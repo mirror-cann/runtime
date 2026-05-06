@@ -331,7 +331,7 @@ bool ClientManager::GetPackagePath(std::string &packagePath, const uint32_t pack
     }
     std::string packageTitle = "";
     if (!GetPackageTitle(packageTitle)) {
-        TSD_RUN_INFO("[TsdClient][deviceId=%u] skip load aicpu opkernel packages, deviceId[%u] ", logicDeviceId_);
+        TSD_RUN_INFO("[TsdClient][deviceId=%u] skip load aicpu opkernel packages", logicDeviceId_);
         return false;
     }
 
