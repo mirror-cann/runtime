@@ -1042,14 +1042,18 @@ TEST_F(CloudV2ApiTest2, ipc_open_with_flag_succ)
 TEST_F(CloudV2ApiTest2, notify_get_phyinfo_invalid_1)
 {
     ApiImpl apiImpl;
-    rtNotify_t notify;
+    rtNotify_t notify = nullptr;
     rtError_t error;
     uint32_t phyDevId;
     uint32_t tsId;
     uint32_t notifyId;
     Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Notify *notifyObj = new (std::nothrow) Notify(0, 0);
+    ASSERT_NE(notifyObj, nullptr);
+    InitEmbeddedInnerHandle<Notify>(notifyObj);
+    g_ipcOpenNotifyRet = notifyObj;
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::IpcOpenNotify).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::IpcOpenNotify).stubs().will(invoke(IpcOpenNotifyStub));
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyPhyInfo).stubs()
         .then(returnValue(RT_ERROR_INVALID_VALUE));
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyDestroy).stubs().will(returnValue(RT_ERROR_NONE));
@@ -1058,6 +1062,8 @@ TEST_F(CloudV2ApiTest2, notify_get_phyinfo_invalid_1)
     error = rtNotifyGetPhyInfo(notify, &phyDevId, &tsId);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     rtNotifyDestroy(notify);
+    g_ipcOpenNotifyRet = nullptr;
+    delete notifyObj;
 }
 
 TEST_F(CloudV2ApiTest2, rtGetP2PStatus)

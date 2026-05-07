@@ -44,7 +44,7 @@ rtError_t ValidateInnerObject(const void *handle, const uint64_t expectedMagic)
         const char * const objectName = GetResourceNameByMagic(expectedMagic);
         RT_LOG(RT_LOG_ERROR, "Validate %s failed, magic mismatch, expected=%#" PRIx64 ", actual=%#" PRIx64 ". %s",
                objectName, expectedMagic, actualMagic, (actualMagic == 0 ? "(Already destroyed)" : ""));
-        return RT_ERROR_INVALID_VALUE;
+        return RT_ERROR_INVALID_HANDLE;
     }
     return RT_ERROR_NONE;
 }

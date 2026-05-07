@@ -1527,6 +1527,13 @@ rtError_t rtModelGetStreams(rtModel_t const mdl, rtStream_t *streams, uint32_t *
         ERROR_RETURN_WITH_EXT_ERRCODE(error);
         return ACL_RT_SUCCESS;
     }
+    if (*numStreams == 0U) {
+        // streams非空但numStreams为0时，表示输出数组容量不足，不是查询stream数量。
+        Stream *stream = nullptr;
+        const rtError_t error = apiInstance->ModelGetStreams(realModel, &stream, numStreams);
+        ERROR_RETURN_WITH_EXT_ERRCODE(error);
+        return ACL_RT_SUCCESS;
+    }
     std::vector<Stream *> streamVec(*numStreams, nullptr);
     const rtError_t error = apiInstance->ModelGetStreams(realModel, streamVec.data(), numStreams);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);

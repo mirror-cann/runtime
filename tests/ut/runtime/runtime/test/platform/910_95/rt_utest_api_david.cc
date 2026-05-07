@@ -9664,7 +9664,7 @@ TEST_F(ApiDavidTest, fusion_launch_with_hdl_and_stubFunc_null_or_not_null)
     fusionInfo.subTask[1].task.aicoreInfo.config = &launchConfig;
     fusionInfo.subTask[1].task.aicoreInfo.stubFunc = &hdl;
  
-    rtError_t error = rtFusionLaunch((void *)(&fusionInfo), stream_, &argsInfo);
+    rtError_t error = rtFusionLaunch((void *)(&fusionInfo), streamHandle_, &argsInfo);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
  
     fusionInfo.subTask[1].task.aicoreInfo.hdl = nullptr;
@@ -9672,7 +9672,7 @@ TEST_F(ApiDavidTest, fusion_launch_with_hdl_and_stubFunc_null_or_not_null)
     fusionInfo.subTask[1].task.aicoreInfo.config = &launchConfig;
     fusionInfo.subTask[1].task.aicoreInfo.stubFunc = nullptr;
  
-    error = rtFusionLaunch((void *)(&fusionInfo), stream_, &argsInfo);
+    error = rtFusionLaunch((void *)(&fusionInfo), streamHandle_, &argsInfo);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
