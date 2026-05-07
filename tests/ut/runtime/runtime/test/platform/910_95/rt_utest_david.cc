@@ -38,6 +38,7 @@
 #include "event_david.hpp"
 #include "context.hpp"
 #include "davinci_kernel_task.h"
+#include "davinci_multiple_task.h"
 #include "profiler.hpp"
 #include "runtime.hpp"
 #include "uma_arg_loader.hpp"

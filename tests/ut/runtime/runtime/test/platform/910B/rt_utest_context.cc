@@ -29,6 +29,7 @@
 #include "module.hpp"
 #include "stream.hpp"
 #include "task_info.hpp"
+#include "davinci_multiple_task.h"
 #include "dump_task.h"
 #include "arg_loader.hpp"
 #include "stream.hpp"

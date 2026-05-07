@@ -91,6 +91,11 @@ void PrintErrorInfoForReduceAsyncV2Task(TaskInfo * const taskInfo, const uint32_
 
 void ConstructSqeForRingBufferMaintainTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
 
+void ConstructSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
+rtError_t WaitAsyncCopyCompleteForDavinciMultipleTask(TaskInfo *taskInfo);
+
+void ConstructSqeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command);
+
 }  // namespace runtime
 }  // namespace cce
 #endif  // TASK_INFO_V100_H

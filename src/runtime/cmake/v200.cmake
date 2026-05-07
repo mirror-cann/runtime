@@ -47,6 +47,8 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_execute_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task_v200_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/event/event_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/event/david_event_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/memory/memory_task.cc
@@ -64,14 +66,13 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci_multiple_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/random_num_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/barrier/barrier_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cmo/cmo_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cmo/cmo_task_v200_base.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/ubdma_task_david.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/dma/ubdma_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_maintaince_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_maintaince_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/event/notify_task.cc
@@ -98,7 +99,6 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/task_manager_david.cc
     ${RUNTIME_FEATURE_DIR}/fusion/fusion_task_david.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_task.cc
-    ${RUNTIME_CORE_DIR}/src/task/v200_base/davinci_task.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/davinci_task_launch_config.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/memcpy_sqe_common_proc.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/aix_sqe_common_proc.cc
@@ -126,6 +126,7 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_update_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_graph_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task_v100.cc
 )
 
 set(libruntime_v200_task_src_files
@@ -242,7 +243,8 @@ set(libruntime_v200_src_files_exclude_for_tiny
     ${RUNTIME_CORE_DIR}/src/profiler/api_profile_decorator_standard_soc.cc
     ${RUNTIME_CORE_DIR}/src/profiler/api_profile_log_decoratoc_standard_soc.cc
     ${RUNTIME_CORE_DIR}/src/task/task_to_sqe.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/rdma_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task_v100.cc
     ${RUNTIME_FEATURE_DIR}/ffts/rdma_task.cc
     ${RUNTIME_FEATURE_DIR}/ffts/ffts_task.cc
     ${RUNTIME_CORE_DIR}/src/event/ipc_event.cc

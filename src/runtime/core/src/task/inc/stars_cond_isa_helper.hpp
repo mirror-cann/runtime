@@ -18,9 +18,6 @@
 namespace cce {
 namespace runtime {
 
-void ConstructRdmaSink1Instr(
-    const uint32_t piInit, const uint8_t sqDepthBitWidth, const uint64_t svmAddr, RtStarsRdmaSinkSqe1 &sqe);
-void ConstructRdmaSink2Instr(const uint64_t dbAddr, const uint64_t dbInfoWithoutPi, RtStarsRdmaSinkSqe2 &sqe);
 void ConstrucStreamResetInstr(const uint32_t sqId, const uint64_t sqEnReg, RtStarsStreamResetHeadSqe &sqe);
 void ConstrucModelExeScanSq(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeScanSq &scanSq);
 void ConstrucModelExeCheckSqFsm(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqFsm &checkSqFsm);

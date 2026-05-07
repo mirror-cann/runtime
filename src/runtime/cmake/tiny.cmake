@@ -20,6 +20,8 @@ set(libruntime_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_execute_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task_v100.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/event_capture.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/v100/api_impl_capture_event.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/capture_model_utils.cc
@@ -40,7 +42,6 @@ set(libruntime_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci_multiple_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/random_num_task.cc
@@ -65,7 +66,6 @@ set(libruntime_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/maintenance_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/maintenance_task_v100.cc
 
-    ${RUNTIME_CORE_DIR}/src/task/v100/davinci_task.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/task_proc_func_register.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/task_checker.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/memory_corruption_checker.cc

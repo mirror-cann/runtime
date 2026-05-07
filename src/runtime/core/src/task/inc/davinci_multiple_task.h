@@ -14,9 +14,16 @@
 
 namespace cce {
 namespace runtime {
-void ConstructSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
+rtError_t DavinciMultipleTaskInit(TaskInfo* taskInfo, const void *const multipleTaskInfo, const uint32_t flag);
 void DavinciMultipleTaskUnInit(TaskInfo* taskInfo);
-rtError_t WaitAsyncCopyCompleteForDavinciMultipleTask(TaskInfo *taskInfo);
+void ResetCmdList(TaskInfo* taskInfo);
+void IncMultipleTaskCqeNum(TaskInfo *taskInfo);
+void DecMultipleTaskCqeNum(TaskInfo *taskInfo);
+void SetMultipleTaskCqeErrorInfo(TaskInfo *taskInfo, uint8_t sqeType, uint8_t errorType, uint32_t errorCode);
+void GetMultipleTaskCqeErrorInfo(TaskInfo * const taskInfo, volatile uint8_t &sqeType,
+                                 volatile uint8_t &errorType, volatile uint32_t &errorCode);
+uint32_t GetSendSqeNumForDavinciMultipleTask(const TaskInfo * const taskInfo);
+uint8_t GetMultipleTaskCqeNum(TaskInfo * const taskInfo);
 }  // namespace runtime
 }  // namespace cce
 #endif  // RUNTIME_DAVINCI_MULTIPLE_TASK_H

@@ -27,6 +27,7 @@
 #include "npu_driver.hpp"
 #include "logger.hpp"
 #include "rdma_task.h"
+#include "task_info_v100.h"
 #include "ffts_task.h"
 #include "rt_unwrap.h"
 #include "dqs/task_dqs.hpp"

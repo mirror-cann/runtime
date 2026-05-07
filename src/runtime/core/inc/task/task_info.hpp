@@ -240,10 +240,8 @@ const char_t* GetSqeDescByType(const uint8_t sqeType);
 const char_t* GetDavidSqeDescByType(const uint8_t sqeType);
 const char_t* GetTaskDescByType(const uint8_t taskType);
 bool IsNeedFreeStreamRes(const TaskInfo *task);
-void ResetCmdList(TaskInfo* taskInfo);
 void TaskTriggerEvent(TaskInfo * const taskInfo);
 
-rtError_t DavinciMultipleTaskInit(TaskInfo* taskInfo, const void *const multipleTaskInfo, const uint32_t flag);
 rtError_t MemcpyAsyncTaskInitV1(TaskInfo * const taskInfo, void *memcpyAddrInfo, const uint64_t cpySize);
 rtError_t MemcpyAsyncTaskInitV2(TaskInfo * const taskInfo, void *const dst, const uint64_t dstPitch,
                                 const void *const srcAddr, const uint64_t srcPitch, const uint64_t width,
@@ -295,18 +293,12 @@ void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo);
 uint32_t GetSqeNumForMemcopyAsync(const rtMemcpyKind_t kind, bool isModelByUb = false, uint32_t cpyType = UINT32_MAX, uint32_t cpyMethod = UINT32_MAX);
 rtError_t ConvertD2DCpyType(const Stream * const stm, uint32_t &cpyType, const void *const srcAddr, void *const desAddr);
 void RecycleTaskResourceForMemcpyAsyncTask(TaskInfo * const taskInfo);
-uint8_t GetMultipleTaskCqeNum(TaskInfo * const taskInfo);
-void DecMultipleTaskCqeNum(TaskInfo *taskInfo);
-void SetMultipleTaskCqeErrorInfo(TaskInfo *taskInfo, uint8_t sqeType, uint8_t errorType, uint32_t errorCode);
-void GetMultipleTaskCqeErrorInfo(TaskInfo * const taskInfo, volatile uint8_t &sqeType,
-    volatile uint8_t &errorType, volatile uint32_t &errorCode);
 void SetSqPos(TaskInfo* taskInfo, const uint32_t pos);
 void SetEndGraphNotifyWaitSqPos(TaskInfo* taskInfo, const uint32_t pos);
 
 void DoCompleteSuccess(TaskInfo* taskInfo, const uint32_t devId);
 void PrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId);
 uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo);
-void IncMultipleTaskCqeNum(TaskInfo *taskInfo);
 
 void SaveTaskInfo(TaskInfo *const taskInfo, TaskInfo *submitTask);
 rtError_t InitFuncCallParaForStreamSwitchTaskV2(TaskInfo* taskInfo, rtStarsStreamSwitchExFcPara_t &fcPara,
@@ -322,16 +314,12 @@ void TryToFreeEventIdAndDestroyEvent(Event **eventPtr, int32_t freeId, bool isNe
 rtError_t DestroyEventSync(Event *evt);
 rtError_t UpdateAddressTaskInit(TaskInfo* taskInfo, uint64_t devAddr, uint64_t len);
 rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo * const updateTask, void * const updateArgHandle = nullptr);
-uint32_t GetSendSqeNumForDavinciMultipleTask(const TaskInfo * const taskInfo);
 bool IsPcieDma(const uint32_t copyTypeFlag);
 uint8_t GetOpcodeForReduce(TaskInfo * const taskInfo);
 uint8_t ReduceOpcodeLow(TaskInfo * const taskInfo);
 void TaskCommonInfoInit(TaskInfo *taskInfo);
 bool IsSupportType(const uint16_t sqeType);
-uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo * const taskInfo);
 uint32_t GetSendSqeNumForAsyncDmaTask(const TaskInfo * const taskInfo);
-rtError_t UbDbSendTaskInit(TaskInfo *taskInfo, const rtUbDbInfo_t *dbInfo, const uint16_t source);
-void UbDirectSendTaskInit(TaskInfo *taskInfo, rtUbWqeInfo_t *wqeInfo);
 bool IsDavidUbDma(const uint32_t copyTypeFlag);
 bool IsDvppTask(const uint16_t sqeType);
 uint32_t GetProfTaskId(const TaskInfo * const taskInfo);

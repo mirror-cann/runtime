@@ -75,6 +75,7 @@
 #include "stream_david.hpp"
 #include "stream_factory.hpp"
 #include "../../data/elf.h"
+#include "davinci_multiple_task.h"
 #undef protected
 #undef private
 

@@ -557,6 +557,14 @@ void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, rtDavidSqe_t
     uint64_t sqBaseAddr);
 void StarsV2MemcpyAsyncTaskUnInit(TaskInfo * const taskInfo);
 void StarsV2DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t devId);
+rtError_t UbDbSendTaskInit(TaskInfo *taskInfo, const rtUbDbInfo_t *dbInfo, const uint16_t source);
+void PrintErrorInfoForUbDbSendTask(TaskInfo *taskInfo, const uint32_t devId);
+void DoCompleteSuccessForUbDmaDbModeTask(TaskInfo* taskInfo, const uint32_t devId);
+void SetResultForUbDmaTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
+void UbDirectSendTaskInit(TaskInfo *taskInfo, rtUbWqeInfo_t *wqeInfo);
+void PrintErrorInfoForUbDirectSendTask(TaskInfo* taskInfo, const uint32_t devId);
+void DoCompleteSuccessForUbDmaDirectWqeModeTask(TaskInfo* taskInfo, const uint32_t devId);
+uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo * const taskInfo);
 void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr);
 void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr);
 void ConstructDavidSqeForLabelSetTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr);
@@ -581,6 +589,8 @@ void ConstructDavidSqeForNotifyRecordTask(TaskInfo *taskInfo, rtDavidSqe_t *cons
 void ConstructDavidSqeForStarsCommonTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr);
 void ConstructDavidSqeForTimeoutSetTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr);
 void ConstructDavidSqeForWordOne(const TaskInfo *const taskInfo, rtDavidSqe_t * const sqe);
+void ConstructDavidSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr);
+void StarsV2DavinciMultipleTaskUnInit(TaskInfo* taskInfo);
 void ConstructSqeForIpcNotifyRecordTask(TaskInfo* taskInfo, rtDavidSqe_t * const command);
 void ConstructDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr);
 void ConstructDavidSqeForMemWriteValueTask(TaskInfo *const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr);

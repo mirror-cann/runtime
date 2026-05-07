@@ -24,11 +24,12 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/feature/ffts/ffts_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_execute_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_multiple_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_v100.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/rdma_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/dma/rdma_task.cc
     ${TOP_DIR}/src/runtime/feature/ffts/rdma_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/reduce/reduce_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/reduce/reduce_task_v100.cc
@@ -39,7 +40,6 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/profiling/profiling_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/dump/dump_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/stream/stream_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci_multiple_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/stars_common/stars_common_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/stars_common/stars_common_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/random_num_task.cc
@@ -61,8 +61,6 @@ set(runtimeut_common_src_task_list
 
 set(runtimeut_src_task_list
     ${runtimeut_common_src_task_list}
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task_v100.cc
-    ${TOP_DIR}/src/runtime/core/src/task/v100/davinci_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/task_proc_func_register_xpu.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/task_checker.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/memory_corruption_checker.cc
@@ -76,6 +74,9 @@ set(runtimeut_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_to_aicpu_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_update_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_graph_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_multiple_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/dma/rdma_task_v100.cc
 )
 
 set(runtimeut_src_api_list

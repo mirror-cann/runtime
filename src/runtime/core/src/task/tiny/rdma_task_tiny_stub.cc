@@ -11,6 +11,7 @@
 #include "stream.hpp"
 #include "runtime.hpp"
 #include "rdma_task.h"
+#include "task_info_v100.h"
 
 namespace cce {
 namespace runtime {

@@ -29,6 +29,7 @@
 #include "scheduler.hpp"
 #include "stars.hpp"
 #include "davinci_kernel_task.h"
+#include "davinci_multiple_task.h"
 #include "hwts.hpp"
 #include "npu_driver.hpp"
 #include "context.hpp"

@@ -27,6 +27,7 @@
 #include "task.hpp"
 #include "device/device_error_proc.hpp"
 #include "task_manager.h"
+#include "davinci_multiple_task.h"
 #include "stub_task.hpp"
 #include "global_state_manager.hpp"
 #include "raw_device.hpp"

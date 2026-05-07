@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
  * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
  * CANN Open Software License Agreement Version 2.0 (the "License").
  * Please refer to the License for details. You may not use this file except in compliance with the License.
@@ -8,11 +8,11 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
+#include "task_info_v100.h"
 #include "stream.hpp"
 #include "runtime.hpp"
 #include "stars_cond_isa_helper.hpp"
 #include "context.hpp"
-#include "rdma_task.h"
 #include "thread_local_container.hpp"
 #include "inner_thread_local.hpp"
 #include "notify.hpp"
@@ -20,81 +20,8 @@
 namespace cce {
 namespace runtime {
 
-#if F_DESC("RdmaSendTask")
-rtError_t RdmaSendTaskInit(TaskInfo* taskInfo, const uint32_t sqId, const uint32_t wqeId)
-{
-    TaskCommonInfoInit(taskInfo);
-    taskInfo->type = TS_TASK_TYPE_RDMA_SEND;
-    taskInfo->typeName = const_cast<char_t*>("RDMA_SEND");
-    taskInfo->u.rdmaSendTask.sqIndex = sqId;
-    taskInfo->u.rdmaSendTask.wqeIndex = wqeId;
-    return RT_ERROR_NONE;
-}
-
-void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t *const command)
-{
-    RT_LOG(RT_LOG_INFO, "index=0x%x, wqe_index=%u.",
-        taskInfo->u.rdmaSendTask.sqIndex, taskInfo->u.rdmaSendTask.wqeIndex);
-    command->u.rdmaSendTask.sqIndex = taskInfo->u.rdmaSendTask.sqIndex;
-    command->u.rdmaSendTask.wqeIndex = taskInfo->u.rdmaSendTask.wqeIndex;
-}
-
-#endif
-
 #if F_DESC("RdmaDbSendTask")
-rtError_t RdmaDbSendTaskInit(TaskInfo* taskInfo, const uint32_t dbIndex, const uint64_t dbInfo, const uint32_t taskSeq)
-{
-    RdmaDbSendTaskInfo* rdmaDbSend = &taskInfo->u.rdmaDbSendTask;
-
-    TaskCommonInfoInit(taskInfo);
-    taskInfo->type = TS_TASK_TYPE_RDMA_DB_SEND;
-    taskInfo->typeName = const_cast<char_t*>("RDMA_DB_SEND");
-    RT_LOG(RT_LOG_INFO, "dbIndex=%#x, dbInfo=%#" PRIx64, dbIndex, dbInfo);
-    rdmaDbSend->taskDbIndex.value = dbIndex;
-    rdmaDbSend->taskDbInfo.value = dbInfo;
-
-    // check vfid and dieid
-    if (taskInfo->stream->Device_()->IsStarsPlatform()) {
-        if (taskInfo->stream->GetBindFlag()) {
-            RT_LOG(RT_LOG_INFO, "taskSeq=%u", taskSeq);
-            rdmaDbSend->taskSeq = taskSeq;
-        }
-        const uint32_t vfId = rdmaDbSend->taskDbIndex.dbIndexStars.vfId;
-        const uint32_t dieId = rdmaDbSend->taskDbIndex.dbIndexStars.dieId;
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_HCCL, vfId != 0U,
-            RT_ERROR_INVALID_VALUE, "invalid vfId, vfId=%u", vfId);
-
-        const int64_t phyDieId = taskInfo->stream->Device_()->GetPhyDieId();
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_HCCL, static_cast<uint32_t>(phyDieId) != dieId,
-            RT_ERROR_INVALID_VALUE, "invalid dieId, dieId=%u, phyDieId=%u", dieId, static_cast<uint32_t>(phyDieId));
-    }
-
-    return RT_ERROR_NONE;
-}
-
-void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t * const command)
-{
-    RdmaDbSendTaskInfo* rdmaDbSend = &taskInfo->u.rdmaDbSendTask;
-
-    RT_LOG(RT_LOG_INFO, "dbIndex=%#x, dbInfo=%#" PRIx64,
-        rdmaDbSend->taskDbIndex.value, rdmaDbSend->taskDbInfo.value);
-    command->u.rdmaDbSendTask.dbIndex = rdmaDbSend->taskDbIndex.value;
-    command->u.rdmaDbSendTask.dbInfo = rdmaDbSend->taskDbInfo.value;
-}
-
-uint32_t GetSendSqeNumForRdmaDbSendTask(TaskInfo * const taskInfo)
-{
-    if (taskInfo->stream->GetBindFlag()) {
-        taskInfo->bindFlag = true;
-    }
-
-    constexpr uint32_t num = 1U;
-    RT_LOG(RT_LOG_INFO, "ChipType=%u, BindFlag=%hhu, SqeNum=%u", Runtime::Instance()->GetChipType(),
-        taskInfo->bindFlag, num);
-    return num;
-}
-
-uint64_t GetRoceDbAddrForRdmaDbSendTask(TaskInfo* const taskInfo)
+static uint64_t GetRoceDbAddrForRdmaDbSendTask(TaskInfo* const taskInfo)
 {
     int64_t chipId = 0U;
     const uint32_t deviceId = taskInfo->stream->Device_()->Id_();
@@ -115,7 +42,71 @@ uint64_t GetRoceDbAddrForRdmaDbSendTask(TaskInfo* const taskInfo)
     return dbAddr;
 }
 
-void ConstructSqeSinkModeForRdmaDb1SendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+/* top half of rdma task sqe, designed to re-calculate PI in sink mode */
+static void ConstructRdmaSink1Instr(const uint32_t piInit, const uint8_t sqDepthBitWidth,
+                                                 const uint64_t svmAddr, RtStarsRdmaSinkSqe1 &sqe)
+{
+    constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
+    constexpr rtStarsCondIsaRegister_t r2 = RT_STARS_COND_ISA_REGISTER_R2;
+
+    // i = *svm_addr(ushort)
+    ConstructLoadImm(r1, svmAddr, RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LHU, sqe.lhu);
+
+    // i_cal = i * sq_depth = i << sqDepthBitWidth[3:0]
+    ConstructOpImmSlli(r1, r1, sqDepthBitWidth, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI,
+                       RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI, sqe.slli1);
+
+    // pi = i_cal + pi_init[11:0]
+    ConstructOpImmAndi(r1, r1, piInit, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, sqe.addi);
+
+    // read immd 0xFFFF, pi &= 0xFFFF
+    ConstructLHWI(r2, 0xFFFFULL, sqe.lhwi);
+    ConstructLLWI(r2, 0xFFFFULL, sqe.llwi);
+    ConstructOpOp(r1, r2, r1, RT_STARS_COND_ISA_OP_FUNC3_AND, RT_STARS_COND_ISA_OP_FUNC7_AND, sqe.and1);
+
+    // pi = pi << 32
+    ConstructOpImmSlli(r1, r1, 32U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI,
+        sqe.slli2);
+
+    // NOP
+    for (RtStarsCondOpNop &nop : sqe.nop) {
+        ConstructNop(nop);
+    }
+}
+
+/* bottom half of rdma task sqe, designed to refresh db value(contains new PI) and write to dbAddr */
+static void ConstructRdmaSink2Instr(const uint64_t dbAddr, const uint64_t dbInfoWithoutPi,
+                                                 RtStarsRdmaSinkSqe2 &sqe)
+{
+    constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
+    constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
+    constexpr rtStarsCondIsaRegister_t r3 = RT_STARS_COND_ISA_REGISTER_R3;
+    constexpr rtStarsCondIsaRegister_t r4 = RT_STARS_COND_ISA_REGISTER_R4;
+    constexpr rtStarsCondIsaRegister_t r5 = RT_STARS_COND_ISA_REGISTER_R5;
+    constexpr uint64_t axiUserVaCfgMask = 0x100000001ULL;
+
+    // read immd dbInfoWithoutPi[63:0]
+    ConstructLHWI(r3, dbInfoWithoutPi, sqe.lhwi1);
+    ConstructLLWI(r3, dbInfoWithoutPi, sqe.llwi1);
+
+    // dbInfo = dbInfoWithoutPi | pi
+    ConstructOpOp(r3, r1, r3, RT_STARS_COND_ISA_OP_FUNC3_OR, RT_STARS_COND_ISA_OP_FUNC7_OR, sqe.or1);
+
+    // read immd dbAddr[63:0]
+    ConstructLHWI(r4, dbAddr, sqe.lhwi2);
+    ConstructLLWI(r4, dbAddr, sqe.llwi2);
+
+    // read immd reg va cfg mask
+    ConstructLLWI(r5, axiUserVaCfgMask, sqe.llwi3);
+    // cfg use PA
+    ConstructSystemCsr(r5, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRC, sqe.csrrc);
+    // write_value dbInfo[63:0] to dbAddr[63:0]
+    ConstructStore(r4, r3, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SD, sqe.sd);
+    // restore to use VA
+    ConstructSystemCsr(r5, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRS, sqe.csrrs);
+}
+
+static void ConstructSqeSinkModeForRdmaDb1SendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
 {
     RdmaDbSendTaskInfo *rdmaDbSendTask = &(taskInfo->u.rdmaDbSendTask);
     Stream * const stream = taskInfo->stream;
@@ -145,7 +136,7 @@ void ConstructSqeSinkModeForRdmaDb1SendTask(TaskInfo* taskInfo, rtStarsSqe_t * c
     PrintSqe(command, "RdmaDbSendSink1");
 }
 
-void ConstructSqeSinkModeForRdmaDb2SendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+static void ConstructSqeSinkModeForRdmaDb2SendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
 {
     RdmaDbSendTaskInfo *rdmaDbSendTask = &(taskInfo->u.rdmaDbSendTask);
     Stream * const stream = taskInfo->stream;
@@ -178,7 +169,7 @@ void ConstructSqeSinkModeForRdmaDb2SendTask(TaskInfo* taskInfo, rtStarsSqe_t * c
     PrintSqe(command, "RdmaDbSendSink2");
 }
 
-void ConstructSqeNoSinkModeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+static void ConstructSqeNoSinkModeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
 {
     Stream * const stream = taskInfo->stream;
     RtStarsWriteValueSqe * const sqe = &(command->writeValueSqe);
@@ -233,5 +224,5 @@ void ConstructSqeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const comm
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+}
+}

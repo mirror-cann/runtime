@@ -21,7 +21,6 @@ rtError_t RdmaSendTaskInit(TaskInfo* taskInfo, const uint32_t sqId, const uint32
 rtError_t RdmaDbSendTaskInit(TaskInfo* taskInfo, const uint32_t dbIndex, const uint64_t dbInfo, const uint32_t taskSeq);
 void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t *const command);
 void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t * const command);
-void ConstructSqeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command);
 rtError_t RdmaPiValueModifyTaskInit(
     TaskInfo *const taskInfo, const std::vector<uint64_t>& rdmaPiValueDeviceAddrVec);
 void GetRdmaTaskInfoFromFftsPlusTask (const rtFftsPlusTaskInfo_t *const fftsPlusTaskInfo,

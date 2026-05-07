@@ -10,6 +10,7 @@
 #include "dvpp_c.hpp"
 #include "davinci_kernel_task.h"
 #include "stars_common_task.h"
+#include "davinci_multiple_task.h"
 #include "stream.hpp"
 #include "stream_david.hpp"
 #include "task_david.hpp"
