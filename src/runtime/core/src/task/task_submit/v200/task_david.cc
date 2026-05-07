@@ -49,28 +49,6 @@ static void SyncTaskCheckResult(const rtError_t error, const Stream * const stm,
     }
     return;
 }
-static rtError_t CheckTaskisValid(TaskInfo *submitTask, const Stream * const stm, uint32_t *sendSqeNum)
-{
-    if (stm->Device_()->GetDevRunningState() == static_cast<uint32_t>(DEV_RUNNING_DOWN)) {
-        RT_LOG_INNER_DETAIL_MSG(RT_DRV_INNER_ERROR, {"device_id"}, {std::to_string(stm->Device_()->Id_())});
-        submitTask->error = TASK_ERROR_SUBMIT_FAIL; // todo:confirm
-        return RT_ERROR_DRV_ERR;
-    }
-    const rtError_t status = stm->abortStatus_;
-    if (status != RT_ERROR_NONE) {
-        return status;
-    }
-    *sendSqeNum = GetSendDavidSqeNum(submitTask);
-    // set stream for task after task alloc
-    if (*sendSqeNum > SQE_NUM_PER_DAVID_TASK_MAX) {
-        RT_LOG(RT_LOG_ERROR, "sendSqeNum %u more than max num %d, task_type=%d(%s).",
-            *sendSqeNum, SQE_NUM_PER_DAVID_TASK_MAX,static_cast<int32_t>(submitTask->type),
-            GetTaskDescByType(submitTask->type));
-        return RT_ERROR_INVALID_VALUE;
-    }
-     return RT_ERROR_NONE;
-}
-
 void TaskRollBack(Stream * const stm, uint32_t pos)
 {
     if (unlikely(stm == nullptr)) {
