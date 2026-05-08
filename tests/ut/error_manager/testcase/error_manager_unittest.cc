@@ -735,6 +735,7 @@ TEST_F(UtestErrorManager, ProcessModeTest02) {
   EXPECT_EQ(warnig_str.find("thread_2"), std::string::npos);
   EXPECT_EQ(instance.error_message_process_.size(), 0);
   EXPECT_EQ(instance.warning_messages_process_.size(), 0);
+  done = false;
 }
 
 TEST_F(UtestErrorManager, ProcessModeTest03) {
@@ -805,6 +806,7 @@ TEST_F(UtestErrorManager, InternalModeTest04) {
   EXPECT_EQ(warnig_str.find("thread_2"), std::string::npos);
   EXPECT_EQ(instance.error_message_process_.size(), 0);
   EXPECT_EQ(instance.warning_messages_process_.size(), 0);
+  done = false;
 }
 
 TEST_F(UtestErrorManager, InternalModeTest05) {
@@ -838,6 +840,7 @@ TEST_F(UtestErrorManager, InternalModeTest05) {
   EXPECT_EQ(warnig_str.find("thread_2"), std::string::npos);
   EXPECT_EQ(instance.error_message_process_.size(), 0);
   EXPECT_EQ(instance.warning_messages_process_.size(), 0);
+  done = false;
 }
 
 TEST_F(UtestErrorManager, IsUserDefinedErrorCode_Failed_invalid_error_code) {
