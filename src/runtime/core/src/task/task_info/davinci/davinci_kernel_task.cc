@@ -982,11 +982,11 @@ static void PrintAicpuErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
     std::string soName = (kernel != nullptr) ? kernel->GetCpuKernelSo() : "";
 
     if ((taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) && (taskInfo->errorCode == TS_ERROR_AICPU_TIMEOUT)) {
-        RT_LOG_OUTER_MSG(RT_AICPU_TIMEOUT_ERROR, "Aicpu kernel execute failed, device_id=%u, stream_id=%d, "
+        RT_LOG_OUTER_MSG(RT_AICPU_TIMEOUT_ERROR, "AI CPU kernel execute failed, device_id=%u, stream_id=%d, "
             "%s=%u, soName=%s, funcName=%s, kernelName=%s.",
             devId, streamId, TaskIdDesc(), taskId, soName.c_str(), funcName.c_str(), kernelName.c_str());
     } else {
-        RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "Aicpu kernel execute failed, device_id=%u, stream_id=%d, "
+        RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "AI CPU kernel execute failed, device_id=%u, stream_id=%d, "
             "%s=%u, soName=%s, funcName=%s, kernelName=%s, errorCode=%#x.",
             devId, streamId, TaskIdDesc(), taskId, soName.c_str(), funcName.c_str(), kernelName.c_str(), taskInfo->errorCode);
     }
