@@ -8861,6 +8861,9 @@ rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
     if (taskInfo->taskOwner == static_cast<uint8_t>(TaskOwner::RT_TASK_INNER)) {
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, __func__, "task->type",
+                "The current task type RT_TASK_DEFAULT does not support obtaining of parameters."
+                " Only task types other than RT_TASK_DEFAULT supports obtaining of parameters");
         RT_LOG(RT_LOG_ERROR,
             "streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, taskOwner=%d.",
             taskInfo->stream->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName, static_cast<int32_t>(taskInfo->taskOwner));
@@ -8901,7 +8904,7 @@ rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
             error = GetWaitValueTaskParams(taskInfo, params);
             break;
         default:
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, "rtModelTaskGetParams", "task->type",
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, __func__, "task->type",
                 "The current task type RT_TASK_DEFAULT does not support obtaining of parameters."
                 " Only task types other than RT_TASK_DEFAULT supports obtaining of parameters");
             RT_LOG(
