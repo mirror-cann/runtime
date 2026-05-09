@@ -1162,7 +1162,7 @@ rtError_t ApiImplDavid::DebugUnRegisterForStream(Stream * const stm)
 rtError_t ApiImplDavid::GetDevRunningStreamSnapshotMsg(const rtGetMsgCallback callback)
 {
     const std::function<rtError_t(Device * const dev)> getDevHangMsgForDev =
-        [callback, this](Device * const dev) -> rtError_t {    
+        [callback](Device * const dev) -> rtError_t {    
         DeviceStreamSnapshotHandler devStreamSnapshotHandler(dev, callback);
         rtError_t error = devStreamSnapshotHandler.Init();
         ERROR_RETURN(error, "Init device stream snapshot msg handler failed, retCode=%#x.", static_cast<uint32_t>(error));

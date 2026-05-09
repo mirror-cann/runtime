@@ -26,8 +26,6 @@
 
 namespace cce {
 namespace runtime {
-constexpr uint32_t MIX_KERNEL_PROC_V1 = 1U;
-constexpr uint32_t MIX_KERNEL_PROC_V2 = 2U;
 
 #pragma pack(push, 1)
 struct CpuSoBuf {

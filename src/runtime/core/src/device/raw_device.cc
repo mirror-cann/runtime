@@ -1399,7 +1399,7 @@ rtError_t RawDevice::UpdateTimeoutConfig()
 
     if (timeoutConfig.isCfgOpExcTaskTimeout) {
         uint32_t opExcTaskTimeout = timeoutConfig.opExcTaskTimeout / RT_TIMEOUT_MS_TO_US;
-        if ((props.timeoutUpdateMethod == TimeoutUpdateMethod::TIMEOUT_NEED_RESET)) {
+        if (props.timeoutUpdateMethod == TimeoutUpdateMethod::TIMEOUT_NEED_RESET) {
             opExcTaskTimeout = timeoutConfig.opExcTaskTimeout;
         }
         TimeoutSetTaskUpdate(timeoutTask, RT_TIMEOUT_TYPE_OP_EXECUTE, 

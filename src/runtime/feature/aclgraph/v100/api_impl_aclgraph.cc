@@ -15,13 +15,6 @@
 #define RT_DRV_FAULT_CNT 25U
 #define NULL_STREAM_PTR_RETURN_MSG(STREAM)     NULL_PTR_RETURN_MSG((STREAM), RT_ERROR_STREAM_NULL)
 
-
-namespace {
-constexpr uint32_t MEM_POLICY_MASK = 0xFFU;
-constexpr uint32_t MEM_TYPE_MASK = 0xFF00U;
-
-}
-
 namespace cce {
 namespace runtime {
 

@@ -119,7 +119,7 @@ rtError_t ProcStreamRecordTask(Stream * const stm, int32_t timeout)
     TaskInfo *tsk = nullptr;
     stm->StreamLock();
     Event *lastHalfRecord = stm->GetLastHalfRecord();
-    std::function<void()> const errRecycle = [&lastHalfRecord, &tsk, &stm, &pos]() {
+    std::function<void()> const errRecycle = [&tsk, &stm, &pos]() {
         TaskUnInitProc(tsk);
         TaskRollBack(stm, pos);
         stm->StreamUnLock();

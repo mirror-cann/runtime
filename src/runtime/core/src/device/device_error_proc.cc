@@ -27,11 +27,6 @@
 
 namespace cce {
 namespace runtime {
-namespace {
-constexpr uint32_t TS_SDMA_STATUS_DDRC_ERROR = 0x8U;
-constexpr uint32_t TS_SDMA_STATUS_LINK_ERROR = 0x9U;
-constexpr uint32_t TS_SDMA_STATUS_POISON_ERROR = 0xAU;
-} // namespace
 
 // alloc a huge page size
 

@@ -20,11 +20,8 @@
 namespace cce {
 namespace runtime {
 
-constexpr double VERSION = 1.0;
 constexpr uint32_t MAX_STREAM_NUM = 64;
 constexpr uint32_t MAX_STREAM_DEPTH = 1024;
-constexpr uint32_t TIMEOUT_MONITOR_GRANULARITY = 1000;
-constexpr uint32_t DEFAULT_TASKEXE_TIMEOUT = 30000;
 
 XpuDevice::XpuDevice(const uint32_t devId)
     : RawDevice(devId), ThreadRunnable(), xpuArgLoader_(nullptr),
