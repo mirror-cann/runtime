@@ -44,8 +44,32 @@ void ConstructDavidSqeForMaintenanceTask(TaskInfo * const taskInfo, rtDavidSqe_t
     RT_LOG(RT_LOG_INFO, "MaintenanceTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn);
 }
-
 #endif
 
+#if F_DESC("GetDevMsgTask")
+void ConstructDavidSqeForGetDevMsgTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+{
+    UNUSED(sqBaseAddr);
+    GetDevMsgTaskInfo * const getDevMsgTask = &(taskInfo->u.getDevMsgTask);
+    Stream * const stm = taskInfo->stream;
+
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
+
+    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    sqe->header.preP = 1U;
+    sqe->taskType = TS_TASK_TYPE_GET_DEVICE_MSG;
+    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    sqe->u.getDevMsgInfo.len = getDevMsgTask->msgBufferLen;
+    sqe->u.getDevMsgInfo.devAddr =
+        RtPtrToValue(getDevMsgTask->devMem);
+    sqe->u.getDevMsgInfo.offset = getDevMsgTask->offset;
+    sqe->u.getDevMsgInfo.type = static_cast<uint16_t>(getDevMsgTask->msgType);
+
+    PrintDavidSqe(davidSqe, "GetDevMsgTask");
+    RT_LOG(RT_LOG_INFO, "GetDevMsgTask, device_id=%u, stream_id=%d, task_id=%hu.", stm->Device_()->Id_(),
+        stm->Id_(), taskInfo->id);
+}
+#endif
 }  // namespace runtime
 }  // namespace cce

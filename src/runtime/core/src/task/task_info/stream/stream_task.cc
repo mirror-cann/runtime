@@ -403,7 +403,83 @@ void ToCmdBodyForSetStreamModeTask(TaskInfo* taskInfo, rtCommand_t *const comman
 {
     command->u.setStreamModeTask.mode = taskInfo->u.setStmModeTask.mode;
 }
+#endif
 
+#if F_DESC("CallbackLaunchTask")
+rtError_t CallbackLaunchTaskInit(TaskInfo* taskInfo, const rtCallback_t callBackFunction, void *const functionData,
+                                 const bool isBlockFlag, const int32_t evtId)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->typeName = "HOSTFUNC_CALLBACK";
+    taskInfo->type = TS_TASK_TYPE_HOSTFUNC_CALLBACK;
+    taskInfo->u.callbackLaunchTask.callBackFunc = callBackFunction;
+    taskInfo->u.callbackLaunchTask.fnData = functionData;
+    taskInfo->u.callbackLaunchTask.isBlock = isBlockFlag;
+    taskInfo->u.callbackLaunchTask.eventId = evtId;
+    return RT_ERROR_NONE;
+}
+
+void ToCmdBodyForCallbackLaunchTask(TaskInfo* taskInfo, rtCommand_t *const command)
+{
+    command->u.hostFuncCBTask.hostFuncCBPtr =
+        RtPtrToValue<rtCallback_t>(taskInfo->u.callbackLaunchTask.callBackFunc);
+    command->u.hostFuncCBTask.fnDataPtr =
+        RtPtrToValue<void *>(taskInfo->u.callbackLaunchTask.fnData);
+    command->u.hostFuncCBTask.cbRptCqid = static_cast<uint32_t>(taskInfo->stream->GetCbRptCqid());
+    command->u.hostFuncCBTask.isBlock = static_cast<uint8_t>(taskInfo->u.callbackLaunchTask.isBlock);
+}
+#endif
+
+
+#if F_DESC("SqeUpdateTask")
+rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo * const updateTask, void * const updateArgHandle)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->type = TS_TASK_TYPE_TASK_SQE_UPDATE;
+    taskInfo->typeName = "TASK_SQE_UPDATE";
+    AicTaskInfo *aicTaskInfo = &(updateTask->u.aicTaskInfo);
+    taskInfo->u.sqeUpdateTask.funcPtr = aicTaskInfo->funcAddr;
+    taskInfo->u.sqeUpdateTask.funcDesc = RtPtrToValue(aicTaskInfo->comm.args);
+    taskInfo->u.sqeUpdateTask.literalSrcAddr = static_cast<uint64_t>(aicTaskInfo->blockDimOffset);
+    taskInfo->u.sqeUpdateTask.literalSize = 0;
+    taskInfo->u.sqeUpdateTask.literalSize |= static_cast<uint32_t>(aicTaskInfo->infMode);
+    taskInfo->u.sqeUpdateTask.blockDim = aicTaskInfo->comm.dim;
+    taskInfo->u.sqeUpdateTask.desStreamId = updateTask->stream->Id_();
+    taskInfo->u.sqeUpdateTask.desTaskId = updateTask->id;
+    taskInfo->u.sqeUpdateTask.schemMode = aicTaskInfo->schemMode;
+    taskInfo->u.sqeUpdateTask.updateArgHandle = updateArgHandle;
+    return RT_ERROR_NONE;
+}
+
+void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t *const command)
+{
+    SqeUpdateTaskInfo *sqeUpdateTaskInfo = &(taskInfo->u.sqeUpdateTask);
+    command->u.sqeUpdateTask.funcPtr = sqeUpdateTaskInfo->funcPtr;
+    command->u.sqeUpdateTask.funcDesc = sqeUpdateTaskInfo->funcDesc;
+    command->u.sqeUpdateTask.literalSrcAddr = sqeUpdateTaskInfo->literalSrcAddr;
+    command->u.sqeUpdateTask.literalSize = sqeUpdateTaskInfo->literalSize;
+    command->u.sqeUpdateTask.blockDim = sqeUpdateTaskInfo->blockDim;
+    command->u.sqeUpdateTask.desStreamId = sqeUpdateTaskInfo->desStreamId;
+    command->u.sqeUpdateTask.desTaskId = sqeUpdateTaskInfo->desTaskId;
+    command->u.sqeUpdateTask.schemMode = sqeUpdateTaskInfo->schemMode;
+    return;
+}
+#endif
+
+#if F_DESC("FlipTask")
+void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->type = TS_TASK_TYPE_FLIP;
+    taskInfo->typeName = "FLIP_TASK";
+    taskInfo->u.flipTask.flipNumReport = flipNum;
+    return;
+}
+
+void ToCmdBodyForFlipTask(TaskInfo *const taskInfo, rtCommand_t *const command)
+{
+    command->u.flipTask.flipNumReport = taskInfo->u.flipTask.flipNumReport;
+}
 #endif
 
 }  // namespace runtime

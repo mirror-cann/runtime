@@ -37,6 +37,13 @@ rtError_t StreamTagSetTaskInit(TaskInfo *taskInfo, Stream * const stm, const uin
 
 rtError_t SetStreamModeTaskInit(TaskInfo *taskInfo, const uint64_t mode);
 void ToCmdBodyForSetStreamModeTask(TaskInfo* taskInfo, rtCommand_t *const command);
+rtError_t CallbackLaunchTaskInit(TaskInfo* taskInfo, const rtCallback_t callBackFunction, void *const functionData,
+                                 const bool isBlockFlag, const int32_t evtId);
+void ToCmdBodyForCallbackLaunchTask(TaskInfo* taskInfo, rtCommand_t *const command);
+void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum);
+void ToCmdBodyForFlipTask(TaskInfo *const taskInfo, rtCommand_t *const command);
+rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo * const updateTask, void * const updateArgHandle = nullptr);
+void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t *const command);
 }  // namespace runtime
 }  // namespace cce
 #endif  // RUNTIME_STREAM_TASK_H

@@ -75,6 +75,9 @@ void PrintErrorInfoForStarsCommonTask(TaskInfo* taskInfo, const uint32_t devId);
 
 // dsa and dvpp are stars common task
 rtError_t GetIsCmdListNotFreeValByDvppCfg(rtDvppCfg_t *cfg, bool &isCmdListNotFree);
+rtError_t WriteValueTaskInit(TaskInfo *taskInfo, uint64_t addr, WriteValueSize size,
+                             uint8_t *value, TaskWrCqeFlag cqeFlag);
+void CommonCmdTaskInit(TaskInfo * const taskInfo, const PhCmdType cmdType, const CommonCmdTaskInfo *cmdInfo);
 }  // namespace runtime
 }  // namespace cce
 #endif  // RUNTIME_STARS_COMMON_TASK_H

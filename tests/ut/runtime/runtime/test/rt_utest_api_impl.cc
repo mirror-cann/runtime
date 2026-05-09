@@ -48,6 +48,7 @@
 #include "rt_utest_config_define.hpp"
 #include "api_impl_david.hpp"
 #include "thread_local_container.hpp"
+#include "maintenance_task.h"
 #include "stream_c.hpp"
 #include "fast_recover.hpp"
 #include "rts.h"

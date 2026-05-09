@@ -23,7 +23,7 @@
 #include "task_fail_callback_manager.hpp"
 #include "device/device_error_proc.hpp"
 #include "hwts.hpp"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "task_manager.h"
 #include "model.hpp"
 #include "error_code.h"

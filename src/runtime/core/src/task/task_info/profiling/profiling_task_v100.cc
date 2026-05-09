@@ -94,5 +94,12 @@ void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t *const 
 }
 #endif
 
+#if F_DESC("PCTraceTask")
+void PCTraceTaskUnInit(TaskInfo * const taskInfo)
+{
+    taskInfo->pcTrace.reset();
+}
+#endif
+
 }  // namespace runtime
 }  // namespace cce

@@ -50,6 +50,7 @@
 #include "../../rt_utest_config_define.hpp"
 #include "thread_local_container.hpp"
 #include "rts.h"
+#include "maintenance_task.h"
 
 using namespace testing;
 using namespace cce::runtime;

@@ -48,6 +48,7 @@
 #include "thread_local_container.hpp"
 #include "stream_c.hpp"
 #include "fast_recover.hpp"
+#include "maintenance_task.h"
 #include "rts.h"
 #include "heterogenous.h"
 #include "rt_unwrap.h"

@@ -24,6 +24,9 @@
 #include "stream_task.h"
 #include "dump_task.h"
 #include "timeout_set_task.h"
+#include "maintenance_task.h"
+#include "common_task.h"
+#include "stars_david.hpp"
 
 namespace cce {
 namespace runtime {

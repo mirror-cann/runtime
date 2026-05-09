@@ -22,6 +22,7 @@
 #include "task_info.hpp"
 #include "task_info.h"
 #include "task_info_v100.h"
+#include "model_execute_task.h"
 #include "ffts_task.h"
 #include "device/device_error_proc.hpp"
 #include "program.hpp"

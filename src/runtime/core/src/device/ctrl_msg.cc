@@ -23,6 +23,7 @@
 #include "task.hpp"
 #include "maintenance_task.h"
 #include "context.hpp"
+#include "common_task.h"
 
 namespace cce {
 namespace runtime {

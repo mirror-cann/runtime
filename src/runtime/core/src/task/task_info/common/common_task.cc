@@ -11,7 +11,7 @@
 #include "runtime.hpp"
 #include "context.hpp"
 #include "task_manager.h"
-#include "stars_common_task.h"
+#include "common_task.h"
 
 namespace cce {
 namespace runtime {
@@ -115,5 +115,50 @@ rtError_t GetIsCmdListNotFreeValByDvppCfg(rtDvppCfg_t *cfg, bool &isCmdListNotFr
     return RT_ERROR_NONE;
 }
 #endif
+
+#if F_DESC("WriteValueTask")
+rtError_t WriteValueTaskInit(TaskInfo *taskInfo, uint64_t addr, WriteValueSize size,
+                             uint8_t *value, TaskWrCqeFlag cqeFlag)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->typeName = "WriteValueTask";
+    taskInfo->type = TS_TASK_TYPE_WRITE_VALUE;
+
+    WriteValueTaskInfo *writeValTsk = &taskInfo->u.writeValTask;
+    writeValTsk->addr = addr;
+    writeValTsk->awSize = size;
+    writeValTsk->cqeFlag = cqeFlag;
+    const uint32_t writeLen = (1U << static_cast<uint32_t>(size));
+
+    for (uint32_t i = 0U; i < writeLen; i++) {
+        writeValTsk->value[i] = value[i];
+    }
+
+    return RT_ERROR_NONE;
+}
+#endif
+
+#if F_DESC("CommonCmdTask")
+void CommonCmdTaskInit(TaskInfo * const taskInfo, const PhCmdType cmdType, const CommonCmdTaskInfo * cmdInfo)
+{
+    CommonCmdTaskInfo *commonCmdTaskInfo = &(taskInfo->u.commonCmdTask);
+    TaskCommonInfoInit(taskInfo);
+
+    taskInfo->type = TS_TASK_TYPE_COMMON_CMD;
+    commonCmdTaskInfo->cmdType = cmdType;
+    if (cmdType == CMD_STREAM_CLEAR) {
+        taskInfo->typeName = "STREAM_CLEAR_TASK";
+        commonCmdTaskInfo->streamId = static_cast<uint16_t>(cmdInfo->streamId);
+        commonCmdTaskInfo->step = static_cast<uint16_t>(cmdInfo->step);
+    } else if (cmdType == CMD_NOTIFY_RESET) {
+        taskInfo->typeName = "NOTIFY_RESET_TASK";
+        commonCmdTaskInfo->notifyId = cmdInfo->notifyId;
+    } else {
+        // no operation
+    }
+    return;
+}
+#endif
+
 }  // namespace runtime
 }  // namespace cce

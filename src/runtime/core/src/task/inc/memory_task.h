@@ -61,6 +61,10 @@ rtError_t GetCaptureRecordTaskParams(const TaskInfo* const taskInfo, rtTaskParam
 rtError_t GetCaptureWaitTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 rtError_t GetCaptureResetTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 void IpcEventDestroy(IpcEvent **eventPtr, int32_t freeId, bool isNeedDestroy);
+
+rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrAddr);
+void ToCommandBodyForCreateL2AddrTask(TaskInfo * const taskInfo, rtCommand_t *const command);
+rtError_t UpdateAddressTaskInit(TaskInfo* taskInfo, uint64_t devAddr, uint64_t len);
 }  // namespace runtime
 }  // namespace cce
 #endif  // RUNTIME_MEMORY_TASK_H

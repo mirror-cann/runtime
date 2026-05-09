@@ -40,7 +40,7 @@
 #include "capture_model_utils.hpp"
 #include "capture_adapt.hpp"
 #include "base_david.hpp"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "args_handle_allocator.hpp"
 #include "para_convertor.hpp"
 #include "runtime/kernel.h"

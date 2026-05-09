@@ -263,30 +263,11 @@ rtError_t RemoteEventWaitTaskInit(TaskInfo * const taskInfo, Event *const eventR
 rtError_t EventWaitTaskInit(TaskInfo * const taskInfo, Event *const eventRec, const int32_t eventIndex,
                             const uint32_t timeout, const uint8_t waitFlag = 0U);
 
-rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrAddr);
-rtError_t KernelFusionTaskInit(TaskInfo * const taskInfo, const FusionFlag fusFlag);
-rtError_t PCTraceTaskInit(TaskInfo * const taskInfo, const uint16_t enableTaskIndex,
-                          const uint16_t coreDims, std::shared_ptr<PCTrace> pcTracePtr);
 // task init func
-rtError_t CallbackLaunchTaskInit(TaskInfo* taskInfo, const rtCallback_t callBackFunction, void *const functionData,
-                                 const bool isBlockFlag, const int32_t evtId);
-rtError_t NpuGetFloatStaTaskInit(TaskInfo *taskInfo, void * const outputAddrPtr,
-                                 const uint64_t outputSize, const uint32_t checkMode,
-                                 bool debugFlag = false);
-rtError_t NpuClrFloatStaTaskInit(TaskInfo *taskInfo, const uint32_t checkMode, bool debugFlag = false);
-
-rtError_t WriteValueTaskInit(TaskInfo *taskInfo, uint64_t addr, WriteValueSize size,
-                             uint8_t *value, TaskWrCqeFlag cqeFlag);
-rtError_t WriteValuePtrTaskInit(TaskInfo *taskInfo, const void * const pointedAddr, TaskWrCqeFlag cqeFlag);
 void CcuLaunchTaskInit(TaskInfo *taskInfo, rtCcuTaskInfo_t *const ccuInfo);
-void CommonCmdTaskInit(TaskInfo * const taskInfo, const PhCmdType cmdType, const CommonCmdTaskInfo *cmdInfo);
 
-
-rtError_t GetDevMsgTaskInit(TaskInfo* taskInfo, const void *const devMemAddr,
-    const uint32_t devMemSize, const rtGetDevMsgType_t messageType);
 uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device * const dev);
 uint32_t CovertToFlipTaskId(const TaskInfo* const taskInfo, const uint32_t taskId);
-void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum);
 void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo);
 
 // others
@@ -306,14 +287,8 @@ rtError_t InitFuncCallParaForStreamSwitchTaskV2(TaskInfo* taskInfo, rtStarsStrea
 rtError_t InitFuncCallParaForStreamSwitchTaskV1(TaskInfo* taskInfo, rtStarsStreamSwitchFcPara_t &fcPara,
     const rtChipType_t chipType);
 void SetTaskTag(TaskInfo *taskInfo);
-rtError_t AllocDsaAddrTaskInit(TaskInfo * const taskInfo, const uint16_t sqId);
-rtError_t StarsVersionTaskInit(TaskInfo * const taskInfo);
-void SetStarsResultForStarsVersionTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
-void DoCompleteSuccessForStarsVersionTask(TaskInfo* taskInfo, const uint32_t devId);
 void TryToFreeEventIdAndDestroyEvent(Event **eventPtr, int32_t freeId, bool isNeedDestroy, bool isCaptureDestroy = false);
 rtError_t DestroyEventSync(Event *evt);
-rtError_t UpdateAddressTaskInit(TaskInfo* taskInfo, uint64_t devAddr, uint64_t len);
-rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo * const updateTask, void * const updateArgHandle = nullptr);
 bool IsPcieDma(const uint32_t copyTypeFlag);
 uint8_t GetOpcodeForReduce(TaskInfo * const taskInfo);
 uint8_t ReduceOpcodeLow(TaskInfo * const taskInfo);

@@ -11,6 +11,7 @@
 #include "stream_sqcq_manage.hpp"
 #include "task.hpp"
 #include "error_message_manage.hpp"
+#include "maintenance_task.h"
 
 namespace cce {
 namespace runtime {

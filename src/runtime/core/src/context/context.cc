@@ -9,6 +9,7 @@
  */
 #include "context.hpp"
 #include "davinci_kernel_task.h"
+#include "maintenance_task.h"
 #include "model_graph_task.h"
 #include "dump_task.h"
 #include <cinttypes>
@@ -48,7 +49,7 @@
 #include "notify_task.h"
 #include "capture_model.hpp"
 #include "capture_model_utils.hpp"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "random_num_task.h"
 #include "memory_task.h"
 #include "reduce_task.h"

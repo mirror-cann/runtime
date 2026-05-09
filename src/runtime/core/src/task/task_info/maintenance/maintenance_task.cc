@@ -60,7 +60,79 @@ void ToCommandBodyForMaintenanceTask(TaskInfo * const taskInfo, rtCommand_t *con
         command->u.maintenanceTask.flag = FORCE_RECYCLE_TASK_FLAG; // for force recycle
     }
 }
+#endif
 
+#if F_DESC("AllocDsaAddrTask")
+rtError_t AllocDsaAddrTaskInit(TaskInfo * const taskInfo, const uint16_t sqId)
+{
+    AllocDsaAddrInfoTaskInfo *dsaTaskInfo = &(taskInfo->u.allocDsaAddrTask);
+    TaskCommonInfoInit(taskInfo);
+
+    taskInfo->type = TS_TASK_TYPE_ALLOC_DSA_ADDR;
+    taskInfo->typeName = "ALLOC_DSA_ADDR";
+    dsaTaskInfo->sqId = sqId;
+
+    return RT_ERROR_NONE;
+}
+#endif
+
+#if F_DESC("GetDevMsgTask")
+rtError_t GetDevMsgTaskInit(TaskInfo* taskInfo, const void * const devMemAddr,
+                            const uint32_t devMemSize,
+                            const rtGetDevMsgType_t messageType)
+{
+    GetDevMsgTaskInfo *getDevMsgTask = &(taskInfo->u.getDevMsgTask);
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->type = TS_TASK_TYPE_GET_DEVICE_MSG;
+    taskInfo->typeName = "GET_DEVICE_MSG";
+    getDevMsgTask->devMem = const_cast<void*>(devMemAddr);
+    getDevMsgTask->msgBufferLen = devMemSize;
+    getDevMsgTask->msgType = messageType;
+    getDevMsgTask->offset = MAX_UINT64_NUM;
+    Stream * const stm = taskInfo->stream;
+
+    if (!stm->Device_()->IsDavidPlatform()) {
+        const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
+            static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
+            RtPtrToValue<void *>(getDevMsgTask->devMem),
+            &(getDevMsgTask->offset));
+        COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
+            "MemAddressTranslate address error=%#x, msg type=%d, msgBuffer length=%u.",
+            error, messageType, getDevMsgTask->msgBufferLen);
+    }
+
+    RT_LOG(RT_LOG_DEBUG, "Create GetDevMsgTask task,task_id=%hu,task_type=%d(%s),stream_id=%d, "
+           "msgBufferLen=%u,msgType=%d,offset=%" PRIu64, taskInfo->id, taskInfo->type, taskInfo->typeName,
+           taskInfo->stream->Id_(), getDevMsgTask->msgBufferLen, messageType, getDevMsgTask->offset);
+    return RT_ERROR_NONE;
+}
+
+void ToCommandBodyForGetDevMsgTask(TaskInfo* taskInfo, rtCommand_t * const command)
+{
+    GetDevMsgTaskInfo *getDevMsgTask = &(taskInfo->u.getDevMsgTask);
+    command->u.getDevMsgTask.len = getDevMsgTask->msgBufferLen;
+    command->u.getDevMsgTask.devAddr =
+        RtPtrToValue<void *>(getDevMsgTask->devMem);
+    command->u.getDevMsgTask.offset = getDevMsgTask->offset;
+    command->u.getDevMsgTask.type = static_cast<uint16_t>(getDevMsgTask->msgType);
+    RT_LOG(RT_LOG_INFO, "Device message device offset=%#" PRIx64 ",msgType=%d", getDevMsgTask->offset,
+        getDevMsgTask->msgType);
+}
+#endif
+
+#if F_DESC("StarsVersionTask")
+rtError_t StarsVersionTaskInit(TaskInfo * const taskInfo)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->type = TS_TASK_TYPE_GET_STARS_VERSION;
+    taskInfo->typeName = "STARS_VERSION";
+
+    if (taskInfo->stream->Device_()->IsStarsPlatform()) {
+        taskInfo->isNeedStreamSync = true;
+    }
+
+    return RT_ERROR_NONE;
+}
 #endif
 
 }  // namespace runtime

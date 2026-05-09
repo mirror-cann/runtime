@@ -20,7 +20,6 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/task_res.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_submit/v100/task_submit.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/task_manager.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/task_info.cc
     ${TOP_DIR}/src/runtime/feature/ffts/ffts_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_execute_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task.cc
@@ -40,8 +39,8 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/profiling/profiling_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/dump/dump_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/stream/stream_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/stars_common/stars_common_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/stars_common/stars_common_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/common/common_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/common/common_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/random_num_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/barrier/barrier_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cmo/cmo_task.cc
@@ -57,6 +56,9 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_to_aicpu_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/maintenance_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/maintenance_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/float_status_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/float_status_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/model/kernel_fusion_task.cc
 )
 
 set(runtimeut_src_task_list

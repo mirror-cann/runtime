@@ -14,6 +14,7 @@
 #include "stream_task.h"
 #include "task_info_v100.h"
 #include "stub_task.hpp"
+#include "arg_loader/arg_loader.hpp"
 
 namespace cce {
 namespace runtime {
@@ -149,6 +150,114 @@ void ConstructSqeForStreamTagSetTask(TaskInfo* taskInfo, rtStarsSqe_t *const com
     PrintSqe(command, "StreamTagSetTask");
     RT_LOG(RT_LOG_INFO, "StreamTagSetTask target stream id=%d, sqe stream id =%hu, geOpTag=%u",
         stmTagSetTsk->targetStm->Id_(), sqe->rt_streamID, stmTagSetTsk->geOpTag);
+}
+#endif
+
+#if F_DESC("CallbackLaunchTask")
+void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+{
+    uint32_t pid = 0U;
+    RtStarsHostfuncCallbackSqe *const sqe = &(command->callbackSqe);
+    Stream *stm = taskInfo->stream;
+
+    sqe->header.type = RT_STARS_SQE_TYPE_AICPU;
+    sqe->header.l1_lock = 0U;
+    sqe->header.l1_unlock = 0U;
+    sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
+    sqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
+    sqe->header.post_p = RT_STARS_SQE_INT_DIR_NO;
+    sqe->header.wr_cqe = 1U;    // callback need write cqe
+    sqe->header.reserved = 0U;
+    sqe->header.block_dim = 1U;
+    sqe->header.rt_stream_id = static_cast<uint16_t>(stm->Id_());
+    sqe->header.task_id = taskInfo->id;
+
+    sqe->kernel_type = static_cast<uint16_t>(TS_AICPU_KERNEL_NON);
+    sqe->batch_mode = 0U;
+
+    if (taskInfo->stream->Device_()->Driver_()->GetRunMode() == RT_RUN_MODE_OFFLINE) {
+        sqe->topic_type = TOPIC_TYPE_DEVICE_CTRL_CPU;
+        // TSCPU, Device CtrlCPU and DvppCPU must init dest_pid
+        (void)taskInfo->stream->Device_()->Driver_()->DeviceGetBareTgid(&pid);
+    } else {
+        sqe->topic_type = TOPIC_TYPE_HOST_CTRL_CPU;
+    }
+
+    sqe->qos = 0U;
+    sqe->res1 = 0U;
+    sqe->sqe_index = 0U; // useless
+    sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
+
+    sqe->cb_cq_id = static_cast<uint16_t>(stm->GetCbRptCqid());
+    sqe->cb_group_id = static_cast<uint16_t>(stm->GetCbGrpId());
+    sqe->dev_id = static_cast<uint16_t>(stm->Device_()->Id_());
+    sqe->stream_id = static_cast<uint16_t>(stm->Id_());
+
+    sqe->event_id = static_cast<uint16_t>(taskInfo->u.callbackLaunchTask.eventId);
+    sqe->isBlock = taskInfo->u.callbackLaunchTask.isBlock;
+    sqe->task_id = taskInfo->id;  //  send taskId callback cqe
+
+    uint64_t addr = RtPtrToValue<rtCallback_t>(taskInfo->u.callbackLaunchTask.callBackFunc);
+    sqe->hostfunc_addr_low = static_cast<uint32_t>(addr);
+    sqe->hostfuncAddrHigh = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
+
+    addr = RtPtrToValue<void *>(taskInfo->u.callbackLaunchTask.fnData);
+    sqe->fndata_low = static_cast<uint32_t>(addr);
+    sqe->fndata_high = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
+
+    sqe->subTopicId = 0U;
+    sqe->topicId = 26U;     // EVENT_TS_CALLBACK_MSG
+    sqe->group_id = 11U;     // 11U, drv defined
+    sqe->usr_data_len = 32U; // word 4 to word 11
+    sqe->dest_pid = pid;
+
+    PrintSqe(command, "CallbackLaunch");
+    RT_LOG(RT_LOG_INFO, "CallbackLaunch, topic_type=%hu, stream_id=%hu, task_id=%hu, event_id=%hu, isBlock=%hu, pid=%u",
+        sqe->topic_type, sqe->stream_id, taskInfo->id, sqe->event_id, sqe->isBlock, sqe->dest_pid);
+}
+#endif
+
+#if F_DESC("SqeUpdateTask")
+rtError_t WaitAsyncCopyCompleteForUpdateTask(TaskInfo* taskInfo)
+{
+    SqeUpdateTaskInfo *sqeUpdateTask = &(taskInfo->u.sqeUpdateTask);
+    if (sqeUpdateTask->updateArgHandle == nullptr) {
+        return RT_ERROR_NONE;
+    }
+    Handle *argHdl = static_cast<Handle *>(sqeUpdateTask->updateArgHandle);
+    if (!(argHdl->freeArgs) || argHdl->argsAlloc == nullptr || argHdl->kerArgs == nullptr) {
+        return RT_ERROR_NONE;
+    }
+    const rtError_t error = argHdl->argsAlloc->H2DMemCopyWaitFinish(argHdl->kerArgs);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "H2DMemCopyWaitFinish for args cpy result failed, retCode=%#x.", static_cast<uint32_t>(error));
+        return error;
+    }
+
+    return RT_ERROR_NONE;
+}
+#endif
+
+#if F_DESC("FlipTask")
+void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+{
+    FlipTaskInfo *flipTaskInfo = &(taskInfo->u.flipTask);
+    Stream *const stm = taskInfo->stream;
+    RtStarsPhSqe *const sqe = &(command->phSqe);
+    sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    sqe->ie = 0U;
+    sqe->pre_p = 1U;
+    sqe->post_p = 0U;
+    sqe->wr_cqe = 0U;
+    sqe->res0 = 0U;
+    sqe->rt_streamID = static_cast<uint16_t>(stm->Id_());
+    sqe->task_id = taskInfo->id;
+    sqe->task_type = TS_TASK_TYPE_FLIP;
+    sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
+    sqe->u.flip_task_info.flipNumReport = flipTaskInfo->flipNumReport;
+    PrintSqe(command, "FlipTask");
+    RT_LOG(RT_LOG_INFO, "launch FlipTask succ, sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, flip_num=%u.",
+           sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, flipTaskInfo->flipNumReport);
 }
 #endif
 

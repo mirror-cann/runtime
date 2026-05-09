@@ -623,6 +623,15 @@ void ConstructDavidSqeForDebugRegisterForStreamTask(TaskInfo *taskInfo, rtDavidS
     uint64_t sqBaseAddr);
 void ConstructDavidSqeForDataDumpLoadInfoTask(TaskInfo *taskInfo, rtDavidSqe_t *const davidSqe,
     uint64_t sqBaseAddr);
+
+void ConstructDavidSqeForGetDevMsgTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr);
+void ConstructDavidSqeForCallbackLaunchTask(TaskInfo * const taskInfo, rtDavidSqe_t *const command, uint64_t sqBaseAddr);
+
+void ConstructDavidSqeForNpuGetFloatStaTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr);
+void ConstructDavidSqeForNpuClrFloatStaTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr);
+
+rtError_t WriteValuePtrTaskInit(TaskInfo *taskInfo, const void * const pointedAddr, TaskWrCqeFlag cqeFlag);
+void ConstructDavidSqeForWriteValueTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr);
 }  // namespace runtime
 }  // namespace cce
 #endif  // __CCE_RUNTIME_STARS_DAVID_HPP__

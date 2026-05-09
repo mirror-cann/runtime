@@ -87,5 +87,57 @@ void ConstructDavidSqeForStreamTagSetTask(TaskInfo * const taskInfo, rtDavidSqe_
         stmTagSetTsk->geOpTag);
 }
 
+void ConstructDavidSqeForCallbackLaunchTask(TaskInfo * const taskInfo, rtDavidSqe_t *const command,
+    uint64_t sqBaseAddr)
+{
+    UNUSED(sqBaseAddr);
+    ConstructDavidSqeForHeadCommon(taskInfo, command);
+    RtDavidPlaceHolderSqe *const sqe = &(command->phSqe);
+    Stream * const stm = taskInfo->stream;
+    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    sqe->header.preP = 1U;
+    sqe->taskType = TS_TASK_TYPE_HOSTFUNC_CALLBACK;
+    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    /* word4-5 */
+    sqe->u.callBackInfo.cbCqId = static_cast<uint16_t>(stm->GetCbRptCqid());
+    sqe->u.callBackInfo.cbGroupId = static_cast<uint16_t>(stm->GetCbGrpId());
+    sqe->u.callBackInfo.devId = static_cast<uint16_t>(stm->Device_()->Id_());
+    sqe->u.callBackInfo.streamId = static_cast<uint16_t>(stm->Id_());
+
+    /* word6-7 */
+    sqe->u.callBackInfo.notifyId = static_cast<uint32_t>(taskInfo->u.callbackLaunchTask.eventId);
+    sqe->u.callBackInfo.taskId = taskInfo->id;  //  send taskId callback cqe
+    sqe->u.callBackInfo.isBlock = taskInfo->u.callbackLaunchTask.isBlock;
+
+    sqe->u.callBackInfo.isOnline = stm->Device_()->Driver_()->GetRunMode() == RT_RUN_MODE_OFFLINE ? 0U : 1U;
+    sqe->u.callBackInfo.res0 = 0U;
+    sqe->u.callBackInfo.res1 = 0U;
+
+    /* word8-11 */
+    uint64_t addr = RtPtrToValue(taskInfo->u.callbackLaunchTask.callBackFunc);
+    sqe->u.callBackInfo.hostfuncAddrLow = static_cast<uint32_t>(addr);
+    sqe->u.callBackInfo.hostfuncAddrHigh = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
+
+    addr = RtPtrToValue(taskInfo->u.callbackLaunchTask.fnData);
+    sqe->u.callBackInfo.fndataLow = static_cast<uint32_t>(addr);
+    sqe->u.callBackInfo.fndataHigh = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
+
+    /* word12-13 */
+    sqe->u.callBackInfo.res2 = 0U;
+    sqe->u.callBackInfo.res3 = 0U;
+
+    /* word14 */
+    sqe->u.callBackInfo.subTopicId = 0U;
+    sqe->u.callBackInfo.topicId = 26U;     // EVENT_TS_CALLBACK_MSG
+    sqe->u.callBackInfo.groupId = 11U;     // 11U, drv defined
+    sqe->u.callBackInfo.usrDataLen = 32U; // word 4 to word 11
+    /* word15 */
+    sqe->u.callBackInfo.destPid = 0U;
+
+    PrintDavidSqe(command, "CallbackLaunch");
+    RT_LOG(RT_LOG_INFO, "CallbackLaunch, stream_id=%hu, task_id=%hu, notify_id=%hu, isBlock=%hu, pid=%u",
+        sqe->u.callBackInfo.streamId, taskInfo->id, sqe->u.callBackInfo.notifyId, sqe->u.callBackInfo.isBlock,
+        sqe->u.callBackInfo.destPid);
+}
 }  // namespace runtime
 }  // namespace cce

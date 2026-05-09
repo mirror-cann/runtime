@@ -10,6 +10,7 @@
 #include "ipc_event.hpp"
 #include "inner_thread_local.hpp"
 #include "thread_local_container.hpp"
+#include "common_task.h"
 namespace cce {
 namespace runtime {
 IpcEvent::IpcEvent(Device *device, uint64_t eventFlag, Context *ctx)

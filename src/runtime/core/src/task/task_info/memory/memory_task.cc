@@ -1428,8 +1428,6 @@ static rtError_t AllocFuncCallMemForMemWaitTask(TaskInfo* taskInfo)
     return RT_ERROR_NONE;
 }
 
-
-
 rtError_t MemWaitValueTaskInit(TaskInfo *taskInfo, const void * const devAddr,
                                const uint64_t value, const uint32_t flag)
 {
@@ -1732,7 +1730,6 @@ rtError_t GetCaptureResetTaskParams(const TaskInfo* const taskInfo, rtTaskParams
     return RT_ERROR_NONE;
 }
 
-
 rtError_t GetWriteValueTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params)
 {
     params->type = RT_TASK_VALUE_WRITE;
@@ -1813,7 +1810,45 @@ rtError_t UpdateWaitValueTaskParams(TaskInfo* const taskInfo, rtTaskParams* cons
         taskInfo->u.memWaitValueTask.value, taskInfo->u.memWaitValueTask.flag);
     return RT_ERROR_NONE;
 }
+#endif
 
+#if F_DESC("CreateL2AddrTask")
+rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrAddr)
+{
+    CreateL2AddrTaskInfo *createL2AddrTaskInfo = &(taskInfo->u.createL2AddrTaskInfo);
+    TaskCommonInfoInit(taskInfo);
+
+    taskInfo->type = TS_TASK_TYPE_CREATE_L2_ADDR;
+    taskInfo->typeName = "CREATE_L2_ADDR";
+    createL2AddrTaskInfo->ptePA = ptePtrAddr;
+    return RT_ERROR_NONE;
+}
+
+void ToCommandBodyForCreateL2AddrTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+{
+    CreateL2AddrTaskInfo *createL2AddrTaskInfo = &(taskInfo->u.createL2AddrTaskInfo);
+    Stream * const stream = taskInfo->stream;
+
+    command->u.createL2Addr.l2BaseVaddrForsdma =
+        RtPtrToValue<void *>(stream->Device_()->GetL2Buffer_());
+    RT_LOG(RT_LOG_DEBUG, "l2BaseVaddrForsdma=%#" PRIx64, command->u.createL2Addr.l2BaseVaddrForsdma);
+    command->u.createL2Addr.ptePA = createL2AddrTaskInfo->ptePA;
+    RT_LOG(RT_LOG_DEBUG, "ptePA=%#" PRIx64, command->u.createL2Addr.ptePA);
+    command->u.createL2Addr.pid = PidTidFetcher::GetCurrentPid();
+    command->u.createL2Addr.virAddr = MAX_UINT32_NUM;
+}
+#endif
+
+#if F_DESC("UpdateAddressTask")
+rtError_t UpdateAddressTaskInit(TaskInfo* taskInfo, uint64_t devAddr, uint64_t len)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->typeName = "Update_Address";
+    taskInfo->type = TS_TASK_TYPE_UPDATE_ADDRESS;
+    taskInfo->u.updateAddrTask.devAddr = devAddr;
+    taskInfo->u.updateAddrTask.len = len;
+    return RT_ERROR_NONE;
+}
 #endif
 
 }  // namespace runtime

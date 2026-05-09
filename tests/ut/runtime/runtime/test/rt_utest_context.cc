@@ -47,6 +47,7 @@
 #include "async_hwts_engine.hpp"
 #include "runtime_keeper.h"
 #include "memory_task.h"
+#include "maintenance_task.h"
 #include "rt_unwrap.h"
 #undef protected
 #undef private

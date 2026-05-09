@@ -38,6 +38,7 @@ void ConstructSqeForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtStarsSqe_
 void ConstructSqeForProfilingEnableTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 void ConstructSqeForProfilingDisableTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+void PCTraceTaskUnInit(TaskInfo * const taskInfo);
 
 void ConstructSqeForStreamSwitchTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
 void ConstructSqeForStreamLabelSwitchByIndexTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
@@ -95,6 +96,24 @@ void ConstructSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtStarsSqe_t 
 rtError_t WaitAsyncCopyCompleteForDavinciMultipleTask(TaskInfo *taskInfo);
 
 void ConstructSqeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command);
+
+void ConstructSqeForStarsVersionTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
+void SetStarsResultForStarsVersionTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
+void DoCompleteSuccessForStarsVersionTask(TaskInfo* taskInfo, const uint32_t devId);
+
+void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+
+void ConstructSqeForNpuGetFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+void ConstructSqeForNpuClrFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+void ConstructSqeForAllocDsaAddrTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
+void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t * const command);
+
+void ConstructSqeForUpdateAddressTask(TaskInfo * const taskInfo, rtStarsSqe_t * const command);
+rtError_t WaitAsyncCopyCompleteForUpdateTask(TaskInfo* taskInfo);
+
+void ConstructSqeForWriteValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+void ConstructSqeForCommonCmdTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 
 }  // namespace runtime
 }  // namespace cce

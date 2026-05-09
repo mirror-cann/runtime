@@ -13,6 +13,7 @@
 #include "profiler.hpp"
 #include "stream_factory.hpp"
 #include "task_info_v100.h"
+#include "maintenance_task.h"
 
 namespace cce {
 namespace runtime {

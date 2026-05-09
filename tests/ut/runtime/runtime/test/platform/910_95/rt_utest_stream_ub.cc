@@ -59,6 +59,7 @@
 #include "elf.hpp"
 #include "rt_unwrap.h"
 #include "../../data/elf.h"
+#include "stream_task.h"
 
 using namespace testing;
 using namespace cce::runtime;

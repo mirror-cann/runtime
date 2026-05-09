@@ -27,6 +27,7 @@
 #include "stars_base.hpp"
 #include "../../../rt_utest_config_define.hpp"
 #include "task_info_base.hpp"
+#include "maintenance_task.h"
 
 #if defined(__cplusplus)
 extern "C" {

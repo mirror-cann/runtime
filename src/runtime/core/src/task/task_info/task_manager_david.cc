@@ -26,7 +26,7 @@
 #include "debug_task.h"
 #include "stream_task.h"
 #include "davinci_multiple_task.h"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "cmo_task.h"
 #include "dump_task.h"
 #include "barrier_task.h"

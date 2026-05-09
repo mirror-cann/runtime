@@ -12,6 +12,7 @@
 #include "inner_thread_local.hpp"
 #include "task_info.hpp"
 #include "memory_task.h"
+#include "common_task.h"
 
 namespace cce {
 namespace runtime {

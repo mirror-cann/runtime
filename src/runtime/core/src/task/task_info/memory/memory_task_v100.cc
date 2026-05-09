@@ -641,5 +641,29 @@ void ConstructSqeForMemWaitValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const com
 }
 #endif
 
+#if F_DESC("UpdateAddressTask")
+// Construct the update address sqe.
+void ConstructSqeForUpdateAddressTask(TaskInfo * const taskInfo, rtStarsSqe_t * const command)
+{
+    UpdateAddressTaskInfo *updateAddrTask = &(taskInfo->u.updateAddrTask);
+    Stream *const stream = taskInfo->stream;
+
+    RtStarsPhSqe *const sqe = &(command->phSqe);
+    sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    sqe->wr_cqe = stream->GetStarsWrCqeFlag();
+    sqe->rt_streamID = static_cast<uint16_t>(stream->Id_());
+    sqe->task_id = taskInfo->id;
+    sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
+    sqe->task_type = TS_TASK_TYPE_UPDATE_ADDRESS;
+    sqe->pre_p = RT_STARS_SQE_INT_DIR_TO_TSCPU;
+    sqe->post_p = RT_STARS_SQE_INT_DIR_NO;
+
+    sqe->u.updateAddrInfo.dev_addr = updateAddrTask->devAddr;
+    sqe->u.updateAddrInfo.len = updateAddrTask->len;
+    PrintSqe(command, "UpdateAddressByPlaceHolder");
+    RT_LOG(RT_LOG_INFO, "ConstructSqe, len=%" PRIu64 ", stream_id=%d.", updateAddrTask->len, stream->Id_());
+}
+#endif
+
 }  // namespace runtime
 }  // namespace cce

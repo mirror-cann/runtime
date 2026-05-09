@@ -14,6 +14,7 @@
 #include "stream_david.hpp"
 #include "profiler_c.hpp"
 #include "event_david.hpp"
+#include "common_task.h"
 namespace cce {
 namespace runtime {
 

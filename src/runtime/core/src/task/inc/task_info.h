@@ -15,50 +15,16 @@
 
 namespace cce {
 namespace runtime {
-
-void ConstructSqeForModelExecuteTask(TaskInfo * const taskInfo, rtStarsSqe_t * const command);
-void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForNpuGetFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForNpuClrFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-
-void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t * const command);
-void ConstructSqeForAllocDsaAddrTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForStarsVersionTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForUpdateAddressTask(TaskInfo * const taskInfo, rtStarsSqe_t * const command);
-void ConstructSqeForAicpuInfoLoadTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForNopTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForCommonCmdTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForWriteValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void ToCommandBodyForCreateL2AddrTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForKernelFusionTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForPCTraceTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForModelExecuteTask(TaskInfo * const taskInfo, rtCommand_t * const command);
 void ToCmdBodyForAddModelExitTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCmdBodyForCallbackLaunchTask(TaskInfo* taskInfo, rtCommand_t *const command);
 
-void ToCommandBodyForGetDevMsgTask(TaskInfo* taskInfo, rtCommand_t * const command);
-void ToCmdBodyForFlipTask(TaskInfo *const taskInfo, rtCommand_t *const command);
 void ToCommandBodyForModelUpdateTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t *const command);
 void ToCommandBodyForAicpuInfoLoadTask(TaskInfo* taskInfo, rtCommand_t *const command);
 void ToCommandForNopTask(TaskInfo *const taskInfo, rtCommand_t *const command);
-void DoCompleteSuccessForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
 
-void DoCompleteSuccessForAicpuInfoLoadTask(TaskInfo* taskInfo, const uint32_t devId);
 void DoCompleteSuccessForIpcRecordTask(TaskInfo* taskInfo, const uint32_t devId);
 void DoCompleteSuccessForIpcWaitTask(TaskInfo* taskInfo, const uint32_t devId);
-void PrintErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
-void PrintErrorModelExecuteTaskFuncCall(TaskInfo *const task);
-
-void SetStarsResultForModelExecuteTask(TaskInfo * const taskInfo, const rtLogicCqReport_t &logicCq);
-void PCTraceTaskUnInit(TaskInfo * const taskInfo);
-void ModelExecuteTaskUnInit(TaskInfo * const taskInfo);
-void SetResultForModelExecuteTask(TaskInfo * const taskInfo, const void * const data, const uint32_t dataSize);
 
 void PrintErrorInfoCommon(TaskInfo *taskInfo, const uint32_t devId);
-rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStarsModelExeFuncCallPara_t &funcCallPara);
-rtError_t WaitAsyncCopyCompleteForUpdateTask(TaskInfo* taskInfo);
 }
 }
 #endif

@@ -42,7 +42,6 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_submit/v100/task_submit.cc
     ${RUNTIME_CORE_DIR}/src/task/task_res_manage/task_res.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/task_manager.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/task_info.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_execute_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_execute_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task.cc
@@ -66,8 +65,8 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task_v200_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/random_num_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/barrier/barrier_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cmo/cmo_task.cc
@@ -87,8 +86,11 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_graph_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_to_aicpu_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_to_aicpu_task_v200_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/model/kernel_fusion_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/maintenance_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/maintenance_task_v200_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/float_status_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/float_status_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_recycle/v200/task_recycle_dvpp.cc
     ${RUNTIME_CORE_DIR}/src/task/task_submit/v200/task_david.cc
     ${RUNTIME_CORE_DIR}/src/task/task_recycle/v200/task_recycle_send_sync.cc
@@ -100,7 +102,6 @@ set(david_series_common_task_src_file
     ${RUNTIME_FEATURE_DIR}/fusion/fusion_task_david.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_task.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/davinci_task_launch_config.cc
-    ${RUNTIME_CORE_DIR}/src/task/v200_base/memcpy_sqe_common_proc.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/aix_sqe_common_proc.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_sqe.cc
 
@@ -118,8 +119,9 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/reduce/reduce_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/ringbuffer_maintain/ringbuffer_maintain_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/maintenance_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/float_status_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_execute_task_v100.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/stars_common/stars_common_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/timeout_set/timeout_set_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_maintaince_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/model_to_aicpu_task_v100.cc

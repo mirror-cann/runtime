@@ -31,7 +31,7 @@
 #include "cond_op_stream_task.h"
 #include "cond_op_label_task.h"
 #include "host_task.hpp"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "reduce_task.h"
 #include "count_notify.hpp"
 #include "ffts_task.h"
@@ -72,6 +72,7 @@
 #include "task_info_v100.h"
 #include "event_task.h"
 #include "notify_task.h"
+#include "maintenance_task.h"
 
 using namespace testing;
 using namespace cce::runtime;

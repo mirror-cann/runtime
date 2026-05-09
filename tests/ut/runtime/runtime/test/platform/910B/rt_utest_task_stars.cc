@@ -30,7 +30,7 @@
 #include "cond_op_label_task.h"
 #include "maintenance_task.h"
 #include "ringbuffer_maintain_task.h"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "model_execute_task.h"
 #include "model_maintaince_task.h"
 #include "event_task.h"

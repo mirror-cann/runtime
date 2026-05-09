@@ -39,7 +39,7 @@
 #include <algorithm>
 #endif
 #include "heterogenous.h"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "stream_factory.hpp"
 
 namespace cce {

@@ -7,14 +7,17 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
+
 #include <string>
 #include "cond_c.hpp"
 #include "internal_error_define.hpp"
 #include "label_c.hpp"
 #include "dvpp_c.hpp"
 #include "spec/base_info.hpp"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "cmo_barrier_c.hpp"
+#include "maintenance_task.h"
+#include "stream_task.h"
 #include "api_impl.hpp"
 #include "runtime_handle_guard.h"
 #include "base.hpp"

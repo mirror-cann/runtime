@@ -43,6 +43,7 @@
 #include "sq_addr_memory_pool.hpp"
 #include "capture_model_utils.hpp"
 #include "davinci_kernel_task.h"
+#include "kernel_fusion_task.h"
 #include <thread>
 #include "ctrl_sq.hpp"
 #include <cstring>

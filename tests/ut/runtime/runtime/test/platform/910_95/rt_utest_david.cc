@@ -28,7 +28,7 @@
 #include "cond_op_label_task.h"
 #include "maintenance_task.h"
 #include "ringbuffer_maintain_task.h"
-#include "stars_common_task.h"
+#include "common_task.h"
 #include "timeout_set_task.h"
 #include "base.hpp"
 #include "stars_david.hpp"
