@@ -407,13 +407,14 @@ void Profiler::ReportTrackData(const Stream *const s, const uint16_t taskId) con
 
     const int32_t steamId = s->Id_();
     const uint32_t devId = s->Device_()->Id_();
-    RT_LOG(RT_LOG_DEBUG, "Report track data, deviceId=%u, streamId=%d, master streamId=%d, taskId=%u", devId, steamId, s->GetExposedStreamId(), taskId);
     TaskInfo *task = GetTaskInfo(s->Device_(), static_cast<uint32_t>(steamId), static_cast<uint32_t>(taskId));
     if (task == nullptr) {
         RT_LOG(RT_LOG_WARNING, "Get task info is null, deviceId=%u, streamId=%d, master streamId=%d, taskId=%u", devId, steamId, s->GetExposedStreamId(), taskId);
         return;
     }
 
+    RT_LOG(RT_LOG_INFO, "Report track data, device_id=%u, stream_id=%d, master stream_id=%d, task_id=%u, task_sn=%u",
+        devId, steamId, s->GetExposedStreamId(), taskId, task->taskSn);
     RuntimeProfTrackData trackData{};
     trackData.isModel = true;
     trackData.compactInfo.level = MSPROF_REPORT_RUNTIME_LEVEL;
