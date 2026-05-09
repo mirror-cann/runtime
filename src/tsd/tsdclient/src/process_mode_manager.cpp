@@ -2268,7 +2268,6 @@ TSD_StatusT ProcessModeManager::LoadPackageToDeviceByConfig()
             TSD_RUN_WARN("cannot find package:%s, optional is true skip", pkgPureName.c_str());
             continue;
         }
-
         const std::string hostPkgHash = CalFileSha256HashValue(orgFile);
         SetHostCommonSinkPackHashValue(pkgPureName, hostPkgHash);
         if (IsCommonSinkHostAndDevicePkgSame(pkgPureName)) {

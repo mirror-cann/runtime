@@ -12,7 +12,6 @@ project(tsdclient)
 
 set(BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-include(${RUNTIME_DIR}/cmake/third_party/openssl.cmake)
 include(${RUNTIME_DIR}/cmake/intf_pub_linux.cmake)
 
 set(PROTO_LIST
@@ -23,10 +22,19 @@ set(tdt_common_files
     ${BASE_DIR}/basic_component/device_comm/hdc_common.cpp
     ${BASE_DIR}/common/src/message_parse_interface.cpp
     ${BASE_DIR}/pub_facility/util_func/tsd_util_func.cpp
+    ${BASE_DIR}/pub_facility/util_func/tsd_sha256.cpp
     ${BASE_DIR}/basic_component/device_comm/hdc_client.cpp
     ${BASE_DIR}/common/src/message_parse_client.cpp
     ${BASE_DIR}/common/src/version_verify.cpp
 )
+
+# SHA256 ARM加速路径需要 -march=armv8-a+crypto，仅对该文件生效，避免影响其他代码
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set_source_files_properties(
+        ${BASE_DIR}/pub_facility/util_func/tsd_sha256.cpp
+        PROPERTIES COMPILE_FLAGS "-march=armv8-a+crypto"
+    )
+endif()
 
 protobuf_generate(tsd_host_proto PROTO_SRCS PROTO_HDRS ${PROTO_LIST} TARGET)
     
@@ -64,7 +72,6 @@ target_include_directories(tsdclient PRIVATE
     ${RUNTIME_DIR}/pkg_inc/profiling
     ${RUNTIME_DIR}/pkg_inc/platform
     ${RUNTIME_DIR}/src/inc/
-    ${CRYPTO_INCLUDE_DIR}
 )
 
 target_compile_options(tsdclient PRIVATE
@@ -100,7 +107,6 @@ target_link_libraries(tsdclient PRIVATE
     ascendalog
     -Wl,--as-needed
     error_manager
-    crypto
     $<BUILD_INTERFACE:c_sec_headers>
     platform
 )
@@ -158,7 +164,6 @@ target_include_directories(tsdclient PRIVATE
     ${RUNTIME_DIR}/pkg_inc/platform
     ${RUNTIME_DIR}/src/dfx/error_manager/
     ${RUNTIME_DIR}/pkg_inc/aicpu_sched/
-    ${CRYPTO_INCLUDE_DIR}
 )
 
 target_compile_options(tsdclient PRIVATE
@@ -197,7 +202,6 @@ target_link_libraries(tsdclient PRIVATE
     unified_dlog
     -Wl,--as-needed
     error_manager
-    crypto_static
     $<BUILD_INTERFACE:c_sec_headers>
     platform
 )

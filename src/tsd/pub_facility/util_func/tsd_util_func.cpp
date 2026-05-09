@@ -15,7 +15,7 @@
 #include <csignal>
 #include <cstring>
 #include <dirent.h>
-#include <openssl/sha.h>
+#include "tsd_sha256.h"
 #include "log.h"
 #ifdef WIN_TSD
 #include <regex>
@@ -342,17 +342,10 @@ namespace tsd {
         std::stringstream fileBuffer;
         fileBuffer << curFile.rdbuf();
         std::string fileBinaryValue = fileBuffer.str();
-        unsigned char hashValue[SHA256_DIGEST_LENGTH];
-#ifndef tsd_UT
-        SHA256(PtrToPtr<const char, const unsigned char>(fileBinaryValue.c_str()), fileBinaryValue.size(), hashValue);
-#endif
-        std::stringstream sha256Str;
-        sha256Str << std::hex << std::setfill('0');
-        for (auto i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-            sha256Str << std::setw(HX_PRINT_POS) << static_cast<int32_t>(hashValue[i]);
-        }
+        std::string hashHex = sha256::ComputeHexString(
+            PtrToPtr<const char, const uint8_t>(fileBinaryValue.c_str()), fileBinaryValue.size());
         curFile.close();
-        return sha256Str.str();
+        return hashHex;
     }
 
     bool IsCurrentVfMode(const uint32_t deviceId, const uint32_t vfId)
