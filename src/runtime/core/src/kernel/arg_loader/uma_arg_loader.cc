@@ -126,20 +126,6 @@ void UmaArgLoader::FreeBuffer(void * const addr, void * const para)
     (void)dev->Driver_()->DevMemFree(addr, dev->Id_());
 }
 
-void UmaArgLoader::UpdateAddrField(const void* const kerArgs,
-                                   void* const argsHostAddr,
-                                   const uint16_t hostInputInfoNum,
-                                   const rtHostInputInfo* const hostInputInfoPtr) const
-{
-    for (uint16_t i = 0U; i < hostInputInfoNum; i++) {
-        // set host mem data offset to host mem addr
-        const uint32_t addrOffset = hostInputInfoPtr[i].addrOffset;
-        const uint32_t dataOffset = hostInputInfoPtr[i].dataOffset;
-        *(RtPtrToPtr<uint64_t *, char_t *>(RtPtrToPtr<char_t *, void *>(argsHostAddr) + addrOffset)) =
-            RtPtrToValue<const void*>(kerArgs) + dataOffset;
-    }
-}
-
 void UmaArgLoader::UpdateArgsAddr(const void * const kerArgs, const rtArgsEx_t *argsInfo) const
 {
     if (argsInfo->hasTiling != 0) {

@@ -65,10 +65,8 @@ TEST_F(TaskResManageTest, TestUpdateAddrField)
     rtHostInputInfo hostInputInfo = {0};
     uint32_t kerArgs[128];
     uint32_t argsHostAddr[128];
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
-    taskResMng->UpdateAddrField(kerArgs, argsHostAddr, 1, &hostInputInfo);
+    UpdateAddrField(kerArgs, argsHostAddr, 1, &hostInputInfo);
     EXPECT_NE(kerArgs, nullptr);
-    delete taskResMng;
 }
 
 TEST_F(TaskResManageTest, TestLoadInputOutputArgs)

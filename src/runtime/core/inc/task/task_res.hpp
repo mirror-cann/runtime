@@ -110,10 +110,6 @@ private:
     uint16_t GetTaskPoolSizeByChipType(const rtChipType_t chipType) const;
     void FreePcieBarBuffer(void *addr, Device *para) const;
 
-    // args copy
-    void UpdateAddrField(const void * const kerArgs, void * const argsHostAddr, const uint16_t hostInputInfoNum,
-                         const rtHostInputInfo * const hostInputInfoPtr) const;
-
 protected:
 };
 

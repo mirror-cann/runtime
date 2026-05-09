@@ -63,10 +63,6 @@ public:
         return randomAllocator_;
     }
 private:
-    void UpdateAddrField(const void * const kerArgs,
-                         void * const argsHostAddr,
-                         const uint16_t hostInputInfoNum,
-                         const rtHostInputInfo * const hostInputInfoPtr) const;
     void UpdateArgsAddr(const void * const kerArgs, const rtArgsEx_t *argsInfo) const;
     void UpdateAicpuArgsEx(const void * const kerArgs, const rtAicpuArgsEx_t *argsInfo) const;
     static void *MallocBuffer(const size_t size, void * const para);

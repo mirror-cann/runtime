@@ -1477,7 +1477,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_build_multiple_task)
     MOCKER_CPP_VIRTUAL(loader, &UmaArgLoader::LoadCpuKernelArgs).stubs().will(returnValue(0));
     rtError_t errorRet;
     void *args[] = {&errorRet, NULL};
-    rtTaskDesc_t taskDesc[2];
+    rtTaskDesc_t taskDesc[2] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
     multipleTaskInfo.taskDesc = taskDesc;
@@ -1510,7 +1510,6 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_build_multiple_task)
     InitByStream(task, stream_);
     DavinciMultipleTaskInit(task, &multipleTaskInfo, 0U);
 
-    MOCKER_CPP(&DavidArgManage::UpdateAddrField).stubs();
     ToConstructDavidSqe(task, sqe, sqBaseAddr);
     auto taskNum = GetSendDavidSqeNum(task);
     EXPECT_EQ(taskNum, 2);

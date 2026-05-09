@@ -142,22 +142,6 @@ void DavidArgManage::FreeFail(DavidArgLoaderResult * const result)
     result->stmArgPos = UINT32_MAX;
 }
 
-void DavidArgManage::UpdateAddrField(const void * const kerArgs,
-                                     void * const argsHostAddr,
-                                     const uint16_t hostInputInfoNum,
-                                     const rtHostInputInfo * const hostInputInfoPtr)
-{
-    uint32_t addrOffset = 0U;
-    uint32_t dataOffset = 0U;
-    for (uint16_t i = 0U; i < hostInputInfoNum; i++) {
-        // set host mem data offset to host mem addr
-        addrOffset = hostInputInfoPtr[i].addrOffset;
-        dataOffset = hostInputInfoPtr[i].dataOffset;
-        *(RtPtrToPtr<uint64_t *, char_t *>(RtPtrToPtr<char_t *, void *>(argsHostAddr) + addrOffset)) =
-            RtPtrToValue<const void *>(kerArgs) + dataOffset;
-    }
-}
-
 rtError_t DavidArgManage::LoadInputOutputArgs(const DavidArgLoaderResult * const result, const rtArgsEx_t * const argsInfo)
 {
     if (argsInfo->hasTiling != 0U) {

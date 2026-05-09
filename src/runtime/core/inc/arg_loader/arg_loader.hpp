@@ -25,6 +25,19 @@ class Device;
 class Stream;
 class Event;
 
+inline void UpdateAddrField(const void * const kerArgs,
+                            void * const argsHostAddr,
+                            const uint16_t hostInputInfoNum,
+                            const rtHostInputInfo * const hostInputInfoPtr)
+{
+    for (uint16_t i = 0U; i < hostInputInfoNum; i++) {
+        const uint32_t addrOffset = hostInputInfoPtr[i].addrOffset;
+        const uint32_t dataOffset = hostInputInfoPtr[i].dataOffset;
+        *(RtPtrToPtr<uint64_t *, char_t *>(RtPtrToPtr<char_t *, void *>(argsHostAddr) + addrOffset)) =
+            RtPtrToValue<const void *>(kerArgs) + dataOffset;
+    }
+}
+
 struct ArgLoaderResult {
     void *handle;
     void *kerArgs;

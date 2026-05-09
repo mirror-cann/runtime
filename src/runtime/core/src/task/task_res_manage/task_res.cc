@@ -21,21 +21,6 @@ TaskResManage::~TaskResManage()
 {
 }
 
-void TaskResManage::UpdateAddrField(const void * const kerArgs,
-                                    void * const argsHostAddr,
-                                    const uint16_t hostInputInfoNum,
-                                    const rtHostInputInfo * const hostInputInfoPtr) const
-{
-    uint32_t addrOffset = 0U;
-    uint32_t dataOffset = 0U;
-    for (uint16_t i = 0U; i < hostInputInfoNum; i++) {
-        // set host mem data offset to host mem addr
-        addrOffset = hostInputInfoPtr[i].addrOffset;
-        dataOffset = hostInputInfoPtr[i].dataOffset;
-        *(RtPtrToPtr<uint64_t *>(RtPtrToPtr<char_t *>(argsHostAddr) + addrOffset)) =
-            static_cast<uint64_t>(RtPtrToPtr<uintptr_t>(kerArgs) + dataOffset);
-    }
-}
 TIMESTAMP_EXTERN(TaskResManage_LoadInputOutputArgs);
 rtError_t TaskResManage::LoadInputOutputArgs(const Stream * const stm, void *&kerArgs, uint32_t taskResId,
     const uint32_t size, const void * const args, const rtArgsEx_t * const argsInfo) const

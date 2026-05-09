@@ -81,8 +81,6 @@ public:
 
     uint32_t GetStmArgPos();
 
-    void UpdateAddrField(const void * const kerArgs, void * const argsHostAddr, const uint16_t hostInputInfoNum,
-                         const rtHostInputInfo * const hostInputInfoPtr);
     virtual rtError_t H2DArgCopy(const DavidArgLoaderResult * const result, void * const args, const uint32_t size) = 0;
 
     uint32_t argPoolSize_{0U};
