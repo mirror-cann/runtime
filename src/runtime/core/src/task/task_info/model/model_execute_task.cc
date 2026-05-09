@@ -325,7 +325,7 @@ rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo)
                 reinterpret_cast<void *>(&funcCall), sizeof(RtStarsModelExeFuncCall));
             COND_PROC_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE, (void)FreeFuncCallHostMemAndSvmMem(taskInfo),
                 "Failed to call memcpy_s to copy funcCall, src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.",
-                reinterpret_cast<void *>(&funcCall), model->GetFuncCallHostMem(), sizeof(RtStarsModelExeFuncCall),
+                RtPtrToPtr<void *>(&funcCall), model->GetFuncCallHostMem(), sizeof(RtStarsModelExeFuncCall),
                 sizeof(RtStarsModelExeFuncCall), ret);
             RT_LOG(RT_LOG_DEBUG,"model first execute.funcCallHostMem=%#" PRIx64, model->GetFuncCallHostMem());
 

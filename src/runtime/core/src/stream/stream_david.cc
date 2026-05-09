@@ -1534,8 +1534,8 @@ rtError_t DavidStream::UpdateTaskAndSqe(TaskInfo *task, Stream *stream)
     if (task->type == TS_TASK_TYPE_MEMCPY) {
         // convert dma
         if (IsPcieDma(task->u.memcpyAsyncTaskInfo.copyType) && (device_->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE)) {
-            rtError_t error = device_->Driver_()->MemConvertAddr(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(task->u.memcpyAsyncTaskInfo.src)),
-                static_cast<uint64_t>(reinterpret_cast<uintptr_t>(task->u.memcpyAsyncTaskInfo.desPtr)), task->u.memcpyAsyncTaskInfo.size,
+            rtError_t error = device_->Driver_()->MemConvertAddr(RtPtrToValue(task->u.memcpyAsyncTaskInfo.src),
+                RtPtrToValue(task->u.memcpyAsyncTaskInfo.desPtr), task->u.memcpyAsyncTaskInfo.size,
                 &(task->u.memcpyAsyncTaskInfo.dmaAddr));
             ERROR_RETURN_MSG_INNER(error,
                 "Convert memory address from virtual to dma physical failed, ret=%#x.", error);

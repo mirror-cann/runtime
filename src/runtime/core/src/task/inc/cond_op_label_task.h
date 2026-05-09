@@ -11,6 +11,7 @@
 #define RUNTIME_COND_OP_LABEL_TASK_H
 
 #include "task_info.hpp"
+#include "hwts.hpp"
 
 namespace cce {
 namespace runtime {
