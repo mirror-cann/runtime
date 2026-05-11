@@ -2244,7 +2244,7 @@ aclError aclrtMemManagedPrefetchBatchAsyncImpl(const void** ptrs, size_t* sizes,
         return ACL_ERROR_INVALID_PARAM;
     }
 
-    rtMemManagedLocation* uvmPrefetchLocs = new rtMemManagedLocation[numPrefetchLocs];
+    rtMemManagedLocation* uvmPrefetchLocs = new(std::nothrow) rtMemManagedLocation[numPrefetchLocs];
     ACL_CHECK_MALLOC_RESULT_REPORT_RET(uvmPrefetchLocs, sizeof(rtMemManagedLocation) * numPrefetchLocs, ACL_ERROR_BAD_ALLOC);
 
     for (size_t numPrefetchIdx = 0; numPrefetchIdx < numPrefetchLocs; numPrefetchIdx++) {
