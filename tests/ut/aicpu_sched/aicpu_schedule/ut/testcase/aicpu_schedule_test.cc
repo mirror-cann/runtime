@@ -914,6 +914,36 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
+TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoUseAivBitmapNumTest) {
+    AicpuSqeAdapter::AicErrReportInfo reportInfo = {};
+    reportInfo.u.aicErrorMsg.aic_bitmap_num = 1;
+    reportInfo.u.aicErrorMsg.aiv_bitmap_num = 2;
+    reportInfo.u.aicErrorMsg.bitmap[0] = 0x1;
+    reportInfo.u.aicErrorMsg.bitmap[1] = 0x2;
+    reportInfo.u.aicErrorMsg.bitmap[2] = 0x3;
+
+    testing::internal::CaptureStdout();
+    AicpuEventManager::GetInstance().PrintAicErrReportInfo(reportInfo);
+    const std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_NE(output.find("aicmap[0]"), std::string::npos);
+    EXPECT_NE(output.find("aivmap[1]"), std::string::npos);
+    EXPECT_NE(output.find("aivmap[2]"), std::string::npos);
+}
+
+TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoRejectOverflowBitmapNumTest) {
+    AicpuSqeAdapter::AicErrReportInfo reportInfo = {};
+    reportInfo.u.aicErrorMsg.aic_bitmap_num = 20;
+    reportInfo.u.aicErrorMsg.aiv_bitmap_num = 7;
+
+    testing::internal::CaptureStdout();
+    AicpuEventManager::GetInstance().PrintAicErrReportInfo(reportInfo);
+    const std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_NE(output.find("exceeds bitmap capacity"), std::string::npos);
+    EXPECT_EQ(output.find("Bit map is :"), std::string::npos);
+}
+
 TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1ModelOperatorTest) {
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     event_info eventInfo;

@@ -543,15 +543,22 @@ namespace AicpuSchedule {
      */
     void  AicpuEventManager::PrintAicErrReportInfo(const AicpuSqeAdapter::AicErrReportInfo &reportInfo)
     {
-        TsToAicpuAicErrMsgReport aicErrMsg = reportInfo.u.aicErrorMsg;
-        uint16_t aicBitmapNum = aicErrMsg.aic_bitmap_num;
-        uint16_t aivBitmapNum = aicErrMsg.aic_bitmap_num;
+        TsToAicpuAicErrMsgReport aicAivErrMsg = reportInfo.u.aicErrorMsg;
+        uint16_t aicBitmapNum = aicAivErrMsg.aic_bitmap_num;
+        uint16_t aivBitmapNum = aicAivErrMsg.aiv_bitmap_num;
+        size_t bitMapTotalNum = static_cast<size_t>(aicBitmapNum) + static_cast<size_t>(aivBitmapNum);
+        size_t bitMapCapacity = sizeof(aicAivErrMsg.bitmap) / sizeof(aicAivErrMsg.bitmap[FIRST_INDEX]);
+        if (bitMapTotalNum > bitMapCapacity) {
+            aicpusd_err("The total number of bit maps of AIC[%hu] and AIV[%hu] exceeds bitmap capacity[%zu].",
+                        aicBitmapNum, aivBitmapNum, bitMapCapacity);
+            return;
+        }
         std::ostringstream oss;
         for (size_t i = 0; i < aicBitmapNum; i++) {
-            oss << "aicmap" << "[" << i << "] : " << std::bitset<BIT_8>(aicErrMsg.bitmap[i]).to_string() << ",";
+            oss << "aicmap" << "[" << i << "] : " << std::bitset<BIT_8>(aicAivErrMsg.bitmap[i]).to_string() << ",";
         }
         for (size_t i = aicBitmapNum; i < (aicBitmapNum + aivBitmapNum); i++) {
-            oss << "aivmap" << "[" << i << "] : " << std::bitset<BIT_8>(aicErrMsg.bitmap[i]).to_string() << ",";
+            oss << "aivmap" << "[" << i << "] : " << std::bitset<BIT_8>(aicAivErrMsg.bitmap[i]).to_string() << ",";
         }
         aicpusd_info("Bit map is : %s", oss.str().c_str());
         return;
