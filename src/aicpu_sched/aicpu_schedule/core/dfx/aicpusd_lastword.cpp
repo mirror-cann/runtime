@@ -40,7 +40,7 @@ void AicpusdLastword::RegLastwordCallback(const std::string mark,
 void AicpusdLastword::LastwordCallback()
 {
     std::lock_guard<std::mutex> lk(lastwordMux_);
-    aicpusd_run_info("Call lastword callback, count[%u].", lastwords_.size());
+    aicpusd_run_info("Call lastword callback, count[%zu].", lastwords_.size());
     for (auto it : lastwords_) {
         aicpusd_run_info("callback[%u][%s].", it.first, it.second.first.c_str());
         it.second.second();

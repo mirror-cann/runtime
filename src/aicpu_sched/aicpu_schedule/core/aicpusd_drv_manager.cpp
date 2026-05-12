@@ -179,7 +179,7 @@ namespace AicpuSchedule {
             aicpuBitMap = aicpuBitMap >> 1;
         }
         if (static_cast<uint32_t>(aicpuNum) != aicpuIdVec_.size()) {
-            aicpusd_err("aicpunum bitmap error, aicpuNum[%lld],aicpuIdVecSize[%u]", aicpuNum, aicpuIdVec_.size());
+            aicpusd_err("aicpunum bitmap error, aicpuNum[%lld],aicpuIdVecSize[%zu]", aicpuNum, aicpuIdVec_.size());
             return AICPU_SCHEDULE_ERROR_INIT_FAILED;
         }
         return AICPU_SCHEDULE_OK;

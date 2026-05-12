@@ -144,6 +144,23 @@ TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_003)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
+TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_InputNumMismatch)
+{
+    AicpuModel aicpuModel;
+    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    inputsIsDequeue.resize(1, false);
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
+
+    AicpuTaskInfo task = {};
+    BatchDequeueDesc batchDeqDesc = {};
+    batchDeqDesc.inputNums = 2U;
+    task.paraBase = reinterpret_cast<uint64_t>(&batchDeqDesc);
+    BatchDequeueInfo batchDeqInfo = {};
+
+    const int32_t ret = kernel_.CheckAndParseBatchDequeueParams(task, runContextT, batchDeqInfo);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
+}
+
 TEST_F(OperatorKernelModelBatchDequeueTest, AlignBatchDequeue_001)
 {
     AicpuModel aicpuModel;

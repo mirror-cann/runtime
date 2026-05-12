@@ -11,6 +11,8 @@
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
 
+#include <limits>
+
 #define private public
 
 #include "aicpusd_resource_manager.h"
@@ -315,6 +317,26 @@ namespace AicpuSchedule {
         bool needWait = false;
         EventWaitManager::NotifyWaitManager().WaitEvent(notifyId, waitStreamId, needWait);
         EXPECT_TRUE(needWait);
+    }
+
+    TEST_F(EventWaitManagerUTEST, CheckEventLargeLengthPrintFullSize)
+    {
+        auto &manager = EventWaitManager::NotifyWaitManager();
+        const size_t largeLength = static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 1U;
+
+        const bool ret = manager.CheckEvent(true, false, largeLength);
+
+        EXPECT_TRUE(ret);
+    }
+
+    TEST_F(EventWaitManagerUTEST, CheckEventLargeLengthWaitStreamPrintFullSize)
+    {
+        auto &manager = EventWaitManager::NotifyWaitManager();
+        const size_t largeLength = static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 1U;
+
+        const bool ret = manager.CheckEvent(false, true, largeLength);
+
+        EXPECT_TRUE(ret);
     }
 
     TEST_F(BufManagerUTEST, InitBufManagerSuccess)

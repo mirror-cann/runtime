@@ -256,7 +256,7 @@ void MessageQueue::SendMsqT1Response()
 int32_t MessageQueue::InitCqeAddr(const size_t threadIndex) const
 {
     if (threadIndex >= aicpuPhyIds_.size()) {
-        aicpusd_err("Init cqe addr failed, threadIdx larger than aicpuPhyIds size, threadIndex=%u, size=%lu",
+        aicpusd_err("Init cqe addr failed, threadIdx larger than aicpuPhyIds size, threadIndex=%zu, size=%zu",
                     threadIndex, aicpuPhyIds_.size());
         return AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;
     }

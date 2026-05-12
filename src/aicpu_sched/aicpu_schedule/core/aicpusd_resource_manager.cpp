@@ -392,13 +392,13 @@ namespace AicpuSchedule {
         const std::unique_lock<std::mutex> lk(waitMutex_);
         if (eventStateNeedCheck) {
             if (length >= eventState_.size()) {
-                aicpusd_warn("eventState_ check failed, size[%d], input value[%u].", eventState_.size(), length);
+                aicpusd_warn("eventState_ check failed, size[%zu], input value[%zu].", eventState_.size(), length);
                 return true;
             }
         }
         if (waitStreamNeedCheck) {
             if (length >= waitStream_.size()) {
-                aicpusd_warn("waitStream_ check failed, size[%d], input value[%u].", waitStream_.size(), length);
+                aicpusd_warn("waitStream_ check failed, size[%zu], input value[%zu].", waitStream_.size(), length);
                 return true;
             }
         }

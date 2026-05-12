@@ -10,6 +10,7 @@
 
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
+#include <limits>
 #include "ascend_hal.h"
 #include "type_def.h"
 #include "aicpusd_status.h"
@@ -292,5 +293,16 @@ TEST_F(AicpusdMessageQueueTest, InitCqeAddrFail1)
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     inst.cqeBaseAddr_ = nullptr;
     ret = inst.InitCqeAddr(5U);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
+}
+
+TEST_F(AicpusdMessageQueueTest, InitCqeAddrLargeThreadIndexPrintFullSize)
+{
+    MessageQueue inst;
+    inst.aicpuPhyIds_ = {1U};
+
+    const size_t threadIndex = static_cast<size_t>(std::numeric_limits<uint32_t>::max()) + 1U;
+    const int32_t ret = inst.InitCqeAddr(threadIndex);
+
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }

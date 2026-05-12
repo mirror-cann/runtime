@@ -171,7 +171,7 @@ namespace AicpuSchedule {
         uint32_t GetCcpuPhysIndex(const uint32_t ccpuLogIndex, const uint32_t deviceId) const
         {
             if (ccpuLogIndex >= ccpuIdVec_.size()) {
-                aicpusd_err("Invalid ccpu index %u %u", ccpuLogIndex, ccpuIdVec_.size());
+                aicpusd_err("Invalid ccpu index %u %zu", ccpuLogIndex, ccpuIdVec_.size());
                 return 0;
             }
             const uint32_t phyIndex = (coreNumPerDev_ * deviceId) + ccpuIdVec_[ccpuLogIndex];

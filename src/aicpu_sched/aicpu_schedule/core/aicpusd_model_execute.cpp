@@ -260,7 +260,7 @@ namespace AicpuSchedule {
             }
         }
         if (aicpuTaskInfos.empty() || streamInfos.empty()) {
-            aicpusd_err("one of tasks[%u], streams[%u] is zero.", aicpuTaskInfos.size(), streamInfos.size());
+            aicpusd_err("one of tasks[%zu], streams[%zu] is zero.", aicpuTaskInfos.size(), streamInfos.size());
             return AICPU_SCHEDULE_ERROR_TRANS_MODELINFO_FAILED;
         }
 

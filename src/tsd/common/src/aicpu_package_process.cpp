@@ -115,7 +115,7 @@ TSD_StatusT AicpuPackageProcess::WalkInVersionFile(const std::string &soInstallP
     std::fstream f;
     f.open(path.get(), std::fstream::in);
     if (!f.is_open()) {
-        TSD_ERROR("Open version file failed, file=%s");
+        TSD_ERROR("Open version file failed, file=%s", path.get());
         return TSD_INTERNAL_ERROR;
     }
     ScopeGuard fGuard([&f]() { f.close(); });

@@ -7,8 +7,9 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#include <iostream>
+#include <cstring>
 #include <fstream>
+#include <iostream>
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
 #include "inc/error_code.h"
@@ -23,6 +24,27 @@
 using namespace tsd;
 
 namespace {
+constexpr const char *OPEN_FAIL_VERSION_INFO_PATH = "/tmp/cann_runtime_ut_nonexistent_version.info";
+
+char *RealpathFakeOpenFail(const char *path, char *resolvedPath)
+{
+    (void)path;
+    if (resolvedPath == nullptr) {
+        return nullptr;
+    }
+
+    const size_t pathLen = std::strlen(OPEN_FAIL_VERSION_INFO_PATH);
+    if (pathLen >= PATH_MAX) {
+        return nullptr;
+    }
+
+    const auto ret = memcpy_s(resolvedPath, PATH_MAX, OPEN_FAIL_VERSION_INFO_PATH, pathLen + 1U);
+    if (ret != EOK) {
+        return nullptr;
+    }
+    return resolvedPath;
+}
+
 std::string GetDirName()
 {
     std::unique_ptr<char_t []> path(new (std::nothrow) char_t[PATH_MAX]);
@@ -215,6 +237,19 @@ TEST_F(AicpuPackageProcessTest, WalkInVersionFileMemsetFail)
         return true;
     };
     MOCKER(memset_s).stubs().will(returnValue(-1));
+    const TSD_StatusT ret = AicpuPackageProcess::WalkInVersionFile(soInstallPath, handler);
+    EXPECT_EQ(ret, TSD_INTERNAL_ERROR);
+}
+
+TEST_F(AicpuPackageProcessTest, WalkInVersionFileOpenFail)
+{
+    const std::string soInstallPath = "/tmp/";
+    const auto handler = [] (const std::string &line) -> bool {
+        (void)line;
+        return false;
+    };
+
+    MOCKER(realpath).stubs().will(invoke(RealpathFakeOpenFail));
     const TSD_StatusT ret = AicpuPackageProcess::WalkInVersionFile(soInstallPath, handler);
     EXPECT_EQ(ret, TSD_INTERNAL_ERROR);
 }

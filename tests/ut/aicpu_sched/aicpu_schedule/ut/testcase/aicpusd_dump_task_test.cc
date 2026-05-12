@@ -128,6 +128,53 @@ TEST_F(AicpuDumpTaskTest, ProcessDumpOpInfoTest2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
+TEST_F(AicpuDumpTaskTest, PreProcessOutputSuccessWithDimRange)
+{
+    std::shared_ptr<OpDumpTask> opDumpTask = std::make_shared<OpDumpTask>(0, 0);
+    aicpu::dump::Task task;
+    aicpu::dump::Output *output = task.add_output();
+    ASSERT_NE(output, nullptr);
+
+    output->set_data_type(7);
+    output->set_format(0);
+    output->set_address(0x1000U);
+    output->set_addr_type(aicpu::dump::AddressType::TRADITIONAL_ADDR);
+    output->set_size(16U);
+    output->set_offset(8U);
+    output->set_original_name("origin_output");
+    output->set_original_output_index(1);
+    output->set_original_output_data_type(7);
+    output->set_original_output_format(0);
+
+    aicpu::dump::Shape *shape = output->mutable_shape();
+    ASSERT_NE(shape, nullptr);
+    shape->add_dim(2);
+    shape->add_dim(2);
+
+    aicpu::dump::Shape *originShape = output->mutable_origin_shape();
+    ASSERT_NE(originShape, nullptr);
+    originShape->add_dim(4);
+
+    aicpu::dump::DimRange *dimRange = output->add_dim_range();
+    ASSERT_NE(dimRange, nullptr);
+    dimRange->set_dim_start(0);
+    dimRange->set_dim_end(1);
+
+    ::toolkit::dumpdata::DumpData dumpData;
+    const auto ret = opDumpTask->PreProcessOutput(task, dumpData);
+
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    ASSERT_EQ(dumpData.output_size(), 1);
+    EXPECT_EQ(dumpData.output(0).dim_range_size(), 1);
+    EXPECT_EQ(opDumpTask->outputsBaseAddr_.size(), 1U);
+    EXPECT_EQ(opDumpTask->outputsAddrType_.size(), 1U);
+    EXPECT_EQ(opDumpTask->outputSize_.size(), 1U);
+    EXPECT_EQ(opDumpTask->outputOffset_.size(), 1U);
+    EXPECT_EQ(opDumpTask->outputsShape_.size(), 1U);
+    EXPECT_EQ(opDumpTask->outputsOriginShape_.size(), 1U);
+    EXPECT_EQ(opDumpTask->outputTotalSize_, 16U);
+}
+
 TEST_F(AicpuDumpTaskTest, GenerateDataDimInfoTest) {
     std::shared_ptr<OpDumpTask> opDumpTask = std::make_shared<OpDumpTask>(0, 0);
 

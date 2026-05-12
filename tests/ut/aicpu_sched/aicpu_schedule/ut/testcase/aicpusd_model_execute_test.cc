@@ -258,6 +258,24 @@ TEST_F(AICPUModelExecuteTEST, ExecuteNextTask_DumpFail)
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
+TEST_F(AICPUModelExecuteTEST, TransModelInfoFailWhenTaskAndStreamEmpty)
+{
+    ModelInfo modelInfo = {};
+    ModelStreamInfo streamInfo = {};
+    modelInfo.modelId = 1U;
+    modelInfo.streams = &streamInfo;
+    modelInfo.aicpuStreamNum = 1U;
+
+    AicpuModelInfo aicpuModelInfo = {};
+    std::vector<AicpuTaskInfo> aicpuTaskInfos;
+    std::vector<StreamInfo> streamInfos;
+    std::vector<QueInfo> queInfos;
+
+    const int32_t ret = AicpuModelManager::GetInstance().TransModelInfo(
+        &modelInfo, aicpuModelInfo, aicpuTaskInfos, streamInfos, queInfos, nullptr);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_TRANS_MODELINFO_FAILED);
+}
+
 TEST_F(AICPUModelExecuteTEST, ConvertToTsKernel_CceKernel)
 {
     AicpuTaskInfo kernelTaskInfo = {};

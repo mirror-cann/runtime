@@ -1030,6 +1030,46 @@ TEST_F(AICPUCustScheduleTEST, OpDumpTask_tset) {
     dumpStep.DebugString();
 }
 
+TEST_F(AICPUCustScheduleTEST, OpDumpTaskPreProcessOutputSuccessWithDimRange)
+{
+    OpDumpTask task(0, 0);
+    aicpu::dump::Task mappingTask;
+    aicpu::dump::Output *output = mappingTask.add_output();
+    ASSERT_NE(output, nullptr);
+
+    output->set_data_type(7);
+    output->set_format(0);
+    output->set_address(0x2000U);
+    output->set_size(32U);
+    output->set_original_name("origin_output");
+    output->set_original_output_index(2);
+    output->set_original_output_data_type(7);
+    output->set_original_output_format(0);
+
+    aicpu::dump::Shape *shape = output->mutable_shape();
+    ASSERT_NE(shape, nullptr);
+    shape->add_dim(4);
+    shape->add_dim(2);
+
+    aicpu::dump::Shape *originShape = output->mutable_origin_shape();
+    ASSERT_NE(originShape, nullptr);
+    originShape->add_dim(8);
+
+    aicpu::dump::DimRange *dimRange = output->add_dim_range();
+    ASSERT_NE(dimRange, nullptr);
+    dimRange->set_dim_start(1);
+    dimRange->set_dim_end(3);
+
+    ::toolkit::dumpdata::DumpData dumpData;
+    const auto ret = task.PreProcessOutput(mappingTask, dumpData);
+
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    ASSERT_EQ(dumpData.output_size(), 1);
+    EXPECT_EQ(dumpData.output(0).dim_range_size(), 1);
+    EXPECT_EQ(task.outputsBaseAddr_.size(), 1U);
+    EXPECT_EQ(task.outputTotalSize_, 32U);
+}
+
 TEST_F(AICPUCustScheduleTEST, ProcessInputDump_dump_fail) {
     ::toolkit::dumpdata::DumpData dumpData;
     ::toolkit::dumpdata::OpInput *opInput = dumpData.add_input();

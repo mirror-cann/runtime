@@ -131,8 +131,8 @@ StatusCode OpDumpTask::PreProcessOutput(const aicpu::dump::Task &task,
             const auto &item = dim_rangeFromOutput.at(i);
             ::toolkit::dumpdata::DimRange * const dimRange = opOutput->add_dim_range();
             if (dimRange == nullptr) {
-                aicpusd_err("op name[%s], call protobuf function to add dim_range elem failed, i[%d],"
-                            " dim_range_size[%u]", opName_.c_str(), i, dim_rangeFromOutput.size());
+                aicpusd_err("op name[%s], call protobuf function to add dim_range elem failed, i[%lld],"
+                            " dim_range_size[%zu]", opName_.c_str(), i, dim_rangeFromOutput.size());
                 return AICPU_SCHEDULE_ERROR_DUMP_FAILED;
             }
             dimRange->set_dim_start(item.dim_start());

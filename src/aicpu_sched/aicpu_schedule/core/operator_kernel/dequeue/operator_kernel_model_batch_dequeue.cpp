@@ -76,7 +76,7 @@ int32_t OperatorKernelModelBatchDequeue::CheckAndParseBatchDequeueParams(const A
     }
     auto &inputsIsDequeue = model->MutableInputsIsDequeue();
     if (batchDeqDesc->inputNums != inputsIsDequeue.size()) {
-        aicpusd_err("KernelTaskInfo inputNums[%u] is not equal model input queue size[%u],"
+        aicpusd_err("KernelTaskInfo inputNums[%u] is not equal model input queue size[%zu],"
             "modelId[%u], streamId[%u], taskId[%u]", batchDeqDesc->inputNums, inputsIsDequeue.size(),
             taskContext.modelId, taskContext.streamId, kernelTaskInfo.taskID);
         return AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;

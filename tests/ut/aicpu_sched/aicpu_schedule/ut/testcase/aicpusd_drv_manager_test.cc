@@ -117,6 +117,17 @@ namespace {
         return DRV_ERROR_NONE;
     }
 
+    drvError_t halGetDeviceInfoFakeAicpuBitmapMismatch(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+    {
+        if (moduleType == 1 && (infoType == 20 || infoType == 3)) {
+            *value = 2;
+        }
+        if (moduleType == 1 && (infoType == 21 || infoType == 8)) {
+            *value = 1;
+        }
+        return DRV_ERROR_NONE;
+    }
+
     drvError_t drvQueryProcessHostPidFake1(int pid, unsigned int *chip_id, unsigned int *vfid,
                                            unsigned int *host_pid, unsigned int *cp_type)
     {
@@ -446,6 +457,23 @@ TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess2) {
     for (uint32_t i = 0; i < expect_aicpuNum; i++) {
         EXPECT_EQ(AicpuDrvManager::GetInstance().GetAicpuPhysIndex(i, 0U), expect_aicpu_index[i]);
     }
+}
+
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoBitmapMismatch)
+{
+    std::vector<uint32_t> deviceVec;
+    deviceVec.push_back(1U);
+    MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoFakeAicpuBitmapMismatch));
+    const int32_t ret = AicpuDrvManager::GetInstance().GetNormalAicpuInfo(deviceVec);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
+}
+
+TEST_F(AICPUDrvManagerTEST, GetCcpuPhysIndexInvalidIndex)
+{
+    AicpuDrvManager drvMgr;
+    drvMgr.ccpuIdVec_.push_back(0U);
+    const uint32_t ret = drvMgr.GetCcpuPhysIndex(1U, 0U);
+    EXPECT_EQ(ret, 0U);
 }
 
 TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess3) {
