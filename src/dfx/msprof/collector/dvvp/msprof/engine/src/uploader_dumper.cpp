@@ -81,7 +81,6 @@ int32_t UploaderDumper::Start()
     }
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("ReceiveData Init failed");
-        MSPROF_INNER_ERROR("EK9999", "ReceiveData Init failed");
         return PROFILING_FAILED;
     }
 
@@ -89,8 +88,6 @@ int32_t UploaderDumper::Start()
     ret = Thread::Start();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to start the reporter %s in UploaderDumper::Start().", module_.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to start the reporter %s in UploaderDumper::Start().",
-            module_.c_str());
         return PROFILING_FAILED;
     } else {
         MSPROF_LOGI("Succeeded in starting the reporter %s in UploaderDumper::Start().", module_.c_str());
@@ -132,7 +129,6 @@ int32_t UploaderDumper::Stop()
         ret = Thread::Stop();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to stop the reporter %s in UploaderDumper::Stop().", module_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Failed to stop the reporter %s in UploaderDumper::Stop().", module_.c_str());
             return PROFILING_FAILED;
         } else {
             MSPROF_LOGI("Succeeded in stopping the reporter %s in UploaderDumper::Stop().", module_.c_str());
@@ -184,7 +180,6 @@ int32_t UploaderDumper::SendData(SHARED_PTR_ALIA<analysis::dvvp::ProfileFileChun
     MSPROF_LOGI("UploaderDumper::SendData");
     if (fileChunk == nullptr) {
         MSPROF_LOGE("fileChunk is nullptr");
-        MSPROF_INNER_ERROR("EK9999", "fileChunk is nullptr");
         return PROFILING_FAILED;
     }
     std::vector<SHARED_PTR_ALIA<analysis::dvvp::ProfileFileChunk> > fileChunks;
@@ -211,8 +206,6 @@ int32_t UploaderDumper::Dump(std::vector<SHARED_PTR_ALIA<analysis::dvvp::Profile
         std::string tag = Utils::GetInfoSuffix(messages[i]->fileName);
         if (!ParamValidation::instance()->CheckDataTagIsValid(tag)) {
             MSPROF_LOGE("UploaderDumper::Dump, Check tag failed, module:%s, tag:%s",
-                module_.c_str(), tag.c_str());
-            MSPROF_INNER_ERROR("EK9999", "UploaderDumper::Dump, Check tag failed, module:%s, tag:%s",
                 module_.c_str(), tag.c_str());
             continue;
         }
@@ -242,8 +235,6 @@ void UploaderDumper::AddToUploader(SHARED_PTR_ALIA<analysis::dvvp::ProfileFileCh
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("UploaderDumper::AddToUploader, UploadData failed, fileName:%s, chunkLen:%zu bytes",
                     module_.c_str(), message->chunkSize);
-        MSPROF_INNER_ERROR("EK9999", "UploaderDumper::AddToUploader, UploadData failed, fileName:%s, "
-            "chunkLen:%zu bytes", module_.c_str(), message->chunkSize);
     }
 }
 }

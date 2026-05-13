@@ -1129,7 +1129,7 @@
       "errClass": "Profiling Errors",
       "errTitle": "Invalid_Argument_API_Call_Sequence",
       "ErrCode": "EK0002",
-      "ErrMessage": "Call the following APIs in order: %s and %s.",
+      "ErrMessage": "Please call the APIs in the following order: call %s first, then %s.",
       "Arglist": "intf1,intf2",
       "suggestion": {
         "Possible Cause": "N/A",
@@ -1174,10 +1174,21 @@
       "errTitle": "Invalid_Argument_Null_Pointer",
       "ErrCode": "EK0006",
       "ErrMessage": "%s failed because parameter %s cannot be a null pointer.",
-      "Arglist": "api, param",
+      "Arglist": "api,param",
       "suggestion": {
         "Possible Cause": "N/A",
         "Solution": "N/A"
+      }
+    },
+    {
+      "errClass": "Profiling Errors",
+      "errTitle": "Invalid_Argument",
+      "ErrCode": "EK0007",
+      "ErrMessage": "Failed to start Profiling in %s mode because it is already in %s mode.",
+      "Arglist": "mode1,mode2",
+      "suggestion": {
+        "Possible Cause": "Do not enable two or more profile data colection modes. Example: When Profiling is started using msprof command lines, do not use acl APIs in the app to start Profiling data collection.",
+        "Solution": "Change the Profiling startup mode as required."
       }
     },
     {
@@ -1189,6 +1200,39 @@
       "suggestion": {
         "Possible Cause": "Allocation failed due to insufficient host memory.",
         "Solution": "Stop unnecessary processes and ensure that the required memory is available."
+      }
+    },
+    {
+      "errClass": "Profiling Errors",
+      "errTitle": "Resource_Error_Insufficient_Host_Memory",
+      "ErrCode": "EK0202",
+      "ErrMessage": "Failed to allocate host memory by %s.",
+      "Arglist": "operation",
+      "suggestion": {
+        "Possible Cause": "Allocation failed due to insufficient host memory.",
+        "Solution": "Stop unnecessary processes and ensure that the required memory is available."
+      }
+    },
+    {
+      "errClass": "Profiling Errors",
+      "errTitle": "Resource_Error",
+      "ErrCode": "EK0203",
+      "ErrMessage": "Failed to create host thread for Profiling. Reason: %s.",
+      "Arglist": "reason",
+      "suggestion": {
+        "Possible Cause": "New thread cannot be created due to insufficient system thread resources.",
+        "Solution": "Stop unnecessary theads and ensure that the required resource is available."
+      }
+    },
+    {
+      "errClass": "Profiling Errors",
+      "errTitle": "Resource_Error",
+      "ErrCode": "EK0204",
+      "ErrMessage": "Insufficient disk space. Reason: %s.",
+      "Arglist": "reason",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "At least 20MB storage space is required for Profiling flushing. Delete redundant files or change the flushing path."
       }
     },
     {

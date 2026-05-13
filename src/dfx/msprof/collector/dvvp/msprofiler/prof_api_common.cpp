@@ -23,6 +23,8 @@ aclprofSubscribeConfig *aclprofCreateSubscribeConfig(
 {
     if (fd == nullptr) {
         MSPROF_LOGE("fd is nullptr");
+        MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({"api", "param"}),
+            std::vector<std::string>({"aclprofCreateSubscribeConfig", "fd"}));
         return nullptr;
     }
 
@@ -37,7 +39,7 @@ aclprofSubscribeConfig *aclprofCreateSubscribeConfig(
     if (subscribeConfig == nullptr) {
         MSPROF_LOGE("new aclprofSubscribeConfig failed");
         MSPROF_ENV_ERROR("EK0201", std::vector<std::string>({"buf_size"}),
-            std::vector<std::string>({std::to_string(sizeof(aclprofSubscribeConfig))}));
+            std::vector<std::string>({std::to_string(sizeof(aclprofSubscribeConfig)) + "B"}));
         return nullptr;
     }
     subscribeConfig->config.timeInfo = opTimeSwitch;

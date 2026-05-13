@@ -53,7 +53,6 @@ int32_t ProfInitProc(uint32_t type)
 {
     if (ProfAclMgr::instance()->Init() != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to init acl manager");
-        MSPROF_INNER_ERROR("EK9999", "Failed to init acl manager");
         ProfAclMgr::instance()->SetModeToOff();
         return MSPROF_ERROR;
     }
@@ -70,7 +69,7 @@ int32_t ProfInitProc(uint32_t type)
         };
         if (Analysis::Dvvp::ProfilerCommon::CommandHandleProfInit() != ACL_SUCCESS) {
             MSPROF_LOGE("CommandHandleProfInit failed.");
-            MSPROF_INNER_ERROR("EK9999", "CommandHandleProfInit failed.");
+            MSPROF_INNER_ERROR("EK9999", "Failed to callback init.");
             return MSPROF_ERROR;
         }
         uint64_t profConfigType = ProfAclMgr::instance()->GetCmdModeDataTypeConfig();
@@ -391,7 +390,6 @@ int32_t ProfReportData(uint32_t moduleId, uint32_t type, VOID_PTR data, uint32_t
                 Msprof::Engine::MsprofReporter::reporters_[moduleId].HandleReportRequest(type, data, len));
         default:
             MSPROF_LOGE("Invalid reporter callback moduleId: %u", moduleId);
-            MSPROF_INNER_ERROR("EK9999", "Invalid reporter callback moduleId: %u", moduleId);
     }
     return ACL_ERROR_PROFILING_FAILURE;
 }

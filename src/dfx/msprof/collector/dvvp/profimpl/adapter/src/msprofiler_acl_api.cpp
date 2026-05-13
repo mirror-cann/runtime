@@ -55,7 +55,7 @@ aclError ProfInit(ProfType type, CONST_CHAR_PTR profilerResultPath, size_t lengt
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofInit"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -116,7 +116,7 @@ aclError ProfFinalize(ProfType type)
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofFinalize"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -126,7 +126,7 @@ aclError ProfFinalize(ProfType type)
     if (ret != ACL_SUCCESS) {
         if (ret == ACL_ERROR_PROF_NOT_RUN) {
             MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
-                std::vector<std::string>({"aclprofFinalize", "aclprofInit"}));
+                std::vector<std::string>({"aclprofInit", "aclprofFinalize"}));
         }
         return ret;
     }
@@ -141,7 +141,6 @@ aclError ProfFinalize(ProfType type)
     ret = ProfAclMgr::instance()->ProfAclFinalize();
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("Failed to finalize profiling, profiling result = %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "Failed to finalize profiling, profiling result = %d", ret);
         return ret;
     }
 
@@ -190,7 +189,6 @@ aclError ProfWarmup(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
     aclError aclRet = preCheckProfConfig(profilerConfig);
     if (aclRet != ACL_SUCCESS) {
         MSPROF_LOGE("PreCheck ProfConfig Failed.");
-        MSPROF_INNER_ERROR("EK9999", "PreCheck ProfConfig Failed.");
         return aclRet;
     }
     struct MsprofConfig cfg;
@@ -207,14 +205,15 @@ aclError ProfWarmup(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
     if (ret != ACL_SUCCESS) {
         if (ret == ACL_ERROR_PROF_NOT_RUN) {
             MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
-                std::vector<std::string>({"aclprofWarmup", "aclprofInit"}));
+                std::vector<std::string>({"aclprofInit", "aclprofWarmup"}));
         }
         return ret;
     }
     // ProfWarmup will not work after ProfStart called
     if (ProfAclMgr::instance()->IsAclApiReady()) {
         MSPROF_LOGE("aclprofWarmup cannot be called after aclprofStart.");
-        MSPROF_INNER_ERROR("EK9999", "aclprofWarmup cannot be called after aclprofStart.");
+        MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
+            std::vector<std::string>({"aclprofWarmup", "aclprofStart"}));
         return ACL_ERROR_PROF_API_CONFLICT;
     }
     ProfAclMgr::instance()->SetProfWarmup();
@@ -223,7 +222,6 @@ aclError ProfWarmup(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
         sizeof(cfg));
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("Start profiling failed, ret: %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "Start profiling failed, ret: %d", ret);
         return ret;
     }
     MSPROF_LOGI("Acl has been allocated warmup profiling config, successfully execute %s%s",
@@ -240,7 +238,6 @@ aclError ProfStart(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
     aclError aclRet = preCheckProfConfig(config);
     if (aclRet != ACL_SUCCESS) {
         MSPROF_LOGE("PreCheck ProfConfig Failed.");
-        MSPROF_INNER_ERROR("EK9999", "PreCheck ProfConfig Failed.");
         return aclRet;
     }
     std::vector<uint32_t> devIds;
@@ -270,7 +267,6 @@ aclError ProfStart(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
             sizeof(cfg));
         if (ret != ACL_SUCCESS) {
             MSPROF_LOGE("Start profiling failed, ret: %d", ret);
-            MSPROF_INNER_ERROR("EK9999", "Start profiling failed, ret: %d", ret);
             return ret;
         }
     }
@@ -293,7 +289,6 @@ aclError ProfStop(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
     aclError aclRet = preCheckProfConfig(config);
     if (aclRet != ACL_SUCCESS) {
         MSPROF_LOGE("PreCheck ProfConfig Failed.");
-        MSPROF_INNER_ERROR("EK9999", "PreCheck ProfConfig Failed.");
         return aclRet;
     }
 
@@ -313,7 +308,6 @@ aclError ProfStop(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
         sizeof(cfg));
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("Stop profiling failed, ret: %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "Stop profiling failed, ret: %d", ret);
         return ret;
     }
     FUNRET_CHECK_EXPR_ACTION(ProfReporterMgr::GetInstance().StopReporters() != PROFILING_SUCCESS,
@@ -382,7 +376,7 @@ aclError ProfSetConfig(aclprofConfigType configType, const char *config, size_t 
     }
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofSetConfig"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -408,7 +402,8 @@ SHARED_PTR_ALIA<ITransport> CreateParserTransport()
     int32_t ret = pipeUploader->Init(subscribeUploaderCapacity);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to init uploader for subscribe");
-        MSPROF_INNER_ERROR("EK9999", "Failed to init uploader for subscribe");
+        MSPROF_ENV_ERROR("EK0201", std::vector<std::string>({"buf_size"}),
+            std::vector<std::string>({std::to_string(subscribeUploaderCapacity) + "B"}));
         return nullptr;
     }
     std::string uploaderName = analysis::dvvp::common::config::MSVP_UPLOADER_THREAD_NAME;
@@ -417,7 +412,8 @@ SHARED_PTR_ALIA<ITransport> CreateParserTransport()
     ret = pipeUploader->Start();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to start uploader thread");
-        MSPROF_INNER_ERROR("EK9999", "Failed to start uploader thread");
+        MSPROF_ENV_ERROR("EK0203", std::vector<std::string>({"reason"}),
+            std::vector<std::string>({std::to_string(ret) + " returned when the pthread_create API is called"}));
         return nullptr;
     }
     // create transport1 and uploader1
@@ -440,9 +436,8 @@ aclError ProfSubscribe(ProfType type, const uint32_t modelId, const uint32_t dev
 {
     if (profSubscribeConfig == nullptr) {
         MSPROF_LOGE("Param profSubscribeConfig is nullptr");
-        std::string errorReason = "Param profSubscribeConfig can not be nullptr";
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({"nullptr", "profSubscribeConfig", errorReason}));
+        MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({"api", "param"}),
+            std::vector<std::string>({"aclprofModelSubscribe", "profSubscribeConfig"}));
         return ACL_ERROR_INVALID_PARAM;
     }
 
@@ -463,7 +458,6 @@ aclError ProfSubscribe(ProfType type, const uint32_t modelId, const uint32_t dev
         sizeof(cfg));
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("Subscribe model (Graph) info failed, ret: %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "Subscribe model (Graph) info failed, ret: %d", ret);
         return ret;
     }
 
@@ -514,7 +508,6 @@ aclError ProfUnSubscribe(ProfType type, const uint32_t modelId, const uint32_t d
         sizeof(cfg));
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("Unsubscribe model (Graph) info failed, ret: %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "Unsubscribe model (Graph) info failed, ret: %d", ret);
         return ret;
     }
 
@@ -547,7 +540,7 @@ size_t ProfGetModelId(ProfType type, CONST_VOID_PTR opInfo, size_t opInfoLen, ui
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofGetModelId"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -556,7 +549,8 @@ size_t ProfGetModelId(ProfType type, CONST_VOID_PTR opInfo, size_t opInfoLen, ui
     int32_t ret = OpDescParser::GetModelId(opInfo, opInfoLen, index, &result);
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("Failed execute %s%s", g_subscribeTypeMap[type].c_str(), __func__);
-        MSPROF_INNER_ERROR("EK9999", "Failed execute aclprofGetModelId");
+        MSPROF_INNER_ERROR("EK9999", "Failed to get model id on type %s and index %u.",
+            g_subscribeTypeMap[type].c_str(), index);
         return static_cast<size_t>(ret);
     }
     MSPROF_LOGD("Successfully execute %s%s", g_subscribeTypeMap[type].c_str(), __func__);
@@ -627,7 +621,7 @@ int32_t ProfAclGetOpVal(uint32_t type, CONST_VOID_PTR opInfo, size_t opInfoLen, 
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofAclGetOpVal"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -656,7 +650,7 @@ uint64_t ProfAclGetOpTime(uint32_t type, CONST_VOID_PTR opInfo, size_t opInfoLen
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofAclGetOpTime"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -677,7 +671,7 @@ const char *ProfAclGetOpAttriVal(uint32_t type, const void *opInfo, size_t opInf
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofAclGetOpAttriVal"}));
         return nullptr;
     }

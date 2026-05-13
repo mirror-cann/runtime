@@ -64,13 +64,11 @@ int32_t Uploader::UploadData(CONST_VOID_PTR data, int32_t len)
 {
     if (!isInited_) {
         MSPROF_LOGE("Uploader was not inited.");
-        MSPROF_INNER_ERROR("EK9999", "Uploader was not inited.");
         return PROFILING_FAILED;
     }
 
     if (data == nullptr) {
         MSPROF_LOGE("[Uploader::UploadData]data is nullptr.");
-        MSPROF_INNER_ERROR("EK9999", "data is nullptr.");
         return PROFILING_FAILED;
     }
 
@@ -86,18 +84,15 @@ int32_t Uploader::UploadData(SHARED_PTR_ALIA<analysis::dvvp::ProfileFileChunk> f
 {
     if (!isInited_) {
         MSPROF_LOGE("Uploader was not inited.");
-        MSPROF_INNER_ERROR("EK9999", "Uploader was not inited.");
         return PROFILING_FAILED;
     }
 
     if (fileChunkReq == nullptr) {
         MSPROF_LOGE("[Uploader::UploadData]data is nullptr.");
-        MSPROF_INNER_ERROR("EK9999", "data is nullptr.");
         return PROFILING_FAILED;
     }
     if (!queue_->Push(fileChunkReq)) {
         MSPROF_LOGE("[Uploader::UploadData]Push data failed.");
-        MSPROF_INNER_ERROR("EK9999", "Push data failed.");
         return PROFILING_FAILED;
     }
 
@@ -109,7 +104,6 @@ void Uploader::Run(const struct error_message::Context &errorContext)
     MsprofErrorManager::instance()->SetErrorContext(errorContext);
     if (!isInited_) {
         MSPROF_LOGE("Uploader was not inited.");
-        MSPROF_INNER_ERROR("EK9999", "Uploader was not inited.");
         return;
     }
 
@@ -133,13 +127,10 @@ void Uploader::Run(const struct error_message::Context &errorContext)
             if (sentLen != static_cast<int32_t>(fileChunkReq->chunkSize)) {
                 MSPROF_LOGE("Failed to upload data, data_len=%zu bytes, sent len=%d bytes",
                     fileChunkReq->chunkSize, sentLen);
-                MSPROF_INNER_ERROR("EK9999", "Failed to upload data, data_len=%zu bytes, sent len=%d bytes",
-                    fileChunkReq->chunkSize, sentLen);
             }
         } else {
             if (transport_->SendBuffer(fileChunkReq) != PROFILING_SUCCESS) {
                 MSPROF_LOGE("Failed to upload data");
-                MSPROF_INNER_ERROR("EK9999", "Failed to upload data");
             }
             if (pipeTransport_ != nullptr && pipeTransport_->IsRegisterRawDataCallback()) {
                 int32_t ret = pipeTransport_->SendBuffer(fileChunkReq);
@@ -167,7 +158,6 @@ int32_t Uploader::Stop(bool force)
         int32_t ret = Thread::Stop();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to stop uploader");
-            MSPROF_INNER_ERROR("EK9999", "Failed to stop uploader");
         }
     }
 

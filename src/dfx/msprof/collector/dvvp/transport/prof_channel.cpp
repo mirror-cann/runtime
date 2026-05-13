@@ -169,8 +169,6 @@ int32_t ChannelReader::Execute()
         if (currLen <= 0) {
             if (currLen < 0) {
                 MSPROF_LOGE("read device %d, channel:%d, ret=%d", deviceId_, static_cast<int32_t>(channelId_), currLen);
-                MSPROF_INNER_ERROR("EK9999", "read device %d, channel:%d, ret=%d", deviceId_,
-                                   static_cast<int32_t>(channelId_), currLen);
             }
             if ((dataSize_ >= UPLOAD_BUFFER_SIZE)) {
                 UploadData();
@@ -215,7 +213,6 @@ void ChannelReader::UploadData()
     int32_t ret = UploaderMgr::instance()->UploadData(jobCtx_->job_id, fileChunkReq);
     if (ret == PROFILING_FAILED) {
         MSPROF_LOGE("Upload data failed, jobId: %s", jobCtx_->job_id.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Upload data failed, jobId: %s", jobCtx_->job_id.c_str());
     } else if (ret == PROFILING_IN_WARMUP) {
         warmupSize_ += static_cast<long long>(dataSize_);
     }
@@ -248,8 +245,6 @@ void ChannelReader::FlushDrvBuff()
     const int32_t ret = DrvProfFlush(deviceId_, channelId_, flushSize);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("DrvProfFlush failed, deviceId:%d, channelId:%d, ret:%d", deviceId_, channelId_, ret);
-        MSPROF_INNER_ERROR("EK9999", "DrvProfFlush failed, deviceId:%d, channelId:%d,ret:%d", deviceId_, channelId_,
-                           ret);
         guard.unlock();
         return;
     }
@@ -462,7 +457,6 @@ void ChannelPoll::Run(const struct error_message::Context &errorContext)
         pollCount_++;
         if (ret == PROF_ERROR) {
             MSPROF_LOGE("Failed to poll channel");
-            MSPROF_INNER_ERROR("EK9999", "Failed to poll channel");
             break;
         }
         if (ret == PROF_STOPPED_ALREADY) {

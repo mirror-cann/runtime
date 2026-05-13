@@ -149,7 +149,7 @@ ACL_GRPH_PROF_CONFIG_PTR aclgrphProfCreateConfig(UINT32_T_PTR deviceidList, uint
     if (config == nullptr) {
         MSPROF_LOGE("new aclgrphProfConfig fail");
         MSPROF_ENV_ERROR("EK0201", std::vector<std::string>({"buf_size"}),
-            std::vector<std::string>({std::to_string(sizeof(aclgrphProfConfig))}));
+            std::vector<std::string>({std::to_string(sizeof(aclgrphProfConfig)) + "B"}));
         return nullptr;
     }
     config->config.devNums = deviceNums;

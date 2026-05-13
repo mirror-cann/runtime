@@ -308,6 +308,8 @@ private:
 private:
     int32_t InitResources();
     int32_t RecordOutPut(const std::string &data);
+    bool InitClientUploader(const std::string& devIdStr,
+        SHARED_PTR_ALIA<analysis::dvvp::transport::ITransport> transport);
     int32_t InitApiCtrlUploader(const std::string& devIdStr);
     int32_t InitSubscribeUploader(const std::string& devIdStr);
     int32_t CheckDeviceTask(const MsprofConfig *config);
@@ -318,6 +320,7 @@ private:
     void SampleBasedCfgTrfToReq(const uint64_t dataTypeConfig, ProfAicoreMetrics aicMetrics,
         SHARED_PTR_ALIA<Analysis::Dvvp::Host::Adapter::ProfApiStartReq> feature) const;
     void AicoreMetricsEnumToName(ProfAicoreMetrics aicMetrics, std::string &name) const;
+    void AicoreMetricsEnumToNameTwo(ProfAicoreMetrics aicMetrics, std::string &name) const;
     int32_t StartDeviceTask(const uint32_t devId, SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
     void WaitAllDeviceResponse();
     void WaitDeviceResponse(const uint32_t devId);

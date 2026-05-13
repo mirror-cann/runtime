@@ -78,7 +78,6 @@ int32_t NanoStarsProfile::Uninit()
     auto ret = DrvStop(cfg_->comParams->devId, static_cast<AI_DRV_CHANNEL>(GetCollectionId()));
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("StarsNanoProfile uninit, DrvStop failed");
-        MSPROF_INNER_ERROR("EK9999", "Uninit, DrvStop failed");
     }
     RemoveReader(cfg_->comParams->devId, GetCollectionId());
     MSPROF_LOGI("stop profiling success, collection id: %d", GetCollectionId());

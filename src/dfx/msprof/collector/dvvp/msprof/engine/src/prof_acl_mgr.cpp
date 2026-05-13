@@ -114,7 +114,6 @@ void ProfAclMgr::PrintWorkMode(WorkMode mode)
         MSPROF_LOGW("%s, mode:%d", iter->second.c_str(), mode);
     } else {
         MSPROF_LOGE("Find WorkModeStr failed, mode:%d", mode);
-        MSPROF_INNER_ERROR("EK9999", "Find WorkModeStr failed, mode:%d", mode);
     }
 }
 
@@ -152,15 +151,17 @@ int32_t ProfAclMgr::ProfInitPrecheck() const
     }
     if (mode_ == WORK_MODE_CMD) {
         MSPROF_LOGW("Acl profiling api mode is disabled because working on cmd mode");
+        MSPROF_INPUT_ERROR("EK0007", std::vector<std::string>({"mode1", "mode2"}),
+            std::vector<std::string>({"aclapi", "commandline, acljson or geoption"}));
         return ACL_ERROR_PROF_ALREADY_RUN;
     }
     if (mode_ == WORK_MODE_API_CTRL) {
         MSPROF_LOGE("Acl profiling is already inited");
-        MSPROF_INNER_ERROR("EK9999", "Acl profiling is already inited");
+        MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
+            std::vector<std::string>({"aclprofInit", "aclprofStart"}));
         return ACL_ERROR_REPEAT_INITIALIZE;
     }
     MSPROF_LOGE("Acl profiling api mode conflict with other api mode %d", mode_);
-    MSPROF_INNER_ERROR("EK9999", "Acl profiling api mode conflict with other api mode %d", mode_);
     return ACL_ERROR_PROF_API_CONFLICT;
 }
 
@@ -171,6 +172,8 @@ int32_t ProfAclMgr::ProfStartPrecheck() const
     }
     if (mode_ == WORK_MODE_CMD) {
         MSPROF_LOGW("Acl profiling api mode is disabled because working on cmd mode");
+        MSPROF_INPUT_ERROR("EK0007", std::vector<std::string>({"mode1", "mode2"}),
+            std::vector<std::string>({"aclapi", "commandline, acljson or geoption"}));
         return ACL_ERROR_PROF_ALREADY_RUN;
     }
     if (mode_ == WORK_MODE_OFF) {
@@ -178,7 +181,6 @@ int32_t ProfAclMgr::ProfStartPrecheck() const
         return ACL_ERROR_PROF_NOT_RUN;
     }
     MSPROF_LOGE("Acl profiling api ctrl conflicts with other api mode %d", mode_);
-    MSPROF_INNER_ERROR("EK9999", "Acl profiling api ctrl conflicts with other api mode %d", mode_);
     return ACL_ERROR_PROF_API_CONFLICT;
 }
 
@@ -207,10 +209,13 @@ int32_t ProfAclMgr::ProfSubscribePrecheck() const
     }
     if (mode_ == WORK_MODE_CMD) {
         MSPROF_LOGW("Acl profiling api mode is disabled because working on cmd mode");
+        MSPROF_INPUT_ERROR("EK0007", std::vector<std::string>({"mode1", "mode2"}),
+            std::vector<std::string>({"subscribe", "commandline, acljson or geoption"}));
         return ACL_ERROR_PROF_ALREADY_RUN;
     }
     MSPROF_LOGE("Acl profiling api subscribe conflicts with other api mode %d", mode_);
-    MSPROF_INNER_ERROR("EK9999", "Acl profiling api subscribe conflicts with other api mode %d", mode_);
+    MSPROF_INPUT_ERROR("EK0007", std::vector<std::string>({"mode1", "mode2"}),
+        std::vector<std::string>({"subscribe", "aclapi"}));
     return ACL_ERROR_PROF_API_CONFLICT;
 }
 
@@ -410,7 +415,6 @@ int32_t ProfAclMgr::Init()
 
     if (ProfManager::instance()->AclInit() != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to init ProfManager");
-        MSPROF_INNER_ERROR("EK9999", "Failed to init ProfManager");
         return PROFILING_FAILED;
     }
 
@@ -436,12 +440,10 @@ int32_t ProfAclMgr::ProfAclInit(const std::string &profResultPath)
     std::lock_guard<std::mutex> lk(mtx_);
     if (!isReady_) {
         MSPROF_LOGE("Profiling is not ready");
-        MSPROF_INNER_ERROR("EK9999", "Profiling is not ready");
         return ACL_ERROR_PROFILING_FAILURE;
     }
     if (mode_ != WORK_MODE_OFF) {
         MSPROF_LOGE("Profiling already inited");
-        MSPROF_INNER_ERROR("EK9999", "Profiling already inited");
         return ACL_ERROR_REPEAT_INITIALIZE;
     }
 
@@ -449,7 +451,6 @@ int32_t ProfAclMgr::ProfAclInit(const std::string &profResultPath)
     std::string path = Utils::RelativePathToAbsolutePath(profResultPath);
     if (path.empty()) {
         MSPROF_LOGE("Input profResultPath is empty");
-        MSPROF_INNER_ERROR("EK9999", "Input profResultPath is empty");
         return ACL_ERROR_INVALID_FILE;
     }
     if (!Utils::CheckPathWithInvalidChar(path)) {
@@ -457,7 +458,12 @@ int32_t ProfAclMgr::ProfAclInit(const std::string &profResultPath)
     }
     if (Utils::CreateDir(path) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to create dir: %s", Utils::BaseName(path).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to create dir: %s", Utils::BaseName(path).c_str());
+        char errBuf[MAX_ERR_STRING_LEN + 1] = {0};
+        int32_t errNo = OsalGetErrorCode();
+        std::string reason = "The operation create dir on directory " + path + " is abnormal. [Error " +
+            std::to_string(errNo) + "] " + std::string(OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({path, "path of aclprofInit", reason}));
         return ACL_ERROR_INVALID_FILE;
     }
     path = Utils::CanonicalizePath(path);
@@ -466,12 +472,12 @@ int32_t ProfAclMgr::ProfAclInit(const std::string &profResultPath)
     // Check path is valid
     if (!Utils::IsDirAccessible(path)) {
         MSPROF_LOGE("Dir is not accessible: %s", Utils::BaseName(path).c_str());
-        std::string errorReason = "The operation on directory " +  path + " is abnormal. [Error 13] Permission denied";
-        if (!Utils::IsDir(path)) {
-            errorReason = "The operation on directory " +  path + " is abnormal. [Error 20] Not a directory";
-        }
-        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config", "value", "reason"}),
-            std::vector<std::string>({"output", path, errorReason}));
+        char errBuf[MAX_ERR_STRING_LEN + 1] = {0};
+        int32_t errNo = OsalGetErrorCode();
+        std::string reason = "The operation access on directory " + path + " is abnormal. [Error " +
+            std::to_string(errNo) + "] " + std::string(OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({path, "path of aclprofInit", reason}));
         return ACL_ERROR_INVALID_FILE;
     }
 
@@ -518,7 +524,6 @@ int32_t ProfAclMgr::ProfAclFinalize()
         iter->second.params->isCancel = true;
         if (ProfManager::instance()->IdeCloudProfileProcess(iter->second.params) != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to finalize profiling on device %u", iter->first);
-            MSPROF_INNER_ERROR("EK9999", "Failed to finalize profiling on device %u", iter->first);
         }
     }
     UploaderMgr::instance()->DelAllUploader();
@@ -560,7 +565,6 @@ uint64_t ProfAclMgr::ProfAclGetDataTypeConfig(const MsprofConfig *config) const
 {
     if (config == nullptr) {
         MSPROF_LOGE("SubscribeConfig is nullptr");
-        MSPROF_INNER_ERROR("EK9999", "SubscribeConfig is nullptr");
         return 0;
     }
     uint64_t dataTypeConfig = 0;
@@ -673,12 +677,14 @@ int32_t ProfAclMgr::CheckSubscribeConfig(const MsprofConfig *config) const
 {
     if (reinterpret_cast<void*>(config->fd) == nullptr) {
         MSPROF_LOGE("SubscribeConfig is nullptr");
-        MSPROF_INNER_ERROR("EK9999", "SubscribeConfig is nullptr");
         return ACL_ERROR_INVALID_PARAM;
     }
     if (!static_cast<bool>(config->cacheFlag) && config->metrics == PROF_AICORE_NONE) {
         MSPROF_LOGE("SubscribeConfig is invalid");
-        MSPROF_INNER_ERROR("EK9999", "SubscribeConfig is invalid");
+        std::string value = std::to_string(config->cacheFlag);
+        std::string reason = "Set the timeInfo switch to 1 if you want to receive subscribe information";
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({value, "timeInfo of aclprofCreateSubscribeConfig", reason}));
         return ACL_ERROR_INVALID_PARAM;
     }
     return ACL_SUCCESS;
@@ -817,7 +823,6 @@ int32_t ProfAclMgr::InitUploader(const std::string& devIdStr)
         ret = InitSubscribeUploader(devIdStr);
     } else {
         MSPROF_LOGE("Profiling mode is off, no uploader can be inited");
-        MSPROF_INNER_ERROR("EK9999", "Profiling mode is off, no uploader can be inited");
         ret = ACL_ERROR_PROFILING_FAILURE;
     }
     UploaderMgr::instance()->RegisterAllUploaderTransportGenHashIdFuncPtr(HashDataGenHashIdWrapper);
@@ -890,6 +895,34 @@ void setUploaderPipeTransport(const std::string devId) {
     }
 }
 
+bool ProfAclMgr::InitClientUploader(const std::string& devIdStr, SHARED_PTR_ALIA<ITransport> transport)
+{
+    MSPROF_LOGI("Create master transport pid: %s, currentId:%s.", masterPid_.c_str(), devIdStr.c_str());
+    if (curDevId_ > MSVP_MAX_DEV_NUM || curDevId_ < 0) {
+        MSPROF_LOGE("device id[%u] is out of range, which should be limited in %u.", curDevId_, MSVP_MAX_DEV_NUM);
+        return false;
+    }
+
+    HDC_CLIENT client = Analysis::Dvvp::Adx::AdxHdcClientCreate(HDC_SERVICE_TYPE_IDE1);
+    if (client == nullptr) {
+        MSPROF_LOGE("HDC client is invalid");
+        return false;
+    }
+
+    int32_t masterPid = 0;
+    FUNRET_CHECK_EXPR_ACTION(!Utils::StrToInt32(masterPid, masterPid_), return false, 
+        "masterPid_ %s is invalid", masterPid_.c_str());
+    transport = analysis::dvvp::transport::HelperTransportFactory().CreateHdcClientTransport(masterPid,
+        curDevId_, client);
+    if (transport == nullptr) {
+        Analysis::Dvvp::Adx::AdxHdcClientDestroy(client);
+        MSPROF_LOGE("Create HdcClientTransport failed.");
+        return false;
+    }
+
+    return true;
+}
+
 int32_t ProfAclMgr::InitApiCtrlUploader(const std::string& devIdStr)
 {
     std::lock_guard<std::mutex> lk(mtxUploader_);
@@ -901,24 +934,7 @@ int32_t ProfAclMgr::InitApiCtrlUploader(const std::string& devIdStr)
     SHARED_PTR_ALIA<ITransport> transport = nullptr;
     if (Platform::instance()->CheckIfRpcHelper()) {
 #ifndef PROF_LITE
-        MSPROF_LOGI("Create master transport pid: %s, currentId:%s.", masterPid_.c_str(), devIdStr.c_str());
-        if (curDevId_ > MSVP_MAX_DEV_NUM || curDevId_ < 0) {
-            MSPROF_LOGE("device id[%u] is out of range, which should be limited in %u.", curDevId_, MSVP_MAX_DEV_NUM);
-            return ACL_ERROR_PROFILING_FAILURE;
-        }
-        HDC_CLIENT client = Analysis::Dvvp::Adx::AdxHdcClientCreate(HDC_SERVICE_TYPE_IDE1);
-        if (client == nullptr) {
-            MSPROF_LOGE("HDC client is invalid");
-            return ACL_ERROR_PROFILING_FAILURE;
-        }
-        int32_t masterPid = 0;
-        FUNRET_CHECK_EXPR_ACTION(!Utils::StrToInt32(masterPid, masterPid_), return ACL_ERROR_PROFILING_FAILURE, 
-            "masterPid_ %s is invalid", masterPid_.c_str());
-        transport = analysis::dvvp::transport::HelperTransportFactory().CreateHdcClientTransport(masterPid,
-            curDevId_, client);
-        if (transport == nullptr) {
-            Analysis::Dvvp::Adx::AdxHdcClientDestroy(client);
-            MSPROF_LOGE("Create HdcClientTransport failed.");
+        if (!InitClientUploader(devIdStr, transport)) {
             return ACL_ERROR_PROFILING_FAILURE;
         }
         SHARED_PTR_ALIA<analysis::dvvp::ProfileFileChunk> fileChunkReq = PackDataTrunk();
@@ -930,9 +946,15 @@ int32_t ProfAclMgr::InitApiCtrlUploader(const std::string& devIdStr)
         devUuid_[devIdStr] = Utils::CreateResultPath(devIdStr);
         std::string devDir = GenerateProfDirName(devIdStr);
         if (Utils::CreateDir(devDir) != PROFILING_SUCCESS) {
-            MSPROF_LOGE("Failed to create device dir: %s", Utils::BaseName(devDir).c_str());
-            MSPROF_INNER_ERROR("EK9999", "Failed to create device dir: %s", Utils::BaseName(devDir).c_str());
-            Utils::PrintSysErrorMsg();
+            char errBuf[MAX_ERR_STRING_LEN + 1] = {0};
+            int32_t errNo = OsalGetErrorCode();
+            MSPROF_LOGE("Failed to create device dir: %s. [Error %d] %s.", Utils::BaseName(devDir).c_str(),
+                errNo, OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
+            std::string reason = "The operation create dir on directory " + baseDir_ +
+                " is abnormal. [Error " + std::to_string(errNo) + "] " +
+                std::string(OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
+            MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+                std::vector<std::string>({baseDir_, "output path", reason}));
             return ACL_ERROR_INVALID_FILE;
         }
         std::string outPutStr = baseDir_;
@@ -941,7 +963,6 @@ int32_t ProfAclMgr::InitApiCtrlUploader(const std::string& devIdStr)
         transport = FileTransportFactory().CreateFileTransport(devDir, storageLimit_, true);
         if (transport == nullptr) {
             MSPROF_LOGE("Failed to create transport for device %s", devIdStr.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Failed to create transport for device %s", devIdStr.c_str());
             return ACL_ERROR_INVALID_FILE;
         }
     }
@@ -949,7 +970,6 @@ int32_t ProfAclMgr::InitApiCtrlUploader(const std::string& devIdStr)
     int32_t ret = UploaderMgr::instance()->CreateUploader(devIdStr, transport, uploaderCapacity);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to create uploader for device %s", devIdStr.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to create uploader for device %s", devIdStr.c_str());
         return ACL_ERROR_PROFILING_FAILURE;
     }
     setUploaderPipeTransport(devIdStr);
@@ -974,7 +994,6 @@ int32_t ProfAclMgr::InitSubscribeUploader(const std::string &devIdStr)
         }
         if (parserTransport == nullptr) {
             MSPROF_LOGE("Failed to create parsertransport for subscribe");
-            MSPROF_INNER_ERROR("EK9999", "Failed to create parsertransport for subscribe");
             return ACL_ERROR_PROFILING_FAILURE;
         }
         parserTransport->SetDevId(devIdStr);
@@ -983,7 +1002,6 @@ int32_t ProfAclMgr::InitSubscribeUploader(const std::string &devIdStr)
         int32_t ret = UploaderMgr::instance()->CreateUploader(devIdStr, parserTransport, capacity);
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to create uploader for subscribe");
-            MSPROF_INNER_ERROR("EK9999", "Failed to create uploader for subscribe");
             return ACL_ERROR_PROFILING_FAILURE;
         }
     }
@@ -1007,7 +1025,10 @@ int32_t ProfAclMgr::CheckDeviceTask(const MsprofConfig *config)
                 continue;
             }
             MSPROF_LOGE("Device %u already started", devId);
-            MSPROF_INNER_ERROR("EK9999", "Device %u already started", devId);
+            std::string value = std::to_string(devId);
+            std::string reason = "The profiling task on device " + value + " is already started";
+            MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+                std::vector<std::string>({value, "device id", reason}));
             return ACL_ERROR_PROF_ALREADY_RUN;
         }
         devIds.push_back(devId);
@@ -1093,7 +1114,6 @@ int32_t ProfAclMgr::StartDeviceTask(const uint32_t devId,
     // start profiling process
     if (ProfManager::instance()->IdeCloudProfileProcess(paramsHandled) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to start profiling on device %u", devId);
-        MSPROF_INNER_ERROR("EK9999", "Failed to start profiling on device %u", devId);
         HandleResponse(devId);
         return ACL_ERROR_PROFILING_FAILURE;
     }
@@ -1139,8 +1159,11 @@ int32_t ProfAclMgr::UpdateSubscribeInfo(const std::string &key, const uint32_t d
     if (iterDev->second.dataTypeConfig != dataTypeConfig) {
         MSPROF_LOGE("Subscribe config %x is different from previous one: %x",
             dataTypeConfig, iterDev->second.dataTypeConfig);
-        MSPROF_INNER_ERROR("EK9999", "Subscribe config %" PRIu64 " is different from previous one: %" PRIu64,
-            dataTypeConfig, iterDev->second.dataTypeConfig);
+        std::string value = std::to_string(dataTypeConfig);
+        std::string reason = "Subscribe config " + value + " is different from previous one " +
+            std::to_string(iterDev->second.dataTypeConfig);
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({value, "dataTypeConfig", reason}));
         return ACL_ERROR_INVALID_PROFILING_CONFIG;
     }
     // check aicore
@@ -1149,13 +1172,14 @@ int32_t ProfAclMgr::UpdateSubscribeInfo(const std::string &key, const uint32_t d
     if (iterDev->second.params->ai_core_metrics != aicoreMetrics) {
         MSPROF_LOGE("Subscribe aicore metrics %s is different from previous one: %s", aicoreMetrics.c_str(),
             iterDev->second.params->ai_core_metrics.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Subscribe aicore metrics %s is different from previous one: %s",
-            aicoreMetrics.c_str(), iterDev->second.params->ai_core_metrics.c_str());
         return ACL_ERROR_INVALID_PROFILING_CONFIG;
     }
     if (iterDev->second.count + 1 == 0) {
         MSPROF_LOGE("Subscribe count is too large");
-        MSPROF_INNER_ERROR("EK9999", "Subscribe count is too large");
+        std::string value = std::to_string(iterDev->second.count);
+        std::string reason = "Subscribe count is too large, which should be less than UINT32_MAX";
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({value, "count", reason}));
         return ACL_ERROR_INVALID_PROFILING_CONFIG;
     }
     iterDev->second.count++;
@@ -1222,7 +1246,6 @@ int32_t ProfAclMgr::StartDeviceSubscribeTask(const std::string &key, const uint3
     auto paramsHandled = ProfManager::instance()->HandleProfilingParams(devId, params->ToString());
     if (ProfManager::instance()->IdeCloudProfileProcess(paramsHandled) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to start profiling on device %u", devId);
-        MSPROF_INNER_ERROR("EK9999", "Failed to start profiling on device %u", devId);
         HandleResponse(devId);
         return ACL_ERROR_PROFILING_FAILURE;
     }
@@ -1514,7 +1537,10 @@ int32_t ProfAclMgr::MsprofInitAclJson(VOID_PTR data, uint32_t len)
     static uint32_t ACL_CFG_LEN_MAX = 1024 * 1024;  // max input cfg len is 1024 * 1024
     if (data == nullptr || len > ACL_CFG_LEN_MAX) {
         MSPROF_LOGE("Length of acl json config is too large: %u", len);
-        MSPROF_INNER_ERROR("EK9999", "Length of acl json config is too large: %u", len);
+        std::string value = std::to_string(len);
+        std::string reason = "Length of acl json config should be less than " + std::to_string(ACL_CFG_LEN_MAX);
+        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config", "value", "reason"}),
+            std::vector<std::string>({"length of acl json config", value, reason}));
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     std::lock_guard<std::mutex> lk(mtx_);
@@ -1707,8 +1733,9 @@ int32_t ProfAclMgr::MsprofGeOptionMetricsConstruct(NanoJson::Json &geoptionCfg)
         ret = Platform::instance()->GetAicoreEvents(aiVectMetrics, params_->aiv_profiling_events);
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("The aic_metrics[%s] of input geconfig is invalid", aiCoreMetrics.c_str());
-            MSPROF_INNER_ERROR("EK9999", "The aic_metrics[%s] of input geconfig is invalid",
-                aiCoreMetrics.c_str());
+            std::string reason = "Aicore metrics is not supported on current platform";
+            MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+                std::vector<std::string>({aiCoreMetrics, "aic_metrics", reason}));
             return MSPROF_ERROR_CONFIG_INVALID;
         }
         params_->ai_core_profiling = MSVP_PROF_ON;
@@ -1758,8 +1785,8 @@ int32_t ProfAclMgr::MsprofInitGeOptions(VOID_PTR data, uint32_t len)
     uint32_t structLen = sizeof(struct MsprofGeOptions);
     if (data == nullptr || len != structLen) {
         MSPROF_LOGE("MsprofInitGeOptions input arguments is invalid, len:%u bytes, structLen:%u bytes", len, structLen);
-        MSPROF_INNER_ERROR("EK9999", "MsprofInitGeOptions input arguments is invalid, len:%u bytes, structLen:%u bytes",
-            len, structLen);
+        MSPROF_INNER_ERROR("EK9999", "Params created by ge can not be analyzed by "
+            "prof shared library in runtime.");
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     std::lock_guard<std::mutex> lk(mtx_);
@@ -1810,7 +1837,8 @@ int32_t ProfAclMgr::MsprofInitAclEnv(const std::string &envValue)
     }
     if (!params_->FromString(envValue)) {
         MSPROF_LOGE("ProfileParams Parse Failed %s", envValue.c_str());
-        MSPROF_INNER_ERROR("EK9999", "ProfileParams Parse Failed %s", envValue.c_str());
+        MSPROF_INNER_ERROR("EK9999", "Params created by msprof in oam-tools can not be analyzed by "
+            "prof shared library in runtime.");
         return MSPROF_ERROR;
     }
     params_->host_sys_pid = Utils::GetPid();
@@ -1832,7 +1860,6 @@ int32_t ProfAclMgr::MsprofInitAclEnv(const std::string &envValue)
     baseDir_ = Utils::CreateProfDir(0);
     if (!ParamValidation::instance()->CheckStorageLimit(params_)) {
         MSPROF_LOGE("storage_limit para is invalid");
-        MSPROF_INNER_ERROR("EK9999", "storage_limit para is invalid");
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     storageLimit_ = params_->storageLimit;
@@ -1858,7 +1885,6 @@ int32_t ProfAclMgr::MsprofHelperParamConstruct(const std::string &msprofPath, co
     baseDir_ = Utils::CreateProfDir(0);
     if (!ParamValidation::instance()->CheckStorageLimit(params_)) {
         MSPROF_LOGE("storage_limit para is invalid");
-        MSPROF_INNER_ERROR("EK9999", "storage_limit para is invalid");
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     storageLimit_ = params_->storageLimit;
@@ -1871,8 +1897,6 @@ int32_t ProfAclMgr::MsprofInitHelper(VOID_PTR data, uint32_t len)
     uint32_t structLen = sizeof(struct MsprofCommandHandleParams);
     if (data == nullptr || len != structLen) {
         MSPROF_LOGE("MsprofInitHelper input arguments is invalid, len:%u bytes, structLen:%u bytes", len, structLen);
-        MSPROF_INNER_ERROR("EK9999", "MsprofInitHelper input arguments is invalid, len:%u bytes, structLen:%u bytes",
-            len, structLen);
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     std::lock_guard<std::mutex> lk(mtx_);
@@ -1918,7 +1942,6 @@ int32_t ProfAclMgr::MsprofPureCpuParamConstruct(std::string &msprofPath, const s
     baseDir_ = Utils::CreateProfDir(0);
     if (!ParamValidation::instance()->CheckStorageLimit(params_)) {
         MSPROF_LOGE("storage_limit para is invalid");
-        MSPROF_INNER_ERROR("EK9999", "storage_limit para is invalid");
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     storageLimit_ = params_->storageLimit;
@@ -1943,8 +1966,6 @@ int32_t ProfAclMgr::MsprofInitPureCpu(VOID_PTR data, uint32_t len)
     uint32_t structLen = sizeof(struct MsprofCommandHandleParams);
     if (data == nullptr || len != structLen) {
         MSPROF_LOGE("MsprofInitPureCpu input arguments is invalid, len:%u bytes, structLen:%u bytes", len, structLen);
-        MSPROF_INNER_ERROR("EK9999", "MsprofInitPureCpu input arguments is invalid, len:%u bytes, structLen:%u bytes",
-            len, structLen);
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     std::lock_guard<std::mutex> lk(mtx_);
@@ -2023,7 +2044,6 @@ void ProfAclMgr::MsprofHostHandle(void)
     auto ret = DoHostHandle();
     if (ret == PROFILING_FAILED) {
         MSPROF_LOGE("[MsprofHostHandle] host profiling handle failed, ret is %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "host profiling handle failed, ret is %d", ret);
     }
 }
 
@@ -2055,7 +2075,6 @@ int32_t ProfAclMgr::MsprofResetDeviceHandle(uint32_t devId)
 
     if (ProfManager::instance()->IdeCloudProfileProcess(devTask->second.params) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to stop profiling on device %u", devId);
-        MSPROF_INNER_ERROR("EK9999", "Failed to stop profiling on device %u", devId);
         return MSPROF_ERROR;
     }
     return MSPROF_ERROR_NONE;
@@ -2079,13 +2098,13 @@ void ProfAclMgr::DoFinalizeHandle(void) const
         geRet = CommandHandleProfStop(devIdList, 1, dataTypeConfig, profSwitchHi);
         if (geRet != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to CommandHandleProfStop on device:%u", devId);
-            MSPROF_INNER_ERROR("EK9999", "Failed to CommandHandleProfStop on device:%u", devId);
+            MSPROF_INNER_ERROR("EK9999", "Failed to callback stop on device %u.", devId);
         }
     }
     geRet = CommandHandleProfFinalize();
     if (geRet != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to CommandHandleProfFinalize");
-        MSPROF_INNER_ERROR("EK9999", "Failed to CommandHandleProfFinalize");
+        MSPROF_INNER_ERROR("EK9999", "Failed to callback finalize.");
     }
 
     Msprof::Engine::FlushAllModule();
@@ -2108,7 +2127,6 @@ int32_t ProfAclMgr::MsprofFinalizeHandle(void)
         iter->second.params->isCancel = true;
         if (ProfManager::instance()->IdeCloudProfileProcess(iter->second.params) != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to finalize profiling on device %u", iter->first);
-            MSPROF_INNER_ERROR("EK9999", "Failed to finalize profiling on device %u", iter->first);
         }
         MSPROF_LOGI("save hash data in MsprofFinalizeHandle");
         // save hash data after IdeCloudProfileProcess
@@ -2141,7 +2159,6 @@ int32_t ProfAclMgr::MsprofSetDeviceImpl(uint32_t devId)
     int32_t ret = StartDeviceTask(devId, params_);
     if (ret != ACL_SUCCESS) {
         MSPROF_LOGE("MsprofSetDeviceImpl, StartDeviceTask failed, devId:%u, mode:%d", devId, mode_);
-        MSPROF_INNER_ERROR("EK9999", "MsprofSetDeviceImpl, StartDeviceTask failed, devId:%u, mode:%d", devId, mode_);
         return PROFILING_FAILED;
     }
     // dump start info file in no acl prof warmup scene
@@ -2296,7 +2313,6 @@ int32_t ProfAclMgr::ProfStartCommon(const uint32_t *devIdList, uint32_t devNums)
     for (uint32_t devId : notifyList) {
         if (!(ProfManager::instance()->CheckIfDevicesOnline(std::to_string(devId), info))) {
             MSPROF_LOGE("DevId:%u is not online, error info:%s", devId, info.c_str());
-            MSPROF_INNER_ERROR("EK9999", "DevId:%u is not online, error info:%s", devId, info.c_str());
             return MSPROF_ERROR;
         }
     }
@@ -2325,7 +2341,7 @@ int32_t ProfAclMgr::ProfStartCommon(const uint32_t *devIdList, uint32_t devNums)
         int32_t ret = CommandHandleProfInit();
         if (ret != ACL_SUCCESS) {
             MSPROF_LOGE("Failed to execute CommandHandleProfInit.");
-            MSPROF_INNER_ERROR("EK9999", "CommandHandleProfInit failed");
+            MSPROF_INNER_ERROR("EK9999", "Failed to callback init.");
             return MSPROF_ERROR;
         }
         // callback start handle
@@ -2338,7 +2354,7 @@ int32_t ProfAclMgr::ProfStartCommon(const uint32_t *devIdList, uint32_t devNums)
         ret = CommandHandleProfStart(startDevIdList, 1, profSwitch, profSwitchHi);
         if (ret != ACL_SUCCESS) {
             MSPROF_LOGE("Failed to execute CommandHandleProfStart.");
-            MSPROF_INNER_ERROR("EK9999", "CommandHandleProfStart failed, devId:%u", devId);
+            MSPROF_INNER_ERROR("EK9999", "Failed to callback start on device %u.", devId);
             return MSPROF_ERROR;
         }
     }
@@ -2380,7 +2396,6 @@ int32_t ProfAclMgr::ProfStopCommon(const MsprofConfig *config)
             iter->second.params->isCancel = true;
             if (ProfManager::instance()->IdeCloudProfileProcess(iter->second.params) != PROFILING_SUCCESS) {
                 MSPROF_LOGE("Failed to stop profiling on device %u", devId);
-                MSPROF_INNER_ERROR("EK9999", "Failed to stop profiling on device %u", devId);
                 return ACL_ERROR_PROFILING_FAILURE;
             }
             MSPROF_LOGI("save hash data in ProfStopCommon");
@@ -2478,7 +2493,7 @@ int32_t ProfAclMgr::PrepareStartAclApi(const MsprofConfig *config)
     // check if 51 helper scene
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("Acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofStart"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -2487,7 +2502,7 @@ int32_t ProfAclMgr::PrepareStartAclApi(const MsprofConfig *config)
     if (ret != ACL_SUCCESS) {
         if (ret == ACL_ERROR_PROF_NOT_RUN) {
             MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
-                std::vector<std::string>({"aclprofStart", "aclprofInit"}));
+                std::vector<std::string>({"aclprofInit", "aclprofStart"}));
         }
         return ret;
     }
@@ -2546,7 +2561,7 @@ int32_t ProfAclMgr::PrepareStopAclApi(const MsprofConfig *config)
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("Acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofStop"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -2554,8 +2569,8 @@ int32_t ProfAclMgr::PrepareStopAclApi(const MsprofConfig *config)
     int32_t ret = ProfStopPrecheck();
     if (ret != ACL_SUCCESS) {
         if (ret == ACL_ERROR_PROF_NOT_RUN) {
-            MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf", "platform"}),
-                std::vector<std::string>({"aclprofStop", "SocCloud"}));
+            MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
+                std::vector<std::string>({"aclprofStart", "aclprofStop"}));
         }
         return ret;
     }
@@ -2606,7 +2621,7 @@ int32_t ProfAclMgr::PrepareStartAclSubscribe(const MsprofConfig *config)
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("Acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofModelSubscribe"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -2621,7 +2636,6 @@ int32_t ProfAclMgr::PrepareStartAclSubscribe(const MsprofConfig *config)
     ret = HashData::instance()->Init();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("HashData init failed in aclprofModelSubscribe");
-        MSPROF_INNER_ERROR("EK9999", "HashData init failed in aclprofModelSubscribe");
         return ACL_ERROR_PROFILING_FAILURE;
     }
     return ACL_SUCCESS;
@@ -2639,7 +2653,8 @@ int32_t ProfAclMgr::ProfStartAclSubscribe(const MsprofConfig *config)
     auto iter = subscribeInfos_.find(subscribePtr->key);
     if (iter != subscribeInfos_.end() && iter->second.subscribed) {
         MSPROF_LOGE("%s has been subscribed", subscribePtr->keyInfo.c_str());
-        MSPROF_INNER_ERROR("EK9999", "%s has been subscribed", subscribePtr->keyInfo.c_str());
+        MSPROF_INNER_ERROR("EK9999", "Failed to pass subscribe check, key %s has been subscribed",
+            subscribePtr->keyInfo.c_str());
         return ACL_ERROR_PROF_REPEAT_SUBSCRIBE;
     }
 
@@ -2659,7 +2674,6 @@ int32_t ProfAclMgr::ProfStartAclSubscribe(const MsprofConfig *config)
         // start subscribe device
         if (StartDeviceSubscribeTask(subscribePtr->key, id, config) != ACL_SUCCESS) {
             MSPROF_LOGE("StartDeviceSubscribeTask failed, %s", subscribePtr->keyInfo.c_str());
-            MSPROF_INNER_ERROR("EK9999", "StartDeviceSubscribeTask failed, %s", subscribePtr->keyInfo.c_str());
             return ACL_ERROR_PROFILING_FAILURE;
         }
     }
@@ -2682,7 +2696,7 @@ int32_t ProfAclMgr::PrepareStopAclSubscribe(const MsprofConfig *config) const
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
-        MSPROF_ENV_ERROR("EK0004", std::vector<std::string>({"intf"}),
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
             std::vector<std::string>({"aclprofModelUnSubscribe"}));
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
@@ -2707,10 +2721,9 @@ int32_t ProfAclMgr::PrepareStopAclSubscribe(const MsprofConfig *config) const
         MSPROF_LOGE("%s is not subscribed when unsubcribed", subscribePtr->keyInfo.c_str());
         if (subscribePtr->modelId != std::numeric_limits<uint32_t>::max()) {
             MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
-                std::vector<std::string>({"aclprofModelUnSubscribe", "aclprofModelSubscribe"}));
+                std::vector<std::string>({"aclprofModelSubscribe", "aclprofModelUnSubscribe"}));
             return ACL_ERROR_INVALID_MODEL_ID;
         } else {
-            MSPROF_INNER_ERROR("EK9999", "%s is not subscribed when unsubcribed", subscribePtr->keyInfo.c_str());
             return ACL_ERROR_PROFILING_FAILURE;
         }
     }

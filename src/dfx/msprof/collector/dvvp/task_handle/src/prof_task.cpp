@@ -63,7 +63,6 @@ int32_t ProfTask::Init()
     analysis::dvvp::transport::UploaderMgr::instance()->GetUploader(params_->job_id, uploader_);
     if (uploader_ == nullptr) {
         MSPROF_LOGE("Failed to get correct uploader");
-        MSPROF_INNER_ERROR("EK9999", "Failed to get correct uploader");
         return PROFILING_FAILED;
     }
 
@@ -168,7 +167,6 @@ int32_t ProfTask::CreateCollectionTimeInfo(std::string collectionTime, bool isSt
                                                                                      fileDataParams, jobCtx);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to upload data for %s", fileName.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to upload data for %s", fileName.c_str());
         return PROFILING_FAILED;
     }
     return PROFILING_SUCCESS;
@@ -183,14 +181,13 @@ int32_t ProfTask::GetHostAndDeviceInfo()
     std::string endTime = Utils::GetHostTime();
     if (endTime.empty()) {
         MSPROF_LOGE("gettimeofday failed");
-        MSPROF_INNER_ERROR("EK9999", "gettimeofday failed");
         return PROFILING_FAILED;
     }
     InfoJson infoJson(params_->jobInfo, devicesStr, params_->host_sys_pid);
     std::string content;
     if (infoJson.Generate(content) != PROFILING_SUCCESS) {
         MSPROF_LOGE("[GetHostAndDeviceInfo]Failed to generate info.json");
-        MSPROF_INNER_ERROR("EK9999", "Failed to generate info.json");
+        MSPROF_INNER_ERROR("EK9999", "Failed to generate info.json.");
         return PROFILING_FAILED;
     }
     SHARED_PTR_ALIA<analysis::dvvp::message::JobContext> jobCtx = nullptr;
@@ -209,7 +206,6 @@ int32_t ProfTask::GetHostAndDeviceInfo()
     if (analysis::dvvp::transport::UploaderMgr::instance()->UploadCtrlFileData(params_->job_id, content, fileDataParams,
         jobCtx) != PROFILING_SUCCESS) {
         MSPROF_LOGE("[GetHostAndDeviceInfo]Failed to upload data for %s", fileName.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to upload data for %s", fileName.c_str());
         return PROFILING_FAILED;
     }
     return PROFILING_SUCCESS;
@@ -240,7 +236,7 @@ void ProfTask::StartDevices(const std::vector<std::string> &devicesVec)
         int32_t ret = dev->Init();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Device %s init failed, ret:%d", devicesVec[i].c_str(), ret);
-            MSPROF_INNER_ERROR("EK9999", "Device %s init failed, ret:%d", devicesVec[i].c_str(), ret);
+            MSPROF_INNER_ERROR("EK9999", "Device %s init failed, ret: %d.", devicesVec[i].c_str(), ret);
             continue;
         }
 
@@ -252,7 +248,7 @@ void ProfTask::StartDevices(const std::vector<std::string> &devicesVec)
         ret = dev->Start();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Device %s start failed, ret:%d", devicesVec[i].c_str(), ret);
-            MSPROF_INNER_ERROR("EK9999", "Device %s start failed, ret:%d", devicesVec[i].c_str(), ret);
+            MSPROF_INNER_ERROR("EK9999", "Device %s start failed, ret: %d.", devicesVec[i].c_str(), ret);
             continue;
         }
 
@@ -268,7 +264,6 @@ void ProfTask::ProcessDefMode()
     StartDevices(currDevicesV_);
     if (GetHostAndDeviceInfo() != PROFILING_SUCCESS) {
         MSPROF_LOGE("ProcessDefMode GetHostAndDeviceInfo failed");
-        MSPROF_INNER_ERROR("EK9999", "ProcessDefMode GetHostAndDeviceInfo failed");
     }
     // wait stop notify
     std::unique_lock<std::mutex> lk(taskMtx_);

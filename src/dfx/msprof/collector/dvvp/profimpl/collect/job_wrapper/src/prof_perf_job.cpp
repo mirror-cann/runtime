@@ -57,13 +57,11 @@ int32_t PerfExtraTask::Init()
 
     if (isInited_) {
         MSPROF_LOGE("The PerfExtraTask is inited");
-        MSPROF_INNER_ERROR("EK9999", "The PerfExtraTask is inited");
         return PROFILING_FAILED;
     }
 
     if (!buf_.Init()) {
         MSPROF_LOGE("Buf init failed");
-        MSPROF_INNER_ERROR("EK9999", "Buf init failed");
         return PROFILING_FAILED;
     }
 
@@ -172,7 +170,6 @@ void PerfExtraTask::StoreData(const std::string &fileName)
     const int64_t len = Utils::GetFileSize(fileName);
     if (len <= 0 || len > MSVP_LARGE_FILE_MAX_LEN) {
         MSPROF_LOGE("data file size is invalid");
-        MSPROF_INNER_ERROR("EK9999", "data file size is invalid");
         return;
     }
 
@@ -207,7 +204,6 @@ void PerfExtraTask::StoreData(const std::string &fileName)
             if (analysis::dvvp::transport::UploaderMgr::instance()->UploadData(param_->job_id,
                 fileChunk) != PROFILING_SUCCESS) {
                 MSPROF_LOGE("Upload cpu data failed , jobId: %s", param_->job_id.c_str());
-                MSPROF_INNER_ERROR("EK9999", "Upload cpu data failed , jobId: %s", param_->job_id.c_str());
             }
         }
         dataSize_ += static_cast<long long>(ifs.gcount());
@@ -243,7 +239,6 @@ int32_t ProfCtrlcpuJob::Init(const SHARED_PTR_ALIA<CollectionJobCfg> cfg)
     const int32_t ret = Utils::CreateDir(tmpPath);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Creating dir failed: %s", Utils::BaseName(tmpPath).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Creating dir failed: %s", Utils::BaseName(tmpPath).c_str());
         Utils::PrintSysErrorMsg();
         return ret;
     }
@@ -268,7 +263,6 @@ int32_t ProfCtrlcpuJob::Process()
         std::vector<std::string> params = Utils::Split(profCtrlcpuCmd.c_str());
         if (params.empty()) {
             MSPROF_LOGE("ProfCtrlcpuJob params empty");
-            MSPROF_INNER_ERROR("EK9999", "ProfCtrlcpuJob params empty");
             return PROFILING_FAILED;
         }
         MSPROF_LOGI("Begin to start profiling ctrl cpu");
@@ -296,7 +290,6 @@ int32_t ProfCtrlcpuJob::Process()
             ret = perfExtraTask_->Start();
             if (ret != PROFILING_SUCCESS) {
                 MSPROF_LOGE("[ProfCtrlcpuJob::Process]Failed to start perfExtraTask_ thread, ret=%d", ret);
-                MSPROF_INNER_ERROR("EK9999", "Failed to start perfExtraTask_ thread, ret=%d", ret);
                 return ret;
             }
         }
@@ -351,7 +344,6 @@ int32_t ProfCtrlcpuJob::PrepareDataDir(std::string &cpuDataFile)
     int32_t ret = Utils::CreateDir(perfDataDir);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Creating dir: %s err!", Utils::BaseName(perfDataDir).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Creating dir: %s err!", Utils::BaseName(perfDataDir).c_str());
         Utils::PrintSysErrorMsg();
         return PROFILING_FAILED;
     }

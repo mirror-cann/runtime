@@ -51,14 +51,16 @@ struct ProfileFileChunk {
 namespace common {
 namespace utils {
 
-#define MSVP_MAKE_SHARED0(instance, Type, action)                          \
-    do {                                                                   \
-        try {                                                              \
-            instance = std::make_shared<Type>();                           \
-        } catch (std::exception &ex) {                                     \
-            MSPROF_LOGE("make shared failed, message: %s", ex.what());     \
-            action;                                                        \
-        }                                                                  \
+#define MSVP_MAKE_SHARED0(instance, Type, action)                               \
+    do {                                                                        \
+        try {                                                                   \
+            instance = std::make_shared<Type>();                                \
+        } catch (std::exception &ex) {                                          \
+            MSPROF_LOGE("make shared failed, message: %s", ex.what());          \
+            MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}), \
+                std::vector<std::string>({"std::make_shared"}));                \
+            action;                                                             \
+        }                                                                       \
     } while (0)
 
 #define MSVP_MAKE_SHARED1(instance, Type, args0, action)                          \
@@ -67,6 +69,8 @@ namespace utils {
             instance = std::make_shared<Type>(args0);                             \
         } catch (std::exception &ex) {                                            \
             MSPROF_LOGE("make shared failed, message: %s", ex.what());            \
+            MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),   \
+                std::vector<std::string>({"std::make_shared"}));                  \
             action;                                                               \
         }                                                                         \
     } while (0)
@@ -77,6 +81,8 @@ namespace utils {
             instance = std::make_shared<Type>(arg0, arg1);                             \
         } catch (std::exception &ex) {                                                 \
             MSPROF_LOGE("make shared failed, message: %s", ex.what());                 \
+            MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),        \
+                std::vector<std::string>({"std::make_shared"}));                       \
             action;                                                                    \
         }                                                                              \
     } while (0)
@@ -87,6 +93,8 @@ namespace utils {
             instance = std::make_shared<Type>(arg0, arg1, arg2);                            \
         } catch (std::exception &ex) {                                                      \
             MSPROF_LOGE("make shared failed, message: %s", ex.what());                      \
+            MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),             \
+                std::vector<std::string>({"std::make_shared"}));                            \
             action;                                                                         \
         }                                                                                   \
     } while (0)
@@ -97,42 +105,11 @@ namespace utils {
             instance = std::make_shared<Type>(args0, args1, args2, args3);                     \
         } catch (std::exception &ex) {                                                         \
             MSPROF_LOGE("make shared failed, message: %s", ex.what());                         \
+            MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),                \
+                std::vector<std::string>({"std::make_shared"}));                               \
             action;                                                                            \
         }                                                                                      \
     } while (0)
-
-#define MSVP_MAKE_SHARED6(instance, Type,                                                       \
-    arg1, arg2, arg3, arg4, arg5, arg6, action)                                                 \
-    do {                                                                                        \
-        try {                                                                                   \
-            instance = std::make_shared<Type>(arg1, arg2, arg3, arg4, arg5, arg6);              \
-        } catch (std::exception &ex) {                                                          \
-            MSPROF_LOGE("make shared failed, message: %s", ex.what());                          \
-            action;                                                                             \
-        }                                                                                       \
-    } while (0)
-
-#define MSVP_MAKE_SHARED7(instance, Type,                                                       \
-    arg0, arg1, arg2, arg3, arg4, arg5, arg6, action)                                           \
-    do {                                                                                        \
-        try {                                                                                   \
-            instance = std::make_shared<Type>(arg0, arg1, arg2, arg3, arg4, arg5, arg6);        \
-        } catch (std::exception &ex) {                                                          \
-            MSPROF_LOGE("make shared failed, message: %s", ex.what());                          \
-            action;                                                                             \
-        }                                                                                       \
-    } while (0)
-
-#define MSVP_MAKE_SHARED9(instance, Type,                                                                \
-        arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, action)                                    \
-        do {                                                                                             \
-            try {                                                                                        \
-                instance = std::make_shared<Type>(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8); \
-            } catch (std::exception &ex) {                                                               \
-            MSPROF_LOGE("make shared failed, message: %s", ex.what());                                   \
-                action;                                                                                  \
-            }                                                                                            \
-        } while (0)
 
 #define MSVP_MAKE_SHARED_ARRAY(instance, Type, len, action)                                 \
     do {                                                                                    \
@@ -151,19 +128,23 @@ namespace utils {
         action;                         \
     }                                   \
 
-#define MSVP_MAKE_SHARED0_NODO(instance, Type, action)                 \
-    try {                                                              \
-        instance = std::make_shared<Type>();                           \
-    } catch (std::exception &ex) {                                     \
-        MSPROF_LOGE("make shared failed, message: %s", ex.what());     \
-        action;                                                        \
-    }                                                                  \
+#define MSVP_MAKE_SHARED0_NODO(instance, Type, action)                      \
+    try {                                                                   \
+        instance = std::make_shared<Type>();                                \
+    } catch (std::exception &ex) {                                          \
+        MSPROF_LOGE("make shared failed, message: %s", ex.what());          \
+        MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}), \
+            std::vector<std::string>({"std::make_shared"}));                \
+        action;                                                             \
+    }                                                                       \
 
 #define MSVP_MAKE_SHARED1_NODO(instance, Type, args0, action)                 \
     try {                                                                     \
         instance = std::make_shared<Type>(args0);                             \
     } catch (std::exception &ex) {                                            \
         MSPROF_LOGE("make shared failed, message: %s", ex.what());            \
+        MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),   \
+            std::vector<std::string>({"std::make_shared"}));                  \
         action;                                                               \
     }                                                                         \
 
@@ -172,6 +153,8 @@ namespace utils {
         instance = std::make_shared<Type>(arg0, arg1);                             \
     } catch (std::exception &ex) {                                                 \
         MSPROF_LOGE("make shared failed, message: %s", ex.what());                 \
+        MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),        \
+            std::vector<std::string>({"std::make_shared"}));                       \
         action;                                                                    \
     }                                                                              \
 
@@ -180,16 +163,10 @@ namespace utils {
         instance = std::make_shared<Type>(arg0, arg1, arg2);                            \
     } catch (std::exception &ex) {                                                      \
         MSPROF_LOGE("make shared failed, message: %s", ex.what());                      \
+        MSPROF_ENV_ERROR("EK0202", std::vector<std::string>({"operation"}),             \
+            std::vector<std::string>({"std::make_shared"}));                            \
         action;                                                                         \
     }                                                                                   \
-
-#define MSVP_MAKE_SHARED4_NODO(instance, Type, args0, args1, args2, args3, action)         \
-    try {                                                                                  \
-        instance = std::make_shared<Type>(args0, args1, args2, args3);                     \
-    } catch (std::exception &ex) {                                                         \
-        MSPROF_LOGE("make shared failed, message: %s", ex.what());                         \
-        action;                                                                            \
-    }                                                                                      \
 
 #define FUNRET_CHECK_RET_VAL(EXPR) do {                      \
     if (EXPR) {                                              \

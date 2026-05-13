@@ -207,7 +207,6 @@ int32_t ProfModuleReprotMgr::ModuleReportInit()
     command.type = PROF_COMMANDHANDLE_TYPE_INIT;
     if (SetCommandHandleProf(command) != ACL_SUCCESS) {
         MSPROF_LOGE("ProfInit CommandHandle set failed");
-        MSPROF_INNER_ERROR("EK9999", "ProfInit CommandHandle set failed");
         return ACL_ERROR;
     }
     return ProfSetProCommand(command);
@@ -234,7 +233,6 @@ int32_t ProfModuleReprotMgr::ModuleReportStart(const uint32_t devIdList[], uint3
     }
     if (SetCommandHandleProf(command) != ACL_SUCCESS) {
         MSPROF_LOGE("ProfStart CommandHandle set failed");
-        MSPROF_INNER_ERROR("EK9999", "ProfStart CommandHandle set failed");
         return ACL_ERROR;
     }
 
@@ -261,7 +259,6 @@ int32_t ProfModuleReprotMgr::ModuleReportStop(const uint32_t devIdList[], uint32
     }
     if (SetCommandHandleProf(command) != ACL_SUCCESS) {
         MSPROF_LOGE("ProfStop CommandHandle set failed");
-        MSPROF_INNER_ERROR("EK9999", "ProfStop CommandHandle set failed");
         return ACL_ERROR;
     }
 
@@ -282,7 +279,6 @@ int32_t ProfModuleReprotMgr::ModuleReportFinalize()
     command.type = PROF_COMMANDHANDLE_TYPE_FINALIZE;
     if (SetCommandHandleProf(command) != ACL_SUCCESS) {
         MSPROF_LOGE("ProfFinalize CommandHandle set failed");
-        MSPROF_INNER_ERROR("EK9999", "ProfFinalize CommandHandle set failed");
         return ACL_ERROR;
     }
 
@@ -302,7 +298,6 @@ int32_t ProfModuleReprotMgr::ModuleReportUnSubscribe(uint32_t modelId)
     command.type = PROF_COMMANDHANDLE_TYPE_MODEL_UNSUBSCRIBE;
     if (SetCommandHandleProf(command) != ACL_SUCCESS) {
         MSPROF_LOGE("ProfUnSubscribe Set params failed!");
-        MSPROF_INNER_ERROR("EK9999", "ProfUnSubscribe Set params failed!");
         return ACL_ERROR;
     }
     return ProfSetProCommand(command);

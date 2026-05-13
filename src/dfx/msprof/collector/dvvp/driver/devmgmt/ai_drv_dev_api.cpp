@@ -30,8 +30,6 @@ int32_t DrvGetDevNum(void)
     }
     if (ret != DRV_ERROR_NONE || numDev > DEV_NUM) {
         MSPROF_LOGE("Failed to drvGetDevNum, ret=%d, num=%u", static_cast<int32_t>(ret), numDev);
-        MSPROF_CALL_ERROR("EK9999", "Failed to drvGetDevNum, ret=%d, num=%u",
-            static_cast<int32_t>(ret), numDev);
         return PROFILING_FAILED;
     }
 
@@ -51,8 +49,6 @@ int32_t DrvGetDevIds(int32_t numDevices, std::vector<int32_t> &devIds)
     const drvError_t ret = drvGetDevIDs(devices, static_cast<uint32_t>(numDevices));
     if (ret != DRV_ERROR_NONE) {
         MSPROF_LOGE("Failed to drvGetDevIDs, ret=%d", static_cast<int32_t>(ret));
-        MSPROF_CALL_ERROR("EK9999", "Failed to drvGetDevIDs, ret=%d",
-            static_cast<int32_t>(ret));
         return PROFILING_FAILED;
     }
 
@@ -70,8 +66,6 @@ int32_t DrvGetPlatformInfo(uint32_t &platformInfo)
     if (ret != DRV_ERROR_NONE) {
         if (ret != MSPROF_HELPER_HOST) {
             MSPROF_LOGE("Failed to drvGetPlatformInfo, ret=%d", static_cast<int32_t>(ret));
-            MSPROF_CALL_ERROR("EK9999", "Failed to drvGetPlatformInfo, ret=%d",
-                static_cast<int32_t>(ret));
             return PROFILING_FAILED;
         }
     }
@@ -92,8 +86,6 @@ int32_t DrvGetEnvType(uint32_t deviceId, int64_t &envType)
     }
 
     MSPROF_LOGE("Failed to DrvGetEnvType, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetEnvType, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -111,8 +103,6 @@ int32_t DrvGetCtrlCpuId(uint32_t deviceId, int64_t &ctrlCpuId)
     }
 
     MSPROF_LOGE("Failed to DrvGetCtrlCpuId, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetCtrlCpuId, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -130,8 +120,6 @@ int32_t DrvGetCtrlCpuCoreNum(uint32_t deviceId, int64_t &ctrlCpuCoreNum)
     }
 
     MSPROF_LOGE("Failed to DrvGetCtrlCpuCoreNum, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetCtrlCpuCoreNum, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -149,8 +137,6 @@ int32_t DrvGetCtrlCpuEndianLittle(uint32_t deviceId, int64_t &ctrlCpuEndianLittl
     }
 
     MSPROF_LOGE("Failed to DrvGetCtrlCpuEndianLittle, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetCtrlCpuEndianLittle, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -168,8 +154,6 @@ int32_t DrvGetAiCpuCoreNum(uint32_t deviceId, int64_t &aiCpuCoreNum)
     }
 
     MSPROF_LOGE("Failed to DrvGetAiCpuCoreNum, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetAiCpuCoreNum, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -187,8 +171,6 @@ int32_t DrvGetAiCpuCoreId(uint32_t deviceId, int64_t &aiCpuCoreId)
     }
 
     MSPROF_LOGE("Failed to DrvGetAiCpuCoreId, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetAiCpuCoreId, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -206,8 +188,6 @@ int32_t DrvGetAiCpuOccupyBitmap(uint32_t deviceId, int64_t &aiCpuOccupyBitmap)
     }
 
     MSPROF_LOGE("Failed to DrvGetAiCpuOccupyBitmap, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetAiCpuOccupyBitmap, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -224,8 +204,6 @@ int32_t DrvGetTsCpuCoreNum(uint32_t deviceId, int64_t &tsCpuCoreNum)
     }
 
     MSPROF_LOGE("Failed to DrvGetTsCpuCoreNum, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetTsCpuCoreNum, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -243,8 +221,6 @@ int32_t DrvGetAiCoreId(uint32_t deviceId, int64_t &aiCoreId)
     }
 
     MSPROF_LOGE("Failed to DrvGetAiCoreId, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetAiCoreId, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -262,8 +238,6 @@ int32_t DrvGetAiCoreNum(uint32_t deviceId, int64_t &aiCoreNum)
     }
 
     MSPROF_LOGE("Failed to DrvGetAiCoreNum, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-    MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetAiCoreNum, deviceId=%u, ret=%d",
-        deviceId, static_cast<int32_t>(ret));
     return PROFILING_FAILED;
 }
 
@@ -282,8 +256,6 @@ int32_t DrvGetDeviceTime(uint32_t deviceId, uint64_t &startMono, uint64_t &cntvc
     } else {
         MSPROF_LOGE("Failed to DrvGetDeviceTime startMono, deviceId=%u, ret=%d",
             deviceId, static_cast<int32_t>(ret));
-        MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetDeviceTime startMono, deviceId=%u, ret=%d",
-            deviceId, static_cast<int32_t>(ret));
         return PROFILING_FAILED;
     }
 
@@ -297,8 +269,6 @@ int32_t DrvGetDeviceTime(uint32_t deviceId, uint64_t &startMono, uint64_t &cntvc
             "deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
     } else {
         MSPROF_LOGE("Failed to DrvGetDeviceTime cntvct, deviceId=%u, ret=%d",
-            deviceId, static_cast<int32_t>(ret));
-        MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetDeviceTime cntvct, deviceId=%u, ret=%d",
             deviceId, static_cast<int32_t>(ret));
         return PROFILING_FAILED;
     }

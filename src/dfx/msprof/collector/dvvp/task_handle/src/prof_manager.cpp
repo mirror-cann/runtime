@@ -68,7 +68,6 @@ bool ProfManager::CreateDoneFile(const std::string &absolutePath, const std::str
     file.open(absolutePath, std::ios::out);
     if (!file.is_open()) {
         MSPROF_LOGE("[CreateDoneFile]Failed to open %s", Utils::BaseName(absolutePath).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to open %s", Utils::BaseName(absolutePath).c_str());
         return false;
     }
     if (OsalChmod(absolutePath.c_str(), 0640) != OSAL_EN_OK) {
@@ -94,13 +93,11 @@ int32_t ProfManager::WriteCtrlDataToFile(const std::string &absolutePath, const 
     }
     if (data.empty() || dataLen <= 0) {
         MSPROF_LOGE("[WriteCtrlDataToFile]Failed to open %s", Utils::BaseName(absolutePath).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to open %s", Utils::BaseName(absolutePath).c_str());
         return PROFILING_FAILED;
     }
     file.open(absolutePath, std::ios::out | std::ios::trunc);
     if (!file.is_open()) {
         MSPROF_LOGE("[WriteCtrlDataToFile]Failed to open %s", Utils::BaseName(absolutePath).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to open %s", Utils::BaseName(absolutePath).c_str());
         return PROFILING_FAILED;
     }
     if (OsalChmod(absolutePath.c_str(), 0640) != OSAL_EN_OK) {
@@ -113,7 +110,6 @@ int32_t ProfManager::WriteCtrlDataToFile(const std::string &absolutePath, const 
     file.close();
     if (!(CreateDoneFile(absolutePath + ".done", std::to_string(dataLen)))) {
         MSPROF_LOGE("[WriteCtrlDataToFile]set device done file failed");
-        MSPROF_INNER_ERROR("EK9999", "set device done file failed");
         return PROFILING_FAILED;
     }
     return PROFILING_SUCCESS;
@@ -141,7 +137,6 @@ bool ProfManager::CreateSampleJsonFile(SHARED_PTR_ALIA<analysis::dvvp::message::
     int32_t ret = Utils::CreateDir(resultDir);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[CreateSampleJsonFile]create dir error , %s", Utils::BaseName(resultDir).c_str());
-        MSPROF_INNER_ERROR("EK9999", "create dir error , %s", Utils::BaseName(resultDir).c_str());
         Utils::PrintSysErrorMsg();
         return false;
     }
@@ -150,7 +145,6 @@ bool ProfManager::CreateSampleJsonFile(SHARED_PTR_ALIA<analysis::dvvp::message::
     ret = WriteCtrlDataToFile(resultDir + fileName, sampleJsonStr.c_str(), sampleJsonStr.size());
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[CreateSampleJsonFile]Failed to write local files");
-        MSPROF_INNER_ERROR("EK9999", "Failed to write local files");
         return false;
     }
 
@@ -177,15 +171,17 @@ bool ProfManager::CheckHandleSuc(SHARED_PTR_ALIA<analysis::dvvp::message::Profil
         if (IsDeviceProfiling(devices)) {
             statusInfo.info = "device is already in profiling, skip the task";
             MSPROF_LOGE("Device is already in profiling");
-            MSPROF_INNER_ERROR("EK9999", "Device is already in profiling");
+            MSPROF_INNER_ERROR("EK9999", "Device is already in profiling, device id: %s, job id: %s.",
+                params->devices.c_str(), params->job_id.c_str());
             break;
         }
         SHARED_PTR_ALIA<ProfTask> task = nullptr;
         MSVP_MAKE_SHARED2(task, ProfTask, devices, params, return PROFILING_FAILED);
         const int32_t ret = LaunchTask(task, params->job_id, statusInfo.info);
         if (ret != PROFILING_SUCCESS) {
-            MSPROF_LOGE("Failed to init profiling task, ret = %d", ret);
-            MSPROF_INNER_ERROR("EK9999", "Failed to init profiling task, ret = %d", ret);
+            MSPROF_LOGE("Failed to launch profiling task.");
+            MSPROF_INNER_ERROR("EK9999", "Failed to launch profiling task, device id: %s, job id: %s.",
+                params->devices.c_str(), params->job_id.c_str());
             break;
         }
         isOk = true;
@@ -201,7 +197,8 @@ int32_t ProfManager::ProcessHandleFailed(SHARED_PTR_ALIA<analysis::dvvp::message
     std::vector<std::string> devices = Utils::Split(params->devices, false, "", ",");
     for (size_t ii = 0; ii < devices.size(); ++ii) {
         MSPROF_LOGE("handle task failed, devid:%s, jobid:%s", devices[ii].c_str(), jobId.c_str());
-        MSPROF_INNER_ERROR("EK9999", "handle task failed, devid:%s, jobid:%s", devices[ii].c_str(), jobId.c_str());
+        MSPROF_INNER_ERROR("EK9999", "Failed to handle profiling task, device id: %s, job id: %s.",
+            devices[ii].c_str(), jobId.c_str());
         int32_t devId = 0;
         FUNRET_CHECK_EXPR_ACTION(!Utils::StrToInt32(devId, devices[ii]), return PROFILING_FAILED, 
             "devices[%zu] %s is invalid", ii, devices[ii].c_str());
@@ -228,7 +225,6 @@ int32_t ProfManager::Handle(SHARED_PTR_ALIA<analysis::dvvp::message::ProfilePara
     // check if device online
     if (!(params->hostProfiling) && !(CheckIfDevicesOnline(params->devices, statusInfo.info))) {
         MSPROF_LOGE("%s", statusInfo.info.c_str());
-        MSPROF_INNER_ERROR("EK9999", "%s", statusInfo.info.c_str());
         return PROFILING_FAILED;
     }
 
@@ -237,7 +233,6 @@ int32_t ProfManager::Handle(SHARED_PTR_ALIA<analysis::dvvp::message::ProfilePara
     }
     if (ProcessHandleFailed(params) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Create state file failed!");
-        MSPROF_INNER_ERROR("EK9999", "Create state file failed!");
     }
     return PROFILING_FAILED;
 }
@@ -254,7 +249,6 @@ bool ProfManager::IsDeviceProfiling(const std::vector<std::string> &devices)
 
             if (iter->second->IsDeviceRunProfiling(devices[ii])) {
                 MSPROF_LOGE("device %s is running profiling", devices[ii].c_str());
-                MSPROF_INNER_ERROR("EK9999", "device %s is running profiling", devices[ii].c_str());
                 return true;
             }
             ++iter;
@@ -333,7 +327,6 @@ int32_t ProfManager::StopTask(const std::string &jobId)
     if (task != nullptr) {
         if (task->Stop() != PROFILING_SUCCESS) {
             MSPROF_LOGE("Job_id %s stop failed", jobId.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Job_id %s stop failed", jobId.c_str());
             return PROFILING_FAILED;
         }
         MSPROF_LOGI("job_id %s stop", jobId.c_str());
@@ -375,7 +368,6 @@ SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> ProfManager::ValidateAnd
     MSPROF_LOGI("ValidateAndProcessParams checking params");
     if (!ParamValidation::instance()->CheckProfilingParams(params)) {
         MSPROF_LOGE("ProfileParams is not valid!");
-        MSPROF_INNER_ERROR("EK9999", "ProfileParams is not valid!");
         return nullptr;
     }
     Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::instance()->GenerateLlcEvents(params);
@@ -396,7 +388,7 @@ SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> ProfManager::ValidateAnd
     if (!Platform::instance()->CheckIfRpcHelper()) {
         if (!CreateSampleJsonFile(params, params->result_dir)) {
             MSPROF_LOGE("Failed to create sample.json");
-            MSPROF_INNER_ERROR("EK9999", "Failed to create sample.json");
+            MSPROF_INNER_ERROR("EK9999", "Failed to create sample.json.");
             return nullptr;
         }
     } else {
@@ -425,7 +417,7 @@ int32_t ProfManager::IdeCloudProfileProcess(SHARED_PTR_ALIA<analysis::dvvp::mess
 
     if (params == nullptr) {
         MSPROF_LOGE("Failed to check profiling params");
-        MSPROF_INNER_ERROR("EK9999", "Failed to check profiling params");
+        MSPROF_INNER_ERROR("EK9999", "Failed to check profiling params.");
         return PROFILING_FAILED;
     }
     do {
@@ -447,13 +439,11 @@ bool ProfManager::PreGetDeviceList(std::vector<int32_t> &devIds) const
     const int32_t numDevices = DrvGetDevNum();
     if (numDevices <= 0) {
         MSPROF_LOGE("Get dev's num %d failed", numDevices);
-        MSPROF_INNER_ERROR("EK9999", "Get dev's num %d failed", numDevices);
         return false;
     }
 
     if (DrvGetDevIds(numDevices, devIds) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Get dev's id failed");
-        MSPROF_INNER_ERROR("EK9999", "Get dev's id failed");
         return false;
     }
     UtilsStringBuilder<int32_t> intBuilder;
@@ -469,7 +459,6 @@ bool ProfManager::CheckIfDevicesOnline(const std::string paramsDevices, std::str
     std::vector<int32_t> devIds;
     if (!PreGetDeviceList(devIds)) {
         MSPROF_LOGE("Get DevList failed.");
-        MSPROF_INNER_ERROR("EK9999", "Get DevList failed.");
         return false;
     }
 
@@ -479,7 +468,6 @@ bool ProfManager::CheckIfDevicesOnline(const std::string paramsDevices, std::str
     for (size_t i = 0; i < devices.size(); ++i) {
         if (!Utils::CheckStringIsNonNegativeIntNum(devices[i])) {
             MSPROF_LOGE("devId(%s) is not valid.", devices[i].c_str());
-            MSPROF_INNER_ERROR("EK9999", "devId(%s) is not valid.", devices[i].c_str());
             return false;
         }
         int32_t devId = 0;
@@ -492,7 +480,6 @@ bool ProfManager::CheckIfDevicesOnline(const std::string paramsDevices, std::str
         auto it = std::find(devIds.begin(), devIds.end(), devId);
         if (it == devIds.end()) {
             MSPROF_LOGE("device:%d is not online!", devId);
-            MSPROF_INNER_ERROR("EK9999", "device:%d is not online!", devId);
             offlineIds.push_back(devices[i]);
             ret = false;
         }

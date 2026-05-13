@@ -23,7 +23,6 @@
 #include "utils.h"
 #include "hdc_api.h"
 #include "dev_mgr_api.h"
-#include "aicpu_report_hdc.h"
 #include "devprof_drv_aicpu.h"
 
 using namespace analysis::dvvp::common::error;
@@ -44,7 +43,6 @@ protected:
         system(DAVID_V121_MKDIR);
         system("touch ./cli");
         MOCKER(mmCreateProcess).stubs().will(invoke(mmCreateProcessStub));
-        MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(PROFILING_FAILED));
         EXPECT_EQ(2, SimulatorMgr().CreateDeviceSimulator(2, StPlatformType::CHIP_CLOUD_V4));
         SimulatorMgr().SetSocSide(SocType::HOST);
     }
@@ -78,8 +76,8 @@ TEST_F(CliDavidV121Stest, CliTaskTime)
     // TaskTime
     const char* argv[] = {DAVID_V121_OUTPUT_DIR, "--task-time=on"};
     std::vector<std::string> dataList = {"ffts_profile.data", "stars_soc.data", "ts_track.data", "ccu0.instr",
-        "ccu1.instr"};
-    std::vector<std::string> blackDataList = {"stars_soc_profile.data"};
+        "ccu1.instr", "stars_soc_profile.data"};
+    std::vector<std::string> blackDataList = {};
     MsprofMgr().SetDeviceCheckList(dataList, blackDataList);
     EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().MsprofStartByAppMode(sizeof(argv) / sizeof(char *), argv));
 }
@@ -89,8 +87,8 @@ TEST_F(CliDavidV121Stest, CliTaskTimeTwo)
     // TaskTime
     const char* argv[] = {DAVID_V121_OUTPUT_DIR, "cli",};
     std::vector<std::string> dataList = {"ffts_profile.data", "stars_soc.data","ts_track.data", "lpmFreqConv.data",
-        "ccu0.instr", "ccu1.instr"};
-    std::vector<std::string> blackDataList = {"stars_soc_profile.data"};
+        "ccu0.instr", "ccu1.instr", "stars_soc_profile.data"};
+    std::vector<std::string> blackDataList = {};
     MsprofMgr().SetDeviceCheckList(dataList, blackDataList);
     EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().MsprofStartByAppModeTwo(sizeof(argv) / sizeof(char *), argv));
 }

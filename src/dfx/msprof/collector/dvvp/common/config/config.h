@@ -225,6 +225,10 @@ constexpr char PIPESTALLCYCLE[] = "PipeStallCycle";
 constexpr char SCALAR_RATIO[] = "ScalarRatio";
 constexpr char RANK_ID_ENV[] = "RANK_ID";
 
+// ai core metrics enum
+constexpr char L2_CACHE_ENUM[] = "ACL_AICORE_L2_CACHE";
+constexpr char MEMORY_ACCESS_ENUM[] = "ACL_AICORE_MEMORY_ACCESS";
+
 // llc  profiling events type
 constexpr char LLC_PROFILING_CAPACITY[] = "capacity";
 constexpr char LLC_PROFILING_BANDWIDTH[] = "bandwidth";

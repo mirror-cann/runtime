@@ -956,8 +956,6 @@ int32_t DrvProfFlush(uint32_t deviceId, uint32_t channelId, uint32_t &bufSize)
         return PROFILING_SUCCESS;
     } else if (ret != DRV_ERROR_NOT_SUPPORT) {
         MSPROF_LOGE("Failed to halProfDataFlush.deviceId=%u, channelId=%u, ret=%d", deviceId, channelId, ret);
-        MSPROF_CALL_ERROR("EK9999", "Failed to halProfDataFlush.deviceId=%u, channelId=%u, ret=%d", deviceId, channelId,
-                          ret);
         return PROFILING_FAILED;
     }
 #endif

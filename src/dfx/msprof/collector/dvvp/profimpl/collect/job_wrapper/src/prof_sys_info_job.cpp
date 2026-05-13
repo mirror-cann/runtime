@@ -53,8 +53,6 @@ static unsigned long long ProfTimerJobCommonInit(const SHARED_PTR_ALIA<Collectio
     if (uploader == nullptr) {
         MSPROF_LOGE("Failed to get devId:%d uploader, devIdOnHost:%d",
                     cfg->comParams->devId, cfg->comParams->devIdOnHost);
-        MSPROF_INNER_ERROR("EK9999", "Failed to get devId:%d uploader, devIdOnHost:%d",
-            cfg->comParams->devId, cfg->comParams->devIdOnHost);
         return 0;
     }
     MSPROF_LOGI("[ProfTimerJobCommonInit]devId:%d, devIdOnHost:%d, timerTag:%d, sampleIntervalMs:%d",
@@ -113,7 +111,6 @@ int32_t ProfSysStatJob::Process()
 
     if (statHandler->Init() != PROFILING_SUCCESS) {
         MSPROF_LOGE("statHandler Init Failed");
-        MSPROF_INNER_ERROR("EK9999", "statHandler Init Failed");
         return PROFILING_FAILED;
     }
     MSPROF_LOGI("statHandler Init succ, sampleIntervalNs_:%" PRIu64, sampleIntervalNs_);
@@ -180,7 +177,6 @@ int32_t ProfAllPidsJob::Process()
         collectionJobCfg_->comParams->jobCtx, uploader_, return PROFILING_FAILED);
     if (pidsHandler->Init() != PROFILING_SUCCESS) {
         MSPROF_LOGE("pidsHandler Init Failed");
-        MSPROF_INNER_ERROR("EK9999", "pidsHandler Init Failed");
         return PROFILING_FAILED;
     }
     MSPROF_LOGI("pidsHandler Init succ, sampleIntervalNs_:%" PRIu64, sampleIntervalNs_);
@@ -248,7 +244,6 @@ int32_t ProfSysMemJob::Process()
         collectionJobCfg_->comParams->jobCtx, uploader_, return PROFILING_FAILED);
     if (memHandler->Init() != PROFILING_SUCCESS) {
         MSPROF_LOGE("memHandler Init Failed");
-        MSPROF_INNER_ERROR("EK9999", "memHandler Init Failed");
         return PROFILING_FAILED;
     }
     MSPROF_LOGI("memHandler Init succ, sampleIntervalNs_:%" PRIu64, sampleIntervalNs_);

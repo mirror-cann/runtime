@@ -38,8 +38,6 @@ int32_t DrvGetAivNum(uint32_t deviceId, int64_t &aivNum)
         return PROFILING_SUCCESS;
     } else if (ret != DRV_ERROR_NONE) {
         MSPROF_LOGE("Failed to DrvGetAivNum, deviceId=%u, ret=%d", deviceId, static_cast<int32_t>(ret));
-        MSPROF_CALL_ERROR("EK9999", "Failed to DrvGetAivNum, deviceId=%u, ret=%d",
-            deviceId, static_cast<int32_t>(ret));
         return PROFILING_FAILED;
     }
 

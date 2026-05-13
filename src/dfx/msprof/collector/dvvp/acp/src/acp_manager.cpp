@@ -95,7 +95,6 @@ int32_t AcpManager::InitAcpUploader()
 
     if (Utils::CreateDir(params_->result_dir) != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to create device dir: %s", Utils::BaseName(params_->result_dir).c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to create device dir: %s", Utils::BaseName(params_->result_dir).c_str());
         Utils::PrintSysErrorMsg();
         return PROFILING_FAILED;
     }
@@ -104,14 +103,12 @@ int32_t AcpManager::InitAcpUploader()
     opTransport = OpTransportFactory().CreateOpTransport(params_->devices);
     if (opTransport == nullptr) {
         MSPROF_LOGE("Failed to create parsertransport for acp tools.");
-        MSPROF_INNER_ERROR("EK9999", "Failed to create parsertransport for acp tools.");
         return PROFILING_FAILED;
     }
     const size_t uploaderCapacity = 512; // uploader capacity
     int32_t ret = UploaderMgr::instance()->CreateUploader(params_->devices, opTransport, uploaderCapacity);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to create uploader for acp tools.");
-        MSPROF_INNER_ERROR("EK9999", "Failed to create uploader for acp tools.");
         return PROFILING_FAILED;
     }
     return PROFILING_SUCCESS;

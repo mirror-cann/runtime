@@ -179,7 +179,7 @@ ACL_PROF_CONFIG_PTR aclprofCreateConfig(uint32_t *deviceIdList, uint32_t deviceN
         MSPROF_LOGE("new aclprofConfig fail");
         MSPROF_ENV_ERROR("EK0201",
             std::vector<std::string>({"buf_size"}),
-            std::vector<std::string>({std::to_string(sizeof(aclprofConfig))}));
+            std::vector<std::string>({std::to_string(sizeof(aclprofConfig)) + "B"}));
         return nullptr;
     }
     profConfig->config.aicoreMetrics = static_cast<ProfAicoreMetrics>(aicoreMetrics);

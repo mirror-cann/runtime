@@ -8,7 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "dyn_prof_thread.h"
-#include "config.h"
+#include "config/config.h"
 #include "utils/utils.h"
 #include "errno/error_code.h"
 #include "message/prof_params.h"

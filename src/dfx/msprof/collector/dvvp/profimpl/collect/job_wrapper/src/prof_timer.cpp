@@ -109,13 +109,11 @@ int32_t ProcTimerHandler::Init()
     do {
         if (isInited_) {
             MSPROF_LOGE("The Handler is inited");
-            MSPROF_INNER_ERROR("EK9999", "The Handler is inited");
             break;
         }
 
         if (!buf_.Init()) {
             MSPROF_LOGE("Buf init failed");
-            MSPROF_INNER_ERROR("EK9999", "Buf init failed");
             break;
         }
 
@@ -148,7 +146,6 @@ int32_t ProcTimerHandler::Execute()
     do {
         if (!isInited_) {
             MSPROF_LOGE("ProcTimerHandler is not inited: %s", retFileName_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "ProcTimerHandler is not inited: %s", retFileName_.c_str());
             break;
         }
 
@@ -237,7 +234,6 @@ void ProcTimerHandler::StoreData(std::string &data)
                            spaceSize, data.c_str(), data.size());
     if (err != EOK) {
         MSPROF_LOGE("memcpy stat data failed: %d", static_cast<int32_t>(err));
-        MSPROF_INNER_ERROR("EK9999", "memcpy stat data failed: %d", static_cast<int32_t>(err));
     } else {
         buf_.SetUsedSize(usedSize + data.size());
     }
@@ -253,7 +249,6 @@ void ProcTimerHandler::SendData(CONST_UNSIGNED_CHAR_PTR buf, uint32_t size)
 {
     if (buf == nullptr) {
         MSPROF_LOGE("buf to be sent is nullptr");
-        MSPROF_INNER_ERROR("EK9999", "buf to be sent is nullptr");
         return;
     }
     TimerHandlerTag tag = GetTag();
@@ -277,13 +272,11 @@ void ProcTimerHandler::SendData(CONST_UNSIGNED_CHAR_PTR buf, uint32_t size)
     } else {
         if (upLoader_ == nullptr) {
             MSPROF_LOGE("[ProcTimerHandler::SendData] upLoader_ is null");
-            MSPROF_INNER_ERROR("EK9999", "upLoader_ is null");
             return;
         }
         int32_t ret = upLoader_->UploadData(fileChunk);
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("[ProcTimerHandler::SendData] Upload Data Failed");
-            MSPROF_INNER_ERROR("EK9999", "Upload Data Failed");
         }
     }
 }
@@ -872,13 +865,11 @@ int32_t NetDevStatsHandler::Init()
 {
     if (isInited_) {
         MSPROF_LOGE("NetDevStatsHandler is inited");
-        MSPROF_INNER_ERROR("EK9999", "NetDevStatsHandler is inited");
         return PROFILING_FAILED;
     }
     auto ret = LoadDcmiApi();
     if (ret == PROFILING_FAILED) {
         MSPROF_LOGE("NetDevStatsHandler dcmi init failed");
-        MSPROF_INNER_ERROR("EK9999", "NetDevStatsHandler load dcmi failed");
         return PROFILING_FAILED;
     } else if (ret == PROFILING_NOTSUPPORT) {
         return PROFILING_NOTSUPPORT;
@@ -892,7 +883,6 @@ int32_t NetDevStatsHandler::Init()
     } else {
         if (dcmiInit_() != PROFILING_SUCCESS) {
             MSPROF_LOGE("NetDevStatsHandler dcmi init failed");
-            MSPROF_INNER_ERROR("EK9999", "NetDevStatsHandler dcmi init failed");
             return PROFILING_FAILED;
         }
     }
@@ -915,7 +905,6 @@ int32_t NetDevStatsHandler::Execute()
 {
     if (!isInited_) {
         MSPROF_LOGE("NetDevStatsHandler is not inited");
-        MSPROF_INNER_ERROR("EK9999", "NetDevStatsHandler is not inited");
         return PROFILING_SUCCESS;
     }
 
@@ -1013,7 +1002,6 @@ void NetDevStatsHandler::StoreData(uint32_t devId, std::string data)
                            buf->GetFreeSize(), data.c_str(), data.size());
     if (err != EOK) {
         MSPROF_LOGE("memcpy stat data failed: %d", err);
-        MSPROF_INNER_ERROR("EK9999", "memcpy stat data failed: %d", err);
     } else {
         buf->SetUsedSize(usedSize + data.size());
     }
@@ -1029,7 +1017,6 @@ void NetDevStatsHandler::SendData(uint32_t devId, CONST_UNSIGNED_CHAR_PTR buf, s
 {
     if (buf == nullptr) {
         MSPROF_LOGE("buf to be sent is nullptr");
-        MSPROF_INNER_ERROR("EK9999", "buf to be sent is nullptr");
         return;
     }
 
@@ -1037,7 +1024,6 @@ void NetDevStatsHandler::SendData(uint32_t devId, CONST_UNSIGNED_CHAR_PTR buf, s
     analysis::dvvp::transport::UploaderMgr::instance()->GetUploader(jobId_, upLoader);
     if (upLoader == nullptr) {
         MSPROF_LOGE("NetDevStatsHandler::SendData upLoader of devId %u is null", devId);
-        MSPROF_INNER_ERROR("EK9999", "upLoader is null");
         return;
     }
 
@@ -1054,7 +1040,6 @@ void NetDevStatsHandler::SendData(uint32_t devId, CONST_UNSIGNED_CHAR_PTR buf, s
 
     if (upLoader->UploadData(fileChunk) != PROFILING_SUCCESS) {
         MSPROF_LOGE("NetDevStatsHandler::SendData Upload Data Failed");
-        MSPROF_INNER_ERROR("EK9999", "Upload Data Failed");
     }
 }
 
@@ -1260,7 +1245,6 @@ int32_t ProfTimer::Start()
     do {
         if (isStarted_) {
             MSPROF_LOGE("ProfTimer is running");
-            MSPROF_INNER_ERROR("EK9999", "ProfTimer is running");
             break;
         }
 
@@ -1334,7 +1318,6 @@ void TimerManager::StartProfTimer()
         MSVP_MAKE_SHARED1(profTimer_, ProfTimer, timerParam, return);
         if (profTimer_->Start() != PROFILING_SUCCESS) {
             MSPROF_LOGE("StartProfTimer failed");
-            MSPROF_INNER_ERROR("EK9999", "StartProfTimer failed");
             return;
         }
         MSPROF_LOGI("StartProfTimer end");
@@ -1351,7 +1334,6 @@ void TimerManager::StopProfTimer()
         int32_t ret = profTimer_->Stop();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("StopProfTimer failed");
-            MSPROF_INNER_ERROR("EK9999", "StopProfTimer failed");
         }
         MSPROF_LOGI("StopProfTimer end");
     }

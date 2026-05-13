@@ -90,7 +90,8 @@ int32_t UploaderMgr::CreateUploader(const std::string &id, SHARED_PTR_ALIA<ITran
     int32_t ret = uploader->Init(queueSize);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to init uploader");
-        MSPROF_INNER_ERROR("EK9999", "Failed to init uploader");
+        MSPROF_ENV_ERROR("EK0201", std::vector<std::string>({"buf_size"}),
+            std::vector<std::string>({std::to_string(queueSize) + "B"}));
         return ret;
     }
     std::string uploaderName = analysis::dvvp::common::config::MSVP_UPLOADER_THREAD_NAME;
@@ -99,7 +100,8 @@ int32_t UploaderMgr::CreateUploader(const std::string &id, SHARED_PTR_ALIA<ITran
     ret = uploader->Start();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to start uploader thread");
-        MSPROF_INNER_ERROR("EK9999", "Failed to start uploader thread");
+        MSPROF_ENV_ERROR("EK0203", std::vector<std::string>({"reason"}),
+            std::vector<std::string>({std::to_string(ret) + " returned when the pthread_create API is called"}));
         return ret;
     }
     AddUploader(id, uploader);
@@ -200,7 +202,6 @@ int32_t UploaderMgr::UploadData(const std::string &id, CONST_VOID_PTR data, uint
     }
 
     MSPROF_LOGE("Get id[%s] uploader failed, dataLen:%d bytes", id.c_str(), dataLen);
-    MSPROF_INNER_ERROR("EK9999", "Get id[%s] uploader failed, dataLen:%u bytes", id.c_str(), dataLen);
     return PROFILING_FAILED;
 }
 
@@ -218,7 +219,6 @@ int32_t UploaderMgr::UploadData(const std::string &id, SHARED_PTR_ALIA<analysis:
     }
 
     MSPROF_LOGE("Get id[%s] uploader failed", id.c_str());
-    MSPROF_INNER_ERROR("EK9999", "Get id[%s] uploader failed", id.c_str());
     return PROFILING_FAILED;
 }
 
@@ -230,13 +230,11 @@ int32_t UploaderMgr::UploadCtrlFileData(const std::string &id,
     MSPROF_LOGI("UploadCtrlFileData id[%s] uploader start", id.c_str());
     if (data.empty()) {
         MSPROF_LOGE("data is empty");
-        MSPROF_INNER_ERROR("EK9999", "data is empty");
         return PROFILING_FAILED;
     }
 
     if (jobCtx == nullptr) {
         MSPROF_LOGE("jobCtx is null");
-        MSPROF_INNER_ERROR("EK9999", "jobCtx is null");
         return PROFILING_FAILED;
     }
 

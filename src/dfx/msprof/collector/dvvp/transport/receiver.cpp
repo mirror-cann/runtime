@@ -106,7 +106,6 @@ void Receiver::Run(const struct error_message::Context &errorContext)
     MSPROF_LOGI("Receiver begin, devId:%d, devIdOnHost:%d", devId_, devIdOnHost_);
     if (!inited_) {
         MSPROF_LOGE("Receiver is not inited.");
-        MSPROF_INNER_ERROR("EK9999", "Receiver is not inited.");
         return;
     }
 

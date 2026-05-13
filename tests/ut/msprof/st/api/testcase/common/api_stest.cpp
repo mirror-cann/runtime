@@ -18,7 +18,6 @@
 #include "../stub/aoe_stub.h"
 #include "data_manager.h"
 #include "acl_prof.h"
-#include "aicpu_report_hdc.h"
 #include "devprof_drv_aicpu.h"
 
 using namespace analysis::dvvp::common::error;
@@ -42,7 +41,6 @@ protected:
         deviceNum = 1;
         devId = 0;
         EXPECT_EQ(deviceNum, SimulatorMgr().CreateDeviceSimulator(deviceNum, static_cast<StPlatformType>(PLATFORM_TYPE)));
-        MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(-1));
     }
     virtual void TearDown()
     {

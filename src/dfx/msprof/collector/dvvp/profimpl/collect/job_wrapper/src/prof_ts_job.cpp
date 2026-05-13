@@ -221,7 +221,6 @@ int32_t ProfTsTrackJob::Process()
     MSPROF_LOGI("start profiling ts track, ret=%d", ret);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[ProfTsTrackJob]Process, DrvTsFwStart failed");
-        MSPROF_INNER_ERROR("EK9999", "Process, DrvTsFwStart failed");
     }
     return ret;
 }
@@ -240,7 +239,6 @@ int32_t ProfTsTrackJob::Uninit()
     MSPROF_LOGI("stop profiling ts track data, ret=%d", ret);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[ProfTsTrackJob]Uninit, DrvStop failed");
-        MSPROF_INNER_ERROR("EK9999", "Uninit, DrvStop failed");
     }
     RemoveReader(collectionJobCfg_->comParams->params->job_id, collectionJobCfg_->comParams->devId, channelId_);
 

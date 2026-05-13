@@ -18,7 +18,6 @@
 #include "../stub/aoe_stub.h"
 #include "data_manager.h"
 #include "prof_acl_api.h"
-#include "aicpu_report_hdc.h"
 #include "devprof_drv_aicpu.h"
 
 class ApiMilanTest: public testing::Test {
@@ -30,7 +29,6 @@ protected:
         MOCKER(dlsym).stubs().will(invoke(mmDlsym));
         MOCKER(dlclose).stubs().will(invoke(mmDlclose));
         MOCKER(dlerror).stubs().will(invoke(mmDlerror));
-        MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(-1));
         const ::testing::TestInfo* curTest = ::testing::UnitTest::GetInstance()->current_test_info();
         DataMgr().Init(SOC_TYPE, curTest->name());
         deviceNum = 1;

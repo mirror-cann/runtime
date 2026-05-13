@@ -50,8 +50,6 @@ int32_t ProfL2CacheTaskJob::Init(const SHARED_PTR_ALIA<CollectionJobCfg> cfg)
         *l2CacheTaskProfilingEvents);
     if (!ret || l2CacheTaskProfilingEvents->size() > L2_CACHE_TASK_EVENT_MAX_SIZE) {
         MSPROF_LOGE("ProfL2CacheTaskJob Exits Error Events Size %zu bytes", l2CacheTaskProfilingEvents->size());
-        MSPROF_INNER_ERROR("EK9999", "ProfL2CacheTaskJob Exits Error Events Size %zu",
-            l2CacheTaskProfilingEvents->size());
         return PROFILING_FAILED;
     }
 

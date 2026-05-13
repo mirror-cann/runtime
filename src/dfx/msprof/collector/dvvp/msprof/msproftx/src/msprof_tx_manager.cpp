@@ -58,7 +58,8 @@ int32_t MsprofTxManager::Init()
     auto ret = stampPool_->Init(CURRENT_STAMP_SIZE);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[Init]init stamp pool failed, ret is %d", ret);
-        MSPROF_INNER_ERROR("EK9999", "init stamp pool failed, ret is %d", ret);
+        MSPROF_ENV_ERROR("EK0201", std::vector<std::string>({"buf_size"}),
+            std::vector<std::string>({std::to_string(CURRENT_STAMP_SIZE) + "B"}));
         return PROFILING_FAILED;
     }
 

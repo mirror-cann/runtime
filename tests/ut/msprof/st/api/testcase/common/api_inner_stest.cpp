@@ -19,10 +19,10 @@
 #include "data_manager.h"
 #include "acl/acl.h"
 #include "acl_prof.h"
+#include "acl_stub.h"
 #include "prof_acl_api.h"
 #include "runtime/stream.h"
 #include "ge/ge_prof.h"
-#include "aicpu_report_hdc.h"
 #include "devprof_drv_aicpu.h"
 
 using namespace analysis::dvvp::common::error;
@@ -37,7 +37,6 @@ protected:
     {
         const ::testing::TestInfo* curTest = ::testing::UnitTest::GetInstance()->current_test_info();
         DataMgr().Init(SOC_TYPE, curTest->name());
-        MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(-1));
         deviceNum = 2;
         EXPECT_EQ(deviceNum, SimulatorMgr().CreateDeviceSimulator(deviceNum, static_cast<StPlatformType>(PLATFORM_TYPE)));
     }
@@ -143,7 +142,7 @@ TEST_F(ApiTest, TestAclGraphUnmatchedDataConfig)
     dataTypeConfig = 0;
     auto config2 = aclgrphProfCreateConfig(deviceIdList, 1, (ge::ProfilingAicoreMetrics)aicoreMetrics, nullptr, dataTypeConfig);
     EXPECT_NE(config2, nullptr);
-    EXPECT_EQ(aclgrphProfStop(config2), ge::FAILED);
+    EXPECT_EQ(aclgrphProfStop(config2), GE_PROF_FAILED);
     EXPECT_EQ(aclgrphProfDestroyConfig(config1), ACL_ERROR_NONE);
     EXPECT_EQ(aclgrphProfDestroyConfig(config2), ACL_ERROR_NONE);
     EXPECT_EQ(aclprofFinalize(), ACL_ERROR_NONE);

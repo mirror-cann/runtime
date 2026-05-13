@@ -65,7 +65,6 @@ int32_t Device::Init()
     status_->status = analysis::dvvp::message::SUCCESS;
     if (!(params_->hostProfiling) && !ParamValidation::instance()->CheckDeviceIdIsValid(indexIdStr_)) {
         MSPROF_LOGE("[Device::Init] devId %s is not valid!", indexIdStr_.c_str());
-        MSPROF_INNER_ERROR("EK9999", "devId %s is not valid!", indexIdStr_.c_str());
         status_->info = "Device id is invalid";
         status_->status = analysis::dvvp::message::ERR;
         return PROFILING_FAILED;
@@ -86,12 +85,10 @@ int32_t Device::InitJobAdapter()
     } else {
         const int32_t platform = Platform::instance()->GetPlatform();
         MSPROF_LOGE("[Device::Init]GetPlatform failed, platformInfo is %d", platform);
-        MSPROF_INNER_ERROR("EK9999", "GetPlatform failed, platformInfo is %d", platform);
         return PROFILING_FAILED;
     }
     if (jobAdapter_ == nullptr) {
         MSPROF_LOGE("[Device::Init]Create Job Adapter failed!");
-        MSPROF_INNER_ERROR("EK9999", "Create Job Adapter failed!");
         return PROFILING_FAILED;
     }
 
@@ -167,7 +164,6 @@ void Device::Run(const struct error_message::Context &errorContext)
     isQuited_ = true;
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Device(%d) ctrl thread status failed", indexId_);
-        MSPROF_INNER_ERROR("EK9999", "Device(%d) ctrl thread status failed", indexId_);
     } else {
         MSPROF_LOGI("Device(%d) ctrl thread exit", indexId_);
     }

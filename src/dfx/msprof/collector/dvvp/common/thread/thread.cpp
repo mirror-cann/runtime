@@ -59,7 +59,7 @@ int32_t Thread::Start()
     int32_t ret = OsalCreateTaskWithThreadAttr(&tid_, &funcBlock, &threadAttr);
     if (ret != OSAL_EN_OK) {
         tid_ = 0;
-        return PROFILING_FAILED;
+        return ret;
     }
     isStarted_ = true;
 

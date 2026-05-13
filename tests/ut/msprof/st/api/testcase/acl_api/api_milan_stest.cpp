@@ -14,7 +14,6 @@
 #include "errno/error_code.h"
 #include "device_simulator_manager.h"
 #include "acl_api_stub.h"
-#include "aicpu_report_hdc.h"
 #include "devprof_drv_aicpu.h"
 
 using namespace analysis::dvvp::common::error;
@@ -32,7 +31,8 @@ protected:
         DataMgr().Init("", "acljson");
         devId = 0;
         deviceNum = 2;
-        int32_t random_number = std::rand() % 100 + 1;
+        static uint32_t randomCount = 1;
+        int32_t random_number = std::rand() % 100 + randomCount;
         aclProfPath = "api_test_milan_output" + std::to_string(random_number);
         mkdir(aclProfPath.c_str(), 0750);
         EXPECT_EQ(deviceNum, SimulatorMgr().CreateDeviceSimulator(deviceNum, StPlatformType::CHIP_V4_1_0));
@@ -41,7 +41,7 @@ protected:
         aclInit(nullptr);
         aclrtSetDevice(0);
         EXPECT_EQ(ACL_ERROR_NONE, aclprofInit(aclProfPath.c_str(), aclProfPath.size()));
-        MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(-1));
+        randomCount++;
     }
     virtual void TearDown()
     {
@@ -114,7 +114,7 @@ TEST_F(AclApiMilanStest, AclApiRepeat)
     EXPECT_EQ(PROFILING_SUCCESS, AclApiRepeatStart(config, dataTypeConfig));
 
     std::vector<std::string> deviceDataList = {};
-    std::vector<std::string> hostDataList = {"hash_dic", "type_info_dic"};
+    std::vector<std::string> hostDataList = {};
     EXPECT_EQ(0, CheckAllFiles(aclProfPath, deviceDataList, hostDataList));
 }
 

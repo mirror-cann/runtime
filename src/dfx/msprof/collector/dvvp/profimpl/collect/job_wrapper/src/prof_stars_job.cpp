@@ -68,7 +68,6 @@ int32_t ProfStarsSocLogJob::Process()
     MSPROF_LOGI("start profiling stars soc log, ret=%d", ret);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[ProfStarsSocLogJob]Process, DrvStarsSocLogStart failed");
-        MSPROF_INNER_ERROR("EK9999", "Process, DrvStarsSocLogStart failed");
     }
     return ret;
 }
@@ -87,7 +86,6 @@ int32_t ProfStarsSocLogJob::Uninit()
     MSPROF_LOGI("stop profiling stars soc log, ret=%d", ret);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[ProfStarsSocLogJob]Uninit, DrvStop failed");
-        MSPROF_INNER_ERROR("EK9999", "Uninit, DrvStop failed");
     }
     RemoveReader(collectionJobCfg_->comParams->params->job_id, collectionJobCfg_->comParams->devId, channelId_);
 
@@ -229,7 +227,6 @@ int32_t ProfFftsProfileJob::Process()
     MSPROF_LOGI("start ffts profile buffer, ret=%d", ret);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[ProfFftsProfileJob]Process, DrvFftsProfileStart failed");
-        MSPROF_INNER_ERROR("EK9999", "Process, DrvFftsProfileStart failed");
     }
     return ret;
 }
@@ -245,7 +242,6 @@ int32_t ProfFftsProfileJob::Uninit()
     const int32_t ret = DrvStop(collectionJobCfg_->comParams->devId, channelId_);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("[ProfFftsProfileJob]Uninit failed, ret:%d", ret);
-        MSPROF_INNER_ERROR("EK9999", "Uninit failed, ret:%d", ret);
     }
     RemoveReader(collectionJobCfg_->comParams->params->job_id, collectionJobCfg_->comParams->devId, channelId_);
     collectionJobCfg_->jobParams.events.reset();

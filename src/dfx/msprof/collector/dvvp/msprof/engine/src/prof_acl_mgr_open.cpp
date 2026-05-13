@@ -94,6 +94,31 @@ void ProfAclMgr::TaskBasedCfgTrfToReq(const uint64_t dataTypeConfig, ProfAicoreM
     }
 }
 
+void ProfAclMgr::AicoreMetricsEnumToNameTwo(ProfAicoreMetrics aicMetrics, std::string &name) const
+{
+    switch (aicMetrics) {
+        case PROF_AICORE_L2_CACHE:
+            if (ConfigManager::instance()->GetPlatformType() == PlatformType::CLOUD_TYPE ||
+                ConfigManager::instance()->GetPlatformType() == PlatformType::DC_TYPE) {
+                MSPROF_LOGE("Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
+                break;
+            }
+            name = L2_CACHE;
+            break;
+        case PROF_AICORE_MEMORY_ACCESS:
+            if (ConfigManager::instance()->GetPlatformType() != PlatformType::CHIP_V4_1_0) {
+                MSPROF_LOGE("Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
+                break;
+            }
+            name = MEMORY_ACCESS;
+            break;
+        case PROF_AICORE_NONE:
+            break;
+        default:
+            MSPROF_LOGE("Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
+    }
+}
+
 void ProfAclMgr::AicoreMetricsEnumToName(ProfAicoreMetrics aicMetrics, std::string &name) const
 {
     switch (aicMetrics) {
@@ -118,28 +143,8 @@ void ProfAclMgr::AicoreMetricsEnumToName(ProfAicoreMetrics aicMetrics, std::stri
         case PROF_AICORE_MEMORY_UB:
             name = MEMORY_UB;
             break;
-        case PROF_AICORE_L2_CACHE:
-            if (ConfigManager::instance()->GetPlatformType() == PlatformType::CLOUD_TYPE ||
-                ConfigManager::instance()->GetPlatformType() == PlatformType::DC_TYPE) {
-                MSPROF_LOGE("Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
-                MSPROF_INNER_ERROR("EK9999", "Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
-                break;
-            }
-            name = L2_CACHE;
-            break;
-        case PROF_AICORE_MEMORY_ACCESS:
-            if (ConfigManager::instance()->GetPlatformType() != PlatformType::CHIP_V4_1_0) {
-                MSPROF_LOGE("Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
-                MSPROF_INNER_ERROR("EK9999", "Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
-                break;
-            }
-            name = MEMORY_ACCESS;
-            break;
-        case PROF_AICORE_NONE:
-            break;
         default:
-            MSPROF_LOGE("Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
-            MSPROF_INNER_ERROR("EK9999", "Invalid aicore metrics enum: %u", static_cast<uint32_t>(aicMetrics));
+            AicoreMetricsEnumToNameTwo(aicMetrics, name);
     }
 }
 

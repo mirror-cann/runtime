@@ -11,7 +11,7 @@
 #include "utils/utils.h"
 #include "errno/error_code.h"
 #include "msprof_dlog.h"
-#include "config.h"
+#include "config/config.h"
 
 namespace Collector {
 namespace Dvvp {

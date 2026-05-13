@@ -55,8 +55,8 @@ set(testSrc
     # testcase/cli_miniv3_ep_stest.cpp
     # testcase/cli_miniv3_rc_stest.cpp
     # testcase/cli_mdc_lite_stest.cpp
-    # testcase/cli_david_stest.cpp
-    # testcase/cli_david_v121_stest.cpp
+    testcase/cli_david_stest.cpp
+    testcase/cli_david_v121_stest.cpp
     # testcase/cli_acp_milan_stest.cpp
     # testcase/cli_acp_david_stest.cpp
     stub/cli_stub.cpp

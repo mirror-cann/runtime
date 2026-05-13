@@ -14,7 +14,6 @@
 #include "errno/error_code.h"
 #include "device_simulator_manager.h"
 #include "acl_api_stub.h"
-#include "aicpu_report_hdc.h"
 #include "devprof_drv_aicpu.h"
 
 using namespace analysis::dvvp::common::error;
@@ -30,8 +29,9 @@ protected:
         const ::testing::TestInfo* curTest = ::testing::UnitTest::GetInstance()->current_test_info();
         DataMgr().Init("", "acljson");
         devId = 0;
-        int32_t random_number = std::rand() % 100 + 1;
-        aclProfPath = "api_test_david_output" + std::to_string(random_number);;
+        static uint32_t randomCount = 1;
+        int32_t random_number = std::rand() % 100 + randomCount;
+        aclProfPath = "api_test_david_output" + std::to_string(random_number);
         mkdir(aclProfPath.c_str(), 0750);
         EXPECT_EQ(2, SimulatorMgr().CreateDeviceSimulator(2, StPlatformType::CHIP_CLOUD_V3));
         SimulatorMgr().SetSocSide(SocType::HOST);
@@ -39,7 +39,7 @@ protected:
         aclInit(nullptr);
         aclrtSetDevice(0);
         EXPECT_EQ(ACL_ERROR_NONE, aclprofInit(aclProfPath.c_str(), aclProfPath.size()));
-        MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(-1));
+        randomCount++;
     }
     virtual void TearDown()
     {
@@ -83,7 +83,7 @@ TEST_F(AclApiDavidStest, AclApiCcuStatUb0)
     uint32_t deviceIdList[1] = {devId};
     aclprofAicoreMetrics aicoreMetrics = ACL_AICORE_ARITHMETIC_UTILIZATION;
     aclprofAicoreEvents *aicoreEvents = nullptr;
-    uint64_t dataTypeConfig = 0;
+    uint64_t dataTypeConfig = ACL_PROF_ACL_API | ACL_PROF_TASK_TIME | ACL_PROF_AICORE_METRICS;
     auto config = aclprofCreateConfig(deviceIdList, 1, aicoreMetrics, aicoreEvents, dataTypeConfig);
     EXPECT_NE(nullptr, config);
 
@@ -112,7 +112,7 @@ TEST_F(AclApiDavidStest, AclApiCcuStatUb1)
     uint32_t deviceIdList[1] = {devId};
     aclprofAicoreMetrics aicoreMetrics = ACL_AICORE_ARITHMETIC_UTILIZATION;
     aclprofAicoreEvents *aicoreEvents = nullptr;
-    uint64_t dataTypeConfig = 0;
+    uint64_t dataTypeConfig = ACL_PROF_ACL_API | ACL_PROF_TASK_TIME | ACL_PROF_AICORE_METRICS;
     auto config = aclprofCreateConfig(deviceIdList, 1, aicoreMetrics, aicoreEvents, dataTypeConfig);
     EXPECT_NE(nullptr, config);
 

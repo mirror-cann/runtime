@@ -70,28 +70,24 @@ int32_t DeviceTransport::HandlePacket(TLV_REQ_PTR packet, analysis::dvvp::messag
     do {
         if (packet == nullptr) {
             MSPROF_LOGE("Device(%s) packet is nullptr", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) packet is nullptr", devIndexIdStr_.c_str());
             break;
         }
         std::string responseStr(packet->value, packet->len);
         auto message = analysis::dvvp::message::DecodeMessage(responseStr);
         if (message == nullptr) {
             MSPROF_LOGE("Device(%s) message decode failed", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) message decode failed", devIndexIdStr_.c_str());
             break;
         }
 
         auto responseMessage = std::dynamic_pointer_cast<analysis::dvvp::proto::Response>(message);
         if (responseMessage == nullptr) {
             MSPROF_LOGE("Device(%s) Not response Message", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) Not response Message", devIndexIdStr_.c_str());
             break;
         }
 
         std::string statusStr = responseMessage->message();
         if (!status.FromString(statusStr)) {
             MSPROF_LOGE("Device(%s) message from string failed", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) message from string failed", devIndexIdStr_.c_str());
             break;
         }
         FUNRET_CHECK_EXPR_ACTION_LOGW(status.status != analysis::dvvp::message::SUCCESS, break,
@@ -160,8 +156,6 @@ int32_t DeviceTransport::HandleShake(SHARED_PTR_ALIA<google::protobuf::Message> 
 
     if (ret != PROFILING_SUCCESS && ret != PROFILING_NOTSUPPORT) {
         MSPROF_LOGE("Failed to handshake with device %s, try times %d", devIndexIdStr_.c_str(), handshakeCount);
-        MSPROF_INNER_ERROR("EK9999", "Failed to handshake with device %s, try times %d",
-            devIndexIdStr_.c_str(), handshakeCount);
     }
     return ret;
 }
@@ -174,7 +168,6 @@ int32_t DeviceTransport::Init()
     MSVP_MAKE_SHARED0(dataMessage, analysis::dvvp::proto::DataChannelHandshake, return PROFILING_FAILED);
     if (!ParamValidation::instance()->CheckDeviceIdIsValid(devIndexIdStr_)) {
         MSPROF_LOGE("[DeviceTransport::Init]devId %s is not valid!", devIndexIdStr_.c_str());
-        MSPROF_INNER_ERROR("EK9999", "devId %s is not valid!", devIndexIdStr_.c_str());
         return PROFILING_FAILED;
     }
     FUNRET_CHECK_EXPR_ACTION(!Utils::StrToInt32(devIndexId_, devIndexIdStr_), return PROFILING_FAILED,
@@ -224,7 +217,6 @@ void DeviceTransport::Run(const struct error_message::Context &errorContext)
     MsprofErrorManager::instance()->SetErrorContext(errorContext);
     if (!dataInitialized_) {
         MSPROF_LOGE("Device(%s) data channel is not inited", devIndexIdStr_.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Device(%s) data channel is not inited", devIndexIdStr_.c_str());
         return;
     }
 
@@ -243,7 +235,6 @@ void DeviceTransport::Run(const struct error_message::Context &errorContext)
         ret = Analysis::Dvvp::Msprof::HdcTransportDataHandle::ReceiveStreamData(packet->value, packet->len);
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Device(%s) ReceiveStreamData failed", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) ReceiveStreamData failed", devIndexIdStr_.c_str());
         }
         dataTran_->DestroyPacket(packet);
         packet = nullptr;
@@ -292,7 +283,6 @@ int32_t DeviceTransport::SendMsgAndRecvResponse(const std::string &msg, TLV_REQ_
     do {
         if (packet == nullptr) {
             MSPROF_LOGE("invalid parameter, packet is null");
-            MSPROF_INNER_ERROR("EK9999", "invalid parameter, packet is null");
             break;
         }
 
@@ -304,7 +294,6 @@ int32_t DeviceTransport::SendMsgAndRecvResponse(const std::string &msg, TLV_REQ_
 
         if (ctrlTran_ == nullptr) {
             MSPROF_LOGE("Device(%s) ctrl tran is null", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) ctrl tran is null", devIndexIdStr_.c_str());
             break;
         }
 
@@ -312,7 +301,6 @@ int32_t DeviceTransport::SendMsgAndRecvResponse(const std::string &msg, TLV_REQ_
         if (sentLen < 0) {
             ctrlInitialized_ = false;
             MSPROF_LOGE("Device(%s) send message failed", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) send message failed", devIndexIdStr_.c_str());
             break;
         }
 
@@ -321,7 +309,6 @@ int32_t DeviceTransport::SendMsgAndRecvResponse(const std::string &msg, TLV_REQ_
         if (recvLen < 0 || packet == nullptr) {
             ctrlInitialized_ = false;
             MSPROF_LOGE("Device(%s) the ack of the message is failed", devIndexIdStr_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Device(%s) the ack of the message is failed", devIndexIdStr_.c_str());
             break;
         }
         ret = PROFILING_SUCCESS;
@@ -340,7 +327,6 @@ int32_t DevTransMgr::Init(std::string jobId, int32_t devId, std::string mode, ui
     HDC_CLIENT client = Analysis::Dvvp::Adx::AdxHdcClientCreate(HDC_SERVICE_TYPE_IDE2);
     if (client == nullptr) {
         MSPROF_LOGE("HDC client is invalid");
-        MSPROF_INNER_ERROR("EK9999", "HDC client is invalid");
         return PROFILING_FAILED;
     }
     MSPROF_LOGI("Device(%d) begin init, jobId: %s, mode: %s", devId, jobId.c_str(), mode.c_str());
@@ -367,7 +353,6 @@ int32_t DevTransMgr::Init(std::string jobId, int32_t devId, std::string mode, ui
         if (ret != PROFILING_SUCCESS) {
             if (ret != PROFILING_NOTSUPPORT) {
                 MSPROF_LOGE("Init device(%d) trans failed", devId);
-                MSPROF_INNER_ERROR("EK9999", "Init device(%d) trans failed", devId);
             }
             return ret;
         }
@@ -377,8 +362,6 @@ int32_t DevTransMgr::Init(std::string jobId, int32_t devId, std::string mode, ui
         ret = devTran->Start();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Device(%d) start devTran thread failed, error:%d", devId, static_cast<int32_t>(errno));
-            MSPROF_INNER_ERROR("EK9999", "Device(%d) start devTran thread failed, error:%d",
-                devId, static_cast<int32_t>(errno));
         } else {
             MSPROF_LOGI("Device(%d) init success", devId);
         }

@@ -399,7 +399,6 @@ SHARED_PTR_ALIA<ITransport> FileTransportFactory::CreateFileTransport(
 
     if (fileTransport->Init() != PROFILING_SUCCESS) {
         MSPROF_LOGE("fileTransport init failed");
-        MSPROF_INNER_ERROR("EK9999", "fileTransport init failed");
         return nullptr;
     }
     return fileTransport;

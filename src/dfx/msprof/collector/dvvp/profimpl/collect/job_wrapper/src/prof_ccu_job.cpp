@@ -110,7 +110,6 @@ int32_t ProfCcuInstrJob::Process()
     int32_t ret = StartCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu0_, filePathCcu0);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuInstrJob Process failed");
         return ret;
     }
 
@@ -118,7 +117,6 @@ int32_t ProfCcuInstrJob::Process()
     ret = StartCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu1_, filePathCcu1);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuInstrJob Process failed");
         return ret;
     }
     return ret;
@@ -130,14 +128,12 @@ int32_t ProfCcuInstrJob::Uninit()
     int32_t ret = StopCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu0_);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuInstrJob Uninit failed");
         return ret;
     }
 
     ret = StopCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu1_);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuInstrJob Uninit failed");
         return ret;
     }
     return ret;
@@ -175,7 +171,6 @@ int32_t ProfCcuStatJob::Process()
     int32_t ret = StartCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu0_, filePathCcu0);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuStatJob Process failed");
         return ret;
     }
 
@@ -183,7 +178,6 @@ int32_t ProfCcuStatJob::Process()
     ret = StartCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu1_, filePathCcu1);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuStatJob Process failed");
         return ret;
     }
     return ret;
@@ -195,14 +189,12 @@ int32_t ProfCcuStatJob::Uninit()
     int32_t ret = StopCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu0_);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuStatJob Uninit failed");
         return ret;
     }
 
     ret = StopCcuChannel(collectionJobCfg_->comParams->params->job_id,
         collectionJobCfg_->comParams->devId, channelIdCcu1_);
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_INNER_ERROR("EK9999", "ProfCcuStatJob Uninit failed");
         return ret;
     }
     return ret;

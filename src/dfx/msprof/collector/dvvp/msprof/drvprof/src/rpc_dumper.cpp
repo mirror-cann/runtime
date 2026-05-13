@@ -50,7 +50,6 @@ int32_t RpcDumper::GetNameAndId(const std::string &module)
     size_t pos = module.find_last_of("-");
     if (posTmp >= pos) {
         MSPROF_LOGE("get pos failed, module:%s", module.c_str());
-        MSPROF_INNER_ERROR("EK9999", "get pos failed, module:%s", module.c_str());
         return PROFILING_FAILED;
     }
     module_ = module.substr(0, posTmp);
@@ -59,7 +58,6 @@ int32_t RpcDumper::GetNameAndId(const std::string &module)
         hostPid_ = std::stoi(hostPidStr);
     } catch (...) {
         MSPROF_LOGE("Failed to transfer hostPidStr(%s) to integer.", hostPidStr.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to transfer hostPidStr(%s) to integer.", hostPidStr.c_str());
         return PROFILING_FAILED;
     }
     std::string devIdStr = module.substr(pos + 1, module.size());
@@ -67,7 +65,6 @@ int32_t RpcDumper::GetNameAndId(const std::string &module)
         devId_ = std::stoi(devIdStr);
     } catch (...) {
         MSPROF_LOGE("Failed to transfer hostPidStr(%s) to integer.", devIdStr.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to transfer hostPidStr(%s) to integer.", devIdStr.c_str());
         return PROFILING_FAILED;
     }
     MSPROF_LOGI("Get module:%s, hostPid:%d, devId:%d success", module_.c_str(), hostPid_, devId_);
@@ -88,7 +85,6 @@ int32_t RpcDumper::Start()
     int32_t ret = GetNameAndId(moduleNameWithId_);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("RpcDumper GetNameAndId failed");
-        MSPROF_INNER_ERROR("EK9999", "RpcDumper GetNameAndId failed");
         return PROFILING_FAILED;
     }
     ReceiveData::moduleName_ = module_;
@@ -97,7 +93,6 @@ int32_t RpcDumper::Start()
     ret = dataHandle_->Init();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("RpcDumper dataHandle init failed");
-        MSPROF_INNER_ERROR("EK9999", "RpcDumper dataHandle init failed");
         return PROFILING_FAILED;
     }
     ret = dataHandle_->TryToConnect();
@@ -108,8 +103,6 @@ int32_t RpcDumper::Start()
     ret = Thread::Start();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to start the reporter %s in RpcDumper::Start().", moduleNameWithId_.c_str());
-        MSPROF_INNER_ERROR("EK9999", "Failed to start the reporter %s in RpcDumper::Start().",
-            moduleNameWithId_.c_str());
         return PROFILING_FAILED;
     } else {
         MSPROF_LOGI("Succeeded in starting the reporter %s in RpcDumper::Start().", moduleNameWithId_.c_str());
@@ -125,7 +118,6 @@ int32_t RpcDumper::Start()
     ret = ReceiveData::Init();
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("ReceiveData Init failed");
-        MSPROF_INNER_ERROR("EK9999", "ReceiveData Init failed");
         return PROFILING_FAILED;
     }
     started_ = true;
@@ -206,7 +198,6 @@ int32_t RpcDumper::Stop()
         ret = Thread::Stop();
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("Failed to stop the reporter %s in RpcDumper::Stop().", module_.c_str());
-            MSPROF_INNER_ERROR("EK9999", "Failed to stop the reporter %s in RpcDumper::Stop().", module_.c_str());
             return PROFILING_FAILED;
         } else {
             MSPROF_LOGI("Succeeded in stopping the reporter %s in RpcDumper::Stop().", module_.c_str());
@@ -245,12 +236,10 @@ void RpcDumper::WriteDone()
             if (dataHandle_->SendData(data.c_str(), data.size(), module_.c_str(), jobCtx->ToString().c_str())
                 != PROFILING_SUCCESS) {
                 MSPROF_LOGE("send last FileChunk package failed");
-                MSPROF_INNER_ERROR("EK9999", "send last FileChunk package failed");
                 continue;
             }
         } else {
             MSPROF_LOGE("Encode the last FileChunk failed");
-            MSPROF_INNER_ERROR("EK9999", "Encode the last FileChunk failed");
             continue;
         }
     }
@@ -358,8 +347,6 @@ int32_t RpcDumper::Dump(std::vector<SHARED_PTR_ALIA<FileChunkReq>> &messages)
         if (!ParamValidation::instance()->CheckDataTagIsValid(tag)) {
             MSPROF_LOGE("UploaderDumper::Dump, Check tag failed, module:%s, tag:%s",
                 module_.c_str(), messages[i]->tag().c_str());
-            MSPROF_INNER_ERROR("EK9999", "UploaderDumper::Dump, Check tag failed, module:%s, tag:%s",
-                module_.c_str(), messages[i]->tag().c_str());
             continue;
         }
         messages[i]->set_datamodule(FileChunkDataModule::PROFILING_IS_FROM_MSPROF);
@@ -369,8 +356,6 @@ int32_t RpcDumper::Dump(std::vector<SHARED_PTR_ALIA<FileChunkReq>> &messages)
         ret = dataHandle_->SendData(encoded.c_str(), encoded.size(), fileName, messages[i]->hdr().job_ctx().c_str());
         if (ret != PROFILING_SUCCESS) {
             MSPROF_LOGE("RpcDumper::Dump, UploadData failed, fileName:%s, chunkLen:%d",
-                module_.c_str(), messages[i]->chunksizeinbytes());
-            MSPROF_INNER_ERROR("EK9999", "RpcDumper::Dump, UploadData failed, fileName:%s, chunkLen:%d",
                 module_.c_str(), messages[i]->chunksizeinbytes());
         }
     }

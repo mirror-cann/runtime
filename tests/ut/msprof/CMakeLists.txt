@@ -111,6 +111,7 @@ set(MSPROF_TARGET
     stub_file_utest
     transport
     cli_stest
+    acl_api_stest
     # geoption_stest
     # acljson_stest
     # proftransport_st_static
@@ -121,7 +122,6 @@ set(MSPROF_TARGET
     # api_mdc_mini_v3_stest
     # api_cloud_stest
     # api_mdc_stest
-    # acl_api_stest
     # api_tiny_stest
 )
 add_custom_target(msprof_ut DEPENDS ${MSPROF_TARGET})

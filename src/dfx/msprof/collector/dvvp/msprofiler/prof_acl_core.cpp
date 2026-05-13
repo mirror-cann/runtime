@@ -84,7 +84,7 @@ ACLPROF_STEPINFO_PTR aclprofCreateStepInfo()
     if (stepInfo == nullptr) {
         MSPROF_LOGE("new stepInfo fail");
         MSPROF_ENV_ERROR("EK0201", std::vector<std::string>({"buf_size"}),
-            std::vector<std::string>({std::to_string(sizeof(aclprofStepInfo))}));
+            std::vector<std::string>({std::to_string(sizeof(aclprofStepInfo)) + "B"}));
         return nullptr;
     }
     stepInfo->startFlag = false;
