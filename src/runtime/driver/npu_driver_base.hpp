@@ -217,6 +217,8 @@ drvError_t __attribute__((weak)) halDeviceEnableP2PNotify(uint32_t phy_dev, uint
 drvError_t __attribute__((weak)) halResAddrMapV2(unsigned int devId, struct res_map_info_in *res_info_in,
     struct res_map_info_out *res_info_out);
 drvError_t __attribute__((weak)) halMemHostGetDevPointer(void *srcPtr, uint32_t devid, void **dstPtr);
+int32_t __attribute__((weak)) drv_log_report_err_msg_handle_register(struct err_msg_report_handle *handle, size_t input_size);
+int32_t __attribute__((weak)) drv_log_report_err_msg_handle_unregister(void);
 };
 
 namespace cce {

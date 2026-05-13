@@ -234,6 +234,32 @@ static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
 
 #ifndef CFG_DEV_PLATFORM_PC
 ErrorManager& RuntimeKeeper::errManager_ = ErrorManager::GetInstance();
+
+static void RegisterDrvErrMsgHandle(void)
+{
+    if (&drv_log_report_err_msg_handle_register == nullptr) {
+        RT_LOG(RT_LOG_WARNING,
+            "[drv api] drv_log_report_err_msg_handle_register does not exist, skip register err msg handle.");
+        return;
+    }
+    struct err_msg_report_handle handle = {
+        RegisterFormatErrorMessageForC, ReportPredefinedErrMsgForC, ReportInnerErrMsgForC, 0};
+    const int32_t ret = drv_log_report_err_msg_handle_register(&handle, sizeof(handle));
+    if (ret != DRV_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "Call driver api drv_log_report_err_msg_handle_register failed, drvRetCode=%d.", ret);
+        return;
+    }
+}
+
+static void UnregisterDrvErrMsgHandle(void)
+{
+    if (&drv_log_report_err_msg_handle_unregister != nullptr) {
+        const int32_t ret = drv_log_report_err_msg_handle_unregister();
+        if (ret != DRV_ERROR_NONE) {
+            RT_LOG(RT_LOG_ERROR, "Call driver api drv_log_report_err_msg_handle_unregister failed, drvRetCode=%d.", ret);
+        }
+    }
+}
 #endif
 
 RuntimeKeeper::RuntimeKeeper() : NoCopy(), runtime_(nullptr)
@@ -246,6 +272,7 @@ RuntimeKeeper::RuntimeKeeper() : NoCopy(), runtime_(nullptr)
     (void)ErrorcodeManage::Instance();
 #ifndef CFG_DEV_PLATFORM_PC
     (void)ErrorManager::GetInstance();
+    (void)RegisterDrvErrMsgHandle();
 #endif
     (void)ProfCtrlCallbackManager::Instance();
     (void)TaskFailCallBackManager::Instance();
@@ -258,6 +285,9 @@ RuntimeKeeper::~RuntimeKeeper()
 {
     g_isRuntimeKeeperExiting = true;
     try {
+#ifndef CFG_DEV_PLATFORM_PC
+        (void)UnregisterDrvErrMsgHandle();
+#endif
         DestroyPoolRegistryImpl(soHandle_);
         DestroyRuntimeImpl(runtime_, soHandle_);
     } catch (...) {}

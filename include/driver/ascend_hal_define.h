@@ -551,6 +551,21 @@ struct log_out_handle {
     unsigned int logLevel;
 };
 
+// register error message
+typedef int32_t (*register_format_err_msg_func)(const char *error_msg, unsigned long error_msg_len);
+// report predefined error message
+typedef int32_t (*report_predefined_err_msg_func)(const char *error_code, const char **key, const char **value,
+                                                  unsigned long arg_num);
+// report inner error message
+typedef int32_t (*report_inner_err_msg_func)(const char *file_name, const char *func, uint32_t line,
+                                             const char *error_code, const char *format, ...);
+struct err_msg_report_handle {
+    register_format_err_msg_func register_format_func;
+    report_predefined_err_msg_func predefined_report_func;
+    report_inner_err_msg_func inner_report_func;
+    int32_t is_registered;
+};
+
 struct PoolInfo {
     unsigned long dataPoolSize;
     void *dataPoolStart;
