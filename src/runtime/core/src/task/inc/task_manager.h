@@ -71,6 +71,7 @@ extern PfnTaskUnInit *g_taskUnInitFunc;
 
 void RefreshTaskFuncPointer(rtChipType_t chipType);
 rtError_t RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, TaskFuncOpType opType, void* func);
+void PrintErrorInfoCommon(TaskInfo *taskInfo, const uint32_t devId);
 
 }  // namespace runtime
 }  // namespace cce

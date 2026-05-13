@@ -134,10 +134,9 @@ set(david_series_common_task_src_file_cmodel
     ${RUNTIME_CORE_DIR}/src/task/task_recycle/v200/task_recycle_common_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_recycle/v200/task_recycle_cqrpt_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/task_manager_david.cc
-    ${RUNTIME_FEATURE_DIR}/fusion/fusion_task_david.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_task.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/davinci_task_launch_config.cc
-    ${RUNTIME_CORE_DIR}/src/task/v200_base/aix_sqe_common_proc.cc
+    ${RUNTIME_FEATURE_DIR}/fusion/fusion_task.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_sqe.cc
 
     # mechanism dependance
@@ -172,7 +171,7 @@ set(libruntime_cmodel_v200_task_src_files
     # david & solomon 专用差异化文件
     ${RUNTIME_CORE_DIR}/src/task/v200_base/task_proc_func_register.cc
     ${RUNTIME_CORE_DIR}/src/task/v200/task_checker.cc
-    ${RUNTIME_CORE_DIR}/src/task/v200/aix_task_to_sqe.cc
+    ${RUNTIME_FEATURE_DIR}/fusion/fusion_task_v200.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/event/notify_task_v200.cc
     ${RUNTIME_CORE_DIR}/src/task/v200/memory_corruption_checker.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cmo/cmo_task_v200.cc
@@ -547,8 +546,6 @@ set(libruntime_cmodel_v200_src_files
     ${RUNTIME_CORE_DIR}/src/launch/aix_c.cc
     ${RUNTIME_CORE_DIR}/src/launch/aicpu_starsv2.cc
     ${RUNTIME_FEATURE_DIR}/fusion/fusion_c.cc
-    ${RUNTIME_FEATURE_DIR}/fusion/fusion_sqe.cc
-    ${RUNTIME_FEATURE_DIR}/fusion/fusion_task_david.cc
     ${RUNTIME_CORE_DIR}/src/launch/dvpp_starsv2.cc
     ${RUNTIME_CORE_DIR}/src/launch/cond_starsv2.cc
     ${RUNTIME_CORE_DIR}/src/launch/label_starsv2.cc

@@ -35,7 +35,6 @@
 #include "driver/ascend_hal.h"
 #include "osal.hpp"
 #include "api.hpp"
-#include "task_info.h"
 #include "notify_task.h"
 #include "memory_task.h"
 #include "model_execute_task.h"

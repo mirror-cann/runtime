@@ -9,7 +9,6 @@
  */
 #include "capture_model.hpp"
 #include "context.hpp"
-#include "task_info.h"
 #include "stream_david.hpp"
 #include "memory_task.h"
 #include "task.hpp"

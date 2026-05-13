@@ -13,7 +13,6 @@
 #include "context.hpp"
 #include "device.hpp"
 #include "davinci_kernel_task.h"
-#include "task_info.h"
 #include "task_xpu_recycle.hpp"
 #include "task_manager_xpu.hpp"
 #include "task_res_da.hpp"

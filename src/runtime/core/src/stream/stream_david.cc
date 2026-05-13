@@ -15,6 +15,7 @@
 #include "device.hpp"
 #include "npu_driver.hpp"
 #include "task.hpp"
+#include "memory_task.h"
 #include "error_message_manage.hpp"
 #include "dvpp_grp.hpp"
 #include "thread_local_container.hpp"
@@ -28,7 +29,7 @@
 #include "inner_thread_local.hpp"
 #include "stream_c.hpp"
 #include "stream_state_callback_manager.hpp"
-#include "fusion_task_david.hpp"
+#include "fusion_task.h"
 #include <thread>
 #include "raw_device.hpp"
 #include "aix_c.hpp"

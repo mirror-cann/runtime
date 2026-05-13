@@ -37,6 +37,10 @@ void StreamLabelSwitchByIndexTaskUnInit(TaskInfo * const taskInfo);
 
 void PrintErrorInfoForStreamLabelSwitchByIndexTask(TaskInfo* taskInfo, const uint32_t devId);
 void PrintErrorInfoForStreamSwitchTask(TaskInfo* taskInfo, const uint32_t devId);
+rtError_t InitFuncCallParaForStreamSwitchTaskV1(TaskInfo* taskInfo, rtStarsStreamSwitchFcPara_t &fcPara,
+    const rtChipType_t chipType);
+rtError_t InitFuncCallParaForStreamSwitchTaskV2(TaskInfo* taskInfo, rtStarsStreamSwitchExFcPara_t &fcPara,
+    const rtChipType_t chipType);
 
 }  // namespace runtime
 }  // namespace cce

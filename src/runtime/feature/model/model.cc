@@ -26,7 +26,6 @@
 #include "task_info.hpp"
 #include "task_submit.hpp"
 #include "stub_task.hpp"
-#include "task_info.h"
 #include "utils.h"
 #include "model_maintaince_task.h"
 #include "model_execute_task.h"

@@ -32,6 +32,7 @@
 #include "timeout_set_task.h"
 #include "base.hpp"
 #include "stars_david.hpp"
+#include "ccu_task.hpp"
 #include "task_res_da.hpp"
 #include "notify.hpp"
 #include "count_notify.hpp"

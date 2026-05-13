@@ -22,6 +22,8 @@ void EventRecordTaskUnInit(TaskInfo *const taskInfo);
 void SetStarsResultForEventRecordTask(TaskInfo *const taskInfo, const rtLogicCqReport_t &logicCq);
 void ToCommandBodyForEventRecordTask(TaskInfo *const taskInfo, rtCommand_t *const command);
 void DoCompleteSuccessForEventRecordTask(TaskInfo *const taskInfo, const uint32_t devId);
+void TaskTriggerEvent(TaskInfo * const taskInfo);
+rtError_t UpdateEventTimeLine(TaskInfo * const taskInfo, const Event *const eventPtr);
 
 rtError_t EventResetTaskInit(TaskInfo * const taskInfo, Event *const eventPtr,
                              const bool isNotifyFlag, const int32_t eventIndex);
@@ -34,7 +36,7 @@ rtError_t RemoteEventWaitTaskInit(TaskInfo * const taskInfo, Event *const eventR
 void RemoteEventWaitTaskUnInit(TaskInfo *const taskInfo);
 void ToCommandBodyForRemoteEventWaitTask(TaskInfo *const taskInfo, rtCommand_t *const command);
 rtError_t EventWaitTaskInit(TaskInfo * const taskInfo, Event *const eventRec, const int32_t eventIndex,
-                            const uint32_t timeout, const uint8_t waitFlag);
+                             const uint32_t timeout, const uint8_t waitFlag = 0U);
 void ToCommandBodyForEventWaitTask(TaskInfo *const taskInfo, rtCommand_t *const command);
 void DoCompleteSuccessForEventWaitTask(TaskInfo *const taskInfo, const uint32_t devId);
 void PrintErrorInfoForEventWaitTask(TaskInfo *const taskInfo, const uint32_t devId);
@@ -43,6 +45,9 @@ void SetStarsResultForEventWaitTask(TaskInfo *taskInfo, const rtLogicCqReport_t 
 rtError_t GetEventRecordTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 rtError_t GetEventWaitTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 rtError_t GetEventResetTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
+void TryToFreeEventIdAndDestroyEvent(Event **eventPtr, int32_t freeId, bool isNeedDestroy,
+                                     bool isCaptureDestroy = false);
+rtError_t DestroyEventSync(Event *evt);
 }  // namespace runtime
 }  // namespace cce
 #endif

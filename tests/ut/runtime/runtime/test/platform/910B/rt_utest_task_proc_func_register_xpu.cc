@@ -11,7 +11,6 @@
 #include "mockcpp/mockcpp.hpp"
 #define private public
 #define protected public
-#include "task_info.h"
 #include "task_manager.h"
 #include "task_manager_xpu.hpp"
 #undef protected

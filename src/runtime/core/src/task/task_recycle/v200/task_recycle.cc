@@ -29,7 +29,6 @@
 #include "davinci_kernel_task.h"
 #include "event_task.h"
 #include "memory_task.h"
-#include "task_info.h"
 #include "engine.hpp"
 #include "task_res_da.hpp"
 #include "task_recycle.hpp"

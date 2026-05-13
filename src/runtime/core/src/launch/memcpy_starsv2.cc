@@ -10,6 +10,7 @@
 
 #include <string>
 #include "memcpy_c.hpp"
+#include "memory_task.h"
 #include "stars_david.hpp"
 #include "task_david.hpp"
 #include "thread_local_container.hpp"

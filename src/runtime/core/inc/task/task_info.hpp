@@ -240,62 +240,21 @@ const char_t* GetSqeDescByType(const uint8_t sqeType);
 const char_t* GetDavidSqeDescByType(const uint8_t sqeType);
 const char_t* GetTaskDescByType(const uint8_t taskType);
 bool IsNeedFreeStreamRes(const TaskInfo *task);
-void TaskTriggerEvent(TaskInfo * const taskInfo);
-
-rtError_t MemcpyAsyncTaskInitV1(TaskInfo * const taskInfo, void *memcpyAddrInfo, const uint64_t cpySize);
-rtError_t MemcpyAsyncTaskInitV2(TaskInfo * const taskInfo, void *const dst, const uint64_t dstPitch,
-                                const void *const srcAddr, const uint64_t srcPitch, const uint64_t width,
-                                const uint64_t height, const uint32_t kind, const uint64_t fixedSize);
-rtError_t MemcpyAsyncTaskInitV3(TaskInfo * const taskInfo, uint32_t cpyType, const void *srcAddr,
-    void *desAddr, const uint64_t cpySize, const rtTaskCfgInfo_t *cfgInfo, const rtD2DAddrCfgInfo_t * const addrCfg);
-rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, void** const dsts, 
-    void** const srcs, const uint64_t* const sizes, const uint64_t count, const uint64_t fixedSize);
-rtError_t MemcpyAsyncD2HTaskInit(TaskInfo * const taskInfo, const void *srcAddr, const uint64_t cpySize,
-                                 uint32_t sqId, uint32_t pos);
-
-rtError_t UpdateEventTimeLine(TaskInfo * const taskInfo, const Event *const eventPtr);
-rtError_t EventRecordTaskInit(TaskInfo * const taskInfo, Event *const eventPtr, const bool isNotifyRecordFlag,
-                              const int32_t newEventId);
-rtError_t EventResetTaskInit(TaskInfo * const taskInfo, Event *const eventPtr,
-                             const bool isNotifyFlag, const int32_t eventIndex);
-rtError_t RemoteEventWaitTaskInit(TaskInfo * const taskInfo, Event *const eventRec,
-                                  const int32_t srcDeviceId, const int32_t eventIndex);
-rtError_t EventWaitTaskInit(TaskInfo * const taskInfo, Event *const eventRec, const int32_t eventIndex,
-                            const uint32_t timeout, const uint8_t waitFlag = 0U);
-
-// task init func
-void CcuLaunchTaskInit(TaskInfo *taskInfo, rtCcuTaskInfo_t *const ccuInfo);
 
 uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device * const dev);
 uint32_t CovertToFlipTaskId(const TaskInfo* const taskInfo, const uint32_t taskId);
 void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo);
 
-// others
-uint32_t GetSqeNumForMemcopyAsync(const rtMemcpyKind_t kind, bool isModelByUb = false, uint32_t cpyType = UINT32_MAX, uint32_t cpyMethod = UINT32_MAX);
-rtError_t ConvertD2DCpyType(const Stream * const stm, uint32_t &cpyType, const void *const srcAddr, void *const desAddr);
-void RecycleTaskResourceForMemcpyAsyncTask(TaskInfo * const taskInfo);
 void SetSqPos(TaskInfo* taskInfo, const uint32_t pos);
 void SetEndGraphNotifyWaitSqPos(TaskInfo* taskInfo, const uint32_t pos);
 
 void DoCompleteSuccess(TaskInfo* taskInfo, const uint32_t devId);
 void PrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId);
-uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo);
 
 void SaveTaskInfo(TaskInfo *const taskInfo, TaskInfo *submitTask);
-rtError_t InitFuncCallParaForStreamSwitchTaskV2(TaskInfo* taskInfo, rtStarsStreamSwitchExFcPara_t &fcPara,
-    const rtChipType_t chipType);
-rtError_t InitFuncCallParaForStreamSwitchTaskV1(TaskInfo* taskInfo, rtStarsStreamSwitchFcPara_t &fcPara,
-    const rtChipType_t chipType);
 void SetTaskTag(TaskInfo *taskInfo);
-void TryToFreeEventIdAndDestroyEvent(Event **eventPtr, int32_t freeId, bool isNeedDestroy, bool isCaptureDestroy = false);
-rtError_t DestroyEventSync(Event *evt);
-bool IsPcieDma(const uint32_t copyTypeFlag);
-uint8_t GetOpcodeForReduce(TaskInfo * const taskInfo);
-uint8_t ReduceOpcodeLow(TaskInfo * const taskInfo);
 void TaskCommonInfoInit(TaskInfo *taskInfo);
 bool IsSupportType(const uint16_t sqeType);
-uint32_t GetSendSqeNumForAsyncDmaTask(const TaskInfo * const taskInfo);
-bool IsDavidUbDma(const uint32_t copyTypeFlag);
 bool IsDvppTask(const uint16_t sqeType);
 uint32_t GetProfTaskId(const TaskInfo * const taskInfo);
 uint32_t GetTaskId(const TaskInfo* const taskInfo);

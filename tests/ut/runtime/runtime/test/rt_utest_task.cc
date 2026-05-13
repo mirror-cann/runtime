@@ -68,7 +68,6 @@
 #include "printf.hpp"
 #include "cmo_task.h"
 #include "stream_task.h"
-#include "task_info.h"
 #include "task_info_v100.h"
 #include "event_task.h"
 #include "notify_task.h"

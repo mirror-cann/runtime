@@ -29,7 +29,6 @@
 #include "device.hpp"
 #include "davinci_kernel_task.h"
 #include "event_task.h"
-#include "task_info.h"
 #include "task_recycle.hpp"
 #include "engine.hpp"
 #include "task_res_da.hpp"

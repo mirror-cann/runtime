@@ -20,6 +20,7 @@
 #include "stream.hpp"
 #include "task_info.hpp"
 #include "kernel_utils.hpp"
+#include "event_task.h"
 #include <string>
 #undef private
 

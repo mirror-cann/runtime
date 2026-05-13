@@ -9,6 +9,8 @@
  */
 
 #include "api_impl_david.hpp"
+#include "memory_task.h"
+#include "event_task.h"
 #include "ccu_stream.hpp"
 #include "runtime_handle_guard.h"
 #include "context.hpp"

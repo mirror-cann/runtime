@@ -24,6 +24,7 @@
 #include "capture_model.hpp"
 #include "stub_task.hpp"
 #include "memory_task.h"
+#include "event_task.h"
 #include "event_state_callback_manager.hpp"
 
 namespace cce {

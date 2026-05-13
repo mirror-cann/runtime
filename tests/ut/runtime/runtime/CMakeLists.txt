@@ -102,7 +102,7 @@ set(runtimeut_david_series_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task_v200_base.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_multiple_task_v200_base.cc
     ${TOP_DIR}/src/runtime/core/src/task/v200_base/davinci_task_launch_config.cc
-    ${TOP_DIR}/src/runtime/core/src/task/v200_base/aix_sqe_common_proc.cc
+    ${TOP_DIR}/src/runtime/feature/fusion/fusion_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/v200_base/stars_david.cc
     ${TOP_DIR}/src/runtime/feature/ccu/ccu_sqe.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cmo/cmo_task_v200_base.cc
@@ -151,7 +151,7 @@ set(runtimeut_david_src_task_list
     ${runtimeut_david_series_common_src_task_list}
     # david & solomon 专用差异化文件
     ${TOP_DIR}/src/runtime/core/src/task/v200/task_proc_func_register.cc
-    ${TOP_DIR}/src/runtime/core/src/task/v200/aix_task_to_sqe.cc
+    ${TOP_DIR}/src/runtime/feature/fusion/fusion_task_v200.cc
     ${TOP_DIR}/src/runtime/core/src/task/v200/task_checker.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/notify_task_v200.cc
     ${TOP_DIR}/src/runtime/core/src/task/v200/memory_corruption_checker.cc
@@ -188,8 +188,7 @@ set(runtimeut_src_david_series_common_c_list
     ${TOP_DIR}/src/runtime/core/src/launch/aicpu_starsv2.cc
     ${TOP_DIR}/src/runtime/core/src/launch/dvpp_starsv2.cc
     ${TOP_DIR}/src/runtime/feature/fusion/fusion_c.cc
-    ${TOP_DIR}/src/runtime/feature/fusion/fusion_sqe.cc
-    ${TOP_DIR}/src/runtime/feature/fusion/fusion_task_david.cc
+    ${TOP_DIR}/src/runtime/feature/fusion/fusion_task.cc
 
     ${TOP_DIR}/src/runtime/core/src/stream/stream_c.cc
     ${TOP_DIR}/src/runtime/feature/ccu/ccu_stream.cc
@@ -394,7 +393,7 @@ set(runtimeut_src_tiny_exclude_list
     ${TOP_DIR}/src/runtime/core/src/task/v200_base/stars_david.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_v200.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task_v200.cc
-    ${TOP_DIR}/src/runtime/core/src/task/v200/aix_task_to_sqe.cc
+    ${TOP_DIR}/src/runtime/feature/fusion/fusion_task_v200.cc
     ${TOP_DIR}/src/runtime/core/src/task/v200/src/task/v200/task_proc_func_register.cc
     ${TOP_DIR}/src/runtime/core/src/event/ipc_event.cc
     ${TOP_DIR}/src/runtime/core/src/event/ipc_event_starsV2.cc
@@ -1407,7 +1406,7 @@ set(runtimeut_v201_src_task_list
     # v201
     ${TOP_DIR}/src/runtime/core/src/task/v201/task_proc_func_register.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task_v201.cc
-    ${TOP_DIR}/src/runtime/core/src/task/v201/aix_task_to_sqe.cc
+    ${TOP_DIR}/src/runtime/feature/fusion/fusion_task_v201.cc
     ${TOP_DIR}/src/runtime/core/src/task/v201/task_checker.cc
     ${TOP_DIR}/src/runtime/feature/dqs/dqs_task.cc
     ${TOP_DIR}/src/runtime/feature/dqs/dqs_c.cc

@@ -25,6 +25,7 @@
 #include "task.hpp"
 #include "task_info.hpp"
 #include "task_res.hpp"
+#include "memory_task.h"
 #include "thread_local_container.hpp"
 #include "atrace_log.hpp"
 #include "task_fail_callback_manager.hpp"

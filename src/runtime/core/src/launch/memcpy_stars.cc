@@ -9,6 +9,7 @@
  */
 
 #include "memcpy_c.hpp"
+#include "memory_task.h"
 #include "inner_thread_local.hpp"
 #include "context.hpp"
 #include "stream.hpp"

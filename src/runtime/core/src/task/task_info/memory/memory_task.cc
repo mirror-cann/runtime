@@ -16,7 +16,6 @@
 #include "error_code.h"
 #include "task_execute_time.h"
 #include "davinci_kernel_task.h"
-#include "task_info.h"
 #include "stars_cond_isa_helper.hpp"
 #include "inner_thread_local.hpp"
 #include "model_update_task.h"

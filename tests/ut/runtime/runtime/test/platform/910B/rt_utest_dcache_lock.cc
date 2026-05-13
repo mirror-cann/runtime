@@ -21,7 +21,6 @@
 #include "notify.hpp"
 #include "event.hpp"
 #include "task_info.hpp"
-#include "task_info.h"
 #include "task_info_v100.h"
 #include "device/device_error_proc.hpp"
 #include "program.hpp"

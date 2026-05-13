@@ -71,5 +71,61 @@ void ConstructDavidSqeForGetDevMsgTask(TaskInfo *taskInfo, rtDavidSqe_t * const 
         stm->Id_(), taskInfo->id);
 }
 #endif
+
+#if F_DESC("AicpuMsgVersionTask")
+void AicpuMsgVersionTaskInit(TaskInfo *taskInfo)
+{
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->type = TS_TASK_TYPE_TSFW_AICPU_MSG_VERSION;
+    taskInfo->typeName = "TSFW_AICPU_MSG_VERSION";
+
+    AicpuMsgVersionTaskInfo *task = &(taskInfo->u.aicpuMsgVersionTask);
+    task->magicNum = MAGIC_NUMBER_FOR_AICPU_MSG_VERSION;
+    task->version = AICPU_MSG_VERSION_FOR_DAVID;
+    return;
+}
+
+void ConstructDavidSqeForAicpuMsgVersionTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
+    uint64_t sqBaseAddr)
+{
+    UNUSED(sqBaseAddr);
+    AicpuMsgVersionTaskInfo * const task = &(taskInfo->u.aicpuMsgVersionTask);
+    Stream * const stm = taskInfo->stream;
+
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsAicpuControlSqe *const sqe = &(davidSqe->aicpuControlSqe);
+    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
+    sqe->header.blockDim = 1U;
+
+    sqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
+    sqe->batchMode = 0U;
+    sqe->topicType = 0U;
+    UpdateDavidAICpuControlSqeForDavinciTask(sqe);
+
+    sqe->qos = stm->Device_()->GetTsdQos();
+    sqe->res2 = 0U;
+    sqe->sqeIndex = 0U; // useless
+    sqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
+
+    sqe->usrData.pid = 0U;
+    sqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_MSG_VERSION);
+    sqe->usrData.vfId = 0U;
+    sqe->usrData.tid = 0U;
+    sqe->usrData.tsId = 0U;
+    sqe->usrData.u.msgVersion.magicNum = task->magicNum;
+    sqe->usrData.u.msgVersion.version = task->version;
+
+    sqe->subTopicId = 0U;
+    sqe->topicId = 5U; // EVENT_TS_CTRL_MSG
+    sqe->groupId = 0U;
+    sqe->usrDataLen = 12U;         /* 8 + 4 */
+
+    sqe->destPid = 0U;
+    PrintDavidSqe(davidSqe, "AicpuMsgVersionTask");
+    RT_LOG(RT_LOG_INFO, "AicpuMsgVersionTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
+        "topic_type=%u, cmd_type=%u", stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
+        static_cast<uint32_t>(sqe->topicType), sqe->usrData.cmdType);
+}
+#endif
 }  // namespace runtime
 }  // namespace cce

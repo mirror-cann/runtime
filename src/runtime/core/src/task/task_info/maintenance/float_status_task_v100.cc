@@ -10,7 +10,6 @@
 
 #include "task_info_v100.h"
 #include "task_manager.h"
-#include "task_info.h"
 #include "stars_cond_isa_helper.hpp"
 
 namespace cce {

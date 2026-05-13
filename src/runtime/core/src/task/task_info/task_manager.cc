@@ -43,7 +43,6 @@
 #include "maintenance_task.h"
 #include "kernel_fusion_task.h"
 #include "davinci_kernel_task.h"
-#include "task_info.h"
 #include "error_code.h"
 #include "stub_task.hpp"
 #include <mutex>

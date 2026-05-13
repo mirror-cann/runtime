@@ -30,6 +30,7 @@
 #include "raw_device.hpp"
 #include "task_info.hpp"
 #include "memory_task.h"
+#include "event_task.h"
 #include "context.hpp"
 #include "stream_david.hpp"
 #include "stars_david.hpp"

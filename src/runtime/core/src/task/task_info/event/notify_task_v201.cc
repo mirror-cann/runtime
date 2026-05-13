@@ -10,7 +10,6 @@
 
 #include "stars.hpp"
 #include "stars_david.hpp"
-#include "task_info.h"
 #include "error_code.h"
 #include "device.hpp"
 #include "task_manager.h"

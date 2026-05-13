@@ -11,7 +11,6 @@
 #include "stars_david.hpp"
 #include "stars.hpp"
 #include "device.hpp"
-#include "task_info.h"
 #include "task_manager.h"
 #include "error_code.h"
 namespace cce {

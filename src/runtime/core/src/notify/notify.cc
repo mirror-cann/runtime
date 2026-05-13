@@ -22,6 +22,7 @@
 #include "ctrl_sq.hpp"
 #include "notify_task.h"
 #include "common_task.h"
+#include "event_task.h"
 
 namespace cce {
 namespace runtime {

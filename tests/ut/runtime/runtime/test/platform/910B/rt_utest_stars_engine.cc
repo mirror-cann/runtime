@@ -45,6 +45,7 @@
 #include "model.hpp"
 #include "stub_task.hpp"
 #include "model_execute_task.h"
+#include "event_task.h"
 
 using namespace testing;
 using namespace cce::runtime;

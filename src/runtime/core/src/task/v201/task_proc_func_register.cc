@@ -11,7 +11,6 @@
 #include "task_manager_david.h"
 #include "stars_david.hpp"
 #include "dqs_task_info.hpp"
-#include "task_info.h"
 #include "task_manager.h"
 
 namespace cce {

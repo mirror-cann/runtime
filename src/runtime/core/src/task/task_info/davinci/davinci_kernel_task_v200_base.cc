@@ -17,7 +17,6 @@
 #include "event_david.hpp"
 #include "stars.hpp"
 #include "stars_david.hpp"
-#include "task_info.h"
 #include "device.hpp"
 #include "error_code.h"
 #include "thread_local_container.hpp"

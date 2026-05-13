@@ -21,6 +21,7 @@ void AixKernelTaskInitForFusion(
     TaskInfo* const taskInfo, const rtAicAivFusionInfo_t* const aicAivInfo,
     const LaunchTaskCfgInfo_t* const launchTaskCfg);
 void FusionKernelTaskInit(TaskInfo* taskInfo);
+
 } // namespace runtime
 } // namespace cce
 

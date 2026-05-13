@@ -38,53 +38,16 @@
 #include "model_to_aicpu_task.h"
 #include "maintenance_task.h"
 #include "davinci_kernel_task.h"
-#include "task_info.h"
 #include "ccu_task.hpp"
 #include "error_code.h"
 #include "task_manager.h"
 #include "task_manager_david.h"
 #include "device_error_proc.hpp"
 #include "starsv2_base.hpp"
-#include "fusion_task_david.hpp"
+#include "fusion_task.h"
 #include <vector>
 namespace cce {
 namespace runtime {
-
-#if F_DESC("SetResultAdapt")
-static void SetStarsResultCommonForDavid(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq)
-{
-    if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
-        if (logicCq.errorCode != TS_SUCCESS) {
-            taskInfo->errorCode = logicCq.errorCode;
-        } else {
-            static uint32_t errMap[TS_STARS_ERROR_MAX_INDEX] = {
-                TS_ERROR_TASK_EXCEPTION,
-                TS_ERROR_TASK_BUS_ERROR,
-                TS_ERROR_TASK_TIMEOUT,
-                TS_ERROR_TASK_SQE_ERROR,
-                TS_ERROR_TASK_RES_CONFLICT_ERROR,
-                TS_ERROR_TASK_SW_STATUS_ERROR};
-            const uint32_t errorIndex =
-                static_cast<uint32_t>(BitScan(static_cast<uint64_t>(logicCq.errorType) & RT_STARS_EXIST_ERROR));
-            taskInfo->errorCode = errMap[errorIndex];
-        }
-    }
-}
-#endif
-
-#if F_DESC("AicpuMsgVersionTask")
-void AicpuMsgVersionTaskInit(TaskInfo *taskInfo)
-{
-    TaskCommonInfoInit(taskInfo);
-    taskInfo->type = TS_TASK_TYPE_TSFW_AICPU_MSG_VERSION;
-    taskInfo->typeName = "TSFW_AICPU_MSG_VERSION";
-
-    AicpuMsgVersionTaskInfo *task = &(taskInfo->u.aicpuMsgVersionTask);
-    task->magicNum = MAGIC_NUMBER_FOR_AICPU_MSG_VERSION;     /* magic number */
-    task->version = AICPU_MSG_VERSION_FOR_DAVID;
-    return;
-}
-#endif
 
 #if F_DESC("钩子注册框架")
 static void DavidRegDoCompleteSuccFunc(const std::vector<rtChipType_t> &chipTypes)

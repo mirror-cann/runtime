@@ -16,7 +16,6 @@
 #include "task_manager.h"
 #include "stars.hpp"
 #include "device.hpp"
-#include "task_info.h"
 #include "error_code.h"
 
 namespace cce {

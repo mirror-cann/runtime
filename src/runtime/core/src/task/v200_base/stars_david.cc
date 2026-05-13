@@ -10,17 +10,17 @@
 
 #include "runtime.hpp"
 #include "stars_david.hpp"
+#include "memory_task.h"
 #include "stream_david.hpp"
 #include "stars_cond_isa_helper.hpp"
 #include "event.hpp"
 #include "notify.hpp"
 #include "count_notify.hpp"
-#include "kernel.h"
 #include "thread_local_container.hpp"
 #include "task_execute_time.h"
 #include "task_res_da.hpp"
+#include "fusion_task.h"
 #include "fusion_c.hpp"
-#include "fusion_sqe.hpp"
 #include "aic_aiv_sqe_common.hpp"
 #include "ccu_sqe.hpp"
 #include "device/device_error_proc.hpp"
@@ -118,6 +118,26 @@ void ConstructDavidSqeForHeadCommon(const TaskInfo *taskInfo, rtDavidSqe_t * con
 }
 
 
+void SetStarsResultCommonForDavid(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq)
+{
+    if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
+        if (logicCq.errorCode != TS_SUCCESS) {
+            taskInfo->errorCode = logicCq.errorCode;
+        } else {
+            static uint32_t errMap[TS_STARS_ERROR_MAX_INDEX] = {
+                TS_ERROR_TASK_EXCEPTION,
+                TS_ERROR_TASK_BUS_ERROR,
+                TS_ERROR_TASK_TIMEOUT,
+                TS_ERROR_TASK_SQE_ERROR,
+                TS_ERROR_TASK_RES_CONFLICT_ERROR,
+                TS_ERROR_TASK_SW_STATUS_ERROR};
+            const uint32_t errorIndex =
+                static_cast<uint32_t>(BitScan(static_cast<uint64_t>(logicCq.errorType) & RT_STARS_EXIST_ERROR));
+            taskInfo->errorCode = errMap[errorIndex];
+        }
+    }
+}
+
 static void ConstructDavidSqeBase(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
 {
     UNUSED(sqBaseAddr);
@@ -129,78 +149,6 @@ static void ConstructDavidSqeBase(TaskInfo *taskInfo, rtDavidSqe_t * const david
     RT_LOG(RT_LOG_WARNING, "No need to construct sqe. task_type=%u, device_id=%u, stream_id=%d, task_id=%hu,"
         " task_sn=%u.", taskInfo->type, taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(),
         taskInfo->id, taskInfo->taskSn);
-}
-
-static void ConstructDavidSqeForAicpuMsgVersionTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
-{
-    UNUSED(sqBaseAddr);
-    AicpuMsgVersionTaskInfo * const task = &(taskInfo->u.aicpuMsgVersionTask);
-    Stream * const stm = taskInfo->stream;
-
-    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuControlSqe *const sqe = &(davidSqe->aicpuControlSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
-    sqe->header.blockDim = 1U;
-
-    sqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
-    sqe->batchMode = 0U;
-    sqe->topicType = 0U;
-    UpdateDavidAICpuControlSqeForDavinciTask(sqe);
-
-    sqe->qos = stm->Device_()->GetTsdQos();
-    sqe->res2 = 0U;
-    sqe->sqeIndex = 0U; // useless
-    sqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
-
-    sqe->usrData.pid = 0U;
-    sqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_MSG_VERSION);
-    sqe->usrData.vfId = 0U;
-    sqe->usrData.tid = 0U;
-    sqe->usrData.tsId = 0U;
-    sqe->usrData.u.msgVersion.magicNum = task->magicNum;
-    sqe->usrData.u.msgVersion.version = task->version;
-
-    sqe->subTopicId = 0U;
-    sqe->topicId = 5U; // EVENT_TS_CTRL_MSG
-    sqe->groupId = 0U;
-    sqe->usrDataLen = 12U;         /* 8 + 4 */
-
-    sqe->destPid = 0U;
-    PrintDavidSqe(davidSqe, "AicpuMsgVersionTask");
-    RT_LOG(RT_LOG_INFO, "AicpuMsgVersionTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
-        "topic_type=%u, cmd_type=%u", stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
-        static_cast<uint32_t>(sqe->topicType), sqe->usrData.cmdType);
-}
-
-void InitWriteValueSqe(RtDavidStarsWriteValueSqe * const writeValueSqe,
-    const rtWriteValueInfo_t * const writeValueInfo)
-{
-    const WriteValueSize awsize = WriteValueSize(static_cast<uint8_t>(writeValueInfo->size) - 1U);
-    writeValueSqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
-    writeValueSqe->awsize = awsize;
-    writeValueSqe->snoop = 0U;
-    writeValueSqe->awcache = 2U;  // 2U: 0010 Normal Non-cacheable Non-bufferable
-    writeValueSqe->awprot = 0U;
-    writeValueSqe->va = 1U;
-
-    writeValueSqe->writeAddrLow = static_cast<uint32_t>(writeValueInfo->addr & MASK_32_BIT);
-    writeValueSqe->writeAddrHigh = static_cast<uint32_t>((writeValueInfo->addr >> UINT32_BIT_NUM) & MASK_17_BIT);
-
-    const uint32_t writeLen = static_cast<uint32_t>(1U << static_cast<uint32_t>(awsize));
-    uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {0U};   // max writen size is 4B*8=32B
-    for (uint32_t i = 0U; i < writeLen; i++) {
-        value[i] = writeValueInfo->value[i];
-    }
-    uint32_t *temp = RtPtrToPtr<uint32_t *>(value);
-    for (uint32_t idx = 0U; idx < (WRITE_VALUE_SIZE_MAX_LEN/4U); idx++) { // 4U: sizeof(uint32_t)
-        writeValueSqe->writeValuePart[idx] = temp[idx];
-        RT_LOG(RT_LOG_INFO, "writeValuePart[%u]: %u", idx, writeValueSqe->writeValuePart[idx]);
-    }
-
-    PrintDavidSqe(RtPtrToPtr<rtDavidSqe_t *>(writeValueSqe), "WriteValueTask");
-
-    return;
 }
 
 void RegTaskToDavidSqefunc(void)

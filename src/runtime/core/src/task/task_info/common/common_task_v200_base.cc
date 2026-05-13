@@ -48,6 +48,36 @@ void ConstructDavidSqeForStarsCommonTask(TaskInfo * const taskInfo, rtDavidSqe_t
 #endif
 
 #if F_DESC("WriteValueTask")
+void InitWriteValueSqe(RtDavidStarsWriteValueSqe * const writeValueSqe,
+    const rtWriteValueInfo_t * const writeValueInfo)
+{
+    const WriteValueSize awsize = WriteValueSize(static_cast<uint8_t>(writeValueInfo->size) - 1U);
+    writeValueSqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
+    writeValueSqe->awsize = awsize;
+    writeValueSqe->snoop = 0U;
+    writeValueSqe->awcache = 2U;  // 2U: 0010 Normal Non-cacheable Non-bufferable
+    writeValueSqe->awprot = 0U;
+    writeValueSqe->va = 1U;
+
+    writeValueSqe->writeAddrLow = static_cast<uint32_t>(writeValueInfo->addr & MASK_32_BIT);
+    writeValueSqe->writeAddrHigh = static_cast<uint32_t>((writeValueInfo->addr >> UINT32_BIT_NUM) & MASK_17_BIT);
+
+    const uint32_t writeLen = static_cast<uint32_t>(1U << static_cast<uint32_t>(awsize));
+    uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {0U};   // max writen size is 4B*8=32B
+    for (uint32_t i = 0U; i < writeLen; i++) {
+        value[i] = writeValueInfo->value[i];
+    }
+    uint32_t *temp = RtPtrToPtr<uint32_t *>(value);
+    for (uint32_t idx = 0U; idx < (WRITE_VALUE_SIZE_MAX_LEN/4U); idx++) { // 4U: sizeof(uint32_t)
+        writeValueSqe->writeValuePart[idx] = temp[idx];
+        RT_LOG(RT_LOG_INFO, "writeValuePart[%u]: %u", idx, writeValueSqe->writeValuePart[idx]);
+    }
+
+    PrintDavidSqe(RtPtrToPtr<rtDavidSqe_t *>(writeValueSqe), "WriteValueTask");
+
+    return;
+}
+
 rtError_t WriteValuePtrTaskInit(TaskInfo *taskInfo, const void * const pointedAddr,
     TaskWrCqeFlag cqeFlag)
 {

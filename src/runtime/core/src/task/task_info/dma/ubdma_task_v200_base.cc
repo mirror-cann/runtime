@@ -15,7 +15,6 @@
 #include "stars.hpp"
 #include "stars_david.hpp"
 #include "device.hpp"
-#include "task_info.h"
 #include "error_code.h"
 #include "task_fail_callback_manager.hpp"
 

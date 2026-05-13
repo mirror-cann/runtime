@@ -22,7 +22,6 @@
 #include "notify.hpp"
 #include "event.hpp"
 #include "task_info.hpp"
-#include "task_info.h"
 #include "ffts_task.h"
 #include "device/device_error_proc.hpp"
 #include "program.hpp"
@@ -1081,7 +1080,6 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_normal)
     rtFree(devPtr);
 
 }
-#include "task_info.h"
 #include "stream_task.h"
 TEST_F(CloudV2CaptureModelTest, capture_activestream)
 {

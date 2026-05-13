@@ -14,7 +14,6 @@
 #include "runtime.hpp"
 #include "task_manager.h"
 #include "error_code.h"
-#include "task_info.h"
 #include "stream_david.hpp"
 #include "stars_cond_isa_define.hpp"
 #include "stars_cond_isa_helper.hpp"

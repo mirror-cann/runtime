@@ -22,7 +22,6 @@
 #include "notify.hpp"
 #include "event.hpp"
 #include "task_info.hpp"
-#include "task_info.h"
 #include "device/device_error_proc.hpp"
 #include "program.hpp"
 #include "uma_arg_loader.hpp"

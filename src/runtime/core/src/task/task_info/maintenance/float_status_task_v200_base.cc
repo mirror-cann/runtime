@@ -9,7 +9,6 @@
  */
 
 #include "stars_david.hpp"
-#include "task_info.h"
 #include "stars_cond_isa_helper.hpp"
 #include "stream.hpp"
 

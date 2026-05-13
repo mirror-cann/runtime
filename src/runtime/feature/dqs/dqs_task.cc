@@ -10,6 +10,7 @@
 
 #include "base.hpp"
 #include "stream_with_dqs.hpp"
+#include "memory_task.h"
 #include "stars_cond_isa_struct.hpp"
 #include "error_message_manage.hpp"
 #include "dqs_task_info.hpp"

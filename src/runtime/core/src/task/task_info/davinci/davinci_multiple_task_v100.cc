@@ -78,7 +78,7 @@ void ConstructDvppSqe(TaskInfo * const taskInfo, rtStarsSqe_t *const command, si
     const uint64_t cmdListAddrLow = dvppTask.sqe.commandCustom[STARS_DVPP_SQE_CMDLIST_ADDR_LOW_IDX];
     const uint64_t cmdListAddrHigh = dvppTask.sqe.commandCustom[STARS_DVPP_SQE_CMDLIST_ADDR_HIGH_IDX];
     // the dvpp has malloced the cmdlist memory.
-    void *cmdList = reinterpret_cast<void *>(((cmdListAddrHigh << UINT32_BIT_NUM) & 0xFFFFFFFF00000000ULL) |
+    void *cmdList = RtPtrToPtr<void *>(((cmdListAddrHigh << UINT32_BIT_NUM) & 0xFFFFFFFF00000000ULL) |
         (cmdListAddrLow & 0x00000000FFFFFFFFULL));
     if (cmdList == nullptr) {
         RT_LOG(RT_LOG_ERROR, "cmdList addr is null.");

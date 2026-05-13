@@ -10,7 +10,6 @@
 
 #include "maintenance_task.h"
 #include "task_manager.h"
-#include "task_info.h"
 
 namespace cce {
 namespace runtime {

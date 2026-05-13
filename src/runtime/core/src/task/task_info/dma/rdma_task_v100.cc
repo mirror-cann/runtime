@@ -21,7 +21,7 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("RdmaDbSendTask")
-static uint64_t GetRoceDbAddrForRdmaDbSendTask(TaskInfo* const taskInfo)
+static uint64_t GetRoceDbAddrForRdmaDbSendTask(const TaskInfo* const taskInfo)
 {
     int64_t chipId = 0U;
     const uint32_t deviceId = taskInfo->stream->Device_()->Id_();

@@ -33,6 +33,7 @@
 #include "npu_driver.hpp"
 #include "api_error.hpp"
 #include "event.hpp"
+#include "event_task.h"
 #include "stream.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "notify.hpp"

@@ -26,7 +26,6 @@
 #include "device.hpp"
 #include "raw_device.hpp"
 #include "atrace_log.hpp"
-#include "task_info.h"
 #include "task_manager.h"
 #include "error_code.h"
 #include "task_execute_time.h"

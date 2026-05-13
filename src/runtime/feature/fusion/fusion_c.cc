@@ -19,6 +19,8 @@
 #include "profiler_c.hpp"
 #include "aix_c.hpp"
 #include "task_execute_time.h"
+#include "fusion_task.h"
+
 namespace cce {
 namespace runtime {
 TIMESTAMP_EXTERN(rtFusionLaunch_ArgLoadAll);

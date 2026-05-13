@@ -12,6 +12,7 @@
 #include "stream.hpp"
 #include "runtime.hpp"
 #include "event.hpp"
+#include "event_task.h"
 #include "task_manager.h"
 #include "error_code.h"
 #include "capture_model.hpp"
