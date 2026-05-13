@@ -43,28 +43,35 @@ namespace tsd {
         uint64_t curIndex = KeyCompose(devId, commType);
         std::shared_ptr<DeviceComm> deviceCommPtr = nullptr;
         {
-            const std::lock_guard<std::recursive_mutex> lk(MutexForDeviceCommMap());
-            auto& deviceCommMap = DeviceCommMap();
-            const auto iter = deviceCommMap.find(curIndex);
-            if (iter != deviceCommMap.end()) {
+            std::recursive_mutex *deviceCommMutex = MutexForDeviceCommMap();
+            std::map<uint64_t, std::shared_ptr<DeviceComm>> *deviceCommMap = DeviceCommMap();
+            std::unordered_map<uint32_t, CreatorFunc> *creatorMap = CreatorMap();
+            TSD_CHECK(deviceCommMutex != nullptr, nullptr, "Fail to create deviceComm mutex");
+            TSD_CHECK(deviceCommMap != nullptr, nullptr, "Fail to create deviceComm map");
+            TSD_CHECK(creatorMap != nullptr, nullptr, "Fail to create creator map");
+            const std::lock_guard<std::recursive_mutex> lk(*deviceCommMutex);
+            const std::map<uint64_t, std::shared_ptr<DeviceComm>>::iterator iter = deviceCommMap->find(curIndex);
+            if (iter != deviceCommMap->end()) {
                 return iter->second;
             }
-            auto& creatorMap = CreatorMap();
-            const auto creatorIter = creatorMap.find(static_cast<uint32_t>(commType));
-            if (creatorIter == creatorMap.end()) {
+            const std::unordered_map<uint32_t, CreatorFunc>::iterator creatorIter =
+                creatorMap->find(static_cast<uint32_t>(commType));
+            if (creatorIter == creatorMap->end()) {
                 TSD_ERROR("DeviceCommType=%u is not supported", static_cast<uint32_t>(commType));
                 return nullptr;
             }
             deviceCommPtr = creatorIter->second(devId);
             TSD_CHECK((deviceCommPtr != nullptr), nullptr, "Fail to create deviceCommPtr");
-            deviceCommMap.emplace(curIndex, deviceCommPtr);
+            deviceCommMap->emplace(curIndex, deviceCommPtr);
         }
         return deviceCommPtr;
     }
 
     bool DeviceComm::Register(DeviceCommType type, CreatorFunc creator)
     {
-        CreatorMap().emplace(static_cast<uint32_t>(type), std::move(creator));
+        std::unordered_map<uint32_t, CreatorFunc> *creatorMap = CreatorMap();
+        TSD_CHECK(creatorMap != nullptr, false, "Fail to create creator map");
+        creatorMap->emplace(static_cast<uint32_t>(type), std::move(creator));
         return true;
     }
 }

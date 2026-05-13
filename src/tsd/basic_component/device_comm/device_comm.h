@@ -137,21 +137,23 @@ namespace tsd {
         DeviceComm(const uint32_t devId, const DeviceCommType commType);
 
          // deviceId 和 DeviceComm 指针对象的 Map
-        static std::map<uint64_t, std::shared_ptr<DeviceComm>>& DeviceCommMap()
+        static std::map<uint64_t, std::shared_ptr<DeviceComm>>* DeviceCommMap()
         {
-            static std::map<uint64_t, std::shared_ptr<DeviceComm>> instance;
+            static std::map<uint64_t, std::shared_ptr<DeviceComm>> *instance =
+                new (std::nothrow) std::map<uint64_t, std::shared_ptr<DeviceComm>>();
             return instance;
         }
         // deviceCommMap_ 的锁
-        static std::recursive_mutex& MutexForDeviceCommMap()
+        static std::recursive_mutex* MutexForDeviceCommMap()
         {
-            static std::recursive_mutex instance;
+            static std::recursive_mutex *instance = new (std::nothrow) std::recursive_mutex();
             return instance;
         }
         // 注册表：DeviceCommType -> 工厂函数
-        static std::unordered_map<uint32_t, CreatorFunc>& CreatorMap()
+        static std::unordered_map<uint32_t, CreatorFunc>* CreatorMap()
         {
-            static std::unordered_map<uint32_t, CreatorFunc> instance;
+            static std::unordered_map<uint32_t, CreatorFunc> *instance =
+                new (std::nothrow) std::unordered_map<uint32_t, CreatorFunc>();
             return instance;
         }
         // 设备 ID

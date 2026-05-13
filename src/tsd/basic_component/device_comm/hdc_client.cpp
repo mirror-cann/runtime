@@ -353,14 +353,19 @@ namespace tsd {
     {
         TSD_INFO("begin HdcClient::ClearClientPtr");
         uint64_t index = KeyCompose(deviceId_, DeviceCommType::HDC);
-        const std::lock_guard<std::recursive_mutex> lk(MutexForDeviceCommMap());
-        auto& deviceCommMap = DeviceCommMap();
-        const auto iter = deviceCommMap.find(index);
-        if (iter == deviceCommMap.end()) {
+        std::recursive_mutex *deviceCommMutex = MutexForDeviceCommMap();
+        std::map<uint64_t, std::shared_ptr<DeviceComm>> *deviceCommMap = DeviceCommMap();
+        if ((deviceCommMutex == nullptr) || (deviceCommMap == nullptr)) {
+            TSD_ERROR("deviceCommMap or mutex is nullptr");
+            return;
+        }
+        const std::lock_guard<std::recursive_mutex> lk(*deviceCommMutex);
+        const std::map<uint64_t, std::shared_ptr<DeviceComm>>::iterator iter = deviceCommMap->find(index);
+        if (iter == deviceCommMap->end()) {
             TSD_ERROR("delete the %lu deviceCommPtr from deviceCommMap failed", index);
             return;
         }
-        (void)deviceCommMap.erase(iter);
+        (void)deviceCommMap->erase(iter);
         TSD_INFO("end HdcClient::ClearClientPtr");
     }
 
