@@ -599,8 +599,6 @@ rtError_t CheckTaskCanSend(Stream * const stm)
     return RT_ERROR_NONE;
 }
 
-
-
 void SaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos, uint32_t sqeNum)
 {
     InitByStream(taskInfo, stm);

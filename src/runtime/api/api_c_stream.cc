@@ -777,5 +777,3 @@ rtError_t rtsGetResInCurrentThread(const rtDevResLimitType_t type, uint32_t *con
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-
-

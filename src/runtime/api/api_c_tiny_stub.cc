@@ -1161,7 +1161,6 @@ rtError_t rtMemPoolMallocAsync(void **ptr, const uint64_t size, const rtMemPool_
     UNUSED(memPoolId);
     UNUSED(stm);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
-
 }
 
 VISIBILITY_DEFAULT

@@ -278,7 +278,6 @@ static void CheckBlockDim(TaskInfo* const taskInfo, const RtFftsPlusKernelSqe* c
 
 void ToCommandBodyForAicAivTask(TaskInfo* taskInfo, rtCommand_t *const command)
 {
-
     AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     Stream * const stm = taskInfo->stream;
 
@@ -318,7 +317,6 @@ void ToCommandBodyForAicAivTask(TaskInfo* taskInfo, rtCommand_t *const command)
 
 void ToCommandBodyForAicpuTask(TaskInfo* taskInfo, rtCommand_t *const command)
 {
-
     AicpuTaskInfo *aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
     Stream * const stm = taskInfo->stream;
     constexpr uint8_t flag = KERNEL_DUMPFLAG_FLAG | FUSION_KERNEL_DUMPFLAG;
