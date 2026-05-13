@@ -38,10 +38,10 @@ set(_cmake_arg_custom_sign_script "${CUSTOM_SIGN_SCRIPT}")
 set(_cmake_arg_version_info "${VERSION_INFO}")
 
 # third_party
-include(${RUNTIME_DIR}/cmake/third_party/protobuf.cmake)
 include(${RUNTIME_DIR}/cmake/third_party/acl_compat.cmake)
 add_cann_third_party(json)
 add_cann_third_party(csec)
+add_cann_third_party(protobuf)
 
 include(version.cmake)
 check_cann_pkg_build_deps("npu-runtime")

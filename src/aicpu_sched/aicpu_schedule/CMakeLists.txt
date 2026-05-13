@@ -11,7 +11,7 @@
 set(BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(RUNTIME_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
 
-include(${RUNTIME_DIR}/cmake/third_party/eigen.cmake)
+add_cann_third_party(eigen)
 
 set(proto_src_files
     ${CMAKE_CURRENT_SOURCE_DIR}/proto/dump_data.proto

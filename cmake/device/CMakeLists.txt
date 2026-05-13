@@ -21,8 +21,8 @@ include(${RUNTIME_DIR}/cmake/func.cmake)
 set_runtime_params("${RUNTIME_DIR}")
 
 # third_party
-include(${RUNTIME_DIR}/cmake/third_party/protobuf.cmake)
 include(${RUNTIME_DIR}/cmake/third_party/acl_compat.cmake)
+add_cann_third_party(protobuf)
 add_cann_third_party(json)
 add_cann_third_party(csec)
 

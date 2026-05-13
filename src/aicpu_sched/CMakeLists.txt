@@ -10,7 +10,7 @@
 
 set(RUNTIME ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
-include(${RUNTIME}/cmake/third_party/seccomp.cmake)
+add_cann_third_party(seccomp)
 
 function(strip_binary target)
 if(NOT SPH_INSTALL_MODE)
