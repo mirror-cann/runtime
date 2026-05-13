@@ -701,7 +701,6 @@ target_compile_options(runtime_model PRIVATE
 
 target_link_libraries(runtime_model PRIVATE
     $<BUILD_INTERFACE:intf_pub>
-    $<BUILD_INTERFACE:runtime_warning_options>
     $<BUILD_INTERFACE:mmpa_headers>
     $<BUILD_INTERFACE:msprof_headers>
     $<BUILD_INTERFACE:slog_headers>
@@ -753,7 +752,6 @@ target_compile_options(runtime_model_v200 PRIVATE
 
 target_link_libraries(runtime_model_v200 PRIVATE
     $<BUILD_INTERFACE:intf_pub>
-    $<BUILD_INTERFACE:runtime_warning_options>
     $<BUILD_INTERFACE:mmpa_headers>
     $<BUILD_INTERFACE:msprof_headers>
     $<BUILD_INTERFACE:slog_headers>
@@ -796,7 +794,6 @@ foreach(product_type ${PRODUCT_TYPE_LIST})
         mmpa
         platform
         $<BUILD_INTERFACE:intf_pub>
-        $<BUILD_INTERFACE:runtime_warning_options>
         dl
         rt
         c_sec
@@ -844,7 +841,6 @@ foreach(product_type ${PRODUCT_TYPE_LIST})
         mmpa
         platform
         $<BUILD_INTERFACE:intf_pub>
-        $<BUILD_INTERFACE:runtime_warning_options>
         dl
         rt
         c_sec
