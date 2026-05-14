@@ -18,7 +18,7 @@ if (ENABLE_OPEN_SRC AND NOT EXISTS "${CMAKE_BINARY_DIR}/include_acl")
     if (LOCAL_TAR_FILE)
         list(GET LOCAL_TAR_FILE -1 REQ_URL)
     else()
-        set(REQ_URL "https://mirrors.huaweicloud.com/artifactory/cann-run/8.5.0/inner/${TARGET_ARCH}/acl-compat_8.5.0_linux-${TARGET_ARCH}.tar.gz")
+        set(REQ_URL "https://cann-3rd.obs.cn-north-4.myhuaweicloud.com/cann/acl-compat/acl-compat_9.1.0_linux-${TARGET_ARCH}.tar.gz")
     endif()
     include(ExternalProject)
     ExternalProject_Add(acl_compat_tar
