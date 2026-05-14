@@ -194,10 +194,10 @@ public:
         const rtMemcpyKind_t kind, Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo = nullptr,
         const rtD2DAddrCfgInfo_t * const addrCfg = nullptr, bool checkKind = true,
         const rtMemcpyConfig_t * const memcpyConfig = nullptr) override;
-    rtError_t MemsetD32(void* dst, uint64_t destMax, uint32_t value,
-                             uint64_t count) override;
-    rtError_t MemsetD32Async(void* dst, uint64_t destMax, uint32_t value,
-                                  uint64_t count, Stream* stm) override;
+    rtError_t MemsetD32(void * const dst, const uint64_t destMax,
+        const uint32_t value, const uint64_t count) override;
+    rtError_t MemsetD32Async(void * const dst, const uint64_t destMax,
+        const uint32_t value, const uint64_t count, Stream * const stm) override;
     rtError_t LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void *src, uint64_t cnt,
                                   Stream * const stm, bool needCpuTask = false) override;
     rtError_t MemcpyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax, const uint64_t count,

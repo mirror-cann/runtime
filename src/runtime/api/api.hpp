@@ -308,10 +308,10 @@ public:
         const uint64_t cnt) = 0;
     virtual rtError_t MemsetAsync(void * const ptr, const uint64_t destMax, const uint32_t val, const uint64_t cnt,
         Stream * const stm) = 0;
-    virtual rtError_t MemsetD32(void* dst, uint64_t destMax, uint32_t value,
- 	                            uint64_t count) = 0;
- 	virtual rtError_t MemsetD32Async(void* dst, uint64_t destMax, uint32_t value,
- 	                            uint64_t count, Stream* stm) = 0;
+    virtual rtError_t MemsetD32(void * const dst, const uint64_t destMax,
+        const uint32_t value, const uint64_t count) = 0;
+ 	virtual rtError_t MemsetD32Async(void * const dst, const uint64_t destMax,
+        const uint32_t value, const uint64_t count, Stream * const stm) = 0;
     virtual rtError_t MemGetInfoByDeviceId(uint32_t deviceId, bool isHugeOnly, size_t* const freeSize, size_t* const totalSize) = 0;
     virtual rtError_t MemGetInfo(size_t * const freeSize, size_t * const totalSize) = 0;
     virtual rtError_t MemGetInfoByType(const int32_t devId, const rtMemType_t type, rtMemInfo_t * const info) = 0;

@@ -551,6 +551,5 @@ rtError_t ApiImpl::MemsetD32Async(void* const dst, const uint64_t destMax, const
     }
 }
 
-
 }
 }
