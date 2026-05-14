@@ -49,8 +49,6 @@ add_dependencies(adump_proto_obj adump_host_proto)
 
 set(ascendDumpSrcList
     ${adumpServerSrcList}
-    ${ADUMP_ADUMP_DIR}/adump_ascend031/exception/adx_exception_callback.cpp
-    ${ADUMP_ADUMP_DIR}/adump_ascend031/exception/exception_dumper_platform.cpp
     ${ADUMP_ADUMP_DIR}/adump_ascend031/manage/adump_api_platform.cpp
     ${ADUMP_ADUMP_DIR}/adump_ascend031/manage/dump_manager.cpp
     ${ADUMP_ADUMP_DIR}/adump_ascend031/printf/dump_printf.cpp
@@ -61,13 +59,6 @@ set(ascendDumpSrcList
     ${ADUMP_ADUMP_DIR}/common/path.cpp
     ${ADUMP_ADUMP_DIR}/common/str_utils.cpp
     ${ADUMP_ADUMP_DIR}/common/sys_utils.cpp
-    ${ADUMP_ADUMP_DIR}/exception/dump_args.cpp
-    ${ADUMP_ADUMP_DIR}/exception/kernel_info_collector.cpp
-    ${ADUMP_ADUMP_DIR}/exception/dump_operator.cpp
-    ${ADUMP_ADUMP_DIR}/exception/dump_file.cpp
-    ${ADUMP_ADUMP_DIR}/exception/exception_info_common.cpp
-    ${ADUMP_ADUMP_DIR}/exception/thread_manager.cpp
-    ${ADUMP_ADUMP_DIR}/exception/exception_dumper.cpp
     ${ADUMP_ADUMP_DIR}/impl/dump_datatype.cpp
     ${ADUMP_ADUMP_DIR}/impl/dump_memory.cpp
     ${ADUMP_ADUMP_DIR}/impl/dump_setting.cpp
@@ -80,12 +71,10 @@ set(ascendDumpHeaderList
     ${adumpServerHeaders}
     ${CMAKE_BINARY_DIR}/proto/adump_host_proto
     ${RUNTIME_DIR}/src/dfx/error_manager
-    ${ADUMP_ADUMP_DIR}/adump_ascend031/exception/
     ${ADUMP_ADUMP_DIR}/adump_ascend031/manage/
     ${ADUMP_DIR}/adcore/
     ${ADUMP_ADUMP_DIR}/
     ${ADUMP_ADUMP_DIR}/common/
-    ${ADUMP_ADUMP_DIR}/exception/
     ${ADUMP_ADUMP_DIR}/manage/
     ${ADUMP_ADUMP_DIR}/impl/
     ${ADUMP_ADUMP_DIR}/operator/
