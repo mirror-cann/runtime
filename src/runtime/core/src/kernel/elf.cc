@@ -1019,6 +1019,7 @@ static rtError_t UpdateCachedParamInfos(RtKernelMetaInfo *metaInfo,
                                           const ElfKernelInfo *kernelInfo,
                                           const char *kernelName)
 {
+    metaInfo->hasParamSummary = kernelInfo->hasParamSummary;
     if (!kernelInfo->hasParamSummary || (kernelInfo->paramCount == 0U)) {
         return RT_ERROR_NONE;
     }
@@ -1051,7 +1052,6 @@ static rtError_t UpdateCachedParamInfos(RtKernelMetaInfo *metaInfo,
         }
     }
 
-    metaInfo->hasParamSummary = kernelInfo->hasParamSummary;
     metaInfo->paramCount = kernelInfo->paramCount;
     metaInfo->paramTotalSize = kernelInfo->paramTotalSize;
     return RT_ERROR_NONE;
