@@ -94,14 +94,20 @@ aclError aclmdlInitDumpImpl()
 {
     ACL_LOG_INFO("start to execute aclmdlInitDump.");
     if (!acl::GetAclInitFlag()) {
-        ACL_LOG_INNER_ERROR("[Check][AclInitFlag]aclmdlInitDump is not supported because it does not execute aclInit");
+        acl::AclErrorLogManager::ReportInputError(
+            "EP0008", std::vector<const char*>({"func", "reason"}),
+            std::vector<const char*>(
+                {"aclmdlInitDump", "aclInit must be executed before aclmdlInitDump is called"}));
+        ACL_LOG_ERROR("[Check][AclInitFlag]aclInit must be executed before aclmdlInitDump is called");
         return ACL_ERROR_UNINITIALIZE;
     }
 
     const std::unique_lock<std::mutex> lk(aclDumpMutex);
     if (aclmdlInitDumpFlag) {
-        ACL_LOG_INNER_ERROR("[Check][InitDumpFlag]repeatedly initialized dump in aclmdlInitDump, "
-            "only initialized once");
+        acl::AclErrorLogManager::ReportInputError(
+            "EP0008", std::vector<const char*>({"func", "reason"}),
+            std::vector<const char*>({"aclmdlInitDump", "This API cannot be called repeatedly"}));
+        ACL_LOG_ERROR("[Check][InitDumpFlag]This API cannot be called repeatedly");
         return ACL_ERROR_REPEAT_INITIALIZE;
     }
 
@@ -120,13 +126,21 @@ aclError aclmdlSetDumpImpl(const char *dumpCfgPath)
 {
     ACL_LOG_INFO("start to execute aclmdlSetDump.");
     if (!acl::GetAclInitFlag()) {
-        ACL_LOG_INNER_ERROR("[Check][AclInitFlag]aclmdlSetDump is not supported because it does not execute aclInit");
+        acl::AclErrorLogManager::ReportInputError(
+            "EP0008", std::vector<const char*>({"func", "reason"}),
+            std::vector<const char*>(
+                {"aclmdlSetDump", "aclInit must be executed before aclmdlSetDumpImpl is called"}));
+        ACL_LOG_ERROR("[Check][AclInitFlag]aclInit must be executed before aclmdlSetDumpImpl is called");
         return ACL_ERROR_UNINITIALIZE;
     }
 
     const std::unique_lock<std::mutex> lk(aclDumpMutex);
     if (!aclmdlInitDumpFlag) {
-        ACL_LOG_INNER_ERROR("[Check][aclmdlInitDumpFlag]dump is not initialized in aclmdlInitDump");
+        acl::AclErrorLogManager::ReportInputError(
+            "EP0008", std::vector<const char*>({"func", "reason"}),
+            std::vector<const char*>(
+                {"aclmdlSetDump", "aclmdlInitDump must be executed before aclmdlSetDumpImpl is called"}));
+        ACL_LOG_ERROR("[Check][aclmdlInitDumpFlag]aclmdlInitDump must be executed before aclmdlSetDumpImpl is called");
         return ACL_ERROR_DUMP_NOT_RUN;
     }
 
@@ -162,14 +176,21 @@ aclError aclmdlFinalizeDumpImpl()
 {
     ACL_LOG_INFO("start to execute aclmdlFinalizeDump.");
     if (!acl::GetAclInitFlag()) {
-        ACL_LOG_INNER_ERROR("[Check][AclInitFlag]aclmdlFinalizeDump is not supported because it does not "
-            "execute aclInit");
+        acl::AclErrorLogManager::ReportInputError(
+            "EP0008", std::vector<const char*>({"func", "reason"}),
+            std::vector<const char*>(
+                {"aclmdlFinalizeDump", "aclInit must be executed before aclmdlFinalizeDump is called"}));
+        ACL_LOG_ERROR("[Check][AclInitFlag]aclInit must be executed before aclmdlFinalizeDump is called");
         return ACL_ERROR_UNINITIALIZE;
     }
 
     const std::unique_lock<std::mutex> lk(aclDumpMutex);
     if (!aclmdlInitDumpFlag) {
-        ACL_LOG_INNER_ERROR("[Check][aclmdlInitDumpFlag]dump is not initialized in aclmdlInitDump");
+        acl::AclErrorLogManager::ReportInputError(
+            "EP0008", std::vector<const char*>({"func", "reason"}),
+            std::vector<const char*>(
+                {"aclmdlFinalizeDump", "aclmdlInitDump must be executed before aclmdlFinalizeDump is called"}));
+        ACL_LOG_ERROR("[Check][aclmdlInitDumpFlag]aclmdlInitDump must be executed before aclmdlFinalizeDump is called");
         return ACL_ERROR_DUMP_NOT_RUN;
     }
 

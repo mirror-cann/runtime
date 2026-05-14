@@ -13,6 +13,8 @@
 #include "adump_api.h"
 #include "dump_manager.h"
 #include "dump_printf.h"
+#include "adump_error_manager.h"
+#include "str_utils.h"
 
 namespace Adx {
 uint64_t g_chunk[RING_CHUNK_SIZE + MAX_TENSOR_NUM] = {0};
@@ -64,12 +66,29 @@ int32_t AdumpSaveToFile(const char *data, size_t dataLen, const char *filename, 
  */
 aclError aclopStartDumpArgs(uint32_t dumpType, const char *path)
 {
-    if ((dumpType & ACL_OP_DUMP_OP_AICORE_ARGS) == ACL_OP_DUMP_OP_AICORE_ARGS) {
-        std::string dumpPath(path);
-        if (Adx::DumpManager::Instance().StartDumpArgs(dumpPath) != 0) {
-            return ACL_ERROR_FAILURE;
-        }
+    if (path == nullptr) {
+        REPORT_EP0007_NULL_POINTER(
+            Adx::FUNC_NAME_ACL_OP_START_DUMP_ARGS, Adx::FUNC_ACL_OP_START_DUMP_ARGS_PARAM_PATH);
+        return ACL_ERROR_FAILURE;
     }
+
+    if ((dumpType & ACL_OP_DUMP_OP_AICORE_ARGS) != ACL_OP_DUMP_OP_AICORE_ARGS) {
+        std::string dumpTypeStr = std::to_string(dumpType);
+        std::string expTypeStr = std::to_string(ACL_OP_DUMP_OP_AICORE_ARGS);
+        std::string reason = Adx::StrUtils::Format(
+            Adx::ADUMP_REASON_RESERVED_PARAM_MUST_EQUAL, expTypeStr.c_str());
+        REPORT_EP0006_INVALID_ARGUMENT(
+            Adx::FUNC_NAME_ACL_OP_START_DUMP_ARGS, dumpTypeStr,
+            Adx::FUNC_ACL_OP_START_DUMP_ARGS_PARAM_DUMPTYPE, reason);
+        return ACL_ERROR_FAILURE;
+    }
+
+    std::string dumpPath(path);
+    int32_t ret = Adx::DumpManager::Instance().StartDumpArgs(dumpPath);
+    if (ret != 0) {
+        return ACL_ERROR_FAILURE;
+    }
+
     return ACL_SUCCESS;
 }
 

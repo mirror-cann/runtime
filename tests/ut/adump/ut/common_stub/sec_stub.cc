@@ -64,7 +64,20 @@ int strtok_s(char* strToken, const char* strDelimit, char** context)
 
 int vsnprintf_s(char *strDest, size_t destMax, size_t count, const char *format, va_list argList)
 {
-    return 0;
+    if (strDest == nullptr || format == nullptr || destMax == 0U || count == 0U) {
+        return -1;
+    }
+    
+    const int ret = vsnprintf(strDest, count, format, argList);
+    if (ret < 0) {
+        return -1;
+    }
+    
+    if (static_cast<size_t>(ret) >= destMax) {
+        return -1;
+    }
+    
+    return ret;
 }
 
 #ifdef __cplusplus

@@ -21,9 +21,12 @@
 
 namespace Adx {
 
-int32_t JsonParser::ParseJsonFromMemory(const char *dumpConfigData, size_t dumpConfigSize, nlohmann::json &js)
+int32_t JsonParser::ParseJsonFromMemory(const char *dumpConfigData, size_t dumpConfigSize, 
+    nlohmann::json &js, std::string &errMsg)
 {
+    errMsg.clear();
     if ((dumpConfigData == nullptr) || (dumpConfigSize == 0U)) {
+        errMsg = "Invalid input parameters";
         IDE_LOGD("Parse json from memory failed: invaild input parameters.");
         return ADUMP_INPUT_FAILED;
     }
@@ -37,10 +40,12 @@ int32_t JsonParser::ParseJsonFromMemory(const char *dumpConfigData, size_t dumpC
     }
     catch(const nlohmann::json::parse_error& e)
     {
+        errMsg = e.what();
         IDE_LOGE("JSON parse error: %s", e.what());
     }
     catch(const std::exception& e)
     {
+        errMsg = e.what();
         IDE_LOGE("Unexpected error while parsing JSON from memory: %s", e.what());
     }
     return ADUMP_INPUT_FAILED;

@@ -42,7 +42,6 @@ set(adxHdcDumpApiSrcList
     ${SRC_CODE_ROOT_PATH}/adump/host/adx_dump_receive.cpp
     ${SRC_CODE_ROOT_PATH}/adump/device/adx_dump_hdc_api.cpp
     ${SRC_CODE_ROOT_PATH}/adump/device/adx_dump_soc_helper.cpp
-    ${SRC_CODE_ROOT_PATH}/adump/host/adx_datadump_callback.cpp
     ${SRC_CODE_ROOT_PATH}/adump/device/adx_datadump_server_soc.cpp
     ${SRC_CODE_ROOT_PATH}/adcore/component/adx_common_component.cpp
     ${SRC_CODE_ROOT_PATH}/adump/adx_dump_process.cpp
@@ -105,11 +104,9 @@ set(adxHdcDumpApiUtSrcList
     ${LLT_CODE_ROOT_PATH}/testcase/adx_dump_receive_utest.cc
     ${LLT_CODE_ROOT_PATH}/testcase/adx_sock_device_utest.cc
     ${LLT_CODE_ROOT_PATH}/testcase/adx_dump_server_utest.cc
-    ${LLT_CODE_ROOT_PATH}/testcase/adx_dump_callback_utest.cc
     ${LLT_CODE_ROOT_PATH}/testcase/adx_hdc_interface_utest.cc
     ${LLT_CODE_ROOT_PATH}/testcase/adx_msg_proto_utest.cc
     ${LLT_CODE_ROOT_PATH}/testcase/adx_data_dump_utest.cc
-    ${LLT_CODE_ROOT_PATH}/testcase/acl_dump_utest.cc
     ${LLT_CODE_ROOT_PATH}/testcase/main.cc
 )
 

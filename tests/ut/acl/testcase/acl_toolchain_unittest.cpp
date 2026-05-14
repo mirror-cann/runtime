@@ -258,6 +258,104 @@ TEST_F(UTEST_ACL_toolchain, FinalizeDumpTest_AdumpSetDumpConfig_Failed)
     ret = aclmdlFinalizeDump();
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
+
+TEST_F(UTEST_ACL_toolchain, aclmdlInitDump_AclNotInit_Test)
+{
+    (void)aclFinalize();
+    aclError ret = aclmdlInitDump();
+    EXPECT_EQ(ret, ACL_ERROR_UNINITIALIZE);
+    (void)aclInit(nullptr);
+}
+
+TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_AclNotInit_Test)
+{
+    (void)aclFinalize();
+    aclError ret = aclmdlSetDump("test.json");
+    EXPECT_EQ(ret, ACL_ERROR_UNINITIALIZE);
+    (void)aclInit(nullptr);
+}
+
+TEST_F(UTEST_ACL_toolchain, aclmdlFinalizeDump_AclNotInit_Test)
+{
+    (void)aclFinalize();
+    aclError ret = aclmdlFinalizeDump();
+    EXPECT_EQ(ret, ACL_ERROR_UNINITIALIZE);
+    (void)aclInit(nullptr);
+}
+
+TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_NullPath_Test)
+{
+    aclError ret = aclmdlInitDump();
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    ret = aclmdlSetDump(nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    ret = aclmdlFinalizeDump();
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_InitDumpFlagFalse_Test)
+{
+    aclError ret = aclmdlSetDump(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
+    EXPECT_EQ(ret, ACL_ERROR_DUMP_NOT_RUN);
+}
+
+TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_AdumpSetDumpConfig_ADUMP_INPUT_FAILED_Test)
+{
+    aclError ret = aclmdlInitDump();
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpSetDumpConfig(_))
+        .WillOnce(Return(Adx::ADUMP_INPUT_FAILED));
+    ret = aclmdlSetDump(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_DUMP_CONFIG);
+
+    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+
+    ret = aclmdlFinalizeDump();
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_GetConfigStrFromFile_Failed_Test)
+{
+    aclError ret = aclmdlInitDump();
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    ret = aclmdlSetDump("invalid_path_not_exist.json");
+    EXPECT_NE(ret, ACL_SUCCESS);
+
+    ret = aclmdlFinalizeDump();
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_toolchain, HandleDumpCommand_AdxDataDumpServerInit_Failed_Test)
+{
+    acl::AclDump aclDump;
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdxDataDumpServerInit())
+        .WillOnce(Return(1));
+    aclError ret = aclDump.HandleDumpConfig(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
+    EXPECT_EQ(ret, ACL_ERROR_INTERNAL_ERROR);
+    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+}
+
+TEST_F(UTEST_ACL_toolchain, HandleDumpCommand_AdumpSetDumpConfig_ADUMP_INPUT_FAILED_Test)
+{
+    acl::AclDump aclDump;
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpSetDumpConfig(_))
+        .WillOnce(Return(Adx::ADUMP_INPUT_FAILED));
+    aclError ret = aclDump.HandleDumpConfig(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_DUMP_CONFIG);
+    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+}
+
+TEST_F(UTEST_ACL_toolchain, HandleDumpConfig_EmptyConfigStr_Test)
+{
+    acl::AclDump aclDump;
+    aclError ret = aclDump.HandleDumpConfig(ACL_BASE_DIR "/tests/ut/acl/json/empty.json");
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
 // ========================== profiling testcase =============================
 
 TEST_F(UTEST_ACL_toolchain, setDeviceSuccess)

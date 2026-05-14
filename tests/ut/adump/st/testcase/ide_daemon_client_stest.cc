@@ -63,7 +63,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_help)
     char *argv1[argc1] = {0};
     argv1[0] = (char *)"ide_cmd";
     argv1[1] = (char *)"--host";
-    argv1[2] = (char *)"10.174.28.162:3562";
+    argv1[2] = (char *)"192.168.1.162:3562";
     argv1[3] = (char *)"--bbox";
     argv1[4] = (char *)"bbox_cmd";
     argv1[5] = (char *)"--log";
@@ -94,7 +94,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_help)
     char *argv2[argc2] = {0};
     argv2[0] = (char *)"ide_cmd";
     argv2[1] = (char *)"--host";
-    argv2[2] = (char *)"10.174.28.162:3562";
+    argv2[2] = (char *)"192.168.1.162:3562";
     argv2[3] = (char *)"--help";
     EXPECT_EQ(0, IdeCmdTestMain(argc2, argv2));
 }
@@ -104,7 +104,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_host_cmd)
     const int number = 5;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--hostcmd", "cd ~/HIAI_PROJECTS/test/out;./test"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--hostcmd", "cd ~/HIAI_PROJECTS/test/out;./test"};
 
     char *argv[number] = {0};
     int i = 0;
@@ -179,7 +179,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_profiler)
     const int number = 5;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--profile", "profile"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--profile", "profile"};
 
     char *argv[number] = {0};
     int i = 0;
@@ -236,7 +236,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_api_device_status)
     const int number = 5;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--api", "device_status"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--api", "device_status"};
     char *argv[number] = {0};
     int i = 0;
     for (; i < number; i++)
@@ -293,7 +293,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_api_board_type)
     const int number = 7;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118","--device","0", "--api", "board_type"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118","--device","0", "--api", "board_type"};
     char *argv[number] = {0};
     int i = 0;
     for (; i < number; i++)
@@ -350,7 +350,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_device_invalid)
     const int number = 7;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118","--device","-1", "--api", "board_type"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118","--device","-1", "--api", "board_type"};
     char *argv[number] = {0};
     int i = 0;
     for (; i < number; i++)
@@ -409,7 +409,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_log)
     const int size = 64;
     int argc = number;
 
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--log", "xxxxx"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--log", "xxxxx"};
 
     char *argv[number] = {0};
     int i = 0;
@@ -459,7 +459,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_sync)
     const int number = 6;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--sync", "source_file", "~/ide_daemon"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--sync", "source_file", "~/ide_daemon"};
      char *argv[number] = {0};
     int i = 0;
     for (; i < number; i++)
@@ -515,7 +515,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_bbox)
     const int number = 5;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--bbox", "xxxxx"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--bbox", "xxxxx"};
     struct stat st;
     memset(&st, 0, sizeof(st));
 
@@ -581,7 +581,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_get)
     const int number = 6;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--get", "local_path", "~/ide_daemon"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--get", "local_path", "~/ide_daemon"};
     char *argv[number] = {0};
     int i = 0;
     for (; i < number; i++)
@@ -647,7 +647,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_get_invalid_path)
     const int number = 6;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--get", "local_path", "/var/dlog/../remote_path"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--get", "local_path", "/var/dlog/../remote_path"};
     char *argv[number] = {0};
     int i = 0;
     for (; i < number; i++)
@@ -712,7 +712,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_detect)
     const int number = 4;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--detect"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--detect"};
     struct stat st;
     memset(&st, 0, sizeof(st));
     
@@ -767,7 +767,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_time)
     const int number = 4;
     const int size = 64;
     int argc = number;
-    char tmp[number][size] = {"ide_cmd",  "--host", "10.174.28.162:22118", "--time"};
+    char tmp[number][size] = {"ide_cmd",  "--host", "192.168.1.162:22118", "--time"};
     struct stat st;
     memset(&st, 0, sizeof(st));
     
@@ -820,8 +820,8 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_time)
 TEST_F(IDE_CMD_STEST, ide_cmd_main_time_for_RemoteOpen)
 {
     const int size = 64;
-    char tmp[size] = "10.174.28.162.11:22118";
-    char tmp1[size] = "10.174.28.162:22118";
+    char tmp[size] = "192.168.1.162.11:22118";
+    char tmp1[size] = "192.168.1.162:22118";
 
 
     MOCKER(setsockopt)
@@ -881,7 +881,7 @@ TEST_F(IDE_CMD_STEST, ide_cmd_main_error)
     char *argv[4];
     argv[0] = "ide_cmd";
     argv[1] = "--host";
-    argv[2] = "10.174.28.162:22118";
+    argv[2] = "192.168.1.162:22118";
     argv[3] = "--detect";
 
     MOCKER(mmSAStartup)

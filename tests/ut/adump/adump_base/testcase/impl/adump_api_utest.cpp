@@ -28,6 +28,7 @@
 #include "common/path.h"
 #include "common/thread.h"
 #include "utils.h"
+#include "error_manager_stub.h"
 
 using namespace Adx;
 #define JSON_BASE ADUMP_BASE_DIR "stub/data/json/"
@@ -587,11 +588,11 @@ TEST_F(AdumpApiUtest, Test_AdumpSetDump)
     ret = AdumpSetDump("", 0);
     EXPECT_EQ(ret, ADUMP_FAILED);
 
-    std::string invalidConfigData = ReadFileToString(JSON_BASE "common/bad_path.json");
+    std::string invalidConfigData = R"({"dump": {"dump_path": "asdf###"}})";
     ret = AdumpSetDump(invalidConfigData.c_str(), invalidConfigData.size());
     EXPECT_EQ(ret, ADUMP_INPUT_FAILED);
 
-    std::string validConfigData = ReadFileToString(JSON_BASE "common/only_path.json");
+    std::string validConfigData = R"({"dump": {"dump_path": "./"}})";
     ret = AdumpSetDump(validConfigData.c_str(), validConfigData.size());
     EXPECT_EQ(ret, ADUMP_SUCCESS);
 
@@ -692,48 +693,98 @@ TEST_F(AdumpApiUtest, Test_OP_Dump_Save)
     system("rm -rf ./UTest_EmptyJsonSuccess");
 }
 
-TEST_F(AdumpApiUtest, Test_OP_Dump_Save_Error)
+TEST_F(AdumpApiUtest, Test_OP_Dump_StartStop_Error)
 {
     EXPECT_EQ(0, AdumpRegisterCallback(1, AdumpCallbackTest, AdumpCallbackTest));
+
+    // Test StopDumpArgs errors
+    EXPECT_EQ(ACL_SUCCESS, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
+    MOCKER_CPP(&DumpManager::StopDumpArgs).stubs().will(returnValue(-1));
+    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
+
     std::string path("./UTest_EmptyJsonSuccess");
+
+    // Test aclopStartDumpArgs with empty path
+    ClearLastReportedErrorCode();
+    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, ""));
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0006");
+
+    // Test aclopStartDumpArgs with path not a directory
+    system("mkdir -p ./UTest_EmptyJsonSuccess/subdir");
+    ClearLastReportedErrorCode();
+    MOCKER_CPP(&Path::IsDirectory).stubs().will(returnValue(false));
+    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0006");
+    GlobalMockObject::verify();
+    
+    // Test aclopStartDumpArgs with create directory failed (path not exist)
+    system("rm -rf ./UTest_EmptyJsonSuccess");
+    ClearLastReportedErrorCode();
+    MOCKER_CPP(&Path::CreateDirectory).stubs().will(returnValue(false));
+    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0006");
+    GlobalMockObject::verify();
+    
+    // Test aclopStartDumpArgs success (path not exist, create success)
+    system("rm -rf ./UTest_EmptyJsonSuccess");
+    ClearLastReportedErrorCode();
     EXPECT_EQ(ACL_SUCCESS, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
+    
+    // Test aclopStartDumpArgs with double start (EP0008)
+    ClearLastReportedErrorCode();
+    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0008");
+
+    // Test StopDumpArgs with file errors
     MOCKER(&File::IsFileOpen).stubs().will(returnValue(ADUMP_FAILED));
     EXPECT_EQ(ACL_SUCCESS, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
+    GlobalMockObject::verify();
+    
     MOCKER(&Path::RealPath).stubs().will(returnValue(false));
     EXPECT_EQ(ACL_SUCCESS, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
+    GlobalMockObject::verify();
+    
     MOCKER(&Path::CreateDirectory).stubs().will(returnValue(false));
     EXPECT_EQ(ACL_SUCCESS, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
+    GlobalMockObject::verify();
+    
     std::string jsonPath = path + "/UTest_EmptyJsonSuccess/test_op_info.json";
     std::ifstream jsonFile(jsonPath);
     EXPECT_EQ(true, jsonFile.is_open());
     std::string data;
     std::getline(jsonFile, data);
     EXPECT_STREQ("", data.c_str());
+    
     DumpManager::Instance().opInfoRecordPath_.clear();
     DumpManager::Instance().enableCallbackFunc_.clear();
     DumpManager::Instance().disableCallbackFunc_.clear();
     system("rm -rf ./UTest_EmptyJsonSuccess");
 }
 
-TEST_F(AdumpApiUtest, Test_OP_Dump_Api_Error)
+TEST_F(AdumpApiUtest, Test_aclopStartDumpArgs_NullPath)
 {
-    EXPECT_EQ(0, AdumpRegisterCallback(1, AdumpCallbackTest, AdumpCallbackTest));
+    ClearLastReportedErrorCode();
+    aclError ret = aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0007");
+}
 
-    EXPECT_EQ(ACL_SUCCESS, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
-    MOCKER_CPP(&DumpManager::StopDumpArgs).stubs().will(returnValue(-1));
-    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStopDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS));
-
-    std::string path("./UTest_EmptyJsonSuccess");
-    system("mkdir ./UTest_EmptyJsonSuccess");
-    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, ""));
-    MOCKER_CPP(&Path::IsDirectory).stubs().will(returnValue(false)).then(returnValue(true));
-    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
-    EXPECT_EQ(ACL_SUCCESS, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
-    EXPECT_EQ(ACL_ERROR_FAILURE, aclopStartDumpArgs(ACL_OP_DUMP_OP_AICORE_ARGS, path.c_str()));
-    DumpManager::Instance().opInfoRecordPath_.clear();
-    DumpManager::Instance().enableCallbackFunc_.clear();
-    DumpManager::Instance().disableCallbackFunc_.clear();
-    system("rm -rf ./UTest_EmptyJsonSuccess");
+TEST_F(AdumpApiUtest, Test_aclopStartDumpArgs_InvalidDumpType)
+{
+    std::string path("./UTest_ValidPath");
+    system("mkdir ./UTest_ValidPath");
+    
+    ClearLastReportedErrorCode();
+    aclError ret1 = aclopStartDumpArgs(0, path.c_str());
+    EXPECT_EQ(ret1, ACL_ERROR_FAILURE);
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0006");
+    
+    ClearLastReportedErrorCode();
+    aclError ret2 = aclopStartDumpArgs(2, path.c_str());
+    EXPECT_EQ(ret2, ACL_ERROR_FAILURE);
+    EXPECT_EQ(GetLastReportedErrorCode(), "EP0006");
+    
+    system("rm -rf ./UTest_ValidPath");
 }
 
 TEST_F(AdumpApiUtest, Test_Callback_AdumpSetDump_AdumpUnSetDump)

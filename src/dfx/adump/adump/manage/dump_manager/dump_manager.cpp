@@ -27,6 +27,7 @@
 #include "exception_info_common.h"
 #include "dump_config_converter.h"
 #include "adump_api.h"
+#include "adump_error_manager.h"
 #include "operator_dumper.h"
 #include "kernel_dfx_dumper.h"
 #include "adx_dump_record.h"
@@ -674,23 +675,30 @@ int32_t DumpManager::StartDumpArgs(const std::string& dumpPath)
         std::lock_guard<std::mutex> lk(resourceMtx_);
         dumpSwitch = dumpSetting_.GetDumpSwitch();
         if ((dumpSwitch & OP_INFO_RECORD_DUMP) == OP_INFO_RECORD_DUMP) {
-            IDE_LOGW("Double OpInfoRecord Start Entry");
+            REPORT_EP0008_API_CALL_SEQUENCE(
+                FUNC_NAME_ACL_OP_START_DUMP_ARGS, ADUMP_REASON_API_CALLED_REPEATEDLY);
             return -1;
         }
 
         Adx::Path path(dumpPath);
         if (path.Empty()) {
-            IDE_LOGE("OpInfoRecord path[%s] is empty", dumpPath.c_str());
+            REPORT_EP0006_INVALID_ARGUMENT(
+                FUNC_NAME_ACL_OP_START_DUMP_ARGS, dumpPath, FUNC_ACL_OP_START_DUMP_ARGS_PARAM_PATH,
+                ADUMP_REASON_PARAM_PATH_EMPTY);
             return -1;
         }
         if (!path.Exist()) {
             if (!path.CreateDirectory(true)) {
-                IDE_LOGE("Create path[%s] failed, strerr: %s", dumpPath.c_str(), strerror(errno));
+                std::string reason = StrUtils::Format(ADUMP_REASON_PARAM_PATH_CREATE_DIR_ERROR, strerror(errno));
+                REPORT_EP0006_INVALID_ARGUMENT(
+                    FUNC_NAME_ACL_OP_START_DUMP_ARGS, dumpPath, FUNC_ACL_OP_START_DUMP_ARGS_PARAM_PATH, reason);
                 return -1;
             }
         }
         if (!path.IsDirectory()) {
-            IDE_LOGE("OpInfoRecord path[%s] is not directory!", dumpPath.c_str());
+            REPORT_EP0006_INVALID_ARGUMENT(
+                FUNC_NAME_ACL_OP_START_DUMP_ARGS, dumpPath, FUNC_ACL_OP_START_DUMP_ARGS_PARAM_PATH,
+                ADUMP_REASON_PARAM_PATH_NOT_DIRECTORY);
             return -1;
         }
 

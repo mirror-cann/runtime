@@ -1511,6 +1511,61 @@
       }
     },
     {
+      "errClass": "DUMP Errors",
+      "errTitle": "Config_Error",
+      "ErrCode": "EP0005",
+      "ErrMessage": "Conflict of configuration items in configuration file %s. Reason: %s.",
+      "Arglist": "path,reason",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "N/A"
+      }
+    },
+    {
+      "errClass": "DUMP Errors",
+      "errTitle": "Invalid_Argument",
+      "ErrCode": "EP0006",
+      "ErrMessage": "%s failed. Value %s for parameter %s is invalid. Reason: %s",
+      "Arglist": "func,value,param,reason",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "N/A"
+      }
+    },
+    {
+      "errClass": "DUMP Errors",
+      "errTitle": "Invalid_Argument_Null_Pointer",
+      "ErrCode": "EP0007",
+      "ErrMessage": "%s failed because %s cannot be a NULL pointer.",
+      "Arglist": "func,param",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "Try again with a correct pointer argument."
+      }
+    },
+    {
+      "errClass": "DUMP Errors",
+      "errTitle": "Invalid_Argument_API_Call_Sequence",
+      "ErrCode": "EP0008",
+      "ErrMessage": "%s failed. Reason: %s.",
+      "Arglist": "func,reason",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "N/A"
+      }
+    },
+    {
+      "errClass": "DUMP Errors",
+      "errTitle": "Inner_Error",
+      "ErrCode": "EP9999",
+      "ErrMessage": "%s",
+      "Arglist": "message",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "N/A"
+      }
+    },
+    {
       "errClass": "Queue Schedule Errors",
       "errTitle": "Inner_Error_Group_Attach_Failed",
       "ErrCode": "EM9001",

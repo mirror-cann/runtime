@@ -112,6 +112,8 @@ set(adumpBaseUtestSrcList
     ${ADUMP_BASE_UT_ROOT_PATH}/testcase/impl/dump_tensor_utest.cpp
     ${ADUMP_BASE_UT_ROOT_PATH}/testcase/impl/dump_setting_utest.cpp
     ${ADUMP_BASE_UT_ROOT_PATH}/testcase/impl/dump_config_converter_utest.cpp
+    ${ADUMP_BASE_UT_ROOT_PATH}/testcase/impl/acl_dump_utest.cpp
+    ${ADUMP_BASE_UT_ROOT_PATH}/testcase/impl/adx_dump_callback_utest.cpp
     ${ADUMP_BASE_UT_ROOT_PATH}/testcase/operator/operator_preliminary_utest.cpp
     ${ADUMP_BASE_UT_ROOT_PATH}/testcase/operator/operator_preliminary_platform_utest.cpp
     ${ADUMP_BASE_UT_ROOT_PATH}/testcase/operator/operator_dumper_utest.cpp
