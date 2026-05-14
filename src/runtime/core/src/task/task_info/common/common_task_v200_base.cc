@@ -82,11 +82,11 @@ rtError_t WriteValuePtrTaskInit(TaskInfo *taskInfo, const void * const pointedAd
     TaskWrCqeFlag cqeFlag)
 {
     TaskCommonInfoInit(taskInfo);
-    taskInfo->typeName = const_cast<char_t*>("WriteValuePtrTask");
+    taskInfo->typeName = "WriteValuePtrTask";
     taskInfo->type = TS_TASK_TYPE_WRITE_VALUE;
 
     WriteValueTaskInfo *writeValTsk = &taskInfo->u.writeValTask;
-    writeValTsk->sqeAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointedAddr));
+    writeValTsk->sqeAddr = RtPtrToValue(pointedAddr);
     writeValTsk->cqeFlag = cqeFlag;
     writeValTsk->ptrFlag = 1U;
 
