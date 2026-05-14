@@ -12,7 +12,6 @@
 #include "api.hpp"
 #include "api_handle_guard.h"
 #include "osal.hpp"
-#include "thread_local_container.hpp"
 #include "rts/rts.h"
 #include "global_state_manager.hpp"
 
@@ -50,8 +49,6 @@ rtError_t rtsLaunchKernelWithHostArgs(rtFuncHandle funcHandle, uint32_t numBlock
  
     Kernel * const kernel = RtPtrToPtr<Kernel *>(funcHandle);
     const KernelRegisterType regType = kernel->GetKernelRegisterType();
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RtArgsWithType argsWithType = {};
     rtArgsEx_t argsInfo = {};
     rtCpuKernelArgs_t cpuArgsInfo = {};
@@ -78,7 +75,6 @@ rtError_t rtsLaunchKernelWithHostArgs(rtFuncHandle funcHandle, uint32_t numBlock
 
     const rtError_t ret = apiInstance->LaunchKernelV2(kernel, numBlocks, &argsWithType,
         exeStream, cfg);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -97,15 +93,12 @@ rtError_t rtsLaunchCpuKernel(const rtFuncHandle funcHandle, uint32_t numBlocks, 
     const KernelRegisterType regType = kernel->GetKernelRegisterType();
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(regType != RT_KERNEL_REG_TYPE_CPU, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
         __func__, "kernel", "current API only support CPU kernel");
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RtArgsWithType argsWithType = {};
     argsWithType.type = RT_ARGS_CPU_EX;
     argsWithType.args.cpuArgsInfo = argsInfo;
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchKernelV2(kernel, numBlocks, &argsWithType,
         exeStream, cfg);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
 
@@ -121,15 +114,12 @@ rtError_t rtsLaunchKernelWithConfig(rtFuncHandle funcHandle, uint32_t numBlocks,
         RT_ERROR_INVALID_VALUE, reserve, "nullptr");
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RtArgsWithType argsWithType = {};
     argsWithType.type = RT_ARGS_HANDLE;
     argsWithType.args.argHandle = RtPtrToPtr<RtArgsHandle *>(argsHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchKernelV2(RtPtrToPtr<Kernel *>(funcHandle), numBlocks, &argsWithType,
         exeStream, cfg);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -148,8 +138,6 @@ rtError_t rtsLaunchKernelWithDevArgs(rtFuncHandle funcHandle, uint32_t numBlocks
 
     Kernel * const kernel = RtPtrToPtr<Kernel *>(funcHandle);
     const KernelRegisterType regType = kernel->GetKernelRegisterType();
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
 
     RtArgsWithType argsWithType = {};
     rtArgsEx_t argsInfo = {};
@@ -171,7 +159,6 @@ rtError_t rtsLaunchKernelWithDevArgs(rtFuncHandle funcHandle, uint32_t numBlocks
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchKernelV2(RtPtrToPtr<Kernel *>(funcHandle), numBlocks, &argsWithType,
         exeStream, cfg);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -192,13 +179,10 @@ rtError_t rtLaunchDvppTask(const void *sqe, uint32_t sqeLen, rtStream_t stm, rtD
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtLaunchDvppTask);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
 
     const rtError_t error = apiInstance->LaunchDvppTask(sqe, sqeLen, exeStream, cfg);
 
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtLaunchDvppTask);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -215,11 +199,8 @@ rtError_t rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, const rt
         ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "chip type(%d) does not support.", static_cast<int32_t>(chipType));
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->LaunchRandomNumTask(taskInfo, exeStream, reserve);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
