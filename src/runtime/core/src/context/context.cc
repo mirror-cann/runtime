@@ -64,6 +64,7 @@
 #include "cmo_task.h"
 #include "aicpu_c.hpp"
 #include "kernel_utils.hpp"
+#include "stars_arg_manager.hpp"
 
 namespace cce {
 namespace runtime {
@@ -136,8 +137,8 @@ static rtError_t LaunchAicpuKernelForCpuSoImpl(const rtKernelLaunchNames_t * con
     TaskInfo *tsk = stm->AllocTask(&submitTask, TS_TASK_TYPE_KERNEL_AICORE, errorReason);
     NULL_PTR_RETURN_MSG(tsk, errorReason);
     AicpuTaskInit(tsk, 1, RT_KERNEL_DEFAULT);
-    ArgLoaderResult result = {};
-    error = device->ArgLoader_()->LoadCpuKernelArgs(argsInfo, stm, &result);
+    StarsArgLoaderResult result = {};
+    error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_CPU_KRN);
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, device->GetTaskFactory()->Recycle(tsk),
         "Failed to load kernel args, retCode=%#x.", error);
     SetAicpuArgs(tsk, result.kerArgs, argsInfo->argsSize, result.handle);
@@ -1091,8 +1092,8 @@ rtError_t Context::UpdateNormalKernelTask(TaskInfo * const updateTask, Stream * 
     return RT_ERROR_NONE;
 }
 
-rtError_t Context::LaunchUpdateKernelSubmit(TaskInfo * const updateTask, Stream * const stm, const rtArgsEx_t * const argsInfo,
-                                            ArgLoaderResult &result)
+rtError_t Context::LaunchUpdateKernelSubmit(
+    TaskInfo* const updateTask, Stream* const stm, const rtArgsEx_t* const argsInfo, StarsArgLoaderResult& result)
 {
     Runtime * const rt = Runtime::Instance();
     const Program * const programPtr = updateTask->u.aicTaskInfo.kernel->Program_();
@@ -1133,8 +1134,9 @@ rtError_t Context::LaunchUpdateKernelSubmit(TaskInfo * const updateTask, Stream 
     return error;
 }
 
-rtError_t Context::LaunchKernelSubmit(TaskInfo *&submitTask, Stream *&stm, const rtArgsEx_t *&argsInfo,
-    ArgLoaderResult &result, const Program * const programPtr)
+rtError_t Context::LaunchKernelSubmit(
+    TaskInfo*& submitTask, Stream*& stm, const rtArgsEx_t*& argsInfo, StarsArgLoaderResult& result,
+    const Program* const programPtr)
 {
     SetKernelLaunchParams(stm, argsInfo, *submitTask);
     if (submitTask->isUpdateSinkSqe == 1U) {
@@ -1168,7 +1170,7 @@ rtError_t Context::LaunchKernel(const void * const stubFunc, const uint32_t core
 {
     rtError_t error;
     rtKernelAttrType kernelAttrType = RT_KERNEL_ATTR_TYPE_AICORE;
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     bool copyFlag = true;
 
     uint64_t addr1 = 0ULL;
@@ -1215,16 +1217,17 @@ rtError_t Context::LaunchKernel(const void * const stubFunc, const uint32_t core
         (argsInfo->argsSize <= (PCIE_BAR_COPY_SIZE - static_cast<uint32_t>(CONTEXT_ALIGN_LEN))) &&
         !stm->NonSupportModelCompile() && !(stm->IsTaskGrouping()) && (kernTask->isUpdateSinkSqe == 0U)) {
         TIMESTAMP_BEGIN(rtKernelLaunch_ArgLoadForMix);
-        error = device_->ArgLoader_()->LoadForMix(argsInfo, stm, &result, mixOpt);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_MIX);
         TIMESTAMP_END(rtKernelLaunch_ArgLoadForMix);
         ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Mix Failed to load args , stream_id=%d,"
                              " retCode=%#x.", stm->Id_(), error);
+        mixOpt = (stm->GetModelNum() == 0U);
         copyFlag = false;
     } else if (((argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE) ||
                (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernTask)) ||
                (kernTask->isUpdateSinkSqe == 1U)) {
         TIMESTAMP_BEGIN(rtKernelLaunch_ArgLoad);
-        error = device_->ArgLoader_()->Load(argsInfo, stm, &result);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_NO_MIX);
         TIMESTAMP_END(rtKernelLaunch_ArgLoad);
         ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Failed to load args, stream_id=%d,"
         " retCode=%#x.", stm->Id_(), error);
@@ -1284,7 +1287,7 @@ rtError_t Context::LaunchKernelWithHandle(void * const progHandle, const uint64_
 {
     rtError_t error;
     rtKernelAttrType kernelAttrType = RT_KERNEL_ATTR_TYPE_AICORE;
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     bool copyFlag = true;
     uint8_t mixType = NO_MIX;
     NULL_PTR_RETURN_MSG_OUTER(progHandle, RT_ERROR_PROGRAM_NULL);
@@ -1337,17 +1340,18 @@ rtError_t Context::LaunchKernelWithHandle(void * const progHandle, const uint64_
        (argsInfo->argsSize <= (PCIE_BAR_COPY_SIZE - CONTEXT_ALIGN_LEN)) && !stm->NonSupportModelCompile() &&
        !(stm->IsTaskGrouping()) && (kernTask->isUpdateSinkSqe == 0U)) {
         TIMESTAMP_BEGIN(rtKernelLaunch_ArgLoadAllForMix);
-        error = device_->ArgLoader_()->LoadForMix(argsInfo, stm, &result, mixOpt);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_MIX);
         TIMESTAMP_END(rtKernelLaunch_ArgLoadAllForMix);
         ERROR_GOTO_MSG_INNER(error, ERROR_FREE, "Mix Failed to load args, stream_id=%d,"
                              " retCode=%#x.", stm->Id_(), error);
+        mixOpt = (stm->GetModelNum() == 0U);
         copyFlag = false;
     } else if (((argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE) ||
                (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernTask)) ||
                (kernTask->isUpdateSinkSqe == 1U)) {
         // 只要不预留pcie,都走公共load流程
         TIMESTAMP_BEGIN(rtKernelLaunch_ArgLoadAll);
-        error = device_->ArgLoader_()->Load(argsInfo, stm, &result);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_NO_MIX);
         TIMESTAMP_END(rtKernelLaunch_ArgLoadAll);
         ERROR_GOTO_MSG_INNER(error, ERROR_FREE, "Failed to load args, stream_id=%d,"
         " retCode=%#x.", stm->Id_(), error);
@@ -1429,7 +1433,7 @@ rtError_t Context::LaunchKernel(Kernel * const kernel, const uint32_t coreDim, c
     uint32_t prefetchCnt2 = 0U;
     TaskInfo *kernTask = nullptr;
     rtError_t error = RT_ERROR_NONE;
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     Program *refProg = nullptr;
     Program * const prog = kernel->Program_();
     NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
@@ -1465,16 +1469,17 @@ rtError_t Context::LaunchKernel(Kernel * const kernel, const uint32_t coreDim, c
         (argsInfo->argsSize <= (PCIE_BAR_COPY_SIZE - CONTEXT_ALIGN_LEN)) && !stm->NonSupportModelCompile() &&
         !(stm->IsTaskGrouping()) && (kernTask->isUpdateSinkSqe == 0U)) {
         TIMESTAMP_BEGIN(rtKernelLaunch_ArgLoadAllForMix);
-        error = device_->ArgLoader_()->LoadForMix(argsInfo, stm, &result, mixOpt);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_MIX);
         TIMESTAMP_END(rtKernelLaunch_ArgLoadAllForMix);
         ERROR_GOTO_MSG_INNER(error, ERROR_FREE, "Mix Failed to load args, stream_id=%d,"
                               " retCode=%#x.", stm->Id_(), error);
+        mixOpt = (stm->GetModelNum() == 0U);
         copyFlag = false;
     } else if (((argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE) ||
                (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernTask)) ||
                (kernTask->isUpdateSinkSqe == 1U)) {
         TIMESTAMP_BEGIN(rtLaunchKernel_ArgLoadAll);
-        error = device_->ArgLoader_()->Load(argsInfo, stm, &result);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_NO_MIX);
         TIMESTAMP_END(rtLaunchKernel_ArgLoadAll);
         ERROR_GOTO_MSG_INNER(error, ERROR_FREE, "Failed to load args, stream_id=%d, retCode=%#x.",
                              stm->Id_(), error);
@@ -1532,7 +1537,7 @@ ERROR_FREE:
     return error;
 }
 
-void Context::LaunchKernelRecycle(ArgLoaderResult &result, TaskInfo *&recycleTask, const Program * const prog) const
+void Context::LaunchKernelRecycle(StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog) const
 {
     rtError_t error = RT_ERROR_NONE;
     Runtime * const rt = Runtime::Instance();
@@ -1801,8 +1806,8 @@ ERROR_RECYCLE:
 rtError_t Context::GetDevArgsAddr(Stream * const stm, const rtArgsEx_t * const argsInfo, void ** const devArgsAddr,
     void ** const argsHandle) const
 {
-    ArgLoaderResult result = {};
-    const rtError_t error = stm->Device_()->ArgLoader_()->Load(argsInfo, stm, &result);
+    StarsArgLoaderResult result = {};
+    const rtError_t error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_NO_MIX);
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to load args, stream_id=%d,"
     " retCode=%#x.", stm->Id_(), error);
 

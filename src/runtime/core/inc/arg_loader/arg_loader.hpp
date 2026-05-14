@@ -16,7 +16,8 @@
 #include "base.hpp"
 #include "osal.hpp"
 #include "driver.hpp"
-#include "runtime.hpp"
+#include "device.hpp"
+#include "load_policy.hpp"
 #include "h2d_copy_mgr.hpp"
 
 namespace cce {
@@ -39,8 +40,9 @@ inline void UpdateAddrField(const void * const kerArgs,
 }
 
 struct ArgLoaderResult {
-    void *handle;
-    void *kerArgs;
+    void* handle;
+    void* kerArgs;
+    uint32_t allocatedEntrySize{0U}; // 实际分配的 entry 大小，0=按 argsSize 拷贝
 };
 
 struct StreamSwitchNLoadResult {
@@ -75,7 +77,9 @@ public:
     }
 
     virtual rtError_t Init() = 0;
-    virtual rtError_t AllocCopyPtr(const uint32_t size, ArgLoaderResult * const result) = 0; // for David, not use smArgs
+    // for starsv2
+    virtual rtError_t AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLoaderResult* const result) = 0;
+
     virtual rtError_t Load(const rtArgsEx_t * const argsInfo,
                            Stream * const stm, ArgLoaderResult * const result) = 0;
     virtual rtError_t LoadForMix(const rtArgsEx_t * const argsInfo,
@@ -108,6 +112,36 @@ public:
                                             const uint32_t elementSize, const rtSwitchDataType_t dataType,
                                             StreamSwitchNLoadResult * const result) = 0;
     virtual bool CheckPcieBar(void) = 0;
+
+    virtual rtError_t AllocCopyPtr(uint32_t size, LoadPolicy policy, ArgLoaderResult* result)
+    {
+        if (policy == LoadPolicy::LP_GENERIC) {
+            // starsv2
+            return AllocCopyPtrWithGenericPolicy(size, result);
+        }
+        // stars
+        return AllocCopyPtrWithSpecificPolicy(size, policy, result);
+    }
+
+    // ArgManager 统一流程：no-copy 时分配 Handle（freeArgs=false），按历史行为填充字段
+    // 默认返回 FEATURE_NOT_SUPPORT，只有 UmaArgLoader override 提供实际实现
+    virtual rtError_t AllocNoCopyPtr(const void* hostArgs, ArgLoaderResult* result)
+    {
+        UNUSED(hostArgs);
+        UNUSED(result);
+        return RT_ERROR_FEATURE_NOT_SUPPORT;
+    }
+
+    // ArgManager 统一流程：按策略分配设备内存 + Handle
+    // 默认返回 FEATURE_NOT_SUPPORT，只有 UmaArgLoader override 提供实际实现
+    virtual rtError_t AllocCopyPtrWithSpecificPolicy(uint32_t size, LoadPolicy policy, ArgLoaderResult* result)
+    {
+        UNUSED(size);
+        UNUSED(policy);
+        UNUSED(result);
+        return RT_ERROR_FEATURE_NOT_SUPPORT;
+    }
+
 protected:
     Driver *drv_;
     Device *device_;

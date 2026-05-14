@@ -20,6 +20,7 @@
 #include "osal.hpp"
 #include "reference.hpp"
 #include "arg_loader.hpp"
+#include "runtime.hpp"
 #include "pctrace.hpp"
 #include "model.hpp"
 #include "capture_model.hpp"
@@ -63,6 +64,7 @@ class Kernel;
 class DavinciKernelTask;
 class PCTraceTask;
 class Runtime;
+struct StarsArgLoaderResult;
 class Model;
 class Label;
 struct ArgLoaderResult;
@@ -446,10 +448,11 @@ public:
         Kernel *&registeredKernel, Program *&prog, rtKernelAttrType &kernelAttrType, Module *&mdl, const void * const stubFunc,
         uint64_t &addr1, uint64_t &addr2, void * const progHandle, const uint64_t tilingKey,
         uint32_t &prefetchCnt1, uint32_t &prefetchCnt2);
-    rtError_t LaunchKernelSubmit(TaskInfo *&submitTask, Stream *&stm, const rtArgsEx_t *&argsInfo,
-                                 ArgLoaderResult &result, const Program * const programPtr);
+    rtError_t LaunchKernelSubmit(
+        TaskInfo*& submitTask, Stream*& stm, const rtArgsEx_t*& argsInfo, StarsArgLoaderResult& result,
+        const Program* const programPtr);
     rtError_t SyncStreamsWithTimeout(const std::list<Stream *> &streams, int32_t timeout, const mmTimespec start) const;
-    void LaunchKernelRecycle(ArgLoaderResult &result, TaskInfo *&recycleTask, const Program * const prog) const;
+    void LaunchKernelRecycle(StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog) const;
     void GetStreamlist(rtStreamlistType_t type, StreamList_t *stmList);
     void GetModelList(ModelList_t *mdlList);
 	rtError_t CheckMemAlign(const void * const addr, const rtDataType_t type) const;
@@ -522,8 +525,8 @@ public:
         isForceReset_ = isForceReset;
     }
 
-    rtError_t LaunchUpdateKernelSubmit(TaskInfo * const updateTask, Stream * const stm, const rtArgsEx_t * const argsInfo,
-                                       ArgLoaderResult &result);
+    rtError_t LaunchUpdateKernelSubmit(
+        TaskInfo* const updateTask, Stream* const stm, const rtArgsEx_t* const argsInfo, StarsArgLoaderResult& result);
     rtError_t UpdateTaskPrepare(TaskInfo * const updateTask, const Kernel * const kernel,
                                 const Stream * const stm) const;
     rtError_t UpdateMixKernelTask(TaskInfo * const updateTask, Stream * const stm, void * const updateArgHandle) const;

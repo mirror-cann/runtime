@@ -23,8 +23,9 @@ namespace cce {
 namespace runtime {
 TIMESTAMP_EXTERN(rtKernelLaunch_CpuArgLoad);
 
-static void SetArgsAicpu(const rtArgsEx_t * const argsInfo, const rtAicpuArgsEx_t * const aicpuArgsInfo,
-                        TaskInfo * const taskInfo, DavidArgLoaderResult * const result)
+static void SetArgsAicpu(
+    const rtArgsEx_t* const argsInfo, const rtAicpuArgsEx_t* const aicpuArgsInfo, TaskInfo* const taskInfo,
+    StarsArgLoaderResult* const result)
 {
     AicpuTaskInfo *aicpuTask = &(taskInfo->u.aicpuTaskInfo);
     aicpuTask->comm.args = result->kerArgs;
@@ -122,7 +123,7 @@ static rtError_t StreamLaunchCpuKernelForAicpuStream(const rtKernelLaunchNames_t
     const char_t * const launchSoName = launchNames->soName;
     const char_t * const kernelName = launchNames->kernelName;
     const int32_t streamId = stm->Id_();
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     TaskInfo submitTask = {};
     TaskInfo *kernelTask = &submitTask;
     AicpuTaskInfo *aicpuTask = &(kernelTask->u.aicpuTaskInfo);
@@ -179,7 +180,7 @@ rtError_t StreamLaunchCpuKernel(const rtKernelLaunchNames_t * const launchNames,
     if ((stm->Flags() & RT_STREAM_AICPU) != 0U) {
         return StreamLaunchCpuKernelForAicpuStream(launchNames, coreDim, argsInfo, stm, flag);
     }
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     TaskInfo *kernelTask = nullptr;
     uint32_t pos = 0xFFFFU;
     Stream *dstStm = stm;
@@ -255,7 +256,7 @@ static rtError_t StreamLaunchCpuKernelExWithArgsForAicpuStm(const uint32_t coreD
     Stream * const stm, const uint32_t flag, const uint32_t kernelType)
 {
     const int32_t streamId = stm->Id_();
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     TaskInfo submitTask = {};
     TaskInfo *kernelTask = &submitTask;
     kernelTask->stream = stm;
@@ -300,7 +301,7 @@ rtError_t StreamLaunchCpuKernelExWithArgs(const uint32_t coreDim, const rtAicpuA
         return StreamLaunchCpuKernelExWithArgsForAicpuStm(coreDim, argsInfo, taskCfg, stm, flag, kernelType);
     }
     const int32_t streamId = stm->Id_();
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     TaskInfo *kernelTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
     ERROR_RETURN_MSG_INNER(error, 

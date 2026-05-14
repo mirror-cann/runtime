@@ -94,7 +94,7 @@ static void CommonConstructDavidAICpuSqe(TaskInfo* const taskInfo, rtDavidSqe_t 
     ConstructDavidSqeForHeadCommon(taskInfo, sqeAddr);
     RtDavidStarsAicpuKernelSqe *const sqe = &(sqeAddr->aicpuSqe);
 
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     rtError_t error = static_cast<DavidStream *>(stm)->LoadArgsInfo(&(params->argsInfo), false, &result);
     if (error != RT_ERROR_NONE) {
         sqe->header.type = RT_DAVID_SQE_TYPE_INVALID;

@@ -94,9 +94,10 @@ set(runtimeut_david_series_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/dma/ubdma_task_v200_base.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_graph_task_v200_base.cc
     ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_loader_ub.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/load_policy.cc
     ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_ub.cc
     ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_pcie.cc
-    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_david.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
     ${TOP_DIR}/src/runtime/feature/cntnotify/count_notify.cc
     ${TOP_DIR}/src/runtime/core/src/event/event_david.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task_v200_base.cc
@@ -320,6 +321,9 @@ set(runtimeut_src_profile_list
 
 set(runtime_src_arg_loader_list
     ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/uma_arg_loader.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/load_policy.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_pcie.cc
     ${TOP_DIR}/src/runtime/core/src/pool/memory_list.cc
     ${TOP_DIR}/src/runtime/core/src/pool/memory_pool.cc
     ${TOP_DIR}/src/runtime/core/src/pool/memory_pool_manager.cc
@@ -590,7 +594,8 @@ set(runtime_xpu_src
     ${TOP_DIR}/src/tprt/feature/src/tprt_timer.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/v200/task_res_da.cc
     ${TOP_DIR}/src/runtime/feature/xpu/task_xpu_recycle.cc
-    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_david.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/load_policy.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
     ${TOP_DIR}/src/runtime/feature/xpu/arg_manage_xpu.cc
     ${TOP_DIR}/src/runtime/core/src/pool/h2h_copy_mgr.cc
     ${TOP_DIR}/src/runtime/feature/xpu/arg_loader_xpu.cc

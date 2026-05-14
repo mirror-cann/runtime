@@ -29,7 +29,6 @@
 #include "task_info_base.hpp"
 #include "tprt_error_code.h"
 #include "xpu_aicpu_c.hpp"
-#include "arg_manage_david.hpp"
 #include "utils.h"
 #include "npu_driver.hpp"
 #include "para_convertor.hpp"

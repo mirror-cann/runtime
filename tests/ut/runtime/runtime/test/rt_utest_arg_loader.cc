@@ -1409,3 +1409,86 @@ TEST_F(ArgLoaderTest, find_or_insert_dev_addr)
     err = argLdr.FindOrInsertDevAddr(kernelName, nameMap, &devAddr);
     EXPECT_EQ(RT_ERROR_DRV_ERR, err);
 }
+
+// 验证 maxArgAllocator_==nullptr && size>itemSize_ 时，SelectAllocator 回退到 randomAllocator_
+// 而不是返回 argAllocator_（entry 太小会导致 H2D 拷贝溢出或截断）
+TEST_F(ArgLoaderTest, AllocCopyPtrWithPolicy_AICORE_maxArgNull_fallback_random)
+{
+    int32_t devId = -1;
+    rtError_t error = RT_ERROR_NONE;
+    Device* device = nullptr;
+    void* memBase = reinterpret_cast<void*>(0x100);
+    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+    MOCKER(memcpy_s).stubs().will(returnValue(NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
+        .stubs()
+        .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
+    error = rtGetDevice(&devId);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new(std::nothrow) UmaArgLoader(device);
+    error = loader->Init();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    H2DCopyMgr* savedMax = loader->maxArgAllocator_;
+    loader->maxArgAllocator_ = nullptr;
+    const uint32_t itemSize = loader->itemSize_;
+    ASSERT_GT(itemSize, 0U);
+    const uint32_t testSize = itemSize + 1U;
+    auto verifyPolicy = [&](LoadPolicy policy) {
+        ArgLoaderResult result = {};
+        rtError_t ret = loader->AllocCopyPtrWithSpecificPolicy(testSize, policy, &result);
+        EXPECT_EQ(ret, RT_ERROR_NONE);
+        EXPECT_EQ(result.allocatedEntrySize, testSize);
+        if (result.handle != nullptr) {
+            loader->Release(result.handle);
+        }
+    };
+    verifyPolicy(LoadPolicy::LP_NO_MIX);
+    verifyPolicy(LoadPolicy::LP_FFTS);
+    loader->maxArgAllocator_ = savedMax;
+    delete loader;
+    delete rawDrv;
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
+}
+
+// 验证 SelectFallbackAllocator 在 maxArgAllocator_==nullptr && size>itemSize_ 时回退到 randomAllocator_
+TEST_F(ArgLoaderTest, SelectFallbackAllocator_maxArgNull_fallback_random)
+{
+    int32_t devId = -1;
+    rtError_t error;
+    Device* device;
+    void* memBase = reinterpret_cast<void*>(0x100);
+    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+
+    MOCKER(memcpy_s).stubs().will(returnValue(NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
+        .stubs()
+        .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
+
+    error = rtGetDevice(&devId);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new(std::nothrow) UmaArgLoader(device);
+    error = loader->Init();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    H2DCopyMgr* savedMax = loader->maxArgAllocator_;
+    loader->maxArgAllocator_ = nullptr;
+    const uint32_t itemSize = loader->itemSize_;
+
+    // size <= itemSize_ → 应返回 argAllocator_
+    H2DCopyMgr* result1 = loader->SelectFallbackAllocator(itemSize);
+    EXPECT_EQ(result1, loader->argAllocator_);
+
+    // size > itemSize_ → 应返回 randomAllocator_（非 argAllocator_）
+    H2DCopyMgr* result2 = loader->SelectFallbackAllocator(itemSize + 1U);
+    EXPECT_EQ(result2, loader->randomAllocator_);
+
+    loader->maxArgAllocator_ = savedMax;
+    delete loader;
+    delete rawDrv;
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
+}

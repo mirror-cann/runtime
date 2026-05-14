@@ -9,10 +9,11 @@
  */
 #include "stream_xpu_c.hpp"
 #include "stream_xpu.hpp"
+#include "kernel.hpp"
 
 namespace cce {
 namespace runtime {
-void XpuStreamLaunchKernelRecycle(DavidArgLoaderResult &result, TaskInfo *&recycleTask, Stream *stm)
+void XpuStreamLaunchKernelRecycle(StarsArgLoaderResult& result, TaskInfo*& recycleTask, Stream* stm)
 {
     XpuStream *xpuStm = static_cast<XpuStream *>(stm);
     if (result.handle != nullptr) {
@@ -27,7 +28,7 @@ void XpuStreamLaunchKernelRecycle(DavidArgLoaderResult &result, TaskInfo *&recyc
     }
 }
 
-void XpuStreamLaunchKernelRecycleAicpu(DavidArgLoaderResult &result, TaskInfo *&recycleTask, Stream *stm)
+void XpuStreamLaunchKernelRecycleAicpu(StarsArgLoaderResult& result, TaskInfo*& recycleTask, Stream* stm)
 {
     if ((recycleTask != nullptr) && (recycleTask->type == TS_TASK_TYPE_KERNEL_AICPU)) {
         DELETE_O(recycleTask->u.aicpuTaskInfo.kernel);

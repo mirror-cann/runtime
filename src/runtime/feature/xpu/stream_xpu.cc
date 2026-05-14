@@ -484,7 +484,7 @@ void XpuStream::ArgReleaseStmPool(TaskInfo * const taskInfo) const
     taskInfo->stmArgPos = UINT32_MAX;
 }
 
-void XpuStream::ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPool) const
+void XpuStream::ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool)
 {
     if (freeStmPool) {
         if (argManage_ != nullptr) {

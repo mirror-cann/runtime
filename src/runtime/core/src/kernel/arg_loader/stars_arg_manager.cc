@@ -11,24 +11,44 @@
 #include "task_info.hpp"
 #include "device.hpp"
 #include "stream.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
+#include "runtime.hpp"
 
 namespace cce {
 namespace runtime {
+namespace {
 
-bool DavidArgManage::CreateArgRes()
+uint32_t GetClampedCpySize(const StarsArgLoaderResult* const result, const uint32_t argsSize)
+{
+    // 计算实际拷贝大小：
+    // - starsv2: 固定allocatedEntrySize==0,不执行裁剪逻辑
+    // - star: cpySize < argsSize时做截断的行为存在于老接口的UmaArgLoader::LoadCpuKernelArgs
+    uint32_t cpySize = argsSize;
+    if ((result->allocatedEntrySize > 0U) && (result->allocatedEntrySize < cpySize)) {
+        cpySize = result->allocatedEntrySize;
+    }
+    return cpySize;
+}
+
+} // namespace
+
+uint32_t StarsArgManager::GetDevId() const { return stream_->Device_()->Id_(); }
+
+int32_t StarsArgManager::GetStmId() const { return stream_->Id_(); }
+
+bool StarsArgManager::CreateArgRes()
 {
     Device * const dev = stream_->Device_();
     void *devAddr = nullptr;
     void *hostAddr = nullptr;
-    const uint64_t size = DAVID_ARG_POOL_SQ_SIZE * dev->GetDevProperties().rtsqDepth;
+    const uint64_t size = STARS_ARG_POOL_SQ_SIZE * dev->GetDevProperties().rtsqDepth;
     argPoolSize_ = static_cast<uint32_t>(size & UINT32_MAX);
 
     dev->ArgStreamMutexLock();
     const uint8_t argStreamNum = dev->GetArgStreamNum();
-    if (argStreamNum >= DAVID_ARG_STREAM_NUM_MAX) {
+    if (argStreamNum >= STARS_ARG_STREAM_NUM_MAX) {
         dev->ArgStreamMutexUnLock();
-        RT_LOG(RT_LOG_WARNING, "argStreamNum=%hhu is over %hhu.", argStreamNum, DAVID_ARG_STREAM_NUM_MAX);
+        RT_LOG(RT_LOG_WARNING, "argStreamNum=%hhu is over %hhu.", argStreamNum, STARS_ARG_STREAM_NUM_MAX);
         return false;
     }
 
@@ -48,7 +68,7 @@ bool DavidArgManage::CreateArgRes()
     return true;
 }
 
-void DavidArgManage::ReleaseArgRes()
+void StarsArgManager::ReleaseArgRes()
 {
     if (devArgResBaseAddr_ != nullptr) {
         FreeArgMem();
@@ -66,7 +86,7 @@ void DavidArgManage::ReleaseArgRes()
     }
 }
 
-bool DavidArgManage::RecycleStmArgPos(const uint32_t taskId, const uint32_t stmArgPos)
+bool StarsArgManager::RecycleStmArgPos(const uint32_t taskId, const uint32_t stmArgPos)
 {
     if ((stmArgPos == UINT32_MAX) || (devArgResBaseAddr_ == nullptr)) {
         return true;
@@ -95,14 +115,14 @@ bool DavidArgManage::RecycleStmArgPos(const uint32_t taskId, const uint32_t stmA
     return true;
 }
 
-bool DavidArgManage::AllocStmArgPos(const uint32_t argsSize, uint32_t &startPos, uint32_t &endPos)
+bool StarsArgManager::AllocStmArgPos(const uint32_t argsSize, uint32_t& startPos, uint32_t& endPos)
 {
     const uint32_t devId = stream_->Device_()->Id_();
     const int32_t stmId = stream_->Id_();
     stmArgTailMutex_.lock();
     const uint32_t head = stmArgHead_.Value();
     uint32_t tail = stmArgTail_.Value();
-    const uint32_t alignArgSize = (argsSize + DAVID_ARG_ADDR_ALIGN_LEN - 1U) & (~(DAVID_ARG_ADDR_ALIGN_LEN - 1U));
+    const uint32_t alignArgSize = (argsSize + STARS_ARG_ADDR_ALIGN_LEN - 1U) & (~(STARS_ARG_ADDR_ALIGN_LEN - 1U));
     // support alloc in following cases, avoid tail==head when full
     const bool flag1 = (head <= tail) && ((tail + alignArgSize) < argPoolSize_);
     const bool flag2 = (head <= tail) && (alignArgSize < head);
@@ -131,7 +151,7 @@ bool DavidArgManage::AllocStmArgPos(const uint32_t argsSize, uint32_t &startPos,
     return true;
 }
 
-void DavidArgManage::FreeFail(DavidArgLoaderResult * const result)
+void StarsArgManager::FreeFail(StarsArgLoaderResult* const result)
 {
     if (result->handle != nullptr) {
         RecycleDevLoader(result->handle);
@@ -142,7 +162,8 @@ void DavidArgManage::FreeFail(DavidArgLoaderResult * const result)
     result->stmArgPos = UINT32_MAX;
 }
 
-rtError_t DavidArgManage::LoadInputOutputArgs(const DavidArgLoaderResult * const result, const rtArgsEx_t * const argsInfo)
+rtError_t StarsArgManager::LoadInputOutputArgs(
+    const StarsArgLoaderResult* const result, const rtArgsEx_t* const argsInfo)
 {
     if (argsInfo->hasTiling != 0U) {
         // set tiling data offset to tiling addr
@@ -150,25 +171,25 @@ rtError_t DavidArgManage::LoadInputOutputArgs(const DavidArgLoaderResult * const
             RtPtrToValue<const void *>(result->kerArgs) + argsInfo->tilingDataOffset;
     }
     UpdateAddrField(result->kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
-    return H2DArgCopy(result, argsInfo->args, argsInfo->argsSize);
+    return H2DArgCopy(result, argsInfo->args, GetClampedCpySize(result, argsInfo->argsSize));
 }
 
-rtError_t DavidArgManage::LoadInputOutputArgs(const DavidArgLoaderResult * const result,
-                                              const rtAicpuArgsEx_t * const argsInfo)
+rtError_t StarsArgManager::LoadInputOutputArgs(
+    const StarsArgLoaderResult* const result, const rtAicpuArgsEx_t* const argsInfo)
 {
     UpdateAddrField(result->kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
     UpdateAddrField(result->kerArgs, argsInfo->args, argsInfo->kernelOffsetInfoNum, argsInfo->kernelOffsetInfoPtr);
-    return H2DArgCopy(result, argsInfo->args, argsInfo->argsSize);
+    return H2DArgCopy(result, argsInfo->args, GetClampedCpySize(result, argsInfo->argsSize));
 }
 
-rtError_t DavidArgManage::LoadInputOutputArgs(const DavidArgLoaderResult * const result,
-                                              const rtFusionArgsEx_t * const argsInfo)
+rtError_t StarsArgManager::LoadInputOutputArgs(
+    const StarsArgLoaderResult* const result, const rtFusionArgsEx_t* const argsInfo)
 {
     UpdateAddrField(result->kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
-    return H2DArgCopy(result, argsInfo->args, argsInfo->argsSize);
+    return H2DArgCopy(result, argsInfo->args, GetClampedCpySize(result, argsInfo->argsSize));
 }
 
-uint32_t DavidArgManage::GetStmArgPos()
+uint32_t StarsArgManager::GetStmArgPos()
 {
     if (devArgResBaseAddr_ == nullptr) {
         return UINT32_MAX;

@@ -9,6 +9,7 @@
  */
 #include "context.hpp"
 #include "stars.hpp"
+#include "stars_arg_manager.hpp"
 #include "davinci_kernel_task.h"
 #include "davinci_multiple_task.h"
 #include "task_info_v100.h"
@@ -94,12 +95,11 @@ void CommonConstructAICpuSqe(TaskInfo* const taskInfo, rtStarsSqe_t *const comma
 {
     DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
     Stream* const stream = taskInfo->stream;
-    ArgLoader* const devArgLdr = stream->Device_()->ArgLoader_();
-    ArgLoaderResult result{};
+    StarsArgLoaderResult result{};
     rtError_t error = RT_ERROR_NONE;
     RtStarsAicpuKernelSqe *const aicpuSqe = &(command[params->idx].aicpuSqe);
 
-    error = devArgLdr->LoadCpuKernelArgs(&(params->argsInfo), stream, &result);
+    error = stream->LoadArgsInfo(&(params->argsInfo), false, &result, LoadPolicy::LP_CPU_KRN);
     if (error != RT_ERROR_NONE) {
         aicpuSqe->header.type = RT_STARS_SQE_TYPE_INVALID;
         RT_LOG(RT_LOG_ERROR, "Failed to load cpu Kernel args , retCode=%#x", error);

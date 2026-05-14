@@ -12,7 +12,7 @@
 
 #include <mutex>
 #include "task_info.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 
 namespace cce {
 namespace runtime {
@@ -21,10 +21,10 @@ class XpuStream;
 
 constexpr uint32_t XPU_ARG_POOL_COPY_SIZE = 4096U;
 
-class XpuArgManage : public DavidArgManage {
+class XpuArgManage : public StarsArgManager {
 public:
-    using DavidArgManage::DavidArgManage;
-    explicit XpuArgManage(Stream * const stm) : DavidArgManage(stm) {}
+    using StarsArgManager::StarsArgManager;
+    explicit XpuArgManage(Stream* const stm) : StarsArgManager(stm) {}
 
     ~XpuArgManage() override;
 
@@ -32,13 +32,14 @@ public:
     bool CreateArgRes() override;
     void ReleaseArgRes() override;
     void FreeArgMem() override;
-    rtError_t H2DArgCopy(const DavidArgLoaderResult * const result, void * const args, const uint32_t size) override;
-    
+    rtError_t H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size) override;
+
     rtError_t MallocArgMem(void *&devAddr, void *&hostAddr) override;
-    bool AllocStmPool(const uint32_t size, DavidArgLoaderResult * const result) override;
-    rtError_t AllocCopyPtr(const uint32_t size, const bool useArgPool, DavidArgLoaderResult * const result) override;
-    rtError_t LoadArgsFromArray(const bool useArgPool,
-        const Kernel *kernel, void **argsArray, DavidArgLoaderResult *result) override;
+    bool AllocStmPool(const uint32_t size, StarsArgLoaderResult* const result) override;
+    rtError_t AllocCopyPtr(
+        const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result) override;
+    rtError_t LoadArgsFromArray(
+    const bool useArgPool, const Kernel* kernel, void** argsArray, StarsArgLoaderResult* result) override;
 };
 
 }  // namespace runtime

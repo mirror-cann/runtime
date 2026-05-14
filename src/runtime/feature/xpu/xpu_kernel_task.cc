@@ -14,7 +14,7 @@
 #include "task_manager.h"
 #include "xpu_task_fail_callback_data_manager.h"
 #include "error_code.h"
-
+#include "task_scheduler_error.h"
 
 namespace cce {
 namespace runtime {

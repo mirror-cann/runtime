@@ -1059,7 +1059,7 @@ protected:
         Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
         DavidStream *str = new (std::nothrow) DavidStream(dev, 0, RT_STREAM_DEFAULT, nullptr);
         str->argManage_ = new (std::nothrow) UbArgManage(str);
-        MOCKER_CPP_VIRTUAL(str->ArgManagePtr(), &DavidArgManage::CreateArgRes).stubs().will(returnValue(true));
+        MOCKER_CPP_VIRTUAL(str->ArgManagePtr(), &StarsArgManager::CreateArgRes).stubs().will(returnValue(true));
 
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
         stream_->SetSqMemAttr(false);
@@ -1103,7 +1103,7 @@ protected:
         Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
         DavidStream *str = new (std::nothrow) DavidStream(dev, 0, RT_STREAM_DEFAULT, nullptr);
         str->argManage_ = new (std::nothrow) UbArgManage(str);
-        MOCKER_CPP_VIRTUAL(str->ArgManagePtr(), &DavidArgManage::CreateArgRes).stubs().will(returnValue(false));
+        MOCKER_CPP_VIRTUAL(str->ArgManagePtr(), &StarsArgManager::CreateArgRes).stubs().will(returnValue(false));
 
         rtDeviceReset(0);
         GlobalMockObject::reset();

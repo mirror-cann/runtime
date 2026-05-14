@@ -12,7 +12,7 @@
 #include "runtime/rt.h"
 #include "utils.h"
 #include "xpu_context.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 #define private public
 #define protected public
 #include "kernel.hpp"
@@ -70,11 +70,11 @@ TEST_F(ArgManageXpuTest, xpu_arg_manager_test_01)
 
     XpuStream *stream = static_cast<XpuStream *>(context_->StreamList_().front());
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    DavidArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
-    error = stream->ArgManagePtr()->AllocCopyPtr(100, true, &result1);
+    StarsArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
+    error = stream->ArgManagePtr()->AllocCopyPtr(100, true, LoadPolicy::LP_GENERIC, &result1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = stream->ArgManagePtr()->AllocCopyPtr(100, false, &result1);
+    error = stream->ArgManagePtr()->AllocCopyPtr(100, false, LoadPolicy::LP_GENERIC, &result1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     void *args = malloc(100);
@@ -100,6 +100,30 @@ TEST_F(ArgManageXpuTest, xpu_arg_manager_test_01)
     delete result;
  }
 
+TEST_F(ArgManageXpuTest, xpu_alloc_copy_ptr_no_copy)
+{
+    MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
+    MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+
+    rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
+    Runtime* rt = (Runtime *)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext *>(rt->GetXpuCtxt());
+
+    const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
+    const uint32_t flag = 0;
+    Stream** result = new(std::nothrow) Stream *(nullptr);
+    error = context->StreamCreate(prio, flag, result);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    XpuStream* stream = static_cast<XpuStream *>(context->StreamList_().front());
+    StarsArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
+    error = stream->ArgManagePtr()->AllocCopyPtr(100, false, LoadPolicy::LP_GENERIC, &result1);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
+    delete result;
+}
+
 TEST_F(ArgManageXpuTest, xpu_arg_manager_test_03)
 {
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
@@ -108,8 +132,8 @@ TEST_F(ArgManageXpuTest, xpu_arg_manager_test_03)
     rtError_t error = context_->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
     XpuArgManage *xpuArgsManager = new XpuArgManage(context_->StreamList_().front());
-    DavidArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
-    MOCKER_CPP(&DavidArgManage::AllocStmArgPos).stubs().will(returnValue(false));
+    StarsArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
+    MOCKER_CPP(&StarsArgManager::AllocStmArgPos).stubs().will(returnValue(false));
     xpuArgsManager->AllocStmPool(100, &result1);
     delete xpuArgsManager;
     delete result;
@@ -127,7 +151,7 @@ TEST_F(ArgManageXpuTest, xpu_arg_manager_H2DArgCopy_MemcpyFail)
 
     // Set up result with handle=nullptr to enter else branch (memcpy_s path)
     void *args = malloc(100);
-    DavidArgLoaderResult result1 = {};
+    StarsArgLoaderResult result1 = {};
     result1.kerArgs = malloc(100);
     result1.handle = nullptr;
 
@@ -157,7 +181,7 @@ TEST_F(ArgManageXpuTest, XpuArgManage_LoadArgsFromArray_NotSupport)
     Kernel kernelMock("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
     
     void *argsArray[2] = {(void *)0x100, (void *)0x200};
-    DavidArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
+    StarsArgLoaderResult result1 = {nullptr, nullptr, nullptr, UINT32_MAX};
     
     error = stream->ArgManagePtr()->LoadArgsFromArray(false, &kernelMock, argsArray, &result1);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);

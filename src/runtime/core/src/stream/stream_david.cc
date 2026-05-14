@@ -163,15 +163,6 @@ rtError_t DavidStream::CreateStreamArgRes()
     return RT_ERROR_NONE;
 }
 
-void DavidStream::ReleaseStreamArgRes()
-{
-    isHasArgPool_ = false;
-    if (argManage_ != nullptr) {
-        argManage_->ReleaseArgRes();
-        DELETE_O(argManage_);
-    }
-}
-
 rtError_t DavidStream::SubmitMaintenanceTask(const MtType type, bool isForceRecycle, int32_t targetStmId, 
     const uint32_t logicCqId, bool terminal)
 {
@@ -1283,7 +1274,7 @@ void DavidStream::ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPo
     }
 }
 
-void DavidStream::ArgReleaseStmPool(TaskInfo * const taskInfo)
+void DavidStream::ArgReleaseStmPool(TaskInfo* const taskInfo) const
 {
     if (argManage_ != nullptr) {
         (void)argManage_->RecycleStmArgPos(taskInfo->id, taskInfo->stmArgPos);
@@ -1306,7 +1297,7 @@ void DavidStream::ArgReleaseMultipleTask(TaskInfo * const taskInfo)
     }
 }
 
-uint32_t DavidStream::GetArgPos()
+uint32_t DavidStream::GetArgPos() const
 {
     if (argManage_ != nullptr) {
         return argManage_->GetStmArgPos();

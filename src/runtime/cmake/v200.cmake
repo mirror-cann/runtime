@@ -296,7 +296,8 @@ set(libruntime_v200_v201_common_src_files
     ${RUNTIME_FEATURE_DIR}/aclgraph/capture_model.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/capture_model_utils.cc
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_loader_ub.cc
-    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_david.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/load_policy.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/stars_arg_manager.cc
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_pcie.cc
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_ub.cc
     ${RUNTIME_CORE_DIR}/src/kernel/args/args_handle_allocator.cc

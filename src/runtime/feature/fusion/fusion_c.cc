@@ -344,8 +344,8 @@ static rtError_t FusionKernelTaskPreProc(rtFunsionTaskInfo_t * const fusionKerne
     return error;
 }
 
-static void SetArgsFusionKernel(const rtFusionArgsEx_t * const argsInfo,
-                                TaskInfo * const taskInfo, DavidArgLoaderResult * const result)
+static void SetArgsFusionKernel(
+    const rtFusionArgsEx_t* const argsInfo, TaskInfo* const taskInfo, StarsArgLoaderResult* const result)
 {
     FusionTaskInfo * const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
     fusionKernelTask->argsInfo = const_cast<rtFusionArgsEx_t*>(argsInfo);
@@ -421,7 +421,7 @@ void GetAicAivTypeForFusion(uint8_t mixType, rtKernelAttrType kernelAttrType, ui
 
 rtError_t LaunchFusionKernel(Stream* stm, void * const fusionKernelInfo, rtFusionArgsEx_t *argsInfo)
 {
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     Program *prog = nullptr;
     Runtime * const rt = Runtime::Instance();
     rtFunsionTaskInfo_t *fusionKernel = static_cast<rtFunsionTaskInfo_t *>(fusionKernelInfo);

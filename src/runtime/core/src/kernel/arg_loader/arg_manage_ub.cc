@@ -11,7 +11,7 @@
 #include "task_info.hpp"
 #include "device.hpp"
 #include "stream.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 #include "kernel.hpp"
 #include "kernel_utils.hpp"
 
@@ -52,7 +52,7 @@ void UbArgManage::FreeArgMem()
     (void)dev->Driver_()->PutTsegInfo(dev->Id_(), &(memTsegInfo_.hostTsegInfo));
 }
 
-bool UbArgManage::AllocStmPool(const uint32_t size, DavidArgLoaderResult * const result)
+bool UbArgManage::AllocStmPool(const uint32_t size, StarsArgLoaderResult* const result)
 {
     uint32_t startPos = UINT32_MAX;
     uint32_t endPos = UINT32_MAX;
@@ -67,16 +67,17 @@ bool UbArgManage::AllocStmPool(const uint32_t size, DavidArgLoaderResult * const
     return true;
 }
 
-rtError_t UbArgManage::AllocCopyPtr(const uint32_t size, const bool useArgPool,
-                                    DavidArgLoaderResult * const result)
+rtError_t UbArgManage::AllocCopyPtr(
+    const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result)
 {
+    UNUSED(policy);
     if (useArgPool && AllocStmPool(size, result)) {
         return RT_ERROR_NONE;
     }
     return stream_->Device_()->UbArgLoaderPtr()->AllocCopyPtr(size, result);
 }
 
-rtError_t UbArgManage::ParseArgsCpyWqe(const DavidArgLoaderResult * const result, const uint32_t size) const
+rtError_t UbArgManage::ParseArgsCpyWqe(const StarsArgLoaderResult* const result, const uint32_t size) const
 {
     Device * const dev = stream_->Device_();
     const uint32_t devId = dev->Id_();
@@ -92,7 +93,7 @@ rtError_t UbArgManage::ParseArgsCpyWqe(const DavidArgLoaderResult * const result
     return dev->Driver_()->SqArgsCopyWithUb(devId, &sqArgsInfo);
 }
 
-rtError_t UbArgManage::H2DArgCopy(const DavidArgLoaderResult * const result, void * const args, const uint32_t size)
+rtError_t UbArgManage::H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size)
 {
     // h2h copy
     uint32_t offset = 0U;
@@ -128,7 +129,7 @@ void UbArgManage::RecycleDevLoader(void * const handle)
 }
 
 rtError_t UbArgManage::LoadArgsFromArray(const bool useArgPool,
-    const Kernel *kernel, void **argsArray, DavidArgLoaderResult *result)
+    const Kernel *kernel, void **argsArray, StarsArgLoaderResult *result)
 {
     uint64_t paramTotalSize = kernel->GetParamTotalSize();
     uint32_t argsSize = static_cast<uint32_t>(paramTotalSize);
@@ -138,7 +139,7 @@ rtError_t UbArgManage::LoadArgsFromArray(const bool useArgPool,
         return RT_ERROR_NONE;
     }
 
-    rtError_t error = AllocCopyPtr(argsSize, useArgPool, result);
+    rtError_t error = AllocCopyPtr(argsSize, useArgPool, LoadPolicy::LP_GENERIC, result);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Alloc args copy ptr failed, size=%u, device_id=%u, stream_id=%d.",
             argsSize, stream_->Device_()->Id_(), stream_->Id_());

@@ -12,7 +12,6 @@
 #include "runtime/rt.h"
 #include "utils.h"
 #include "xpu_context.hpp"
-#include "arg_manage_david.hpp"
 #define private public
 #define protected public
 #include "kernel.hpp"

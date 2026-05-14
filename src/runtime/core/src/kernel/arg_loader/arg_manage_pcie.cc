@@ -13,7 +13,7 @@
 #include "stream.hpp"
 #include "task_res.hpp"
 #include "error_message_manage.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 #include "kernel.hpp"
 #include "kernel_utils.hpp"
 #include "thread_local_container.hpp"
@@ -42,7 +42,7 @@ void PcieArgManage::FreeArgMem()
     (void)dev->Driver_()->DevMemFree(devArgResBaseAddr_, devId);
 }
 
-bool PcieArgManage::AllocStmPool(const uint32_t size, DavidArgLoaderResult * const result)
+bool PcieArgManage::AllocStmPool(const uint32_t size, StarsArgLoaderResult* const result)
 {
     uint32_t startPos = UINT32_MAX;
     uint32_t endPos = UINT32_MAX;
@@ -54,30 +54,55 @@ bool PcieArgManage::AllocStmPool(const uint32_t size, DavidArgLoaderResult * con
     return true;
 }
 
-rtError_t PcieArgManage::AllocCopyPtr(const uint32_t size, const bool useArgPool, DavidArgLoaderResult * const result)
+rtError_t PcieArgManage::AllocCopyPtr(
+    const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result)
 {
-    rtError_t error = RT_ERROR_NONE;
-    if (useArgPool && AllocStmPool(size, result)) {
-        return error;
+    // starsv2 FAST_LAUNCH pool 路径保持不变
+    if (policy == LoadPolicy::LP_GENERIC && useArgPool && AllocStmPool(size, result)) {
+        result->allocatedEntrySize = 0U;
+        return RT_ERROR_NONE;
     }
 
-    ArgLoaderResult res = {nullptr, nullptr};
-    res.kerArgs = nullptr;
-    res.handle = nullptr;
-    error = stream_->Device_()->ArgLoader_()->AllocCopyPtr(size, &res);
+    ArgLoaderResult res = {};
+    rtError_t error = RT_ERROR_NONE;
+    error = stream_->Device_()->ArgLoader_()->AllocCopyPtr(size, policy, &res);
     if (error == RT_ERROR_NONE) {
         result->kerArgs = res.kerArgs;
         result->handle = res.handle;
+        result->allocatedEntrySize = res.allocatedEntrySize;
     }
     return error;
 }
 
-rtError_t PcieArgManage::H2DArgCopy(const DavidArgLoaderResult * const result, void * const args, const uint32_t size)
+rtError_t PcieArgManage::AllocNoCopyPtr(StarsArgLoaderResult* const result)
+{
+    ArgLoaderResult res = {};
+    rtError_t error = RT_ERROR_NONE;
+    error = stream_->Device_()->ArgLoader_()->AllocNoCopyPtr(result->kerArgs, &res);
+    if (error == RT_ERROR_NONE) {
+        result->kerArgs = res.kerArgs;
+        result->handle = res.handle;
+        result->allocatedEntrySize = 0U;
+    }
+    return error;
+}
+
+rtError_t PcieArgManage::H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size)
 {
     rtError_t error = RT_ERROR_NONE;
     Handle *handle = static_cast<Handle *>(result->handle);
     if (handle != nullptr) {
-        error = handle->argsAlloc->H2DMemCopy(result->kerArgs, args, static_cast<uint64_t>(size));
+        // - stars:
+        // 对齐现有行为需要，当allocator默认copy策略是COPY_POLICY_DEFAULT的，当不能走PCIe BAR时就可能走
+        // COPY_POLICY_ASYNC_PCIE_DMA路径，此时H2DMemCopy的dst就必须是CpyHandle*，即需要使用handle->kerArgs。
+        // - starsv2:
+        // 由于starv2开启了RT_FEATURE_MEM_H2D_MANAGER_POLICY_SYNC_FORCE，所以不会使用COPY_POLICY_ASYNC_PCIE_DMA会被
+        // 换成COPY_POLICY_SYNC，所以总是使用result->handle即可。
+        void* dst = result->kerArgs;
+        if (handle->argsAlloc->GetPolicy() == COPY_POLICY_ASYNC_PCIE_DMA) {
+            dst = handle->kerArgs;
+        }
+        error = handle->argsAlloc->H2DMemCopy(dst, args, static_cast<uint64_t>(size));
         ERROR_RETURN(error, "H2DMemCopy failed, kind=%d, retCode=%#x.",
             static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), error);
     } else {
@@ -95,7 +120,7 @@ void PcieArgManage::RecycleDevLoader(void * const handle)
 }
 
 rtError_t PcieArgManage::LoadArgsFromArray(const bool useArgPool,
-    const Kernel *kernel, void **argsArray, DavidArgLoaderResult *result)
+    const Kernel *kernel, void **argsArray, StarsArgLoaderResult *result)
 {
     uint64_t paramTotalSize = kernel->GetParamTotalSize();
     uint32_t argsSize = static_cast<uint32_t>(paramTotalSize);
@@ -104,7 +129,7 @@ rtError_t PcieArgManage::LoadArgsFromArray(const bool useArgPool,
         return RT_ERROR_NONE;
     }
 
-    rtError_t error = AllocCopyPtr(argsSize, useArgPool, result);
+    rtError_t error = AllocCopyPtr(argsSize, useArgPool, LoadPolicy::LP_GENERIC, result);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Alloc args copy ptr failed, size=%u, device_id=%u, stream_id=%d.",
             argsSize, stream_->Device_()->Id_(), stream_->Id_());

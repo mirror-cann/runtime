@@ -149,6 +149,9 @@ set(libruntime_profile_src_files
 )
 set(libruntime_arg_loader_files
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/uma_arg_loader.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/load_policy.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/stars_arg_manager.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_pcie.cc
 )
 
 set(libruntime_callback_files
@@ -223,7 +226,7 @@ set(xpu_tprt_src_file
     ${RUNTIME_CORE_DIR}/src/pool/h2h_copy_mgr.cc
     ${RUNTIME_DIR}/src/runtime/driver/xpu_driver.cc
     ${RUNTIME_FEATURE_DIR}/xpu/arg_loader_xpu.cc
-    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_david.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/stars_arg_manager.cc
     ${RUNTIME_FEATURE_DIR}/xpu/arg_manage_xpu.cc
     ${RUNTIME_FEATURE_DIR}/xpu/xpu_aicpu_c.cc
     ${RUNTIME_FEATURE_DIR}/xpu/program_plat.cc

@@ -18,6 +18,7 @@
 #include "task_info.hpp"
 #include "runtime.hpp"
 #include "uma_arg_loader.hpp"
+#include "stars_arg_manager.hpp"
 #include "profiler.hpp"
 #include "capture_model_utils.hpp"
 #include "inner_thread_local.hpp"
@@ -38,7 +39,6 @@ rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint
     TaskInfo* kernelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_KERNEL_AICORE, errorReason);
     NULL_PTR_RETURN_MSG(kernelTask, errorReason);
 
-    ArgLoader* const devArgLdr = curCtx->Device_()->ArgLoader_();
     const rtAicpuArgsEx_t* argsInfo = &cpuKernelArgs->baseArgs;
     const size_t cpuParamHeadOffset = cpuKernelArgs->cpuParamHeadOffset;
     const uint32_t kernelType = kernel->GetAicpuKernelType_();
@@ -54,9 +54,9 @@ rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint
     SetNameArgs(kernelTask, kernel->GetSoNameDevAddr(curCtx->Device_()->Id_()),
         kernel->GetFuncNameDevAddr(curCtx->Device_()->Id_()));
     if (argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE || (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernelTask)) {
-        ArgLoaderResult result = {};
+        StarsArgLoaderResult result = {};
         TIMESTAMP_BEGIN(rtKernelLaunch_CpuArgLoad);
-        error = devArgLdr->LoadCpuKernelArgsEx(argsInfo, stm, &result);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_CPU_KRN_EX);
         TIMESTAMP_END(rtKernelLaunch_CpuArgLoad);
         ERROR_GOTO(error, ERROR_FREE, "Failed to load cpu Kernel args, retCode=%#x", error);
         SetAicpuArgs(kernelTask, result.kerArgs, argsInfo->argsSize, result.handle);
@@ -103,14 +103,13 @@ rtError_t InternalLaunchWithArgs(const uint32_t coreDim, const rtAicpuArgsEx_t* 
     NULL_PTR_RETURN_MSG(kernelTask, errorReason);
 
     const int32_t streamId = stm->Id_();
-    ArgLoader* const devArgLdr = curCtx->Device_()->ArgLoader_();
     // Init task
     AicpuTaskInit(kernelTask, static_cast<uint16_t>(coreDim), flag);
     if ((argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE) ||
         (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernelTask)) {
-        ArgLoaderResult result{};
+        StarsArgLoaderResult result{};
         TIMESTAMP_BEGIN(rtKernelLaunch_CpuArgLoad);
-        error = devArgLdr->LoadCpuKernelArgsEx(argsInfo, stm, &result);
+        error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_CPU_KRN_EX);
         TIMESTAMP_END(rtKernelLaunch_CpuArgLoad);
         // Set args for task
         ERROR_GOTO(error, ERROR_FREE, "Failed to load cpu Kernel args , retCode=%#x", error);
@@ -177,7 +176,7 @@ rtError_t StreamLaunchCpuKernel(const rtKernelLaunchNames_t* const launchNames, 
     rtError_t error = RT_ERROR_NONE;
     Context* const curCtx = stm->Context_();
     ArgLoader* const devArgLdr = curCtx->Device_()->ArgLoader_();
-    ArgLoaderResult result{};
+    StarsArgLoaderResult result{};
     const char_t* const launchSoName = launchNames->soName;
     const char_t* const kernelName = launchNames->kernelName;
     TaskInfo submitTask = {};
@@ -191,7 +190,7 @@ rtError_t StreamLaunchCpuKernel(const rtKernelLaunchNames_t* const launchNames, 
     AicpuTaskInit(kernTask, static_cast<uint16_t>(coreDim), flag);
 
     // Set args for task
-    error = devArgLdr->LoadCpuKernelArgs(argsInfo, stm, &result);
+    error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_CPU_KRN);
     ERROR_GOTO(error, ERROR_FREE, "Failed to load cpu Kernel args , retCode=%#x", error);
     SetAicpuArgs(kernTask, result.kerArgs, argsInfo->argsSize, result.handle);
     // handle is owned by task.

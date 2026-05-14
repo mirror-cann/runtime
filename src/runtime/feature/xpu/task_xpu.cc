@@ -150,7 +150,8 @@ void XpuSaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos,
     taskInfo->needPostProc = false;
 }
 
-void XpuSetArgsAicpu(const rtAicpuArgsEx_t * const aicpuArgsInfo, TaskInfo * const taskInfo, DavidArgLoaderResult * const result)
+void XpuSetArgsAicpu(
+    const rtAicpuArgsEx_t* const aicpuArgsInfo, TaskInfo* const taskInfo, StarsArgLoaderResult* const result)
 {
     AicpuTaskInfo *aicpuTask = &(taskInfo->u.aicpuTaskInfo);
     aicpuTask->comm.args = result->kerArgs;

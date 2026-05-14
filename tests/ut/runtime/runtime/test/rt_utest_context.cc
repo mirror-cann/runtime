@@ -36,6 +36,7 @@
 #include "davinci_multiple_task.h"
 #include "dump_task.h"
 #include "arg_loader.hpp"
+#include "arg_loader_ub.hpp"
 #include "stream.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "npu_driver.hpp"
@@ -873,7 +874,7 @@ public:
         return;
     }
 
-    rtError_t AllocCopyPtr(const uint32_t size, ArgLoaderResult * const result) override
+    rtError_t AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLoaderResult* const result) override
     {
         return RT_ERROR_NONE;
     }
@@ -923,6 +924,17 @@ public:
     bool CheckPcieBar(void)
     {
         return true;
+    }
+
+    rtError_t AllocNoCopyPtr(const void* hostArgs, ArgLoaderResult* result) override
+    {
+        result->kerArgs = const_cast<void*>(hostArgs);
+        return RT_ERROR_NONE;
+    }
+
+    rtError_t AllocCopyPtrWithSpecificPolicy(uint32_t size, LoadPolicy policy, ArgLoaderResult* result) override
+    {
+        return RT_ERROR_NONE;
     }
 };
 
@@ -4347,7 +4359,7 @@ TEST_F(ContextTest, MixKernelUpdate_test_1)
     taskInfo.stream = updateStream;
     MOCKER_CPP(&TaskFactory::Alloc).stubs().will(returnValue(&taskInfo));
 
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     TaskInfo updateTask = {};
     uint32_t temp = {};
     updateTask.stream = stream;
@@ -4433,7 +4445,7 @@ TEST_F(ContextTest, MixKernelUpdate_test_2)
         .stubs()
         .will(returnValue(RT_ERROR_NONE));
 
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     TaskInfo updateTask = {};
     uint32_t temp = {};
     updateTask.stream = stream;
@@ -4533,7 +4545,7 @@ TEST_F(ContextTest, MixKernelUpdate_test_3)
     taskInfo.stream = updateStream;
     MOCKER_CPP(&TaskFactory::Alloc).stubs().will(returnValue(&taskInfo));
 
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     TaskInfo updateTask = {};
     updateTask.stream = stream;
     updateTask.id = 1;
@@ -4615,7 +4627,7 @@ TEST_F(ContextTest, MixKernelUpdate_test_4)
     taskInfo.stream = updateStream;
     MOCKER_CPP(&TaskFactory::Alloc).stubs().will(returnValue(&taskInfo));
 
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     TaskInfo updateTask = {};
     updateTask.stream = stream;
     updateTask.id = 1;
@@ -4690,7 +4702,7 @@ Device* deviceStub = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
     taskInfo.stream = updateStream;
     MOCKER_CPP(&TaskFactory::Alloc).stubs().will(returnValue(&taskInfo));
 
-    ArgLoaderResult result = {};
+    StarsArgLoaderResult result = {};
     TaskInfo updateTask = {};
     updateTask.stream = stream;
     updateTask.id = 1;

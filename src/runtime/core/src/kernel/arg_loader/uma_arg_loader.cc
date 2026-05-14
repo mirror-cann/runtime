@@ -212,7 +212,7 @@ rtError_t UmaArgLoader::LoadInputOutputArgsForMix(const Stream * const stm, void
     return error;
 }
 
-rtError_t UmaArgLoader::AllocCopyPtr(const uint32_t size, ArgLoaderResult * const result)
+rtError_t UmaArgLoader::AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLoaderResult* const result)
 {
     Handle *argHandle = nullptr;
     result->handle = handleAllocator_->AllocItem();
@@ -746,6 +746,181 @@ rtError_t UmaArgLoader::Release(void * const argHandle)
 
     handleAllocator_->FreeByItem(argHandle);
     return error;
+}
+
+rtError_t UmaArgLoader::AllocNoCopyPtr(const void* hostArgs, ArgLoaderResult* result)
+{
+    Handle* argHandle = static_cast<Handle*>(handleAllocator_->AllocItem());
+    NULL_PTR_RETURN(argHandle, RT_ERROR_MEMORY_ALLOCATION);
+    argHandle->kerArgs = const_cast<void*>(hostArgs);
+    argHandle->freeArgs = false;
+    argHandle->argsAlloc = argAllocator_;
+    result->kerArgs = const_cast<void*>(hostArgs);
+    result->handle = static_cast<void*>(argHandle);
+    result->allocatedEntrySize = 0U;
+    return RT_ERROR_NONE;
+}
+
+H2DCopyMgr* UmaArgLoader::SelectPcieFirstAllocator(uint32_t size) const
+{
+    if ((argPcieBarAllocator_ != nullptr) && (size <= PCIE_BAR_COPY_SIZE)) {
+        return argPcieBarAllocator_;
+    }
+    if (size > itemSize_) {
+        return (maxArgAllocator_ != nullptr) ? maxArgAllocator_ : randomAllocator_;
+    }
+    return argAllocator_;
+}
+
+H2DCopyMgr* UmaArgLoader::SelectAllocator(uint32_t size, LoadPolicy policy) const
+{
+    switch (policy) {
+        case LoadPolicy::LP_NO_MIX: {
+            // 使用maxItemSize_来匹配运行时真实的maxArgAllocator_容量上限
+            if (size > maxItemSize_) {
+                return randomAllocator_;
+            }
+            return SelectPcieFirstAllocator(size);
+        }
+        case LoadPolicy::LP_MIX: {
+            return argPcieBarAllocator_;
+        }
+        case LoadPolicy::LP_CPU_KRN: {
+            return (size > MULTI_GRAPH_ARG_ENTRY_SIZE) ? superArgAllocator_ : argAllocator_;
+        }
+        case LoadPolicy::LP_CPU_KRN_EX: {
+            if (size > (ARG_ENTRY_INCRETMENT_SIZE + itemSize_)) {
+                return randomAllocator_;
+            }
+            if (size > itemSize_) {
+                return maxArgAllocator_;
+            }
+            if ((argPcieBarAllocator_ == nullptr) || (size > PCIE_BAR_COPY_SIZE)) {
+                return argAllocator_;
+            }
+            return argPcieBarAllocator_;
+        }
+        case LoadPolicy::LP_FFTS: {
+            return SelectPcieFirstAllocator(size);
+        }
+        default: {
+            return nullptr;
+        }
+    }
+}
+
+bool UmaArgLoader::NeedPcieRollback(LoadPolicy policy, H2DCopyMgr* allocator) const
+{
+    return (policy == LoadPolicy::LP_NO_MIX || policy == LoadPolicy::LP_CPU_KRN_EX) &&
+           (allocator == argPcieBarAllocator_) &&
+           device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_ARGS_ALLOC_DEFAULT);
+}
+
+H2DCopyMgr* UmaArgLoader::SelectFallbackAllocator(uint32_t size) const
+{
+    if (size > itemSize_) {
+        return (maxArgAllocator_ != nullptr) ? maxArgAllocator_ : randomAllocator_;
+    }
+    return argAllocator_;
+}
+
+uint32_t UmaArgLoader::GetEntrySize(H2DCopyMgr* allocator, uint32_t argsSize, bool isRandom) const
+{
+    if (isRandom) {
+        return argsSize;
+    }
+    if (allocator == argPcieBarAllocator_) {
+        return PCIE_BAR_COPY_SIZE;
+    }
+    if (allocator == argAllocator_) {
+        return itemSize_;
+    }
+    if (allocator == superArgAllocator_) {
+        return MULTI_GRAPH_SUPER_ARG_ENTRY_SIZE;
+    }
+    if (allocator == maxArgAllocator_) {
+        return maxItemSize_;
+    }
+    return argsSize;
+}
+
+rtError_t UmaArgLoader::CheckPolicyPreCondition(uint32_t size, LoadPolicy policy) const
+{
+    if (policy == LoadPolicy::LP_MIX) {
+        if (argPcieBarAllocator_ == nullptr || size > PCIE_BAR_COPY_SIZE) {
+            ERROR_RETURN_MSG_INNER(RT_ERROR_INVALID_VALUE, "invalid para, byteSize=%u.", size);
+        }
+    }
+    if (policy == LoadPolicy::LP_FFTS) {
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_GE, size > (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE), RT_ERROR_INVALID_VALUE,
+            "size=%u is more than MaxSize=%u", size, (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE));
+    }
+    if (policy == LoadPolicy::LP_CPU_KRN_EX) {
+        COND_RETURN_ERROR(
+            size > itemSize_ && maxArgAllocator_ == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+            "maxArgAllocator_ is nullptr.");
+    }
+    if (policy == LoadPolicy::LP_CPU_KRN) {
+        COND_RETURN_ERROR(
+            size > MULTI_GRAPH_ARG_ENTRY_SIZE && superArgAllocator_ == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+            "superArgAllocator_ is nullptr.");
+    }
+    return RT_ERROR_NONE;
+}
+
+rtError_t UmaArgLoader::AllocCopyPtrWithSpecificPolicy(uint32_t size, LoadPolicy policy, ArgLoaderResult* result)
+{
+    rtError_t preCheck = CheckPolicyPreCondition(size, policy);
+    if (preCheck != RT_ERROR_NONE) {
+        return preCheck;
+    }
+
+    // 分配 Handle
+    Handle* argHandle = static_cast<Handle*>(handleAllocator_->AllocItem());
+    NULL_PTR_RETURN(argHandle, RT_ERROR_MEMORY_ALLOCATION);
+    argHandle->freeArgs = false;
+
+    // 选择分配器
+    H2DCopyMgr* allocator = SelectAllocator(size, policy);
+    if (allocator == nullptr) {
+        handleAllocator_->FreeByItem(argHandle);
+        return RT_ERROR_MEMORY_ALLOCATION;
+    }
+
+    // 分配设备内存
+    bool isRandom = (allocator == randomAllocator_);
+    void* kerArgs = isRandom ? allocator->AllocDevMem(size) : allocator->AllocDevMem();
+
+    // PCIe BAR 回退（NO_MIX_KRN / CPU_EX）
+    if (kerArgs == nullptr && NeedPcieRollback(policy, allocator)) {
+        allocator = SelectFallbackAllocator(size);
+        if (allocator != nullptr) {
+            isRandom = (allocator == randomAllocator_);
+            kerArgs = isRandom ? allocator->AllocDevMem(size) : allocator->AllocDevMem();
+        }
+    }
+    if (kerArgs == nullptr) {
+        handleAllocator_->FreeByItem(argHandle);
+        result->handle = nullptr;
+        return RT_ERROR_MEMORY_ALLOCATION;
+    }
+
+    // 设置 Handle
+    argHandle->kerArgs = kerArgs;
+    argHandle->freeArgs = true;
+    argHandle->argsAlloc = allocator;
+
+    // 设置结果
+    void* devAddr = allocator->GetDevAddr(kerArgs);
+    if (policy == LoadPolicy::LP_MIX) {
+        devAddr = static_cast<void*>(RtPtrToPtr<char_t*>(devAddr) + CONTEXT_ALIGN_LEN);
+    }
+    result->kerArgs = devAddr;
+    result->handle = static_cast<void*>(argHandle);
+    result->allocatedEntrySize = GetEntrySize(allocator, size, isRandom);
+
+    return RT_ERROR_NONE;
 }
 }
 }

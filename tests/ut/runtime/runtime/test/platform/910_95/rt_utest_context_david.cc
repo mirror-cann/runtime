@@ -42,7 +42,7 @@
 #include "task_david.hpp"
 #include "model_c.hpp"
 #include "device_error_proc_c.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 #include "stream_c.hpp"
 #undef protected
 #undef private

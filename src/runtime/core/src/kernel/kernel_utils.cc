@@ -13,6 +13,7 @@
 #include "para_convertor.hpp"
 #include "capture_model.hpp"
 #include "arg_loader.hpp"
+#include "stars_arg_manager.hpp"
 #include "error_message_manage.hpp"
 #include "task/task_info.hpp"
 
@@ -155,8 +156,8 @@ static rtError_t UpdateKernelTaskInfoWithArgsAndCfg(
         error, "failed to get prefetch cnt, retCode=%#x, device_id=%u, stream_id=%d, task_id=%hu.", error, dev->Id_(),
         stm->Id_(), taskInfo->id);
     rtKernelAttrType kernelAttrType = kernel->GetKernelAttrType();
-    ArgLoaderResult result = {};
-    error = dev->ArgLoader_()->Load(argsInfo, stm, &result);
+    StarsArgLoaderResult result = {};
+    error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_NO_MIX);
     ERROR_RETURN(
         error, "failed to load args, retCode=%#x, device_id=%u, stream_id=%d, task_id=%hu.", error, dev->Id_(),
         stm->Id_(), taskInfo->id);

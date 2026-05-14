@@ -15,6 +15,7 @@
 #include "npu_driver.hpp"
 #include "error_message_manage.hpp"
 #include "arg_loader_ub.hpp"
+#include "runtime.hpp"
 
 namespace cce {
 
@@ -169,7 +170,7 @@ rtError_t UbArgLoader::AllocDynamic(const uint32_t size, UbHandle * const argHan
     return error;
 }
 
-rtError_t UbArgLoader::AllocCopyPtr(const uint32_t size, DavidArgLoaderResult * const result)
+rtError_t UbArgLoader::AllocCopyPtr(const uint32_t size, StarsArgLoaderResult* const result)
 {
     rtError_t error = RT_ERROR_NONE;
     UbHandle *argHandle = nullptr;

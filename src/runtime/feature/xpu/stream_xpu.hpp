@@ -49,10 +49,10 @@ public:
     rtError_t GetSynchronizeError(rtError_t error) override;
     rtError_t SynchronizeExecutedTask(const uint32_t taskId, const mmTimespec &beginTime, int32_t timeout) override;
     rtError_t Synchronize(const bool isNeedWaitSyncCq, int32_t timeout) override;
-    void ArgReleaseStmPool(TaskInfo * const taskInfo) const;
-    void ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPool) const;
+    void ArgReleaseStmPool(TaskInfo* const taskInfo) const override;
+    void ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool) override;
     template<typename T>
-    rtError_t LoadArgsInfo(const T *argsInfo, const bool useArgPool, DavidArgLoaderResult * const result) const
+    rtError_t LoadArgsInfo(const T* argsInfo, const bool useArgPool, StarsArgLoaderResult* const result) const
     {
         if (argManage_ != nullptr) {
             return argManage_->LoadArgs(argsInfo, useArgPool, result);
@@ -61,25 +61,17 @@ public:
         return RT_ERROR_NONE;
     }
 
-    uint32_t GetArgPos() const;
+    uint32_t GetArgPos() const override;
 
-    bool GetIsHasArgPool() const
+    XpuArgManage* ArgManagePtr() const
     {
-        return isHasArgPool_;
-    }
-
-    XpuArgManage *ArgManagePtr() const
-    {
-        return argManage_;
+        return static_cast<XpuArgManage*>(argManage_);
     }
 
 protected:
-    bool isHasArgPool_{false};
     uint32_t publicQueueHead_{0U};
     uint32_t publicQueueTail_{0U};
     uint32_t recycleFinishTaskId_{MAX_UINT32_NUM};
-private:
-    XpuArgManage *argManage_{nullptr};
 };
 
 }  // namespace runtime

@@ -28,6 +28,7 @@
 #include "task_info.hpp"
 #include "event.h"
 #include "runtime_handle_guard.h"
+#include "stars_arg_manager.hpp"
 
 constexpr size_t PTE_LENGTH = 16U;
 
@@ -195,6 +196,26 @@ public:
     virtual rtError_t SetupWithoutBindSq();
     virtual rtError_t SetupForAutoSplit();
     virtual rtError_t CreateStreamArgRes();
+
+    // ArgManager interface
+    bool GetIsHasArgPool() const { return isHasArgPool_; }
+    virtual uint32_t GetArgPos() const;
+    virtual void ArgReleaseStmPool(TaskInfo* const taskInfo) const;
+    virtual void ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool);
+    virtual void ArgReleaseMultipleTask(TaskInfo* const taskInfo);
+
+    // kernel参数加载统一入口：通过 ArgManager 4 步流程（copy 判定→分配→地址修复→H2D 拷贝）
+    template <typename T>
+    rtError_t LoadArgsInfo(
+        const T* argsInfo, const bool useArgPool, StarsArgLoaderResult* const result,
+        const LoadPolicy policy = LoadPolicy::LP_GENERIC)
+    {
+        if (argManage_ != nullptr) {
+            return argManage_->LoadArgs(argsInfo, useArgPool, result, policy);
+        }
+        result->kerArgs = argsInfo->args;
+        return RT_ERROR_NONE;
+    }
 
     // init L2 addr
     rtError_t SetL2Addr();
@@ -1653,6 +1674,9 @@ public:
     bool isRecycleThreadProc_{false};
     struct sq_switch_stream_info *streamSwitchInfo_{nullptr};
 protected:
+    void ReleaseStreamArgRes();
+    StarsArgManager* argManage_{nullptr};
+    bool isHasArgPool_{false};
     bool isCtrlStream_;
     uint32_t sqTailPos_;
     uint32_t sqHeadPos_;

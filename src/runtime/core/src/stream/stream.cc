@@ -11,6 +11,8 @@
 #include "stream.hpp"
 #include "model_update_task.h"
 #include "runtime_handle_guard.h"
+#include "arg_loader.hpp"
+#include "stars_arg_manager.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "cond_c.hpp"
 #include "runtime.hpp"
@@ -203,6 +205,7 @@ Stream::~Stream()
             dvppRRTaskAddr_ = nullptr;
         }
 
+        ReleaseStreamArgRes();
         ReleaseStreamTaskRes();
         if (hcclIndex_ != static_cast<uint16_t>(UINT16_MAX)) {
             const std::lock_guard<std::mutex> lk(device_->GetHcclStreamIndexMutex());
@@ -762,6 +765,10 @@ rtError_t Stream::Setup()
     TIMESTAMP_BEGIN(rtStreamCreate_CreateTaskResource);
     CreateStreamTaskRes();
     TIMESTAMP_END(rtStreamCreate_CreateTaskResource);
+
+    error = CreateStreamArgRes();
+    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "new args res manage fail.");
+
     SetMaxTaskId(isDisableThread);
     if (GetIsSupportASyncRecycle() && isHasPcieBar_) {
         static_cast<void>(CreateArgRecycleList(STREAM_PUBLIC_TASK_BUFF_SIZE));
@@ -810,8 +817,34 @@ void Stream::ResetSqCq(void)
 
 rtError_t Stream::CreateStreamArgRes()
 {
+    argManage_ = new (std::nothrow) PcieArgManage(this);
+    if (argManage_ == nullptr) {
+        RT_LOG(RT_LOG_ERROR, "new PcieArgManage fail for stream.");
+        return RT_ERROR_CALLOC;
+    }
     return RT_ERROR_NONE;
 }
+
+void Stream::ReleaseStreamArgRes()
+{
+    isHasArgPool_ = false;
+    if (argManage_ != nullptr) {
+        argManage_->ReleaseArgRes();
+        DELETE_O(argManage_);
+    }
+}
+
+uint32_t Stream::GetArgPos() const { return UINT32_MAX; }
+
+void Stream::ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool)
+{
+    UNUSED(taskInfo);
+    UNUSED(freeStmPool);
+}
+
+void Stream::ArgReleaseStmPool(TaskInfo* const taskInfo) const { UNUSED(taskInfo); }
+
+void Stream::ArgReleaseMultipleTask(TaskInfo* const taskInfo) { UNUSED(taskInfo); }
 
 rtError_t Stream::SetupWithoutBindSq()
 {

@@ -156,6 +156,9 @@ set(runtimeut_src_profile_list
 
 set(runtime_src_arg_loader_list
     ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/uma_arg_loader.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/load_policy.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_pcie.cc
     ${TOP_DIR}/src/runtime/core/src/pool/memory_list.cc
     ${TOP_DIR}/src/runtime/core/src/pool/memory_pool.cc
     ${TOP_DIR}/src/runtime/core/src/pool/memory_pool_manager.cc
@@ -361,7 +364,7 @@ set(runtimeut_910b_src_list
     ${TOP_DIR}/src/runtime/core/src/pool/h2h_copy_mgr.cc
     ${TOP_DIR}/src/runtime/driver/xpu_driver.cc
     ${TOP_DIR}/src/runtime/feature/xpu/arg_loader_xpu.cc
-    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/arg_manage_david.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
     ${TOP_DIR}/src/runtime/feature/xpu/arg_manage_xpu.cc
     ${TOP_DIR}/src/runtime/feature/xpu/xpu_aicpu_c.cc
     ${TOP_DIR}/src/runtime/feature/xpu/program_plat.cc

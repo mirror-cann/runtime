@@ -11,7 +11,6 @@
 #define __CCE_RUNTIME_ARG_LOADER_UB_HPP__
 
 #include "driver.hpp"
-#include "runtime.hpp"
 #include "h2d_copy_mgr.hpp"
 
 namespace cce {
@@ -19,13 +18,14 @@ namespace runtime {
 class Device;
 class Stream;
 
-struct DavidArgLoaderResult {
+struct StarsArgLoaderResult {
     void *kerArgs;      // dev addr
     void *hostAddr;     // used for ub
     void *handle;       // used for dev arg pool & dynamic alloc
     uint32_t stmArgPos; // used for stm arg pool
     void *devTsegInfo;
     void *hostTsegInfo;
+    uint32_t allocatedEntrySize{0U}; // 实际分配的 entry 大小，0=按 argsSize 拷贝
 };
 
 struct UbHandle {
@@ -40,8 +40,8 @@ constexpr uint32_t UB_ARG_MAX_SUPER_ENTRY_SIZE = 16384U;
 constexpr uint32_t UB_ARG_INIT_CNT = 1024U;
 constexpr uint32_t UB_ARG_SUPER_INIT_CNT = 128U;
 
-constexpr uint32_t DAVID_ARG_ADDR_ALIGN_LEN = 8U;
-constexpr uint32_t DAVID_ARG_ADDR_ALIGN_BIT = 3U;
+constexpr uint32_t STARS_ARG_ADDR_ALIGN_LEN = 8U;
+constexpr uint32_t STARS_ARG_ADDR_ALIGN_BIT = 3U;
 
 class UbArgLoader : public NoCopy {
 public:
@@ -49,7 +49,7 @@ public:
     ~UbArgLoader() override;
     rtError_t Init();
     rtError_t Release(void * const argHandle);
-    rtError_t AllocCopyPtr(const uint32_t size, DavidArgLoaderResult * const result);
+    rtError_t AllocCopyPtr(const uint32_t size, StarsArgLoaderResult* const result);
     H2DCopyMgr *GetArgsAllocator(void) const
     {
         return argAllocator_;

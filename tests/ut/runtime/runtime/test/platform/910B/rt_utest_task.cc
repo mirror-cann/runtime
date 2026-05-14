@@ -688,7 +688,7 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqe)
     stream->Setup();
     rtError_t errorRet;
     void *args[] = {&errorRet, NULL};
-    rtTaskDesc_t taskDesc[2];
+    rtTaskDesc_t taskDesc[2] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
     multipleTaskInfo.taskDesc = taskDesc;
@@ -772,7 +772,7 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeNotFree)
     Stream *stream = new Stream(device, 0);
     stream->Setup();
     rtError_t errorRet;
-    rtTaskDesc_t taskDesc[1];
+    rtTaskDesc_t taskDesc[1] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
     multipleTaskInfo.taskDesc = taskDesc;
@@ -818,7 +818,7 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeFree)
     Stream *stream = new Stream(device, 0);
     stream->Setup();
     rtError_t errorRet;
-    rtTaskDesc_t taskDesc[1];
+    rtTaskDesc_t taskDesc[1] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
     multipleTaskInfo.taskDesc = taskDesc;

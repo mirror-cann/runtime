@@ -20,7 +20,7 @@ public:
     ~UmaArgLoader() override;
 
     rtError_t Init() override;
-    rtError_t AllocCopyPtr(const uint32_t size, ArgLoaderResult * const result) override;
+    rtError_t AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLoaderResult* const result) override;
     rtError_t Load(const rtArgsEx_t * const argsInfo,
                    Stream * const stm, ArgLoaderResult * const result) override;
     rtError_t PureLoad(const uint32_t size, const void * const args, ArgLoaderResult * const result) override;
@@ -38,6 +38,10 @@ public:
     void GetKernelInfoFromAddr(std::string &name, const KernelInfoType type, void* addr) override;
     bool CheckPcieBar(void) override;
     void RestoreAiCpuKernelInfo(void) override;
+
+    // stars ArgManager 统一流程
+    rtError_t AllocNoCopyPtr(const void* hostArgs, ArgLoaderResult* result) override;
+    rtError_t AllocCopyPtrWithSpecificPolicy(uint32_t size, LoadPolicy policy, ArgLoaderResult* result) override;
     H2DCopyMgr *GetPcieBarAllocator(void)
     {
         return argPcieBarAllocator_;
@@ -95,6 +99,14 @@ private:
     std::unordered_map<std::string, void *> kernelNameMap_;
     uint32_t itemSize_;
     uint32_t maxItemSize_;  // transpose kernel args size
+
+    // AllocCopyPtrWithSpecificPolicy 辅助方法
+    H2DCopyMgr* SelectAllocator(uint32_t size, LoadPolicy policy) const;
+    H2DCopyMgr* SelectPcieFirstAllocator(uint32_t size) const;
+    rtError_t CheckPolicyPreCondition(uint32_t size, LoadPolicy policy) const;
+    bool NeedPcieRollback(LoadPolicy policy, H2DCopyMgr* allocator) const;
+    H2DCopyMgr* SelectFallbackAllocator(uint32_t size) const;
+    uint32_t GetEntrySize(H2DCopyMgr* allocator, uint32_t argsSize, bool isRandom) const;
 };
 }  // namespace runtime
 }  // namespace cce

@@ -65,8 +65,9 @@ static rtError_t CheckDynSizeValid(TaskInfo* taskInfo, const Kernel * const kern
     return CheckAndGetTotalShareMemorySize(kernel, aicTaskInfo->dynamicShareMemSize, aicTaskInfo->simtDcuSmSize);
 }
 
-static void SetArgsAix(const Stream *const stm, const rtArgsEx_t * const argsInfo, TaskInfo * const taskInfo,
-    DavidArgLoaderResult * const result)
+static void SetArgsAix(
+    const Stream* const stm, const rtArgsEx_t* const argsInfo, TaskInfo* const taskInfo,
+    StarsArgLoaderResult* const result)
 {
     SetKernelLaunchParams(stm, argsInfo, *taskInfo);
     AicTaskInfo *aicTask = &(taskInfo->u.aicTaskInfo);
@@ -249,7 +250,7 @@ rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreD
     Stream *stm, const uint32_t flag, const rtTaskCfgInfo_t * const cfgInfo)
 {
     rtKernelAttrType kernelAttrType = RT_KERNEL_ATTR_TYPE_AICORE;
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     uint64_t addr1 = 0ULL;
     uint64_t addr2 = 0ULL;
     uint8_t mixType = NO_MIX;
@@ -350,7 +351,7 @@ rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t t
     NULL_PTR_RETURN_MSG_OUTER(progHandle, RT_ERROR_PROGRAM_NULL);
 
     rtKernelAttrType kernelAttrType = RT_KERNEL_ATTR_TYPE_AICORE;
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     uint8_t mixType = static_cast<uint8_t>(NO_MIX);
     uint64_t addr1 = 0ULL;
     uint64_t addr2 = 0ULL;
@@ -494,7 +495,7 @@ rtError_t StreamLaunchKernelV2(Kernel * const kernel, const uint32_t coreDim, St
     uint64_t kernelPc2 = 0ULL;
     const uint8_t mixType = kernel->GetMixType();
     rtKernelAttrType kernelAttrType = kernel->GetKernelAttrType();
-    DavidArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
+    StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     TaskInfo *kernelTask = nullptr;
 
     NULL_PTR_RETURN_MSG_OUTER(extendAgrs, RT_ERROR_INVALID_VALUE);

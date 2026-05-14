@@ -491,7 +491,8 @@ set(libruntime_cmodel_v200_src_files
     ${RUNTIME_FEATURE_DIR}/aclgraph/v200/capture_adapt_v200.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/v200/capture_model_adapt_v200.cc
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_loader_ub.cc
-    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_david.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/load_policy.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/stars_arg_manager.cc
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_pcie.cc
     ${RUNTIME_CORE_DIR}/src/kernel/arg_loader/arg_manage_ub.cc
     ${RUNTIME_CORE_DIR}/src/kernel/args/args_handle_allocator.cc

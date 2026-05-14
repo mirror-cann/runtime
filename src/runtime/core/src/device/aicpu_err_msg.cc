@@ -16,6 +16,7 @@
 #include "task_fail_callback_manager.hpp"
 #include "program.hpp"
 #include "arg_loader.hpp"
+#include "stars_arg_manager.hpp"
 #include "npu_driver.hpp"
 #include "task.hpp"
 #include "osal.hpp"
@@ -127,8 +128,7 @@ rtError_t AicpuErrMsg::SendTaskToAicpu(const rtKernelLaunchNames_t &launchNames,
     TaskInfo* kernTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_KERNEL_AICPU, errorReason);
     NULL_PTR_RETURN(kernTask, errorReason);
 
-    ArgLoader * const devArgLdr = device_->ArgLoader_();
-    ArgLoaderResult result{};
+    StarsArgLoaderResult result{};
     tsAicpuKernelType aicpuKernelType;
 
     // Init task
@@ -142,7 +142,7 @@ rtError_t AicpuErrMsg::SendTaskToAicpu(const rtKernelLaunchNames_t &launchNames,
     rtArgsEx_t argsInfo = {};
     argsInfo.args = const_cast<void *>(args);
     argsInfo.argsSize = argsSize;
-    retErr = devArgLdr->LoadCpuKernelArgs(&argsInfo, stm, &result);
+    retErr = stm->LoadArgsInfo(&argsInfo, false, &result, LoadPolicy::LP_CPU_KRN);
     if (retErr != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Failed to load cpu Kernel args , retCode=%d", retErr);
         (void)device_->GetTaskFactory()->Recycle(kernTask);

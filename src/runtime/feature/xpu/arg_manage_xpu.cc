@@ -13,7 +13,7 @@
 #include "stream_xpu.hpp"
 #include "arg_manage_xpu.hpp"
 #include "error_message_manage.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 #include "kernel.hpp"
 #include "thread_local_container.hpp"
 
@@ -66,15 +66,16 @@ rtError_t XpuArgManage::MallocArgMem(void *&devAddr, void *&hostAddr)
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuArgManage::AllocCopyPtr(const uint32_t size, const bool useArgPool, DavidArgLoaderResult * const result)
+rtError_t XpuArgManage::AllocCopyPtr(
+    const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result)
 {
+    UNUSED(policy);
     rtError_t error = RT_ERROR_NONE;
     if (useArgPool && AllocStmPool(size, result)) {
         return error;
     }
     ArgLoaderResult res = {nullptr, nullptr};
-    res.kerArgs = nullptr;
-    res.handle = nullptr;
+    res.allocatedEntrySize = 0U;
     error = static_cast<XpuDevice *>(stream_->Device_())->XpuArgLoader_()->AllocCopyPtr(size, &res);
     if (error == RT_ERROR_NONE) {
         result->kerArgs = res.kerArgs;
@@ -83,7 +84,7 @@ rtError_t XpuArgManage::AllocCopyPtr(const uint32_t size, const bool useArgPool,
     return error;
 }
 
-bool XpuArgManage::AllocStmPool(const uint32_t size, DavidArgLoaderResult * const result)
+bool XpuArgManage::AllocStmPool(const uint32_t size, StarsArgLoaderResult* const result)
 {
     uint32_t startPos = UINT32_MAX;
     uint32_t endPos = UINT32_MAX;
@@ -95,7 +96,7 @@ bool XpuArgManage::AllocStmPool(const uint32_t size, DavidArgLoaderResult * cons
     return true;
 }
 
-rtError_t XpuArgManage::H2DArgCopy(const DavidArgLoaderResult * const result, void * const args, const uint32_t size)
+rtError_t XpuArgManage::H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size)
 {
     rtError_t error = RT_ERROR_NONE;
     XpuHandle *handle = static_cast<XpuHandle *>(result->handle);
@@ -125,7 +126,7 @@ void XpuArgManage::RecycleDevLoader(void * const handle)
 }
 
 rtError_t XpuArgManage::LoadArgsFromArray(const bool useArgPool,
-    const Kernel *kernel, void **argsArray, DavidArgLoaderResult *result)
+    const Kernel *kernel, void **argsArray, StarsArgLoaderResult *result)
 {
     UNUSED(useArgPool);
     UNUSED(kernel);

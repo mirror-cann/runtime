@@ -8822,7 +8822,7 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update)
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(MemcpyAsyncTaskCommonInit).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &DavidArgManage::RecycleDevLoader).stubs().will(ignoreReturnValue());
+    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &StarsArgManager::RecycleDevLoader).stubs().will(ignoreReturnValue());
 
     rtLaunchKernelAttr_t attrs[5];
     attrs[0].id = RT_LAUNCH_KERNEL_ATTR_ENGINE_TYPE;
@@ -9169,7 +9169,7 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update_allocTaskFail)
     argsWithType.args.nonCpuArgsInfo = &argsInfo1;
     argsInfo1.isNoNeedH2DCopy = 1U;
 
-    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &DavidArgManage::RecycleDevLoader).stubs().will(ignoreReturnValue());
+    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &StarsArgManager::RecycleDevLoader).stubs().will(ignoreReturnValue());
 
     ApiImplDavid impl;
     error = impl.KernelLaunchWithHandle(m_handle, tilingKey, 1, &wwargsInfo, stream);
@@ -9276,7 +9276,7 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update_CaptureStreamE
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(MemcpyAsyncTaskCommonInit).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &DavidArgManage::RecycleDevLoader).stubs().will(ignoreReturnValue());
+    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &StarsArgManager::RecycleDevLoader).stubs().will(ignoreReturnValue());
 
     rtLaunchKernelAttr_t attrs[5];
     attrs[0].id = RT_LAUNCH_KERNEL_ATTR_ENGINE_TYPE;

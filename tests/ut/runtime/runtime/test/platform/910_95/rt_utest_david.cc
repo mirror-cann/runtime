@@ -58,7 +58,7 @@
 #include "task_david.hpp"
 #include "model_c.hpp"
 #include "device_error_proc_c.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 #include "task_execute_time.h"
 #include "stream_c.hpp"
 #include "fusion_c.hpp"

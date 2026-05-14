@@ -18,6 +18,7 @@
 #include "driver.hpp"
 #include "thread_local_container.hpp"
 #include "stars_cond_isa_helper.hpp"
+#include "stars_arg_manager.hpp"
 #include "event.hpp"
 #include "notify.hpp"
 #include "task_fail_callback_manager.hpp"
@@ -258,10 +259,11 @@ static rtError_t FftsPlusTmpAllocH2D(TaskInfo* taskInfo, const rtFftsPlusTaskInf
 static rtError_t FftsPlusPoolH2D(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo,
     FftsPlusTaskInfo *fftsPlusTask)
 {
-    ArgLoaderResult result = {};
-    Device * const dev = taskInfo->stream->Device_();
-    const rtError_t error = dev->ArgLoader_()->PureLoad(static_cast<uint32_t>(fftsPlusTask->descBufLen),
-        fftsPlusTaskInfo->descBuf, &result);
+    rtArgsEx_t pureArgsInfo = {};
+    pureArgsInfo.args = const_cast<void*>(static_cast<const void*>(fftsPlusTaskInfo->descBuf));
+    pureArgsInfo.argsSize = static_cast<uint32_t>(fftsPlusTask->descBufLen);
+    StarsArgLoaderResult result = {};
+    const rtError_t error = taskInfo->stream->LoadArgsInfo(&pureArgsInfo, false, &result, LoadPolicy::LP_FFTS);
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "FftsPlusPoolH2D Failed, stream_id=%d,"
         " retCode=%#x, size=%" PRIu64, taskInfo->stream->Id_(), static_cast<uint32_t>(error), fftsPlusTask->descBufLen);
 

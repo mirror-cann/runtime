@@ -91,7 +91,8 @@ rtError_t StreamLaunchKernelPrepare(const Stream * const stm, Kernel *&registere
     return error;
 }
 
-void StreamLaunchKernelRecycle(DavidArgLoaderResult &result, TaskInfo *&recycleTask, const Program * const prog, Stream *stm)
+void StreamLaunchKernelRecycle(
+    StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog, Stream* stm)
 {
     DavidStream *davidStm = static_cast<DavidStream *>(stm);
     if (result.handle != nullptr) {
@@ -112,7 +113,8 @@ void StreamLaunchKernelRecycle(DavidArgLoaderResult &result, TaskInfo *&recycleT
     Runtime::Instance()->PutProgram(prog);
 }
 
-void StreamLaunchKernelRecycleAicpu(DavidArgLoaderResult &result, TaskInfo *&recycleTask, const Program * const prog, Stream *stm)
+void StreamLaunchKernelRecycleAicpu(
+    StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog, Stream* stm)
 {
     if ((recycleTask != nullptr) && (recycleTask->type == TS_TASK_TYPE_KERNEL_AICPU)) {
         DELETE_O(recycleTask->u.aicpuTaskInfo.kernel);

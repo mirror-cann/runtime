@@ -10,7 +10,7 @@
 #ifndef __CCE_RUNTIME_STREAM_DAVID_HPP__
 #define __CCE_RUNTIME_STREAM_DAVID_HPP__
 #include "stream.hpp"
-#include "arg_manage_david.hpp"
+#include "stars_arg_manager.hpp"
 
 namespace cce {
 namespace runtime {
@@ -73,27 +73,12 @@ public:
     void RecordPosToTaskIdMap(TaskInfo * const tsk, const uint32_t sendSqeNum);
     void ExpandStreamRecycleModelBindStreamAllTask() override;
 
-    bool GetIsHasArgPool() const
-    {
-        return isHasArgPool_;
-    }
-    DavidArgManage *ArgManagePtr() const
+    StarsArgManager* ArgManagePtr() const
     {
         return argManage_;
     }
-
-    template<typename T>
-    rtError_t LoadArgsInfo(const T *argsInfo, const bool useArgPool, DavidArgLoaderResult * const result)
-    {
-        if (argManage_ != nullptr) {
-            return argManage_->LoadArgs(argsInfo, useArgPool, result);
-        }
-        result->kerArgs = argsInfo->args;
-        return RT_ERROR_NONE;
-    }
-
-    rtError_t LoadArgsFromArray(const bool useArgPool,
-        const Kernel *kernel, void **argsArray, DavidArgLoaderResult *result)
+    rtError_t LoadArgsFromArray(
+        const bool useArgPool, const Kernel* kernel, void** argsArray, StarsArgLoaderResult* result)
     {
         if (argManage_ != nullptr) {
             return argManage_->LoadArgsFromArray(useArgPool, kernel, argsArray, result);
@@ -102,11 +87,10 @@ public:
         return RT_ERROR_NONE;
     }
 
-    uint32_t GetArgPos();
-
-    void ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPool);
-    void ArgReleaseStmPool(TaskInfo * const taskInfo);
-    void ArgReleaseMultipleTask(TaskInfo * const taskInfo);
+    uint32_t GetArgPos() const override;
+    void ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool) override;
+    void ArgReleaseStmPool(TaskInfo* const taskInfo) const override;
+    void ArgReleaseMultipleTask(TaskInfo* const taskInfo) override;
 
     void GetTaskQueueHeadTail(uint16_t& head, uint16_t& tail) const;
     rtError_t Restore() override;
@@ -114,8 +98,6 @@ public:
     rtError_t UpdateSnapShotSqe() override;
     rtError_t UpdateTaskAndSqe(TaskInfo *task, Stream *stream);
     bool IsNeedUpdateTask(const TaskInfo * const updateTask) const;
-protected:
-    bool isHasArgPool_{false};
 
 private:
     void BuildTraceEventForTask(TaskInfo *const task, const uint32_t flags, TraceEvent &record);
@@ -126,8 +108,6 @@ private:
     Atomic<uint32_t> recordVersion_{0U};
     uint32_t publicQueueHead_{0U};
     uint32_t publicQueueTail_{0U};
-    DavidArgManage *argManage_{nullptr};
-    void ReleaseStreamArgRes();
     void FreeStreamIdAndSqCq();
 };
 

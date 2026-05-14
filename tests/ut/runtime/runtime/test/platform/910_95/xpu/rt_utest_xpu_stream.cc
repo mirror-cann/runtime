@@ -325,7 +325,7 @@ TEST_F(XpuStreamTest, xpu_stream_launch_kernel_recycle_error)
     Stream **result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    DavidArgLoaderResult result1 = {nullptr, nullptr, (void *)10, UINT32_MAX};
+    StarsArgLoaderResult result1 = {nullptr, nullptr, (void*)10, UINT32_MAX};
     TaskInfo *taskInfo = nullptr;
     MOCKER_CPP_VIRTUAL(((XpuStream *)(context->StreamList_().front()))->ArgManagePtr(), &XpuArgManage::RecycleDevLoader).stubs();
     XpuStreamLaunchKernelRecycleAicpu(result1, taskInfo, context->StreamList_().front());
@@ -373,7 +373,7 @@ TEST_F(XpuStreamTest, get_cur_sq_pos)
     Stream **result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    DavidArgLoaderResult result1 = {nullptr, nullptr, (void *)10, UINT32_MAX};
+    StarsArgLoaderResult result1 = {nullptr, nullptr, (void*)10, UINT32_MAX};
     TaskInfo *taskInfo = nullptr;
     ((XpuStream *)(context->StreamList_().front()))->GetCurSqPos();
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
@@ -417,8 +417,6 @@ TEST_F(XpuStreamTest, Is_exist_cqe)
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
     MOCKER_CPP_VIRTUAL((XpuDriver *)context->Device_()->Driver_(), &XpuDriver::GetCqeStatus).stubs().will(returnValue(1));
-    DavidArgLoaderResult result1 = {nullptr, nullptr, (void *)10, UINT32_MAX};
-    TaskInfo *taskInfo = nullptr;
     ((XpuStream *)(context->StreamList_().front()))->IsExistCqe();
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
@@ -443,7 +441,7 @@ TEST_F(XpuStreamTest, arg_release_single_task)
     TaskInfo *taskInfo = new TaskInfo();
     taskInfo->id = 0;
     taskInfo->stmArgPos = 1;
-    MOCKER_CPP(&DavidArgManage::RecycleStmArgPos).stubs().will(returnValue(false));
+    MOCKER_CPP(&StarsArgManager::RecycleStmArgPos).stubs().will(returnValue(false));
     stream->ArgReleaseSingleTask(taskInfo, true);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete taskInfo;

@@ -14,12 +14,14 @@
 #include "stream_david.hpp"
 #include "program.hpp"
 #include "starsv2_base.hpp"
+#include "runtime_intf.hpp"
 namespace cce {
 namespace runtime {
     rtError_t StreamLaunchKernelPrepare(const Stream * const stm, Kernel *&registeredKernel, Program *&prog,
         rtKernelAttrType &kernelAttrType, Module *&mdl, const void * const stubFunc, uint64_t &addr1, uint64_t &addr2,
         void * const progHandle, const uint64_t tilingKey);
-    void StreamLaunchKernelRecycle(DavidArgLoaderResult &result, TaskInfo *&recycleTask, const Program * const prog, Stream *stm);
+    void StreamLaunchKernelRecycle(
+        StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog, Stream* stm);
 
     rtError_t CmoAddrTaskLaunchForDavid(rtDavidCmoAddrInfo * const cmoAddrInfo, const rtCmoOpCode_t cmoOpCode,
                                      Stream * const stm);
@@ -49,7 +51,8 @@ namespace runtime {
     rtError_t StreamWriteValuePtr(const rtWriteValueInfo_t * const writeValueInfo, Stream * const stm,
                                   void * const pointedAddr);
     rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream * const stm, const RtTimeoutConfig &timeoutConfig);
-    void StreamLaunchKernelRecycleAicpu(DavidArgLoaderResult &result, TaskInfo *&recycleTask, const Program * const prog, Stream *stm);
+    void StreamLaunchKernelRecycleAicpu(
+        StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog, Stream* stm);
     rtError_t SendTopicMsgVersionToAicpuDavid(Stream * const stm);
 
     template<typename T>

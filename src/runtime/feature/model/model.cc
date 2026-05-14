@@ -17,6 +17,7 @@
 #include "davinci_kernel_task.h"
 #include "context.hpp"
 #include "stream.hpp"
+#include "stars_arg_manager.hpp"
 #include "api.hpp"
 #include "task.hpp"
 #include "notify.hpp"
@@ -1954,8 +1955,7 @@ rtError_t Model::SendTaskToAicpu(const rtKernelLaunchNames_t * const launchNames
     std::function<void()> const devTaskRecycle = [&dev, &kernTask]() {
         (void)dev->GetTaskFactory()->Recycle(kernTask);
     };
-    ArgLoader * const devArgLdr = dev->ArgLoader_();
-    ArgLoaderResult result{};
+    StarsArgLoaderResult result{};
     ScopeGuard taskGuard(devTaskRecycle);
     // Init task
    AicpuTaskInit(kernTask, static_cast<uint16_t>(coreDim), flag);
@@ -1968,7 +1968,7 @@ rtError_t Model::SendTaskToAicpu(const rtKernelLaunchNames_t * const launchNames
     rtArgsEx_t argsInfo = {};
     argsInfo.args = const_cast<void *>(args);
     argsInfo.argsSize = argsSize;
-    rtError_t retErr = devArgLdr->LoadCpuKernelArgs(&argsInfo, stm, &result);
+    rtError_t retErr = stm->LoadArgsInfo(&argsInfo, false, &result, LoadPolicy::LP_CPU_KRN);
     ERROR_RETURN(retErr, "Failed to load cpu Kernel args , retCode=%d.", retErr);
 
     SetArgs(kernTask, result.kerArgs, argsSize, result.handle);
