@@ -60,6 +60,7 @@ extern "C" {
 #define  ACL_ERROR_RT_INSUFFICIENT_INPUT_ARRAY   107039 // input array capacity insufficient
 #define  ACL_ERROR_RT_MODEL_UPDATE_FAILED        107040 // the model update failed
 #define  ACL_ERROR_RT_CAPTURE_MODE_BLOCK_ASYNC   107041 // async oper convert to sync oper, stream is captured, not support current oper
+#define  ACL_ERROR_RT_SYMBOL_NOT_FOUND           107042 // symbol not found
 
 #define  ACL_ERROR_RT_FEATURE_NOT_SUPPORT        207000 // feature not support
 #define  ACL_ERROR_RT_MEMORY_ALLOCATION          207001 // memory allocation error, only used by out of memory
@@ -157,7 +158,6 @@ extern "C" {
 #define  ACL_ERROR_SNAPSHOT_CALLBACK_FAILED          507912 // snapshot callback function execution failed
 #define  ACL_ERROR_SNAPSHOT_REGISTER_CALLBACK_FAILED 507913 // register snapshot callback function failed
 #define  ACL_ERROR_RT_L3_PORT_ERROR              507914 // ub mem error
-#define  ACL_ERROR_RT_SYMBOL_NOT_FOUND    507915 // symbol not found
 
 #ifdef __cplusplus
 }

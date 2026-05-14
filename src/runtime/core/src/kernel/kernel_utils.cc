@@ -440,7 +440,7 @@ rtError_t CopyKernelParamsToBuffer(const Kernel *kernel, void **argsArray, void 
         COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
                        "GetParamInfo failed, index=%u, retCode=%#x.", i, static_cast<uint32_t>(error));        
         
-        void *destAddr = static_cast<char *>(dest) + offset;
+        void *destAddr = static_cast<uint8_t *>(dest) + offset;
         const errno_t ret = memcpy_s(destAddr, static_cast<size_t>(size), 
                                      argsArray[i], static_cast<size_t>(size));
         COND_RETURN_ERROR((ret != EOK), RT_ERROR_SEC_HANDLE,
