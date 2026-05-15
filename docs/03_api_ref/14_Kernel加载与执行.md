@@ -334,33 +334,29 @@ aclError aclrtBinaryGetGlobal(aclrtBinHandle binHandle, const char *name, void *
 
 ### 功能说明
 
-根据全局变量名称，获取Device侧全局变量的地址和大小。
-
-调用本接口前，需先调用[aclrtBinaryLoadFromFile](#aclrtBinaryLoadFromFile)或[aclrtBinaryLoadFromData](#aclrtBinaryLoadFromData)接口加载算子二进制，并确保算子二进制中包含全局符号（Global Symbol）。
+根据全局变量名称，获取算子二进制中的全局变量在Device侧的内存地址和大小。
 
 ### 参数说明
 
 
-| 参数名 | 输入/输出 | 说明 |
-| --- | :---: | --- |
+| 参数名 | 输入/输出 | 说明                                                                                                                                                                                                        |
+| --- | :---: |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | binHandle | 输入 | 算子二进制句柄。类型定义请参见[aclrtBinHandle](25_数据类型及其操作接口.md#aclrtBinHandle)。<br>调用[aclrtBinaryLoadFromFile](#aclrtBinaryLoadFromFile)接口或[aclrtBinaryLoadFromData](#aclrtBinaryLoadFromData)接口获取算子二进制句柄，再将其作为入参传入本接口。 |
-| name | 输入 | 全局变量名称。需与算子二进制中定义的全局符号名称一致。 |
-| dptr | 输出 | Device侧全局变量的地址指针。可以为nullptr，表示不需要获取地址。 |
-| size | 输出 | Device侧全局变量的大小，单位Byte。可以为nullptr，表示不需要获取大小。<br>dptr和size不能同时为nullptr。 |
+| name | 输入 | 全局变量名称。需与算子二进制中定义的全局变量名称一致。                                                                                                                                                                               |
+| dptr | 输出 | Device侧全局变量的地址指针。<br/>若此处传nullptr，表示不需要获取地址。                                                                                                                                                              |
+| size | 输出 | Device侧全局变量的大小，单位Byte。<br/>若此处传nullptr，表示不需要获取大小。<br>dptr和size不能同时为nullptr。                                                                                                                              |
 
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败。
 
-| 错误码 | 说明 |
-| --- | --- |
-| ACL_SUCCESS | 接口调用成功。 |
+| 错误码 | 说明                                                            |
+| --- |---------------------------------------------------------------|
+| ACL_SUCCESS | 接口调用成功。                                                       |
 | ACL_ERROR_INVALID_PARAM | 参数校验失败，请检查入参binHandle、name是否为nullptr，或者dptr和size是否同时为nullptr。 |
-| ACL_ERROR_RT_FEATURE_NOT_SUPPORT | 当前设备不支持此特性。 |
-| ACL_ERROR_RT_SYMBOL_NOT_FOUND | 全局符号未找到，请检查name参数是否与算子二进制中的全局符号名称一致。 |
+| ACL_ERROR_RT_FEATURE_NOT_SUPPORT | 当前设备不支持此特性。                                                   |
+| ACL_ERROR_RT_SYMBOL_NOT_FOUND | 全局符号未找到，请检查name参数是否与算子二进制中的全局变量名称一致。                          |
 
-### 约束说明
-- 当前不支持XPU设备调用此接口。
 
 <br>
 <br>
@@ -1365,24 +1361,24 @@ aclError aclrtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, aclrtStr
 
 ### 功能说明
 
-使用参数数组启动核函数计算任务，异步接口。
-
-本接口通过参数数组的方式传递核函数入参，每个数组元素指向一个参数数据。该方式适用于参数个数动态变化或参数分散存储的场景。
-
+基于参数数组的方式传递核函数入参，并启动对应算子的计算任务。异步接口。
 ### 参数说明
 
 
-| 参数名 | 输入/输出 | 说明 |
-| --- | :---: | --- |
-| func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)。 |
-| numBlocks | 输入 | 指定核函数将会在几个核上执行。 |
-| stream | 输入 | 指定执行任务的Stream。类型定义请参见[aclrtStream](25_数据类型及其操作接口.md#aclrtStream)。 |
+| 参数名 | 输入/输出 | 说明                                                                                                  |
+| --- | :---: |-----------------------------------------------------------------------------------------------------|
+| func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)。                                   |
+| numBlocks | 输入 | 指定核函数将会在几个核上执行。                                                                                     |
+| stream | 输入 | 指定执行任务的Stream。类型定义请参见[aclrtStream](25_数据类型及其操作接口.md#aclrtStream)。                                   |
 | cfg | 输入 | 任务下发的配置信息。类型定义请参见[aclrtLaunchKernelCfg](25_数据类型及其操作接口.md#aclrtLaunchKernelCfg)。<br>不指定配置时，此处可传NULL。 |
-| args | 输入 | 参数数组指针，每个数组元素指向一个参数数据。 |
+| args | 输入 | 参数数组指针。<br/>参数数组中的每个元素指向一个核函数参数数据。                                                                  |
 
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25_数据类型及其操作接口.md#aclError)。
+
+### 约束说明
+如果args参数数组的大小与核函数的参数数量不一致，会导致未定义行为。
 
 ### 参考资源
 
@@ -1631,15 +1627,15 @@ aclError aclrtFunctionGetParamCount(const void *func, size_t *paramCount)
 
 从核函数句柄获取参数个数。
 
-本接口用于查询核函数的参数列表中包含多少个参数，配合[aclrtFunctionGetParamInfo](#aclrtFunctionGetParamInfo)接口使用，可遍历获取每个参数的详细信息（偏移和大小）。
+使用本接口查询核函数的参数列表中包含多少个参数后，再配合[aclrtFunctionGetParamInfo](#aclrtFunctionGetParamInfo)接口使用，可遍历获取每个参数的详细信息（偏移和大小）。
 
 ### 参数说明
 
 
-| 参数名 | 输入/输出 | 说明 |
-| --- | :---: | --- |
+| 参数名 | 输入/输出 | 说明                                                                |
+| --- | :---: |-------------------------------------------------------------------|
 | func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)。 |
-| paramCount | 输出 | 参数个数。 |
+| paramCount | 输出 | 核函数参数列表中所包含的参数数量。                                                 |
 
 ### 返回值说明
 
@@ -1673,17 +1669,15 @@ aclError aclrtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *
 
 根据索引从核函数句柄获取参数信息（偏移和大小）。
 
-本接口用于查询核函数参数列表中指定索引位置的参数详细信息，包括参数在参数数据区中的偏移和大小。配合[aclrtFunctionGetParamCount](#aclrtFunctionGetParamCount)接口使用，可遍历获取所有参数的信息。
-
 ### 参数说明
 
 
-| 参数名 | 输入/输出 | 说明 |
-| --- | :---: | --- |
-| func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)。 |
-| paramIndex | 输入 | 参数索引，从0开始计数。 |
-| paramOffset | 输出 | 参数在参数数据区中的偏移，单位为Byte。 |
-| paramSize | 输出 | 参数的大小，单位为Byte。 |
+| 参数名 | 输入/输出 | 说明                                                                                                                   |
+| --- | :---: |----------------------------------------------------------------------------------------------------------------------|
+| func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)。                                                    |
+| paramIndex | 输入 | 参数索引。<br/> 可先调用[aclrtFunctionGetParamCount](#aclrtFunctionGetParamCount)接口获取可用的参数数量后，这个paramIndex的取值范围：[0，(参数数量-1)]. |
+| paramOffset | 输出 | 参数在参数数据区中的偏移，单位为Byte。                                                                                                |
+| paramSize | 输出 | 参数的大小，单位为Byte。                                                                                                       |
 
 ### 返回值说明
 
