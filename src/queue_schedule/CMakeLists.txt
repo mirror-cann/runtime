@@ -171,7 +171,7 @@ if (${PRODUCT_SIDE} STREQUAL "device")
 endif()
 
 target_link_libraries(queue_schedule_so PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     $<BUILD_INTERFACE:slog_headers>
     -lrt
     ascend_protobuf_static
@@ -191,7 +191,7 @@ target_include_directories(queue_schedule PRIVATE
 )
 
 target_link_libraries(queue_schedule PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     $<BUILD_INTERFACE:slog_headers>
     queue_schedule_so
     $<$<STREQUAL:${PRODUCT_SIDE},device>:tsd_eventclient_stub_in_qs>

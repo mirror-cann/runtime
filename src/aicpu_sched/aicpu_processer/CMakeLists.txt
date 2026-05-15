@@ -44,7 +44,7 @@ target_include_directories(aicpu_processer PRIVATE
 )
 
 target_link_libraries(aicpu_processer PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     PUBLIC c_sec
     aicpu_prof
     aicpu_sharder

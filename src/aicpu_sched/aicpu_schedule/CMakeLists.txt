@@ -335,7 +335,7 @@ if(${PRODUCT_SIDE} STREQUAL host)
         ${commom_inc_path}
     )
     target_link_libraries(host_aicpu_scheduler_so PRIVATE
-        $<BUILD_INTERFACE:intf_pub_cxx17>
+        $<BUILD_INTERFACE:intf_pub>
         PUBLIC c_sec
         ascend_hal_stub
         protobuf_static 
@@ -395,7 +395,7 @@ else()
     )
 
     target_link_libraries(aicpu_scheduler_so PRIVATE
-        $<BUILD_INTERFACE:intf_pub_cxx17>
+        $<BUILD_INTERFACE:intf_pub>
         PUBLIC c_sec
         $<$<STREQUAL:${tdt_server_depend},true>:tdtserver>
         $<$<STREQUAL:${tsd_event_client_depend},true>:tsd_eventclient_stub>
@@ -483,7 +483,7 @@ else()
     )
 
     target_link_libraries(aicpu_scheduler PRIVATE
-        $<BUILD_INTERFACE:intf_pub_cxx17>
+        $<BUILD_INTERFACE:intf_pub>
         PUBLIC c_sec
         unified_dlog
         aicpu_scheduler_so

@@ -88,7 +88,7 @@ add_executable(aicpu_custom_scheduler
 
 target_link_libraries(aicpu_custom_scheduler_so PRIVATE
     -ldl
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     c_sec
     ascend_hal_stub
     aicpu_processer
@@ -154,7 +154,7 @@ install(TARGETS aicpu_custom_scheduler_so OPTIONAL
 )
 
 target_link_libraries(aicpu_custom_scheduler PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     c_sec
     unified_dlog
     aicpu_custom_scheduler_so

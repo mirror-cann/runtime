@@ -25,7 +25,7 @@ add_library(aicpu_sharder SHARED
 )
 
 target_link_libraries(aicpu_sharder PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     PUBLIC 
     c_sec
     -rdynamic

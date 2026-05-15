@@ -46,7 +46,7 @@ target_compile_options(dgw_client PRIVATE
 
 target_link_libraries(dgw_client
     PRIVATE
-        $<BUILD_INTERFACE:intf_pub_cxx17>
+        $<BUILD_INTERFACE:intf_pub>
         c_sec
         -Wl,--no-as-needed
         unified_dlog

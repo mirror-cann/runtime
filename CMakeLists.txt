@@ -13,6 +13,7 @@ include(cmake/fetch_cann_cmake.cmake)
 project (rts)
 
 init_cann_project()
+add_cann_target_options()
 
 set(RUNTIME_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE PATH "Project top directory")
 include(cmake/func.cmake)

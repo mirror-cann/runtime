@@ -12,10 +12,12 @@ cmake_minimum_required(VERSION 3.14)
 include(../fetch_cann_cmake.cmake)
 project (device_rts)
 
+set(PRODUCT_SIDE device)
 init_cann_project()
+add_cann_target_options()
 
 set(RUNTIME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../" CACHE PATH "Project top directory")
-set(PRODUCT_SIDE device)
+
 
 include(${RUNTIME_DIR}/cmake/func.cmake)
 set_runtime_params("${RUNTIME_DIR}")

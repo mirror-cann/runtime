@@ -12,8 +12,6 @@ project(tsdclient)
 
 set(BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-include(${RUNTIME_DIR}/cmake/intf_pub_linux.cmake)
-
 set(PROTO_LIST
     ${BASE_DIR}/pub_facility/proto/tsd_message.proto
 )
@@ -97,7 +95,7 @@ target_link_options(tsdclient PRIVATE
 )
 
 target_link_libraries(tsdclient PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     -Wl,--no-as-needed
     ascend_protobuf_static
     c_sec
@@ -193,7 +191,7 @@ target_link_options(tsdclient PRIVATE
 )
 
 target_link_libraries(tsdclient PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     -Wl,--no-as-needed
     ascend_protobuf_static
     c_sec 

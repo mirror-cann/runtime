@@ -57,7 +57,7 @@ target_compile_definitions(qs_client PRIVATE
 )
 
 target_link_libraries(qs_client PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     -Wl,-Bsymbolic -Wl,--exclude-libs,ALL
     -rdynamic
     $<$<OR:$<STREQUAL:${PRODUCT},ascend610>,$<STREQUAL:${PRODUCT},ascend610Lite>,$<STREQUAL:${PRODUCT},ascend310Brc>,$<STREQUAL:${PRODUCT},as31xm1>,$<STREQUAL:${PRODUCT},mc62cm12aesl>,$<STREQUAL:${PRODUCT},mc62cm12a>>:easy_comm>

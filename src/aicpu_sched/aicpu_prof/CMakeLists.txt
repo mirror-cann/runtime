@@ -36,7 +36,7 @@ target_include_directories(aicpu_prof PRIVATE
 )
 
 target_link_libraries(aicpu_prof PRIVATE
-    $<BUILD_INTERFACE:intf_pub_cxx17>
+    $<BUILD_INTERFACE:intf_pub>
     -ldl
     $<$<NOT:$<STREQUAL:${TARGET_SYSTEM_NAME},Android>>:-lrt>
     PUBLIC c_sec

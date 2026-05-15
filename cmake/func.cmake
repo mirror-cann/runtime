@@ -379,7 +379,6 @@ endfunction()
 
 # 设置rts参数
 macro(set_runtime_params base_dir)
-    include(${base_dir}/cmake/intf_pub_linux.cmake)
 
     set(PROJECT_BASE_DIR "${base_dir}")  # 工程根目录，仅在func.cmake中使用
 
