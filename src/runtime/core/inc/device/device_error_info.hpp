@@ -36,8 +36,10 @@ namespace runtime {
     constexpr uint32_t MAX_RECORD_DHA_NUM = 8U;
     constexpr uint32_t CCU_TASK_LOCAL_MEM_ERROR = 0x02U;
     constexpr uint32_t CCU_TASK_REMOTE_MEM_ERROR = 0x03U;
+    constexpr uint32_t CCU_TASK_MEM_COPY_ERROR = 0x0AU;
     constexpr uint32_t CCU_TASK_LINK_ERROR = 0x05U;
     constexpr uint32_t CCU_TASK_LOCAL_MEM_ERROR_SUBSTATUS = 0x0U;
+    constexpr uint32_t CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS = 0xCU;
 
 enum rtErrorType : std::uint8_t {
     AICORE_ERROR = 0,
@@ -61,6 +63,8 @@ enum rtErrorType : std::uint8_t {
 };
 
 extern const std::map<uint32_t, std::string> g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList;
+
+extern const std::map<uint32_t, std::string> g_hcclLocalMulBitEccEventIdBlkList;
 
 extern const std::map<uint32_t, std::string> g_hcclRemoteMulBitEccEventIdBlkList;
 

@@ -1952,17 +1952,18 @@ static void UnknowErrorProc(const Context * const curCtx, rtErrorInfo * const er
 
 rtError_t ApiImplDavid::GetErrorVerbose(const uint32_t deviceId, rtErrorInfo * const errorInfo)
 {
+    errorInfo->hasDetail = 0U;
+    errorInfo->tryRepair = 0U;
+    errorInfo->errorType = RT_NO_ERROR;
     const uint32_t tsId = InnerThreadLocalContainer::GetTsId();
     Context * const ctx = Runtime::Instance()->GetPriCtxByDeviceId(deviceId, tsId);
-    CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
+    COND_RETURN_WARN(ctx == nullptr, RT_ERROR_NONE, "Device[%u] has no fault.", deviceId);
     Device * const dev = ctx->Device_();
-    NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
+    COND_RETURN_WARN(dev == nullptr, RT_ERROR_NONE, "Device[%u] has no fault.", deviceId);
 
     rtError_t error = RT_ERROR_NONE;
     const DeviceFaultType faultType = dev->GetDeviceFaultType();
     RT_LOG(RT_LOG_DEBUG, "start GetErrorVerbose, device_id=%u, type=%u", deviceId, faultType);
-    errorInfo->hasDetail = 0U;
-    errorInfo->tryRepair = 0U;
     switch (faultType) {
         case DeviceFaultType::L2_BUFFER_ERROR:
             error = L2BufferErrProc(deviceId, errorInfo);
@@ -2058,9 +2059,7 @@ rtError_t ApiImplDavid::RepairError(const uint32_t deviceId, const rtErrorInfo *
 {
     rtError_t error = RT_ERROR_NONE;
     const uint32_t tsId = InnerThreadLocalContainer::GetTsId();
-    Context * const ctx = Runtime::Instance()->GetPriCtxByDeviceId(deviceId, tsId);
-    CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = ctx->Device_();
+    Device * const dev = Runtime::Instance()->GetDevice(deviceId, tsId);
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     switch (errorInfo->errorType) {
         case RT_ERROR_L2:

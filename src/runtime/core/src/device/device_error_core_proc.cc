@@ -54,6 +54,28 @@ const std::map<uint32_t, std::string> g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkL
     {0x81B18008U, "UB PORT multiple bit ecc error."}
 };
 
+const std::map<uint32_t, std::string> g_hcclLocalMulBitEccEventIdBlkList = {
+    {0x80CD8008U, "L2BUFF multi bit Err."},
+    {0x80F2180DU, "HBMA/MATA Os Err."},
+    {0x80F38008U, "HBMA Multi Bit Ecc."},
+    {0x81338002U, "TS Dispatch Input Err."},
+    {0x81338004U, "TS Dispatch Config Err."},
+    {0x813B8002U, "AIC Dispatch Input Error."},
+    {0x813B8004U, "AIC Dispatch Config Error."},
+    {0x81478004U, "DVPP Dispatch Config Error."},
+    {0x81478002U, "DVPP Dispatch Input Error."},
+    {0x815F8002U, "PERI Dispatch Input Error."},
+    {0x815F8004U, "PERI Dispatch Config Error."},
+    {0x81978002U, "PCIE Dispatch Input Error."},
+    {0x81978004U, "PCIE Dispatch Config Error."},
+    {0x81B58002U, "UB Dispatch Input Error."},
+    {0x81B58004U, "UB Dispatch Config Error."},
+    {0x813D8009U, "AIC AA Bus Error."},
+    {0x81AF8009U, "UB Posion Error."},
+    {0x81AF8008U, "UB multiple bit ecc error."},
+    {0x81B18008U, "UB PORT multiple bit ecc error."}
+};
+
 const std::map<uint32_t, std::string> g_hcclRemoteMulBitEccEventIdBlkList = {
     {0x80CD8008U, "L2BUFF multi bit Err."},
     {0x80F2180DU, "HBMA/MATA Os Err."},

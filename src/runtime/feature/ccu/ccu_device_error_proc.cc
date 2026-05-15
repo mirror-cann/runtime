@@ -123,8 +123,15 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
                 "CCU Launch local HBM UCE fault occurred: device_id=%u, stream_id=%d, task_id=%hu, retCode=%u",
                 devId, taskInfo->stream->Id_(), taskInfo->id, taskInfo->mte_error);
         }
-    }
-    else if (status == CCU_TASK_REMOTE_MEM_ERROR) {
+    } else if (status == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS) {
+        if (hasMteErr && !HasMemUceErr(devId, g_hcclLocalMulBitEccEventIdBlkList)) {
+            taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
+            (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
+            RT_LOG(RT_LOG_ERROR,
+                "CCU Launch local HBM UCE fault occurred: device_id=%u, stream_id=%d, task_id=%hu, ccu_status=%u, retCode=%u",
+                devId, taskInfo->stream->Id_(), taskInfo->id, status, taskInfo->mte_error);
+        }
+    } else if (status == CCU_TASK_REMOTE_MEM_ERROR) {
         if (!hasMteErr && !HasMemUceErr(devId, g_hcclRemoteMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_REMOTE_MEM_ERROR;
             RT_LOG(RT_LOG_ERROR,
