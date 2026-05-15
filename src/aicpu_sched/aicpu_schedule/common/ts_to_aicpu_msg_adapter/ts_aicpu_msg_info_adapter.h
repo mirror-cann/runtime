@@ -24,7 +24,7 @@ public:
     // invaild parameter
     bool IsAdapterInvaildParameter() const override;
 
-    //verison set
+    //version set
     void GetAicpuMsgVersionInfo(AicpuMsgVersionInfo& info) override;
     int32_t AicpuMsgVersionResponseToTs(const int32_t result) override;
 

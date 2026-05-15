@@ -131,7 +131,7 @@ public:
 
     /**
      * @ingroup ProcessModeManager
-     * @brief  used for release resource when error occured
+     * @brief  used for release resource when error occurred
      * @return void
      */
     void Destroy() override;
@@ -373,7 +373,7 @@ private:
 
     /**
      * @ingroup ProcessModeManager
-     * @brief check wheteher need to send aicpu package to device
+     * @brief check whether need to send aicpu package to device
      * @return TSD_OK when SUCCESS
      */
     TSD_StatusT GetDeviceCheckCode();
@@ -387,7 +387,7 @@ private:
 
     /**
      * @ingroup ProcessModeManager
-     * @brief check wheteher need to send aicpu package to device
+     * @brief check whether need to send aicpu package to device
      * @return TSD_OK when SUCCESS
      */
     TSD_StatusT GetDeviceCheckCodeRetry(const HDCMessage &msg);
