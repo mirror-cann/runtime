@@ -4089,7 +4089,7 @@ rtError_t rtsProfTrace(void *userdata, int32_t length, rtStream_t stream)
         length, "(0, " + std::to_string(dataSize) + "]");
 
     rtProfTraceUserData data = {0, 0, 0};
-    errno_t ret = memcpy_s(&data, dataSize, userdata, length);
+    errno_t ret = memcpy_s(&data, sizeof(data), userdata, length);
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(ret != EOK, RT_ERROR_SEC_HANDLE, ErrorCode::EE1020, __func__, "memcpy_s",
         std::to_string(ret), strerror(ret), "src=" + std::to_string(RtPtrToValue(userdata)) + ", dest=" +
         std::to_string(RtPtrToValue(&data)) + ", dest_max=" + std::to_string(dataSize) + ", count=" +

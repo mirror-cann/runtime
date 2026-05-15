@@ -1538,7 +1538,6 @@ int32_t GetEhSizeOffset(void * const elfData, const uint32_t elfLen, uint32_t* o
         return ELF_FAIL;
     }
 
-
     elfDataF->obj_ptr = static_cast<char_t *>(elfData);
     elfDataF->obj_ptr_origin = static_cast<char_t *>(elfData);
     elfDataF->section_headers = nullptr;

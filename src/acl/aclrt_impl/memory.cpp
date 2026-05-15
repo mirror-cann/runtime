@@ -29,6 +29,7 @@
 namespace {
 constexpr uint32_t MEM_SIZE_MAX = 96U;
 constexpr uint32_t MAX_PADDING_SIZE_STR_LEN = 32U;
+constexpr int32_t STRTOUL_DECIMAL_BASE = 10;
 constexpr size_t DATA_MEMORY_ALIGN_SIZE = 32UL;
 constexpr size_t DATA_MEMORY_PADDING_SIZE = 32UL;
 constexpr unsigned int FLAG_START_DYNAMIC_ALLOC_MEM = 0x200U;
@@ -178,7 +179,7 @@ void GetPaddingSize(size_t *paddingSize)
     }
     char *endPtr = NULL;
     errno = 0;
-    *paddingSize = (size_t)strtoul(paddingSizeStr, &endPtr, 10);
+    *paddingSize = static_cast<size_t>(strtoul(paddingSizeStr, &endPtr, STRTOUL_DECIMAL_BASE));
     if (errno == ERANGE || endPtr == paddingSizeStr || *endPtr != '\0') {
         *paddingSize = DATA_MEMORY_PADDING_SIZE;
         ACL_LOG_EVENT("paddingSizeStr could not be converted, paddingSizeStr[%s] is invalid.", paddingSizeStr);

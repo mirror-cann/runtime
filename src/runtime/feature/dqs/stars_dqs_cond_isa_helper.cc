@@ -446,14 +446,12 @@ void ConstructDqsDequeueFc(RtStarsDqsDequeueFc &fc, const RtStarsDqsFcPara &func
     // write mbuffer into mbuf handle addr
     ConstructStore(r8, r7, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.store);
 
-
     // r4 is cnt addr
     ConstructLoad(r4, 0U, r5, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldr2);
     // increment count: R5 = R5 + 1
     ConstructOpImmAndi(r5, r5, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addi1);
     // store updated count back
     ConstructStore(r4, r5, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.initCnt1);
-
 
     offset = static_cast<uint64_t>(RtPtrToPtr<const uint32_t *>(&fc.end) - RtPtrToPtr<const uint32_t *>(&fc));
     /* go to nop */

@@ -2394,7 +2394,6 @@ rtError_t ApiErrorDecorator::MemCopy2DAsync(void * const dst, const uint64_t dst
         COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_CAPTURE_MODE_BLOCK_ASYNC, error, ErrorCode::EE1016, __func__,
             "the operation has been converted to a synchronous operation. "
             "operation not permitted when a stream is capturing and the specified capture mode is not relaxed");
-        
     } else {
         error = impl_->MemCopy2DAsync(dst, dstPitch, src, srcPitch, width, height, curStm, copyKind, newKind);
     }

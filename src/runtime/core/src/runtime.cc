@@ -1504,7 +1504,7 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
 {
     uint32_t kernelCount = elfProg->GetKernelsCount();
     bool isKernelFound = false;
-    const RtKernel * kernels = elfProg->GetKernels();
+    const RtKernel *kernels = elfProg->GetKernels();
     for (uint32_t idx = 0U; idx < kernelCount; idx++) {
         const RtKernel * const elfKernelInfo = &kernels[idx];
 
@@ -1515,7 +1515,7 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
             continue;
         }
 
-        Kernel * kernelTmp = kernelTable_.Lookup(stubFunc);
+        Kernel *kernelTmp = kernelTable_.Lookup(stubFunc);
         if (kernelTmp != nullptr) {
             PutProgram(kernelTmp->Program_());
             error = elfProg->MergeKernel(elfKernelInfo, kernelTmp);
@@ -1559,7 +1559,7 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
 rtError_t Runtime::KernelRegister(Program *prog, const void *stubFunc, const char_t *stubName,
                                   const void * const kernelInfoExt, const uint32_t funcMode)
 {
-    Kernel * kernelObj = kernelTable_.Lookup(stubFunc);
+    Kernel *kernelObj = kernelTable_.Lookup(stubFunc);
     if (kernelObj != nullptr) {
         PutProgram(kernelObj->Program_());
         RT_LOG(RT_LOG_WARNING, "kernel is registerd, stubFunc=%p, stubName=%s, kernelInfoExt=%s.",
@@ -1610,7 +1610,7 @@ rtError_t Runtime::AllKernelRegister(Program * const prog) const
 
     const std::map<std::string, Kernel *>& kernelNameMap = prog->GetKernelNameMap();
     for (auto iter = kernelNameMap.begin(); iter != kernelNameMap.end(); ++iter) {
-        Kernel * kernelObj = iter->second;
+        Kernel *kernelObj = iter->second;
 
         /* kernelTable_ will maintain kernel and the function PutProgram() will release memory. */
         if (prog->KernelTable_ == nullptr) {
