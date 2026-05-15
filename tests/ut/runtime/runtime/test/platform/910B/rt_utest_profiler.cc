@@ -34,9 +34,6 @@
 #include "thread_local_container.hpp"
 #include "onlineprof.hpp"
 #include "../../data/elf.h"
-#include "npu_driver.hpp"
-#include "common_memset_d32.h"
-#include "simd_memsetd32.h"
 
 #undef protected
 #undef private
@@ -3146,45 +3143,6 @@ TEST_F(ProfilerTest, ProfileLogDecoratorModelApiTest)
     error = profiler->apiProfileLogDecorator_->ModelSetSchGroupId(nullptr, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = profiler->apiProfileLogDecorator_->ModelTaskUpdate(nullptr, 0, nullptr, nullptr);
-    EXPECT_EQ(error, RT_ERROR_NONE);
-    profiler->SetProfLogEnable(false);
-    delete apiImpl_;
-}
-
-TEST_F(ProfilerTest, MemsetD32Test)
-{
-    void *devPtr = (void*)0x1234;
-    uint64_t destMax = 1024;
-    uint32_t value = 0xDEADBEEF;
-    uint64_t count = 256;
-
-    ApiImpl* apiImpl_ = new ApiImpl();
-    // Mock ApiImpl 的 MemsetD32 方法
-    MOCKER_CPP_VIRTUAL(apiImpl_, &ApiImpl::MemsetD32).stubs().will(returnValue(RT_ERROR_NONE));
-
-    Profiler *profiler = ((Runtime *)Runtime::Instance())->profiler_;
-    profiler->SetProfLogEnable(true);
-    auto error = profiler->apiProfileLogDecorator_->MemsetD32(devPtr, destMax, value, count);
-    EXPECT_EQ(error, RT_ERROR_NONE);
-    profiler->SetProfLogEnable(false);
-    delete apiImpl_;
-}
-
-TEST_F(ProfilerTest, MemsetD32AsyncTest)
-{
-    void *devPtr = (void*)0x1234;
-    uint64_t destMax = 1024;
-    uint32_t value = 0xBAADF00D;
-    uint64_t count = 256;
-    Stream *stm = nullptr;
-
-    ApiImpl* apiImpl_ = new ApiImpl();
-    // Mock ApiImpl 的 MemsetD32Async 方法
-    MOCKER_CPP_VIRTUAL(apiImpl_, &ApiImpl::MemsetD32Async).stubs().will(returnValue(RT_ERROR_NONE));
-
-    Profiler *profiler = ((Runtime *)Runtime::Instance())->profiler_;
-    profiler->SetProfLogEnable(true);
-    auto error = profiler->apiProfileLogDecorator_->MemsetD32Async(devPtr, destMax, value, count, stm);
     EXPECT_EQ(error, RT_ERROR_NONE);
     profiler->SetProfLogEnable(false);
     delete apiImpl_;

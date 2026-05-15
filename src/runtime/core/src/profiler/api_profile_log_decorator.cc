@@ -512,25 +512,6 @@ rtError_t ApiProfileLogDecorator::MemsetAsync(void * const ptr, const uint64_t d
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemsetD32(void * const dst, const uint64_t destMax,
- 	                                                 const uint32_t value, const uint64_t count)
-{
-    ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MemsetD32, profiler_);
-    const rtError_t error = impl_->MemsetD32(dst, destMax, value, count);
-    record.SaveRecord();
-    return error;
-}
-
-rtError_t ApiProfileLogDecorator::MemsetD32Async(void * const dst, const uint64_t destMax,
-                                                 const uint32_t value, const uint64_t count,
-                                                 Stream * const stm)
-{
-    ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MemsetD32Async, profiler_);
-    const rtError_t error = impl_->MemsetD32Async(dst, destMax, value, count, stm);
-    record.SaveRecord();
-    return error;
-}
-
 rtError_t ApiProfileLogDecorator::SetDevice(const int32_t devId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_SET_DEVICE, profiler_);

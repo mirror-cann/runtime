@@ -115,10 +115,6 @@ public:
         const uint64_t cnt) override;
     rtError_t MemsetAsync(void * const ptr, const uint64_t destMax, const uint32_t val, const uint64_t cnt,
         Stream * const stm) override;
-    rtError_t MemsetD32(void * const dst, const uint64_t destMax,
- 	    const uint32_t value, const uint64_t count) override;
- 	rtError_t MemsetD32Async(void * const dst, const uint64_t destMax,
-        const uint32_t value, const uint64_t count, Stream * const stm) override;
     rtError_t MemCopy2DSync(void * const dst, const uint64_t dstPitch, const void * const src, const uint64_t srcPitch,
         const uint64_t width, const uint64_t height,
         const rtMemcpyKind_t kind = RT_MEMCPY_RESERVED, const rtMemcpyKind newKind = RT_MEMCPY_KIND_MAX) override;
