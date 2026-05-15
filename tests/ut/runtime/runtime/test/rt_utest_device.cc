@@ -1013,8 +1013,8 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx)
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx1)
 {
     // mix
-    rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    RawDevice *device = new RawDevice(1);
+    device->Init();
 
     Stream *stm = new Stream(device, 1);
     stm->streamId_ = 1;
@@ -1054,20 +1054,21 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx1)
     ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(&errorInfo, 0, device, errorProc);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     GlobalMockObject::verify();
+    GlobalMockObject::reset();
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
+    stm->device_ = nullptr;
     delete stm;
     delete errorProc;
     DELETE_O(kernel);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
-    rtDeviceReset(1);
+    delete device;
 }
 
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx2)
 {
     // ffts+
-    rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    RawDevice *device = new RawDevice(1);
+    device->Init();
     Stream *stm = new Stream(device, 1);
     stm->streamId_ = 1;
     TaskInfo taskInfo = {};
@@ -1097,18 +1098,18 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx2)
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
     GlobalMockObject::verify();
+    GlobalMockObject::reset();
+    stm->device_ = nullptr;
     delete stm;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
-    auto error = rtDeviceReset(1);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    delete device;
 }
 
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx3)
 {
     // ffts+
-    rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    RawDevice *device = new RawDevice(1);
+    device->Init();
     Stream *stm = new Stream(device, 1);
     stm->streamId_ = 1;
 
@@ -1132,11 +1133,10 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx3)
     rtError_t ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(&errorInfo, 0, device, errorProc);
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
+    stm->device_ = nullptr;
     delete stm;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
-    auto error = rtDeviceReset(1);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    delete device;
 }
 
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo1)
