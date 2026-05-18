@@ -160,6 +160,11 @@ sudo yum install python3 python3-pip python3-devel gcc gcc-c++ cmake ccache auto
 
 本项目支持源码构建，编译运行前需参考以上步骤完成环境部署。
 
+源码构建可选择如下方式：
+
+- **本机源码构建**：参考下文“下载源码”、“环境变量配置”和“编译runtime包”章节执行构建。
+- **Docker源码构建**：参考[.devcontainer/README.md](.devcontainer/README.md)，在容器内完成源码构建。
+
 ### 下载源码
    
     ```bash
