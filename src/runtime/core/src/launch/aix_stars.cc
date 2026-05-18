@@ -398,7 +398,7 @@ rtError_t InternalUpdateNormalKernelTask(const Context * const ctx, TaskInfo * c
     return RT_ERROR_NONE;
 }
 
-rtError_t InternalLaunchUpdateKernelSubmit(Context * const ctx, TaskInfo * const updateTask, Stream * const stm,
+rtError_t InternalLaunchUpdateKernelSubmit(const Context * const ctx, TaskInfo * const updateTask, Stream * const stm,
     const rtArgsEx_t * const argsInfo, StarsArgLoaderResult &result)
 {
     Runtime * const rt = Runtime::Instance();
@@ -438,7 +438,7 @@ rtError_t InternalLaunchUpdateKernelSubmit(Context * const ctx, TaskInfo * const
     return error;
 }
 
-rtError_t InternalLaunchKernelSubmit(Context * const ctx, TaskInfo *&submitTask, Stream *&stm,
+rtError_t InternalLaunchKernelSubmit(const Context * const ctx, TaskInfo *&submitTask, Stream *&stm,
     const rtArgsEx_t *&argsInfo, StarsArgLoaderResult &result, const Program * const programPtr)
 {
     SetKernelLaunchParams(stm, argsInfo, *submitTask);
@@ -614,12 +614,12 @@ ERROR_FREE:
     return error;
 }
 
-rtError_t UpdateTaskPrepare(Context *ctx, TaskInfo *updateTask, const Kernel *kernel, const Stream *stm)
+rtError_t UpdateTaskPrepare(const Context *ctx, TaskInfo *updateTask, const Kernel *kernel, const Stream *stm)
 {
     return InternalUpdateTaskPrepare(ctx, updateTask, kernel, stm);
 }
 
-rtError_t LaunchUpdateKernelSubmit(Context *ctx, TaskInfo *updateTask, Stream *stm, const rtArgsEx_t *argsInfo,
+rtError_t LaunchUpdateKernelSubmit(const Context *ctx, TaskInfo *updateTask, Stream *stm, const rtArgsEx_t *argsInfo,
     StarsArgLoaderResult &result)
 {
     return InternalLaunchUpdateKernelSubmit(ctx, updateTask, stm, argsInfo, result);

@@ -19,7 +19,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t DcacheLockSendTask(Context *ctx, const uint32_t blockDim, const void * const funcAddr, Stream *stream)
+rtError_t DcacheLockSendTask(const Context *ctx, const uint32_t blockDim, const void * const funcAddr, Stream *stream)
 {
     (void)ctx;
     // 算子args需要3个uint64的占位符
