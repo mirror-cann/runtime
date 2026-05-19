@@ -562,8 +562,8 @@ static void SetTaskMteErrByType(const rtErrorType errType, const Device * const 
     bool hasL2BuffEcc = (faultEventId == L2_BUFFER_ECC_EVENT_ID);
     bool hasHbmEcc = (faultEventId == HBM_ECC_EVENT_ID);
     bool isHitHbmBlkList = !hasL2BuffEcc && isHitBlklist;
-    RT_LOG(RT_LOG_ERROR, "mte error, support_hbm_ras_report=%d, has_l2_buffer_ecc_event=%d, has_hbm_ecc_notify_evnet=%d, "
-        "has_hbm_ecc_evnet=%d, hit_black_list=%d.", suppHbmRas, hasL2BuffEcc, hasMteHbmErr, hasHbmEcc, isHitBlklist);
+    RT_LOG(RT_LOG_ERROR, "support_hbm_ras_report=%d, has_l2_buffer_ecc_event=%d, has_hbm_ecc_notify_event=%d, "
+        "has_hbm_ecc_event=%d, hit_black_list=%d.", suppHbmRas, hasL2BuffEcc, hasMteHbmErr, hasHbmEcc, isHitBlklist);
 
     const uint16_t local_error = (errType == AICORE_ERROR) ? TS_ERROR_AICORE_MTE_ERROR : TS_ERROR_SDMA_POISON_ERROR;
     const uint16_t remote_error = TS_ERROR_SDMA_LINK_ERROR;
