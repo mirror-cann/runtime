@@ -161,3 +161,58 @@ dfx:
   llt:
     ut_check: true
     st_check: false
+dfx_log:
+  commiter:
+    "xxx"
+  team: "dfx"
+  src:
+    release:
+      - src/dfx/log
+    unrelease:
+  llt:
+    ut_check: true
+    st_check: false
+dfx_trace:
+  commiter:
+    "xxx"
+  team: "dfx"
+  src:
+    release:
+      - src/dfx/trace
+    unrelease:
+  llt:
+    ut_check: true
+    st_check: false
+dfx_adump:
+  commiter:
+    "xxx"
+  team: "dfx"
+  src:
+    release:
+      - src/dfx/adump
+    unrelease:
+  llt:
+    ut_check: true
+    st_check: false
+dfx_msprof:
+  commiter:
+    "xxx"
+  team: "dfx"
+  src:
+    release:
+      - src/dfx/msprof
+    unrelease:
+  llt:
+    ut_check: true
+    st_check: false
+dfx_error_manager:
+  commiter:
+    "xxx"
+  team: "dfx"
+  src:
+    release:
+      - src/dfx/error_manager
+    unrelease:
+  llt:
+    ut_check: true
+    st_check: false
