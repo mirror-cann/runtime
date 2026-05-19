@@ -99,7 +99,7 @@ static const DevProperties CHIP_MC32DM11A_PROPERTIES = {
     .engineType = "STARS",
     .isStars = true,
     .isStarsV2 = true,
-    .pthreadStackSize = PTHREAD_STACK_SIZE,
+    .pthreadStackSize = 0U,
     .eventWaitTimeout = EventWaitTimeoutType::SET_OP_WAIT_TIMEOUT_NOT_SUPPORT,
     .tsCount = 2U,
     .defaultTaskRatio = NORMAL_TASK_RATION,
@@ -192,6 +192,8 @@ static const DevProperties CHIP_MC32DM11A_PROPERTIES = {
     .supportCreateTaskRes = SupportCreateTaskRes::CREATE_TASK_RES_SUPPORT_WITH_OFFLINE,
     .physicalMemTypePolicy = PhysicalMemTypePolicy::DEFAULT,
     .aicNumForCoreStack = RT_AICORE_NUM_25,
+    // mcxx vector is processing uint in aicore
+    .aivNumPerDie = RT_MCXX_CORE_NUM_PER_DIE,
     .engineWaitCompletionTImeout = 0UL,
     .reportWaitTimeout = RT_REPORT_TIMEOUT_TIME,
     .hostAtomicCapabilities = {},

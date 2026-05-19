@@ -160,6 +160,7 @@ static const DevProperties CHIP_610LITE_PROPERTIES = {
     .supportCreateTaskRes = SupportCreateTaskRes::CREATE_TASK_RES_NOT_SUPPORT,
     .physicalMemTypePolicy = PhysicalMemTypePolicy::DEFAULT,
     .aicNumForCoreStack = 4U,
+    .aivNumPerDie = 0U,
     .engineWaitCompletionTImeout = ENGINE_WAIT_COMPLETION_TIMEOUT,
     .reportWaitTimeout = RT_REPORT_MDC_TIMEOUT_TIME,
     .hostAtomicCapabilities = {},

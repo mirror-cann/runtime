@@ -267,6 +267,7 @@ static const DevProperties CHIP_DAVID_PROPERTIES = {
     .supportCreateTaskRes = SupportCreateTaskRes::CREATE_TASK_RES_SUPPORT_WITH_OFFLINE,
     .physicalMemTypePolicy = PhysicalMemTypePolicy::DEFAULT,
     .aicNumForCoreStack = RT_AICORE_NUM_25,
+    .aivNumPerDie = RT_DAVID_AIVECTOR_NUM_PER_DIE,
     .engineWaitCompletionTImeout = 0UL,
     .reportWaitTimeout = RT_REPORT_TIMEOUT_TIME,
     .hostAtomicCapabilities = GetDavidAtomicCaps(),

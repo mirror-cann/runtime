@@ -130,6 +130,7 @@ static const DevProperties CHIP_MINI_PROPERTIES = {
     .supportCreateTaskRes = SupportCreateTaskRes::CREATE_TASK_RES_NOT_SUPPORT,
     .physicalMemTypePolicy = PhysicalMemTypePolicy::DEFAULT,
     .aicNumForCoreStack = RT_AICORE_NUM_25,
+    .aivNumPerDie = 0U,
     .engineWaitCompletionTImeout = 0UL,
     .reportWaitTimeout = RT_REPORT_TIMEOUT_TIME,
     .hostAtomicCapabilities = {},

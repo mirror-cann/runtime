@@ -45,7 +45,7 @@ rtError_t RawDevice::AllocSimtStackPhyBase(const rtChipType_t chipType)
     const uint64_t simtWarpStkSize = Runtime::Instance()->GetSimtWarpStkSize();
     const uint32_t simtDvgWarpStkSize = Runtime::Instance()->GetSimtDvgWarpStkSize();
 
-    uint64_t aivCoreNum = GetDavidDieNum() * RT_DAVID_AIVECTOR_NUM_PER_DIE;
+    uint64_t aivCoreNum = GetDavidDieNum() * GetDevProperties().aivNumPerDie;
     uint64_t stackPhySize = aivCoreNum * RT_MAX_WARP_NUM_PER_VECTOR_CORE * (simtWarpStkSize + static_cast<uint64_t>(simtDvgWarpStkSize));
     stackPhySize += static_cast<uint64_t>(STACK_PHY_BASE_ALIGN_LEN);   // 128B align
 
@@ -82,7 +82,7 @@ rtError_t RawDevice::FreeSimtStackPhyBase()
 
 rtError_t RawDevice::AllocStackPhyBaseDavid()
 {
-    uint64_t scalerBufSize = 32U * 1024U * GetDavidDieNum() * (RT_DAVID_AICORE_NUM_PER_DIE + RT_DAVID_AIVECTOR_NUM_PER_DIE);
+    uint64_t scalerBufSize = 32U * 1024U * GetDavidDieNum() * (RT_DAVID_AICORE_NUM_PER_DIE + GetDevProperties().aivNumPerDie);
 
     rtError_t error = AllocAddrForDcache(deviceId_, stackPhyBase32k_, scalerBufSize, drvMemCtrlHandle_);
     if (error == RT_ERROR_NONE) {

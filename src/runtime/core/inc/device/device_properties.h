@@ -324,6 +324,7 @@ struct DevProperties final {
     SupportCreateTaskRes supportCreateTaskRes;
     PhysicalMemTypePolicy physicalMemTypePolicy;
     uint32_t aicNumForCoreStack;
+    uint32_t aivNumPerDie;
     uint64_t engineWaitCompletionTImeout;
     int32_t reportWaitTimeout;
     std::array<uint32_t, RT_ATOMIC_OPERATION_MAX_VAL> hostAtomicCapabilities;
