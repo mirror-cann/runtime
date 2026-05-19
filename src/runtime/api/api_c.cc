@@ -460,10 +460,7 @@ rtError_t rtCpuKernelLaunchWithFlag(const void *soName, const void *kernelName, 
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtKernelLaunchNames_t launchName = {static_cast<const char_t *>(soName),
         static_cast<const char_t *>(kernelName), ""};
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t ret = apiInstance->CpuKernelLaunch(&launchName, numBlocks, argsInfo, exeStream, flags);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
 }
@@ -477,10 +474,7 @@ rtError_t rtAicpuKernelLaunchWithFlag(const rtKernelLaunchNames_t *launchNames, 
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t ret = apiInstance->CpuKernelLaunch(launchNames, numBlocks, argsInfo, exeStream, flags);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
 }
@@ -505,11 +499,8 @@ rtError_t rtAicpuKernelLaunchExWithArgs(const uint32_t kernelType, const char_t 
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t ret = apiInstance->CpuKernelLaunchExWithArgs(opName, numBlocks, argsInfo,
                                                                  exeStream, flags, kernelType);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
 }
@@ -713,10 +704,7 @@ rtError_t rtEventRecord(rtEvent_t evt, rtStream_t stm)
     RT_VALIDATE_AND_UNWRAP_OBJECT(evt, Event, eventPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
 
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->EventRecord(eventPtr, streamPtr);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtEventRecord);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -733,10 +721,7 @@ rtError_t rtEventReset(rtEvent_t evt, rtStream_t stm)
     RT_VALIDATE_AND_UNWRAP_OBJECT(evt, Event, eventPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
 
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->EventReset(eventPtr, streamPtr);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtEventReset);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -934,10 +919,7 @@ rtError_t rtMemset(void *devPtr, uint64_t destMax, uint32_t val, uint64_t cnt)
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemset);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemSetSync(devPtr, destMax, val, cnt);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemset);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -951,10 +933,7 @@ rtError_t rtMemsetAsync(void *ptr, uint64_t destMax, uint32_t val, uint64_t cnt,
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemsetAsync);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemsetAsync(ptr, destMax, val, cnt, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemsetAsync);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -1044,10 +1023,7 @@ rtError_t rtMemcpyEx(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemcpyEx);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemCopySyncEx(dst, destMax, src, cnt, kind);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemcpyEx);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_DRV_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -1061,10 +1037,7 @@ rtError_t rtMemcpy(void *dst, uint64_t destMax, const void *src, uint64_t cnt, r
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemcpy);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemCopySync(dst, destMax, src, cnt, kind);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemcpy);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -1079,10 +1052,7 @@ rtError_t rtMemcpyAsync(void *dst, uint64_t destMax, const void *src, uint64_t c
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyAsync(dst, destMax, src, cnt, kind, exeStream, nullptr);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     TIMESTAMP_END(rtMemcpyAsync);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -1098,11 +1068,8 @@ rtError_t rtMemcpyAsyncWithoutCheckKind(void *dst, uint64_t destMax, const void 
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyAsync(dst, destMax, src, cnt, kind, exeStream,
                                                      nullptr, nullptr, false);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemcpyAsyncWithoutCheckKind);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -1117,10 +1084,7 @@ rtError_t rtMemcpyAsyncEx(void *dst, uint64_t destMax, const void *src, uint64_t
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyAsync(dst, destMax, src, cnt, kind, exeStream, nullptr, nullptr, true, memcpyConfig);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     TIMESTAMP_END(rtMemcpyAsyncEx);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -1141,10 +1105,7 @@ rtError_t rtMemcpyAsyncWithCfg(void *dst, uint64_t destMax, const void *src, uin
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
 
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyAsync(dst, destMax, src, cnt, kind, exeStream, &cfgInfo);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemcpyAsyncWithCfg);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -1160,10 +1121,7 @@ rtError_t rtMemcpyAsyncWithCfgV2(void *dst, uint64_t destMax, const void *src, u
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
 
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyAsync(dst, destMax, src, cnt, kind, exeStream, cfgInfo);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemcpyAsyncV2);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -1190,8 +1148,6 @@ rtError_t rtMemcpyAsyncPtr(void *memcpyAddrInfo, uint64_t destMax, uint64_t coun
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(Runtime::Instance());
     RT_VALIDATE_AND_UNWRAP_OBJECT(stream, Stream, exeStream);
     rtError_t error;
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     if (likely(Runtime::Instance()->ChipIsHaveStars())) {
         error = api->MemcpyAsyncPtr(memcpyAddrInfo, destMax, count, exeStream,
             &cfgInfo);
@@ -1201,7 +1157,6 @@ rtError_t rtMemcpyAsyncPtr(void *memcpyAddrInfo, uint64_t destMax, uint64_t coun
         error = api->MemcpyAsync((static_cast<char_t *>(memcpyAddrInfo) + dstPtrOffset), destMax,
             (static_cast<const char_t *>(memcpyAddrInfo) + srcPtrOffset), count, kind, exeStream, &cfgInfo);
     }
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -1225,8 +1180,6 @@ rtError_t rtMemcpyAsyncPtrV2(void *memcpyAddrInfo, uint64_t destMax, uint64_t co
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(Runtime::Instance());
     RT_VALIDATE_AND_UNWRAP_OBJECT(stream, Stream, exeStream);
     rtError_t error;
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     if (likely(Runtime::Instance()->ChipIsHaveStars())) {
         error = api->MemcpyAsyncPtr(memcpyAddrInfo, destMax, count, exeStream,
             cfgInfo);
@@ -1236,7 +1189,6 @@ rtError_t rtMemcpyAsyncPtrV2(void *memcpyAddrInfo, uint64_t destMax, uint64_t co
         error = api->MemcpyAsync((static_cast<char_t *>(memcpyAddrInfo) + dstPtrOffset), destMax,
             (static_cast<const char_t *>(memcpyAddrInfo) + srcPtrOffset), count, kind, exeStream, cfgInfo);
     }
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -1248,10 +1200,7 @@ rtError_t rtMemcpy2d(void *dst, uint64_t dstPitch, const void *src, uint64_t src
     GLOBAL_STATE_WAIT_IF_LOCKED();
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemCopy2DSync(dst, dstPitch, src, srcPitch, width, height, kind);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -1265,10 +1214,7 @@ rtError_t rtMemcpy2dAsync(void *dst, uint64_t dstPitch, const void *src, uint64_
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
 
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemCopy2DAsync(dst, dstPitch, src, srcPitch, width, height, exeStream, kind);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
 
@@ -1952,13 +1898,10 @@ rtError_t rtNotifyRecord(rtNotify_t notify, rtStream_t stm)
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
 
     RT_VALIDATE_AND_UNWRAP_OBJECT(notify, Notify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->NotifyRecord(notifyPtr, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
 
     return ACL_RT_SUCCESS;
@@ -1973,8 +1916,6 @@ rtError_t rtNotifyWait(rtNotify_t notify, rtStream_t stm)
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     rtError_t error = RT_ERROR_NONE;
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
 
     RT_VALIDATE_AND_UNWRAP_OBJECT(notify, Notify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -1984,7 +1925,6 @@ rtError_t rtNotifyWait(rtNotify_t notify, rtStream_t stm)
         error = apiInstance->NotifyWait(notifyPtr, exeStream, Runtime::Instance()->GetWaitTimeout());
         RT_LOG(RT_LOG_INFO, "start NotifyWait timeout value.timeout=%us", Runtime::Instance()->GetWaitTimeout());
     }
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
 
     return ACL_RT_SUCCESS;
@@ -2004,10 +1944,7 @@ rtError_t rtNotifyWaitWithTimeOut(rtNotify_t notify, rtStream_t stm, uint32_t ti
         RT_LOG(RT_LOG_INFO, "start notify wait support timeout value.timeout=%us", timeOut);
         RT_VALIDATE_AND_UNWRAP_OBJECT(notify, Notify, notifyPtr);
         RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-        const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-        (void)AwdStartThreadWatchdog(watchDogHandle);
         const rtError_t error = apiInstance->NotifyWait(notifyPtr, exeStream, timeOut);
-        (void)AwdStopThreadWatchdog(watchDogHandle);
         ERROR_RETURN_WITH_EXT_ERRCODE(error);
         return ACL_RT_SUCCESS;
     } else {
@@ -2169,11 +2106,8 @@ rtError_t rtCallbackLaunch(rtCallback_t callBackFunc, void *fnData, rtStream_t s
     GLOBAL_STATE_WAIT_IF_LOCKED();
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->CallbackLaunch(callBackFunc, fnData, exeStream, isBlock);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -2598,10 +2532,7 @@ rtError_t rtStarsTaskLaunchWithFlag(const void *taskSqe, uint32_t sqeLen, rtStre
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtStarsTaskLaunchWithFlag);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->StarsTaskLaunch(taskSqe, sqeLen, streamPtr, flag);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtStarsTaskLaunchWithFlag);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -3111,10 +3042,7 @@ rtError_t rtBarrierTaskLaunch(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uin
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->BarrierTaskLaunch(taskInfo, streamPtr, flag);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -3135,10 +3063,7 @@ rtError_t rtMemcpyHostTask(void * const dst, const uint64_t destMax, const void 
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyHostTask(dst, destMax, src, cnt, kind, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -3244,11 +3169,8 @@ rtError_t rtMultipleTaskInfoLaunch(const void * taskInfo, rtStream_t stm)
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t ret = apiInstance->MultipleTaskInfoLaunch(
         RtPtrToPtr<const rtMultipleTaskInfo_t *>(taskInfo), exeStream, RT_DEFAULT_FLAG);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -3388,12 +3310,9 @@ rtError_t rtLaunchKernelByFuncHandleV2(rtFuncHandle funcHandle, uint32_t numBloc
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(argsHandle, RT_ERROR_INVALID_VALUE);
     rtLaunchArgs_t* args = RtPtrToPtr<rtLaunchArgs_t*>(argsHandle);
     rtArgsEx_t *argsInfo = &(args->argsInfo);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchKernel(RtPtrToPtr<Kernel *>(funcHandle), numBlocks, argsInfo,
                                                     exeStream, cfgInfo);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -3406,12 +3325,9 @@ rtError_t rtLaunchKernelByFuncHandleV3(rtFuncHandle funcHandle, uint32_t numBloc
     GLOBAL_STATE_WAIT_IF_LOCKED();
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchKernel(RtPtrToPtr<Kernel *>(funcHandle), numBlocks, argsInfo,
                                                     exeStream, cfgInfo);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -3897,12 +3813,9 @@ rtError_t rtVectorCoreKernelLaunchWithHandle(void *hdl, const uint64_t tilingKey
     }
 
     TIMESTAMP_BEGIN(rtKernelLaunchWithHandle);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->KernelLaunchWithHandle(
         hdl, tilingKey, numBlocks, argsInfo, exeStream, cfgInfo, true);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtKernelLaunchWithHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -3931,11 +3844,8 @@ rtError_t rtVectorCoreKernelLaunch(const void *stubFunc, uint32_t numBlocks, rtA
         mergedCfg = *cfgInfo;
     }
     mergedCfg.dumpflag = static_cast<uint8_t>(flags); // 优先使用flags作为dumpflag
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t err = apiInstance->KernelLaunch(stubFunc, numBlocks,
         argsInfo, exeStream, &mergedCfg, true);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtKernelLaunch);
     launchArg.argCount = 0U;
     ERROR_RETURN_WITH_EXT_ERRCODE(err);
@@ -4140,11 +4050,8 @@ rtError_t rtsLaunchHostFunc(rtStream_t stm, const rtCallback_t callBackFunc, voi
 {
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->LaunchHostFunc(exeStream, callBackFunc, fnData);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;

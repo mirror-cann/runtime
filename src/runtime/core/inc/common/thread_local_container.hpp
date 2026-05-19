@@ -17,7 +17,6 @@
 #include "base.hpp"
 #include "osal.hpp"
 #include "api.hpp"
-#include "awatchdog.h"
 #include "args_buffer_guard.hpp"
 
 namespace cce {
@@ -34,7 +33,6 @@ public:
     static uint32_t GetEnvFlags(void);
     static void SetEnvFlags(const uint32_t inEnvFlags);
     static rtArgsSizeInfo_t& GetArgsSizeInfo(void);
-    static AwdHandle GetOrCreateWatchDogHandle(void);
     static void* GetOrCreateArgsBuffer(uint64_t requiredSize);
 private:
     // always end with '\0', if first is '\0', means not set.
@@ -42,7 +40,6 @@ private:
     static __THREAD_LOCAL__ char_t taskTag_[TASK_TAG_MAX_LEN];
     static __THREAD_LOCAL__ uint32_t envFlags_;
     static __THREAD_LOCAL__ rtArgsSizeInfo_t argsSize_;
-    static __THREAD_LOCAL__ AwdHandle watchDogHandle_;
     static thread_local ArgsBufferGuard argsBufferGuard_;
 };
 

@@ -143,10 +143,7 @@ rtError_t rtFftsPlusTaskLaunch(rtFftsPlusTaskInfo_t *fftsPlusTaskInfo, rtStream_
 
     TIMESTAMP_BEGIN(rtFftsPlusTaskLaunch);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->FftsPlusTaskLaunch(fftsPlusTaskInfo, streamPtr, 0U);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtFftsPlusTaskLaunch);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -167,10 +164,7 @@ rtError_t rtFftsPlusTaskLaunchWithFlag(rtFftsPlusTaskInfo_t *fftsPlusTaskInfo, r
 
     TIMESTAMP_BEGIN(rtFftsPlusTaskLaunchWithFlag);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t ret = apiInstance->FftsPlusTaskLaunch(fftsPlusTaskInfo, streamPtr, flag);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtFftsPlusTaskLaunchWithFlag);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -334,10 +328,7 @@ rtError_t rtLaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void *src, u
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->LaunchSqeUpdateTask(streamId, taskId, src, cnt, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -428,10 +419,7 @@ rtError_t rtsLaunchUpdateTask(rtStream_t destStm, uint32_t destTaskId, rtStream_
             NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
             RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-            const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-            (void)AwdStartThreadWatchdog(watchDogHandle);
             error = apiInstance->LaunchSqeUpdateTask(static_cast<uint32_t>(destStream->Id_()), destTaskId, cfg->val.dsaTaskAttr.srcAddr, cfg->val.dsaTaskAttr.size, exeStream, true);
-            (void)AwdStopThreadWatchdog(watchDogHandle);
             ERROR_RETURN_WITH_EXT_ERRCODE(error);
             break;
         }
@@ -535,10 +523,7 @@ rtError_t rtCmoAddrTaskLaunch(void *cmoAddrInfo, uint64_t destMax, rtCmoOpCode_t
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
     TIMESTAMP_BEGIN(CmoAddrTaskLaunch);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->CmoAddrTaskLaunch(cmoAddrInfo, destMax, cmoOpCode, streamPtr, flag);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(CmoAddrTaskLaunch);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -798,10 +783,7 @@ rtError_t rtCmoTaskLaunch(rtCmoTaskInfo_t *taskInfo, rtStream_t stm, uint32_t fl
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
     TIMESTAMP_BEGIN(CmoTaskLaunch);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->CmoTaskLaunch(taskInfo, streamPtr, flag);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(CmoTaskLaunch);
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_CMO_DOT_NO_LOG)) {
         COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -876,10 +858,7 @@ rtError_t rtMemsetD32(void* dst, uint64_t destMax, uint32_t value, uint64_t coun
     Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemsetD32);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemsetD32(dst, destMax, value, count);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemsetD32);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -893,10 +872,7 @@ rtError_t rtMemsetD32Async(void* dst, uint64_t destMax, uint32_t value, uint64_t
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemsetD32Async(dst, destMax, value, count, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT,
                            ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     TIMESTAMP_END(rtMemsetD32Async);
@@ -962,11 +938,8 @@ rtError_t rtMemcpyD2DAddrAsync(void *dst, uint64_t dstMax, uint64_t dstOffset, c
     rtD2DAddrCfgInfo_t addrCfgInfo = {};
     addrCfgInfo.dstOffset = dstOffset;
     addrCfgInfo.srcOffset = srcOffset;
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemcpyAsync(dst, dstMax, src, cnt, RT_MEMCPY_ADDR_DEVICE_TO_DEVICE,
         exeStream, nullptr, &addrCfgInfo);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
@@ -1481,8 +1454,6 @@ rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
     Kernel * const kernel = RtPtrToPtr<Kernel *>(func);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
 
     RtArgsWithType argsWithType = {};
     argsWithType.type = RT_ARGS_ARRAY;
@@ -1491,7 +1462,6 @@ rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchKernelV2(kernel, numBlocks, &argsWithType,
         exeStream, cfg);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_KERNEL_INVALID, ACL_ERROR_RT_INVALID_HANDLE);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);

@@ -104,10 +104,7 @@ rtError_t rtMemPoolMallocAsync(void **devPtr, const uint64_t size, const rtMemPo
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(exeStream);
     TIMESTAMP_BEGIN(rtMemPoolMallocAsync);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemPoolMallocAsync(devPtr, size, memPoolId, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemPoolMallocAsync);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -124,10 +121,7 @@ rtError_t rtMemPoolFreeAsync(void *ptr, rtStream_t stm)
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     
     TIMESTAMP_BEGIN(rtMemPoolFreeAsync);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     const rtError_t error = apiInstance->MemPoolFreeAsync(ptr, exeStream);
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     TIMESTAMP_END(rtMemPoolFreeAsync);
  
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

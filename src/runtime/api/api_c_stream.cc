@@ -125,8 +125,6 @@ rtError_t rtStreamWaitEvent(rtStream_t stm, rtEvent_t evt)
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(Runtime::Instance());
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     rtError_t ret;
     DevProperties properties;
     GET_DEV_PROPERTIES(Runtime::Instance()->GetChipType(), properties);
@@ -135,7 +133,6 @@ rtError_t rtStreamWaitEvent(rtStream_t stm, rtEvent_t evt)
     } else {
         ret = apiInstance->StreamWaitEvent(exeStream, waitEvent);
     }
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
@@ -392,8 +389,6 @@ rtError_t rtStreamWaitEventWithTimeout(rtStream_t stm, rtEvent_t evt, uint32_t t
     RT_VALIDATE_AND_UNWRAP_OBJECT(evt, Event, waitEvent);
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const auto watchDogHandle = ThreadLocalContainer::GetOrCreateWatchDogHandle();
-    (void)AwdStartThreadWatchdog(watchDogHandle);
     uint32_t work_timeout = 0;
     DevProperties properties;
     GET_DEV_PROPERTIES(rtInstance->GetChipType(), properties);
@@ -406,7 +401,6 @@ rtError_t rtStreamWaitEventWithTimeout(rtStream_t stm, rtEvent_t evt, uint32_t t
     }
     const rtError_t ret = apiInstance->StreamWaitEvent(exeStream, waitEvent, work_timeout);
 
-    (void)AwdStopThreadWatchdog(watchDogHandle);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;

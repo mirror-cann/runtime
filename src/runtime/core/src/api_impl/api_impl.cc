@@ -3176,7 +3176,6 @@ rtError_t ApiImpl::SetDevice(const int32_t devId)
     curCtx->Device_()->SetSatMode(Runtime::Instance()->GetSatMode());
 
     InnerThreadLocalContainer::SetCurCtx(nullptr);
-    (void)ThreadLocalContainer::GetOrCreateWatchDogHandle();
 
     RT_LOG(RT_LOG_INFO, "SetDevice success, curCtx=%p, drv devId=%u.", curCtx, devId);
     return RT_ERROR_NONE;
@@ -3817,7 +3816,6 @@ rtError_t ApiImpl::ContextSetCurrent(Context * const inCtx)
     RT_LOG(RT_LOG_INFO, "set context=%p", inCtx);
     InnerThreadLocalContainer::SetCurCtx(inCtx);
     InnerThreadLocalContainer::SetCurRef(nullptr);  // must be null for context switch
-    (void)ThreadLocalContainer::GetOrCreateWatchDogHandle();
     return RT_ERROR_NONE;
 }
 

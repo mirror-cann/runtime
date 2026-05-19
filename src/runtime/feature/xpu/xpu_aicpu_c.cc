@@ -31,7 +31,7 @@ rtError_t XpuLaunchKernel(const Kernel * const kernel, const uint32_t coreDim, c
         "XPU kernel launch does not support dump");
     
     RT_LOG(RT_LOG_DEBUG,
-        "launch kernel V2, device_id=%u, stream_id=%d, blockDim=%u.",
+        "xpu launch kernel, device_id=%u, stream_id=%d, blockDim=%u.",
         stm->Device_()->Id_(),
         stm->Id_(),
         coreDim);
