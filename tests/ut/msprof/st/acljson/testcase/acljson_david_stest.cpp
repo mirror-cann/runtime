@@ -172,7 +172,7 @@ TEST_F(AclJsonDavidStest, AclJsonScale)
     // david: scale
     nlohmann::json data;
     data["output"] = DAVID_OUTPUT_DIR;
-    data["scale"] = "opType:MatMulV3,Index;opName:aclnnMatmul_MatMulV3Common_MatMulV3,aclnnIndex_IndexAiCore_Index";
+    data["optype"] = "MatMulV3,Index";
     EXPECT_EQ(PROFILING_FAILED, MsprofMgr().AclJsonStart(1, data));
 }
 

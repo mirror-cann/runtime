@@ -62,6 +62,22 @@ static int32_t ProfStopFuncStub(uint32_t dataType, const void *data, uint32_t le
     return 0;
 }
 
+static bool ProfCheckOpSwitchFuncStubTrue(uint32_t type, const char *op, size_t len)
+{
+    (void)type;
+    (void)op;
+    (void)len;
+    return true;
+}
+
+static bool ProfCheckOpSwitchFuncStubFalse(uint32_t type, const char *op, size_t len)
+{
+    (void)type;
+    (void)op;
+    (void)len;
+    return false;
+}
+
 TEST_F(PROF_API_PLUGIN_UTTEST, PROF_START_STOP)
 {
     EXPECT_EQ(0, ProfAPI::ProfCannPlugin::instance()->ProfStart(0, nullptr, 0));
@@ -71,6 +87,41 @@ TEST_F(PROF_API_PLUGIN_UTTEST, PROF_START_STOP)
     EXPECT_EQ(0, ProfAPI::ProfCannPlugin::instance()->ProfStop(0, nullptr, 0));
     ProfAPI::ProfCannPlugin::instance()->profStop_ = ProfStopFuncStub;
     EXPECT_EQ(0, ProfAPI::ProfCannPlugin::instance()->ProfStop(0, nullptr, 0));
+}
+
+TEST_F(PROF_API_PLUGIN_UTTEST, PROF_CHECKOPSWITCH_NULLPTR)
+{
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, nullptr, 0));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, nullptr, 6));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(1, nullptr, 0));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(1, nullptr, 6));
+}
+
+TEST_F(PROF_API_PLUGIN_UTTEST, PROF_CHECKOPSWITCH_VALID_OP)
+{
+    const char *opName = "MatMul";
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, opName, 6));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, opName, 0));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(1, "Add", 3));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(2, "Relu", 4));
+}
+
+TEST_F(PROF_API_PLUGIN_UTTEST, PROF_CHECKOPSWITCH_WITH_CALLBACK_TRUE)
+{
+    ProfAPI::ProfCannPlugin::instance()->profCheckOpSwitch_ = ProfCheckOpSwitchFuncStubTrue;
+    EXPECT_EQ(true, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, nullptr, 0));
+    EXPECT_EQ(true, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, "MatMul", 6));
+    EXPECT_EQ(true, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(1, "Add", 3));
+    EXPECT_EQ(true, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(2, nullptr, 0));
+}
+
+TEST_F(PROF_API_PLUGIN_UTTEST, PROF_CHECKOPSWITCH_WITH_CALLBACK_FALSE)
+{
+    ProfAPI::ProfCannPlugin::instance()->profCheckOpSwitch_ = ProfCheckOpSwitchFuncStubFalse;
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, nullptr, 0));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(0, "MatMul", 6));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(1, "Add", 3));
+    EXPECT_EQ(false, ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(2, nullptr, 0));
 }
 
 TEST_F(PROF_API_PLUGIN_UTTEST, PROF_INIT)

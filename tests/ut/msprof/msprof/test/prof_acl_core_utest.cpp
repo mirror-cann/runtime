@@ -4462,3 +4462,48 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofResetDeviceHandle_SetUploaderStopped)
   ProfAclMgr::instance()->devTasks_.clear();
   GlobalMockObject::verify();
 }
+
+TEST_F(MSPROF_ACL_CORE_UTEST, GetOpTypeConfig) {
+    using namespace Msprofiler::Api;
+    std::shared_ptr<analysis::dvvp::message::ProfileParams> params(new analysis::dvvp::message::ProfileParams());
+    params->opType = "MatMul,Index";
+    ProfAclMgr::instance()->params_ = params;
+
+    std::string opTypeConfig = ProfAclMgr::instance()->GetOpTypeConfig();
+    EXPECT_EQ("MatMul,Index", opTypeConfig);
+
+    params->opType = "";
+    opTypeConfig = ProfAclMgr::instance()->GetOpTypeConfig();
+    EXPECT_EQ("", opTypeConfig);
+
+    ProfAclMgr::instance()->params_ = nullptr;
+    opTypeConfig = ProfAclMgr::instance()->GetOpTypeConfig();
+    EXPECT_EQ("", opTypeConfig);
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, ProfDataTypeConfigHandle_OpTypeMask) {
+    using namespace Msprofiler::Api;
+    std::shared_ptr<analysis::dvvp::message::ProfileParams> params(new analysis::dvvp::message::ProfileParams());
+    params->ai_core_profiling = "on";
+    params->opType = "MatMul,Index";
+
+    MOCKER_CPP(&Platform::CheckIfSupport, bool (Platform::*)(const PlatformFeature) const)
+        .stubs()
+        .will(returnValue(true));
+    MOCKER_CPP(&Platform::GetAicoreEvents)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+
+    ProfAclMgr::instance()->params_ = params;
+    ProfAclMgr::instance()->ProfDataTypeConfigHandle(params);
+
+    uint64_t dataTypeConfig = ProfAclMgr::instance()->GetCmdModeDataTypeConfig();
+    EXPECT_TRUE((dataTypeConfig & PROF_OP_MASK) != 0);
+
+    params->opType = "";
+    ProfAclMgr::instance()->ProfDataTypeConfigHandle(params);
+    dataTypeConfig = ProfAclMgr::instance()->GetCmdModeDataTypeConfig();
+    EXPECT_TRUE((dataTypeConfig & PROF_OP_MASK) == 0);
+
+    GlobalMockObject::verify();
+}

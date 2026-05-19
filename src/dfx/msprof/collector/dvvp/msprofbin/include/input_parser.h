@@ -52,7 +52,7 @@ enum MsprofArgsType {
     ARGS_EXPORT_TYPE,
     ARGS_REPORTS,
     ARGS_MEM_SERVICEFLOW,
-    ARGS_SCALE,
+    ARGS_OPTYPE,
     ARGS_RULE,
     // switch
     ARGS_ASCENDCL,
@@ -138,7 +138,7 @@ const OsalStructOption LONG_OPTIONS[] = {
     {"type", OSAL_OPTIONAL_ARG, nullptr, ARGS_EXPORT_TYPE},
     {"reports", OSAL_OPTIONAL_ARG, nullptr, ARGS_REPORTS},
     {"sys-mem-serviceflow", OSAL_OPTIONAL_ARG, nullptr, ARGS_MEM_SERVICEFLOW},
-    {"scale", OSAL_OPTIONAL_ARG, nullptr, ARGS_SCALE},
+    {"optype", OSAL_OPTIONAL_ARG, nullptr, ARGS_OPTYPE},
     {"rule", OSAL_OPTIONAL_ARG, nullptr, ARGS_RULE},
     // switch
     {"ascendcl", OSAL_OPTIONAL_ARG, nullptr, ARGS_ASCENDCL},               // the default value is on

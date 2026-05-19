@@ -78,7 +78,7 @@ const std::vector<std::string> ACLJSON_CONFIG_VECTOR = {
     "host_sys_usage",
     "host_sys_usage_freq",
     "sys_lp_freq",
-    "scale"
+    "optype"
 };
 
 // vector of geoption start
@@ -113,7 +113,7 @@ const std::vector<std::string> GEOPTION_CONFIG_VECTOR = {
     "host_sys_usage",
     "host_sys_usage_freq",
     "sys_lp_freq",
-    "scale"
+    "optype"
 };
 
 class ProfSubscribeKey {
@@ -213,6 +213,7 @@ public:
     void GetRunningDevices(std::vector<uint32_t> &devIds);
     uint64_t GetDeviceSubscribeCount(SHARED_PTR_ALIA<ProfSubscribeKey> subscribeKey, uint32_t &devId);
     uint64_t GetCmdModeDataTypeConfig();
+    std::string GetOpTypeConfig();
     std::string GetParamJsonStr();
     // task datatypeconfig add
     void AddAiCpuModelConf(uint64_t &dataTypeConfig) const;
@@ -333,6 +334,11 @@ private:
                                  const MsprofConfig *config);
     std::string MsprofResultDirAdapter(const std::string &dir) const;
     void ProfDataTypeConfigHandle(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
+    void UpdateDataTypeConfigByMetrics(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
+    void UpdateDataTypeConfigByTimelineTrace(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
+    void UpdateDataTypeConfigByProfLevel(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
+    void UpdateDataTypeConfigByGeApi(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
+    void UpdateDataTypeConfigBySwitches(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
     void UpdateDataTypeConfigBySwitch(const std::string &sw, const uint64_t dataTypeConfig);
     std::string MsprofCheckAndGetChar(CHAR_PTR data, uint32_t dataLen) const;
     void MsprofAclJsonParamAdaper(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);

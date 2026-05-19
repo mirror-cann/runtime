@@ -335,4 +335,9 @@ TEST_F(PROF_API_STTEST, PROF_API)
     EXPECT_EQ(0, MsprofStart(0, nullptr, 0));
     EXPECT_EQ(0, MsprofStop(0, nullptr, 0));
     EXPECT_NE(0, MsprofSysCycleTime());
+    EXPECT_EQ(false, MsprofCheckOpSwitch(0, nullptr, 0));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(1, "MatMul", 6));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(0, "MatMul", 0));
+    const char *op = "MatMul";
+    EXPECT_EQ(false, MsprofCheckOpSwitch(0, op, 6));
 }

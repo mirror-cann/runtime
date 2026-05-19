@@ -64,4 +64,5 @@ extern "C" MSVP_PROF_API int32_t ProfImplUnSubscribeRawData();
 
 extern "C" MSVP_PROF_API void ProfImplSetVarAddBlockBufBatchPop(const ProfVarAddBlockBufPopCallback func);
 extern "C" MSVP_PROF_API int32_t ProfImplSetProfCommand(VOID_PTR command, uint32_t len);
+extern "C" MSVP_PROF_API bool ProfCheckOpSwitch(uint32_t type, const char *op, size_t len);
 #endif

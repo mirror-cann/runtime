@@ -89,7 +89,7 @@ typedef enum {
     ACL_PROF_LOW_POWER_FREQ             = 11,
     ACL_PROF_SYS_MEM_SERVICEFLOW        = 12,
     ACL_PROF_SYS_CPU_FREQ               = 13,
-    ACL_PROF_SCALE                      = 14,
+    ACL_PROF_OPTYPE                     = 14,
     ACL_PROF_ARGS_MAX                   = 15
 } aclprofConfigType;
 

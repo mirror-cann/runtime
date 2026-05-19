@@ -607,6 +607,6 @@ TEST_F(CliDavidStest, CliSysInterconnectionAppOverflow)
 TEST_F(CliDavidStest, CliScale)
 {
     // david: scale normal
-    const char* argv[] = {DAVID_OUTPUT_DIR, "--scale=opType:MatMulV3,Index;opName:aclnnMatmul_MatMulV3Common_MatMulV3,aclnnIndex_IndexAiCore_Index"};
+    const char* argv[] = {DAVID_OUTPUT_DIR, "--optype=MatMulV3,Index"};
     EXPECT_EQ(PROFILING_FAILED, MsprofMgr().MsprofStartByAppMode(sizeof(argv) / sizeof(char *), argv));
 }

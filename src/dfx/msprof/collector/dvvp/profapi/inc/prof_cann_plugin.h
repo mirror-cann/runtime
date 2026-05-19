@@ -56,6 +56,7 @@ using ProfVarAddBlockBufPopFunc = void* (*) (const ProfVarAddBlockBufPopCallback
 using ProfVarAddBufIndexShiftFunc = void* (*) (const ProfVarAddBufIndexShiftCallBack func);
 
 using ProfSetCommandFunc = int32_t (*) (VOID_PTR command, uint32_t len);
+using ProfCheckOpSwitchFunc = bool (*) (uint32_t type, const char *op, size_t len);
 
 class ProfCannPlugin : public ProfPlugin, public analysis::dvvp::common::singleton::Singleton<ProfCannPlugin> {
 public:
@@ -109,6 +110,7 @@ public:
     int32_t ProfUnSubscribeRawData() const;
 
     int32_t ProfSetProfCommand(VOID_PTR command, uint32_t len);
+    bool ProfCheckOpSwitch(uint32_t type, const char *op, size_t len);
     int32_t RegisterProfileCallback(int32_t callbackType, VOID_PTR callback, uint32_t len);
     ~ProfCannPlugin() override;
 
@@ -170,6 +172,7 @@ private:
     ProfVarAddBufIndexShiftFunc profVarAddBlockBufIndexShift_{nullptr};
 
     ProfSetCommandFunc profSetProfCommand_{nullptr};
+    ProfCheckOpSwitchFunc profCheckOpSwitch_{nullptr};
 
     // for atls tools callback
     MsprofSetDeviceHandle atlsSetDevice_{nullptr};

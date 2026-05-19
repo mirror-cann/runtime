@@ -169,6 +169,7 @@ typedef void* VOID_PTR;
 #define PROF_SUBTASK_TIME_MASK         0x0000040000000ULL
 #define PROF_OP_DETAIL_MASK            0x0000080000000ULL
 #define PROF_OP_TIMESTAMP_MASK         0x0000100000000ULL
+#define PROF_OP_MASK                   0x0000200000000ULL
 
 #define PROF_AICPU_MODEL_MASK          0x4000000000000000ULL
 #define PROF_MODEL_LOAD_MASK           0x8000000000000000ULL
@@ -255,6 +256,10 @@ enum AttrType {
 
 enum MsprofReportBatchType {
     MSPROF_BATCH_ADDITIONAL_INFO = 0
+};
+
+enum MsprofOpSwitchType {
+    MSPROF_OPTYPE = 0
 };
 
 struct MsprofCommandHandleParams {
@@ -708,6 +713,15 @@ MSVP_PROF_API int32_t MsprofUnsetDeviceIdByGeModelIdx(const uint32_t geModelIdx,
  * @return system cycle time of CPU
  */
 MSVP_PROF_API uint64_t MsprofSysCycleTime(void);
+
+/**
+ * @brief check if op profiling is enabled for specified opType
+ * @param type [IN] query type, 0 for opType
+ * @param op [IN] opType string to query, need not be null-terminated
+ * @param len [IN] length of opType string, excluding null terminator
+ * @return true if opType is enabled, false otherwise
+ */
+MSVP_PROF_API bool MsprofCheckOpSwitch(uint32_t type, const char *op, size_t len);
 
 #ifdef __cplusplus
 }

@@ -298,3 +298,60 @@ TEST_F(PROF_API_UTTEST, PROF_PROFSETPROFCOMMAND)
   auto data = reinterpret_cast<void *>(&command);
   EXPECT_EQ(PROFILING_FAILED, profSetProfCommand(data, 0));
 }
+
+static bool MsprofCheckOpSwitchCallbackStubTrue(uint32_t type, const char *op, size_t len)
+{
+    (void)type;
+    (void)op;
+    (void)len;
+    return true;
+}
+
+static bool MsprofCheckOpSwitchCallbackStubFalse(uint32_t type, const char *op, size_t len)
+{
+    (void)type;
+    (void)op;
+    (void)len;
+    return false;
+}
+
+TEST_F(PROF_API_UTTEST, PROF_MSPROFCHECKOPSWITCH_TYPE_NOT_OPTYPE)
+{
+    EXPECT_EQ(false, MsprofCheckOpSwitch(1, nullptr, 0));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(1, "MatMul", 6));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(2, "Add", 3));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(100, "Relu", 4));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(UINT32_MAX, nullptr, 0));
+}
+
+TEST_F(PROF_API_UTTEST, PROF_MSPROFCHECKOPSWITCH_OPTYPE_NULLPTR)
+{
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, nullptr, 0));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, nullptr, 6));
+}
+
+TEST_F(PROF_API_UTTEST, PROF_MSPROFCHECKOPSWITCH_OPTYPE_VALID_OP)
+{
+    const char *op = "MatMul";
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, op, 6));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, "Add", 3));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, op, 0));
+}
+
+TEST_F(PROF_API_UTTEST, PROF_MSPROFCHECKOPSWITCH_WITH_CALLBACK_TRUE)
+{
+    ProfAPI::ProfCannPlugin::instance()->profCheckOpSwitch_ = MsprofCheckOpSwitchCallbackStubTrue;
+    EXPECT_EQ(true, MsprofCheckOpSwitch(MSPROF_OPTYPE, nullptr, 0));
+    EXPECT_EQ(true, MsprofCheckOpSwitch(MSPROF_OPTYPE, "MatMul", 6));
+    EXPECT_EQ(true, MsprofCheckOpSwitch(MSPROF_OPTYPE, "Add", 3));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(1, "MatMul", 6));
+}
+
+TEST_F(PROF_API_UTTEST, PROF_MSPROFCHECKOPSWITCH_WITH_CALLBACK_FALSE)
+{
+    ProfAPI::ProfCannPlugin::instance()->profCheckOpSwitch_ = MsprofCheckOpSwitchCallbackStubFalse;
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, nullptr, 0));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, "MatMul", 6));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(MSPROF_OPTYPE, "Add", 3));
+    EXPECT_EQ(false, MsprofCheckOpSwitch(1, "MatMul", 6));
+}

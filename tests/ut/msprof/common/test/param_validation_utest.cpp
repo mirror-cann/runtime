@@ -564,3 +564,66 @@ TEST_F(COMMON_VALIDATION_PARAM_VALIDATION_TEST, CheckLlcConfigValid) {
     llc = "write";
     EXPECT_EQ(true, ParamValidation::instance()->CheckLlcConfigValid(llc));
 }
+
+TEST_F(COMMON_VALIDATION_PARAM_VALIDATION_TEST, CheckOpTypeIsValid) {
+    MOCKER_CPP(&Platform::CheckIfSupport, bool (Platform::*)(const PlatformFeature) const)
+        .stubs()
+        .will(returnValue(false))
+        .then(returnValue(true));
+    std::string opType;
+    std::string errInfo;
+
+    std::string opTypeInput = "MatMul,Index";
+    EXPECT_EQ(false, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+
+    opType.clear();
+    EXPECT_EQ(true, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("MatMul,Index", opType);
+
+    opType.clear();
+    opTypeInput = "";
+    EXPECT_EQ(false, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("Failed to check empty opType.", errInfo);
+
+    opType.clear();
+    opTypeInput = "MatMul,,Index";
+    EXPECT_EQ(false, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("Failed to check empty opType item.", errInfo);
+
+    opType.clear();
+    std::string longOpType(257, 't');
+    EXPECT_EQ(false, ParamValidation::instance()->CheckOpTypeIsValid(longOpType, opType, errInfo));
+    EXPECT_EQ("Failed to check overflow opType: " + longOpType.substr(0, 128) + "..., the max input size is 256.", errInfo);
+
+    opType.clear();
+    std::string criticalOpType(256, 't');
+    EXPECT_EQ(true, ParamValidation::instance()->CheckOpTypeIsValid(criticalOpType, opType, errInfo));
+    EXPECT_EQ(criticalOpType, opType);
+
+    opType.clear();
+    opTypeInput = "MatMul,Index,MatMul";
+    EXPECT_EQ(true, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("MatMul,Index", opType);
+
+    opType.clear();
+    opTypeInput = "MatMul";
+    EXPECT_EQ(true, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("MatMul", opType);
+
+    opType.clear();
+    opTypeInput = ",MatMul";
+    EXPECT_EQ(false, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("Failed to check empty opType item.", errInfo);
+
+    opType.clear();
+    opTypeInput = "MatMul,";
+    EXPECT_EQ(false, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("Failed to check empty opType item.", errInfo);
+
+    opType.clear();
+    opTypeInput = "MatMul,MatMul,MatMul";
+    EXPECT_EQ(true, ParamValidation::instance()->CheckOpTypeIsValid(opTypeInput, opType, errInfo));
+    EXPECT_EQ("MatMul", opType);
+
+    GlobalMockObject::verify();
+}

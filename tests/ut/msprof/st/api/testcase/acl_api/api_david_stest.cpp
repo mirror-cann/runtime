@@ -152,8 +152,8 @@ TEST_F(AclApiDavidStest, AclApiSetConfigError)
     ret = aclprofSetConfig(configType, setConfig.c_str(), setConfig.size());
     EXPECT_EQ(ACL_ERROR_INVALID_PROFILING_CONFIG, ret);
 
-    configType = ACL_PROF_SCALE;
-    setConfig = "opType:MatMulV3,Index;opName:aclnnMatmul_MatMulV3Common_MatMulV3,aclnnIndex_IndexAiCore_Index";
+    configType = ACL_PROF_OPTYPE;
+    setConfig = "MatMulV3,Index";
     ret = aclprofSetConfig(configType, setConfig.c_str(), setConfig.size());
     EXPECT_EQ(ACL_ERROR_INVALID_PROFILING_CONFIG, ret);
 

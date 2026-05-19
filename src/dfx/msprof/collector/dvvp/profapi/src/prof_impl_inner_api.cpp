@@ -207,6 +207,14 @@ MSVP_PROF_API uint64_t MsprofSysCycleTime()
 #endif
 }
 
+MSVP_PROF_API bool MsprofCheckOpSwitch(uint32_t type, const char *op, size_t len)
+{
+    if (type != MSPROF_OPTYPE) {
+        return false;
+    }
+    return ProfAPI::ProfCannPlugin::instance()->ProfCheckOpSwitch(type, op, len);
+}
+
 #ifdef __cplusplus
 }
 #endif

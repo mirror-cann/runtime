@@ -899,8 +899,7 @@ int32_t InputParser::CheckAnalyzeRuleSwitch(const struct MsprofCmdInfo &cmdInfo)
 int32_t InputParser::CheckCmdScaleIsValid(const struct MsprofCmdInfo &cmdInfo) const
 {
     std::string errInfo = "";
-    if (!ParamValidation::instance()->CheckScaleIsValid(cmdInfo.args[ARGS_SCALE], params_->scaleType,
-        params_->scaleName, errInfo)) {
+    if (!ParamValidation::instance()->CheckOpTypeIsValid(cmdInfo.args[ARGS_OPTYPE], params_->opType, errInfo)) {
         CmdLog::CmdErrorLog("%s", errInfo.c_str());
         return MSPROF_DAEMON_ERROR;
     }
@@ -1515,9 +1514,9 @@ void ArgsManager::AddScaleArgs()
     if (!Platform::instance()->CheckIfSupport(PLATFORM_TASK_SCALE)) {
         return;
     }
-    Args scale = {"scale", "Customized operator name and operator type with the following format: "
-        "\"opName:*,*;opType:*,*\"."};
-    argsList_.push_back(scale);
+    Args optype = {"optype", "Customized operator type with the following format: "
+        "\"opType1,opType2,...\"."};
+    argsList_.push_back(optype);
 }
 }
 }

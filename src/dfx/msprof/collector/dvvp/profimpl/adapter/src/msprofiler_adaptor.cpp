@@ -311,3 +311,8 @@ extern "C" MSVP_PROF_API int32_t ProfImplSetProfCommand(VOID_PTR command, uint32
     }
     return ProfSetProfCommand(*reinterpret_cast<ProfCommand*>(command));
 }
+
+extern "C" MSVP_PROF_API bool ProfCheckOpSwitch(uint32_t type, const char *op, size_t len)
+{
+    return Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(type, op, len);
+}

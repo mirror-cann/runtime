@@ -496,28 +496,25 @@ TEST_F(INPUT_PARSER_UTEST, CheckBaseInfo) {
         .will(returnValue(Analysis::Dvvp::Common::Config::PlatformType::CHIP_CLOUD_V4));
     Platform::instance()->Uninit();
     Platform::instance()->Init();
-    // Failed to check scale, please check if input duplicate type
-    cmdInfo.args[ARGS_SCALE] = "opType:Index;opType:aclnn_matmul_index";
-    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
-    // Failed to check empty scale
-    cmdInfo.args[ARGS_SCALE] = "opType:;opName:aclnn_matmul_index";
-    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
-    // Failed to check unkown scale type
-    cmdInfo.args[ARGS_SCALE] = "op type:Index;opName:aclnn_matmul_index";
-    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
-    cmdInfo.args[ARGS_SCALE] = "Index";
-    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
-    // Failed to check overflow scale
-    std::string opName(4096, 't');
-    std::string scaleOpName = "opName:" + opName;
-    cmdInfo.args[ARGS_SCALE] = const_cast<char *>(scaleOpName.c_str());
-    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
-    // pass check function
-    cmdInfo.args[ARGS_SCALE] = "opType:Index;opName:aclnn_matmul_index,,";
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "Index,Index";
     EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
-    cmdInfo.args[ARGS_SCALE] = "opType:Index";
+    EXPECT_EQ("Index", parser.params_->opType);
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = ",";
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "Index,,MatMul";
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+    parser.params_->opType.clear();
+    std::string opType(257, 't');
+    cmdInfo.args[ARGS_OPTYPE] = const_cast<char *>(opType.c_str());
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "Index,MatMul";
     EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
-    cmdInfo.args[ARGS_SCALE] = "opName:aclnn_matmul_index,,";
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "Index";
     EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
 
     GlobalMockObject::verify();
@@ -922,4 +919,53 @@ TEST_F(INPUT_PARSER_UTEST, PreCheckParamOffset) {
     EXPECT_STREQ("invalid", LONG_OPTIONS[ARGS_INVALID].name);
     EXPECT_STREQ("iteration-id", LONG_OPTIONS[ARGS_EXPORT_ITERATION_ID].name);
     EXPECT_STREQ("model-id", LONG_OPTIONS[ARGS_EXPORT_MODEL_ID].name);
+}
+
+TEST_F(INPUT_PARSER_UTEST, CheckCmdScaleIsValidComprehensive) {
+    InputParser parser = InputParser();
+    struct MsprofCmdInfo cmdInfo = { {nullptr} };
+
+    MOCKER_CPP(&Platform::CheckIfSupport, bool (Platform::*)(const PlatformFeature) const)
+        .stubs()
+        .will(returnValue(false))
+        .then(returnValue(true));
+
+    cmdInfo.args[ARGS_OPTYPE] = "MatMul";
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "MatMul";
+    EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
+    EXPECT_EQ("MatMul", parser.params_->opType);
+
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "MatMul,Index";
+    EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
+    EXPECT_EQ("MatMul,Index", parser.params_->opType);
+
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = ",MatMul";
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "MatMul,";
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+
+    parser.params_->opType.clear();
+    std::string criticalOpType(256, 't');
+    cmdInfo.args[ARGS_OPTYPE] = const_cast<char *>(criticalOpType.c_str());
+    EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
+    EXPECT_EQ(criticalOpType, parser.params_->opType);
+
+    parser.params_->opType.clear();
+    std::string overflowOpType(257, 't');
+    cmdInfo.args[ARGS_OPTYPE] = const_cast<char *>(overflowOpType.c_str());
+    EXPECT_EQ(PROFILING_FAILED, parser.CheckCmdScaleIsValid(cmdInfo));
+
+    parser.params_->opType.clear();
+    cmdInfo.args[ARGS_OPTYPE] = "MatMul,MatMul";
+    EXPECT_EQ(PROFILING_SUCCESS, parser.CheckCmdScaleIsValid(cmdInfo));
+    EXPECT_EQ("MatMul", parser.params_->opType);
+
+    GlobalMockObject::verify();
 }

@@ -210,7 +210,7 @@ int32_t ProfParamsAdapter::CheckApiConfigSupport(aclprofConfigType type) const
         {ACL_PROF_HOST_SYS_USAGE_FREQ,      {PLATFORM_SYS_HOST_ALL_PID_CPU, PLATFORM_SYS_HOST_ALL_PID_MEM}},
         {ACL_PROF_LOW_POWER_FREQ,           {PLATFORM_SYS_DEVICE_LOW_POWER}},
         {ACL_PROF_SYS_MEM_SERVICEFLOW,      {PLATFORM_SYS_MEM_SERVICEFLOW}},
-        {ACL_PROF_SCALE,                    {PLATFORM_TASK_SCALE}}
+        {ACL_PROF_OPTYPE,                   {PLATFORM_TASK_SCALE}}
     };
     if (type == ACL_PROF_STORAGE_LIMIT) {
         return PROFILING_SUCCESS;
@@ -388,10 +388,9 @@ int32_t ProfParamsAdapter::CheckApiConfigIsValidThree(SHARED_PTR_ALIA<analysis::
                 return PROFILING_SUCCESS;
             }
             break;
-        case ACL_PROF_SCALE:
+        case ACL_PROF_OPTYPE:
             static std::string errInfo = "";
-            if (ParamValidation::instance()->CheckScaleIsValid(config, params->scaleType, params->scaleName,
-                errInfo)) {
+            if (ParamValidation::instance()->CheckOpTypeIsValid(config, params->opType, errInfo)) {
                 return PROFILING_SUCCESS;
             }
             break;

@@ -150,6 +150,8 @@ MSVP_PROF_API int32_t ProfAclRangePushEx(ACLPROF_EVENT_ATTR_PTR attr);
 
 MSVP_PROF_API int32_t ProfAclRangePop();
 
+MSVP_PROF_API bool MsprofCheckOpSwitch(uint32_t type, const char *op, size_t len);
+
 #ifdef __cplusplus
 }
 #endif

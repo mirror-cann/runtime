@@ -476,6 +476,25 @@ void InstanceFinalizeGuard()
 {
     static FinalizeGuard guard;
 }
+
+bool ProfCheckOpSwitch(uint32_t type, const char *op, size_t len)
+{
+    if (type != 0U || op == nullptr || len == 0U) {
+        return false;
+    }
+    std::string opType(op, len);
+    std::string opTypeConfig = ProfAclMgr::instance()->GetOpTypeConfig();
+    if (opTypeConfig.empty()) {
+        return false;
+    }
+    std::vector<std::string> opList = Utils::Split(opTypeConfig, false, "", ",");
+    for (const auto& item : opList) {
+        if (item == opType) {
+            return true;
+        }
+    }
+    return false;
+}
 }
 }
 }

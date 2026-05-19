@@ -30,11 +30,7 @@ enum class ProfSocPmuType {
     PMU_TYPE_UNKNOWN
 };
 
-enum class ProfScaleType {
-    SCALE_OP_TYPE = 0,
-    SCALE_OP_NAME = 1,
-    SCALE_TYPE_UNKNOWN
-};
+
 
 class ParamValidation : public analysis::dvvp::common::singleton::Singleton<ParamValidation> {
 public:
@@ -82,13 +78,10 @@ public:
     bool CheckFreqIsValid(const std::string &switchName, uint32_t freq) const;
     bool CheckMemServiceflowValid(const std::string &switchName, const std::string &config) const;
     bool CheckDuplicateSocPmu(const std::string &oriStr) const;
-    bool CheckDuplicateScale(const std::string &oriStr) const;
     ProfSocPmuType GetSocPmuInfo(std::string &socPmuStr, std::string &eventStr) const;
-    ProfScaleType GetScaleInfo(std::string &scaleStr, std::string &scaleInfoStr) const;
     bool CheckSocPmuEventsValid(ProfSocPmuType type, const std::vector<std::string> &events) const;
     bool CheckSocPmuEventsSizeValid(ProfSocPmuType type, uint32_t eventSize, int32_t &maxEvent) const;
-    bool CheckScaleIsValid(const std::string &scaleInput, std::string &scaleType, std::string &scaleName,
-        std::string &errInfo) const;
+    bool CheckOpTypeIsValid(const std::string &opTypeInput, std::string &opType, std::string &errInfo) const;
     bool CheckTaskBlockValid(const std::string &switchName, const std::string &config) const;
 
 private:

@@ -105,6 +105,7 @@ void ProfCannPlugin::LoadProfApi()
     LOAD_MSPROF_API(profVarAddBlockBufPop_, msProfLibHandle_, ProfVarAddBlockBufPopFunc, "ProfImplSetVarAddBlockBufBatchPop");
     LOAD_MSPROF_API(profVarAddBlockBufIndexShift_, msProfLibHandle_, ProfVarAddBufIndexShiftFunc, "ProfImplSetVarAddBlockBufIndexShift");
     LOAD_MSPROF_API(profSetProfCommand_, msProfLibHandle_, ProfSetCommandFunc, "ProfImplSetProfCommand");
+    LOAD_MSPROF_API(profCheckOpSwitch_, msProfLibHandle_, ProfCheckOpSwitchFunc, "ProfCheckOpSwitch");
     LoadProfInfo();
     LoadProftxApiInit(msProfLibHandle_);
     ProfAclPlugin::instance()->ProfAclApiInit(msProfLibHandle_);
@@ -937,6 +938,14 @@ int32_t ProfCannPlugin::ProfUnSubscribeRawData() const
     }
     MSPROF_LOGW("profUnSubscribeRawData_ is null");
     return 0;
+}
+
+bool ProfCannPlugin::ProfCheckOpSwitch(uint32_t type, const char *op, size_t len)
+{
+    if (profCheckOpSwitch_ != nullptr) {
+        return profCheckOpSwitch_(type, op, len);
+    }
+    return false;
 }
 
 void *TryPopAdprofBuf(size_t &popSize, bool popForce)

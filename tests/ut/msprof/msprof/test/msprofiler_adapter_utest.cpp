@@ -69,3 +69,67 @@ TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_ACL_SUBSCRIBE)
   ProfRegisterTransport(ProfCreateParsertransport());
   EXPECT_EQ(ACL_ERROR_INVALID_MODEL_ID, ProfAclSubscribe(0, 0, nullptr));
 }
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_TYPE_NOT_ZERO)
+{
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(1, nullptr, 0));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(1, "MatMul", 6));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(2, "Add", 3));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(UINT32_MAX, "Relu", 4));
+}
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_NULLPTR_OP)
+{
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, nullptr, 0));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, nullptr, 6));
+}
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_ZERO_LEN)
+{
+  const char *op = "MatMul";
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, op, 0));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Add", 0));
+}
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_EMPTY_CONFIG)
+{
+  MOCKER(&Msprofiler::Api::ProfAclMgr::GetOpTypeConfig)
+    .stubs()
+    .will(returnValue(std::string("")));
+  
+  const char *op = "MatMul";
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, op, 6));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Add", 3));
+}
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_OP_IN_CONFIG)
+{
+  MOCKER(&Msprofiler::Api::ProfAclMgr::GetOpTypeConfig)
+    .stubs()
+    .will(returnValue(std::string("MatMul,Add,Relu")));
+  
+  EXPECT_EQ(true, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "MatMul", 6));
+  EXPECT_EQ(true, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Add", 3));
+  EXPECT_EQ(true, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Relu", 4));
+}
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_OP_NOT_IN_CONFIG)
+{
+  MOCKER(&Msprofiler::Api::ProfAclMgr::GetOpTypeConfig)
+    .stubs()
+    .will(returnValue(std::string("MatMul,Add")));
+  
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Relu", 4));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Conv2D", 6));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Softmax", 7));
+}
+
+TEST_F(MSPROFILER_ADAPTER_UTEST, PROF_CHECKOPSWITCH_SINGLE_OP_CONFIG)
+{
+  MOCKER(&Msprofiler::Api::ProfAclMgr::GetOpTypeConfig)
+    .stubs()
+    .will(returnValue(std::string("MatMul")));
+  
+  EXPECT_EQ(true, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "MatMul", 6));
+  EXPECT_EQ(false, Analysis::Dvvp::ProfilerCommon::ProfCheckOpSwitch(0, "Add", 3));
+}

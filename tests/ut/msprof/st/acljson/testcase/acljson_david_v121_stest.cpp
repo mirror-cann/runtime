@@ -87,27 +87,26 @@ TEST_F(AclJsonDavidV121Stest, AclJsonScale)
     // david: scale
     nlohmann::json data;
     data["output"] = DAVID_V121_OUTPUT_DIR;
-    data["scale"] = "opType:MatMulV3,Index;opName:aclnnMatmul_MatMulV3Common_MatMulV3,aclnnIndex_IndexAiCore_Index";
+    data["optype"] = "MatMulV3,Index";
     EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().AclJsonStart(1, data));
 }
 
-TEST_F(AclJsonDavidV121Stest, AclJsonScaleEmpty)
+TEST_F(AclJsonDavidV121Stest, AclJsonScaleEmptyItem)
 {
-    // david: scale empty
+    // david: scale empty item
     nlohmann::json data;
     data["output"] = DAVID_V121_OUTPUT_DIR;
-    data["scale"] = "opType:MatMulV3,Index;opName:aclnnMatmul_MatMulV3Common_MatMulV3,,,,,,";
-    EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().AclJsonStart(1, data));
+    data["optype"] = "MatMulV3,,Index";
+    EXPECT_EQ(PROFILING_FAILED, MsprofMgr().AclJsonStart(1, data));
 }
 
 TEST_F(AclJsonDavidV121Stest, AclJsonScaleOverflow)
 {
     // david: scale overflow
     nlohmann::json data;
-    std::string opName(512, 't');
-    std::string scaleCmd = "opType:MatMulV3;opName:" + opName;
+    std::string opType(257, 't');
     data["output"] = DAVID_V121_OUTPUT_DIR;
-    data["scale"] = scaleCmd;
+    data["optype"] = opType;
     EXPECT_EQ(PROFILING_FAILED, MsprofMgr().AclJsonStart(1, data));
 }
 
@@ -115,25 +114,24 @@ TEST_F(AclJsonDavidV121Stest, AclJsonScaleCritical)
 {
     // david: scale critical
     nlohmann::json data;
-    std::string opName(511, 't');
-    std::string scaleCmd = "opType:MatMulV3;opName:" + opName;
+    std::string opType(256, 't');
     data["output"] = DAVID_V121_OUTPUT_DIR;
-    data["scale"] = scaleCmd;
+    data["optype"] = opType;
     EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().AclJsonStart(1, data));
 }
 
 TEST_F(AclJsonDavidV121Stest, AclJsonScaleDuplicate)
 {
-    // david: scale dumplicate
+    // david: scale duplicate
     nlohmann::json data;
-    std::string opName = "aclnnIndex_IndexAiCore_Index";
-    std::string scaleCmd = "opType:MatMulV3;opName:";
+    std::string opType = "MatMulV3";
+    std::string scaleCmd = "";
     for (auto i = 0; i < 20; ++i) {
-        scaleCmd += opName;
+        scaleCmd += opType;
         scaleCmd += ",";
     }
     scaleCmd.pop_back();
     data["output"] = DAVID_V121_OUTPUT_DIR;
-    data["scale"] = scaleCmd;
+    data["optype"] = scaleCmd;
     EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().AclJsonStart(1, data));
 }
