@@ -64,8 +64,6 @@ enum rtErrorType : std::uint8_t {
 
 extern const std::map<uint32_t, std::string> g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList;
 
-extern const std::map<uint32_t, std::string> g_hcclLocalMulBitEccEventIdBlkList;
-
 extern const std::map<uint32_t, std::string> g_hcclRemoteMulBitEccEventIdBlkList;
 
 extern const std::map<uint32_t, std::string> g_mulBitEccEventId;
