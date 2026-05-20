@@ -124,7 +124,7 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
                 devId, taskInfo->stream->Id_(), taskInfo->id, taskInfo->mte_error);
         }
     } else if (status == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS) {
-        if (hasMteErr && !HasMemUceErr(devId, g_hcclLocalMulBitEccEventIdBlkList)) {
+        if (hasMteErr && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
             (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
             RT_LOG(RT_LOG_ERROR,
