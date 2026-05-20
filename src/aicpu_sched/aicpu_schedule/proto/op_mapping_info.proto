@@ -142,4 +142,7 @@ message OpMappingInfo {
     repeated Task task = 8;
     string dump_step = 9;
     DumpData dump_data = 10;
+    oneof dump_switch {
+        uint64 dump_switch_addr = 11;
+    }
 }

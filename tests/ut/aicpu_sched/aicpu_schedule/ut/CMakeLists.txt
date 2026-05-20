@@ -64,6 +64,7 @@ set(COMMON_C_INCLUDES
     ${RUNTIME_DIR}/src/dfx/msprof/inc/toolchain
     ${RUNTIME_DIR}/src/aicpu_sched/aicpu_schedule/common/ts_to_aicpu_msg_adapter
     ${RUNTIME_DIR}/src/aicpu_sched/aicpu_schedule/common
+    ${RUNTIME_DIR}/src/runtime/core/inc
     ${CMAKE_BINARY_DIR}/proto/aicpu_proto/proto
 )
 

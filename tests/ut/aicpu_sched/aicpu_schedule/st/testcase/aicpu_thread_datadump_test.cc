@@ -54,6 +54,8 @@
 #include "aicpu_engine.h"
 #include "aicpusd_so_manager.h"
 #include "aicpusd_cust_dump_process.h"
+#include "aicpusd_common.h"
+
 #undef private
 using namespace AicpuSchedule;
 using namespace aicpu;
@@ -68,6 +70,17 @@ public:
         GlobalMockObject::verify();
     }
 };
+
+namespace {
+    drvError_t halTsdrvCtlStub(uint32_t devId, int cmd, void *param, size_t paramSize, void *out, size_t *outSize)
+    {
+        TsCtrlMsgBody queryResult = {};
+        queryResult.u.query_stream_overflow_status.status = 1U;
+        memcpy_s(out, sizeof(TsCtrlMsgBody), &queryResult, sizeof(TsCtrlMsgBody));
+        *outSize = sizeof(TsCtrlMsgBody);
+        return 0;
+    }
+}
 
 TEST_F(AiCPUThreadDatadumpSt, DatadumpInitAICPUDatadumpStSuccess)
 {
@@ -886,6 +899,69 @@ TEST_F(AiCPUThreadDatadumpSt, WorkTest_LoadSt_failed) {
     AicpuSqeAdapter ada(0U);
     int32_t ret = opDumpTaskMgr.Load(opMappingInfo, ada);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
-    ret = opDumpTaskMgr.DoDump(opMappingInfo);
+    MappingInfoOptionalParam optionalParam;
+    opDumpTaskMgr.GetOptionalParam(opMappingInfo, optionalParam);
+    ret = opDumpTaskMgr.DoDump(opMappingInfo, optionalParam);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+}
+ 
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_DoDumpBySwitchBitmap) {
+    MOCKER_CPP(&OpDumpTaskManager::GetDumpStepFromString).stubs().will(returnValue(true));
+    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    aicpu::dump::OpMappingInfo opMappingInfo;
+    const uint32_t taskId = 3333;
+    const uint32_t streamId = 3;
+    const uint32_t contextid = 1;
+    const uint32_t threadid = 2;
+    const uint32_t modelId = 33;
+    const int32_t dataType = 3;
+    uint64_t stepId = 1;
+    uint64_t iterationsPerLoop = 1;
+    uint64_t loopCond = 1;
+    opMappingInfo.set_step_id_addr(reinterpret_cast<uint64_t>(&stepId));
+    opMappingInfo.set_iterations_per_loop_addr(reinterpret_cast<uint64_t>(&iterationsPerLoop));
+    opMappingInfo.set_loop_cond_addr(reinterpret_cast<uint64_t>(&loopCond));
+    opMappingInfo.set_dump_path("dump_path");
+    opMappingInfo.set_model_name("model_debug");
+    opMappingInfo.set_model_id(modelId);
+    opMappingInfo.set_flag(0x01);
+ 
+    aicpu::dump::Task *task = opMappingInfo.add_task();
+    task->set_task_id(taskId);
+    task->set_stream_id(streamId);
+    task->set_context_id(INVALID_VAL);
+    // 测试场景：optionalParam.dumpSwitchAddr == nullptr 场景
+    opMappingInfo.set_dump_switch_addr(reinterpret_cast<uint64_t>(0UL));
+    std::string opMappingInfoStr1;
+    opMappingInfo.SerializeToString(&opMappingInfoStr1);
+    int32_t ret = opDumpTaskMgr.DumpOpInfoForUnknowShape(opMappingInfoStr1.c_str(), opMappingInfoStr1.length());
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    //  测试场景：获取dumpSwitchBitMap成功 场景
+    const uint64_t dump_switch = 1UL;
+    opMappingInfo.set_dump_switch_addr(reinterpret_cast<uint64_t>(&dump_switch));
+    std::string opMappingInfoStr;
+    opMappingInfo.SerializeToString(&opMappingInfoStr);
+    ret = opDumpTaskMgr.DumpOpInfoForUnknowShape(opMappingInfoStr.c_str(), opMappingInfoStr.length());
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    AicpuSqeAdapter ada(0U);
+    ret = opDumpTaskMgr.Load(opMappingInfo, ada);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    MappingInfoOptionalParam optionalParam;
+    opDumpTaskMgr.GetOptionalParam(opMappingInfo, optionalParam);
+    // 测试场景：普通的tensor dump
+    uint64_t switchBitMap = 1UL;
+    ret = opDumpTaskMgr.DoDumpBySwitchBitmap(opMappingInfo, optionalParam, switchBitMap);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    // 测试场景：普通的统计dump
+    switchBitMap = 2UL;
+    ret = opDumpTaskMgr.DoDumpBySwitchBitmap(opMappingInfo, optionalParam, switchBitMap);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    // 测试场景：溢出检测且stream设置为非溢出状态
+    switchBitMap = 4UL;
+    ret = opDumpTaskMgr.DoDumpBySwitchBitmap(opMappingInfo, optionalParam, switchBitMap);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    // 测试场景：溢出检测且stream设置为溢出状态和清理溢出状态
+    MOCKER_CPP(&halTsdrvCtl).stubs().will(invoke(halTsdrvCtlStub));
+    ret = opDumpTaskMgr.DoDumpBySwitchBitmap(opMappingInfo, optionalParam, switchBitMap);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }

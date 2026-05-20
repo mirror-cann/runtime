@@ -13,6 +13,7 @@
 #include <regex>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <dlfcn.h>
 #include "aicpusd_drv_manager.h"
 #include "aicpusd_status.h"
@@ -21,10 +22,16 @@
 #include "common/aicpusd_util.h"
 #include "securec.h"
 #include "external/graph/types.h"
+#include "aicpusd_hal_interface_ref.h"
+#include "aicpusd_common.h"
 
 namespace AicpuSchedule {
 const size_t INTERNAL_STEP_SIZE = 2U;
 const uint32_t VERSION_0 = 0U;
+constexpr uint32_t OVERFLOW_DUMP_BIT = 0x04;
+constexpr uint32_t STATS_DUMP_BIT = 0x02;
+constexpr uint32_t TENSOR_DUMP_BIT = 0x01;
+constexpr int32_t MAX_TASK_SIZE = 2;
 
 OpDumpTaskManager &OpDumpTaskManager::GetInstance()
 {
@@ -58,6 +65,11 @@ void OpDumpTaskManager::GetOptionalParam(const aicpu::dump::OpMappingInfo &opMap
         optionalParam.loopCondAddr =
             PtrToPtr<void, uint64_t>(ValueToPtr(opMappingInfo.loop_cond_addr()));
         optionalParam.hasLoopCond = true;
+    }
+    if (opMappingInfo.dump_switch_case() == aicpu::dump::OpMappingInfo::kDumpSwitchAddr) {
+        optionalParam.dumpSwitchAddr =
+            PtrToPtr<void, uint64_t>(ValueToPtr(opMappingInfo.dump_switch_addr()));
+        optionalParam.hasDumpSwitch = true;
     }
 }
 int32_t OpDumpTaskManager::CreateOpDumpTask(std::shared_ptr<OpDumpTask> &opDumpTaskPtr,
@@ -383,6 +395,23 @@ int32_t OpDumpTaskManager::DumpOpInfo(TaskInfoExt &dumpTaskInfo,
     return AICPU_SCHEDULE_OK;
 }
 
+static bool CheckAndGetDumpBitmap(MappingInfoOptionalParam &optionalParam, uint64_t &switchBitMap)
+{
+    // 检查是否有有效的dump开关
+    if (!optionalParam.hasDumpSwitch) {
+        aicpusd_info("Get op mapping info: no dump switch field.");
+        return false;
+    }
+    // 检查dumpSwitchAddr是否有效
+    if (optionalParam.dumpSwitchAddr == nullptr) {
+        aicpusd_run_info("Get op mapping info: dump switch field exists but address is null.");
+        return false;
+    }
+    switchBitMap = *(optionalParam.dumpSwitchAddr);
+    aicpusd_info("Get op mapping info dump bitmap is [%llx].", switchBitMap);
+    return true;
+}
+
 int32_t OpDumpTaskManager::DumpOpInfoForUnknowShape(const uint64_t opMappingInfoAddr,
                                                     const uint64_t opMappingInfoLen) const
 {
@@ -399,20 +428,25 @@ int32_t OpDumpTaskManager::DumpOpInfoForUnknowShape(const uint64_t opMappingInfo
         aicpusd_err("parse op mapping info failed, size[%u]", opMappingInfoLen);
         return AICPU_SCHEDULE_ERROR_DUMP_FAILED;
     }
+    MappingInfoOptionalParam optionalParam;
+    GetOptionalParam(opMappingInfo, optionalParam);
+    uint64_t switchBitMap = 0UL;
+    if (!CheckAndGetDumpBitmap(optionalParam, switchBitMap)) {
+        return DoDump(opMappingInfo, optionalParam);
+    } else {
+        return DoDumpBySwitchBitmap(opMappingInfo, optionalParam, switchBitMap);
+    }
+}
+
+int32_t OpDumpTaskManager::DoDump(const aicpu::dump::OpMappingInfo &opMappingInfo, const MappingInfoOptionalParam &optionalParam) const
+{
     const int32_t taskSize = opMappingInfo.task_size();
     if (taskSize != 1) {
         aicpusd_err("task number[%d] should be only one, op mapping info: %s",
             opMappingInfo.task_size(), opMappingInfo.DebugString().c_str());
         return AICPU_SCHEDULE_ERROR_DUMP_FAILED;
     }
-    return DoDump(opMappingInfo);
-}
-
-int32_t OpDumpTaskManager::DoDump(const aicpu::dump::OpMappingInfo &opMappingInfo) const
-{
     const std::string dumpPath = opMappingInfo.dump_path();
-    MappingInfoOptionalParam optionalParam;
-    GetOptionalParam(opMappingInfo, optionalParam);
     const std::string dumpStepStr = opMappingInfo.dump_step();
 
     DumpStep dumpStep;
@@ -467,6 +501,131 @@ int32_t OpDumpTaskManager::DoDump(const aicpu::dump::OpMappingInfo &opMappingInf
     opDumpTaskPtr->ClearBaseDumpData();
     const_cast<OpDumpTaskManager *>(this)->ClearKfcDumpTaskInfo(kfcDumpTaskinfo);
     return ret;
+}
+
+int32_t OpDumpTaskManager::GetAndClearOverflowStatus(const uint32_t deviceId, const uint32_t streamId, const uint32_t opType, uint32_t *status) const
+{
+    TsCtrlMsgBody queryIn = {};
+    queryIn.type = opType;
+    queryIn.u.query_stream_overflow_status.stream_id = streamId;
+    TsCtrlMsgBody queryResult = {};
+    size_t queryResultCount = sizeof(TsCtrlMsgBody);
+    TsDrvCtrlMsg para;
+    para.tsid = 0U;
+    para.msg_len = sizeof(TsCtrlMsgBody);
+    para.msg = static_cast<void*>(&queryIn);
+    if (!EnsureDeviceOpened(deviceId)) {
+        aicpusd_err("The open device interface return failed, device id is %u, stream id is %u, op type is %u.", deviceId, streamId, opType);
+        return AICPU_SCHEDULE_ERROR_FROM_DRV;
+    }
+    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(TsDrvCtrlMsg), static_cast<void*>(&queryResult), &queryResultCount);
+    if (drvRet != DRV_ERROR_NONE) {
+        aicpusd_err("The device id is %u, stream id is %u, op type is %u, return result is %d.", deviceId, streamId, opType, static_cast<int32_t>(drvRet));
+        return static_cast<int32_t>(drvRet);
+    }
+    *status = queryResult.u.query_stream_overflow_status.status;
+    aicpusd_run_info("The device id is %u, stream id is %u, op type is %u, overflow status result is %u.",
+                      deviceId, streamId, opType, queryResult.u.query_stream_overflow_status.status);
+    return AICPU_SCHEDULE_OK;
+}
+
+bool OpDumpTaskManager::EnsureDeviceOpened(const uint32_t deviceId) const {
+    static std::once_flag drvOpenflag;
+    static bool isDeviceOpen = false;
+    std::call_once(drvOpenflag, [&]() {
+        struct drvDevInfo devInfo = {0};
+        auto ret = drvDeviceOpen(PtrToPtr<void, void*>(&devInfo), deviceId);
+        if ((ret != DRV_ERROR_NONE) && (ret != DRV_ERROR_REPEATED_INIT)) {
+            aicpusd_err("Device %u open failed, ret=%d", deviceId, static_cast<int32_t>(ret));
+            isDeviceOpen = false;
+        } else {
+            aicpusd_info("Device %u opened successfully", deviceId);
+            isDeviceOpen = true;
+        }
+    });
+    return isDeviceOpen;
+}
+
+int32_t OpDumpTaskManager::DoDumpBySwitchBitmap(const aicpu::dump::OpMappingInfo &opMappingInfo, const MappingInfoOptionalParam &optionalParam, const uint64_t switchBitMap) const
+{
+    // 全0表示关闭dump开关，或者溢出检测开关开启但是halTsdrvCtl接口或者drvDeviceOpen不存在，不做dump处理
+    if ((switchBitMap == 0UL) || ((switchBitMap & OVERFLOW_DUMP_BIT) != 0UL && ((&halTsdrvCtl == nullptr) || (&drvDeviceOpen == nullptr)))) {
+        aicpusd_run_info("Get op mapping info dump bitmap is [%llx], halTsdrvCtl available is [%d], drvDeviceOpen available is [%d].", switchBitMap, &halTsdrvCtl == nullptr, &drvDeviceOpen == nullptr);
+        return AICPU_SCHEDULE_OK;
+    }
+    DumpMode dumpMode = DumpMode::TENSOR_DUMP_DATA;
+    if ((switchBitMap & STATS_DUMP_BIT) != 0UL) {
+        dumpMode = DumpMode::STATS_DUMP_DATA;
+    }
+    if ((switchBitMap & TENSOR_DUMP_BIT) != 0UL) {
+        dumpMode = DumpMode::TENSOR_DUMP_DATA;
+    }
+    const std::string dumpPath = opMappingInfo.dump_path();
+    const std::string dumpStepStr = opMappingInfo.dump_step();
+    DumpStep dumpStep;
+    if (!GetDumpStepFromString(dumpStepStr, dumpStep)) {
+        return AICPU_SCHEDULE_ERROR_DUMP_FAILED;
+    }
+    const int32_t hostPid = static_cast<int32_t>(AicpuSchedule::AicpuDrvManager::GetInstance().GetHostPid());
+    const uint32_t deviceId = AicpuSchedule::AicpuDrvManager::GetInstance().GetDeviceId();
+    const int32_t taskSize = opMappingInfo.task_size();
+    if (taskSize > MAX_TASK_SIZE) {
+        aicpusd_run_info("Task number[%d] exceeds 2, op mapping info: %s", taskSize, opMappingInfo.DebugString().c_str());
+    }
+    int32_t ret = AICPU_SCHEDULE_OK;
+    for (int32_t i = 0; i < taskSize; i++) {
+        const aicpu::dump::Task task = opMappingInfo.task(i);
+        std::shared_ptr<OpDumpTask> opDumpTaskPtr = nullptr;
+        ret = CreateOpDumpTask(opDumpTaskPtr, hostPid, deviceId);
+        if (ret != AICPU_SCHEDULE_OK) {
+            aicpusd_err("Create opDumpTask failed, hostPid[%d], deviceId[%u].", hostPid, deviceId);
+            return ret;
+        }
+        aicpusd_memory_log("MallocMemory, func=new, size=%zu, purpose=data dumper.", sizeof(OpDumpTask));
+        if (opDumpTaskPtr == nullptr) {
+            aicpusd_err("Malloc memory for OpDumpTask object failed.");
+            return AICPU_SCHEDULE_ERROR_DUMP_FAILED;
+        }
+        if ((switchBitMap & OVERFLOW_DUMP_BIT) != 0UL) {
+            uint32_t overflowStatus = 0U;
+            int32_t getRet = GetAndClearOverflowStatus(deviceId, task.stream_id(), OP_QUERY_OVERFLOW, &overflowStatus);
+            if (getRet != AICPU_SCHEDULE_OK) {
+                aicpusd_err("Query overflow status interface returned: ret is %d, device id is %u, stream id is %u.", getRet, deviceId, task.stream_id());
+                return AICPU_SCHEDULE_ERROR_FROM_DRV;
+            }
+            if (overflowStatus == 0U) { // result 为0表示不溢出，不做dump处理直接返回
+                aicpusd_run_info("The query overflow status is %u, the device id is %u, and the stream id is %u.", overflowStatus, deviceId, task.stream_id());
+                return AICPU_SCHEDULE_OK;
+            }
+        }
+        aicpusd_info("Dump the parameter information : single or unknown shape flag[false], has step id[%u], task id[%u], stream id[%u], dump mode[%d].",
+            static_cast<uint32_t>(optionalParam.hasStepId), task.task_id(), task.stream_id(),
+            static_cast<int32_t>(dumpMode));
+        ret = opDumpTaskPtr->PreProcessOpMappingInfo(task, dumpPath, optionalParam, dumpStep, dumpMode, false);
+        if (ret != AICPU_SCHEDULE_OK) {
+            aicpusd_err("Preprocess op mapping info failed. Op mapping info is %s", opMappingInfo.DebugString().c_str());
+            return ret;
+        }
+        AicpuSqeAdapter adapter(FeatureCtrl::GetTsMsgVersion());
+        AicpuSqeAdapter::AicpuOpMappingDumpTaskInfo opmappingInfo(task.task_id(), task.stream_id(), INVALID_VAL, INVALID_VAL);
+        AicpuSqeAdapter::AicpuDumpTaskInfo taskInfo{};
+        adapter.GetAicpuDumpTaskInfo(opmappingInfo, taskInfo);
+        auto startTime = std::chrono::steady_clock::now();
+        aicpusd_run_info("Start dumping operation information: op name is %s.", opDumpTaskPtr->GetOpName().c_str());
+        const KfcDumpTask kfcDumpTaskinfo(taskInfo.stream_id, taskInfo.task_id, 0);
+        const_cast<OpDumpTaskManager *>(this)->MakeDumpOpInfoforKfc(kfcDumpTaskinfo, opDumpTaskPtr);
+        const TaskInfoExt dumpTaskInfo(taskInfo.stream_id, taskInfo.task_id, INVALID_VAL, INVALID_VAL, 0);
+        DumpFileName dumpFileName(taskInfo.stream_id, taskInfo.task_id);
+        ret = opDumpTaskPtr->DumpOpInfo(dumpTaskInfo, dumpFileName);
+        auto endTime = std::chrono::steady_clock::now();
+        double drUs = std::chrono::duration<double, std::micro>(endTime - startTime).count();
+        aicpusd_run_info("End of dump operation information: result is %d, op name is %s, cost time is [%.2lf]us.",
+            ret, opDumpTaskPtr->GetOpName().c_str(), drUs);
+        UNUSED(drUs);
+        opDumpTaskPtr->ClearBaseDumpData();
+        const_cast<OpDumpTaskManager *>(this)->ClearKfcDumpTaskInfo(kfcDumpTaskinfo);
+    }
+    return ret;    
 }
 
 void OpDumpTaskManager::ProcessEndGraph(const std::vector<std::shared_ptr<OpDumpTask>> &opDumptasks)

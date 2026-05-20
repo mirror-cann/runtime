@@ -403,3 +403,13 @@ hdcError_t halHdcGetSessionAttr(HDC_SESSION session, int attr, int *value)
 {
     return DRV_ERROR_NONE;
 }
+
+drvError_t halTsdrvCtl(uint32_t devId, int cmd, void *param, size_t paramSize, void *out, size_t *outSize)
+{
+    return DRV_ERROR_NONE;
+}
+ 
+drvError_t drvDeviceOpen(void **device, uint32_t deviceId)
+{
+    return DRV_ERROR_NONE;
+}

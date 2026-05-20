@@ -266,7 +266,8 @@ SET(commom_inc_path
     ${RUNTIME_DIR}/src/dfx/adump/inc/metadef
     ${RUNTIME_DIR}/src/dfx/adump/inc
     ${RUNTIME_DIR}/src/dfx/msprof/inc/toolchain
-    ${RUNTIME_DIR}/src/aicpu_sched/aicpu_schedule/common 
+    ${RUNTIME_DIR}/src/aicpu_sched/aicpu_schedule/common
+    ${RUNTIME_DIR}/src/runtime/core/inc
 
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/core/platform_info
@@ -307,7 +308,8 @@ SET(commom_inc_path
     ${RUNTIME_DIR}/src/dfx/adump/inc/metadef
     ${RUNTIME_DIR}/src/dfx/adump/inc
     ${RUNTIME_DIR}/src/dfx/msprof/inc/toolchain
-    ${RUNTIME_DIR}/src/aicpu_sched/aicpu_schedule/common 
+    ${RUNTIME_DIR}/src/aicpu_sched/aicpu_schedule/common
+    ${RUNTIME_DIR}/src/runtime/core/inc
 
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/core/platform_info

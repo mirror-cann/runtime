@@ -69,7 +69,9 @@ struct MappingInfoOptionalParam {
                                  hasIterationsPerLoop(false),
                                  iterationsPerLoopAddr(nullptr),
                                  hasLoopCond(false),
-                                 loopCondAddr(nullptr) {}
+                                 loopCondAddr(nullptr),
+                                 hasDumpSwitch(false),
+                                 dumpSwitchAddr(nullptr) {}
 
     bool hasModelName;
     std::string modelName;
@@ -81,6 +83,8 @@ struct MappingInfoOptionalParam {
     uint64_t *iterationsPerLoopAddr;
     bool hasLoopCond;
     uint64_t *loopCondAddr;
+    bool hasDumpSwitch;
+    uint64_t *dumpSwitchAddr;
 };
 
 struct IntervalStep {
@@ -413,13 +417,14 @@ public:
      */
     void ClearResource();
 
-    int32_t DoDump(const aicpu::dump::OpMappingInfo &opMappingInfo) const;
+    int32_t DoDump(const aicpu::dump::OpMappingInfo &opMappingInfo, const MappingInfoOptionalParam &optionalParam) const;
     void MakeDumpOpInfoforKfc(const KfcDumpTask &taskinfo, std::shared_ptr<OpDumpTask> dumpTask);
     int32_t GetDumpOpTaskDataforKfc(const KfcDumpTask &taskKey, KfcDumpInfo **dumpInfo);
     int32_t DumpOpTaskDataforKfc(const KfcDumpTask &taskKey, void *dumpData, uint32_t length) const;
     bool IsCustDumpTask(const uint32_t streamId, const uint32_t taskId);
     int32_t SetCustDumpTaskFlag(const uint32_t streamId, const uint32_t taskId, const bool flag);
     void ClearKfcDumpTaskInfo(const KfcDumpTask &kfcTaskinfo);
+    int32_t DoDumpBySwitchBitmap(const aicpu::dump::OpMappingInfo &opMappingInfo, const MappingInfoOptionalParam &optionalParam, const uint64_t switchBitMap) const;
 
 private:
     OpDumpTaskManager(const OpDumpTaskManager &) = delete;
@@ -499,8 +504,9 @@ private:
      * @return create success
      */
     int32_t CreateKfcDumpInfo(std::shared_ptr<KfcDumpInfo> &kfcDumpInfoPtr) const;
-
-private:
+    bool EnsureDeviceOpened(const uint32_t deviceId) const;
+    int32_t GetAndClearOverflowStatus(const uint32_t deviceId, const uint32_t streamId, const uint32_t opType, uint32_t *status) const;
+    private:
     std::multimap<TaskInfo, std::shared_ptr<OpDumpTask>> dumpTaskMap_;
     std::mutex dumpTaskMapMtx_;
     std::mutex kfcDumpTaskMapMtx_;

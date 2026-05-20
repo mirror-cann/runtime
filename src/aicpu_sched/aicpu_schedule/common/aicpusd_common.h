@@ -16,6 +16,7 @@
 #include <map>
 #include <vector>
 #include "aicpu_msg.h"
+#include "tsch_defines.h"
 #include "task_scheduler_error.h"
 #include "rt_model.h"
 #include "ascend_hal.h"
@@ -51,7 +52,8 @@ using TsToAicpuInfoLoad =  ts_to_aicpu_loadinfo_t;
 using TsToAicpuInfoLoadMsg  =  ts_to_aicpu_info_load_msg_t;
 using TsToAicpuAicErrReport = ts_to_aicpu_aic_err_report_t;
 using TsToAicpuAicErrMsgReport = ts_to_aicpu_aic_err_msg_t;
-
+using TsDrvCtrlMsg = tsdrv_ctrl_msg;
+using TsCtrlMsgBody = ts_ctrl_msg_body_t;
 
 struct RunContext {
     const uint32_t modelId;
