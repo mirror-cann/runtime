@@ -903,7 +903,7 @@ TEST_F(ELFTest, ELF_Process_Object_15)
     uint8_t *bufPtr = buf;
     uint32_t totalLen = sizeof(ElfDfxInfo);
     ElfDfxInfo *typeInfo = (ElfDfxInfo *)bufPtr;
-    typeInfo->head.type = FUNC_META_TYPE_DFX_TYPE;
+    typeInfo->head.type = RT_FUNCTION_TYPE_DFX_TYPE;
     typeInfo->head.length = 100U;
     ElfKernelInfo kernelInfo = {5U, 0U, {1U, 3U}, bufPtr, 108U, false, false, 1U};
     GetKernelTlvInfo(buf, 150U, &kernelInfo);
@@ -1226,7 +1226,7 @@ TEST_F(ELFTest, ElfParseParamSummary_Success)
 
     uint8_t paramSummaryBuf[64] = {0};
     ElfParamSummary paramSummary = {};
-    paramSummary.head.type = FUNC_META_TYPE_PARAM_SUMMARY;
+    paramSummary.head.type = RT_FUNCTION_TYPE_PARAM_SUMMARY;
     paramSummary.head.length = sizeof(uint32_t) + sizeof(uint64_t);
     paramSummary.paraNums = 5U;
     paramSummary.paramTotalSize = 256ULL;
@@ -1253,7 +1253,7 @@ TEST_F(ELFTest, ElfParseParamInfo_Success)
 
     uint8_t paramInfoBuf[64] = {0};
     ElfParamInfo paramInfo = {};
-    paramInfo.head.type = FUNC_META_TYPE_PARAM_INFO;
+    paramInfo.head.type = RT_FUNCTION_TYPE_PARAM_INFO;
     paramInfo.head.length = sizeof(ElfParamBody);
     paramInfo.info.index = 2U;
     paramInfo.info.ordinal = 3U;
@@ -1301,7 +1301,7 @@ TEST_F(ELFTest, GetKernelTlvInfo_MultipleTlv)
     uint32_t offset = 0;
 
     ElfParamSummary paramSummary = {};
-    paramSummary.head.type = FUNC_META_TYPE_PARAM_SUMMARY;
+    paramSummary.head.type = RT_FUNCTION_TYPE_PARAM_SUMMARY;
     paramSummary.head.length = sizeof(uint32_t) + sizeof(uint64_t);
     paramSummary.paraNums = 2U;
     paramSummary.paramTotalSize = 80ULL;
@@ -1309,7 +1309,7 @@ TEST_F(ELFTest, GetKernelTlvInfo_MultipleTlv)
     offset += sizeof(ElfParamSummary);
 
     ElfParamInfo paramInfo1 = {};
-    paramInfo1.head.type = FUNC_META_TYPE_PARAM_INFO;
+    paramInfo1.head.type = RT_FUNCTION_TYPE_PARAM_INFO;
     paramInfo1.head.length = sizeof(ElfParamBody);
     paramInfo1.info.ordinal = 0U;
     paramInfo1.info.offset = 0U;
@@ -1318,7 +1318,7 @@ TEST_F(ELFTest, GetKernelTlvInfo_MultipleTlv)
     offset += sizeof(ElfParamInfo);
 
     ElfParamInfo paramInfo2 = {};
-    paramInfo2.head.type = FUNC_META_TYPE_PARAM_INFO;
+    paramInfo2.head.type = RT_FUNCTION_TYPE_PARAM_INFO;
     paramInfo2.head.length = sizeof(ElfParamBody);
     paramInfo2.info.ordinal = 1U;
     paramInfo2.info.offset = 32U;

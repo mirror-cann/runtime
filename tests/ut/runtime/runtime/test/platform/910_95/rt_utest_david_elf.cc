@@ -94,26 +94,26 @@ TEST_F(ELFTest, ELF_Process_Object_13)
     uint32_t totalLen = sizeof(ElfFuncTypeInfo) + sizeof(ElfKernelSyncInfo) + sizeof(ElfKernelAivTypeInfo) +
                         sizeof(ElfKernelReportSzInfo);
     ElfFuncTypeInfo *typeInfo = (ElfFuncTypeInfo *)bufPtr;
-    typeInfo->head.type = FUNC_META_TYPE_KERNEL_TYPE;
+    typeInfo->head.type = RT_FUNCTION_TYPE_KERNEL_TYPE;
     typeInfo->head.length = 4;
     typeInfo->funcType = KERNEL_FUNCTION_TYPE_AICORE;
 
     bufPtr = bufPtr + sizeof(ElfFuncTypeInfo);
 
     ElfKernelSyncInfo *syncInfo = (ElfKernelSyncInfo *)bufPtr;
-    syncInfo->head.type = FUNC_META_TYPE_CROSS_CORE_TYPE;
+    syncInfo->head.type = RT_FUNCTION_TYPE_CROSS_CORE;
     syncInfo->head.length = 4;
     syncInfo->crossCoreSync = FUNC_USE_SYNC;
 
     bufPtr = bufPtr + sizeof(ElfKernelAivTypeInfo);
     ElfKernelAivTypeInfo *aivTypeInfo = (ElfKernelAivTypeInfo *)bufPtr;
-    aivTypeInfo->head.type = FUNC_META_TYPE_AIV_TYPE_FLAG;
+    aivTypeInfo->head.type = RT_FUNCTION_TYPE_AIV_TYPE_FLAG;
     aivTypeInfo->head.length = 4;
     aivTypeInfo->aivType = static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY);
 
     bufPtr = bufPtr + sizeof(ElfKernelReportSzInfo);
     ElfKernelReportSzInfo *reportSzInfo = (ElfKernelReportSzInfo *)bufPtr;
-    reportSzInfo->head.type = FUNC_META_TYPE_COMPILER_ALLOC_UB_SIZE;
+    reportSzInfo->head.type = RT_FUNCTION_TYPE_COMPILER_ALLOC_UB_SIZE;
     reportSzInfo->head.length = 4;
     reportSzInfo->shareMemSize = 2048U;
 
@@ -175,20 +175,20 @@ TEST_F(ELFTest, ELF_Process_Object_SIMT_ERROR1)
     uint8_t *bufPtr = buf;
     uint32_t totalLen = sizeof(ElfFuncTypeInfo) + sizeof(ElfKernelSyncInfo) + sizeof(ElfKernelAivTypeInfo);
     ElfFuncTypeInfo *typeInfo = (ElfFuncTypeInfo *)bufPtr;
-    typeInfo->head.type = FUNC_META_TYPE_KERNEL_TYPE;
+    typeInfo->head.type = RT_FUNCTION_TYPE_KERNEL_TYPE;
     typeInfo->head.length = 4;
     typeInfo->funcType = KERNEL_FUNCTION_TYPE_AICORE;
 
     bufPtr = bufPtr + sizeof(ElfFuncTypeInfo);
 
     ElfKernelSyncInfo *syncInfo = (ElfKernelSyncInfo *)bufPtr;
-    syncInfo->head.type = FUNC_META_TYPE_CROSS_CORE_TYPE;
+    syncInfo->head.type = RT_FUNCTION_TYPE_CROSS_CORE;
     syncInfo->head.length = 4;
     syncInfo->crossCoreSync = FUNC_USE_SYNC;
 
     bufPtr = bufPtr + sizeof(ElfKernelAivTypeInfo);
     ElfKernelAivTypeInfo *aivTypeInfo = (ElfKernelAivTypeInfo *)bufPtr;
-    aivTypeInfo->head.type = FUNC_META_TYPE_AIV_TYPE_FLAG;
+    aivTypeInfo->head.type = RT_FUNCTION_TYPE_AIV_TYPE_FLAG;
     aivTypeInfo->head.length = 4;
     aivTypeInfo->aivType = static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY);
 
@@ -241,26 +241,26 @@ TEST_F(ELFTest, ELF_Process_Object_SIMT_ERROR2)
     uint32_t totalLen = sizeof(ElfFuncTypeInfo) + sizeof(ElfKernelSyncInfo) + sizeof(ElfKernelAivTypeInfo) +
                         sizeof(ElfKernelReportSzInfo);
     ElfFuncTypeInfo *typeInfo = (ElfFuncTypeInfo *)bufPtr;
-    typeInfo->head.type = FUNC_META_TYPE_KERNEL_TYPE;
+    typeInfo->head.type = RT_FUNCTION_TYPE_KERNEL_TYPE;
     typeInfo->head.length = 4;
     typeInfo->funcType = KERNEL_FUNCTION_TYPE_AICORE;
 
     bufPtr = bufPtr + sizeof(ElfFuncTypeInfo);
 
     ElfKernelSyncInfo *syncInfo = (ElfKernelSyncInfo *)bufPtr;
-    syncInfo->head.type = FUNC_META_TYPE_CROSS_CORE_TYPE;
+    syncInfo->head.type = RT_FUNCTION_TYPE_CROSS_CORE;
     syncInfo->head.length = 4;
     syncInfo->crossCoreSync = FUNC_USE_SYNC;
 
     bufPtr = bufPtr + sizeof(ElfKernelAivTypeInfo);
     ElfKernelAivTypeInfo *aivTypeInfo = (ElfKernelAivTypeInfo *)bufPtr;
-    aivTypeInfo->head.type = FUNC_META_TYPE_AIV_TYPE_FLAG;
+    aivTypeInfo->head.type = RT_FUNCTION_TYPE_AIV_TYPE_FLAG;
     aivTypeInfo->head.length = 4;
     aivTypeInfo->aivType = static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY);
 
     bufPtr = bufPtr + sizeof(ElfKernelReportSzInfo);
     ElfKernelReportSzInfo *reportSzInfo = (ElfKernelReportSzInfo *)bufPtr;
-    reportSzInfo->head.type = FUNC_META_TYPE_COMPILER_ALLOC_UB_SIZE;
+    reportSzInfo->head.type = RT_FUNCTION_TYPE_COMPILER_ALLOC_UB_SIZE;
     reportSzInfo->head.length = 4;
     reportSzInfo->shareMemSize = 255 * 1024U;
 

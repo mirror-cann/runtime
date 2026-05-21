@@ -3387,6 +3387,17 @@ rtError_t rtFunctionGetMetaInfo(const rtFuncHandle funcHandle, const rtFunctionM
 }
 
 VISIBILITY_DEFAULT
+rtError_t rtFunctionGetMetaInfoSize(const rtFuncHandle funcHandle, const rtFunctionMetaType type, size_t *size)
+{
+    GLOBAL_STATE_WAIT_IF_LOCKED();
+    Api * const apiInstance = Api::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
+    const rtError_t ret = apiInstance->FunctionGetMetaInfoSize(RtPtrToPtr<const Kernel *>(funcHandle), type, size);
+    ERROR_RETURN_WITH_EXT_ERRCODE(ret);
+    return ACL_RT_SUCCESS;
+}
+
+VISIBILITY_DEFAULT
 RTS_API rtError_t rtGeneralCtrl(uintptr_t *ctrl, uint32_t num, uint32_t type)
 {
     return rtGeneralCtrlInner(ctrl, num, type);

@@ -989,6 +989,19 @@ rtError_t ApiImpl::FunctionGetMetaInfo(const Kernel * const funcHandle, const rt
     return RT_ERROR_NONE;
 }
 
+ rtError_t ApiImpl::FunctionGetMetaInfoSize(const Kernel * const funcHandle, const rtFunctionMetaType type,
+ 	                                             size_t *size)
+ 	 {
+ 	     Program * const prog = funcHandle->Program_();
+ 	     const std::string kernelName = funcHandle->Name_();
+ 	     const rtError_t error = prog->FunctionGetMetaInfoSize(kernelName, type, size);
+ 	     if (error != RT_ERROR_NONE) {
+ 	         RT_LOG(RT_LOG_WARNING, "FunctionGetMetaInfoSize failed, kernel name = %s, type=%u", kernelName.c_str(), type);
+ 	         return error;
+ 	     }
+ 	     return RT_ERROR_NONE;
+ 	 }
+
 rtError_t ApiImpl::RegisterCpuFunc(rtBinHandle binHandle, const char_t *const funcName,
     const char_t *const kernelName, rtFuncHandle *funcHandle)
 {

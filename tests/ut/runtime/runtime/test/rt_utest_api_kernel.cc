@@ -471,6 +471,21 @@ TEST_F(ApiKernelTest, TestFuncGetAttribute)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
+TEST_F(ApiKernelTest, TestFunctionGetMetaInfoSize)
+{
+    ApiImpl apiImpl;
+    ApiErrorDecorator apiErrorDecorator(&apiImpl);
+    rtError_t error;
+    size_t metaSize = 0;
+    Kernel kernel("testKernelName", 0, nullptr, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    error = apiErrorDecorator.FunctionGetMetaInfoSize(nullptr, RT_FUNCTION_TYPE_KERNEL_TYPE, &metaSize);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    error = apiErrorDecorator.FunctionGetMetaInfoSize(&kernel, RT_FUNCTION_TYPE_KERNEL_TYPE, nullptr);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+}
+
 TEST_F(ApiKernelTest, TestFuncGetSchedMode)
 {
     ElfProgram program(RT_KERNEL_ATTR_TYPE_VECTOR);

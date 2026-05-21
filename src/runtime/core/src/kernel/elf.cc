@@ -498,7 +498,7 @@ static void ElfParseKernelArgNum(const uint8_t * const buf, ElfKernelInfo *tlvIn
             break;
         }
 
-        if (tlvType == static_cast<uint16_t>(FUNC_META_TYPE_DFX_ARG_INFO)) {
+        if (tlvType == static_cast<uint16_t>(RT_FUNCTION_TYPE_DFX_ARG_INFO)) {
             argNum++;
         }
         curBuf = curBuf + sizeof(ElfTlvHead) + tlvLength;
@@ -595,19 +595,19 @@ static rtError_t ElfParseTlvInfo(uint16_t tlvType, const uint8_t *buf, ElfKernel
     uint16_t tlvLength = 0U;
 
     switch (static_cast<int32_t>(tlvType)) {
-        case FUNC_META_TYPE_KERNEL_TYPE:
+        case RT_FUNCTION_TYPE_KERNEL_TYPE:
             typeInfo = RtPtrToPtr<const ElfFuncTypeInfo *>(buf);
             tlvInfo->funcType =
                 static_cast<uint32_t>(GetByte(RtPtrToPtr<const uint8_t *>(&(typeInfo->funcType)),
                 sizeof(uint32_t)));
             break;
-        case FUNC_META_TYPE_CROSS_CORE_TYPE:
+        case RT_FUNCTION_TYPE_CROSS_CORE:
             syncInfo = RtPtrToPtr<const ElfKernelSyncInfo *>(buf);
             tlvInfo->crossCoreSync =
                 static_cast<uint32_t>(GetByte(RtPtrToPtr<const uint8_t *>(&(syncInfo->crossCoreSync)),
                 sizeof(uint32_t)));
             break;
-        case FUNC_META_TYPE_MIX_TASK_RATION:
+        case RT_FUNCTION_TYPE_MIX_TASK_RATION:
             taskRationInfo = RtPtrToPtr<const ElfTaskRationInfo *>(buf);
             tlvInfo->taskRation[0] =
                 static_cast<uint16_t>(GetByte(RtPtrToPtr<const uint8_t *>(&(taskRationInfo->taskRation[0])),
@@ -616,22 +616,22 @@ static rtError_t ElfParseTlvInfo(uint16_t tlvType, const uint8_t *buf, ElfKernel
                 static_cast<uint16_t>(GetByte(RtPtrToPtr<const uint8_t *>(&(taskRationInfo->taskRation[1])),
                 sizeof(uint16_t)));
             break;
-        case FUNC_META_TYPE_DFX_TYPE:
+        case RT_FUNCTION_TYPE_DFX_TYPE:
             ElfParseKernelArgNum(buf, tlvInfo);
             break;
-        case FUNC_META_TYPE_AIV_TYPE_FLAG:
+        case RT_FUNCTION_TYPE_AIV_TYPE_FLAG:
             aivTypeInfo = RtPtrToUnConstPtr<ElfKernelAivTypeInfo*>(RtPtrToPtr<const ElfKernelAivTypeInfo*>(buf));
             tlvInfo->kernelVfType = static_cast<uint32_t>(GetByte(RtPtrToPtr<const uint8_t *>(&(aivTypeInfo->aivType)),
                                     sizeof(uint32_t)));
             RT_LOG(RT_LOG_INFO, "kernelVfType=%u", tlvInfo->kernelVfType);
             break;
-        case FUNC_META_TYPE_COMPILER_ALLOC_UB_SIZE:
+        case RT_FUNCTION_TYPE_COMPILER_ALLOC_UB_SIZE:
             reportSzInfo = RtPtrToPtr<const ElfKernelReportSzInfo *>(buf);
             tlvInfo->shareMemSize = static_cast<uint32_t>(
                 GetByte(RtPtrToPtr<const uint8_t *>(&(reportSzInfo->shareMemSize)), sizeof(uint32_t)));
             RT_LOG(RT_LOG_INFO, "shareMemSize=%u.", tlvInfo->shareMemSize);
             break;
-        case FUNC_META_TYPE_SU_STACK_SIZE:
+        case RT_FUNCTION_TYPE_SU_STACK_SIZE:
             minStackSizeInfo = RtPtrToPtr<const ElfKernelMinStackSizeInfo *>(buf);
             tlvLength = static_cast<uint16_t>(
                 GetByte(RtPtrToPtr<const uint8_t *, const uint16_t *>(&(minStackSizeInfo->head.length)),
@@ -640,7 +640,7 @@ static rtError_t ElfParseTlvInfo(uint16_t tlvType, const uint8_t *buf, ElfKernel
                 GetByte(RtPtrToPtr<const uint8_t *, const uint32_t *>(&(minStackSizeInfo->minStackSize)), tlvLength));
             RT_LOG(RT_LOG_INFO, "tlvLength=%u, minStackSize=%u.", tlvLength, tlvInfo->minStackSize);
             break;
-        case FUNCTION_META_TYPE_FUNCTION_ENTRY_INFO:
+        case RT_FUNCTION_TYPE_FUNCTION_ENTRY_INFO:
             functionEntryInfo = RtPtrToPtr<const ElfKernelFunctionEntryInfo *>(buf);
             tlvLength = static_cast<uint16_t>(
                 GetByte(RtPtrToPtr<const uint8_t *, const uint16_t *>(&(functionEntryInfo->head.length)),
@@ -651,7 +651,7 @@ static rtError_t ElfParseTlvInfo(uint16_t tlvType, const uint8_t *buf, ElfKernel
             RT_LOG(RT_LOG_INFO, "tlvLength=%u, isSupportFuncEntry=%d, functionEntryFlag=%u, functionEntry=%" PRIu64 ".", 
                 tlvLength, tlvInfo->isSupportFuncEntry, tlvInfo->functionEntryFlag, tlvInfo->functionEntry);
             break;
-        case FUNC_META_TYPE_SCHED_MODE_INFO:
+        case RT_FUNCTION_TYPE_SCHED_MODE_INFO:
             schedModeInfo = RtPtrToPtr<const ElfKernelSchedModeInfo *>(buf);
             tlvLength = static_cast<uint16_t>(
                 GetByte(RtPtrToPtr<const uint8_t *, const uint16_t *>(&(schedModeInfo->head.length)),
@@ -660,10 +660,10 @@ static rtError_t ElfParseTlvInfo(uint16_t tlvType, const uint8_t *buf, ElfKernel
                 GetByte(RtPtrToPtr<const uint8_t *, const uint32_t *>(&(schedModeInfo->schedMode)), tlvLength));
             RT_LOG(RT_LOG_INFO, "tlvLength=%u, schedMode=%u.", tlvLength, tlvInfo->schedMode);
             break;
-        case FUNC_META_TYPE_PARAM_SUMMARY:
+        case RT_FUNCTION_TYPE_PARAM_SUMMARY:
             ElfParseParamSummary(buf, tlvInfo);
             break;
-        case FUNC_META_TYPE_PARAM_INFO:
+        case RT_FUNCTION_TYPE_PARAM_INFO:
             ElfParseParamInfo(buf, tlvInfo);
             break;
         default:
@@ -1697,15 +1697,15 @@ rtError_t GetBinaryMetaInfo(const rtElfData * const elfData, const uint16_t type
     return RT_ERROR_NONE;
 }
 
-rtError_t GetFunctionMetaInfo(const rtElfData * const elfData, const std::string &kernelName, const uint16_t type,
-                              void *data, const uint32_t length)
+static rtError_t GetMetaInfoInternal(const rtElfData * const elfData, const std::string &kernelName,
+                                      const uint16_t type, std::vector<std::pair<void *, uint32_t>> &metaInfo)
 {
     if (elfData == nullptr) {
         RT_LOG(RT_LOG_ERROR, "elfData is nullptr.");
         return RT_ERROR_INVALID_VALUE;
     }
 
-    if ((type >= RT_FUNCTION_TYPE_PARAM_INFO) || (type == 0)) {
+    if ((type > RT_FUNCTION_TYPE_SCHED_MODE_INFO) || (type == 0)) {
         RT_LOG(RT_LOG_WARNING, "No data segment with the type value of %u was found.", type);
         return RT_ERROR_INVALID_VALUE;
     }
@@ -1720,15 +1720,42 @@ rtError_t GetFunctionMetaInfo(const rtElfData * const elfData, const std::string
         return error;
     }
 
-    auto metaInfo = GetMetaInfo(elfData, section, type);
+    metaInfo = GetMetaInfo(elfData, section, type);
     COND_RETURN_WARN((metaInfo.empty()), RT_ERROR_INVALID_VALUE, "No meta info with type %u was found.", type);
+
+    return RT_ERROR_NONE;
+}
+
+rtError_t GetFunctionMetaInfo(const rtElfData * const elfData, const std::string &kernelName, const uint16_t type,
+                              void *data, const uint32_t length)
+{
+    std::vector<std::pair<void *, uint32_t>> metaInfo;
+    const rtError_t error = GetMetaInfoInternal(elfData, kernelName, type, metaInfo);
+    if (error != RT_ERROR_NONE) {
+        return error;
+    }
 
     if (length != metaInfo[0].second) {
         RT_LOG_OUTER_MSG_INVALID_PARAM(length, metaInfo[0].second);
         return RT_ERROR_INVALID_VALUE;
     }
-    uint64_t *out = RtPtrToPtr<uint64_t *>(data);
-    *out = RtPtrToValue(metaInfo[0].first);
+    const errno_t ret = memcpy_s(data, length, metaInfo[0].first, metaInfo[0].second);
+ 	COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, ELF_FAIL, 
+        "Failed to call memcpy_s to copy metaInfo, dest=%p, dest_max=%u, src=%p, count=%u, retCode=%d.",
+ 	    data, length, metaInfo[0].first, metaInfo[0].second, ret);
+    return RT_ERROR_NONE;
+}
+
+rtError_t GetFunctionMetaInfoSize(const rtElfData * const elfData, const std::string &kernelName,
+                                   const uint16_t type, size_t *size)
+{
+    std::vector<std::pair<void *, uint32_t>> metaInfo;
+    const rtError_t error = GetMetaInfoInternal(elfData, kernelName, type, metaInfo);
+    if (error != RT_ERROR_NONE) {
+        return error;
+    }
+
+    *size = static_cast<size_t>(metaInfo[0].second);
     return RT_ERROR_NONE;
 }
 }

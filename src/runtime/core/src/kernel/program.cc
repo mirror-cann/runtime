@@ -776,6 +776,15 @@ rtError_t PlainProgram::FunctionGetMetaInfo(const std::string &kernelName, const
     return RT_ERROR_NONE;
 }
 
+rtError_t PlainProgram::FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
+                                                  size_t *size)
+{
+    UNUSED(kernelName);
+    UNUSED(type);
+    UNUSED(size);
+    return RT_ERROR_NONE;
+}
+
 // 注册CPU算子
 rtError_t Program::RegisterCpuKernel(const std::vector<CpuKernelInfo> &kernelInfos)
 {
@@ -1120,6 +1129,12 @@ rtError_t ElfProgram::FunctionGetMetaInfo(const std::string &kernelName, const r
                                           void *data, const uint32_t length)
 {
     return GetFunctionMetaInfo(elfData_, kernelName, type, data, length);
+}
+
+rtError_t ElfProgram::FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
+                                               size_t *size)
+{
+    return GetFunctionMetaInfoSize(elfData_, kernelName, type, size);
 }
 
 rtError_t ElfProgram::GetGlobalSymbol(const char *name, uint64_t *offset, uint64_t *size) const

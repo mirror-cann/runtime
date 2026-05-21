@@ -105,23 +105,6 @@ enum {
     KERNEL_FUNCTION_TYPE_MAX              = 8U,
 };
 
-enum {
-    FUNC_META_TYPE_INVALID          = 0U,
-    FUNC_META_TYPE_KERNEL_TYPE      = 1U,
-    FUNC_META_TYPE_CROSS_CORE_TYPE  = 2U,
-    FUNC_META_TYPE_MIX_TASK_RATION  = 3U,
-    FUNC_META_TYPE_DFX_TYPE         = 4U,
-    FUNC_META_TYPE_DFX_ARG_INFO     = 5U,
-    FUNC_META_TYPE_COMPILER_ALLOC_UB_SIZE  = 7U, // for simt, elf report share memory size
-    FUNC_META_TYPE_SU_STACK_SIZE    = 8U,        // for min stack size
-    FUNC_META_TYPE_AIV_TYPE_FLAG    = 12U,       // for simt, corresponding enum AivTypeFlag
-    FUNCTION_META_TYPE_FUNCTION_ENTRY_INFO = 14U,
-    FUNC_META_TYPE_BLOCK_DIM_INFO   = 15U,
-    FUNC_META_TYPE_PARAM_SUMMARY    = 16U,
-    FUNC_META_TYPE_PARAM_INFO       = 17U,
-    FUNC_META_TYPE_SCHED_MODE_INFO  = 18U,
-};
-
 enum class AivTypeFlag : uint32_t {
     AIV_TYPE_NO_VF = 1,            // SU
     AIV_TYPE_SIMD_VF_ONLY = 2,     // SU + SIMD
@@ -438,6 +421,8 @@ std::vector<std::pair<void*, uint32_t>> GetMetaInfo(const rtElfData * const elfD
     const Elf_Internal_Shdr * const metaSection, const uint16_t type);
 rtError_t GetFunctionMetaInfo(const rtElfData * const elfData, const std::string &kernelName, const uint16_t type,
                               void *data, const uint32_t length);
+rtError_t GetFunctionMetaInfoSize(const rtElfData * const elfData, const std::string &kernelName,
+                                   const uint16_t type, size_t *size);
 }
 }
 

@@ -1199,7 +1199,7 @@ TEST_F(CloudV2ELFTest, ELF_Process_Object_15)
     uint8_t *bufPtr = buf;
     uint32_t totalLen = sizeof(ElfDfxInfo);
     ElfDfxInfo *typeInfo = (ElfDfxInfo *)bufPtr;
-    typeInfo->head.type = FUNC_META_TYPE_DFX_TYPE;
+    typeInfo->head.type = RT_FUNCTION_TYPE_DFX_TYPE;
     typeInfo->head.length = 100U;
     ElfKernelInfo kernelInfo = {5U, 0U, {1U, 3U}, bufPtr, 108U, false, false, 1U};
     GetKernelTlvInfo(buf, 150U, &kernelInfo);
@@ -1382,6 +1382,104 @@ TEST_F(CloudV2ELFTest, GetMetaInfo)
     elfData = nullptr;
 }
 
+TEST_F(CloudV2ELFTest, GetFunctionMetaInfoSize)
+{
+    rtElfData* elfData = nullptr;
+    rtFunctionMetaType FuncTLVType = RT_FUNCTION_TYPE_DFX_ARG_INFO;
+    rtError_t error;
+    size_t metaSize = 0;
+
+    error = GetFunctionMetaInfoSize(elfData, "", FuncTLVType, &metaSize);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    elfData = new rtElfData;
+    elfData->obj_size = 0;
+    elfData->elf_header.e_shstrndx = 0;
+    elfData->elf_header.e_shnum = 3;
+    elfData->section_headers = new Elf_Internal_Shdr[3];
+    elfData->section_headers[0].sh_size = 0;
+
+    Elf_Internal_Shdr metaSection = {};
+    metaSection.sh_size = 20;
+    std::vector<uint8_t> obj(500, 0);
+    elfData->obj_ptr_origin = (char*)obj.data();
+    GetMetaInfo(elfData, &metaSection, FuncTLVType);
+
+    error = GetFunctionMetaInfoSize(elfData, "", FuncTLVType, &metaSize);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    elfData->obj_size = 1;
+    elfData->section_headers[0].sh_size = 1;
+    elfData->section_headers[0].sh_offset = 1;
+    error = GetFunctionMetaInfoSize(elfData, "", FuncTLVType, &metaSize);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    elfData->obj_size = (~(static_cast<uint64_t>(0)));
+    elfData->section_headers[0].sh_size = (~(static_cast<uint64_t>(0)));
+    elfData->section_headers[0].sh_offset = 0;
+    elfData->obj_ptr_origin = nullptr;
+    error = GetFunctionMetaInfoSize(elfData, "", FuncTLVType, &metaSize);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    delete[] elfData->section_headers;
+    elfData->section_headers = nullptr;
+
+    delete elfData;
+    elfData = nullptr;
+}
+
+TEST_F(CloudV2ELFTest, GetFunctionMetaInfoSizeSuccess)
+{
+    rtElfData* elfData = new rtElfData;
+
+    std::vector<uint8_t> objBuffer(200, 0);
+
+    size_t strTabOffset = 0;
+    const char* emptyStr = "";
+    memcpy_s(&objBuffer[strTabOffset], objBuffer.size() - strTabOffset, emptyStr, 1);
+
+    size_t metaSectionNameOffset = 1;
+    const char* metaSectionName = ".ascend.meta.kernel0";
+    memcpy_s(
+        &objBuffer[metaSectionNameOffset], objBuffer.size() - metaSectionNameOffset, metaSectionName,
+        strlen(metaSectionName) + 1);
+    size_t strTabSize = metaSectionNameOffset + strlen(metaSectionName) + 1;
+
+    size_t tlvDataOffset = 50;
+    uint16_t tlvType = RT_FUNCTION_TYPE_DFX_ARG_INFO;
+    uint16_t tlvLength = 4;
+    uint8_t tlvData[4] = {1, 2, 3, 4};
+    memcpy_s(&objBuffer[tlvDataOffset], objBuffer.size() - tlvDataOffset, &tlvType, sizeof(tlvType));
+    memcpy_s(&objBuffer[tlvDataOffset + 2], objBuffer.size() - tlvDataOffset - 2, &tlvLength, sizeof(tlvLength));
+    memcpy_s(&objBuffer[tlvDataOffset + 4], objBuffer.size() - tlvDataOffset - 4, tlvData, tlvLength);
+    size_t tlvTotalSize = sizeof(ElfTlvHead) + tlvLength;
+
+    elfData->obj_ptr_origin = (char*)objBuffer.data();
+    elfData->obj_size = objBuffer.size();
+
+    elfData->elf_header.e_shstrndx = 0;
+    elfData->elf_header.e_shnum = 2;
+    elfData->section_headers = new Elf_Internal_Shdr[2];
+
+    elfData->section_headers[0].sh_name = 0;
+    elfData->section_headers[0].sh_type = SHT_STRTAB;
+    elfData->section_headers[0].sh_offset = strTabOffset;
+    elfData->section_headers[0].sh_size = strTabSize;
+
+    elfData->section_headers[1].sh_name = metaSectionNameOffset;
+    elfData->section_headers[1].sh_type = SHT_PROGBITS;
+    elfData->section_headers[1].sh_offset = tlvDataOffset;
+    elfData->section_headers[1].sh_size = tlvTotalSize;
+
+    size_t metaSize = 0;
+    rtError_t error = GetFunctionMetaInfoSize(elfData, "kernel0", RT_FUNCTION_TYPE_DFX_ARG_INFO, &metaSize);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(metaSize, 4);
+
+    delete[] elfData->section_headers;
+    delete elfData;
+}
+
 TEST_F(CloudV2ELFTest, rtGetMetaInfo)
 {
     ElfProgram *prog = new ElfProgram();
@@ -1443,10 +1541,48 @@ TEST_F(CloudV2ELFTest, rtGetMetaInfo)
     delete funcHandle;
 }
 
+TEST_F(CloudV2ELFTest, rtFunctionGetMetaInfoSize)
+{
+    ElfProgram *prog = new ElfProgram();
+    PlainProgram *prog2 = new PlainProgram();
+    Kernel *funcHandle = new Kernel("func", "func", "func");
+    size_t metaSize = 0;
+
+    delete prog->elfData_;
+    prog->elfData_ = nullptr;
+    funcHandle->program_ = RtPtrToPtr<Program *>(prog);
+
+    rtError_t error = rtFunctionGetMetaInfoSize(nullptr, RT_FUNCTION_TYPE_KERNEL_TYPE, &metaSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    error = rtFunctionGetMetaInfoSize(RtPtrToPtr<rtFuncHandle>(funcHandle), RT_FUNCTION_TYPE_KERNEL_TYPE, nullptr);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    error = rtFunctionGetMetaInfoSize(RtPtrToPtr<rtFuncHandle>(funcHandle), RT_FUNCTION_TYPE_INVALID, &metaSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    error = rtFunctionGetMetaInfoSize(RtPtrToPtr<rtFuncHandle>(funcHandle), RT_FUNCTION_TYPE_SCHED_MODE_INFO, &metaSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    error = rtFunctionGetMetaInfoSize(RtPtrToPtr<rtFuncHandle>(funcHandle), RT_FUNCTION_TYPE_DFX_ARG_INFO, &metaSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    funcHandle->program_ = RtPtrToPtr<Program *>(prog2);
+    error = rtFunctionGetMetaInfoSize(RtPtrToPtr<rtFuncHandle>(funcHandle), RT_FUNCTION_TYPE_KERNEL_TYPE, &metaSize);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
+
+    error = rtFunctionGetMetaInfoSize(RtPtrToPtr<rtFuncHandle>(funcHandle), RT_FUNCTION_TYPE_DFX_ARG_INFO, &metaSize);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
+
+    delete prog;
+    delete prog2;
+    delete funcHandle;
+}
+
 TEST_F(CloudV2ELFTest, ElfParseTlvInfo_Function_Entry)
 {
     ElfKernelFunctionEntryInfo kernelFunctionEntryInfo;
-    kernelFunctionEntryInfo.head.type = FUNCTION_META_TYPE_FUNCTION_ENTRY_INFO;
+    kernelFunctionEntryInfo.head.type = RT_FUNCTION_TYPE_FUNCTION_ENTRY_INFO;
     kernelFunctionEntryInfo.head.length = sizeof(ElfKernelFunctionEntryInfo) - sizeof(ElfTlvHead);
     kernelFunctionEntryInfo.functionEntry = 0;
     ElfKernelInfo tlvInfo;
@@ -1530,7 +1666,7 @@ TEST_F(CloudV2ELFTest, ELF_Process_SetKernelFunctionEntry_Failed)
 TEST_F(CloudV2ELFTest, ElfParseTlvInfo_Sched_Mode)
 {
     ElfKernelSchedModeInfo kernelSchedModeInfo;
-    kernelSchedModeInfo.head.type = FUNC_META_TYPE_SCHED_MODE_INFO;
+    kernelSchedModeInfo.head.type = RT_FUNCTION_TYPE_SCHED_MODE_INFO;
     kernelSchedModeInfo.head.length = sizeof(kernelSchedModeInfo) - sizeof(ElfTlvHead);
     kernelSchedModeInfo.schedMode = 1;
     ElfKernelInfo tlvInfo;

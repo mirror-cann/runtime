@@ -390,6 +390,17 @@ RTS_API rtError_t rtBinaryGetMetaInfo(const rtBinHandle binHandle, const rtBinar
  */
 RTS_API rtError_t rtFunctionGetMetaInfo(const rtFuncHandle funcHandle, const rtFunctionMetaType type, void* data, const uint32_t length);
 
+/**
+ * @ingroup rt_kernel
+ * @brief get binary function meta info size
+ * @param [in] funcHandle  function handle
+ * @param [in] type        function meta info type
+ * @param [out] size       function meta info size
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API rtError_t rtFunctionGetMetaInfoSize(const rtFuncHandle funcHandle, const rtFunctionMetaType type, size_t *size);
+
 #if defined(__cplusplus)
 }
 #endif

@@ -1210,6 +1210,17 @@ rtError_t rtFunctionGetMetaInfo(const rtFuncHandle funcHandle, const rtFunctionM
 
 /**
  * @ingroup rt_kernel
+ * @brief get binary function meta info size
+ * @param [in] funcHandle  function handle
+ * @param [in] type        function meta info type
+ * @param [out] size       function meta info size
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+rtError_t rtFunctionGetMetaInfoSize(const rtFuncHandle funcHandle, const rtFunctionMetaType type, size_t *size);
+
+/**
+ * @ingroup rt_kernel
  * @brief Kernel Launch to device
  * @param [in] funcHandle  function Handle
  * @param [in] numBlocks  block dimensions

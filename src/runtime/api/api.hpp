@@ -143,6 +143,8 @@ public:
                                         void **data, const size_t *dataSize) = 0;
     virtual rtError_t FunctionGetMetaInfo(const Kernel * const funcHandle, const rtFunctionMetaType type, 
                                           void *data, const uint32_t length) = 0;
+    virtual rtError_t FunctionGetMetaInfoSize(const Kernel * const funcHandle, const rtFunctionMetaType type, 
+                                               size_t *size) = 0;
     virtual rtError_t RegisterCpuFunc(rtBinHandle binHandle, const char_t * const funcName,
         const char_t * const kernelName, rtFuncHandle *funcHandle) = 0;
     virtual rtError_t LaunchKernel(Kernel * const kernel, uint32_t blockDim, const rtArgsEx_t * const argsInfo,

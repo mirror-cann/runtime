@@ -309,6 +309,8 @@ public:
                                         const size_t *dataSize) = 0;
     virtual rtError_t FunctionGetMetaInfo(const std::string &kernelName, const rtFunctionMetaType type,
                                           void *data, const uint32_t length) = 0;
+    virtual rtError_t FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
+                                               size_t *size) = 0;
 
     rtError_t BuildTilingTbl(TilingTabl **tilingTab, uint32_t *kernelLen);
     rtError_t BuildTilingTblForDavid(const Module *mdl, TilingTablForDavid **tilingTab, uint32_t *kernelLen);
@@ -399,6 +401,8 @@ public:
                                 const size_t *dataSize) override;
     rtError_t FunctionGetMetaInfo(const std::string &kernelName, const rtFunctionMetaType type,
                                   void *data, const uint32_t length) override;
+    rtError_t FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
+                                       size_t *size) override;
 };
 
 class ElfProgram : public Program {
@@ -417,6 +421,8 @@ public:
     rtError_t BinaryGetMetaNum(const rtBinaryMetaType type, size_t *numOfMeta) override;
     rtError_t FunctionGetMetaInfo(const std::string &kernelName, const rtFunctionMetaType type,
                                   void *data, const uint32_t length) override;
+    rtError_t FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
+                                       size_t *size) override;
     rtError_t GetGlobalSymbol(const char *name, uint64_t *offset, uint64_t *size) const;
 
     rtError_t UnifiedKernelRegister();

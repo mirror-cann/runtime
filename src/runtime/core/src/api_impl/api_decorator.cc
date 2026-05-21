@@ -235,6 +235,12 @@ rtError_t ApiDecorator::FunctionGetMetaInfo(const Kernel * const funcHandle, con
     return impl_->FunctionGetMetaInfo(funcHandle, type, data, length);
 }  
 
+rtError_t ApiDecorator::FunctionGetMetaInfoSize(const Kernel * const funcHandle, const rtFunctionMetaType type,
+                                                size_t *size)
+{
+    return impl_->FunctionGetMetaInfoSize(funcHandle, type, size);
+}  
+
 rtError_t ApiDecorator::RegisterCpuFunc(rtBinHandle binHandle, const char_t * const funcName,
         const char_t * const kernelName, rtFuncHandle *funcHandle)
 {
