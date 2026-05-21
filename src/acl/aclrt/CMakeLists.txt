@@ -8,18 +8,23 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
 
+############ acl_rt_headers ############
+add_library(acl_rt_headers INTERFACE)
+
+target_include_directories(acl_rt_headers INTERFACE
+    $<BUILD_INTERFACE:${RUNTIME_DIR}/include/external>
+    $<BUILD_INTERFACE:${RUNTIME_DIR}/include/external/acl>
+)
+
 ############ libacl_rt.so ############
 add_library(acl_rt SHARED
     acl_rt.cpp
 )
 
-set(ACL_INC_EXTERNAL_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../include/external)
-
 target_include_directories(acl_rt PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${CMAKE_CURRENT_LIST_DIR}/..
     ${CMAKE_CURRENT_LIST_DIR}/../aclrt_impl
-    ${ACL_INC_EXTERNAL_DIR}
 )
 
 target_compile_options(acl_rt PRIVATE
@@ -39,12 +44,15 @@ target_link_options(acl_rt PRIVATE
     -Wl,--no-undefined
 )
 
-target_link_libraries(acl_rt PRIVATE
-    $<BUILD_INTERFACE:intf_pub>
-    -Wl,--no-as-needed
-    acl_rt_impl
-    -Wl,--as-needed
-    -ldl
-    -lpthread
-    -lstdc++
+target_link_libraries(acl_rt
+    PRIVATE
+        $<BUILD_INTERFACE:intf_pub>
+        -Wl,--no-as-needed
+        acl_rt_impl
+        -Wl,--as-needed
+        -ldl
+        -lpthread
+        -lstdc++
+    PUBLIC
+        $<BUILD_INTERFACE:acl_rt_headers>
 )
