@@ -15,6 +15,27 @@
 #include "adx_dump_soc_helper.h"
 #include "mmpa_api.h"
 #include "adx_datadump_server_soc.h"
+#include "memory_utils.h"
+#include "extra_config.h"
+#include "adx_dump_record.h"
+#include "securec.h"
+
+static const IDE_SESSION TEST_SESSION = (IDE_SESSION)0xFFFF0000;
+static const char* TEST_FILE_NAME = "/home/test.log";
+
+static IdeDumpChunk BuildDefaultDumpChunk()
+{
+    IdeDumpChunk dumpChunk = {};
+    static unsigned char defaultData = 'a';
+    dumpChunk.fileName = const_cast<char*>(TEST_FILE_NAME);
+    dumpChunk.dataBuf = &defaultData;
+    dumpChunk.bufLen = 1;
+    dumpChunk.isLastChunk = 0;
+    dumpChunk.offset = 0;
+    dumpChunk.flag = IDE_DUMP_NONE_FLAG;
+    return dumpChunk;
+}
+
 class ADX_DUMP_SOC_HELPER_TEST: public testing::Test {
 protected:
     virtual void SetUp() {}
@@ -53,27 +74,75 @@ TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpStart)
     EXPECT_EQ(session, (IDE_SESSION)0xFFFF0000);
 }
 
-TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData)
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_Success)
 {
-    IDE_SESSION session = (IDE_SESSION)0xFFFF0000;
-    IdeDumpChunk dumpChunk;
-    unsigned char ch = 'a';
-    dumpChunk.fileName = "/home/test.log";
-    dumpChunk.dataBuf = &ch;
-    dumpChunk.bufLen = 1;
-    dumpChunk.isLastChunk = 0;
-    dumpChunk.offset = 0;
-    dumpChunk.flag = IDE_DUMP_NONE_FLAG ;
-    const IdeDumpChunk constDumpChunk = dumpChunk;
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    MOCKER(&Adx::AdxDumpRecord::RecordDumpDataToDisk).stubs().will(returnValue(true));
+    EXPECT_EQ(IDE_DAEMON_NONE_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_WriteError)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    MOCKER(&Adx::AdxDumpRecord::RecordDumpDataToDisk).stubs().will(returnValue(false));
+    EXPECT_EQ(IDE_DAEMON_WRITE_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_InvalidParam)
+{
     EXPECT_EQ(IDE_DAEMON_INVALID_PARAM_ERROR, IdeDumpData(nullptr, nullptr));
-    EXPECT_EQ(IDE_DAEMON_INVALID_PARAM_ERROR, IdeDumpData(session, nullptr));
-    int ret = IdeDumpData(session, &constDumpChunk);
-    EXPECT_EQ(0, ret);
+    EXPECT_EQ(IDE_DAEMON_INVALID_PARAM_ERROR, IdeDumpData(TEST_SESSION, nullptr));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_InvalidFileName)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    dumpChunk.fileName = nullptr;
+    EXPECT_EQ(IDE_DAEMON_INVALID_PARAM_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_InvalidDataBuf)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    dumpChunk.dataBuf = nullptr;
+    EXPECT_EQ(IDE_DAEMON_INVALID_PARAM_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_InvalidBufLen)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    dumpChunk.bufLen = 0;
+    EXPECT_EQ(IDE_DAEMON_INVALID_PARAM_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_FileNameTooLong)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    char longFileName[4097];
+    for (int i = 0; i < 4096; i++) {
+        longFileName[i] = 'a';
+    }
+    longFileName[4096] = '\0';
+    dumpChunk.fileName = longFileName;
+    EXPECT_EQ(IDE_DAEMON_INVALID_PATH_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_BufLenOverflow)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    dumpChunk.bufLen = UINT32_MAX;
+    EXPECT_EQ(IDE_DAEMON_INTERGER_REVERSED_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
+}
+
+TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpData_MallocFailed)
+{
+    IdeDumpChunk dumpChunk = BuildDefaultDumpChunk();
+    MOCKER(Adx::IdeXmalloc).stubs().will(returnValue((IdeMemHandle)nullptr));
+    EXPECT_EQ(IDE_DAEMON_MALLOC_ERROR, IdeDumpData(TEST_SESSION, &dumpChunk));
 }
 
 TEST_F(ADX_DUMP_SOC_HELPER_TEST, IdeDumpEnd)
 {
-    IDE_SESSION session = (IDE_SESSION)0xFFFF0000;
-    EXPECT_EQ(0, IdeDumpEnd(session));
+    EXPECT_EQ(0, IdeDumpEnd(TEST_SESSION));
 }
 

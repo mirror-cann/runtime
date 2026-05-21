@@ -93,9 +93,9 @@ public:
     void SetOptimizationMode(uint64_t statsItem);
 #endif
     void SetDumpPath(const std::string &dumpPath);
+    bool RecordDumpDataToDisk(const DumpChunk &dumpChunk) const;
 
 private:
-    bool RecordDumpDataToDisk(const DumpChunk &dumpChunk) const;
     bool JudgeRemoteFalg(const std::string &msg) const;
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
     bool DumpDataToCallback(const std::string &filename, const std::string &dumpData, int64_t offSet, int32_t flag);

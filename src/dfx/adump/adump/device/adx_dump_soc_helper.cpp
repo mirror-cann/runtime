@@ -9,8 +9,8 @@
  */
 
 #include "adx_dump_soc_helper.h"
-#include "protocol/adx_msg_proto.h"
 #include "adx_dump_record.h"
+#include "adx_datadump_callback.h"
 #include "memory_utils.h"
 #include "common_utils.h"
 #include "log/adx_log.h"
@@ -75,18 +75,21 @@ IdeErrorT AdxDumpSocHelper::HandShake(const std::string &info, IDE_SESSION &sess
 IdeErrorT AdxDumpSocHelper::DataProcess(const IDE_SESSION &session, const IdeDumpChunk &dumpChunk) const
 {
     UNUSED(session);
-    int err;
     uint32_t dataLen = 0;
-    // malloc memory for save user data
+    IDE_CTRL_VALUE_FAILED(dumpChunk.fileName != nullptr, return IDE_DAEMON_INVALID_PARAM_ERROR, "fileName is null");
+    IDE_CTRL_VALUE_FAILED(dumpChunk.dataBuf != nullptr, return IDE_DAEMON_INVALID_PARAM_ERROR, "dataBuf is null");
+    IDE_CTRL_VALUE_FAILED(dumpChunk.bufLen > 0, return IDE_DAEMON_INVALID_PARAM_ERROR, "bufLen is 0");
     IDE_RETURN_IF_CHECK_ASSIGN_32U_ADD(sizeof(DumpChunk),
         dumpChunk.bufLen, dataLen, return IDE_DAEMON_INTERGER_REVERSED_ERROR);
-    MsgProto *msg = AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
-    IDE_CTRL_VALUE_FAILED(msg != nullptr, return IDE_DAEMON_MALLOC_ERROR, "create message failed");
-    SharedPtr<MsgProto> sendDataMsgPtr(msg, IdeXfree);
-    msg = nullptr;
-    DumpChunk* data = reinterpret_cast<DumpChunk*>(sendDataMsgPtr->data);
-    err = strcpy_s(data->fileName, IDE_MAX_FILE_PATH, dumpChunk.fileName);
-    IDE_CTRL_VALUE_FAILED(err == EOK, return IDE_DAEMON_INVALID_PATH_ERROR, "copy file name failed");
+    DumpChunk* data = reinterpret_cast<DumpChunk*>(IdeXmalloc(dataLen));
+    IDE_CTRL_VALUE_FAILED(data != nullptr, return IDE_DAEMON_MALLOC_ERROR, "malloc failed");
+    std::unique_ptr<DumpChunk, decltype(&IdeXfree)> dataPtr(data, IdeXfree);
+    IDE_CTRL_VALUE_FAILED(strnlen(dumpChunk.fileName, MAX_FILE_PATH_LENGTH) < MAX_FILE_PATH_LENGTH,
+        return IDE_DAEMON_INVALID_PATH_ERROR,
+        "fileName is too long or not null-terminated, max=%u", MAX_FILE_PATH_LENGTH);
+    int32_t err = strcpy_s(data->fileName, MAX_FILE_PATH_LENGTH, dumpChunk.fileName);
+    IDE_CTRL_VALUE_FAILED(err == EOK, return IDE_DAEMON_INVALID_PATH_ERROR,
+        "copy file name failed, err=%d", err);
     data->bufLen = dumpChunk.bufLen;
     data->flag = dumpChunk.flag;
     data->isLastChunk = dumpChunk.isLastChunk;
@@ -95,15 +98,8 @@ IdeErrorT AdxDumpSocHelper::DataProcess(const IDE_SESSION &session, const IdeDum
         dataLen, data->bufLen, data->flag, data->isLastChunk, data->offset, data->fileName);
     err = memcpy_s(data->dataBuf, data->bufLen, dumpChunk.dataBuf, dumpChunk.bufLen);
     IDE_CTRL_VALUE_FAILED(err == EOK, return IDE_DAEMON_UNKNOW_ERROR, "memcpy_s data buffer failed");
-    HostDumpDataInfo dataInfo = {sendDataMsgPtr, dataLen};
-    MsgStatus status = MsgStatus::MSG_STATUS_NONE_ERROR;
-    if (!AdxDumpRecord::Instance().RecordDumpDataToQueue(dataInfo)) {
-        status = MsgStatus::MSG_STATUS_CACHE_FULL_ERROR;
-    }
-
-    if (status == MsgStatus::MSG_STATUS_CACHE_FULL_ERROR) {
-        return IDE_DAEMON_DUMP_QUEUE_FULL;
-    }
+    bool ret = AdxDumpRecord::Instance().RecordDumpDataToDisk(*data);
+    IDE_CTRL_VALUE_FAILED(ret, return IDE_DAEMON_WRITE_ERROR, "record dump data to disk failed");
     IDE_LOGD("dump data process normal");
     return IDE_DAEMON_NONE_ERROR;
 }
@@ -148,22 +144,17 @@ IDE_SESSION SocDumpStart(const char *connectInfo)
  *      IDE_DAEMON_INVALID_PARAM_ERROR: invalid parameter
  *      IDE_DAEMON_UNKNOW_ERROR: write data failed
  *      IDE_DAEMON_NONE_ERROR:   write data succ
+ *      IDE_DAEMON_WRITE_ERROR: write file failed
+ *      IDE_DAEMON_MALLOC_ERROR: malloc memory failed
+ *      IDE_DAEMON_INVALID_PATH_ERROR:  invalid dump path
+ *      IDE_DAEMON_INTERGER_REVERSED_ERROR: integer overflow
  */
 IdeErrorT SocDumpData(const IDE_SESSION session, const IdeDumpChunk *dumpChunk)
 {
-    IdeErrorT ret;
     IDE_CTRL_VALUE_FAILED(session != nullptr, return IDE_DAEMON_INVALID_PARAM_ERROR, "session is nullptr");
     IDE_CTRL_VALUE_FAILED(dumpChunk != nullptr, return IDE_DAEMON_INVALID_PARAM_ERROR, "IdeDumpChunk is nullptr");
-    const uint32_t waitInsertDumpQueueTime = 100;
-    int32_t retryInsertDumpQueueTimes = 3000; // 5min(3000 * 100ms)
     IDE_LOGD("dump data process entry");
-    do {
-        ret = Adx::AdxDumpSocHelper::Instance().DataProcess(session, *dumpChunk);
-        if (ret == IDE_DAEMON_DUMP_QUEUE_FULL) {
-            (void)mmSleep(waitInsertDumpQueueTime);
-            retryInsertDumpQueueTimes--;
-        }
-    } while (ret == IDE_DAEMON_DUMP_QUEUE_FULL && retryInsertDumpQueueTimes > 0);
+    IdeErrorT ret = Adx::AdxDumpSocHelper::Instance().DataProcess(session, *dumpChunk);
     IDE_LOGD("dump data process exit");
     return ret;
 }
