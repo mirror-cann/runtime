@@ -264,6 +264,15 @@ public:
     bool IsCapturing() const;
     bool IsRecordOrigCaptureStream(const Stream * const stm) const;
     bool ToBeCaptured(const Stream * const stm) const;
+    void SoftwareModeEnable(void)
+    {
+        isHardwareMode_ = false;
+    }
+
+    bool IsHardwareMode(void)
+    {
+        return isHardwareMode_;
+    }
 
 protected:
     Device           *device_;
@@ -304,6 +313,7 @@ private:
     std::unordered_map<int32_t, uint32_t> idMap_;
     std::unordered_map<uint32_t, Notifier *> notifierMap_;
     EventOwner eventOwner_{EventOwner::EVENT_UNKNOWN};
+    bool isHardwareMode_{true};
 };
 }
 }

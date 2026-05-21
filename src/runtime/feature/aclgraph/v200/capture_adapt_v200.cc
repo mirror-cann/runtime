@@ -66,7 +66,7 @@ rtError_t ResetCaptureEventsProc(const CaptureModel * const captureModel, Stream
             "the capture event has not been recorded, stream_id=%d, event_id=%d.",
             stm->Id_(), evt->EventId_());
 
-        if (GlobalContainer::IsEventHardMode()) {
+        if (evt->IsHardwareMode()) {
  	        error = EvtReset(evt, stm);
  	    } else {
  	        error = EvtResetSoftwareMode(evt, stm);

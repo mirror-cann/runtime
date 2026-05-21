@@ -14,6 +14,30 @@
 namespace cce {
 namespace runtime {
 
+constexpr uint32_t HARD_EVENT_RESVERD_MAX = 8 *1024U;
+
+bool IsUseHardwareEvent(Device * const dev)
+{
+    const Runtime * const rt = Runtime::Instance();
+    const rtChipType_t chipType = rt->GetChipType();
+    uint32_t eventCount = 0U;
+
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_VALUE_WAIT)) {
+        return true;
+    }
+
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GET_RESOURCE_NUM_DYNAMIC)) {
+        return false;
+    }
+
+    (void)dev->Driver_()->GetAvailEventNum(dev->Id_(), dev->DevGetTsId(), &eventCount);
+    if (eventCount > HARD_EVENT_RESVERD_MAX) {
+        return true;
+    }
+
+    return false;
+}
+
 rtError_t CheckCaptureStreamThreadIsMatch(const Stream * const stm)
 {
     const rtStreamCaptureMode streamCaptureMode = stm->GetStreamCaptureMode();

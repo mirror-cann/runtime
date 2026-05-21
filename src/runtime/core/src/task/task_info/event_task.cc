@@ -170,7 +170,7 @@ void TryToFreeEventIdAndDestroyEvent(Event **eventPtr, int32_t freeId, bool isNe
 {
     COND_RETURN_VOID(*eventPtr == nullptr, "event is nullptr");
     bool canEventbeDelete = false;
-    if ((!GlobalContainer::IsEventHardMode()) && (isCaptureDestroy) && ((*eventPtr)->IsNewMode())) {
+    if ((!(*eventPtr)->IsHardwareMode()) && (isCaptureDestroy) && ((*eventPtr)->IsNewMode())) {
         canEventbeDelete = true;
     } else {
         canEventbeDelete = (*eventPtr)->TryFreeEventIdAndCheckCanBeDelete(freeId, isNeedDestroy);

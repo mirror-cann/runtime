@@ -26,6 +26,7 @@ rtError_t CheckCaptureStreamThreadIsMatch(const Stream * const stm);
 rtError_t CheckCaptureModelSupportSoftwareSq(Device* const dev);
 rtError_t CheckCaptureModelForUpdate(const Stream* stm);
 bool IsSoftwareSqCaptureModel(Model * const mdl);
+bool IsUseHardwareEvent(Device * const dev);
 }
 }
 

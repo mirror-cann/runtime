@@ -43,7 +43,7 @@
 #include "thread_local_container.hpp"
 #include "../../rt_utest_config_define.hpp"
 #include "task_res_da.hpp"
-
+#include "capture_model_utils.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -773,33 +773,50 @@ TEST_F(EventTestDavid, event_resetnull)
 
 TEST_F(EventTestDavid, GetCaptureEvent1)
 {
-    MOCKER(GlobalContainer::IsEventHardMode)
-        .stubs()
-        .will(returnValue(false));
-
     rtEvent_t event;
     rtStream_t stream;
     ApiImplDavid apiImpl;
+    rtStream_t captureStream;
 
     rtEventCreate(&event);
     DavidEvent *evt = (DavidEvent *)event;
+    evt->SoftwareModeEnable();
     rtStreamCreate(&stream, 0);
     Stream* stm = (Stream *)stream;
+    
+    rtStreamCreate(&captureStream, 0);
+    Stream* stmCapture = (Stream *)captureStream;
+    stm->UpdateCaptureStream(stmCapture);
+    stm->SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_ACTIVE);
+    CaptureModel* captureModel = new CaptureModel();
+    stmCapture->SetModel(static_cast<Model *>(captureModel));
+    captureModel->context_ = stm->Context_();
+
     Event *curEvent = evt->GetCaptureEvent();
 
     rtError_t error = apiImpl.GetCaptureEvent(stm, evt, &curEvent);
+    EXPECT_EQ(error,RT_ERROR_NONE);
+
+    error = apiImpl.CaptureRecordEvent(stm->Context_(), evt, stm);
     EXPECT_NE(error,RT_ERROR_NONE);
-    rtEventDestroy(event);
+
+    error = apiImpl.CaptureWaitEvent(stm->Context_(), stm, evt, 0U);
+    EXPECT_NE(error,RT_ERROR_NONE);
+
+    error = apiImpl.CaptureResetEvent(evt, stm);
+    EXPECT_NE(error,RT_ERROR_NONE);
+
+    stmCapture->SetModel(nullptr);
+    stm->UpdateCaptureStream(nullptr);
+    stm->SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_NONE);
+    rtStreamDestroy(captureStream);
     rtStreamDestroy(stream);
-    delete curEvent;
+    delete captureModel;
+    rtEventDestroy(event);
 }
 
 TEST_F(EventTestDavid, GetCaptureEvent2)
 {
-    MOCKER(GlobalContainer::IsEventHardMode)
-        .stubs()
-        .will(returnValue(true));
-
     rtEvent_t event;
     rtStream_t stream;
     ApiImplDavid apiImpl;
@@ -817,18 +834,61 @@ TEST_F(EventTestDavid, GetCaptureEvent2)
     delete curEvent;
 }
 
+TEST_F(EventTestDavid, GetCaptureEvent3)
+{
+    rtEvent_t event;
+    rtStream_t stream;
+    rtStream_t captureStream;
+    ApiImplDavid apiImpl;
+
+    rtEventCreate(&event);
+    DavidEvent *evt = (DavidEvent *)event;
+    evt->SoftwareModeEnable();
+    rtStreamCreate(&stream, 0);
+    Stream* stm = (Stream *)stream;
+
+    MOCKER(IsUseHardwareEvent).stubs().will(returnValue(false));
+
+    rtStreamCreate(&captureStream, 0);
+    Stream* stmCapture = (Stream *)captureStream;
+    stm->UpdateCaptureStream(stmCapture);
+    stm->SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_ACTIVE);
+    CaptureModel* captureModel = new CaptureModel();
+    stmCapture->SetModel(static_cast<Model *>(captureModel));
+    captureModel->context_ = stm->Context_();
+
+    Event *curEvent = evt->GetCaptureEvent();
+
+    rtError_t error = apiImpl.GetCaptureEvent(stm, evt, &curEvent);
+    EXPECT_EQ(error,RT_ERROR_NONE);
+
+    error = apiImpl.CaptureRecordEvent(stm->Context_(), evt, stm);
+    EXPECT_NE(error,RT_ERROR_NONE);
+
+    error = apiImpl.CaptureWaitEvent(stm->Context_(), stm, evt, 0U);
+    EXPECT_NE(error,RT_ERROR_NONE);
+
+    error = apiImpl.CaptureResetEvent(evt, stm);
+    EXPECT_NE(error,RT_ERROR_NONE);
+
+    stmCapture->SetModel(nullptr);
+    stm->UpdateCaptureStream(nullptr);
+    stm->SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_NONE);
+    rtStreamDestroy(captureStream);
+    rtStreamDestroy(stream);
+    delete captureModel;
+    rtEventDestroy(event);
+}
+
 TEST_F(EventTestDavid, CaptureResetEvent1)
 {
-    MOCKER(GlobalContainer::IsEventHardMode)
-        .stubs()
-        .will(returnValue(false));
-
     rtEvent_t event;
     rtStream_t stream;
     ApiImplDavid apiImpl;
 
     rtEventCreate(&event);
     DavidEvent *evt = (DavidEvent *)event;
+    evt->SoftwareModeEnable();
     rtStreamCreate(&stream, 0);
     Stream* stm = (Stream *)stream;
 
@@ -840,10 +900,6 @@ TEST_F(EventTestDavid, CaptureResetEvent1)
 
 TEST_F(EventTestDavid, CaptureResetEvent2)
 {
-    MOCKER(GlobalContainer::IsEventHardMode)
-        .stubs()
-        .will(returnValue(true));
-
     rtEvent_t event;
     rtStream_t stream;
     ApiImplDavid apiImpl;
