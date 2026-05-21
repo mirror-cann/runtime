@@ -71,7 +71,7 @@ void AicTaskInitCommon(TaskInfo *taskInfo, const Kernel *kernel, const uint16_t 
     aicTaskInfo->kernelTaskMode = RT_DEFAULT_KERNEL_MODE;
     aicTaskInfo->qos = 0U;
     aicTaskInfo->partId = 0U;
-    uint32_t schedMode = (kernel == nullptr) ? RT_SCHEM_MODE_NORMAL : kernel->GetSchedMode();
+    uint32_t schedMode = (kernel == nullptr) ? static_cast<uint32_t>(RT_SCHEM_MODE_NORMAL) : kernel->GetSchedMode();
     aicTaskInfo->schemMode = static_cast<uint8_t>(schedMode);
     aicTaskInfo->infMode = 0U;
 
