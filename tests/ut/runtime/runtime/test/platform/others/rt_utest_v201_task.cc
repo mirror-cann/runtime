@@ -66,6 +66,7 @@
 #include "notify_task.h"
 #include "davinci_kernel_task.h"
 #include "rt_unwrap.h"
+#include "../../task_test_helper.h"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -1602,7 +1603,9 @@ TEST_F(TaskTestV201, Test_Construct_Simt_Sqe)
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
 
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, aicKernel, 1, nullptr);
+    delete aicKernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     task.id = 0;
     task.u.aicTaskInfo.kernel = kernel;

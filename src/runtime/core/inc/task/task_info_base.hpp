@@ -118,8 +118,7 @@ struct AicTaskInfo {
     uint64_t tilingKey;
     uint64_t funcAddr;    /* only for 1910 or 1980 virtual (because of sending thread) */
     uint64_t funcAddr1;
-    uint64_t smDescData; // unused
-    uint32_t smSize; // unused
+    uint8_t rsv[12];
     uint16_t groupDim;
     uint16_t groupBlockDim;
     uint8_t kernelTaskMode;
