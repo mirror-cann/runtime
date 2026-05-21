@@ -192,6 +192,7 @@ void DumpCore::DumpV4Register(uint8_t coreType, uint16_t coreId)
     DumpV4ErrorRegister(coreType, coreId, reg->GetErrorRegisterTable(), regData);
 
     size_t totalSize = regData.size() * sizeof(RegInfoWide);
+    IDE_LOGI("coreType=%d, coreId=%d, register num=%zu", static_cast<int32_t>(coreType), coreId, regData.size());
     std::string data(reinterpret_cast<const char*>(regData.data()), totalSize);
     ELF::SectionPtr registerSection = coreFile_.AddSection(ASCEND_SHTYPE_REGS, sectionName);
     IDE_CTRL_VALUE_FAILED(registerSection != nullptr, return, "Create %s section failed.", sectionName.c_str());
