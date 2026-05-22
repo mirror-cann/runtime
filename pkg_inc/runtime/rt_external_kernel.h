@@ -401,6 +401,15 @@ RTS_API rtError_t rtFunctionGetMetaInfo(const rtFuncHandle funcHandle, const rtF
  */
 RTS_API rtError_t rtFunctionGetMetaInfoSize(const rtFuncHandle funcHandle, const rtFunctionMetaType type, size_t *size);
 
+/**
+* @ingroup rt_kernel
+* @brief get l2cache offset
+* @param [in] deviceId   device id
+* @param [out]  offset l2cache offset
+* @return  0 for success, others for fail
+*/
+RTS_API rtError_t rtGetL2CacheOffset(uint32_t deviceId, uint64_t *offset);
+
 #if defined(__cplusplus)
 }
 #endif
