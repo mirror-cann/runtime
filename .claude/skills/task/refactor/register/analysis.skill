@@ -1,0 +1,101 @@
+---
+name: register-analysis
+description: 注册机制重构-现状分析
+license: MIT
+compatibility: opencode
+version: "1.0"
+parameters:
+  - name: task_types
+    type: array
+    description: 要迁移的任务类型列表
+    required: true
+---
+
+## 角色
+现状分析工程师，负责梳理目标任务在机制层和任务文件中的现状分布。
+
+## 规则引用
+- **必须读取**：`skills/task/refactor/register/rules/rules.md`
+- **禁止读取**：其他规则文件
+
+## 执行流程
+
+### Phase A: 注册入口分析
+- **任务**：分析 `task_types` 在机制层注册入口中的注册语句
+- **搜索范围**：
+  - `task_manager.cc`：v100注册入口（TaskFuncReg、RegTaskToCommandFunc等）
+  - `task_manager_david.cc`：David注册入口（DavidRegTaskFunc等）
+  - `stars_david.cc`：David SQE注册入口（RegTaskToDavidSqefunc等）
+- **输出格式**：
+  | 任务类型 | 注册入口文件 | 注册函数名 | 芯片范围 | 注册位置（行号） |
+  |---|---|---|---|---|
+- **写入时机**：完成分析后立即写入 `docs/register/step1_migrate_output.md`
+
+**Phase A 用户确认**：
+> "Phase A 完成。请确认注册入口分析是否覆盖所有目标task_types。确认OK后进入Phase B。"
+
+### Phase B: 任务文件分布分析
+- **任务**：分析 `task_types` 对应的任务实现文件分布
+- **搜索范围**：
+  - `task_info/v100/` 目录下的任务文件
+  - `task_info/v200_base/` 目录下的任务文件
+  - `task_info/v200/` 目录下的任务文件
+  - `task_info/v201/` 目录下的任务文件
+- **判断规则**：
+  - 文件存在 → 标注对应版本
+  - 文件不存在 → 标注 "-"
+  - 需新增 → 标注 "需新增"
+- **输出格式**：
+  | 任务类型 | v100文件 | v200_base文件 | v200文件 | v201文件 |
+  |---|---|---|---|---|
+- **写入时机**：追加写入 `docs/register/step1_migrate_output.md`
+
+**Phase B 用户确认**：
+> "Phase B 完成。请确认任务文件分布是否正确。确认OK后进入Phase C。"
+
+### Phase C: 机制层赋值现状分析
+- **任务**：分析机制层中对目标任务的函数指针赋值语句
+- **搜索范围**：
+  - `task_manager.cc` 中 TaskFuncReg 函数内的赋值语句
+  - `task_manager_david.cc` 中 DavidRegTaskFunc 函数内的赋值语句
+  - `stars_david.cc` 中 RegTaskToDavidSqefunc 函数内的赋值语句
+- **关键函数指针**（8个）：
+  - toCommandFunc
+  - toSqeFunc
+  - doCompleteSuccFunc
+  - taskUnInitFunc
+  - waitAsyncCpCompleteFunc
+  - printErrorInfoFunc
+  - setResultFunc
+  - setStarsResultFunc
+- **输出格式**：
+  | 任务类型 | 函数指针 | 赋值文件 | 赋值函数 | 赋值行号 | 函数值 |
+  |---|---|---|---|---|---|
+- **写入时机**：追加写入 `docs/register/step1_migrate_output.md`
+
+**Phase C 用户确认**：
+> "Phase C 完成。请确认机制层赋值现状是否完整。确认OK后进入汇总阶段。"
+
+### Phase D: 芯片范围验证
+- **任务**：验证各版本注册入口使用的芯片范围是否正确
+- **验证内容**：
+  - v100注册：是否使用正确的芯片列表（Ascend910相关）
+  - David注册：是否使用正确的David芯片列表
+- **输出格式**：
+  | 注册入口文件 | 芯片范围来源 | 芯片列表 | 验证结果 |
+  |---|---|---|---|
+- **写入时机**：追加写入 `docs/register/step1_migrate_output.md`
+
+### 汇总阶段
+1. 合并所有Phase输出
+2. 生成现状问题总结：
+   - **待迁移任务**：列出所有目标task_types
+   - **注册入口状态**：v100/David双入口是否均已定位
+   - **任务文件状态**：各版本文件是否存在
+   - **赋值行数统计**：每个任务需删除的赋值行数
+3. 追加写入 `docs/register/step1_migrate_output.md`
+
+**汇总用户确认**：
+> "汇总完成。请确认现状分析是否完整覆盖所有目标task_types。确认OK后进入Step 2。"
+
+**步骤检查**：使用 Read 工具读取 `skills/task/refactor/register/rules/checklists/checklist-migrate.md`，逐项勾选现状分析相关检查项，将结果写入 `docs/register/step1_migrate_checklist.md`。

@@ -1,0 +1,112 @@
+---
+name: task-build-verify
+description: CANN Runtime编译验证与UT测试（独立Session，参数化复用）
+license: MIT
+compatibility: opencode
+version: "9.0"
+parameters:
+  - name: task_types
+    type: array
+    description: 已重构/已迁移的任务类型列表
+    required: true
+  - name: config_file
+    type: string
+    description: Config文件路径（用于读取项目配置，如项目根目录）
+    required: true
+  - name: build_verify_result_file
+    type: string
+    description: 编译验证结果输出文件路径
+    required: true
+  - name: rules_file
+    type: string
+    description: 任务专属规则文件路径（如 skills/task/refactor/register/rules/rules.md），修复时从中读取对应规则
+    required: true
+  - name: output_dir_prefix
+    type: string
+    description: 输出文件目录前缀（如 docs/register 或 docs/layer），用于编译日志等中间文件路径
+    required: true
+---
+
+## 角色
+编译验证工程师，负责执行编译和UT测试，确保重构/迁移后代码正确编译和运行。
+
+## 隔离执行机制
+- **独立Session**：本Skill必须在**独立Session**中运行，避免编译日志污染主流程。
+- **结果回传**：仅向主流程返回关键结果摘要（成功/失败、错误类型）。
+- **规则自包含**：本Skill通过 `rules_file` 参数读取任务专属规则，不依赖主流程上下文。
+- **参数接收**：本Skill仅接收主流程传入的参数（`task_types`、`config_file`、`build_verify_result_file`、`rules_file`、`output_dir_prefix`），不自行读取或修改param.md。
+- **Config读取**：使用主流程传入的 `config_file` 路径读取Config文件，获取项目根目录。
+
+## 修复约束
+
+### 修复原则
+- **规则读取**：修复操作前，**必须使用 Read 工具读取 `rules_file` 参数指定的规则文件**，从中获取编译验证相关的规则编号和约束。禁止凭记忆执行修复。
+- **违规回退**：若修复后违反规则，**必须立即回退**（使用`git checkout -- <文件>`或手动恢复）
+- **连续失败**：同一错误连续出现2次违规修复，暂停执行并请求用户介入决策
+- **修复后自检**：每次修复后必须对照 `rules_file` 中的编译验证相关规则逐项自检，确认无违规后方可继续
+
+### 修复后检查清单（每次修复后必须逐项勾选）
+- [ ] 遵守 `rules_file` 中定义的编译验证相关规则
+- [ ] 修复仅涉及编译/UT失败相关的代码，未引入额外变更
+- [ ] 删除/新增位置已记录（文件路径、行号、变更内容摘要）
+- **若任一项未通过，必须回退该次修复，重新分析错误原因**
+
+## 执行流程
+
+**前置条件**：
+1. 使用 Read 工具读取 `rules_file`，获取编译验证相关的规则编号和约束。
+2. 使用主流程传入的 `config_file` 路径读取Config文件，获取项目根目录。
+3. 进入项目根目录：`cd <项目根目录>`
+4. 确保输出目录存在：`mkdir -p {output_dir_prefix}`
+
+### Step 1: 编译验证
+1. 清理缓存：`rm -rf build build_out output`
+2. 执行编译：`bash build.sh 2>&1 | tee {output_dir_prefix}/task_build_verify.log`
+3. 检查结果：
+   - 根据 `build.sh` 日志确认产物输出路径，验证 `.run` 文件存在：`find <日志中确认的路径> -name "*.run"`（若日志未明确，尝试 `output` 或 `build_out`）
+   - 验证 `.run` 文件修改时间晚于编译开始时间：`find <日志中确认的路径> -name "*.run" -newer {output_dir_prefix}/task_build_verify.log`
+   - 无 undefined reference/multiple definition 错误
+4. 错误排查：参照 `rules_file` 中的编译验证规则，常见错误类型及对应规则编号从规则文件中查找。
+   通用排查方向：
+   | 错误类型 | 通用排查方向 |
+   |---|---|
+   | undefined reference | CMake遗漏文件 或 include缺失 |
+   | multiple definition | 同名函数跨文件重复定义 |
+   | 'xxx' not declared | 缺少include 或 头文件声明缺失/误删 |
+   | 注册/赋值相关错误 | 注册赋值被误删 或 注册函数未正确调用 |
+   | 文件路径错误 | 源文件路径配置错误（CMake/编译配置） |
+   | 头文件路径错误 | 声明放置位置错误 或 include路径错误 |
+   **具体规则编号**：从 `rules_file` 中查找对应的编译/设计/修改规则。
+5. **若需修复代码，严格遵守上方"修复约束"，并对照 `rules_file` 中对应规则逐项验证**
+
+### Step 2: UT验证
+1. 清理缓存：`rm -rf build build_out output`
+2. 执行子测试套（**强制步骤，禁止跳过**）：前面测试套执行成功则后面测试套不需要清理缓存。
+   - **执行策略**：按顺序逐一执行以下命令，**严禁并行或跳过**。
+   - `runtime_ut_common`: `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_common -c`
+   - `runtime_ut_910b`: `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_910b -c`
+   - `runtime_ut_david`: `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_david -c`
+   - `runtime_ut_v201`: `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_v201 -c`
+   - **验证要求**：每个子测试套完成后，**必须检查日志**确认包含 `SUCCESS` 或 `PASSED` 关键字。若未找到，视为失败。
+   - **Fail-Fast**：若任一子测试套失败，**立即停止**后续所有测试，记录错误日志并输出失败摘要。
+   - **超时设置**：每个子测试套超时 20 分钟。
+3. **超时处理**：若超时，检查日志确认是否仍在编译；若有进度输出，可延长 20 分钟等待再查结果；若是还没有则和用户交互是否继续。
+4. 失败排查：参照 `rules_file` 中的规则，常见问题及通用排查方向：
+   | 问题类型 | 通用排查方向 |
+   |---|---|
+   | No such file or directory | UT使用相对路径include 或 源文件路径错误 |
+   | undefined reference / 'xxx' not defined | 头文件声明缺失 或 误删 |
+   | 头文件找不到 | 声明放置位置错误 或 include路径错误 |
+   **具体规则编号**：从 `rules_file` 中查找对应的规则。
+5. **若需修复代码，严格遵守上方"修复约束"，并对照 `rules_file` 中对应规则逐项验证**
+
+### Step 3: 输出结果
+将编译/UT结果写入 `build_verify_result_file` 参数指定的路径，格式：
+```markdown
+# 编译验证结果
+- 状态: 成功/失败
+- 错误类型: (若失败)
+- 错误日志摘要: (若失败)
+- 修复次数: (若执行过修复)
+- 约束检查状态: 通过/违规（若执行过修复）
+```

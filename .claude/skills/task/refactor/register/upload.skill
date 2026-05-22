@@ -1,0 +1,122 @@
+---
+name: register-upload
+description: 注册机制重构-代码上库（独立Session）
+license: MIT
+compatibility: opencode
+version: "1.0"
+parameters:
+  - name: task_types
+    type: array
+    description: 已迁移的任务类型列表
+    required: true
+  - name: config_file
+    type: string
+    description: Config文件路径（`skills/task/shared/config.md`）
+    required: true
+  - name: step3_output_file
+    type: string
+    description: Step3输出文件路径（迁移进度表、删除记录表）
+    required: true
+  - name: build_verify_result_file
+    type: string
+    description: 编译验证结果文件路径
+    required: true
+---
+
+## 角色
+开发工程师，负责Git提交、创建PR。
+
+## 隔离执行机制
+- **独立Session**：本Skill必须在**独立Session**中运行
+- **结果回传**：仅向主流程返回 Commit Hash 和 PR URL
+- **参数接收**：本Skill仅接收主流程传入的参数
+
+## 执行流程
+
+### Step 1: 前置验证
+1. **读取编译验证结果**：从 `build_verify_result_file` 读取状态
+2. **拦截检查**：若状态不为"成功"，中止执行并报告错误
+3. **进入项目目录**：从 `config_file` 读取项目根目录，执行 `cd <项目根目录>`
+
+### Step 2: Git提交准备
+1. **查看修改**：`git status`
+2. **添加文件**：
+   - **禁止提交的路径**：
+     - `docs/` 下的所有文件
+     - `skills/` 下的所有文件
+     - 任何 `.md` 文档
+   - **允许提交的路径**：
+     - `src/runtime/` 下的 `.cc` 和 `.h` 文件
+     - `cmake/` 下的 `.cmake` 文件
+     - `tests/ut/` 下的 `.cc` 和 `CMakeLists.txt` 文件
+   - **添加方式**：使用 `git add <具体文件路径>` 逐个添加
+   - **禁止**：`git add .` 或 `git add -A`
+3. **验证**：`git status --short` 确仅包含允许路径
+
+### Step 3: Git提交
+1. **构造Commit Message**：`"refactor(task): {task_types}任务注册机制重构"`
+2. **判断HEAD状态**：`git log origin/<分支>..<分支> --oneline | wc -l`
+   - 结果 > 0 → HEAD未push，可amend
+   - 结果 = 0 → HEAD已push，禁止amend
+3. **检查HEAD commit message**：
+   - 若匹配当前task_types且HEAD未push → `git commit --amend -m "<Message>"`
+   - 否则 → `git commit -m "<Message>"`
+
+### Step 4: Git推送
+- 执行 `git push origin <分支>`
+- 若失败，停止并提示用户手动解决
+
+### Step 5: 创建PR
+1. **读取Config**：获取 `owner`、`repo`、`gitcode_token`、`parent_issue_url`
+2. **读取Step3输出**：获取迁移进度表和删除记录表
+3. **构造PR Body**：
+   ```markdown
+   # Pull Request
+   
+   ## 描述
+   将 {task_types} 任务类型的操作函数按硬件版本分离，实现任务注册机制重构。
+   
+   **重构范围**：{task_types}任务迁移
+   
+   ## 关联的Issue
+   - **父需求**：[Issue #{parent_issue_number}](<parent_issue_url>)
+   
+   Related #{parent_issue_number}
+   
+   ## 变更类型
+   - [x] ♻️ 重构
+   
+   ## 如何测试
+   1. 编译验证：`bash build.sh`
+   2. UT验证：依次执行4个子测试套
+   
+   ## 核对清单
+   - [x] 我的代码遵循了项目的代码风格
+   - [x] 我已对代码进行了自测
+   - [x] 我已更新了相关的文档
+   - [x] 我在标题中使用了合适的类型标签（refactor:）
+   
+   ## 其他信息
+   
+   ### 迁移进度
+   {迁移进度表}
+   
+   ### 删除代码位置
+   {删除记录表}
+   ```
+4. **发送API请求**：
+   - URL：`POST https://gitcode.com/api/v5/repos/{owner}/{repo}/pulls`
+   - Headers：`{"PRIVATE-TOKEN": "<token>"}`
+   - Body：JSON格式，注意Markdown内容转义
+5. **解析响应**：获取 `web_url` 作为PR URL
+
+### Step 6: 输出结果
+- 将 Commit Hash 和 PR URL 写入 `docs/register/pr_migrate_url.md`
+- 格式：
+  ```markdown
+  # 代码上库结果
+  
+  - Commit Hash: <hash>
+  - PR URL: <url>
+  - 提交时间: <时间>
+  ```

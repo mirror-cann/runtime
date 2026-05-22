@@ -1,0 +1,213 @@
+---
+name: register-modify
+description: 注册机制重构-修改实施（单Agent顺序执行）
+license: MIT
+compatibility: opencode
+version: "1.0"
+parameters:
+  - name: task_types
+    type: array
+    description: 要迁移的任务类型列表
+    required: true
+  - name: design_file
+    type: string
+    description: Step 2 方案设计文件路径（step2_migrate_output.md）
+    required: true
+---
+
+## 角色
+代码修改工程师，负责按任务粒度顺序执行迁移：新增注册→删除赋值→编译适配。
+
+## 规则引用
+- **必须读取**：`skills/task/refactor/register/rules/rules.md`
+- **禁止读取**：其他规则文件
+
+## 执行流程（单Agent顺序执行，以任务为粒度）
+
+### 核心约束
+- **任务粒度**：必须完成当前任务所有版本（v100→v200_base→v200→v201）后再迁移下一任务
+- **先增后删**：先新增注册代码，编译通过后再删除旧赋值代码
+- **每版本编译**：每个版本迁移后立即编译验证
+
+### A: v100版本迁移（单任务）
+
+#### A1: 新增注册函数
+1. **定位任务文件**：从 `design_file` 读取v100文件路径
+2. **读取文件末尾**：确认文件结构，找到合适的插入位置（文件末尾，在现有函数之后）
+3. **构造注册函数**：按T2规则结构，使用以下模板：
+   ```cpp
+   static bool {TaskName}TaskRegister()
+   {
+       TaskFuncSingle funcs = {
+           .toCommandFunc = &func1,
+           .toSqeFunc = &func2,
+           // ... 8个字段
+       };
+       
+       const auto& chips = GetV100Chips();
+       for (auto chip : chips) {
+           RegTaskFunc(chip, TS_TASK_TYPE_XXX, funcs);
+       }
+       
+       return true;
+   }
+   
+   static bool g_{taskName}TaskRegister = {TaskName}TaskRegister();
+   ```
+4. **使用Edit工具追加**：在文件末尾追加注册函数
+5. **验证**：`grep -n "{TaskName}TaskRegister" <文件>` 确认存在
+
+#### A2: 编译验证（v100新增后）
+- 执行 `bash build.sh` 确认编译通过
+- 若失败，分析错误并修复
+
+#### A3: 删除机制层赋值
+1. **定位赋值行**：从 `design_file` 读取需要删除的赋值位置
+2. **读取赋值函数**：定位 TaskFuncReg 函数
+3. **精准删除**：仅删除当前任务相关的赋值行（按T6规则）
+4. **记录删除位置**：
+   | 文件 | 函数名 | 删除行号 | 删除内容摘要 |
+   |---|---|---|---|
+5. **验证**：`grep -n "{任务关键字}" task_manager.cc` 确认已删除
+
+#### A4: 编译验证（v100删除后）
+- 执行 `bash build.sh` 确认编译通过
+- 若失败，回退删除操作，重新分析
+
+#### A5: UT验证（v100）
+- 执行 `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_910b -c`
+- 若失败，按T16规则删除旧接口UT用例
+
+#### A6: 输出记录
+- 将v100迁移结果追加写入 `docs/register/step3_migrate_output.md`：
+  - 新增注册函数位置
+  - 删除赋值位置记录
+  - 编译/UT验证结果
+
+**v100用户确认**：
+> "v100版本迁移完成。请确认注册函数是否正确、删除位置是否准确。确认OK后继续v200版本迁移。"
+
+### B: v200版本迁移（单任务）
+
+#### B1: 新增注册函数
+1. **定位任务文件**：从 `design_file` 读取v200文件路径
+2. **构造注册函数**：按T4规则结构，**必须调用RegDavidSqeFunc**：
+```cpp
+    static bool {TaskName}TaskRegister()
+    {
+        TaskFuncSingle funcs = {
+            .toCommandFunc = &func1,  // 使用v100对应函数值
+            .toSqeFunc = nullptr,  // David使用g_toDavidSqeFunc
+            // ... 8个字段
+        };
+        
+        const auto& chips = GetV200Chips();
+        for (auto chip : chips) {
+            RegTaskFunc(chip, TS_TASK_TYPE_XXX, funcs);
+        }
+        
+        RegDavidSqeFunc(TS_TASK_TYPE_XXX, &toDavidSqeFunc);
+        
+        return true;
+    }
+    
+    static bool g_{taskName}TaskRegister = {TaskName}TaskRegister();
+    ```
+3. **使用Edit工具追加**
+
+#### B2: 编译验证（v200新增后）
+
+#### B3: 删除机制层赋值
+1. **删除task_manager_david.cc赋值**：仅删除当前任务相关
+2. **删除stars_david.cc SQE赋值**：删除RegTaskToDavidSqefunc中的对应行
+3. **记录删除位置**
+
+#### B4: 编译适配（按T10规则）
+**仅删除机制依赖的v100文件**：
+1. **定位mechanism dependance**：在 `tests/ut/runtime/runtime/CMakeLists.txt` 中找到 `# mechanism dependance` 注释
+2. **删除v100文件**：仅删除该注释后面、当前任务对应的v100文件（如 `xx_task_v100.cc`）
+3. **不要删除其他位置**：
+   - **保留** `runtimeut_common_src_task_list` 中的v100文件（v100基础列表）
+   - **保留** `runtimeut_david_series_common_src_task_list` 中非mechanism dependance部分的v100文件
+   - **保留** `910B平台`的v100文件（v100测试需要）
+4. **验证**：grep确认残留已清理
+
+#### B5: 编译验证（v200删除+适配后）
+
+#### B6: UT验证（v200）
+- 执行 `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_david -c`
+- 按T18规则新增v200 UT用例（如有）
+
+#### B7: 输出记录
+- 将v200迁移结果追加写入 `docs/register/step3_migrate_output.md`
+
+**v200用户确认**：
+> "v200版本迁移完成。请确认注册函数是否正确、David SQE注册是否已调用、编译适配是否完成。确认OK后继续v201版本迁移。"
+
+### C: v201版本迁移（单任务）
+
+#### C1: 新增注册函数
+- 按T5规则结构，调用GetV201Chips()和RegDavidSqeFunc
+
+#### C2: 编译验证（v201新增后）
+
+#### C3: 删除机制层赋值
+- 删除task_manager_david.cc赋值（如有）
+- 删除stars_david.cc SQE赋值（如有）
+
+#### C4: 编译适配（如有）
+
+#### C5: 编译验证（v201删除后）
+
+#### C6: UT验证（v201）
+- 执行 `bash tests/build_ut.sh --ut=runtime --target=runtime_ut_v201 -c`
+- 按T18规则新增v201 UT用例（如有）
+
+#### C7: 输出记录
+- 将v201迁移结果追加写入 `docs/register/step3_migrate_output.md`
+
+**v201用户确认**：
+> "v201版本迁移完成。请确认注册函数是否正确。确认OK后继续下一任务迁移。"
+
+### D: 任务完成汇总
+
+#### D1: 更新迁移进度表
+- 将当前任务进度追加写入 `docs/register/step3_migrate_output.md`：
+  | 任务名称 | v100状态 | v200_base状态 | v200状态 | v201状态 | 编译状态 | UT状态 |
+  |---|---|---|---|---|---|---|
+
+#### D2: 检查清单执行
+- 使用 Read 工具读取 `skills/task/refactor/register/rules/checklists/checklist-migrate.md`
+- 逐项勾选当前任务相关检查项
+- 追加写入 `docs/register/step3_migrate_checklist.md`
+
+#### D3: 继续下一任务
+- 若还有未迁移任务，回到A阶段执行下一任务
+- 若所有任务已完成，进入汇总验证阶段
+
+### 汇总验证阶段
+
+#### E1: 迁移完整性检查
+- 读取 `docs/register/step3_migrate_output.md` 中的进度表
+- 确认所有任务所有版本状态为"完成"
+
+#### E2: 删除代码完整性检查
+- 确认所有删除位置已记录
+- 执行grep验证机制层无残留赋值
+
+#### E3: 编译适配完整性检查
+- 确认CMake修改已完成
+- 执行grep验证CMake中无残留v100依赖
+
+#### E4: 输出汇总
+- 将汇总验证结果追加写入 `docs/register/step3_migrate_output.md`
+
+## 强制约束检查（每版本迁移后自检）
+
+- [ ] 先增后删执行顺序正确
+- [ ] 删除仅涉及当前任务
+- [ ] 删除位置已记录
+- [ ] TaskFuncSingle字段完整（8个字段）
+- [ ] v200/v201调用RegDavidSqeFunc
+- [ ] 编译验证已执行
+- [ ] UT验证已执行
