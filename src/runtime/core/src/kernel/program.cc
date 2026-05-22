@@ -1201,7 +1201,7 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     const uint32_t devId = static_cast<uint32_t>(device->Id_());
     void *devSoBuff = nullptr;
     if (isLoadCpuSo) {
-        ret = device->Driver_()->DevMemAlloc(&devSoBuff, binarySize_, RT_MEMORY_HBM, devId, DEFAULT_MODULEID);
+        ret = device->Driver_()->DevMemAlloc(&devSoBuff, binarySize_, RT_MEMORY_HBM, devId, MODULEID_RUNTIME);
         ERROR_RETURN(ret, "devSoBuff alloc failed! error=%#x", ret);
         allocMem.push_back(devSoBuff);
 
@@ -1210,7 +1210,7 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     }
 
     void *devSoName = nullptr;
-    ret = device->Driver_()->DevMemAlloc(&devSoName, soName_.size(), RT_MEMORY_HBM, devId, DEFAULT_MODULEID);
+    ret = device->Driver_()->DevMemAlloc(&devSoName, soName_.size(), RT_MEMORY_HBM, devId, MODULEID_RUNTIME);
     ERROR_RETURN(ret, "devSoName alloc failed! error=%#x", ret);
     allocMem.push_back(devSoName);
 
@@ -1224,7 +1224,7 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     // 2. copy cpuSoBuf to device memory
     void *args = nullptr;
     constexpr size_t argsSize = sizeof(CpuSoBuf);
-    ret = device->Driver_()->DevMemAlloc(&args, argsSize, RT_MEMORY_HBM, devId, DEFAULT_MODULEID);
+    ret = device->Driver_()->DevMemAlloc(&args, argsSize, RT_MEMORY_HBM, devId, MODULEID_RUNTIME);
     ERROR_RETURN(ret, "args alloc failed! error=%#x", ret);
     allocMem.push_back(args);
 
