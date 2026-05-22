@@ -73,14 +73,15 @@
 - gperf
 - libtool
 - make
+- libc6-dev/glibc-devel
 
  Ubuntu/Debian操作系统安装命令示例如下：
 ```bash
-sudo apt install python3 python3-pip python3-dev gcc-9 g++-9 cmake ccache autoconf gperf libtool libtool-bin make
+sudo apt install python3 python3-pip python3-dev gcc-9 g++-9 libc6-dev cmake ccache autoconf gperf libtool libtool-bin make
 ```
 CentOS/EulerOS操作系统安装命令示例如下：
 ```bash
-sudo yum install python3 python3-pip python3-devel gcc gcc-c++ cmake ccache autoconf gperf libtool make
+sudo yum install python3 python3-pip python3-devel gcc gcc-c++ glibc-devel cmake ccache autoconf gperf libtool make
 ```
 
 ##### 安装软件
@@ -256,6 +257,7 @@ runtime在编译时，依赖的第三方开源软件列表如下：
 ```bash
 bash tests/build_ut.sh --ut=acl --target=ascendcl_utest -c --cann_3rd_lib_path={your_3rd_party_path}
 ```
+其中，`{your_3rd_party_path}`必须为绝对路径。
 
 **指定测试模块**
 
