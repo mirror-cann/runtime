@@ -17,9 +17,6 @@
 #include <dirent.h>
 #include "tsd_sha256.h"
 #include "log.h"
-#ifdef WIN_TSD
-#include <regex>
-#else
 #include <semaphore.h>
 #include <thread>
 #include <cerrno>
@@ -31,7 +28,6 @@
 #include <iomanip>
 #include "inc/basic_define.h"
 #include "inc/weak_ascend_hal.h"
-#endif
 
 namespace {
     constexpr int32_t SYSTE_EXECUTE_CMD_ERROR = 127; // 与system实现保持一致
@@ -67,10 +63,6 @@ namespace tsd {
 
     bool ValidateStr(const std::string &str, const std::string &mode)
     {
-#ifdef WIN_TSD
-        std::regex re(mode);
-        return std::regex_search(str, re);
-#else
         regex_t reg;
         int32_t ret = regcomp(&reg, mode.c_str(), REG_EXTENDED | REG_NOSUB);
         if (ret != 0) {
@@ -84,7 +76,6 @@ namespace tsd {
 
         regfree(&reg);
         return true;
-#endif
     }
 
     void GetScheduleEnv(const char_t * const envName, std::string &envValue)
@@ -125,8 +116,6 @@ namespace tsd {
 
     bool CheckRealPath(const std::string &inputPath)
     {
-#ifdef WIN_TSD
-#else
         if (inputPath.empty()) {
             TSD_RUN_INFO("Input path is empty");
             return false;
@@ -159,7 +148,6 @@ namespace tsd {
             TSD_RUN_INFO("Invalid path [%s], should be [%s]", inputPath.c_str(), normalizedPath.c_str());
             return false;
         }
-#endif
         return true;
     }
 
@@ -171,9 +159,6 @@ namespace tsd {
 
     int32_t TsdExecuteCmd(const std::string &cmd)
     {
-#ifdef WIN_TSD
-        return 0;
-#else
         if (cmd.empty()) {
             return -1;
         }
@@ -195,14 +180,10 @@ namespace tsd {
         }
 
         return status;
-#endif
     }
 
     int32_t PackSystem(const char_t * const cmdLine)
     {
-#ifdef WIN_TSD
-        return 0;
-#else
         const sighandler_t oldHandler = signal(SIGCHLD, nullptr);
         // system()函数失败是由于“ No child processes”
         // 如果SIGCHLD信号行为被设置为SIG_IGN时，waitpid()函数有可能因为找不到子进程而报ECHILD错误
@@ -212,7 +193,6 @@ namespace tsd {
                  SafeStrerror().c_str());
         (void)signal(SIGCHLD, oldHandler);
         return ret;
-#endif
     }
 
     static bool IsTinyRuntime()
@@ -231,9 +211,6 @@ namespace tsd {
     std::string SafeStrerror()
     {
         const uint32_t errnoLen = 256U;
-#ifdef WIN_TSD
-        return "no system error info.";
-#else
         char_t errBuf[errnoLen] = { };
         auto errorMsg = strerror_r(errno, &errBuf[0], errnoLen);
         if (IsTinyRuntime()) {
@@ -248,7 +225,6 @@ namespace tsd {
             }
         }
         return "";
-#endif
     }
 
     uint32_t CalcUniqueVfId(const uint32_t deviceId, const uint32_t vfId)

@@ -242,16 +242,12 @@ TSD_StatusT ClientManager::SetAicpuSchedMode(const uint32_t schedMode)
 
 bool ClientManager::CheckPackageExistsOnce(const uint32_t packageType)
 {
-#ifdef WIN_TSD
-    std::string packagePath = "C:\\Program Files\\Huawei\\Ascend\\Aicpu\\aicpu\\";
-#else
     std::string packagePath;
     if (!GetPackagePath(packagePath, packageType)) {
         TSD_INFO("[TsdClient][deviceId=%u] Package path is invalid, skip load package file, packageType[%u]",
                  logicDeviceId_, packageType);
         return false;
     }
-#endif
     if ((mmAccess(packagePath.c_str()) != EN_OK) || (mmIsDir(packagePath.c_str()) != EN_OK)) {
         TSD_WARN("[TsdClient][deviceId=%u] path[%s] does not exist, packageType[%u]", logicDeviceId_,
                  packagePath.c_str(), packageType);

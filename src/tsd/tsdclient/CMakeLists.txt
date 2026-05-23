@@ -37,91 +37,6 @@ endif()
 
 protobuf_generate(tsd_host_proto PROTO_SRCS PROTO_HDRS ${PROTO_LIST} TARGET)
     
-if(${TARGET_SYSTEM_NAME} STREQUAL "Windows")
-# windows
-#######################################################################################################################
-# libtsdclient.so windows
-add_library(tsdclient SHARED
-    ${BASE_DIR}/interface/tsd_client.cpp
-    src/client_manager.cpp
-    src/process_mode_manager.cpp
-    src/process_mode_base.cpp
-    src/process_mode_msg_parse.cpp
-    src/stub/stub_process_mode_win.cpp
-    src/thread_mode_manager.cpp
-    ${BASE_DIR}/pub_facility/env_manager/env_internal_api.cpp
-    ${tdt_common_files}
-    ${PROTO_SRCS}
-)
-
-add_dependencies(tsdclient tsd_host_proto)
-
-target_include_directories(tsdclient PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../common/
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc/
-    ${RUNTIME_DIR}/include/
-    ${RUNTIME_DIR}/src/tsd/pub_facility/tsdlog/
-    ${RUNTIME_DIR}/src/tsd/pub_facility/util_func/
-    ${RUNTIME_DIR}/src/tsd/pub_facility/env_manager/
-    ${RUNTIME_DIR}/src/tsd/basic_component/device_comm/
-    ${RUNTIME_DIR}/src/tsd/client/common/inc/
-    ${RUNTIME_DIR}/src/tsd/client/common/inc/stub/
-    ${RUNTIME_DIR}/pkg_in/aicpu/queue_schedule
-    ${RUNTIME_DIR}/pkg_inc/profiling
-    ${RUNTIME_DIR}/pkg_inc/platform
-    ${RUNTIME_DIR}/src/inc/
-)
-
-target_compile_options(tsdclient PRIVATE
-    /utf-8
-    $<$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Debug>:/MTd>
-    $<$<STREQUAL:${CMAKE_CONFIGURATION_TYPES},Release>:/MT>
-    $<$<STREQUAL:${ascend031},true>:TINY_RUNTIME>
-)
-
-target_compile_definitions(tsdclient PRIVATE
-    TDT_HOST_LIB
-    TSD_HOST_LIB
-    NOT_COVERAGE_BY_UT
-    WIN_TSD
-    SECUREC_USING_STD_SECURE_LIB=0
-    NOMINMAX
-    google=ascend_private
-)
-
-target_link_options(tsdclient PRIVATE
-    /FORCE:UNRESOLVED
-)
-
-target_link_libraries(tsdclient PRIVATE
-    $<BUILD_INTERFACE:intf_pub>
-    -Wl,--no-as-needed
-    ascend_protobuf_static
-    c_sec
-    mmpa
-    ascend_hal_stub
-    dl
-    unified_dlog
-    ascendalog
-    -Wl,--as-needed
-    error_manager
-    $<BUILD_INTERFACE:c_sec_headers>
-    platform
-)
-
-set_target_properties(tsdclient
-    PROPERTIES
-    OUTPUT_NAME libtsdclient
-)
-
-add_dependencies(tsdclient platform)
-
-#---------------------------------------------------------------------------------------------------linux
-else()
-# linux
-#######################################################################################################################
-# libtsdclient.so linux
 add_library(tsdclient SHARED
     ${BASE_DIR}/interface/tsd_client.cpp
     src/client_manager.cpp
@@ -144,6 +59,8 @@ add_library(tsdclient SHARED
     ${PROTO_SRCS}
     src/stub/stub_process_mode_nowin.cpp
 )
+
+add_dependencies(tsdclient tsd_host_proto)
 
 target_include_directories(tsdclient PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../common/
@@ -206,5 +123,3 @@ target_link_libraries(tsdclient PRIVATE
 )
 
 add_dependencies(tsdclient platform)
-
-endif()

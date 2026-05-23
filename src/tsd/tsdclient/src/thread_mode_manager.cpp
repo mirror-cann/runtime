@@ -13,11 +13,8 @@
 #include "log.h"
 #include "tsd_util_func.h"
 #include "env_internal_api.h"
-#ifdef WIN_TSD
-#else
 #include "inc/package_worker.h"
 #include "inc/package_worker_utils.h"
-#endif
 
 namespace {
     const uint32_t SUB_PROC_PARAM_LIST_MAX_COUNT = 128U;
@@ -132,11 +129,7 @@ TSD_StatusT ThreadModeManager::StartCallAICPU()
         }
     }
     SetAICPUProfilingCallback();
-#ifdef WIN_TSD
-    const int32_t devicePid = static_cast<int32_t>(drvDeviceGetBareTgid());
-#else
     const int32_t devicePid = static_cast<int32_t>(getpid());
-#endif
     TSD_INFO("[ThreadModeManager] InitAICPUScheduler, deviceId[%u], devicePid[%d], profilingMode_[%d]", logicDeviceId_,
              devicePid, profilingMode_);
 #ifdef NOT_COVERAGE_BY_UT
@@ -178,11 +171,7 @@ TSD_StatusT ThreadModeManager::Close(const uint32_t flag)
         TSD_INFO("[TsdClient] don't need to stop because no start");
         return ret;
     }
-#ifdef WIN_TSD
-    const int32_t devicePid = static_cast<int32_t>(drvDeviceGetBareTgid());
-#else
     const int32_t devicePid = static_cast<int32_t>(getpid());
-#endif
     TSD_INFO("[TsdClient] StopAICPUScheduler, deviceId[%u], devicePid[%d]", logicDeviceId_, devicePid);
 #ifdef NOT_COVERAGE_BY_UT
     const int32_t result = (*stopAicpu_)(logicDeviceId_, devicePid);
@@ -203,11 +192,7 @@ TSD_StatusT ThreadModeManager::UpdateProfilingConf(const uint32_t &flag)
     }
 
 #ifdef NOT_COVERAGE_BY_UT
-#ifdef WIN_TSD
-    const int32_t devicePid = static_cast<int32_t>(drvDeviceGetBareTgid());
-#else
     const int32_t devicePid = static_cast<int32_t>(getpid());
-#endif
     TSD_INFO("[TsdClient] UpdateProfilingCallAICPU, logicDeviceId=%u, devicePid=%d", logicDeviceId_, devicePid);
     const int32_t result = (*updateProfiling_)(logicDeviceId_, devicePid, flag);
     if (result != 0) {
