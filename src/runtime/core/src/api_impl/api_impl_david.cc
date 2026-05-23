@@ -2047,7 +2047,7 @@ static rtError_t L3PortRepairResume(Device * const dev)
 static void L3PortErrorStatusReset(Device * const dev)
 {
     dev->SetDeviceStatus(RT_ERROR_NONE);
-    const WriteProtect wp(&ContextDataManage::Instance().GetSetRwLock());
+    const ReadProtect rp(&ContextDataManage::Instance().GetSetRwLock());
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
         COND_PROC((ctx->Device_()->Id_() != dev->Id_()), continue);
         ctx->SetStreamsStatus(RT_ERROR_NONE);
