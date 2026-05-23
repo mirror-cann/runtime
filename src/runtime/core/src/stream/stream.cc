@@ -698,6 +698,7 @@ rtError_t Stream::Setup()
     ERROR_RETURN(error, "Failed to alloc svm for executed times, retCode=%#x.",
         static_cast<uint32_t>(error));
 
+    SetSatMode(device_->GetSatMode());
     TIMESTAMP_BEGIN(rtStreamCreate_AllocStreamSqCq);
     /**** alloc sq cq id *****/
     const auto stmSqCqManage = const_cast<StreamSqCqManage *>(device_->GetStreamSqCqManage());
@@ -728,7 +729,6 @@ rtError_t Stream::Setup()
         return error;
     }
 
-    SetSatMode(device_->GetSatMode());
     sqId_ = tmpSqId;
     cqId_ = tmpCqId;
     RT_LOG(RT_LOG_DEBUG, "[StreamSetup]alloc sq cq success: stream_id=%d, sqId=%u, cqId=%u", streamId_, tmpSqId,

@@ -711,6 +711,9 @@ public:
 
     bool IsOverflowEnable(void) const
     {
+        if (satMode_ == RT_OVERFLOW_MODE_INFNAN) {
+            return true;
+        }
         return (isDebugRegister_ || isOverflowSwitchOn_);
     }
 

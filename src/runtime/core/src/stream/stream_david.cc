@@ -560,6 +560,7 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
     ERROR_RETURN(error, "Failed to alloc stream id, retCode=%#x.", static_cast<uint32_t>(error));
     RT_LOG(RT_LOG_DEBUG, "Alloc stream, stream_id=%d", streamId_);
     this->taskResMang_->streamId_ = streamId_;
+    SetSatMode(device_->GetSatMode());
 
     /**** alloc sq cq id *****/
     const auto stmSqCqManage = RtPtrToUnConstPtr<StreamSqCqManage *>(device_->GetStreamSqCqManage());
@@ -583,7 +584,6 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
         return error;
     }
 
-    SetSatMode(device_->GetSatMode());
     RT_LOG(RT_LOG_DEBUG, "[StreamSetup]alloc sq cq success: stream_id=%d, sqId=%u, cqId=%u", streamId_, sqId_,
         cqId_);
 
