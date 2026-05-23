@@ -56,7 +56,7 @@ rtError_t DeviceTaskSendStop(const int32_t devId, const uint64_t timeRemain)
     RT_LOG(RT_LOG_INFO, "DeviceStop[%u] start", devId);
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const uint64_t startTime = ClockGetTimeUs();
-    const WriteProtect wp(&ContextDataManage::Instance().GetSetRwLock());
+    const ReadProtect rp(&ContextDataManage::Instance().GetSetRwLock());
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
         COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
         ctx->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
@@ -78,7 +78,7 @@ rtError_t DavidDeviceKill(const int32_t devId, const uint32_t op, const uint64_t
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const uint64_t startTime = ClockGetTimeUs();
     uint64_t count = 0U;
-    const WriteProtect wp(&ContextDataManage::Instance().GetSetRwLock());
+    const ReadProtect rp(&ContextDataManage::Instance().GetSetRwLock());
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
         COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
 
@@ -119,7 +119,7 @@ rtError_t DavidDeviceQuery(const int32_t devId, const uint32_t op, const uint64_
     RT_LOG(RT_LOG_INFO, "DeviceQuery[%u] op=%u start.", devId, op);
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const uint64_t startTime = ClockGetTimeUs();
-    const WriteProtect wp(&ContextDataManage::Instance().GetSetRwLock());
+    const ReadProtect rp(&ContextDataManage::Instance().GetSetRwLock());
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
         COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
         uint64_t count = 0U;
@@ -166,7 +166,7 @@ rtError_t DeviceTaskSendResume(const int32_t devId, const uint64_t timeRemain)
     uint64_t count = 0U;
     Device *dev = nullptr;
     const uint64_t startTime = ClockGetTimeUs();
-    const WriteProtect wp(&ContextDataManage::Instance().GetSetRwLock());
+    const ReadProtect rp(&ContextDataManage::Instance().GetSetRwLock());
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
         COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
         dev = ctx->Device_();
