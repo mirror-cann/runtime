@@ -406,7 +406,7 @@ rtError_t Event::Record(Stream * const stm, const bool isApiCall)
 {
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
     const std::lock_guard<std::mutex> lockRecord(eventLockForRecord_);
-    if ((!GlobalContainer::IsEventHardMode()) && (captureStream_ != nullptr)) {
+    if ((!IsHardwareMode()) && (captureStream_ != nullptr)) {
         return CaptureEventProcess(stm);
     }
     rtError_t error = RT_ERROR_NONE;
@@ -516,7 +516,7 @@ bool Event::WaitSendCheck(const Stream * const stm, int32_t &eventId)
 rtError_t Event::Wait(Stream * const stm, const uint32_t timeout)
 {
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
-    if ((!GlobalContainer::IsEventHardMode()) && (captureStream_ != nullptr)) {
+    if ((!IsHardwareMode()) && (captureStream_ != nullptr)) {
         return CaptureWaitProcess(stm);
     }
     int32_t eventId = INVALID_EVENT_ID;
@@ -569,7 +569,7 @@ ERROR_RECYCLE:
 rtError_t Event::Reset(Stream * const stm)
 {
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
-    if ((!GlobalContainer::IsEventHardMode()) && (captureStream_ != nullptr)) { // capture mode
+    if ((!IsHardwareMode()) && (captureStream_ != nullptr)) { // capture mode
         return CaptureResetProcess(stm);
     }
     rtError_t error;

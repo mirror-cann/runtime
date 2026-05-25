@@ -41,7 +41,8 @@ rtError_t ApiImpl::GetCaptureEvent(const Stream * const stm, Event * const evt, 
         stm->Id_(), captureStm->Id_(), evt->EventId_(), eventId);
 
     Event *newEvent = nullptr;
-    if (GlobalContainer::IsEventHardMode()) {
+    bool isHardwareEvent = IsUseHardwareEvent(stm->Device_());
+    if (isHardwareEvent) {
         error = EventCreate(&newEvent, RT_EVENT_WITH_FLAG);
     } else {
         error = EventCreateEx(&newEvent, RT_EVENT_WITH_FLAG);
@@ -51,6 +52,9 @@ rtError_t ApiImpl::GetCaptureEvent(const Stream * const stm, Event * const evt, 
         "Create capture event failed, stream_id=[%d->%d], event_id=[%d->%d], error=%d.",
         stm->Id_(), captureStm->Id_(), evt->EventId_(), eventId, error);
 
+    if (!isHardwareEvent) {
+        newEvent->SoftwareModeEnable();
+    }
     evt->SetCaptureEvent(newEvent);
     CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(mdl);
     captureMdl->InsertSingleOperEvent(evt);
@@ -95,7 +99,14 @@ rtError_t ApiImpl::CaptureEventRecord(Context * const ctx, Event * const evt, St
             stm->Id_(), evt->EventId_(), error);
 
     bool isNewEvt = false;
-    if (GlobalContainer::IsEventHardMode()) {
+    bool isHardwareMode;
+    if (evt->GetCaptureEvent() != nullptr) {
+        isHardwareMode = evt->GetCaptureEvent()->IsHardwareMode();
+    } else {
+        isHardwareMode = IsUseHardwareEvent(stm->Device_());
+    }
+
+    if (isHardwareMode) {
         Event * const captureEvt = evt->GetCaptureEvent();
         if ((captureEvt == nullptr) || (!(captureEvt->HasRecord()))) {
             evt->InitEventAllocFlag(stm->Id_());

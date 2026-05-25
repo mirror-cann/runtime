@@ -38,7 +38,8 @@ rtError_t ApiImplDavid::GetCaptureEvent(const Stream * const stm, Event * const 
 
     Event *newEvent = nullptr;
     rtError_t error;
-    if (GlobalContainer::IsEventHardMode()) {
+    bool isHardwareEvent = IsUseHardwareEvent(stm->Device_());
+    if (isHardwareEvent) {
          // hardware mode, use single bit notify
         error = EventCreate(&newEvent, RT_EVENT_WITH_FLAG);
     } else {
@@ -49,6 +50,9 @@ rtError_t ApiImplDavid::GetCaptureEvent(const Stream * const stm, Event * const 
         "Create capture event failed, stream_id=[%d->%d], event_id=%d, error=%d.",
         stm->Id_(), captureStm->Id_(), evt->EventId_(), error);
 
+    if (!isHardwareEvent) {
+        newEvent->SoftwareModeEnable();
+    }
     evt->SetCaptureEvent(newEvent);
     CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(mdl);
     captureMdl->InsertSingleOperEvent(evt);
@@ -75,7 +79,7 @@ rtError_t ApiImplDavid::CaptureRecordEvent(Context * const ctx, Event * const ev
     COND_RETURN_ERROR_MSG_INNER(IsCrossCaptureModel(captureEvt, captureStm),
         RT_ERROR_STREAM_CAPTURE_CONFLICT, "Capture event and capture stream is cross-model.");
 
-    if (GlobalContainer::IsEventHardMode()) {
+    if (captureEvt->IsHardwareMode()) {
         error = EvtRecord(captureEvt, stm);
     } else {
         error = EvtRecordSoftwareMode(captureEvt, stm);
@@ -105,7 +109,7 @@ rtError_t ApiImplDavid::CaptureResetEvent(const Event * const evt, Stream * cons
         RT_ERROR_STREAM_CAPTURE_CONFLICT, "Capture event and capture stream is cross-model.");
 
     rtError_t error;
-    if (GlobalContainer::IsEventHardMode()) {
+    if (captureEvt->IsHardwareMode()) {
         error = EvtReset(captureEvt, stm);
     } else {
         error = EvtResetSoftwareMode(captureEvt, stm);
@@ -136,7 +140,7 @@ rtError_t ApiImplDavid::CaptureWaitEvent(Context * const ctx, Stream * const stm
 
     COND_RETURN_ERROR_MSG_INNER(IsCrossCaptureModel(captureEvt, captureStm),
         RT_ERROR_STREAM_CAPTURE_CONFLICT, "Capture event and capture stream is cross-model.");
-    if (GlobalContainer::IsEventHardMode()) {
+    if (captureEvt->IsHardwareMode()) {
         error = EvtWait(captureEvt, stm, timeout);
     } else {
         error = EvtWaitSoftwareMode(captureEvt, stm);

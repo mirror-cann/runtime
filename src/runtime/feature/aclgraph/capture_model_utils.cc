@@ -15,6 +15,8 @@
 namespace cce {
 namespace runtime {
 
+constexpr uint32_t HARD_EVENT_RESVERD_MAX = 8 * 1024U;
+
 bool NeedReBuildSqe(const TaskInfo *const task)
 {
     const tsTaskType_t type = task->type;
@@ -23,6 +25,28 @@ bool NeedReBuildSqe(const TaskInfo *const task)
         (type == TS_TASK_TYPE_IPC_WAIT)) {
         return true;
     }
+    return false;
+}
+
+bool IsUseHardwareEvent(Device * const dev)
+{
+    const Runtime * const rt = Runtime::Instance();
+    const rtChipType_t chipType = rt->GetChipType();
+    uint32_t eventCount = 0U;
+
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_VALUE_WAIT)) {
+        return true;
+    }
+
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GET_RESOURCE_NUM_DYNAMIC)) {
+        return false;
+    }
+
+    (void)dev->Driver_()->GetAvailEventNum(dev->Id_(), dev->DevGetTsId(), &eventCount);
+    if (eventCount > HARD_EVENT_RESVERD_MAX) {
+        return true;
+    }
+
     return false;
 }
 

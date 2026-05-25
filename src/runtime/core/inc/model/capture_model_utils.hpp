@@ -28,6 +28,7 @@ rtError_t CheckCaptureModelForUpdate(const Stream* stm);
 bool IsSoftwareSqCaptureModel(Model * const mdl);
 bool CheckCaptureModeSupport(const Context* ctx, const char* funcName);
 bool NeedReBuildSqe(const TaskInfo *const task);
+bool IsUseHardwareEvent(Device * const dev);
 }
 }
 
