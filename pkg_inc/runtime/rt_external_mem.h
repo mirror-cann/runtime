@@ -1161,6 +1161,46 @@ RTS_API rtError_t rtMemcpyEx(void *dst, uint64_t destMax, const void *src, uint6
  */
 RTS_API rtError_t rtMemcpy(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtMemcpyKind_t kind);
 
+
+/**
+ * @ingroup dvrt_mem
+ * @brief dsa update memcpy
+ * @param [in] streamId dsa streamId
+ * @param [in] taskId dsa
+ * @param [in] src   source device address pointer
+ * @param [in] cnt   the number of byte to copy
+ * @param [in] stm   asynchronized task stream
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API rtError_t rtLaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void *src, uint64_t cnt,
+                                        rtStream_t stm);
+
+typedef void* rtDrvMemHandle;
+
+typedef struct DrvMemProp {
+    uint32_t side;
+    uint32_t devid;
+    uint32_t module_id;
+
+    uint32_t pg_type;
+    uint32_t mem_type;
+    uint64_t reserve;
+} rtDrvMemProp_t;
+
+/**
+ * @ingroup dvrt_mem
+ * @brief This command is used to alloc physical memory.
+ * @attention Only support ONLINE scene.
+ * @param [out] handle Value of handle returned,all operations on this allocation are to be performed using this handle.
+ * @param [in] size Size of the allocation requested.
+ * @param [in] prop Properties of the allocation to create.
+ * @param [in] flags Currently unused, must be zero.
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ * @return RT_ERROR_DRV_ERR for driver error
+ */
+RTS_API rtError_t rtMallocPhysical(rtDrvMemHandle* handle, size_t size, rtDrvMemProp_t* prop, uint64_t flags);
 #if defined(__cplusplus)
 }
 #endif

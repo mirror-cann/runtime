@@ -137,6 +137,26 @@ typedef struct tagRtAicpuArgsEx {
     uint8_t reserved;
 } rtAicpuArgsEx_t;
 
+#define FUSION_SUB_TASK_MAX_NUM     (2U)
+#define FUSION_SUB_TASK_MAX_CPU_NUM (1U)
+typedef struct tagRtAicpuArgs {
+    uint16_t kfcArgsFmtOffset;      // default value is 0xffff
+    uint16_t soNameAddrOffset;      // just for CCE Kernel, default value is 0xffff for FWK kernel
+    uint16_t kernelNameAddrOffset;  // just for CCE Kernel, default value is 0xffff for FWK kernel
+    uint16_t rev;
+} rtAicpuArgs_t;
+
+typedef struct tagRtFusionArgsEx {
+    void *args;                     // args host mem addr
+    rtHostInputInfo_t *hostInputInfoPtr;     // nullptr means no host mem input
+    uint32_t argsSize;              // input + output + host mem
+    uint16_t hostInputInfoNum;      // hostInputInfo num
+    uint8_t aicpuNum;               // aicpu task num
+    uint8_t isNoNeedH2DCopy;        // is no need host to device copy: 0 means need H2D copy,
+                                    // others means doesn't need H2D copy.
+    rtAicpuArgs_t aicpuArgs[FUSION_SUB_TASK_MAX_CPU_NUM]; // aicpuArgsInfo
+} rtFusionArgsEx_t;
+
 /**
  * @ingroup rt_kernel
  * @brief shared memory data control
@@ -409,6 +429,25 @@ RTS_API rtError_t rtFunctionGetMetaInfoSize(const rtFuncHandle funcHandle, const
 * @return  0 for success, others for fail
 */
 RTS_API rtError_t rtGetL2CacheOffset(uint32_t deviceId, uint64_t *offset);
+
+/**
+ * @brief Fusion Kernel Launch to device
+ * @param [in] fusionInfo  task information about fusion kernel
+ * @param [in] stm         associated stream
+ * @param [in] argsInfo    args info about fusion kernel
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API rtError_t rtFusionLaunch(void * const fusionInfo, rtStream_t const stm, rtFusionArgsEx_t *argsInfo);
+
+/**
+ * @ingroup rt_kernel
+ * @brief no operation task
+ * @param [in] stm
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API rtError_t rtNopTask(rtStream_t stm);
 
 #if defined(__cplusplus)
 }

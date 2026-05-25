@@ -390,6 +390,49 @@ RTS_API rtError_t rtXpuSetTaskFailCallback(rtXpuDevType devType, const char_t *m
  */
 RTS_API rtError_t rtGetTSDevice(uint32_t *tsId);
 
+typedef enum {
+    RT_FEATURE_TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV = 1U,
+    RT_FEATURE_SYSTEM_MEMQ_EVENT_CROSS_DEV       = 21U,
+    RT_FEATURE_AICPU_SCHEDULE_TYPE               = 10001U,
+    RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH           = 20001U,
+    RT_DEV_FEATURE_MAX
+} rtDevFeatureType;
+
+typedef enum tagRtDeviceFeatureType {
+    FEATURE_TYPE_SCHE,
+    FEATURE_TYPE_BLOCKING_OPERATOR,
+    FEATURE_TYPE_FFTS_MODE,
+    FEATURE_TYPE_MEMQ_EVENT_CROSS_DEV,
+    FEATURE_TYPE_MODEL_TASK_UPDATE,
+    FEATURE_TYPE_END,
+} rtDeviceFeatureType_t;
+
+typedef enum tagRtDeviceModuleType {
+    RT_MODULE_TYPE_SYSTEM = 0,  /**< system info*/
+    RT_MODULE_TYPE_AICPU,       /**< aicpu info*/
+    RT_MODULE_TYPE_CCPU,        /**< ccpu_info*/
+    RT_MODULE_TYPE_DCPU,        /**< dcpu info*/
+    RT_MODULE_TYPE_AICORE,      /**< AI CORE info*/
+    RT_MODULE_TYPE_TSCPU,       /**< tscpu info*/
+    RT_MODULE_TYPE_PCIE,        /**< PCIE info*/
+    RT_MODULE_TYPE_VECTOR_CORE, /**< VECTOR CORE info*/
+    RT_MODULE_TYPE_HOST_AICPU,  /**< HOST AICPU info*/
+    RT_MODULE_TYPE_QOS,         /**<qos info>*/
+    RT_MODULE_TYPE_MEMORY       /**<memory info*/
+} rtDeviceModuleType_t;
+
+/**
+ * @ingroup
+ * @brief get device feature ability by device id, such as task schedule ability.
+ * @param [in] deviceId
+ * @param [in] moduleType
+ * @param [in] featureType
+ * @param [out] val
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API rtError_t rtGetDeviceCapability(int32_t deviceId, int32_t moduleType, int32_t featureType, int32_t *val);
+
 #if defined(__cplusplus)
 }
 #endif
