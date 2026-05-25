@@ -1506,9 +1506,9 @@ private:
     rtError_t SubmitStreamRecycle(Stream* exeStream, bool isForceRecycle, uint16_t logicCqId, TaskInfo *&task) const;
     void ResetHostResourceForPersistentStream();
     void RecycleModelDelayRecycleTask();
-    rtError_t HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
+    virtual rtError_t HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
     rtError_t HandleTaskDisable(TaskInfo* workTask, CaptureModel* model);
-    rtError_t HandleTaskDefault(TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
+    virtual rtError_t HandleTaskDefault(TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
 
     // Auto Split 辅助方法
     rtError_t InitAutoSplitBasicParams();

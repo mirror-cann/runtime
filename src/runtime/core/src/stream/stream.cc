@@ -69,16 +69,6 @@ void CheckAndPrintPlaceHolder(const LaunchParam &launchParam, const uint32_t off
     }
 }
 
-bool NeedReBuildSqe(const TaskInfo *const task)
-{
-    const tsTaskType_t type = task->type;
-    // mem wait类型task在sqe中会使用到当前stream的PosTail，在task更新后需要重新构造sqe
-    if ((type == TS_TASK_TYPE_MEM_WAIT_VALUE) || (type == TS_TASK_TYPE_CAPTURE_WAIT) ||
-        (type == TS_TASK_TYPE_IPC_WAIT)) {
-        return true;
-    }
-    return false;
-}
 } // namespace
 
 TIMESTAMP_EXTERN(rtStreamCreate_drvMemAllocL2buffAddr);
@@ -3509,7 +3499,7 @@ rtError_t Stream::UpdateAllPersistentTask()
     }
 
     if (totalSendSqeNum == 0U && parentCaptureStream_ != nullptr) {
-        error = Context_()->NopTask(this);
+        error = SendNopTask(Context_(), this);
         ERROR_RETURN(error, "construct nop failed, stream_id=%d.", streamId_);
 
         RT_LOG(RT_LOG_INFO, "construct nop success, stream_id=%d.", streamId_);

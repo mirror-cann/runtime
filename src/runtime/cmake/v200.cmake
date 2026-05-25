@@ -101,6 +101,7 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/task_manager_david.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_task.cc
     ${RUNTIME_CORE_DIR}/src/task/v200_base/davinci_task_launch_config.cc
+    ${RUNTIME_CORE_DIR}/src/task/v200_base/task_adpter.cc
     ${RUNTIME_FEATURE_DIR}/fusion/fusion_task.cc
     ${RUNTIME_FEATURE_DIR}/ccu/ccu_sqe.cc
 

@@ -1055,3 +1055,43 @@ TEST_F(DavidStreamTest, RecordPosToTaskIdMap)
     stream->RecordPosToTaskIdMap(task, 0);
     EXPECT_NE(stream, nullptr);
 }
+
+
+TEST_F(DavidStreamTest, HandleTaskUpdate)
+{
+    DavidStream *stream = (DavidStream *)stream_;
+
+    MOCKER_CPP(&Stream::StarsAddTaskToStreamForModelUpdate).stubs().will(returnValue(RT_ERROR_NONE));
+
+    CaptureModel captureModel(RT_MODEL_CAPTURE_MODEL);
+    uint8_t sqeBuffer[100];
+    TaskInfo taskInfo = {};
+    TaskInfo *task = &taskInfo;
+    captureModel.context_ = stream->Context_();
+
+    InitByStream(task, stream_);
+    AicpuTaskInit(task, 1, 0);
+
+    rtError_t ret = stream->HandleTaskUpdate(task, &captureModel, sqeBuffer, 1);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+}
+
+TEST_F(DavidStreamTest, HandleTaskDefault)
+{
+    DavidStream *stream = (DavidStream *)stream_;
+
+    MOCKER_CPP(&Stream::StarsAddTaskToStreamForModelUpdate).stubs().will(returnValue(RT_ERROR_NONE));
+
+    CaptureModel captureModel(RT_MODEL_CAPTURE_MODEL);
+    uint8_t sqeBuffer1[200];
+    TaskInfo taskInfo = {};
+    TaskInfo *task = &taskInfo;
+    captureModel.context_ = stream->Context_();
+
+    InitByStream(task, stream_);
+    task->type = TS_TASK_TYPE_MEM_WAIT_VALUE;
+    task->u.memWaitValueTask.devAddr = 8;
+
+    rtError_t ret = stream->HandleTaskDefault(task, &captureModel, sqeBuffer1, 1);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+}

@@ -101,6 +101,10 @@ public:
 
 private:
     void BuildTraceEventForTask(TaskInfo *const task, const uint32_t flags, TraceEvent &record);
+    rtError_t HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
+        uint8_t* sqeBufferBackup, uint32_t sendSqeNum) override;
+    rtError_t HandleTaskDefault(TaskInfo* workTask, CaptureModel* model,
+        uint8_t* sqeBufferBackup, uint32_t sendSqeNum) override;
 
     uint64_t sqAddr_{0ULL};
     std::mutex cntNotifyInfoLock_;

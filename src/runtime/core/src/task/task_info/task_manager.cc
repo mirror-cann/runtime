@@ -729,23 +729,6 @@ void ToCommand(TaskInfo *taskInfo, rtCommand_t *const command)
     }
 }
 
-uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
-{
-    const tsTaskType_t type = taskInfo->type;
-    if (type == TS_TASK_TYPE_MULTIPLE_TASK) {
-        return GetSendSqeNumForDavinciMultipleTask(taskInfo);
-    } else if (type == TS_TASK_TYPE_RDMA_DB_SEND) {
-        return GetSendSqeNumForRdmaDbSendTask(taskInfo);
-    } else if (type == TS_TASK_TYPE_FFTS_PLUS) {
-        return GetSendSqeNumForFftsPlusTask(taskInfo);
-    } else if ((type == TS_TASK_TYPE_MEM_WAIT_VALUE) || (type == TS_TASK_TYPE_CAPTURE_WAIT) ||
-        (type == TS_TASK_TYPE_IPC_WAIT)) {
-        return GetSendSqeNumForMemWaitTask(taskInfo);
-    } else {
-        return 1U;
-    }
-}
-
 void ConstructSqeBase(TaskInfo *const taskInfo, rtStarsSqe_t *const command)
 {
     command->phSqe.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;

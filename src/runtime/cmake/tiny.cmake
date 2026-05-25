@@ -70,6 +70,7 @@ set(libruntime_v100_task_src_files
 
     ${RUNTIME_CORE_DIR}/src/task/v100/task_proc_func_register.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/task_checker.cc
+    ${RUNTIME_CORE_DIR}/src/task/v100/task_adpter.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/memory_corruption_checker.cc
 )
 

@@ -15,6 +15,17 @@
 namespace cce {
 namespace runtime {
 
+bool NeedReBuildSqe(const TaskInfo *const task)
+{
+    const tsTaskType_t type = task->type;
+    // mem wait类型task在sqe中会使用到当前stream的PosTail，在task更新后需要重新构造sqe
+    if ((type == TS_TASK_TYPE_MEM_WAIT_VALUE) || (type == TS_TASK_TYPE_CAPTURE_WAIT) ||
+        (type == TS_TASK_TYPE_IPC_WAIT)) {
+        return true;
+    }
+    return false;
+}
+
 rtError_t CheckCaptureStreamThreadIsMatch(const Stream * const stm)
 {
     const rtStreamCaptureMode streamCaptureMode = stm->GetStreamCaptureMode();
