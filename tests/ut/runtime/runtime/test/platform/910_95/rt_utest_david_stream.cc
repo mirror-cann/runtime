@@ -964,3 +964,36 @@ TEST_F(DavidStreamTest, RecordPosToTaskIdMap)
     stream->RecordPosToTaskIdMap(task, 0);
     EXPECT_NE(stream, nullptr);
 }
+
+TEST_F(DavidStreamTest, Destructor_ArgHandleNonNull)
+{
+    DavidStream *stream = new DavidStream(device_, 0, 0, nullptr);
+    rtError_t res = stream->Setup();
+    EXPECT_EQ(res, RT_ERROR_NONE);
+    ASSERT_NE(stream->ArgManagePtr(), nullptr);
+
+    void *fakeArgHandle = reinterpret_cast<void *>(0x1U);
+    stream->SetArgHandle(fakeArgHandle);
+    EXPECT_EQ(stream->GetArgHandle(), fakeArgHandle);
+
+    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &StarsArgManager::RecycleDevLoader).stubs().will(ignoreReturnValue());
+
+    delete stream;
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidStreamTest, Destructor_ArgHandleNull)
+{
+    DavidStream *stream = new DavidStream(device_, 0, 0, nullptr);
+    rtError_t res = stream->Setup();
+    EXPECT_EQ(res, RT_ERROR_NONE);
+    ASSERT_NE(stream->ArgManagePtr(), nullptr);
+
+    stream->SetArgHandle(nullptr);
+
+    MOCKER_CPP_VIRTUAL(stream->ArgManagePtr(), &StarsArgManager::RecycleDevLoader)
+        .expects(never());
+
+    delete stream;
+    GlobalMockObject::verify();
+}
