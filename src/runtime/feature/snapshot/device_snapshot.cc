@@ -13,7 +13,6 @@
 #include "kernel.hpp"
 #include "runtime.hpp"
 #include "context.hpp"
-#include "context_data_manage.h"
 #include "inner_thread_local.hpp"
 #include "error_message_manage.hpp"
 #include "uma_arg_loader.hpp"
@@ -101,21 +100,15 @@ void DeviceSnapshot::OpMemoryInfoInit(void)
 rtError_t DeviceSnapshot::OpMemoryBackup(void)
 {
     OpMemoryInfoInit();
-    ContextDataManage &ctxMan = ContextDataManage::Instance();
-    const ReadProtect rp(&ctxMan.GetSetRwLock());
-    const uint32_t devId = device_->Id_();
-    for (Context *const ctx : ctxMan.GetSetObj()) {
-        if (ctx->Device_()->Id_() != devId) {
-            continue;
+    auto mdlList = std::make_unique<ModelList_t>();
+    NULL_PTR_RETURN(mdlList, RT_ERROR_MEMORY_ALLOCATION);
+    ContextManage::DeviceGetModelList(static_cast<int32_t>(device_->Id_()), mdlList.get());
+
+    for (uint32_t i = 0U; i < mdlList->mdlNum; i++) {
+        Model *mdl = RtPtrToPtr<Model *>(mdlList->mdls[i]);
+        if (mdl != nullptr) {
+            GetOpTotalMemoryInfo(mdl);
         }
-        SpinLock &modelLock = ctx->GetModelLock();
-        modelLock.Lock();
-        for (Model *model : ctx->GetModelList()) {
-            if (model != nullptr) {
-                GetOpTotalMemoryInfo(model);
-            }
-        }
-        modelLock.Unlock();
     }
     const size_t opTotalHostMemSize = GetOpTotalHostMemSize();
     if (opTotalHostMemSize == 0U) {

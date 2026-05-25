@@ -21,12 +21,7 @@ rtError_t SnapShotPreProcessBackup(ContextDataManage &ctxMan);
 rtError_t SnapShotDeviceRestore();
 rtError_t SnapShotResourceRestore(ContextDataManage &ctxMan);
 rtError_t SnapShotAclGraphRestore(Device * const dev);
+}
+}
 
-rtError_t SnapShotProcessBackup();
-rtError_t SnapShotProcessRestore();
-rtError_t ModelBackup(const int32_t devId);
-rtError_t ModelRestore(const int32_t devId);
-rtError_t SinkTaskMemoryBackup(const int32_t devId);
-}
-}
 #endif  // CCE_RUNTIME_SNAPSHOT_PROCESS_HELPER_HPP

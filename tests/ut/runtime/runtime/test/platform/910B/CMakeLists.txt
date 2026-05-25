@@ -104,7 +104,6 @@ set(runtimeut_src_api_list
     ${TOP_DIR}/src/runtime/api/api_c_soc.cc
     ${TOP_DIR}/src/runtime/api/api_c_dqs.cc
     ${TOP_DIR}/src/runtime/api/api_c_snapshot.cc
-    ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_callback_manager.cc
     ${TOP_DIR}/src/runtime/api/api_c_uvm.cc
 )
 
@@ -258,7 +257,6 @@ set(runtimeut_910b_src_list
     ${TOP_DIR}/src/runtime/core/src/device/raw_device.cc
     ${TOP_DIR}/src/runtime/core/src/device/raw_device_res.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/device_snapshot.cc
-    ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_callback_manager.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_process_helper.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/v100/device_snapshot_adapter.cc
     ${TOP_DIR}/src/runtime/core/src/device/device_sq_cq_pool.cc
