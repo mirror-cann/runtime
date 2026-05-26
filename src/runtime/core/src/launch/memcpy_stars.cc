@@ -72,29 +72,33 @@ rtError_t MemcopyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax, c
     RT_LOG(RT_LOG_INFO, "memcpyAddrInfo=0x%lx , qos=%u",
         RtPtrToValue<void *>(memcpyAddrInfo), sdmaSqe.qos);
     Device * const dev = stm->Device_();
+    const auto recycleTask = [&dev, &cpyAsyncTask]() {
+        (void)dev->GetTaskFactory()->Recycle(cpyAsyncTask);
+    };
     if (dev->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE) {
         error = dev->Driver_()->MemCopySync(memcpyAddrInfo, flushSize, &sdmaSqe, copySize, RT_MEMCPY_HOST_TO_DEVICE);
         if (error != RT_ERROR_NONE) {
-            ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE,
+            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();,
                 "Failed to memory copy stream info, device_id=%u, size=%zu, retCode=%#x.",
                 dev->Id_(), copySize, error);
         }
         error = dev->Driver_()->DevMemFlushCache(RtPtrToValue<void *>(memcpyAddrInfo), flushSize);
         if (error != RT_ERROR_NONE) {
-            ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Failed to flush stream info, device_id=%u, retCode=%#x",
+            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();, "Failed to flush stream info, device_id=%u, retCode=%#x",
                 dev->Id_(), error);
         }
     } else {
         error = dev->Driver_()->MemCopySync(memcpyAddrInfo, flushSize, &sdmaSqe, copySize, RT_MEMCPY_HOST_TO_DEVICE);
         if (error != RT_ERROR_NONE) {
-            ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE,
+            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();,
                 "Failed to memory copy stream info, device_id=%u, retCode=%#x", dev->Id_(), error);
         }
     }
 
     error = MemcpyAsyncTaskInitV1(cpyAsyncTask, memcpyAddrInfo, isMemcpyDesc ? 0ULL : count);
     if (error != RT_ERROR_NONE) {
-        goto ERROR_RECYCLE;
+        recycleTask();
+        return error;
     }
 
     if (guardMem != nullptr) {
@@ -104,15 +108,12 @@ rtError_t MemcopyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax, c
     callback = (stm->Context_() == nullptr) ? nullptr : stm->Context_()->TaskGenCallback_();
     error = dev->SubmitTask(cpyAsyncTask, callback);
     if (error != RT_ERROR_NONE) {
-        goto ERROR_RECYCLE;
+        recycleTask();
+        return error;
     }
 
     GET_THREAD_TASKID_AND_STREAMID(cpyAsyncTask, stm->AllocTaskStreamId());
     return RT_ERROR_NONE;
-
-ERROR_RECYCLE:
-    (void)dev->GetTaskFactory()->Recycle(cpyAsyncTask);
-    return error;
 }
 
 rtError_t Memcpy2DAsync(void * const dst, const uint64_t dstPitch, const void * const src,
@@ -129,11 +130,15 @@ rtError_t Memcpy2DAsync(void * const dst, const uint64_t dstPitch, const void * 
 
     TaskInfo *taskAsync2d = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
     NULL_PTR_RETURN_MSG(taskAsync2d, errorReason);
+    const auto recycleTask = [&stm, &taskAsync2d]() {
+        (void)stm->Device_()->GetTaskFactory()->Recycle(taskAsync2d);
+    };
 
     rtError_t error = MemcpyAsyncTaskInitV2(taskAsync2d, dst, dstPitch, src, srcPitch, width, height, kind, fixedSize);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "invoke taskAsync2d Init error code:%#x", error);
-        goto ERROR_RECYCLE;
+        recycleTask();
+        return error;
     }
     *realSize = taskAsync2d->u.memcpyAsyncTaskInfo.size;
 
@@ -141,15 +146,12 @@ rtError_t Memcpy2DAsync(void * const dst, const uint64_t dstPitch, const void * 
     error = stm->Device_()->SubmitTask(taskAsync2d, callback);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "invoke device_ SubmitTask error code:%#x", error);
-        goto ERROR_RECYCLE;
+        recycleTask();
+        return error;
     }
 
     GET_THREAD_TASKID_AND_STREAMID(taskAsync2d, stm->AllocTaskStreamId());
     return RT_ERROR_NONE;
-
-ERROR_RECYCLE:
-    (void)stm->Device_()->GetTaskFactory()->Recycle(taskAsync2d);
-    return error;
 }
     
 rtError_t MemcopyAsync(
