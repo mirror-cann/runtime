@@ -1,4 +1,4 @@
-# 3_ipcevent_multi_device
+# 1_ipcevent_multi_device
 
 ## 描述
 本样例展示了在**多个Device**上通过 **IPC Event** 进行跨进程任务同步。  
@@ -17,7 +17,7 @@
 
 ## 编译运行
 
-环境安装详情以及通用运行步骤请见 example 目录下的 [README](../../README.md)。
+环境安装详情以及通用运行步骤请见 example 目录下的 [README](../../../README.md)。
 
 本样例至少需要 2 个可用 Device。`run.sh` 中 `CONSUMER_NUM` 默认配置为 1，表示生产者使用 Device 0，消费者使用 Device 1；如需启动更多消费者，请根据实际可用 Device 数量调整 `CONSUMER_NUM`。
 

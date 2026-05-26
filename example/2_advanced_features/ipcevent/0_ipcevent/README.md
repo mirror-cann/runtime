@@ -1,4 +1,4 @@
-# 2_ipcevent
+# 0_ipcevent
 
 ## 描述
 本样例展示了两个进程之间通过 **IPC Event** 进行任务同步。  
@@ -18,7 +18,7 @@
 ## 编译运行
 
 本样例会由 `run.sh` 同时启动 `proc_a` 和 `proc_b` 两个进程，并通过临时文件交换 IPC Event 句柄。
-环境安装详情以及通用运行步骤请见 example 目录下的 [README](../../README.md)。
+环境安装详情以及通用运行步骤请见 example 目录下的 [README](../../../README.md)。
 
 ## CANN RUNTIME API
 

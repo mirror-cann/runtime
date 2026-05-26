@@ -152,7 +152,7 @@
 <tr>
 <td style="word-wrap: break-word; overflow-wrap: break-word;"><b>进程间通信</b></td>
 <td style="word-wrap: break-word; overflow-wrap: break-word;">包括IPC Event同步、IPC内存共享（指定PID/不指定PID）等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/1_basic_features/ipcevent/0_ipcevent/README.md">ipc_event</a> · <a href="../example/1_basic_features/memory/11_ipc_memory_withoutpid/README.md">ipc_memory</a></td>
+<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/2_advanced_features/ipcevent/0_ipcevent/README.md">ipc_event</a> · <a href="../example/1_basic_features/memory/11_ipc_memory_withoutpid/README.md">ipc_memory</a></td>
 </tr>
 <tr>
 <td style="word-wrap: break-word; overflow-wrap: break-word;"><b>性能调优</b></td>
@@ -198,7 +198,7 @@
 </tr>
 <tr>
 <td style="word-wrap: break-word; overflow-wrap: break-word;"><b>析构崩溃</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">应用程序运行过程中出现core dump导致崩溃，应用程序异常终止。</td>
+<td style="word-wrap: break-word; overflow-wrap: break-word;">应用程序运行过程中出现coredump导致了崩溃，应用程序异常终止</td>
 <td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="04_FAQ/析构函数中调用aclFinalize导致应用进程coredump.md">析构函数中调用aclFinalize导致应用进程coredump</a></td>
 </tr>
 </tbody>
