@@ -129,7 +129,7 @@
         <file value="securectype.h" install_mod="440" entity="true"/>
     </file_info>
     <file_info copy_type="source" src_path="" dst_path="$(TARGET_ENV)/include/acl/error_codes" install_path="$(TARGET_ENV)/include/acl/error_codes" install_type="all">
-        <file value="ge_error_codes.h" install_mod="440" entity="true"/>
+        <file value="ge_error_codes.h" install_mod="440" install_softlink="$(TARGET_ENV)/include/ge/ge_error_codes.h" entity="true"/>
         <file value="rt_error_codes.h" install_mod="440" entity="true"/>
     </file_info>
     <file_info copy_type="source" src_path="" dst_path="$(TARGET_ENV)/pkg_inc/dump" install_path="$(TARGET_ENV)/pkg_inc/dump" install_type="all">
@@ -228,9 +228,6 @@
         <file value="err_msg.h" install_mod="440" entity="true"/>
         <file value="alog_pub.h" install_mod="440" entity="true"/>
         <file value="log_types.h" install_mod="440" entity="true"/>
-    </file_info>
-    <file_info copy_type="source" src_path="" dst_path="$(TARGET_ENV)/include/ge" install_path="$(TARGET_ENV)/include/ge" install_type="all">
-        <file value="ge_error_codes.h" install_mod="440" entity="true"/>
     </file_info>
     <file_info copy_type="source" src_path="" dst_path="$(TARGET_ENV)/pkg_inc/base" install_path="$(TARGET_ENV)/pkg_inc/base" install_type="all">
         <file value="err_mgr.h" install_mod="440" entity="true"/>

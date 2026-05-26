@@ -327,13 +327,6 @@ install(DIRECTORY
 )
 
 install(FILES
-    ${RUNTIME_DIR}/include/external/acl/error_codes/ge_error_codes.h
-    DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/include/ge
-    ${INSTALL_OPTIONAL}
-    COMPONENT npu-runtime
-)
-
-install(FILES
     ${RUNTIME_DIR}/pkg_inc/base/err_mgr.h
     ${RUNTIME_DIR}/pkg_inc/base/dlog_pub.h
     ${RUNTIME_DIR}/pkg_inc/base/log_types.h
