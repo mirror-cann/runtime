@@ -632,6 +632,8 @@ aclError aclrtGetFunctionAttribute(aclrtFuncHandle funcHandle, aclrtFuncAttribut
 
 根据核函数句柄获取核函数属性信息。
 
+此接口仅支持查询算子二进制文件中的核函数属性信息。
+
 ### 参数说明
 
 
