@@ -292,9 +292,9 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask5)
     rtKernel.metaInfo.funcType = KERNEL_FUNCTION_TYPE_AIC;
     rtKernel.name = "abc";
     prog.kernelNameMap_["abc"] = &kernelPtr;
-    rtInstance->MixKernelRegister(&prog);
+    ret = rtInstance->MixKernelRegister(&prog);
     prog.kernels_ = nullptr;
-    prog.kernelNameMap_["abc"] = nullptr;
+    prog.kernelNameMap_.erase("abc");
     prog.elfData_->kernel_num = 0;
 
     TaskInfo taskInfo = {};

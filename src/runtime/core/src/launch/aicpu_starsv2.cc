@@ -279,11 +279,14 @@ static rtError_t StreamLaunchCpuKernelExWithArgsForAicpuStm(const uint32_t coreD
     return RT_ERROR_NONE;
 }
 
-static void SetTaskInfo(TaskInfo *kernelTask, const rtAicpuArgsEx_t * const argsInfo, Kernel *newKernel,
+static void SetTaskInfo(TaskInfo *kernelTask, const rtAicpuArgsEx_t * const argsInfo, const Kernel * const kernel,
     const TaskCfg * const taskCfg, const AicpuTaskInfo &tmpTaskInfo)
 {
     AicpuTaskInfo *aicpuTask = &(kernelTask->u.aicpuTaskInfo);
-    aicpuTask->kernel = newKernel;
+    aicpuTask->kernel = const_cast<Kernel*>(kernel);
+    if (kernel != nullptr) {
+        aicpuTask->kernelInnerHandle = kernel->GetInnerHandle();
+    }
     aicpuTask->aicpuFlags = tmpTaskInfo.aicpuFlags;
     aicpuTask->aicpuKernelType = tmpTaskInfo.aicpuKernelType;
     aicpuTask->timeout = ConvertAicpuTimeout(argsInfo, taskCfg, tmpTaskInfo.aicpuFlags);
@@ -309,11 +312,6 @@ rtError_t StreamLaunchCpuKernelExWithArgs(const uint32_t coreDim, const rtAicpuA
         streamId, static_cast<uint32_t>(error));
     DavidStream *davidStm = static_cast<DavidStream *>(stm);
     bool useArgPool = UseArgsPool(davidStm, argsInfo, false);
-    Kernel *newKernel = nullptr;
-    if (kernel != nullptr) {
-        newKernel =  new (std::nothrow) Kernel(kernel->GetCpuKernelSo(), kernel->GetCpuFuncName(), kernel->GetCpuOpType());
-        COND_RETURN_AND_MSG_OUTER(newKernel == nullptr, RT_ERROR_KERNEL_NEW, ErrorCode::EE1013, std::to_string(sizeof(Kernel)));
-    }
 
     Stream *dstStm = stm;
     uint32_t pos = 0xFFFFU;
@@ -325,7 +323,7 @@ rtError_t StreamLaunchCpuKernelExWithArgs(const uint32_t coreDim, const rtAicpuA
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&kernelTask, stm, pos, dstStm);
     ScopeGuard tskErrRecycle(errRecycle);
-    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(newKernel);, "Alloc task failed, stream_id=%d, retCode=%#x.", stm->Id_(),
+    ERROR_RETURN_MSG_INNER(error, "Alloc task failed, stream_id=%d, retCode=%#x.", stm->Id_(),
         static_cast<uint32_t>(error));
     SaveTaskCommonInfo(kernelTask, dstStm, pos);
     AicpuTaskInit(kernelTask, static_cast<uint16_t>(coreDim), flag);
@@ -339,8 +337,8 @@ rtError_t StreamLaunchCpuKernelExWithArgs(const uint32_t coreDim, const rtAicpuA
 
     SetArgsAicpu(nullptr, argsInfo, kernelTask, &result);
     AicpuTaskInfo tmpTaskInfo = {{}, nullptr, nullptr, nullptr, nullptr, nullptr, flag, 
-        static_cast<uint32_t>(cpuParamHeadOffset), 0, static_cast<uint8_t>(kernelType), 0};
-    SetTaskInfo(kernelTask, argsInfo, newKernel, taskCfg, tmpTaskInfo);
+        static_cast<uint32_t>(cpuParamHeadOffset), 0, static_cast<uint8_t>(kernelType), 0, nullptr};
+    SetTaskInfo(kernelTask, argsInfo, kernel, taskCfg, tmpTaskInfo);
     error = DavidSendTask(kernelTask, dstStm);
     ERROR_RETURN_MSG_INNER(error, "Submit task failed, stream_id=%d, retCode=%#x.",
         streamId, static_cast<uint32_t>(error));

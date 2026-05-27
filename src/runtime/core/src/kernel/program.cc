@@ -69,6 +69,7 @@ Program::~Program()
     for (uint32_t i = 0U; i < kernelPos_; i++) {
         const Kernel * const delKernel = KernelTable_[i].kernel;
         deletedKernels.push_back(delKernel);
+        ResetEmbeddedInnerHandle<Kernel>(const_cast<Kernel *>(delKernel));
         delete delKernel;
     }
     delete [] KernelTable_;
@@ -78,6 +79,7 @@ Program::~Program()
         const Kernel * const kernel = iter->second;
         const auto it = std::find(deletedKernels.begin(), deletedKernels.end(), kernel);
         if (it == deletedKernels.end()) {
+            ResetEmbeddedInnerHandle<Kernel>(const_cast<Kernel *>(kernel));
             delete kernel;
         }
     }
@@ -805,6 +807,7 @@ rtError_t Program::RegisterCpuKernel(const std::vector<CpuKernelInfo> &kernelInf
             continue;
         }
         SetCpuKernelAttr(kernel, kernelInfo, key);
+        InitEmbeddedInnerHandle<Kernel>(kernel);
         kernelNameMap_[key] = kernel;
         RT_LOG(RT_LOG_DEBUG, "cpu kernel info:functionName[%s],kernelSo[%s],opType[%s]",
             kernel->GetCpuFuncName().c_str(), kernel->GetCpuKernelSo().c_str(), key.c_str());
@@ -854,6 +857,7 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
         RT_LOG(RT_LOG_ERROR, "fail to store kernel %s literal name to device, ret=%d", kernelName, ret);
         return ret;
     }
+    InitEmbeddedInnerHandle<Kernel>(kernel);
     kernelNameMap_[kernelName] = kernel;
     kernelMapLock_.Unlock();
 
@@ -1295,6 +1299,7 @@ rtError_t Program::CopySoAndNameToCurrentDevice()
             ret = StoreKernelLiteralNameToDevice(kernel);
             if (unlikely(ret != RT_ERROR_NONE)) {
                 RT_LOG(RT_LOG_ERROR, "fail to store kernel %s literal name to device_id=%d, retCode=%#x", item.first.c_str(), device->Id_(), ret);
+                ResetEmbeddedInnerHandle<Kernel>(kernel);
                 delete kernel;
                 kernelNameMap_.erase(item.first);
             }

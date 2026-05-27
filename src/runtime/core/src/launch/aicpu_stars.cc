@@ -44,11 +44,8 @@ rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint
     const uint32_t kernelType = kernel->GetAicpuKernelType_();
     AicpuTaskInit(kernelTask, static_cast<uint16_t>(coreDim), flag);
     kernelTask->u.aicpuTaskInfo.headParamOffset = static_cast<uint32_t>(cpuParamHeadOffset);
-    Kernel* newKernel = new(std::nothrow) Kernel(kernel->GetCpuKernelSo(), kernel->GetCpuFuncName(),
-        kernel->GetCpuOpType()); 
-    COND_GOTO_MSG_OUTER(newKernel == nullptr, ERROR_FREE, error, RT_ERROR_KERNEL_NEW, ErrorCode::EE1013, std::to_string(sizeof(Kernel)));
-    // newKernel申请完毕需要立即绑定到kernelTask上，确保ERROR_FREE能在所有异常分支回收newKernel
-    kernelTask->u.aicpuTaskInfo.kernel = newKernel;
+    kernelTask->u.aicpuTaskInfo.kernel = const_cast<Kernel*>(kernel);
+    kernelTask->u.aicpuTaskInfo.kernelInnerHandle = kernel->GetInnerHandle();
 
     /* 默认使用kernel注册时的devAddr */
     SetNameArgs(kernelTask, kernel->GetSoNameDevAddr(curCtx->Device_()->Id_()),

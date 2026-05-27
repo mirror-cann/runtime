@@ -116,10 +116,6 @@ void StreamLaunchKernelRecycle(
 void StreamLaunchKernelRecycleAicpu(
     StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog, Stream* stm)
 {
-    if ((recycleTask != nullptr) && (recycleTask->type == TS_TASK_TYPE_KERNEL_AICPU)) {
-        DELETE_O(recycleTask->u.aicpuTaskInfo.kernel);
-    }
-
     StreamLaunchKernelRecycle(result, recycleTask, prog, stm);
 }
 

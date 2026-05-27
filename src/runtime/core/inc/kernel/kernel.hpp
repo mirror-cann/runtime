@@ -20,6 +20,7 @@
 #include "osal.hpp"
 #include "elf.hpp"
 #include "device.hpp"
+#include "runtime_handle_guard.h"
 
 #define PREFETCH_INCREASE_SIZE  (1280U)  //1280byte
 namespace cce {
@@ -459,6 +460,16 @@ public:
 
     rtError_t GetParamInfo(uint32_t paramIndex, uint32_t *paramOffset, uint32_t *paramSize) const;
 
+    rtInnerObject *GetInnerHandle()
+    {
+        return &handle_;
+    }
+
+    const rtInnerObject *GetInnerHandle() const
+    {
+        return &handle_;
+    }
+
 private:
     Program *program_;
     uint32_t aicpuKernelType_ = static_cast<uint32_t>(KERNEL_TYPE_RESERVED);
@@ -507,6 +518,8 @@ private:
     std::string cpuFunctionName_;
     void *cpuSoNameDevAddr_[RT_MAX_DEV_NUM] = {nullptr};
     void *cpuFuncNameDevAddr_[RT_MAX_DEV_NUM] = {nullptr};
+
+    rtInnerObject handle_ {};
 };
 
 typedef struct rtAllKernelMapKey {

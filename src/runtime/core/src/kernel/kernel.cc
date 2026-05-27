@@ -91,7 +91,8 @@ KernelTable::~KernelTable()
 {
     kernelMapLock_.Lock();
     for (uint32_t i = 0U; i < rtKernelArrPos_; i++) {
-         const Kernel * const delKernel = kernelArr_[i].kernel;
+         Kernel * const delKernel = kernelArr_[i].kernel;
+         ResetEmbeddedInnerHandle<Kernel>(delKernel);
          delete delKernel;
     }
 
@@ -204,6 +205,7 @@ rtError_t KernelTable::Add(Kernel *&addKernel)
         const Program *prog = addKernel->Program_();
         (void)programStubMultiMap_.insert({prog, stub});
         rtKernelArrPos_ += 1;
+        InitEmbeddedInnerHandle<Kernel>(addKernel);
     } else {
         const std::string temp = kernelArr_[halfSearchResult.matchIndex].kernel->Name_();
         RT_LOG(RT_LOG_WARNING, "Add kernel failed, using registered stubfun=%p --> kernel_name=%s",
@@ -226,7 +228,7 @@ rtError_t KernelTable::RemoveAll(const Program * const prog)
         rtHalfSearchResult_t halfSearchResult;
         HalfSearch(rtKernelArrPos_, stub, &halfSearchResult);
         if (halfSearchResult.matchFlag) {
-            const Kernel * const delKernel = kernelArr_[halfSearchResult.matchIndex].kernel;
+            Kernel * const delKernel = kernelArr_[halfSearchResult.matchIndex].kernel;
             (void)invKernelMap_.erase(delKernel->Name_());
             (void)kernelInfoExtMap_.erase(delKernel->KernelInfoExt_());
             const uint32_t copySize = sizeof(rtKernelArr_t) *
@@ -241,6 +243,7 @@ rtError_t KernelTable::RemoveAll(const Program * const prog)
                     kernelArr_ + halfSearchResult.matchIndex, copySize, kernelArr_ + halfSearchResult.matchIndex + 1, copySize, ret);
             }
 
+            ResetEmbeddedInnerHandle<Kernel>(delKernel);
             delete delKernel;
             rtKernelArrPos_ -= 1;
         }

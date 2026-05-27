@@ -508,7 +508,6 @@ static void ArgReleaseForAicpuTaskUnInit(TaskInfo *taskInfo)
     aicpuTaskInfo->comm.args = nullptr;
     aicpuTaskInfo->funcName = nullptr;
     aicpuTaskInfo->soName = nullptr;
-    DELETE_O(aicpuTaskInfo->kernel);
 }
 
 void DavinciTaskUnInit(TaskInfo *taskInfo)

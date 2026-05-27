@@ -123,6 +123,7 @@ void AicpuTaskInit(TaskInfo *taskInfo, const uint16_t dimNum, const uint32_t fla
 
     aicpuTaskInfo->argsInfo = nullptr;
     aicpuTaskInfo->kernel = nullptr;
+    aicpuTaskInfo->kernelInnerHandle = nullptr;
     aicpuTaskInfo->headParamOffset = 0U;
     aicpuTaskInfo->aicpuArgsInfo = nullptr;
     aicpuTaskInfo->aicpuKernelType = TS_AICPU_KERNEL_CCE;
@@ -978,9 +979,18 @@ static void PrintAicpuErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
     const uint32_t taskId = taskInfo->id;
     const int32_t streamId = taskInfo->stream->Id_();
     const Kernel *kernel = aicpuTaskInfo->kernel;
-    const std::string funcName = (kernel != nullptr) ? kernel->GetCpuFuncName() : "";
-    std::string kernelName = (kernel != nullptr) ? kernel->GetCpuOpType() : "";
-    std::string soName = (kernel != nullptr) ? kernel->GetCpuKernelSo() : "";
+    bool isKernelValid = false;
+    const auto * const innerObject = aicpuTaskInfo->kernelInnerHandle;
+    if ((innerObject != nullptr) && (innerObject->magic.load() == RT_KERNEL_MAGIC)) {
+        isKernelValid = true;
+    }
+    if (kernel != nullptr) {
+        RT_LOG(RT_LOG_ERROR, "kernel is not null, device_id=%u, stream_id=%d, %s=%u, isKernelValid=%d.", 
+            devId, streamId, TaskIdDesc(), taskId, isKernelValid);
+    }
+    const std::string funcName = (isKernelValid && kernel != nullptr) ? kernel->GetCpuFuncName() : "";
+    std::string kernelName = (isKernelValid && kernel != nullptr) ? kernel->GetCpuOpType() : "";
+    std::string soName = (isKernelValid && kernel != nullptr) ? kernel->GetCpuKernelSo() : "";
 
     if ((taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) && (taskInfo->errorCode == TS_ERROR_AICPU_TIMEOUT)) {
         RT_LOG_OUTER_MSG(RT_AICPU_TIMEOUT_ERROR, "AI CPU kernel execute failed, device_id=%u, stream_id=%d, "
@@ -995,8 +1005,7 @@ static void PrintAicpuErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
     Stream *const reportStream = GetReportStream(taskInfo->stream);
     std::string extendInfo;
     const tsAicpuKernelType aicpuKernelType = static_cast<tsAicpuKernelType>(aicpuTaskInfo->aicpuKernelType);
-    if ((aicpuKernelType == TS_AICPU_KERNEL_AICPU) ||
-        (aicpuKernelType == TS_AICPU_KERNEL_CUSTOM_AICPU)) {
+    if ((aicpuKernelType == TS_AICPU_KERNEL_AICPU) || (aicpuKernelType == TS_AICPU_KERNEL_CUSTOM_AICPU)) {
         STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_AICPU,
             "AI CPU kernel execution failed, device_id=%u, stream_id=%d, %s=%u, fault op_name=%s.",
             devId, streamId, TaskIdDesc(), taskId, taskInfo->stream->GetTaskTag(taskInfo->id).c_str());
@@ -1009,8 +1018,8 @@ static void PrintAicpuErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
     }
     (void)GetSoNameForAiCpu(taskInfo, soName);
     (void)GetKernelNameForAiCpu(taskInfo, kernelName);
-    kernelName = (kernel != nullptr) ? kernel->GetCpuOpType() : kernelName;
-    soName = (kernel != nullptr) ? kernel->GetCpuKernelSo() : soName;
+    kernelName = (isKernelValid && kernel != nullptr) ? kernel->GetCpuOpType() : kernelName;
+    soName = (isKernelValid && kernel != nullptr) ? kernel->GetCpuKernelSo() : soName;
 
     RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "AI CPU kernel execution failed, device_id=%u,stream_id=%d,"
         "%s=%u, soName=%s, funcName=%s, kernelName=%s.",
@@ -1018,9 +1027,8 @@ static void PrintAicpuErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
 
     STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_AICPU,
         "AI CPU kernel execution failed, device_id=%u, stream_id=%d, %s=%u, flip_num=%hu, kernel_type=%u, "
-        "fault op_name=%s, extend_info=%s.", devId, streamId, TaskIdDesc(), taskId,
-        taskInfo->flipNum, aicpuKernelType,
-        taskInfo->stream->GetTaskTag(taskInfo->id).c_str(), extendInfo.c_str());
+        "fault op_name=%s, extend_info=%s.", devId, streamId, TaskIdDesc(), taskId, taskInfo->flipNum, 
+        aicpuKernelType, taskInfo->stream->GetTaskTag(taskInfo->id).c_str(), extendInfo.c_str());
 }
 
 rtError_t GetMixCtxInfo(TaskInfo* taskInfo)

@@ -26,6 +26,7 @@ constexpr uint64_t RT_STREAM_MAGIC    = 0x5354524Dull; // STRM
 constexpr uint64_t RT_EVENT_MAGIC     = 0x45564E54ull; // EVNT
 constexpr uint64_t RT_NOTIFY_MAGIC    = 0x4E544659ull; // NTFY
 constexpr uint64_t RT_CNTNOTIFY_MAGIC = 0x434E5446ull; // CNTF
+constexpr uint64_t RT_KERNEL_MAGIC    = 0x4B524E4Cull; // KRNL
 
 template <typename T>
 struct RtMagicTraits;
@@ -42,6 +43,7 @@ class Stream;
 class Event;
 class Notify;
 class CountNotify;
+class Kernel;
 
 // Register all magic constants
 REGISTER_RT_MAGIC(Model,     RT_MODEL_MAGIC);
@@ -50,6 +52,7 @@ REGISTER_RT_MAGIC(Stream,    RT_STREAM_MAGIC);
 REGISTER_RT_MAGIC(Event,     RT_EVENT_MAGIC);
 REGISTER_RT_MAGIC(Notify,    RT_NOTIFY_MAGIC);
 REGISTER_RT_MAGIC(CountNotify, RT_CNTNOTIFY_MAGIC);
+REGISTER_RT_MAGIC(Kernel,    RT_KERNEL_MAGIC);
 
 /**
  * @ingroup

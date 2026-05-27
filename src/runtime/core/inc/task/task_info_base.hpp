@@ -19,6 +19,7 @@
 #include "stars_base.hpp"
 #include "starsv2_base.hpp"
 #include "kernel.h"
+#include "runtime_handle_guard.h"
 #define RTS_LITE_PCIE_BAR_COPY_SIZE (1024U)
 #define UB_DIRECT_WQE_MIN_LEN (64)
 #define UB_DIRECT_WQE_MAX_LEN (128)
@@ -151,6 +152,7 @@ struct AicpuTaskInfo {
     uint64_t timeout; // unit: us
     uint8_t aicpuKernelType;
     uint8_t resv;
+    const rtInnerObject *kernelInnerHandle;
 };
 
 struct rtAicAivFusionInfo_t {

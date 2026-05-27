@@ -177,7 +177,6 @@ void StarsV2DavinciTaskUnInit(TaskInfo *taskInfo)
         AicpuTaskInfo *aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
         aicpuTaskInfo->comm.args = nullptr;
         aicpuTaskInfo->funcName = nullptr;
-        DELETE_O(aicpuTaskInfo->kernel);
     } else {
         AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
         aicTaskInfo->comm.args = nullptr;
