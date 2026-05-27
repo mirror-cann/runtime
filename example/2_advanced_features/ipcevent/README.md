@@ -1,4 +1,4 @@
-# event
+# ipcevent
 
 本目录聚焦 IPCEvent 的同步能力。
 
