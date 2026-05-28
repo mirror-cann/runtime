@@ -2629,8 +2629,9 @@ rtError_t ApiImpl::MemcpyAsync(void * const dst, const uint64_t destMax, const v
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT(curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT, 
         "stream " + std::to_string(curStm->Id_()));
-
- 	if (UvmCallback::IsUvmMem(src, cnt) || UvmCallback::IsUvmMem(dst, cnt)) {
+    
+    // UVM memcpyAsync doesn't support RT_MEMCPY_ADDR_DEVICE_TO_DEVICE
+    if ((kind != RT_MEMCPY_ADDR_DEVICE_TO_DEVICE) && (UvmCallback::IsUvmMem(src, cnt) || UvmCallback::IsUvmMem(dst, cnt))) {
         rtMemcpyCallbackParam *params = new (std::nothrow) rtMemcpyCallbackParam;
         COND_RETURN_AND_MSG_OUTER((params == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
             sizeof(rtMemcpyCallbackParam));
