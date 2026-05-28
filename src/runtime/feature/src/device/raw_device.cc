@@ -1283,6 +1283,7 @@ rtError_t RawDevice::Stop()
     (void)FreeSimtStackPhyBase();
     SetPageFaultBaseCnt(0U);
     SetPageFaultBaseTime(0U);
+    FreeFftsPlusArgHandleCache();
     FreeProfSwitchAddr();
     return engine_->Stop();
 }
@@ -2525,5 +2526,19 @@ rtError_t RawDevice::RestoreSqCqPool()
     return RT_ERROR_NONE;
 }
 
+void RawDevice::PushFftsPlusArgHandle(void *argHandle)
+{
+    std::lock_guard<std::mutex> lock(fftsPlusArgHandleMutex_);
+    fftsPlusArgHandleCache_.push_back(argHandle);
+}
+
+void RawDevice::FreeFftsPlusArgHandleCache()
+{
+    std::lock_guard<std::mutex> lock(fftsPlusArgHandleMutex_);
+    for (void *handle : fftsPlusArgHandleCache_) {
+        ArgLoader_()->Release(handle);
+    }
+    fftsPlusArgHandleCache_.clear();
+}
 }  // namespace runtime
 }

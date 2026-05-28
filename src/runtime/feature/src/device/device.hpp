@@ -477,6 +477,8 @@ public:
     virtual void UnRegisterProgram(Program *prog) = 0;
     virtual bool ProgramSetMutexTryLock() = 0;
     virtual void ProgramSetMutexUnLock() = 0;
+    virtual void PushFftsPlusArgHandle(void *argHandle) = 0;
+    virtual void FreeFftsPlusArgHandleCache() = 0;
     virtual rtError_t RestoreSqCqPool() = 0;
 
     inline std::mutex& GetHcclStreamIndexMutex(void)
