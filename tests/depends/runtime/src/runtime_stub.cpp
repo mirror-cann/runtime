@@ -1419,6 +1419,16 @@ rtError_t aclStub::rtFunctionGetParamInfo(const void *func, size_t paramIndex, s
     return RT_ERROR_NONE;
 }
 
+rtError_t aclStub::rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+{
+    (void)func;
+    (void)flags;
+    if (dynamicUbufSize != nullptr) {
+        *dynamicUbufSize = 0U;
+    }
+    return RT_ERROR_NONE;
+}
+
 rtError_t aclStub::rtModelDebugDotPrint(rtModel_t mdl)
 {
     (void)mdl;
@@ -3796,6 +3806,11 @@ rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount)
 rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionGetParamInfo(func, paramIndex, paramOffset, paramSize);
+}
+
+rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+{
+    return MockFunctionTest::aclStubInstance().rtFunctionGetAvailDynUbufPerBlock(func, flags, dynamicUbufSize);
 }
 
 rtError_t rtModelDebugDotPrint(rtModel_t mdl)

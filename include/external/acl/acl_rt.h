@@ -5408,6 +5408,19 @@ ACL_FUNC_VISIBILITY aclError aclrtFunctionGetParamInfo(const void *func, size_t 
                                                         size_t *paramOffset, size_t *paramSize);
 /**
  * @ingroup AscendCL
+ * @brief get available dynamic ubuf size per block from function handle.
+ *
+ * @param [in] func function handle
+ * @param [in] flags reserved, currently ignored
+ * @param [out] dynamicUbufSize returned available dynamic ubuf size
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval OtherValues Failure
+ */
+ACL_FUNC_VISIBILITY aclError aclrtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags,
+                                                                  size_t *dynamicUbufSize);
+/**
+ * @ingroup AscendCL
  * @brief get an interprocess handle for a previously allocated event.
  *
  * @param [in]  event  event allocated with ACL_EVENT_IPC flags

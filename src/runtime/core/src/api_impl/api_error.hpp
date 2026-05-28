@@ -744,6 +744,8 @@ private:
     rtError_t FunctionGetParamCount(const Kernel *funcHandle, size_t *paramCount) override;
     rtError_t FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIndex,
                                    size_t *paramOffset, size_t *paramSize) override;
+    rtError_t FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags,
+                                              size_t *dynamicUbufSize) override;
 
     rtError_t TaskGetParams(rtTask_t task, rtTaskParams* const params) override;
     rtError_t TaskSetParams(rtTask_t task, rtTaskParams* const params) override;

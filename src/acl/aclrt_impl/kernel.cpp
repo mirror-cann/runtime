@@ -878,6 +878,28 @@ aclError aclrtFunctionGetParamInfoImpl(const void *func, size_t paramIndex,
     return ACL_SUCCESS;
 }
 
+aclError aclrtFunctionGetAvailDynUbufPerBlockImpl(void *func, uint32_t flags, size_t *dynamicUbufSize)
+{
+    ACL_LOG_INFO("start to execute aclrtFunctionGetAvailDynUbufPerBlock.");
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(func);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(dynamicUbufSize);
+    ACL_REQUIRES_PARAM_EQUAL_REPORT(flags, 0U);
+
+    const rtError_t rtErr = rtFunctionGetAvailDynUbufPerBlock(func, flags, dynamicUbufSize);
+    if (rtErr != ACL_RT_SUCCESS) {
+        if (rtErr == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
+            ACL_LOG_WARN("rtFunctionGetAvailDynUbufPerBlock not support, runtime result = %d.", rtErr);
+            return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
+        } else {
+            ACL_LOG_CALL_ERROR("rtFunctionGetAvailDynUbufPerBlock failed, runtime result = %d.", rtErr);
+            return ACL_GET_ERRCODE_RTS(rtErr);
+        }
+    }
+    ACL_LOG_INFO("successfully execute aclrtFunctionGetAvailDynUbufPerBlock, dynamicUbufSize=%zu.",
+        *dynamicUbufSize);
+    return ACL_SUCCESS;
+}
+
 aclError aclmdlRITaskGetTypeImpl(aclmdlRITask task, aclmdlRITaskType *type)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclmdlRITaskGetType);

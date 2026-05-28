@@ -719,6 +719,8 @@ public:
     rtError_t FunctionGetParamCount(const Kernel *funcHandle, size_t *paramCount) override;
     rtError_t FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIndex,
                                    size_t *paramOffset, size_t *paramSize) override;
+    rtError_t FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags,
+                                              size_t *dynamicUbufSize) override;
     
     rtError_t BinarySetExceptionCallback(Program *binHandle, void *callback, void *userData) override;
     rtError_t GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, Kernel ** const funcHandle) override;

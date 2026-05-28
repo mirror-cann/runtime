@@ -836,6 +836,8 @@ public:
     virtual rtError_t FunctionGetParamCount(const Kernel *funcHandle, size_t *paramCount) = 0;
     virtual rtError_t FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIndex,
                                             size_t *paramOffset, size_t *paramSize) = 0;
+    virtual rtError_t FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags,
+                                                      size_t *dynamicUbufSize) = 0;
     
     virtual rtError_t BinarySetExceptionCallback(Program *binHandle, void *callback, void *userData) = 0;
 

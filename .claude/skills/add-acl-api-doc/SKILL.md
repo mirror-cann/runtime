@@ -59,7 +59,7 @@ description: 向 CANN Runtime 已合并的 API 参考文档中添加新接口或
 | `aclrtMemPool*` | `11-10_Stream有序内存分配.md` |
 | `aclrtLaunchCallback`, `aclrt*Report`, `aclrtReduceAsync` | `12_执行控制.md` |
 | `aclGetRecentErrMsg`, `aclrtSetExceptionInfoCallback` | `13_异常处理.md` |
-| `aclrtBinaryLoad*`, `aclrtLaunchKernel*`, `aclrtKernelArgs*` | `14_Kernel加载与执行.md` |
+| `aclrtBinaryLoad*`, `aclrtLaunchKernel*`, `aclrtKernelArgs*`,`aclrtFunction*` | `14_Kernel加载与执行.md` |
 | `aclmdlRI*` | `15_模型运行实例管理.md` |
 | `aclrtSetGroup`, `aclrtGetGroup*` | `16_算力Group查询与设置.md` |
 | `acltdtSendTensor`, `acltdt*Channel*` | `17-01_Tensor数据传输.md` |

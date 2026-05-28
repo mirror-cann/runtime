@@ -6240,6 +6240,19 @@ rtError_t ApiErrorDecorator::FunctionGetParamInfo(const Kernel *funcHandle, size
     return impl_->FunctionGetParamInfo(funcHandle, paramIndex, paramOffset, paramSize);
 }
 
+rtError_t ApiErrorDecorator::FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags,
+                                                             size_t *dynamicUbufSize)
+{
+    NULL_PTR_RETURN_MSG_OUTER(funcHandle, RT_ERROR_INVALID_VALUE);
+    NULL_PTR_RETURN_MSG_OUTER(dynamicUbufSize, RT_ERROR_INVALID_VALUE);
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags != 0U), RT_ERROR_INVALID_VALUE, flags, "0");
+
+    Program * const prog = funcHandle->Program_();
+    NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
+
+    return impl_->FunctionGetAvailDynUbufPerBlock(funcHandle, flags, dynamicUbufSize);
+}
+
 rtError_t ApiErrorDecorator::MemRetainAllocationHandle(void* virPtr, rtDrvMemHandle *handle)
 {
     NULL_PTR_RETURN_MSG_OUTER(virPtr, RT_ERROR_INVALID_VALUE);

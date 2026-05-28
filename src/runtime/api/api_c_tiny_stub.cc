@@ -1026,6 +1026,15 @@ rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex,
 }
 
 VISIBILITY_DEFAULT
+rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+{
+    UNUSED(func);
+    UNUSED(flags);
+    UNUSED(dynamicUbufSize);
+    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
+}
+
+VISIBILITY_DEFAULT
 rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t stm,
                                       rtKernelLaunchCfg_t *cfg, void **args)
 {

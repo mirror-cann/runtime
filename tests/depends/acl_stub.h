@@ -338,6 +338,7 @@ public:
     virtual rtError_t rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle *binHandle);
     virtual rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount);
     virtual rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize);
+    virtual rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize);
     virtual rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t stream, 
                                                    rtKernelLaunchCfg_t *cfg, void **args);
 
@@ -829,6 +830,7 @@ public:
     MOCK_METHOD2(rtFunctionGetBinary, rtError_t(const rtFuncHandle funcHandle, rtBinHandle *binHandle));
     MOCK_METHOD2(rtFunctionGetParamCount, rtError_t(const void *func, size_t *paramCount));
     MOCK_METHOD4(rtFunctionGetParamInfo, rtError_t(const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize));
+    MOCK_METHOD3(rtFunctionGetAvailDynUbufPerBlock, rtError_t(void *func, uint32_t flags, size_t *dynamicUbufSize));
     MOCK_METHOD5(rtLaunchKernelWithArgsArray, rtError_t(void *func, uint32_t numBlocks, rtStream_t stream,
                                                          rtKernelLaunchCfg_t *cfg, void **args));
     MOCK_METHOD1(rtModelDebugDotPrint, rtError_t(rtModel_t mdl));

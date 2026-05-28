@@ -303,6 +303,7 @@
     _(aclError, aclrtFunctionGetBinary, (const aclrtFuncHandle funcHandle, aclrtBinHandle *binHandle), (funcHandle, binHandle)) \
     _(aclError, aclrtFunctionGetParamCount, (const void *func, size_t *paramCount), (func, paramCount)) \
     _(aclError, aclrtFunctionGetParamInfo, (const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize), (func, paramIndex, paramOffset, paramSize)) \
+    _(aclError, aclrtFunctionGetAvailDynUbufPerBlock, (void *func, uint32_t flags, size_t *dynamicUbufSize), (func, flags, dynamicUbufSize)) \
     _(aclError, aclrtIpcGetEventHandle, (aclrtEvent event, aclrtIpcEventHandle * handle), (event, handle)) \
     _(aclError, aclrtIpcOpenEventHandle, (aclrtIpcEventHandle handle, aclrtEvent * event), (handle, event)) \
     _(aclError, aclrtMemRetainAllocationHandle, (void* virPtr, aclrtDrvMemHandle * handle), (virPtr, handle)) \

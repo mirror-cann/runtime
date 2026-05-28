@@ -2531,6 +2531,11 @@ rtError_t ApiDecorator::FunctionGetParamInfo(const Kernel *funcHandle, size_t pa
     return impl_->FunctionGetParamInfo(funcHandle, paramIndex, paramOffset, paramSize);
 }
 
+rtError_t ApiDecorator::FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags, size_t *dynamicUbufSize)
+{
+    return impl_->FunctionGetAvailDynUbufPerBlock(funcHandle, flags, dynamicUbufSize);
+}
+
 rtError_t ApiDecorator::MemGetAddressRange(void *ptr, void **pbase, size_t *psize)
 {
     return impl_->MemGetAddressRange(ptr, pbase, psize);

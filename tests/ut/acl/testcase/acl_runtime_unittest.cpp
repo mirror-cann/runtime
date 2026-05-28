@@ -8584,6 +8584,70 @@ TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetParamInfoTest)
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlockTest)
+{
+    void *func = (void *)0x01;
+    uint32_t flags = 0U;
+    size_t dynamicUbufSize = 0U;
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtFunctionGetAvailDynUbufPerBlock(_, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtFunctionGetAvailDynUbufPerBlock(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_ReturnDynamicUbufSizeTest)
+{
+    void *func = (void *)0x01;
+    uint32_t flags = 0U;
+    size_t dynamicUbufSize = 0U;
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtFunctionGetAvailDynUbufPerBlock(func, flags, _))
+        .WillOnce(DoAll(SetArgPointee<2>(4096U), Return(RT_ERROR_NONE)));
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(dynamicUbufSize, 4096U);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_FlagsNotZeroTest)
+{
+    void *func = (void *)0x01;
+    uint32_t flags = 1U;
+    size_t dynamicUbufSize = 0U;
+
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_InternalErrorTest)
+{
+    void *func = (void *)0x01;
+    uint32_t flags = 0U;
+    size_t dynamicUbufSize = 0U;
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtFunctionGetAvailDynUbufPerBlock(func, flags, _))
+        .WillOnce(Return(ACL_ERROR_RT_INTERNAL_ERROR));
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_ERROR_RT_INTERNAL_ERROR);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_FeatureNotSupportTest)
+{
+    void *func = (void *)0x01;
+    uint32_t flags = 0U;
+    size_t dynamicUbufSize = 0U;
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtFunctionGetAvailDynUbufPerBlock(func, flags, _))
+        .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+}
+
 TEST_F(UTEST_ACL_Runtime, aclrtLaunchKernelWithArgsArray_NumBlocksZeroTest)
 {
     void *func = (void *)0x01;
@@ -8665,5 +8729,23 @@ TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetParamInfo_BothOutputNullptrTest)
     size_t paramIndex = 0;
     
     aclError ret = aclrtFunctionGetParamInfo(func, paramIndex, nullptr, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_FuncNullptrTest)
+{
+    uint32_t flags = 0U;
+    size_t dynamicUbufSize = 0U;
+
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(nullptr, flags, &dynamicUbufSize);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_OutputNullptrTest)
+{
+    void *func = (void *)0x01;
+    uint32_t flags = 0U;
+
+    aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }

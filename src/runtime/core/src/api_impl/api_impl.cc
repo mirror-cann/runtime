@@ -21,6 +21,7 @@
 #include "api_impl.hpp"
 #include "runtime_handle_guard.h"
 #include "base.hpp"
+#include "elf.hpp"
 #include "stream.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "event.hpp"
@@ -8848,6 +8849,24 @@ rtError_t ApiImpl::FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIn
     if (paramSize != nullptr) {
         *paramSize = static_cast<size_t>(size);
     }
+    return RT_ERROR_NONE;
+}
+
+rtError_t ApiImpl::FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags, size_t *dynamicUbufSize)
+{
+    UNUSED(flags);
+    const uint32_t kernelVfType = funcHandle->KernelVfType_();
+    const bool simtFlag = (kernelVfType == static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY)) ||
+        (kernelVfType == static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMD_SIMT_MIX_VF));
+    if (!simtFlag) {
+        *dynamicUbufSize = 0U;
+        return RT_ERROR_NONE;
+    }
+
+    COND_RETURN_ERROR_MSG_INNER(funcHandle->ShareMemSize_() > RT_SIMT_REMAIN_UB_SIZE, RT_ERROR_INVALID_VALUE,
+        "Compiler alloc ub size %u exceeds the maximum simt ub limit %u.",
+        funcHandle->ShareMemSize_(), RT_SIMT_REMAIN_UB_SIZE);
+    *dynamicUbufSize = static_cast<size_t>(RT_SIMT_REMAIN_UB_SIZE - funcHandle->ShareMemSize_());
     return RT_ERROR_NONE;
 }
 

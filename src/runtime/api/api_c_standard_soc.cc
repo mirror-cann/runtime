@@ -1431,6 +1431,18 @@ rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex,
 }
 
 VISIBILITY_DEFAULT
+rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+{
+    Api * const apiInstance = Api::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
+    Kernel *kernel = RtPtrToPtr<Kernel *>(func);
+    const rtError_t error = apiInstance->FunctionGetAvailDynUbufPerBlock(kernel, flags, dynamicUbufSize);
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    ERROR_RETURN_WITH_EXT_ERRCODE(error);
+    return ACL_RT_SUCCESS;
+}
+
+VISIBILITY_DEFAULT
 rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t stm,
                                       rtKernelLaunchCfg_t *cfg, void **args)
 {

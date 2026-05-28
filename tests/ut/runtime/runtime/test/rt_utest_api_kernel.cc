@@ -25,6 +25,8 @@
 #include "binary_loader.hpp"
 #include "thread_local_container.hpp"
 #include "inner_kernel.h"
+#include "base_david.hpp"
+#include "elf.hpp"
 #undef private
 
 
@@ -700,6 +702,37 @@ TEST_F(ApiKernelTest, TestRtFunctionGetParamInfo_ApiImplOtherError)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_ApiImplSuccess)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    size_t dynamicUbufSize = 0;
+    ApiImpl apiImpl;
+    MOCKER(Api::Instance).stubs().will(returnValue(static_cast<Api *>(&apiImpl)));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::FunctionGetAvailDynUbufPerBlock).stubs().will(returnValue(RT_ERROR_NONE));
+
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_ApiImplOtherError)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    size_t dynamicUbufSize = 0;
+    ApiImpl apiImpl;
+    MOCKER(Api::Instance).stubs().will(returnValue(static_cast<Api *>(&apiImpl)));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::FunctionGetAvailDynUbufPerBlock).stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
+
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+}
+
 
 
 TEST_F(ApiKernelTest, TestRtFunctionGetParamCount_CpuKernelNoParamSummary)
@@ -800,6 +833,96 @@ TEST_F(ApiKernelTest, TestRtFunctionGetParamInfo_Success_RealDecorator)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(paramOffset, 64);
     EXPECT_EQ(paramSize, 128);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_NonSimtSuccess)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    size_t dynamicUbufSize = 1U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
+    EXPECT_EQ(dynamicUbufSize, 0U);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_SimtSuccess)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+    kernel.SetKernelVfType_(static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY));
+    kernel.SetShareMemSize_(2048U);
+
+    size_t dynamicUbufSize = 0U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
+    EXPECT_EQ(dynamicUbufSize, static_cast<size_t>(RT_SIMT_REMAIN_UB_SIZE - 2048U));
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_SimdSimtMixSuccess)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+    kernel.SetKernelVfType_(static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMD_SIMT_MIX_VF));
+    kernel.SetShareMemSize_(4096U);
+
+    size_t dynamicUbufSize = 0U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
+    EXPECT_EQ(dynamicUbufSize, static_cast<size_t>(RT_SIMT_REMAIN_UB_SIZE - 4096U));
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_SimtShareMemSizeOverflow)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+    kernel.SetKernelVfType_(static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY));
+    kernel.SetShareMemSize_(RT_SIMT_REMAIN_UB_SIZE + 1U);
+
+    size_t dynamicUbufSize = 0U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_FuncNullptr)
+{
+    size_t dynamicUbufSize = 0U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(nullptr, 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_OutputNullptr)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, nullptr);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_FlagsNotZero)
+{
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    size_t dynamicUbufSize = 0U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 1U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_ProgramNullptr)
+{
+    Kernel kernel("cpuKernelSo", "cpuFunctionName", "cpuOpType");
+
+    size_t dynamicUbufSize = 0U;
+    rtError_t error = rtFunctionGetAvailDynUbufPerBlock(static_cast<void *>(&kernel), 0U, &dynamicUbufSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_INTERNAL_ERROR);
 }
 
 TEST_F(ApiKernelTest, TestRtCheckArgsWithType_CpuKernelArgsArray)

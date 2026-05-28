@@ -41,6 +41,7 @@
 - [`aclError aclrtFunctionGetBinary(const aclrtFuncHandle funcHandle, aclrtBinHandle *binHandle)`](#aclrtFunctionGetBinary)：根据核函数句柄获取算子二进制句柄。
 - [`aclError aclrtFunctionGetParamCount(const void *func, size_t *paramCount)`](#aclrtFunctionGetParamCount)：从核函数句柄获取参数个数。
 - [`aclError aclrtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize)`](#aclrtFunctionGetParamInfo)：根据索引从核函数句柄获取参数信息。
+- [`aclError aclrtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)`](#aclrtFunctionGetAvailDynUbufPerBlock)：从核函数句柄获取每个Block可用的动态UB buffer大小。
 
 ## 概念及使用说明
 
@@ -1685,3 +1686,46 @@ aclError aclrtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25_数据类型及其操作接口.md#aclError)。
 
+
+<br>
+<br>
+<br>
+
+
+
+<a id="aclrtFunctionGetAvailDynUbufPerBlock"></a>
+
+## aclrtFunctionGetAvailDynUbufPerBlock
+
+```c
+aclError aclrtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+```
+
+### 产品支持情况
+
+
+| 产品 | 是否支持 |
+| --- | :---: |
+| Ascend 950PR/Ascend 950DT | √ |
+| Atlas A3 训练系列产品/Atlas A3 推理系列产品 | √ |
+| Atlas A2 训练系列产品/Atlas A2 推理系列产品 | √ |
+
+### 功能说明
+
+对于SIMT（Single Instruction Multiple Thread）核函数，本接口通过dynamicUbufSize输出Kernel Launch前可设置的最大动态UB buffer大小。
+
+对于非SIMT核函数，本接口返回成功，且`dynamicUbufSize`固定为0。
+
+
+### 参数说明
+
+
+| 参数名 | 输入/输出 | 说明 |
+| --- | :---: | --- |
+| func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)，不能为空。 |
+| flags | 输入 | 预留参数，当前固定配置为0。 |
+| dynamicUbufSize | 输出 | 每个Block可用的动态UB buffer大小，单位为Byte，不能为空。 |
+
+### 返回值说明
+
+返回0表示成功，返回其他值表示失败，请参见[aclError](25_数据类型及其操作接口.md#aclError)。

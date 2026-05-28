@@ -810,6 +810,8 @@ private:
     rtError_t FunctionGetParamCount(const Kernel *funcHandle, size_t *paramCount) override;
     rtError_t FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIndex,
                                    size_t *paramOffset, size_t *paramSize) override;
+    rtError_t FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags,
+                                              size_t *dynamicUbufSize) override;
     rtError_t GetAtomicDevProperties(uint32_t* capabilities, uint32_t count, DevProperties& prop);
     void FillAtomicCapabilities(uint32_t* capabilities, const rtAtomicOperation* operations, uint32_t count,
                                 const uint32_t* sourceCapabilities);
