@@ -255,9 +255,11 @@ void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
     sqe->task_type = TS_TASK_TYPE_FLIP;
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe->u.flip_task_info.flipNumReport = flipTaskInfo->flipNumReport;
+    sqe->u.flip_task_info.streamId = flipTaskInfo->streamId;
+    sqe->u.flip_task_info.subType = flipTaskInfo->subType;
     PrintSqe(command, "FlipTask");
-    RT_LOG(RT_LOG_INFO, "launch FlipTask succ, sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, flip_num=%u.",
-           sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, flipTaskInfo->flipNumReport);
+    RT_LOG(RT_LOG_INFO, "launch FlipTask succ, sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, flip_num=%u, sub_type=%u.",
+           sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, flipTaskInfo->flipNumReport, sqe->u.flip_task_info.subType);
 }
 #endif
 

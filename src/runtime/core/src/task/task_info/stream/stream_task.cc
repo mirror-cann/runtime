@@ -467,18 +467,71 @@ void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t *const comman
 #endif
 
 #if F_DESC("FlipTask")
-void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum)
+void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum, const uint16_t streamId, const uint16_t subType)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_FLIP;
     taskInfo->typeName = "FLIP_TASK";
     taskInfo->u.flipTask.flipNumReport = flipNum;
+    taskInfo->u.flipTask.streamId = streamId;
+    taskInfo->u.flipTask.subType = subType;
     return;
 }
 
 void ToCmdBodyForFlipTask(TaskInfo *const taskInfo, rtCommand_t *const command)
 {
     command->u.flipTask.flipNumReport = taskInfo->u.flipTask.flipNumReport;
+}
+
+rtError_t SendFlipTaskWithStreamId(Stream *stream)
+{
+    if (!stream->IsSoftwareSqEnable() || !Runtime::Instance()->GetTrackProfFlag()) {
+        RT_LOG(RT_LOG_DEBUG, "TrackProfFlag is false or stream is not in aclgraph scenario, stream_id=%d", stream->Id_());
+        return RT_ERROR_NONE;
+    }
+
+    Device *dev = stream->Device_();
+    NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
+    if (!dev->CheckFeatureSupport(TS_FEATURE_FLIP_TASK_WITH_STREAM_ID)) {
+        RT_LOG(RT_LOG_DEBUG, "TS not support stream destroy flip task, stream_id=%d", stream->Id_());
+        return RT_ERROR_NONE;
+    }
+    Stream *ctrlStream = dev->GetCtrlStream(stream);
+    if (ctrlStream == nullptr) {
+        RT_LOG(RT_LOG_WARNING, "CtrlStream is null, stream_id=%d", stream->Id_());
+        return RT_ERROR_STREAM_NULL;
+    }
+
+    rtError_t errorReason;
+    TaskInfo taskTmp = {};
+    TaskInfo *flipTask = ctrlStream->AllocTask(&taskTmp, TS_TASK_TYPE_FLIP, errorReason, 1U,
+                                                UpdateTaskFlag::NOT_SUPPORT_AND_SKIP);
+    if (flipTask == nullptr) {
+        RT_LOG(RT_LOG_WARNING, "Alloc flip task on ctrl stream failed for stream_id=%d", stream->Id_());
+        return errorReason;
+    }
+
+    FlipTaskInit(flipTask, RT_MILAN_TASK_ID_MAX, static_cast<uint16_t>(stream->Id_()), RT_FLIP_TASK_STREAM_ID);
+    rtError_t error = dev->SubmitTask(flipTask);
+    if (error != RT_ERROR_NONE) {
+        (void)dev->GetTaskFactory()->Recycle(flipTask);
+        RT_LOG(RT_LOG_WARNING, "Submit destroy flip task on ctrl stream failed, "
+               "stream_id=%d, flipNum=%hu, retCode=%#x",
+               stream->Id_(), flipTask->u.flipTask.flipNumReport, static_cast<uint32_t>(error));
+        return error;
+    }
+    RT_LOG(RT_LOG_INFO, "Task send succ.");
+    error = ctrlStream->Synchronize(false);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_WARNING, "Sync ctrl stream after flip task failed, "
+               "stream_id=%d, ctrl_stream_id=%d, retCode=%#x.",
+               stream->Id_(), ctrlStream->Id_(), static_cast<uint32_t>(error));
+        return error;
+    }
+    RT_LOG(RT_LOG_INFO, "sync succ, stream_id=%d, ctrl_stream_id=%d, task_id=%hu, device_id=%u",
+        stream->Id_(), ctrlStream->Id_(), flipTask->id, dev->Id_());
+
+    return RT_ERROR_NONE;
 }
 #endif
 

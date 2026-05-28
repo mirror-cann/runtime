@@ -40,10 +40,11 @@ void ToCmdBodyForSetStreamModeTask(TaskInfo* taskInfo, rtCommand_t *const comman
 rtError_t CallbackLaunchTaskInit(TaskInfo* taskInfo, const rtCallback_t callBackFunction, void *const functionData,
                                  const bool isBlockFlag, const int32_t evtId);
 void ToCmdBodyForCallbackLaunchTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum);
+void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum, const uint16_t streamId = 0U, const uint16_t subType = 0U);
 void ToCmdBodyForFlipTask(TaskInfo *const taskInfo, rtCommand_t *const command);
 rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo * const updateTask, void * const updateArgHandle = nullptr);
 void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t *const command);
+rtError_t SendFlipTaskWithStreamId(Stream *stream);
 }  // namespace runtime
 }  // namespace cce
 #endif  // RUNTIME_STREAM_TASK_H

@@ -441,6 +441,8 @@ struct DebugRegisterForStreamTaskInfo {
 
 struct FlipTaskInfo {
     uint16_t flipNumReport;
+    uint16_t subType;       // 0：使用当前流的streamId上报, 1：使用task中携带的streamId上报
+    uint32_t streamId;
 };
 
 // Add place holder sq lock/unlock task info.

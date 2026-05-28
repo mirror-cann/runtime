@@ -104,6 +104,7 @@ typedef enum {
     TS_FEATURE_MEM_WAIT_PROF = 47,
     TS_FEATURE_QUERY_STREAM_OVERFLOW_STATUS = 48, // support query overflow bit
     TS_FEATURE_AICORE_TIMEOUT_DFX = 49,
+    TS_FEATURE_FLIP_TASK_WITH_STREAM_ID = 50,
 } rtTschFeature;
 
 typedef enum {

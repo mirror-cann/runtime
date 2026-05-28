@@ -2609,3 +2609,132 @@ TEST_F(StreamTest, rtsLaunchHostFunc00)
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
+
+TEST_F(StreamTest, SendFlipTaskWithStreamId_SuccessPath)
+{
+    RawDevice* stubDevice = new RawDevice(0);
+    rtError_t error = stubDevice->Init();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
+    stream->streamId_ = 1;
+    stream->device_ = stubDevice;
+    Stream* ctrlStream = new Stream((Device*)stubDevice, 0);
+    ctrlStream->streamId_ = 2;
+    ctrlStream->device_ = stubDevice;
+    TaskInfo flipTask = {};
+    TaskInfo* flipTaskPtr = &flipTask;
+    flipTask.type = TS_TASK_TYPE_FLIP;
+    flipTask.stream = ctrlStream;
+    Runtime::Instance()->SetTrackProfFlag(true);
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
+    .stubs()
+    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::GetCtrlStream)
+        .stubs()
+        .with(mockcpp::any())
+        .will(returnValue(ctrlStream));
+    MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(flipTaskPtr));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::SubmitTask)
+        .stubs()
+        .with(mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(ctrlStream, &Stream::Synchronize)
+        .stubs()
+        .with(mockcpp::eq(false), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
+    stream->SetTaskIdFlipNum(10U);
+    stream->SetSoftWareSqEnable();
+    rtError_t ret = SendFlipTaskWithStreamId(stream);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+    EXPECT_EQ(flipTaskPtr->type, TS_TASK_TYPE_FLIP);
+    EXPECT_EQ(flipTaskPtr->u.flipTask.streamId, static_cast<uint16_t>(stream->Id_()));
+    EXPECT_EQ(flipTaskPtr->u.flipTask.subType, 1U);
+    Runtime::Instance()->SetTrackProfFlag(false); // 恢复默认值
+    DELETE_O(stream);
+    DELETE_O(ctrlStream);
+    DELETE_O(stubDevice);
+    GlobalMockObject::verify();
+}
+
+TEST_F(StreamTest, SendFlipTaskWithStreamId_GateCond2_TsNotSupport)
+{
+    RawDevice* stubDevice = new RawDevice(0);
+    rtError_t error = stubDevice->Init();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
+    stream->streamId_ = 1;
+    stream->device_ = stubDevice;
+    Runtime::Instance()->SetTrackProfFlag(true);
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
+    .stubs()
+    .will(returnValue(false));
+    rtError_t ret = SendFlipTaskWithStreamId(stream);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+    Runtime::Instance()->SetTrackProfFlag(false);
+    DELETE_O(stream);
+    DELETE_O(stubDevice);
+    GlobalMockObject::verify();
+}
+
+TEST_F(StreamTest, SendFlipTaskWithStreamId_CtrlStreamNull)
+{
+    RawDevice* stubDevice = new RawDevice(0);
+    rtError_t error = stubDevice->Init();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
+    stream->streamId_ = 1;
+    stream->device_ = stubDevice;
+    Runtime::Instance()->SetTrackProfFlag(true);
+    stream->SetStreamCacheOpInfoSwitch(1U);
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
+    .stubs()
+    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::GetCtrlStream)
+        .stubs()
+        .with(mockcpp::any())
+        .will(returnValue(static_cast<Stream*>(nullptr)));
+    stream->SetSoftWareSqEnable();
+    rtError_t ret = SendFlipTaskWithStreamId(stream);
+    EXPECT_EQ(ret, RT_ERROR_STREAM_NULL);
+    Runtime::Instance()->SetTrackProfFlag(false);
+    DELETE_O(stream);
+    DELETE_O(stubDevice);
+    GlobalMockObject::verify();
+}
+
+TEST_F(StreamTest, SendFlipTaskWithStreamId_AllocTaskFail)
+{
+    RawDevice* stubDevice = new RawDevice(0);
+    rtError_t error = stubDevice->Init();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
+    stream->streamId_ = 1;
+    stream->device_ = stubDevice;
+    Stream* ctrlStream = new Stream((Device*)stubDevice, 0);
+    ctrlStream->streamId_ = 2;
+    ctrlStream->device_ = stubDevice;
+    Runtime::Instance()->SetTrackProfFlag(true);
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
+    .stubs()
+    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::GetCtrlStream)
+        .stubs()
+        .with(mockcpp::any())
+        .will(returnValue(ctrlStream));
+    MOCKER_CPP(&Stream::AllocTask)
+        .stubs()
+        .with(mockcpp::any(),
+              mockcpp::any(),
+              outBound(RT_ERROR_TASK_NOT_SUPPORT),
+              mockcpp::any(),
+              mockcpp::any())
+        .will(returnValue(static_cast<TaskInfo*>(nullptr)));
+    stream->SetSoftWareSqEnable();
+    rtError_t ret = SendFlipTaskWithStreamId(stream);
+    EXPECT_NE(ret, RT_ERROR_NONE);
+    Runtime::Instance()->SetTrackProfFlag(false);
+    DELETE_O(stream);
+    DELETE_O(ctrlStream);
+    DELETE_O(stubDevice);
+    GlobalMockObject::verify();
+}
