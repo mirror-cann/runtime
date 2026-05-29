@@ -125,7 +125,7 @@
       "errClass": "AI CPU Errors",
       "errTitle": "Execution_Error_AICPU_Operator_Timeout",
       "ErrCode": "E30008",
-      "ErrMessage": "AI CPU operator execution timed out. %s.",
+      "ErrMessage": "AI CPU operator execution timed out. %s",
       "Arglist": "extend_info",
       "suggestion": {
         "Possible Cause": "1. For a GetNext operator, its preprocessing time may be too long. 2. For a custom operator, it contains an ultra-large loop in the implementation logic or its input and output shapes are too large. 3. The input and output shapes of a built-in operator are too large.",

@@ -995,7 +995,7 @@ static void PrintAicpuErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
     if ((taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) && (taskInfo->errorCode == TS_ERROR_AICPU_TIMEOUT)) {
         const std::string errMsg = "The AI CPU operator " + kernelName + " that times out is on device " +
             std::to_string(devId) + " stream " + std::to_string(streamId) + ". The task ID is " + std::to_string(taskId) +
-            ", the so name is " + soName + ", and the entry function for executing this AI CPU operator is " + funcName;
+            ", the so name is " + soName + ", and the entry function for executing this AI CPU operator is " + funcName + ".";
         RT_LOG_OUTER_MSG(RT_AICPU_TIMEOUT_ERROR, "%s", errMsg.c_str());
     } else {
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "AI CPU kernel execution failed, device_id=%u, stream_id=%d, "

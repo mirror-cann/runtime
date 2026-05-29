@@ -536,11 +536,11 @@ bool RawDevice::IsSupportFeature(RtOptionalFeatureType f) const
 rtError_t RawDevice::Init()
 {
     rtError_t error = InitRawDriver();
-    ERROR_RETURN_MSG_INNER(error, "Failed to init RawDriver, device_id=%u, retCode=%#x",
+    ERROR_RETURN_MSG_INNER(error, "Failed to init RawDriver, device_id=%u, retCode=%#x.",
         deviceId_, static_cast<uint32_t>(error));
 
     error = InitStreamSyncEsched();
-    ERROR_RETURN_MSG_INNER(error, "Failed to init StreamSyncEsched, retCode=%#x", static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "Failed to init StreamSyncEsched, retCode=%#x.", static_cast<uint32_t>(error));
 
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
 

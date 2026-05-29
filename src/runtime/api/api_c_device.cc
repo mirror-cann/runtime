@@ -563,7 +563,7 @@ rtError_t rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureType, int32
     } else {
         RT_LOG_OUTER_MSG_INVALID_PARAM(
            devFeatureType,
-           "[RT_FEATURE_TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV, RT_DEV_FEATURE_MAX");
+           "[RT_FEATURE_TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV, RT_DEV_FEATURE_MAX)");
         return ACL_ERROR_RT_PARAM_INVALID;
     }
     return ACL_RT_SUCCESS;

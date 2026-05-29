@@ -303,7 +303,7 @@ rtError_t rtKernelLaunch(const void *stubFunc, uint32_t numBlocks, void *args, u
         const Runtime * const rtInstance = Runtime::Instance();
         NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
         Context * const curCtx = rtInstance->CurrentContext();
-        COND_RETURN_EXT_ERRCODE_AND_MSG_INNER(curCtx == nullptr, RT_ERROR_CONTEXT_NULL, "current context is nullptr");
+        COND_RETURN_EXT_ERRCODE_AND_MSG_INNER(curCtx == nullptr, RT_ERROR_CONTEXT_NULL, "Current context is a nullptr.");
         curStm = curCtx->DefaultStream_();
     }
 
@@ -491,7 +491,7 @@ rtError_t rtAicpuKernelLaunchExWithArgs(const uint32_t kernelType, const char_t 
         (kernelType != KERNEL_TYPE_AICPU) &&
         (kernelType != KERNEL_TYPE_AICPU_CUSTOM) &&
         (kernelType != KERNEL_TYPE_AICPU_KFC)) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(kernelType, "KERNEL_TYPE_FWK, KERNEL_TYPE_AICPU, KERNEL_TYPE_AICPU_CUSTOM, KERNEL_TYPE_AICPU_KFC");
+        RT_LOG_OUTER_MSG_INVALID_PARAM(kernelType, "KERNEL_TYPE_FWK, KERNEL_TYPE_AICPU, KERNEL_TYPE_AICPU_CUSTOM, or KERNEL_TYPE_AICPU_KFC");
         REPORT_FUNC_ERROR_REASON(RT_ERROR_INVALID_VALUE);
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
     }
@@ -1280,7 +1280,7 @@ rtError_t rtGetPriCtxByDeviceId(int32_t devId, rtContext_t *primaryCtx)
     const rtError_t error = rtInstance->ChgUserDevIdToDeviceId(static_cast<uint32_t>(devId), &realDeviceId);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     if (static_cast<uint32_t>(devId) >= RT_MAX_DEV_NUM) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Invalid device_id=%d, valid range is [0,%u)", devId,
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Invalid device_id=%d, valid range is [0,%u).", devId,
             RT_MAX_DEV_NUM);
         return ACL_ERROR_RT_PARAM_INVALID;
     }

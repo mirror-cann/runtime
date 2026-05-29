@@ -996,7 +996,7 @@ rtError_t ProcRingBufferTaskDavid(const Device *const dev, const void * const de
     ERROR_RETURN_MSG_INNER(error, "Failed to init create ringbuffer task, stream_id=%d, retCode=%#x.",
         stm->Id_(), static_cast<uint32_t>(error));
     error = DavidSendTask(tsk, stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, retCode=%#x", stm->Id_(),
+    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(),
         static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();

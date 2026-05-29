@@ -1231,3 +1231,15 @@ TEST_F(EventTestDavid, TestEventSynchronizeWithEventInModel)
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
+
+TEST_F(EventTestDavid, TestPrintErrorInfoForDavidEventWaitTaskWithAicpuTimeout)
+{
+    TaskInfo taskInfo = {};
+    InitByStream(&taskInfo, stream_);
+    taskInfo.errorCode = TS_ERROR_AICPU_TIMEOUT;
+    taskInfo.type = TS_TASK_TYPE_DAVID_EVENT_WAIT;
+    taskInfo.typeName = "EVENT_WAIT";
+    taskInfo.id = 1;
+    taskInfo.flipNum = 0;
+    PrintErrorInfoForDavidEventWaitTask(&taskInfo, 0);
+}

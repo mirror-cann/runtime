@@ -955,7 +955,7 @@ rtError_t rtStartADCProfiler(void **addr, uint32_t length)
 
     // minium 256k
     if ((length < minimum) || (length > maximum)) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Invalid length=%u, valid range=[%u, %u]", length, minimum, maximum);
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Invalid length=%u, valid range=[%u, %u].", length, minimum, maximum);
         REPORT_FUNC_ERROR_REASON(RT_ERROR_INVALID_VALUE);
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
     }
@@ -963,7 +963,7 @@ rtError_t rtStartADCProfiler(void **addr, uint32_t length)
     const rtMemType_t memType = rtInstance->GetTsMemType(MEM_REQUEST_FEATURE_DEFAULT, static_cast<uint64_t>(length));
     error = rtMalloc(addr, static_cast<uint64_t>(length), memType, MODULEID_RUNTIME);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Malloc memory failed, error=%d, length=%u", error, length);
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to malloc memory, error=%d, length=%u.", error, length);
         REPORT_FUNC_ERROR_REASON(RT_ERROR_MEMORY_ALLOCATION);
         return GetRtExtErrCodeAndSetGlobalErr((RT_ERROR_MEMORY_ALLOCATION));
     }
@@ -972,7 +972,7 @@ rtError_t rtStartADCProfiler(void **addr, uint32_t length)
     if (error != RT_ERROR_NONE) {
         (void)rtFree(*addr);
         *addr = nullptr;
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "AdcProfiler failed, error=%d, length=%u", error, length);
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "AdcProfiler failed, error=%d, length=%u.", error, length);
         ERROR_RETURN_WITH_EXT_ERRCODE(error);
     }
 
