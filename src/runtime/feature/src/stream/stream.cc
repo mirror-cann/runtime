@@ -1321,6 +1321,7 @@ rtError_t Stream::TearDown(const bool terminal, bool flag)
             static_cast<uint32_t>(error));
     }
 
+    (void)SendFlipTaskWithStreamId(this);
     // on stars, there is no need to send destroy task
     if (starsFlag || ((flags_ & RT_STREAM_CP_PROCESS_USE) != 0)) {
         const std::lock_guard<std::mutex> stmLock(persistentTaskMutex_);

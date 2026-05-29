@@ -229,9 +229,12 @@ struct RtMemCpyAsyncWithoutSdma {
     uint8_t reserved[24];
 };
 
+constexpr uint16_t RT_FLIP_TASK_STREAM_ID = 1U;
 struct RtFlipTaskTag {
     uint16_t flipNumReport;
-    uint8_t reserved[46];
+    uint16_t subType;       // 0：使用当前流的streamId上报, 1：使用task中携带的streamId上报
+    uint32_t streamId;
+    uint8_t reserved[40];
 };
 
 struct RtMemWaitTask {

@@ -367,7 +367,8 @@ rtError_t DebugRegisterForStreamTaskInit(TaskInfo* taskInfo, const uint32_t stmI
     const uint32_t curFlag);
 uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device * const dev);
 uint32_t CovertToFlipTaskId(const TaskInfo* const taskInfo, const uint32_t taskId);
-void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum);
+void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum, const uint16_t streamId = 0U, const uint16_t subType = 0U);
+rtError_t SendFlipTaskWithStreamId(Stream *stream);
 void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo);
 
 // others

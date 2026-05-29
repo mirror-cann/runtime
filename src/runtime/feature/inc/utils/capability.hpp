@@ -102,6 +102,7 @@ typedef enum {
     TS_FEATURE_SOFTWARE_SQ_ENABLE = 45,
     TS_FEATURE_AICORE_NEVER_TIMEOUT = 46,
     TS_FEATURE_MEM_WAIT_PROF = 47,
+    TS_FEATURE_FLIP_TASK_WITH_STREAM_ID = 50,
 } rtTschFeature;
 
 typedef enum {
