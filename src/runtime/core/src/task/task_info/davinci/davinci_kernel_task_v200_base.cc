@@ -156,11 +156,9 @@ void ConstructDavidAICpuSqeForDavinciTaskBase(TaskInfo *const taskInfo, rtDavidS
 
 void StarsV2DoCompleteSuccessForDavinciTask(TaskInfo* taskInfo, const uint32_t devId)
 {
+    PreCheckTaskErr(taskInfo, devId);
     const uint32_t errorCode = taskInfo->errorCode;
     Stream * const stream = taskInfo->stream;
-
-    PreCheckTaskErr(taskInfo, devId);
-
     if ((errorCode != TS_ERROR_AICORE_OVERFLOW) && (errorCode != TS_ERROR_AIVEC_OVERFLOW) &&
         (errorCode != TS_ERROR_AICPU_OVERFLOW) && (errorCode != TS_ERROR_SDMA_OVERFLOW) && (errorCode != 0U)) {
         TaskFailCallBack(static_cast<uint32_t>(stream->Id_()), static_cast<uint32_t>(taskInfo->id),
