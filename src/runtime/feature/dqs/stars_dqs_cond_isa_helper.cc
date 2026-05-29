@@ -936,6 +936,8 @@ void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc &fc, const RtStarsDqsPrepareFc
 
     ConstructLLWI(r7, fcPara.csPtrOutputHeadPoolBaseAddr, fc.llwi16);
     ConstructLHWI(r7, fcPara.csPtrOutputHeadPoolBaseAddr, fc.lhwi16);
+    // r6 << 1: output_mbuf_head_pool_base_addr数组元素大小为8，r6 = (loop1_index * 4) * 2 = loop1_index * 8
+    ConstructOpImmSlli(r6, r6, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI, fc.slli5);
     ConstructOpAdd(r7, r6, r7, fc.add5);
     // r7 = output_mbuf_head_pool_base_addr[i]
     ConstructLoad(r7, 0U, r7, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.load9);

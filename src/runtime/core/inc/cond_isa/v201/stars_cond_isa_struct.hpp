@@ -230,6 +230,7 @@ struct RtStarsDqsPrepareOutFc {
 
     RtStarsCondOpLLWI             llwi16;
     RtStarsCondOpLHWI             lhwi16;
+    RtStarsCondOpImmSLLI          slli5;
     RtStarsCondOpOp               add5;
     RtStarsCondOpLoad             load9;
 
