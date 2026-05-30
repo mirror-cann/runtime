@@ -654,6 +654,7 @@ const std::unordered_map<uint32_t,
 
 void GetDumpShape(const DumpInfoHead *dumpHead, std::vector<size_t> &shape)
 {
+    shape = {};
     COND_RETURN_VOID_AND_MSG_INNER(static_cast<size_t>(dumpHead->infoLen) < sizeof(DumpShapeInfo),
         "The value of dumpHead->infoLen %u must be greater than or equal to that of DumpShapeInfo %zu.",
         dumpHead->infoLen, sizeof(DumpShapeInfo));
