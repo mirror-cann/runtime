@@ -40,38 +40,42 @@ const std::set<int32_t> MEM_ERROR_CODE = {TS_ERROR_AICORE_MTE_ERROR,
 
 // FFTS 失败路径只做轻量可观测增强：围绕上报的 contextId 打印结构化摘要和原始 context，
 // 避免在正常路径引入额外观测开销。
+struct FftsPlusContextTypeName {
+    uint16_t contextType;
+    const char *name;
+};
+
 std::string GetFftsPlusContextTypeName(const uint16_t contextType)
 {
-    switch (contextType) {
-        case RT_CTX_TYPE_AICORE:
-            return "AICORE";
-        case RT_CTX_TYPE_AIV:
-            return "AIV";
-        case RT_CTX_TYPE_MIX_AIC:
-            return "MIX_AIC";
-        case RT_CTX_TYPE_MIX_AIV:
-            return "MIX_AIV";
-        case RT_CTX_TYPE_SDMA:
-            return "SDMA";
-        case RT_CTX_TYPE_NOTIFY_WAIT:
-            return "NOTIFY_WAIT";
-        case RT_CTX_TYPE_NOTIFY_RECORD:
-            return "NOTIFY_RECORD";
-        case RT_CTX_TYPE_WRITE_VALUE:
-            return "WRITE_VALUE";
-        case RT_CTX_TYPE_AICPU:
-            return "AICPU";
-        case RT_CTX_TYPE_COND_SWITCH:
-            return "COND_SWITCH";
-        case RT_CTX_TYPE_CASE_SWITCH:
-            return "CASE_SWITCH";
-        case RT_CTX_TYPE_LABEL:
-            return "LABEL";
-        case RT_CTX_TYPE_DSA:
-            return "DSA";
-        default:
-            return "UNKNOWN";
+    static constexpr FftsPlusContextTypeName fftsPlusContextTypeNames[] = {
+        {RT_CTX_TYPE_AICORE, "AICORE"},
+        {RT_CTX_TYPE_AIV, "AIV"},
+        {RT_CTX_TYPE_MIX_AIC, "MIX_AIC"},
+        {RT_CTX_TYPE_MIX_AIV, "MIX_AIV"},
+        {RT_CTX_TYPE_SDMA, "SDMA"},
+        {RT_CTX_TYPE_NOTIFY_WAIT, "NOTIFY_WAIT"},
+        {RT_CTX_TYPE_NOTIFY_RECORD, "NOTIFY_RECORD"},
+        {RT_CTX_TYPE_WRITE_VALUE, "WRITE_VALUE"},
+        {RT_CTX_TYPE_FLUSH_DATA, "FLUSH_DATA"},
+        {RT_CTX_TYPE_INVALIDATE_DATA, "INVALIDATE_DATA"},
+        {RT_CTX_TYPE_WRITEBACK_DATA, "WRITEBACK_DATA"},
+        {RT_CTX_TYPE_AICPU, "AICPU"},
+        {RT_CTX_TYPE_COND_SWITCH, "COND_SWITCH"},
+        {RT_CTX_TYPE_CASE_SWITCH, "CASE_SWITCH"},
+        {RT_CTX_TYPE_AT_START, "AT_START"},
+        {RT_CTX_TYPE_AT_END, "AT_END"},
+        {RT_CTX_TYPE_LABEL, "LABEL"},
+        {RT_CTX_TYPE_PERSISTENT_CACHE, "PERSISTENT_CACHE"},
+        {RT_CTX_TYPE_DSA, "DSA"},
+        {RT_CTX_TYPE_WRITE_VALUE_RDMA, "WRITE_VALUE_RDMA"},
+    };
+
+    for (const auto &contextTypeName : fftsPlusContextTypeNames) {
+        if (contextTypeName.contextType == contextType) {
+            return contextTypeName.name;
+        }
     }
+    return "UNKNOWN";
 }
 
 rtError_t CopyFftsPlusContextToHost(TaskInfo *taskInfo, const uint32_t contextId, void *ctxInfo)

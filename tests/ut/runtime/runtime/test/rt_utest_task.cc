@@ -2846,6 +2846,38 @@ TEST_F(TaskTest, PrintErrorInfoForFftsPlusTaskUnknownErrTypeWithContextDetail)
     free(taskInfo.u.fftsPlusTask.descAlignBuf);
 }
 
+TEST_F(TaskTest, PrintErrorInfoForFftsPlusTaskUnknownContextTypeName)
+{
+    TaskInfo taskInfo = {};
+    InitByStream(&taskInfo, stream_);
+    taskInfo.id = 14U;
+    taskInfo.errorCode = 0x99U;
+    taskInfo.u.fftsPlusTask.descAlignBuf = malloc(kFftsContextLenForTest * 2U);
+    taskInfo.u.fftsPlusTask.descBufLen = kFftsContextLenForTest * 2U;
+    taskInfo.u.fftsPlusTask.errInfo = new std::vector<rtFftsPlusTaskErrInfo_t>();
+
+    rtFftsPlusTaskErrInfo_t info = {};
+    info.contextId = 1U;
+    info.threadId = 7U;
+    info.errType = ERROR_TYPE_BUTT + 5U;
+    taskInfo.u.fftsPlusTask.errInfo->push_back(info);
+
+    g_fftsMixCtxForTest = {};
+    g_fftsMixCtxForTest.contextType = static_cast<uint16_t>(0xFFFFU);
+    g_fftsMixCtxForTest.threadId = info.threadId;
+    g_fftsMixCtxForTest.threadDim = 16U;
+
+    g_fftsMemCopySyncCallCount = 0U;
+    MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::MemCopySync)
+        .expects(exactly(2))
+        .will(invoke(FftsMemCopySyncMixCtxStub));
+    PrintErrorInfoForFftsPlusTask(&taskInfo, stream_->Device_()->Id_());
+    EXPECT_EQ(g_fftsMemCopySyncCallCount, 2U);
+
+    delete taskInfo.u.fftsPlusTask.errInfo;
+    free(taskInfo.u.fftsPlusTask.descAlignBuf);
+}
+
 TEST_F(TaskTest, PrintErrorInfoForFftsPlusTaskSdmaContextCopyFail)
 {
     TaskInfo taskInfo = {};
