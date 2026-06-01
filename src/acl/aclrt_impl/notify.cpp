@@ -18,6 +18,10 @@
 #include "common/error_codes_inner.h"
 #include "common/prof_reporter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtCreateNotifyImpl(aclrtNotify *notify, uint64_t flag)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtCreateNotify);
@@ -267,3 +271,6 @@ aclError aclrtCntNotifyGetIdImpl(aclrtCntNotify cntNotify, uint32_t *notifyId)
     ACL_LOG_INFO("successfully execute aclrtCntNotifyGetId");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

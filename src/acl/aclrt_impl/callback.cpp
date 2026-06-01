@@ -23,6 +23,10 @@ namespace {
     constexpr uint32_t ACL_ERROR_INVALID_EXCEPTION_INFO = 0xFFFFFFFFU;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtSubscribeReportImpl(uint64_t threadId, aclrtStream stream)
 {
     ACL_LOG_INFO("start to execute aclrtSubscribeReport, threadId is %lu.", threadId);
@@ -245,3 +249,6 @@ aclError aclrtSetDeviceTaskAbortCallbackImpl(const char *regName, aclrtDeviceTas
     ACL_LOG_INFO("successfully execute aclrtSetDeviceTaskAbortCallback");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

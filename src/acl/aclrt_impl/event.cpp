@@ -19,6 +19,10 @@
 #include "common/prof_reporter.h"
 #include "common/resource_statistics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtCreateEventImpl(aclrtEvent *event)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtCreateEvent);
@@ -503,3 +507,6 @@ aclError aclrtIpcOpenEventHandleImpl(aclrtIpcEventHandle handle, aclrtEvent *eve
     ACL_LOG_INFO("successfully execute aclrtIpcOpenEventHandle.");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

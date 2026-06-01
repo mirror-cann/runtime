@@ -11,6 +11,10 @@
 #include "acl_rt_impl.h"
 #include "init_callback_manager.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclInitCallbackRegisterImpl(aclRegisterCallbackType type, aclInitCallbackFunc cbFunc, void *userData)
 {
     return acl::InitCallbackManager::GetInstance().RegInitCallback(type, cbFunc, userData);
@@ -30,3 +34,6 @@ aclError aclFinalizeCallbackUnRegisterImpl(aclRegisterCallbackType type, aclFina
 {
     return acl::InitCallbackManager::GetInstance().UnRegFinalizeCallback(type, cbFunc);
 }
+#ifdef __cplusplus
+}
+#endif

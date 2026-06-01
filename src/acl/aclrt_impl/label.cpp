@@ -15,6 +15,10 @@
 #include "common/error_codes_inner.h"
 #include "common/prof_reporter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtCreateLabelImpl(aclrtLabel *label)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtCreateLabel);
@@ -116,3 +120,6 @@ aclError aclrtSwitchLabelByIndexImpl(void *ptr, uint32_t maxValue, aclrtLabelLis
     ACL_LOG_INFO("successfully execute aclrtSwitchLabelByIndex");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

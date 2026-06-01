@@ -276,6 +276,10 @@ aclError aclrtMallocInnerWithCfg(void **devPtr, const size_t size, aclrtMemMallo
 }
 } // namespace acl
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtMallocImpl(void **devPtr, size_t size, aclrtMemMallocPolicy policy)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtMalloc);
@@ -2425,3 +2429,6 @@ aclError aclrtMemMapSelectedLinkImpl(void *virPtrDst, size_t size, void *virPtrS
     ACL_LOG_INFO("successfully execute aclrtMemMapSelectedLink");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

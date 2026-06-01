@@ -18,6 +18,10 @@
 #include "common/error_codes_inner.h"
 #include "common/prof_reporter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclmdlRIExecuteAsyncImpl(aclmdlRI modelRI, aclrtStream stream)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclmdlRIExecuteAsync);
@@ -471,3 +475,6 @@ aclError aclmdlRIDestroyUnregisterCallbackImpl(aclmdlRI modelRI, aclrtCallback f
 
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

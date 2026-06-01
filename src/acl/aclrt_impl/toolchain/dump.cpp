@@ -90,6 +90,10 @@ namespace acl {
     }
 } // namespace acl
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclmdlInitDumpImpl()
 {
     ACL_LOG_INFO("start to execute aclmdlInitDump.");
@@ -212,3 +216,6 @@ aclError aclmdlFinalizeDumpImpl()
     ACL_LOG_INFO("successfully execute aclmdlFinalizeDump, the dump task completed!");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

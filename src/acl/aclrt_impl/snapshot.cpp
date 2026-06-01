@@ -15,6 +15,10 @@
 #include "common/prof_reporter.h"
 #include "mmpa/mmpa_api.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtSnapShotProcessLockImpl(int pid, void* reserve)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtSnapShotProcessLock);
@@ -127,3 +131,6 @@ aclError aclrtSnapShotCallbackUnregisterImpl(aclrtSnapShotStage stage, aclrtSnap
     ACL_LOG_INFO("successfully execute aclrtSnapShotCallbackUnregister");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

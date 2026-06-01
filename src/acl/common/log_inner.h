@@ -105,8 +105,8 @@ public:
 } // namespace acl
 
 #if defined(__GNUC__) || defined(__clang__)
-#define LIKELY(expr) (static_cast<bool>(__builtin_expect(static_cast<bool>(expr), 1)))
-#define UNLIKELY(expr) (static_cast<bool>(__builtin_expect(static_cast<bool>(expr), 0)))
+#define LIKELY(expr)   (__builtin_expect(!!(expr), 1) != 0)
+#define UNLIKELY(expr) (__builtin_expect(!!(expr), 0) != 0)
 #else
 #define LIKELY(expr) (expr)
 #define UNLIKELY(expr) (expr)

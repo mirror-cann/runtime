@@ -197,6 +197,10 @@ aclError GetStrFromConfigPath(const char *configPath, std::string &configStr) {
 }
 } // namespace acl
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 const char *aclrtGetSocNameImpl()
 {
     ACL_LOG_INFO("start to execute aclrtGetSocName.");
@@ -225,3 +229,6 @@ aclError aclrtGetVersionImpl(int32_t *majorVersion, int32_t *minorVersion, int32
 
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

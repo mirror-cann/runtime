@@ -368,6 +368,10 @@ void GetAllPackageVersion()
 }
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclInitImpl(const char *configPath)
 {
     ACL_LOG_INFO("start to execute aclInit");
@@ -663,6 +667,9 @@ aclError aclFinalizeReferenceImpl(uint64_t *refCount)
     ACL_LOG_INFO("successfully execute aclFinalizeReference");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif
 
 bool IsFileExist(const std::string &path)
 {
@@ -787,6 +794,10 @@ aclError GetCANNVersionInternal(const aclCANNPackageName name, aclCANNPackageVer
     return ACL_SUCCESS;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclsysGetCANNVersionImpl(aclCANNPackageName name, aclCANNPackageVersion *version)
 {
     ACL_LOG_INFO("start to execute aclsysGetCANNVersion.");
@@ -828,6 +839,9 @@ aclError aclsysGetCANNVersionImpl(aclCANNPackageName name, aclCANNPackageVersion
     }
     return ret;
 }
+#ifdef __cplusplus
+}
+#endif
 
 bool GetPkgPath(const std::string &ascendInstallPath, std::string &pkgPath, const std::string &pkgPathKey)
 {
@@ -963,6 +977,10 @@ aclError GetPkgVersionContent(const char *pkgName, std::string &versionContent) 
     return ret;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclsysGetVersionStrImpl(char *pkgName, char *versionStr)
 {
     ACL_LOG_INFO("start to execute aclsysGetVersionStr.");
@@ -994,6 +1012,9 @@ aclError aclsysGetVersionStrImpl(char *pkgName, char *versionStr)
     ACL_LOG_INFO("aclsysGetVersionStr success. Pkg:[%s], Ver:[%s]", pkgName, versionStr);
     return ret;
 }
+#ifdef __cplusplus
+}
+#endif
 
 // Allowed format: "001", ".1", "-1"
 // Not allowed format: "..1", ".", "-a", "a"
@@ -1164,6 +1185,10 @@ aclError CalculateVersionNum(const std::string &verStr, int32_t *verNum) {
     return ACL_SUCCESS;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclsysGetVersionNumImpl(char *pkgName, int32_t *versionNum)
 {
     ACL_LOG_INFO("start to execute aclsysGetVersionNum.");
@@ -1185,6 +1210,9 @@ aclError aclsysGetVersionNumImpl(char *pkgName, int32_t *versionNum)
     ACL_LOG_INFO("aclsysGetVersionNum success. Pkg:[%s], Num:[%d]", pkgName, *versionNum);
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif
 
 static std::string GetFaultEventInfo()
 {
@@ -1221,6 +1249,10 @@ static std::string GetFaultEventInfo()
     faultInfo = "Fault diagnosis analysis: " + faultInfo;
     return faultInfo;
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *aclGetRecentErrMsgImpl()
 {
@@ -1326,3 +1358,6 @@ aclError aclGetDeviceCapabilityImpl(uint32_t deviceId, aclDeviceInfo deviceInfo,
     ACL_LOG_INFO("execute aclGetDeviceCapability successfully.");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

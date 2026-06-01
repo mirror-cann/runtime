@@ -13,6 +13,10 @@
 #include "acl_rt_impl.h"
 #include "common/log_inner.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void aclAppLogImpl(aclLogLevel logLevel, const char *func, const char *file, uint32_t line, const char *fmt, va_list args)
 {
     if ((fmt == nullptr) || (func == nullptr) || (file == nullptr)) {
@@ -38,3 +42,6 @@ void aclAppLogImpl(aclLogLevel logLevel, const char *func, const char *file, uin
     }
     return;
 }
+#ifdef __cplusplus
+}
+#endif

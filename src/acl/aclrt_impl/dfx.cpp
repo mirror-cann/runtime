@@ -17,6 +17,10 @@
 #include "common/prof_reporter.h"
 #include "common/resource_statistics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtProfTraceImpl(void *userdata, int32_t length, aclrtStream stream)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtProfTrace);
@@ -29,3 +33,6 @@ aclError aclrtProfTraceImpl(void *userdata, int32_t length, aclrtStream stream)
     }
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

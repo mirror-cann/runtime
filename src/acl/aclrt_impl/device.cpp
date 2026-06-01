@@ -45,6 +45,10 @@ namespace {
     }
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtSetDeviceImpl(int32_t deviceId)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtSetDevice);
@@ -681,3 +685,6 @@ aclError aclrtCheckArchCompatibilityImpl(const char *socVersion, int32_t *canCom
     ACL_LOG_INFO("successfully execute aclrtCheckArchCompatibility");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

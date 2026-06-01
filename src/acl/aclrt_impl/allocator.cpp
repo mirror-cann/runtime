@@ -44,6 +44,10 @@ std::mutex g_AllocatorDescMutex;
 std::map<aclrtStream, std::pair<aclrtAllocatorDesc, AllocatorDesc>> g_AllocatorDesMap;
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclrtAllocatorDesc aclrtAllocatorCreateDescImpl()
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtAllocatorCreateDesc);
@@ -184,3 +188,6 @@ aclError aclrtAllocatorUnregisterImpl(aclrtStream stream)
     ACL_LOG_INFO("Unregister external allocator success, stream %p.", stream);
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

@@ -54,6 +54,10 @@ static aclError FillAttrValue(const void *const src, const size_t srcLen, void *
 }
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtSetGroupImpl(int32_t groupId)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtSetGroup);
@@ -207,3 +211,6 @@ aclError aclrtGetGroupInfoDetailImpl(const aclrtGroupInfo *groupInfo, int32_t gr
     ACL_LOG_INFO("end to execute aclrtGetGroupInfoDetail, groupIndex = %d", groupIndex);
     return aclRet;
 }
+#ifdef __cplusplus
+}
+#endif

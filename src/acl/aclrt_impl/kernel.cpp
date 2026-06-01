@@ -35,6 +35,10 @@ static const std::map<aclDataType, rtRandomNumDataType> kMapDataType = {
 
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclrtBinary aclrtCreateBinaryImpl(const void *data, size_t dataLen)
 {
   ACL_ADD_APPLY_TOTAL_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_ALLOCATOR_BINARY_DESC);
@@ -912,3 +916,6 @@ aclError aclmdlRITaskGetTypeImpl(aclmdlRITask task, aclmdlRITaskType *type)
 
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

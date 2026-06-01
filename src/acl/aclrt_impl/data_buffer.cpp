@@ -15,6 +15,10 @@
 #include "common/prof_reporter.h"
 #include "acl_rt_impl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 size_t aclDataTypeSizeImpl(aclDataType dataType)
 {
     switch (dataType) {
@@ -105,3 +109,6 @@ size_t aclGetDataBufferSizeV2Impl(const aclDataBuffer *dataBuffer)
 
     return static_cast<size_t>(dataBuffer->length);
 }
+#ifdef __cplusplus
+}
+#endif

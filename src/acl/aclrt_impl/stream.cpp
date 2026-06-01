@@ -30,6 +30,10 @@ std::unordered_map<rtError_t, const char *> succStmSyncErrCodes = {
     {ACL_ERROR_RT_SOCKET_CLOSE, "socket close"}};
 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtCreateStreamImpl(aclrtStream *stream)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtCreateStream);
@@ -464,3 +468,6 @@ aclError aclmdlRIGetTasksByStreamImpl(aclrtStream stream, aclmdlRITask *tasks, u
 
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

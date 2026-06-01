@@ -22,6 +22,10 @@
 #include "common/resource_statistics.h"
 #include "utils/data_type_utils.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 aclError aclrtCreateContextImpl(aclrtContext *context, int32_t deviceId)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtCreateContext);
@@ -238,3 +242,6 @@ aclError aclrtGetPrimaryCtxStateImpl(int32_t deviceId, uint32_t *flags, int32_t 
     ACL_LOG_INFO("successfully execute aclrtGetPrimaryCtxState");
     return ACL_SUCCESS;
 }
+#ifdef __cplusplus
+}
+#endif

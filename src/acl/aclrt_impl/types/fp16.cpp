@@ -12,6 +12,10 @@
 #include "acl_rt_impl.h"
 #include "fp16_impl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 float aclFloat16ToFloatImpl(aclFloat16 value)
 {
     return acl::Fp16ToFloat(value);
@@ -21,3 +25,6 @@ aclFloat16 aclFloatToFloat16Impl(float value)
 {
     return acl::FloatToFp16(value);
 }
+#ifdef __cplusplus
+}
+#endif
