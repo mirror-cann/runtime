@@ -1794,7 +1794,6 @@ rtError_t Context::StartOnlineProf(Stream * const stm, const uint32_t sampleNum)
     rtError_t error;
     rtError_t freeErr;
     const void *deviceMem = nullptr;
-    const int32_t streamId = stm->Id_();
 
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
         (sampleNum == 0U) || (sampleNum > MAX_ONLINEPROF_NUM), RT_ERROR_INVALID_VALUE, sampleNum,
@@ -1802,7 +1801,7 @@ rtError_t Context::StartOnlineProf(Stream * const stm, const uint32_t sampleNum)
     if ((stm->Device_())->DevGetOnlineProfStart()) {
         RT_LOG_OUTER_MSG_WITH_FUNC(
             ErrorCode::EE1017, "stream",
-            "Stream " + std::to_string(streamId) + " online profiling has already been started on the device");
+            "Stream " + std::to_string(stm->Id_()) + " online profiling has already been started on the device");
         return RT_ERROR_PROF_START;
     }
 
