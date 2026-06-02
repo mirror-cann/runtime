@@ -38,7 +38,7 @@ BinaryLoader::BinaryLoader(const char_t * const binPath, const rtLoadBinaryConfi
 BinaryLoader::BinaryLoader(const void * const data, const uint64_t length,
                            const rtLoadBinaryConfig_t * const optionalCfg) :
                            loadOptions_(optionalCfg),
-                           binarySize_(static_cast<uint32_t>(length))
+                           binarySize_(static_cast<uint64_t>(length))
 {
     this->binaryBuffer_ = const_cast<void *>(data);
 }

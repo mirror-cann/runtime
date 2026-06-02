@@ -4666,7 +4666,7 @@ rtError_t Runtime::GetElfOffset(void * const elfData, const uint32_t elfLen, uin
 
 // 调用方保证binFileName路径是realpath标准化之后的路径
 rtError_t Runtime::GetKernelBinByFileName(const char_t *const binFileName,
-                                         char_t **const buffer, uint32_t *length) const
+                                         char_t **const buffer, uint64_t *length) const
 {
     *length = 0U;
     std::ifstream file(binFileName, std::ios::binary | std::ios::in);
@@ -4677,7 +4677,7 @@ rtError_t Runtime::GetKernelBinByFileName(const char_t *const binFileName,
     const std::streampos begin = file.tellg();
     (void)file.seekg(0, std::ios::end);
     const std::streampos end = file.tellg();
-    const uint32_t filelength = static_cast<uint32_t>(end - begin);
+    const uint64_t filelength = static_cast<uint64_t>(end - begin);
     if (filelength == 0U) {
         file.close();
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "File %s is empty.", binFileName);
@@ -4747,7 +4747,7 @@ rtError_t Runtime::GetKernelBin(const char_t *const binFileName,
     }
 
     RT_LOG(RT_LOG_INFO, "kernel bin full path:%s", binRealPath.c_str());
-    return GetKernelBinByFileName(binRealPath.c_str(), buffer, length);
+    return GetKernelBinByFileName(binRealPath.c_str(), buffer, RtPtrToPtr<uint64_t *>(length));
 }
 
 rtError_t Runtime::GetBinBuffer(const rtBinHandle binHandle, const rtBinBufferType_t type, void **bin,

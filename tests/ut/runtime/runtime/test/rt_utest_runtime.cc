@@ -640,12 +640,34 @@ TEST_F(RuntimeTest, RuntimeGetKernelBinTest)
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
 }
 
+TEST_F(RuntimeTest, GetKernelBin_Success)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    static char envPath[] = "/usr/lib:/tmp/rt_fwkacllib/lib64:/usr/local/lib";
+    system("mkdir -p /tmp/rt_fwkacllib/lib64");
+    std::ofstream ofs("/tmp/rt_fwkacllib/lib64/test.bin", std::ios::binary);
+    ofs << "test";
+    ofs.close();
+    MOCKER(getenv).stubs().will(returnValue(static_cast<char*>(envPath)));
+    char_t *buffer = nullptr;
+    uint32_t length = 0;
+    rtError_t ret = rtInstance->GetKernelBin("test.bin", &buffer, &length);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+    EXPECT_NE(buffer, nullptr);
+    if (buffer != nullptr) {
+        rtInstance->FreeKernelBin(buffer);
+    }
+    unlink("/tmp/rt_fwkacllib/lib64/test.bin");
+    unlink("/tmp/rt_fwkacllib/lib64");
+    unlink("/tmp/rt_fwkacllib");
+}
+
 TEST_F(RuntimeTest, GetKernelBinByFileName_test)
 {
     Runtime *rtInstance = (Runtime *)Runtime::Instance();
     char_t *binFileName = "llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o";
     char_t *buffer = nullptr;
-    uint32_t length;
+    uint64_t length;
     rtError_t ret = rtInstance->GetKernelBinByFileName(binFileName, &buffer, &length);
     ret = rtInstance->FreeKernelBin(buffer);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -772,7 +794,7 @@ TEST_F(RuntimeTest, GetKernelBinByFileName_EmptyFile)
     ofs.close();
 
     char_t *buffer = nullptr;
-    uint32_t length = 0;
+    uint64_t length = 0;
     EXPECT_EQ(rtInstance->GetKernelBinByFileName(emptyFile.c_str(), &buffer, &length), RT_ERROR_INVALID_VALUE);
     std::remove(emptyFile.c_str());
 }

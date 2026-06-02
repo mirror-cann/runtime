@@ -525,7 +525,7 @@ public:
     rtError_t RegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc callback) override;
     rtError_t UnRegKernelLaunchFillFunc(const char* symbol) override;
     rtError_t ExeCallbackFillFunc(std::string symbol, void *cfgAddr, uint32_t size);
-    rtError_t GetKernelBinByFileName(const char_t *const binFileName, char_t **const buffer, uint32_t *length) const;
+    rtError_t GetKernelBinByFileName(const char_t *const binFileName, char_t **const buffer, uint64_t *length) const;
     rtError_t GetTilingValue(const std::string &kernelInfoExt, uint64_t &tilingValue) const;
     std::string GetTilingKeyFromKernel(const std::string &kernelName, uint8_t &mixType) const;
     void ReportSoftwareSqEnableToMsprof(void) const;

@@ -49,7 +49,7 @@ private:
     bool isLoadFromFile_ = false;
 
     void *binaryBuffer_ = nullptr;
-    uint32_t binarySize_ = 0;
+    uint64_t binarySize_ = 0;
     uint32_t magic_ = 0;
     bool isLazyLoad_ = false;
 
