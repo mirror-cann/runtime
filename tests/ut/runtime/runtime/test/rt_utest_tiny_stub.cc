@@ -50,6 +50,7 @@
 #include "capture_model_utils.hpp"
 #include "device_snapshot.hpp"
 #include "snapshot_process_helper.hpp"
+#include "snapshot_callback_manager.hpp"
 #include "notify.hpp"
 #include "event.hpp"
 #undef protected
@@ -685,6 +686,10 @@ TEST_F(TinyStubTest, npu_snapshot_stub)
     rtProcessState state;
     ret = rtSnapShotProcessGetState(&state);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    ret = rtSnapShotCallbackRegister(RT_SNAPSHOT_LOCK_PRE, nullptr, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    ret = rtSnapShotCallbackUnregister(RT_SNAPSHOT_LOCK_PRE, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(TinyStubTest, printf_stub)
@@ -856,6 +861,21 @@ TEST_F(TinyStubTest, snapshot_process_helper_stub)
 
     ret = SnapShotAclGraphRestore(nullptr);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = SnapShotProcessBackup();
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = SnapShotProcessRestore();
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = ModelBackup(0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = ModelRestore(0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = SinkTaskMemoryBackup(0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(TinyStubTest, capture_model_execute_stub)
@@ -1015,6 +1035,21 @@ TEST_F(TinyStubTest, device_snapshot_stub)
     TaskHandlers::HandleRdmaPiValueModify(nullptr, nullptr);
     TaskHandlers::HandleStreamActive(nullptr, nullptr);
     TaskHandlers::HandleModelTaskUpdate(nullptr, nullptr);
+}
+
+TEST_F(TinyStubTest, snapshot_callback_manager_stub)
+{
+    SnapshotCallbackManager &manager = SnapshotCallbackManager::GetInstance();
+    EXPECT_NE(&manager, nullptr);
+
+    rtError_t ret = manager.RegisterCallback(RT_SNAPSHOT_LOCK_PRE, nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = manager.UnregisterCallback(RT_SNAPSHOT_LOCK_PRE, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = manager.InvokeCallbacks(RT_SNAPSHOT_LOCK_PRE);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(TinyStubTest, model_aclgraph_stub)

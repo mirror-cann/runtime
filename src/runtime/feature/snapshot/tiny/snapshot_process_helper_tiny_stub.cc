@@ -24,5 +24,11 @@ rtError_t SnapShotProcessBackup() { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
 rtError_t SnapShotProcessRestore() { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
+rtError_t ModelBackup(const int32_t devId) { UNUSED(devId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+
+rtError_t ModelRestore(const int32_t devId) { UNUSED(devId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+
+rtError_t SinkTaskMemoryBackup(const int32_t devId) { UNUSED(devId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+
 }
 }

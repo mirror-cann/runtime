@@ -382,6 +382,7 @@ set(runtimeut_src_tiny_exclude_list
     ${TOP_DIR}/src/runtime/feature/model/v100/capture_adapt.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/device_snapshot.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_process_helper.cc
+    ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_callback_manager.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/v100/device_snapshot_adapter.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/context_standard_soc_aclgraph.cc
     ${TOP_DIR}/src/runtime/feature/ffts/context_ffts_standard_soc.cc
@@ -440,6 +441,7 @@ set(runtimeut_src_tiny_include_list
     ${TOP_DIR}/src/runtime/feature/model/tiny/model_aclgraph_tiny_stub.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/tiny/device_snapshot_tiny_stub.cc
     ${TOP_DIR}/src/runtime/feature/snapshot/tiny/snapshot_process_helper_tiny_stub.cc
+    ${TOP_DIR}/src/runtime/feature/snapshot/tiny/snapshot_callback_manager_tiny_stub.cc
     ${TOP_DIR}/src/runtime/feature/ffts/context_ffts_tiny_stub.cc
     ${TOP_DIR}/src/runtime/core/src/dfx/printf_tiny_stub.cc
     ${TOP_DIR}/src/runtime/core/src/dfx/kernel_dfx_info.cc

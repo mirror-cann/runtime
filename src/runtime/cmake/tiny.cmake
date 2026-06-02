@@ -168,6 +168,7 @@ set(libruntime_src_files_include_for_tiny
     ${RUNTIME_CORE_DIR}/src/engine/engine_factory_tiny_stub.cc
     ${RUNTIME_CORE_DIR}/src/kernel/binary_loader.cc
     ${RUNTIME_CORE_DIR}/src/kernel/json_parse.cc
+    ${RUNTIME_CORE_DIR}/src/kernel/symbol_table_tiny_stub.cc
     ${RUNTIME_CORE_DIR}/src/task/tiny/rdma_task_tiny_stub.cc
     ${RUNTIME_CORE_DIR}/src/kernel/funcsymbol_table_tiny_stub.cc
     ${RUNTIME_FEATURE_DIR}/ffts/ffts_task_tiny_stub.cc
@@ -177,6 +178,7 @@ set(libruntime_src_files_include_for_tiny
     ${RUNTIME_CORE_DIR}/src/launch/xpu_aicpu_c_stub.cc
     ${RUNTIME_FEATURE_DIR}/snapshot/tiny/device_snapshot_tiny_stub.cc
     ${RUNTIME_FEATURE_DIR}/snapshot/tiny/snapshot_process_helper_tiny_stub.cc
+    ${RUNTIME_FEATURE_DIR}/snapshot/tiny/snapshot_callback_manager_tiny_stub.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/tiny/capture_model_utils_tiny_stub.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/tiny/capture_model_tiny_stub.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/tiny/context_tiny_stub_aclgraph.cc
