@@ -71,7 +71,7 @@ void DqsFrameAlignTaskUnInit(TaskInfo * const taskInfo);
 
 template <typename T>
 void InitDqsFunctionCallSqe(
-    T &sqe, const bool isWrCqe, const int32_t streamId, const uint16_t taskId, const RtCondsSubType subType)
+    T &sqe, const bool isWrCqe, const uint32_t taskId, const RtCondsSubType subType)
 {
     sqe.header.type = RT_DAVID_SQE_TYPE_COND;
     sqe.header.lock = 0U;
@@ -85,7 +85,6 @@ void InitDqsFunctionCallSqe(
     sqe.header.headUpdate = 0U;
     sqe.header.reserved = 0U;
     sqe.header.blockDim = 0U;
-    sqe.header.rtStreamId = static_cast<uint16_t>(streamId);
     sqe.header.taskId = taskId;
     sqe.condsSubType = subType;
     sqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT;

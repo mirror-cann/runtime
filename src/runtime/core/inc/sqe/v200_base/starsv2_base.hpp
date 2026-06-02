@@ -34,8 +34,7 @@ struct rtDavidStarsSqeHeader_t {
     uint16_t blockDim;
 
     /* word1 */
-    uint16_t rtStreamId;
-    uint16_t taskId;
+    uint32_t taskId;
 };
 
 struct rtDavidStarsCommonSqe_t {

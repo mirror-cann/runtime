@@ -113,8 +113,7 @@ void ToConstructDavidSqe(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint
 // fusion ccu not use these following func
 void ConstructDavidSqeForWordOne(const TaskInfo *const taskInfo, rtDavidSqe_t * const sqe)
 {
-    sqe->commonSqe.sqeHeader.rtStreamId = static_cast<uint16_t>(taskInfo->taskSn & 0xFFFFULL);
-    sqe->commonSqe.sqeHeader.taskId = static_cast<uint16_t>((taskInfo->taskSn & 0xFFFF0000ULL) >> UINT16_BIT_NUM);
+    sqe->commonSqe.sqeHeader.taskId = taskInfo->taskSn;
 }
 
 void ConstructDavidSqeForHeadCommon(const TaskInfo *taskInfo, rtDavidSqe_t * const sqe)
@@ -124,8 +123,7 @@ void ConstructDavidSqeForHeadCommon(const TaskInfo *taskInfo, rtDavidSqe_t * con
     // and security functions are not required for evaluation.
     (void)memset_s(sqe, sizeof(rtDavidSqe_t), 0, sizeof(rtDavidSqe_t));
     sqe->commonSqe.sqeHeader.wrCqe = stream->GetStarsWrCqeFlag();
-    sqe->commonSqe.sqeHeader.rtStreamId = static_cast<uint16_t>(taskInfo->taskSn & 0xFFFFULL);
-    sqe->commonSqe.sqeHeader.taskId = static_cast<uint16_t>((taskInfo->taskSn & 0xFFFF0000ULL) >> UINT16_BIT_NUM);
+    sqe->commonSqe.sqeHeader.taskId = taskInfo->taskSn;
 }
 
 

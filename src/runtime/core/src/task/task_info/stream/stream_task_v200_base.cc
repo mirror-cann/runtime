@@ -84,8 +84,8 @@ void ConstructDavidSqeForStreamTagSetTask(TaskInfo * const taskInfo, rtDavidSqe_
 
     PrintDavidSqe(davidSqe, "StreamTagSetTask");
     RT_LOG(RT_LOG_INFO, "StreamTagSetTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, target_stream_id=%d, "
-        "sqe_stream_id=%hu, geOpTag=%u.", taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(),
-        taskInfo->id, taskInfo->taskSn, stmTagSetTsk->targetStm->Id_(), sqe->header.rtStreamId,
+        "sqe_task_id=%u, geOpTag=%u.", taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(),
+        taskInfo->id, taskInfo->taskSn, stmTagSetTsk->targetStm->Id_(), sqe->header.taskId,
         stmTagSetTsk->geOpTag);
 }
 

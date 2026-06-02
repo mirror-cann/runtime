@@ -81,8 +81,7 @@ static void FusionCcuSubSqeCommonInit(const rtCcuTaskInfo_t * const subInfo, con
     sqe->header.headUpdate = 0U;
     sqe->header.reserved = 0U;
     sqe->header.blockDim = 0U;
-    sqe->header.rtStreamId = static_cast<uint16_t>(taskInfo->taskSn & 0xFFFFULL);
-    sqe->header.taskId = static_cast<uint16_t>((taskInfo->taskSn & 0xFFFF0000ULL) >> UINT16_BIT_NUM);
+    sqe->header.taskId = taskInfo->taskSn;
 
     /* word2 */
     sqe->taskCnt = taskCnt - 1U;
