@@ -6057,7 +6057,7 @@ rtError_t ApiImpl::GetDevErrMsg(const rtGetMsgCallback callback)
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     Device * const dev = curCtx->Device_();
     rtError_t error = dev->GetDeviceStatus();
-    ERROR_RETURN(error, "device_id=%u, status=%#x is abnormal.", static_cast<uint32_t>(error));
+    ERROR_RETURN(error, "device_id=%u, status=%#x is abnormal.", dev->Id_(), static_cast<uint32_t>(error));
     // stars do nothing in device, so do not need to send task.
     COND_PROC((dev->IsStarsPlatform()),
         callback("", 0U);
