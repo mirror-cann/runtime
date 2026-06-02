@@ -88,7 +88,7 @@ int32_t MessageQueue::InitCqeBaseAddr()
 {
     cqeBaseAddr_ = MapResAddr(RES_ADDR_TYPE_STARS_TOPIC_CQE);
     if (cqeBaseAddr_ == nullptr) {
-        aicpusd_err("Get cqe base addr failed by nullptr");
+        aicpusd_err("Failed to get CQE base address: nullptr");
         return AICPU_SCHEDULE_ERROR_DRV_ERR;
     }
     aicpusd_info("Init cqe base addr success, va=0x%x", cqeBaseAddr_);

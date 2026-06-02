@@ -352,7 +352,7 @@ int32_t ComputeProcessMain(int32_t argc, char* argv[])
             deviceVec, pid, startParams.GetPidSign(), startParams.GetProfilingMode(),
             vfId, true, aicpuSchedMode, startParams.GetHostProcName());
         if (ret != AicpuSchedule::AICPU_SCHEDULE_OK) {
-            aicpusd_err("Aicpu schedule start failed, ret=%d", ret);
+            aicpusd_err("Aicpu scheduler start failed, ret=%d", ret);
             AicpuSchedule::ReportErrorMsg(ret, deviceId, static_cast<uint32_t>(pid), vfId);
             (void)AicpuSchedule::AicpuScheduleInterface::GetInstance().StopAICPUScheduler(deviceVec, pid);
             return -1;
