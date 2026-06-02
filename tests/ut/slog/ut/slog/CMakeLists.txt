@@ -13,6 +13,7 @@ set(ADX_SOURCE_PATH ${TOP_DIR}/src/dfx/adump)
 ###################################################################
 set(slogSrc
     ${LOG_SOURCE_PATH}/liblog/slog/alog_to_slog.c
+    ${LOG_SOURCE_PATH}/liblog/slog/plog/plog_callback.cpp
     ${LOG_SOURCE_PATH}/liblog/slog/slog_api.cpp
     ${LOG_SOURCE_PATH}/liblog/slog/dlog_core.c
     ${LOG_SOURCE_PATH}/liblog/slog/dlog_message.c
@@ -106,6 +107,7 @@ set(slogSrc
     # ${CMAKE_CURRENT_SOURCE_DIR}/testcase/slogd_app_log_watch_unittest.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/testcase/slogd_log_session_manage_unittest.cc
     # # ${CMAKE_CURRENT_SOURCE_DIR}/testcase/log_group_ut.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/testcase/plog_callback_utest.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/testcase/log_buffer_utest.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/testcase/log_hdc_server_ut.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/testcase/log_hdc_ut.cc
@@ -146,9 +148,11 @@ set(slogInc
     ${LOG_SOURCE_PATH}/syslog/common/pm
     ${LOG_SOURCE_PATH}/syslog/common/config
     ${LOG_SOURCE_PATH}/liblog/slog
+    ${LOG_SOURCE_PATH}/liblog/slog/plog
     ${LOG_SOURCE_PATH}/liblog/slog/dlog_communication
     ${LOG_SOURCE_PATH}/utils/log_buffer/
     ${CMAKE_CURRENT_SOURCE_DIR}/stub
+    ${TOP_DIR}/include/dfx/base
     ${ADX_SOURCE_PATH}/external
     ${ADX_SOURCE_PATH}/adcore
     ${ADX_SOURCE_PATH}/adcore/commopts

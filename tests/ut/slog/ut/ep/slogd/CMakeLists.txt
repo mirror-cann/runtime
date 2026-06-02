@@ -7,8 +7,8 @@
 # INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
-set(LOG_SOURCE_PATH ${TOP_DIR}/abl/slog)
-set(UT_SOURCE_PATH ${TOP_DIR}/llt/abl/slog/ut)
+set(LOG_SOURCE_PATH ${TOP_DIR}/src/dfx/log)
+set(UT_SOURCE_PATH ${TOP_DIR}/tests/ut/slog/ut)
 
 set(libSlogdSrc
     ${LOG_SOURCE_PATH}/syslog/slog/slogd_main.c
@@ -111,12 +111,10 @@ set(testSrc
 )
 
 set(libSlogdInc
-    ${TOP_DIR}/inc/driver
-    ${TOP_DIR}/abl/libc_sec/include
-    ${TOP_DIR}/runtime/src/dfx/adump/external
-    ${TOP_DIR}/runtime/src/dfx/adump/inc/adump
-    ${TOP_DIR}/abl/atrace/inc/trace_server
-    ${TOP_DIR}/abl/atrace/inc/utrace
+    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/src/dfx/adump/external
+    ${TOP_DIR}/src/dfx/adump/inc/adump
+    ${TOP_DIR}/pkg_inc/trace
     ${LOG_SOURCE_PATH}/syslog/slog
     ${LOG_SOURCE_PATH}/syslog/slog/log_server
     ${LOG_SOURCE_PATH}/syslog/slog/log_server/log_pre_process
@@ -155,6 +153,7 @@ set(libSlogdInc
 
 add_executable(ep_slogd_utest
     ${libSlogdSrc}
+    ${TOP_DIR}/tests/ut/slog/ut/slog/testcase/main.cc
     ${testSrc}
 )
 
@@ -198,13 +197,9 @@ set_target_properties(ep_slogd_utest
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
 )
 
-run_llt_test(
-    TARGET ep_slogd_utest
-    TASK_NUM 1
-)
-
 add_executable(ep_slogd_milan_utest
     ${libSlogdSrc}
+    ${TOP_DIR}/tests/ut/slog/ut/slog/testcase/main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/config/testcase/slogd_config_func_milan_utest.cc
 )
 
@@ -243,11 +238,6 @@ set_target_properties(ep_slogd_milan_utest
     PROPERTIES
     OUTPUT_NAME toolchain_ep_slogd_milan_utest
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-)
-
-run_llt_test(
-    TARGET ep_slogd_milan_utest
-    TASK_NUM 1
 )
 
 ###################################################################

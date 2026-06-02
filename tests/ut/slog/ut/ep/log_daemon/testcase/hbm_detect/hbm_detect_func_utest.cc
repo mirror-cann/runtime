@@ -53,7 +53,6 @@ protected:
 
 TEST(EP_HBM_DETECT_FUNC_UTEST, HbmDetectRunFree)
 {
-    EXPECT_EQ(0, HbmDetectServerInit(ServerCreateHbmDetectStub));
     OptHandle session = (OptHandle)0x123456;
     CommHandle handle = {COMM_HDC, session, COMPONENT_HBM_DETECT, -1, nullptr};
     AmlHbmDetectInfo info = { 0 };

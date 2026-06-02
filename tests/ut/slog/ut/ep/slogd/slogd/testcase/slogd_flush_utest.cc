@@ -62,7 +62,6 @@ TEST_F(SLOGD_FLUSH_UTEST, FlushDevice)
     LogFlushNode flushNode = {DEVICE_THREAD_TYPE, FIRMWARE_LOG_PRIORITY, TestFlush, NULL};
     EXPECT_EQ(LOG_SUCCESS, SlogdFlushRegister(&flushNode));
 
-    MOCKER(SlogdSyslogMgrInit).stubs().will(returnValue(LOG_SUCCESS));
     MOCKER(SlogdEventMgrInit).stubs().will(returnValue(LOG_SUCCESS));
     SlogdFlushInit();
     usleep(10 * 1000);

@@ -53,14 +53,14 @@ hdcError_t LogdrvHdcSend(HDC_SESSION session, struct drvHdcMsg *pMsg, UINT64 fla
 
 int32_t LogSetDfxParam(uint32_t devId, uint32_t channelType, void *data, uint32_t dataLen)
 {
-    int32_t ret = log_set_dfx_param(devId, channelType, data, dataLen);
+    int32_t ret = log_set_dfx_param(devId, channelType, LOG_SET_DFX_PARAM, data, dataLen);
     SELF_LOG_INFO("call log_set_dfx_param with devId:%u, channelType:%u, return:%d", devId, channelType, ret);
     return ret;
 }
 
 int32_t LogGetDfxParam(uint32_t devId, uint32_t channelType, void *data, uint32_t dataLen)
 {
-    int32_t ret = log_get_dfx_param(devId, channelType, data, dataLen);
+    int32_t ret = log_get_dfx_param(devId, channelType, LOG_GET_DFX_PARAM, data, dataLen);
     SELF_LOG_INFO("call log_get_dfx_param with devId:%u, channelType:%u, return:%d", devId, channelType, ret);
     return ret;
 }

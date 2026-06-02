@@ -12,6 +12,7 @@ project(ut CXX C)
 
 if (ENABLE_COV)
     set(COVERAGE_COMPILER_FLAGS "-g --coverage -fprofile-arcs -fPIC -O0 -ftest-coverage")
+    set(CMAKE_C_FLAGS "${COVERAGE_COMPILER_FLAGS}")
     set(CMAKE_CXX_FLAGS "${COVERAGE_COMPILER_FLAGS}")
 endif()
 set(TOP_DIR ${RUNTIME_DIR})

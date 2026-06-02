@@ -227,6 +227,7 @@
     </file_info>
     <file_info copy_type="source" src_path="" dst_path="$(TARGET_ENV)/include/base" install_path="$(TARGET_ENV)/include/base" install_type="all">
         <file value="err_msg.h" install_mod="440" entity="true"/>
+        <file value="acl_log.h" install_mod="440" entity="true"/>
         <file value="alog_pub.h" install_mod="440" entity="true"/>
         <file value="log_types.h" install_mod="440" entity="true"/>
     </file_info>

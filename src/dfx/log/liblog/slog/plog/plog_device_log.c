@@ -16,6 +16,7 @@
 #include "plog_drv.h"
 #include "ide_tlv.h"
 #include "plog_thread.h"
+#include "plog_callback.h"
 #include "plog_file_mgr.h"
 #include "plog.h"
 #include "mmpa_api.h"
@@ -213,10 +214,12 @@ STATIC LogStatus DlogWriteReportLog(char *buf, uint32_t bufLen, int32_t devId)
         PlogDeviceLogInfo info = { 0, (uint32_t)devId, DEBUG_LOG, 0, 0, 0 };
         int32_t logType = 0;
         char *realBuf = NULL;
+        bool isValidLogType = false;
         if (buf[0] == '[') {
             logType = (int32_t)DEBUG_LOG;
             realBuf = buf;
             info.len = bufLen;
+            isValidLogType = true;
         } else {
             logType = buf[0] - '0';
             realBuf = buf + 1;
@@ -225,6 +228,10 @@ STATIC LogStatus DlogWriteReportLog(char *buf, uint32_t bufLen, int32_t devId)
         if ((logType >= (int32_t)DEBUG_LOG) && (logType < (int32_t)LOG_TYPE_NUM)) {
             static const LogType sortLogType[LOG_TYPE_NUM] = { DEBUG_LOG, SECURITY_LOG, RUN_LOG };
             info.logType = sortLogType[logType];
+            isValidLogType = true;
+        }
+        if (isValidLogType) {
+            PlogDispatchDeviceLogCallback((int32_t)info.logType, realBuf, (size_t)info.len);
         }
         NO_ACT_WARN_LOG(PlogWriteDeviceLog(realBuf, &info) != LOG_SUCCESS, "can not write device log.");
         return LOG_SUCCESS;
@@ -419,4 +426,3 @@ void PlogDeviceMgrExit(void)
 #ifdef __cplusplus
 }
 #endif
-

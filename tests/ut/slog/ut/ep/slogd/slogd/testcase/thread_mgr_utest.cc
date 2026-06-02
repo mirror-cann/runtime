@@ -14,6 +14,10 @@
 #include "ascend_hal.h"
 #include "self_log_stub.h"
 
+extern "C" {
+int32_t log_get_device_id(uint32_t *devices, uint32_t *devNum, uint32_t len);
+}
+
 static ThreadManage g_threadManage;
 
 class SLOGD_THREAD_MGR_UTEST : public testing::Test
@@ -40,20 +44,20 @@ static void *TestProcess(void *args)
 
 TEST_F(SLOGD_THREAD_MGR_UTEST, SlogdThreadMgrCreateDeviceThread)
 {
-    uint32_t devNum = 0;
+    int32_t devNum = 0;
     DevThread devThread[1] = {0};
     EXPECT_EQ(LOG_FAILURE, SlogdThreadMgrCreateDeviceThread(devThread, 1, &devNum, NULL));
     EXPECT_EQ(LOG_SUCCESS, SlogdThreadMgrCreateDeviceThread(devThread, 1, &devNum, TestProcess));
-    MOCKER(halGetDevNumEx).stubs().will(returnValue(1));
+    MOCKER(log_get_device_id).stubs().will(returnValue(LOG_FAILURE));
     EXPECT_EQ(LOG_FAILURE, SlogdThreadMgrCreateDeviceThread(devThread, 1, &devNum, TestProcess));
 }
 
 TEST_F(SLOGD_THREAD_MGR_UTEST, SlogdThreadMgrCreateDeviceThreadGetDevIdFailed)
 {
-    uint32_t devNum = 0;
+    int32_t devNum = 0;
     DevThread devThread[1] = {0};
     EXPECT_EQ(LOG_FAILURE, SlogdThreadMgrCreateDeviceThread(devThread, 1, &devNum, NULL));
     EXPECT_EQ(LOG_SUCCESS, SlogdThreadMgrCreateDeviceThread(devThread, 1, &devNum, TestProcess));
-    MOCKER(halGetDevIDsEx).stubs().will(returnValue(1));
+    MOCKER(log_get_device_id).stubs().will(returnValue(LOG_FAILURE));
     EXPECT_EQ(LOG_FAILURE, SlogdThreadMgrCreateDeviceThread(devThread, 1, &devNum, TestProcess));
 }

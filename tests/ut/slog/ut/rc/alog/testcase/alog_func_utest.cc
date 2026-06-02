@@ -33,6 +33,7 @@ protected:
     {
         MOCKER(ShMemRead).stubs().will(invoke(ShMemRead_stub));
         MOCKER(CreatSocket).stubs().will(invoke(CreatSocket_stub));
+        MOCKER(AlogTryUseSlog).stubs().will(returnValue(LOG_FAILURE));
 
         ResetErrLog();
         system("echo [DBG][TEST][`date +%Y-%m-%d-%H-%M-%S`] Start test case");
@@ -40,6 +41,7 @@ protected:
 
     virtual void TearDown()
     {
+        DlogFree();
         system("echo > " PATH_ROOT "/socket/rc_alog_socket"); // 清空socket文件
         system("echo [DBG][TEST][`date +%Y-%m-%d-%H-%M-%S`] End test case");
         GlobalMockObject::verify();
@@ -212,11 +214,11 @@ TEST_F(GetSlogSocketPathTest, GetSlogSocketPath_alogWithSameUser)
     curInfo.pw_uid = (uid_t)12345;
     MOCKER(DlogCheckAttrSystem).stubs().will(returnValue(false));
     MOCKER(DlogGetUid).stubs().will(returnValue(uint32_t(12345)));
-    MOCKER(getpwuid).stubs().with(any()).will(returnValue(&curInfo));
+    MOCKER(getpwuid).stubs().with(mockcpp::any()).will(returnValue(&curInfo));
 
     ToolStat dirStat = {0};
     dirStat.st_uid = (uid_t)12345;
-    MOCKER(ToolStatGet).stubs().with(any(), outBoundP(&dirStat)).will(returnValue(0));
+    MOCKER(ToolStatGet).stubs().with(mockcpp::any(), outBoundP(&dirStat)).will(returnValue(0));
 
     char path[WORKSPACE_PATH_MAX_LENGTH + 1] = { 0 };
     EXPECT_EQ(0, GetSlogSocketPath(0, path, WORKSPACE_PATH_MAX_LENGTH));
@@ -234,11 +236,11 @@ TEST_F(GetSlogSocketPathTest, GetSlogSocketPath_alogWithDiffUser)
     curInfo.pw_uid = (uid_t)54321;
     MOCKER(DlogCheckAttrSystem).stubs().will(returnValue(false));
     MOCKER(DlogGetUid).stubs().will(returnValue(uint32_t(54321)));
-    MOCKER(getpwuid).stubs().with(any()).will(returnValue(&curInfo));
+    MOCKER(getpwuid).stubs().with(mockcpp::any()).will(returnValue(&curInfo));
 
     ToolStat dirStat = {0};
     dirStat.st_uid = (uid_t)12345;
-    MOCKER(ToolStatGet).stubs().with(any(), outBoundP(&dirStat)).will(returnValue(0));
+    MOCKER(ToolStatGet).stubs().with(mockcpp::any(), outBoundP(&dirStat)).will(returnValue(0));
     MOCKER(ToolAccess).stubs().will(returnValue(0));
 
     char path[WORKSPACE_PATH_MAX_LENGTH + 1] = { 0 };
@@ -257,11 +259,11 @@ TEST_F(GetSlogSocketPathTest, GetSlogSocketPath_alogWithDiffUserInvalidPath)
     curInfo.pw_uid = (uid_t)54321;
     MOCKER(DlogCheckAttrSystem).stubs().will(returnValue(false));
     MOCKER(DlogGetUid).stubs().will(returnValue(uint32_t(54321)));
-    MOCKER(getpwuid).stubs().with(any()).will(returnValue(&curInfo));
+    MOCKER(getpwuid).stubs().with(mockcpp::any()).will(returnValue(&curInfo));
 
     ToolStat dirStat = {0};
     dirStat.st_uid = (uid_t)12345;
-    MOCKER(ToolStatGet).stubs().with(any(), outBoundP(&dirStat)).will(returnValue(0));
+    MOCKER(ToolStatGet).stubs().with(mockcpp::any(), outBoundP(&dirStat)).will(returnValue(0));
     MOCKER(ToolAccess).stubs().will(returnValue(-1));
 
     char path[WORKSPACE_PATH_MAX_LENGTH + 1] = { 0 };
@@ -275,6 +277,9 @@ TEST_F(GetSlogSocketPathTest, GetSlogSocketPath_alogWithDiffUserInvalidPath)
 
 TEST_F(RC_ALOG_FUNC_UTEST, TransferToSlog)
 {
+    GlobalMockObject::reset();
+    MOCKER(ShMemRead).stubs().will(invoke(ShMemRead_stub));
+    MOCKER(CreatSocket).stubs().will(invoke(CreatSocket_stub));
     MOCKER(dlopen).stubs().will(invoke(logDlopen));
     MOCKER(dlclose).stubs().will(invoke(logDlclose));
     MOCKER(dlsym).stubs().will(invoke(logDlsym));

@@ -7,8 +7,8 @@
 # INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
-set(LOG_SOURCE_PATH ${TOP_DIR}/abl/slog)
-set(UT_SOURCE_PATH ${TOP_DIR}/llt/abl/slog/ut)
+set(LOG_SOURCE_PATH ${TOP_DIR}/src/dfx/log)
+set(UT_SOURCE_PATH ${TOP_DIR}/tests/ut/slog/ut)
 
 set(libAlogSrc
     ${LOG_SOURCE_PATH}/liblog/slog/alog_to_slog.c
@@ -28,14 +28,14 @@ set(libAlogSrc
     ${LOG_SOURCE_PATH}/utils/log_common.c
     ${LOG_SOURCE_PATH}/utils/library_load.c
 
+    ${TOP_DIR}/tests/ut/slog/ut/slog/testcase/main.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/testcase/alog_func_utest.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/stub/alog_stub.c
     ${UT_SOURCE_PATH}/stub/self_log_stub.c
 )
 
 set(libAlogInc
-    ${TOP_DIR}/inc/driver
-    ${TOP_DIR}/abl/libc_sec/include
+    ${TOP_DIR}/include/driver
     ${LOG_SOURCE_PATH}/liblog/slog
     ${LOG_SOURCE_PATH}/liblog/slog/dlog_communication
     ${LOG_SOURCE_PATH}/utils
@@ -65,6 +65,7 @@ target_link_libraries(rc_alog_utest PRIVATE
     $<BUILD_INTERFACE:mmpa_headers>
     mmpa
     c_sec
+    dl
 )
 
 target_compile_options(rc_alog_utest PRIVATE
@@ -75,11 +76,6 @@ set_target_properties(rc_alog_utest
     PROPERTIES
     OUTPUT_NAME toolchain_rc_alog_utest
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-)
-
-run_llt_test(
-    TARGET rc_alog_utest
-    TASK_NUM 1
 )
 
 ###################################################################

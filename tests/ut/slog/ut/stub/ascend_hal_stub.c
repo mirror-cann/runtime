@@ -15,20 +15,32 @@ drvError_t halGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType
     return DRV_ERROR_NOT_SUPPORT;
 }
 
-int log_set_dfx_param(uint32_t devid, uint32_t chan_type, void *data, uint32_t data_len)
+int log_set_dfx_param(uint32_t devid, uint32_t chan_type, uint32_t cmd_type, void *data, uint32_t data_len)
 {
     (void)devid;
     (void)chan_type;
+    (void)cmd_type;
     (void)data;
     (void)data_len;
     return 0;
 }
-int log_get_dfx_param(uint32_t device_id, uint32_t channel_type, void *data, uint32_t dataLen)
+int log_get_dfx_param(uint32_t device_id, uint32_t channel_type, uint32_t cmd_type, void *data, uint32_t dataLen)
 {
     (void)device_id;
     (void)channel_type;
+    (void)cmd_type;
     (void)data;
     (void)dataLen;
+    return 0;
+}
+
+int32_t log_get_device_id(uint32_t *devices, uint32_t *devNum, uint32_t len)
+{
+    if (devices == NULL || devNum == NULL || len == 0) {
+        return -1;
+    }
+    devices[0] = 0;
+    *devNum = 1;
     return 0;
 }
 

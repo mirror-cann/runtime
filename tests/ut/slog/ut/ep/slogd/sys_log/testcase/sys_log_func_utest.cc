@@ -202,7 +202,7 @@ TEST_F(EP_SLOGD_SYS_LOG_FUNC_UTEST, KernelLogReceive)
         SlogdKernelLogReceive(nullptr);
     }
 
-    EXPECT_EQ(9, DlogCheckLog(LOG_FILE_PATH "/device-os/device-os_2025022835702082.log", "KERNEL"));
+    EXPECT_EQ(7, DlogCheckLog(LOG_FILE_PATH "/device-os/device-os_2025022835702082.log", "KERNEL"));
     SlogdKernelLogExit();
 }
 

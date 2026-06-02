@@ -8,7 +8,9 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include <string>
+#include "acl_log.h"
 #include "plog.h"
+#include "plog_callback.h"
 #include "plog_device_log.h"
 #include "plog_to_dlog.h"
 #include "library_load.h"
@@ -20,13 +22,17 @@ namespace {
         {"DlogReportInitialize", nullptr},
         {"DlogReportFinalize", nullptr},
         {"DlogReportStart", nullptr},
-        {"DlogReportStop", nullptr}
+        {"DlogReportStop", nullptr},
+        {"acllogRegisterCallback", nullptr},
+        {"acllogUnregisterCallback", nullptr}
     };
 
     using DlogReportInitializeFunc = decltype(DlogReportInitialize)*;
     using DlogReportFinalizeFunc = decltype(DlogReportFinalize)*;
     using DlogReportStartFunc = decltype(DlogReportStart)*;
     using DlogReportStopFunc = decltype(DlogReportStop)*;
+    using AcllogRegisterCallbackFunc = decltype(acllogRegisterCallback)*;
+    using AcllogUnregisterCallbackFunc = decltype(acllogUnregisterCallback)*;
 };
 
 #ifdef __cplusplus
@@ -105,6 +111,24 @@ int32_t DlogReportFinalize(void)
         return reinterpret_cast<DlogReportFinalizeFunc>(g_dlogFuncInfo[DLOG_REPORT_FINALIZE].handle)();
     }
     return DlogReportFinalizeInner();
+}
+
+int32_t acllogRegisterCallback(acllogRecordCallback callbackFunc, void *userData, uint32_t outputLogType,
+    acllogCallbackHandle *callbackHandle)
+{
+    if (g_dlogFuncInfo[ACLLOG_REGISTER_CALLBACK].handle != nullptr) {
+        return reinterpret_cast<AcllogRegisterCallbackFunc>(g_dlogFuncInfo[ACLLOG_REGISTER_CALLBACK].handle)(
+            callbackFunc, userData, outputLogType, callbackHandle);
+    }
+    return PlogRegisterCallbackInner(callbackFunc, userData, outputLogType, callbackHandle);
+}
+
+int32_t acllogUnregisterCallback(acllogCallbackHandle callback)
+{
+    if (g_dlogFuncInfo[ACLLOG_UNREGISTER_CALLBACK].handle != nullptr) {
+        return reinterpret_cast<AcllogUnregisterCallbackFunc>(g_dlogFuncInfo[ACLLOG_UNREGISTER_CALLBACK].handle)(callback);
+    }
+    return PlogUnregisterCallbackInner(callback);
 }
 #ifdef __cplusplus
 #ifndef LOG_CPP

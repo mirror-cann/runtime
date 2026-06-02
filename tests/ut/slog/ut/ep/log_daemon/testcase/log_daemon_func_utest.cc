@@ -93,7 +93,8 @@ static int32_t TestServerStart(ServerHandle handle)
 {
     EXPECT_EQ(0, ServerSyncFile(handle, "src", "dts"));
     EXPECT_EQ(0, ServerSendMsg(handle, "message", 6));
-    char msg[] = "receive";
+    char recvBuf[] = "receive";
+    char *msg = recvBuf;
     uint32_t len = 7;
     EXPECT_EQ(0, ServerRecvMsg(handle, (char **)&msg, &len, 10000));
     return 0;
@@ -107,7 +108,8 @@ static int32_t TestFailServerStart(ServerHandle handle)
 {
     EXPECT_EQ(-1, ServerSyncFile(nullptr, "src", "dts"));
     EXPECT_EQ(-1, ServerSendMsg(nullptr, "message", 6));
-    char msg[] = "receive";
+    char recvBuf[] = "receive";
+    char *msg = recvBuf;
     uint32_t len = 7;
     EXPECT_EQ(-1, ServerRecvMsg(nullptr, (char **)&msg, &len, 10000));
     return -1;
@@ -395,6 +397,7 @@ TEST_F(EP_LOG_DAEMON_FUNC_UTEST, LogDaemonMainServerProcessFailed)
     handle.comp = COMPONENT_GETD_FILE;
     MOCKER(AdxSendMsg).stubs().will(returnValue(-1)).then(returnValue(0));
     EXPECT_EQ(-1, ServerProcess(&handle, nullptr, 0));
+    MOCKER(AdxRecvMsg).stubs().will(returnValue(0));
     EXPECT_EQ(0, ServerProcess(&handle, nullptr, 0));
     EXPECT_EQ(-1, ServerProcess(&handle, nullptr, 0));
 
@@ -436,6 +439,7 @@ TEST_F(EP_LOG_DAEMON_FUNC_UTEST, LogDaemonMainServerStop)
     handle.timeout = 0;
     handle.client = nullptr;
     handle.comp = COMPONENT_GETD_FILE;
+    MOCKER(AdxRecvMsg).stubs().will(returnValue(0));
     EXPECT_EQ(0, ServerProcess(&handle, nullptr, 0));
 
     sleep(1);

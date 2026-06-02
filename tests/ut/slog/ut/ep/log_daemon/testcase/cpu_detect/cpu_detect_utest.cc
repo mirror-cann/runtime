@@ -100,7 +100,7 @@ protected:
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectInit)
 {
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_SUCCESS);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_SUCCESS);
     CpuDetectServerExit();
     EXPECT_EQ(0, GetErrLogNum());
 }
@@ -109,7 +109,7 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectInitDlopenFailed)
 {
     // so is not exist on other soc
     MOCKER(DlopenStub).stubs().will(returnValue((void*)NULL));
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_SUCCESS);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_SUCCESS);
     CpuDetectServerExit();
     EXPECT_EQ(0, GetErrLogNum());
 }
@@ -117,25 +117,27 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectInitDlopenFailed)
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectInitDlsymFailed)
 {
     MOCKER(DlsymStub).stubs().will(returnValue((void*)NULL));
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_FAILURE);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_FAILURE);
     CpuDetectServerExit();
     EXPECT_NE(0, GetErrLogNum());
 }
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectInitServerCreateFailed)
 {
-    MOCKER(ServerCreateCpuDetectStub).stubs().will(returnValue(1));
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_FAILURE);
+    MOCKER(ServerCreate).stubs().will(returnValue(1));
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_FAILURE);
     CpuDetectServerExit();
 }
 
 int32_t ServerRecvMsgStub(ServerHandle handle, char **msg, uint32_t *msgLen, uint32_t timeout)
 {
+    (void)timeout;
     CpuDetectInfo *info = *(CpuDetectInfo**)msg;
     info->magic = g_cpuDetectInfo.magic;
     info->cmdType = g_cpuDetectInfo.cmdType;
+    *msgLen = sizeof(CpuDetectInfo);
     ONE_ACT_ERR_LOG(handle == NULL, return LOG_FAILURE, "receive message failed, handle is null");
-    return AdxRecvMsg((AdxCommHandle)handle->handle, msg, msgLen, timeout);
+    return LOG_SUCCESS;
 }
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStartInvalidHandle)
@@ -148,8 +150,6 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStartInvalidHandle)
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStartInvalidMagic)
 {
     ServerMgr tmp;
-    tmp.send = ServerSendMsg;
-    tmp.recv = ServerRecvMsg;
     CommHandle comm = {COMM_HDC, 0x12345, COMPONENT_GETD_FILE};
     tmp.handle = &comm;
     ServerHandle handle = &tmp;
@@ -160,11 +160,9 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStartInvalidMagic)
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStart)
 {
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_SUCCESS);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_SUCCESS);
 
     ServerMgr tmp;
-    tmp.send = ServerSendMsg;
-    tmp.recv = ServerRecvMsg;
     CommHandle comm = {COMM_HDC, 0x12345, COMPONENT_GETD_FILE};
     tmp.handle = &comm;
     ServerHandle handle = &tmp;
@@ -177,11 +175,9 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStart)
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectTestcaseFailed)
 {
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_SUCCESS);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_SUCCESS);
     MOCKER(CpuDetectStart).stubs().will(returnValue(100));
     ServerMgr tmp;
-    tmp.send = ServerSendMsg;
-    tmp.recv = ServerRecvMsg;
     CommHandle comm = {COMM_HDC, 0x12345, COMPONENT_GETD_FILE};
     tmp.handle = &comm;
     ServerHandle handle = &tmp;
@@ -194,11 +190,9 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectTestcaseFailed)
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectTestcaseTimeout)
 {
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_SUCCESS);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_SUCCESS);
     MOCKER(CpuDetectStart).stubs().will(returnValue(1000));
     ServerMgr tmp;
-    tmp.send = ServerSendMsg;
-    tmp.recv = ServerRecvMsg;
     CommHandle comm = {COMM_HDC, 0x12345, COMPONENT_GETD_FILE};
     tmp.handle = &comm;
     ServerHandle handle = &tmp;
@@ -211,11 +205,9 @@ TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectTestcaseTimeout)
 
 TEST_F(CPU_DETECT_EXCP_UTEST, CpuDetectServerStartRecvFailed)
 {
-    EXPECT_EQ(CpuDetectServerInit(ServerCreateCpuDetectStub), DETECT_SUCCESS);
+    EXPECT_EQ(CpuDetectServerInit(), DETECT_SUCCESS);
 
     ServerMgr tmp;
-    tmp.send = ServerSendMsg;
-    tmp.recv = ServerRecvMsg;
     CommHandle comm = {COMM_HDC, 0x12345, COMPONENT_GETD_FILE};
     tmp.handle = &comm;
     ServerHandle handle = &tmp;

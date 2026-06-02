@@ -19,6 +19,15 @@
 using namespace std;
 using namespace testing;
 
+static LogStatus SlogdSyslogMgrInit(StLogFileList *fileList)
+{
+    LogStatus ret = LogAgentInitDeviceOs(fileList);
+    if (ret != LOG_SUCCESS) {
+        return ret;
+    }
+    return LogAgentInitDeviceApplication(fileList);
+}
+
 class EP_SLOGD_FILE_MGR_LOG_EXCP_UTEST : public testing::Test
 {
 protected:
@@ -109,7 +118,7 @@ TEST_F(EP_SLOGD_FILE_MGR_LOG_EXCP_UTEST, LogAgentInitDeviceMallocFailed)
     StLogFileList logList = { 0 };
     LogAgentGetCfg(&logList);
     MOCKER(LogMalloc).stubs().will(invoke(MallocStub)).then(invoke(MallocStub)).then(returnValue((void *)NULL));
-    EXPECT_EQ(LOG_FAILURE, LogAgentInitDevice(&logList, MAX_DEV_NUM));
+    EXPECT_EQ(NOK, LogAgentInitDevice(&logList, MAX_DEV_NUM));
     EXPECT_EQ(1, GetErrLogNum());
     LogAgentCleanUpDevice(&logList);
     SlogdConfigMgrExit();

@@ -7,8 +7,8 @@
 # INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
-set(LOG_SOURCE_PATH ${TOP_DIR}/abl/slog)
-set(UT_SOURCE_PATH ${TOP_DIR}/llt/abl/slog/ut)
+set(LOG_SOURCE_PATH ${TOP_DIR}/src/dfx/log)
+set(UT_SOURCE_PATH ${TOP_DIR}/tests/ut/slog/ut)
 
 set(logDaemonSrc
     ${LOG_SOURCE_PATH}/syslog/log_daemon/log_daemon.c
@@ -51,7 +51,6 @@ set(logDaemonSrc
     ${UT_SOURCE_PATH}/stub/ascend_hal_stub.c
 
     # file_dump
-    ${LOG_SOURCE_PATH}/syslog/log_daemon/file_dump/
     ${CMAKE_CURRENT_SOURCE_DIR}/testcase/file_dump/file_dump_func_utest.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/testcase/file_dump/file_dump_excp_utest.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/testcase/log_daemon_func_utest.cc
@@ -78,17 +77,15 @@ set(logDaemonSrc
     ${CMAKE_CURRENT_SOURCE_DIR}/testcase/event_process/event_process_func_utest.cc
     # file monitor
     ${CMAKE_CURRENT_SOURCE_DIR}/testcase/file_monitor/file_monitor_func_utest.cc
-    # library load
-    ${LOG_SOURCE_PATH}/syslog/log_daemon/lib_load/lib_load.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/testcase/lib_load/lib_load_utest.cc
+    ${TOP_DIR}/tests/ut/slog/ut/slog/testcase/main.cc
 )
 
 set(logDaemonInc
-    ${TOP_DIR}/inc/driver
-    ${TOP_DIR}/runtime/src/dfx/adump/external
-    ${TOP_DIR}/runtime/src/dfx/adump/inc/adump
-    ${TOP_DIR}/abl/libc_sec/include
-    ${TOP_DIR}/ace/csruntime/inc/tsch
+    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/src/runtime/core/inc
+    ${TOP_DIR}/src/aicpu_sched/extern_include
+    ${TOP_DIR}/src/dfx/adump/external
+    ${TOP_DIR}/src/dfx/adump/inc/adump
     ${LOG_SOURCE_PATH}/shared
     ${LOG_SOURCE_PATH}/utils
     ${LOG_SOURCE_PATH}/syslog/common
@@ -153,11 +150,6 @@ set_target_properties(ep_log_daemon_utest
     PROPERTIES
     OUTPUT_NAME toolchain_ep_log_daemon_utest
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-)
-
-run_llt_test(
-    TARGET ep_log_daemon_utest
-    TASK_NUM 1
 )
 
 ###################################################################

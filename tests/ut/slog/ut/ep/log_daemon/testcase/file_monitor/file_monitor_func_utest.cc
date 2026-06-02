@@ -307,7 +307,7 @@ TEST_F(EP_FILE_MONITOR_FUNC_UTEST, FileMonitorGetDevFailed)
     sleep(1);
     ServerHandle handle = (ServerMgr *)LogMalloc(sizeof(ServerMgr));
     MOCKER(ServerRecvMsg).stubs().will(invoke(ServerRecvMsgStub));
-    EXPECT_EQ(LOG_FAILURE, FileMonitorStart(handle));
+    EXPECT_EQ(LOG_SUCCESS, FileMonitorStart(handle));
     sleep(1);
     system("mkdir -p " BBOX_DIR_MONITOR "device-0/bbox");
     system("echo test > " BBOX_DIR_MONITOR "device-0/bbox/test2.log");

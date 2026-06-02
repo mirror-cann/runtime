@@ -9,13 +9,20 @@
 # -----------------------------------------------------------------------------------------------------------
 add_subdirectory(slog)
 add_subdirectory(common)
-# add_subdirectory(alog)
-# add_subdirectory(ep)
-# add_subdirectory(rc)
+add_subdirectory(alog)
+add_subdirectory(ep)
+add_subdirectory(rc)
 
 set(SLOG_UT_TARGETS
     log_slogd_utest
     log_common_utest
+    log_libalog_utest
+    ep_alog_host_utest
+    ep_log_daemon_utest
+    ep_slogd_utest
+    ep_slogd_milan_utest
+    ep_stackcore_utest
+    rc_alog_utest
 )
 
 add_custom_target(slog_ut DEPENDS ${SLOG_UT_TARGETS})

@@ -49,11 +49,31 @@ static void PlogDlogReportStop(int32_t devId)
     return;
 }
 
+static int32_t PlogAcllogRegisterCallback(void *callbackFunc, void *userData, uint32_t outputLogType,
+    uintptr_t *callbackHandle)
+{
+    (void)callbackFunc;
+    (void)userData;
+    (void)outputLogType;
+    (void)callbackHandle;
+    g_plogFuncCount[ACLLOG_REGISTER_CALLBACK]++;
+    return 0;
+}
+
+static int32_t PlogAcllogUnregisterCallback(uintptr_t callback)
+{
+    (void)callback;
+    g_plogFuncCount[ACLLOG_UNREGISTER_CALLBACK]++;
+    return 0;
+}
+
 static SymbolInfo g_plogFuncMap[PLOG_FUNC_MAX] = {
     {"DlogReportInitialize", (ArgPtr)PlogDlogReportInitialize},
     {"DlogReportFinalize", (ArgPtr)PlogDlogReportFinalize},
     {"DlogReportStart", (ArgPtr)PlogDlogReportStart},
-    {"DlogReportStop", (ArgPtr)PlogDlogReportStop}
+    {"DlogReportStop", (ArgPtr)PlogDlogReportStop},
+    {"acllogRegisterCallback", (ArgPtr)PlogAcllogRegisterCallback},
+    {"acllogUnregisterCallback", (ArgPtr)PlogAcllogUnregisterCallback}
 };
 
 int32_t g_drvHandle = 0;

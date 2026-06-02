@@ -19,6 +19,8 @@
 #include "log_pm_sr.h"
 #include "log_pm_sig.h"
 #include "log_file_info.h"
+#include "slogd_service.h"
+#include "slogd_trace_server.h"
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
 #include "log_path_mgr.h"
@@ -238,9 +240,6 @@ TEST_F(SLOGD_FUNC_UTEST, argvInvalid)
 
 TEST_F(SLOGD_FUNC_UTEST, TraceServerFailed)
 {
-    MOCKER(CreateAppLogWatchThread).stubs();
-    system("touch " KERNEL_LOG_PATH);
-    MOCKER(TraceServerProcess).stubs().will(returnValue(-1));
-    char *argv[] = { "slogd", "-n", NULL };
-    EXPECT_EQ(LOG_FAILURE, TestMain(2, argv));
+    MOCKER(TraceServerProcess).stubs().will(returnValue(TRACE_FAILURE));
+    EXPECT_EQ(LOG_FAILURE, LogTraceServiceProcess());
 }

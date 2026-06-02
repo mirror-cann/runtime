@@ -22,6 +22,15 @@
 using namespace std;
 using namespace testing;
 
+static LogStatus SlogdSyslogMgrInit(StLogFileList *fileList)
+{
+    LogStatus ret = LogAgentInitDeviceOs(fileList);
+    if (ret != LOG_SUCCESS) {
+        return ret;
+    }
+    return LogAgentInitDeviceApplication(fileList);
+}
+
 class EP_SLOGD_FILE_MGR_LOG_FUNC_UTEST : public testing::Test
 {
 protected:

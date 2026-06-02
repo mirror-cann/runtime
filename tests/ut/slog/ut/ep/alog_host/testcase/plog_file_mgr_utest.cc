@@ -246,107 +246,41 @@ TEST_F(PlogFileMgrUtest, ReinitForChild_IdempotentMultipleCalls)
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ *
- * TC-06: fork()-based integration test.                                      *
- *        Verifies that after a real fork() + PlogReinitFileHeadsForChild(), *
- *        the child's g_plogFileList carries the child's own PID — not the  *
- *        parent's — in every host log list entry.                           *
- *                                                                           *
- *  exit(0)  → g_plogFileList correctly updated with child PID (fix works)  *
- *  exit(1)  → still contains parent PID (bug present)                      *
+ * TC-06: Simulate child reinit with a changed pid.                           *
+ *        A real fork() is intentionally avoided in this unit test because    *
+ *        mockcpp/global locks inherited by the child can hang the UT process. *
  * ══════════════════════════════════════════════════════════════════════════ */
-TEST_F(PlogFileMgrUtest, ForkChild_ReinitGivesChildOwnPidInFileHead)
+TEST_F(PlogFileMgrUtest, ReinitForChild_ChangesPidWithoutFork)
 {
     ASSERT_EQ(LOG_SUCCESS, PlogFileMgrInit());
     ASSERT_NE(nullptr, PlogGetFileMgrInfo());
 
-    const pid_t parentPid = getpid();
+    const uint32_t parentPid = (uint32_t)getpid();
+    const uint32_t childPid = parentPid + 2468U;
+    MOCKER(ToolGetPid).stubs().will(returnValue((INT32)childPid));
 
-    pid_t child = fork();
-    ASSERT_GE(child, 0) << "fork() failed: " << strerror(errno);
+    PlogReinitFileHeadsForChild();
 
-    if (child == 0) {
-        /* ── child process ─────────────────────────────────────────────── */
-        const pid_t myPid = getpid();
-
-        /* Simulate what the real ATFORK_CHILD handler does. */
-        PlogReinitFileHeadsForChild();
-
-        PlogFileMgrInfo *childList = PlogGetFileMgrInfo();
-        bool ok = true;
-        for (int i = (int)DEBUG_LOG; i < (int)LOG_TYPE_NUM; i++) {
-            uint32_t storedPid = childList->hostLogList[i].pid;
-            if (storedPid != (uint32_t)myPid) {
-                ok = false;
-                break;
-            }
-            const char *head = childList->hostLogList[i].aucFileHead;
-            char expected[32] = {};
-            (void)snprintf_s(expected, sizeof(expected), sizeof(expected) - 1, "%u", (uint32_t)myPid);
-            if (strstr(head, expected) == nullptr) {
-                ok = false;
-                break;
-            }
-        }
-        /* exit(0) = fix works, exit(1) = bug still present */
-        _exit(ok ? 0 : 1);
-    }
-
-    /* ── parent: wait for child and check exit code ────────────────────── */
-    int wstatus = 0;
-    waitpid(child, &wstatus, 0);
-    ASSERT_TRUE(WIFEXITED(wstatus)) << "child did not exit normally";
-    EXPECT_EQ(0, WEXITSTATUS(wstatus))
-        << "Child process: PlogReinitFileHeadsForChild() did not update "
-           "hostLogList with child PID — fork PID naming bug is still present";
-
-    /* Sanity-check: parent's list must still hold the parent's PID. */
     PlogFileMgrInfo *parentList = PlogGetFileMgrInfo();
     for (int i = (int)DEBUG_LOG; i < (int)LOG_TYPE_NUM; i++) {
-        EXPECT_EQ((uint32_t)parentPid, parentList->hostLogList[i].pid)
-            << "Parent's hostLogList[" << i << "].pid was modified by child "
-               "(fork isolation violated?)";
+        EXPECT_EQ(childPid, parentList->hostLogList[i].pid);
+        EXPECT_TRUE(FileHeadContainsPid(parentList->hostLogList[i].aucFileHead, childPid));
+        EXPECT_FALSE(FileHeadContainsPid(parentList->hostLogList[i].aucFileHead, parentPid));
     }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ *
- * TC-07: Regression — without reinit, child would inherit the parent PID.  *
- *        This test documents the bug by showing what happens when reinit is  *
- *        NOT called, confirming the test environment is sound.              *
+ * TC-07: Regression — without reinit the existing pid remains unchanged.    *
  * ══════════════════════════════════════════════════════════════════════════ */
-TEST_F(PlogFileMgrUtest, ForkChild_WithoutReinitInheritsParentPid_Regression)
+TEST_F(PlogFileMgrUtest, WithoutReinit_KeepsOriginalPid_Regression)
 {
     ASSERT_EQ(LOG_SUCCESS, PlogFileMgrInit());
     ASSERT_NE(nullptr, PlogGetFileMgrInfo());
 
-    const pid_t parentPid = getpid();
-
-    pid_t child = fork();
-    ASSERT_GE(child, 0) << "fork() failed: " << strerror(errno);
-
-    if (child == 0) {
-        /* ── child process: intentionally does NOT call reinit ─────────── */
-        const pid_t myPid = getpid();
-        PlogFileMgrInfo *childList = PlogGetFileMgrInfo();
-        bool inherited = false;
-        for (int i = (int)DEBUG_LOG; i < (int)LOG_TYPE_NUM; i++) {
-            if (childList->hostLogList[i].pid == (uint32_t)parentPid &&
-                (uint32_t)myPid != (uint32_t)parentPid) {
-                inherited = true;
-                break;
-            }
-        }
-        /* exit(0) = bug present (expected for regression doc),
-         * exit(1) = somehow not inherited (unexpected) */
-        _exit(inherited ? 0 : 1);
+    const uint32_t parentPid = (uint32_t)getpid();
+    PlogFileMgrInfo *fileList = PlogGetFileMgrInfo();
+    for (int i = (int)DEBUG_LOG; i < (int)LOG_TYPE_NUM; i++) {
+        EXPECT_EQ(parentPid, fileList->hostLogList[i].pid);
+        EXPECT_TRUE(FileHeadContainsPid(fileList->hostLogList[i].aucFileHead, parentPid));
     }
-
-    int wstatus = 0;
-    waitpid(child, &wstatus, 0);
-    ASSERT_TRUE(WIFEXITED(wstatus));
-    /* The child exits 0 to signal the bug is present (no reinit → parent PID
-     * inherited).  If this expectation ever fails it means the OS or compiler
-     * has somehow prevented the inheritance, which would be surprising. */
-    EXPECT_EQ(0, WEXITSTATUS(wstatus))
-        << "Regression: child should have inherited parent PID in g_plogFileList "
-           "when PlogReinitFileHeadsForChild() is NOT called";
 }

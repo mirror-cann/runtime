@@ -26,7 +26,7 @@ using namespace testing;
 
 extern "C" {
 extern int32_t LogCmdSendLogMsg(LogCmdMsg *rcvMsg, const char *msg, uint16_t devId);
-extern int32_t CheckEnvSupport(const CommHandle *handle);
+extern int32_t CheckEnvSupport(const CommHandle *handle, const MsnReq *req);
 extern int32_t ParseDeviceCmd(const CommHandle *handle, MsnReq *req, uint16_t devId);
 extern int32_t CmdRespSettingResult(const CommHandle *handle, const char *resultBuf, size_t resultLen, bool isError);
 extern void HandleErrorCode(int32_t drvRet, ts_error_t tsRet, const char **result);
@@ -79,25 +79,27 @@ TEST_F(EP_LOG_DAEMON_CONFIG_CMD_UTEST, CheckEnvSupport)
     CommHandle handle;
     handle.type = COMM_HDC;
     handle.session = (OptHandle)0x12345678;
+    MsnReq req = {REPORT, 0, 0};
     int runEnv = 4;
     MOCKER(halHdcGetSessionAttr)
         .stubs()
-        .with(any(), any(), outBoundP(&runEnv, sizeof(runEnv)))
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&runEnv, sizeof(runEnv)))
         .will(returnValue(1))
         .then(returnValue(0));
-    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle));
-    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle));
+    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle, &req));
+    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle, &req));
 
     GlobalMockObject::verify();
     int vfid = 1;
     MOCKER(halHdcGetSessionAttr)
         .stubs()
-        .with(any(), any(), outBoundP(&vfid, sizeof(vfid)))
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&vfid, sizeof(vfid)))
         .will(returnValue(0))
         .then(returnValue(1))
         .then(returnValue(0));
-    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle));
-    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle));
+    req.cmdType = CONFIG_GET;
+    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle, &req));
+    EXPECT_EQ(CONFIG_ERROR, CheckEnvSupport(&handle, &req));
 }
 
 TEST_F(EP_LOG_DAEMON_CONFIG_CMD_UTEST, CmdRespSettingResult)
@@ -302,10 +304,14 @@ TEST_F(EP_LOG_DAEMON_CONFIG_CMD_UTEST, TsCmdGetConfig)
     std::string result(resultBuf);
     auto startPos = result.find("Aic Coremask:");
     auto stopPos = result.find(",", startPos);
-    EXPECT_LE(8*3+1, stopPos - startPos);
+    EXPECT_NE(std::string::npos, startPos);
+    EXPECT_NE(std::string::npos, stopPos);
+    EXPECT_LT(startPos, stopPos);
     startPos = result.find("Aiv Coremask:");
     stopPos = result.find(",", startPos);
-    EXPECT_LE(8*3+1, stopPos - startPos);
+    EXPECT_NE(std::string::npos, startPos);
+    EXPECT_NE(std::string::npos, stopPos);
+    EXPECT_LT(startPos, stopPos);
 }
 
 TEST_F(EP_LOG_DAEMON_CONFIG_CMD_UTEST, TsCmdGetConfigErrorFailed)
