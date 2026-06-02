@@ -3023,6 +3023,108 @@ TEST_F(ProcessManagerTest, LoadPackageToDeviceByConfig_load_finish)
     GlobalMockObject::verify();
 }
 
+TEST_F(ProcessManagerTest, LoadPackageToDeviceByConfig_failed_verify_failed_does_not_match)
+{
+    MOCKER_CPP(&ProcessModeManager::IsSupportCommonInterface)
+        .stubs()
+        .will(returnValue(true));
+    MOCKER(drvHdcGetTrustedBasePathV2).stubs().will(returnValue(0));
+    MOCKER(drvHdcSendFileV2).stubs().will(returnValue(0));
+    MOCKER_CPP(&ClientManager::IsAdcEnv)
+        .stubs()
+        .will(returnValue(false));
+    ProcessModeManager processModeManager(deviceId, 0);
+    PackageProcessConfig *pkgConInst = PackageProcessConfig::GetInstance();
+    std::string pkgName = "LoadPackageToDeviceByConfig_failed_test";
+    PackConfDetail packConfDetail;
+    packConfDetail.hostTruePath = "tmp123";
+    pkgConInst->configMap_[pkgName] = packConfDetail;
+    MOCKER_CPP(&ProcessModeManager::SupportLoadPkg)
+        .stubs()
+        .will(returnValue(true));
+    std::string hashcode = "12345666";
+    MOCKER(CalFileSha256HashValue)
+        .stubs()
+        .will(returnValue(hashcode));
+    MOCKER_CPP(&ProcessModeManager::IsCommonSinkHostAndDevicePkgSame).stubs().will(returnValue(false));
+    MOCKER_CPP(&ProcessModeManager::CompareAndSendCommonSinkPkg)
+        .stubs()
+        .will(returnValue(tsd::TSD_OK));
+    processModeManager.rspCode_ = ResponseCode::FAIL;
+    processModeManager.loadPackageErrorMsg_ = "cms verify failed. certType [XXX] does not match verifyFlag [XXX]";
+    auto ret = processModeManager.LoadPackageToDeviceByConfig();
+    EXPECT_EQ(ret, tsd::TSD_INTERNAL_ERROR);
+    EXPECT_TRUE(processModeManager.loadPackageErrorMsg_.empty());
+}
+
+TEST_F(ProcessManagerTest, LoadPackageToDeviceByConfig_failed_verify_failed_verifyFlag_not_close_but_pkg_has_header)
+{
+    MOCKER_CPP(&ProcessModeManager::IsSupportCommonInterface)
+        .stubs()
+        .will(returnValue(true));
+    MOCKER(drvHdcGetTrustedBasePathV2).stubs().will(returnValue(0));
+    MOCKER(drvHdcSendFileV2).stubs().will(returnValue(0));
+    MOCKER_CPP(&ClientManager::IsAdcEnv)
+        .stubs()
+        .will(returnValue(false));
+    ProcessModeManager processModeManager(deviceId, 0);
+    PackageProcessConfig *pkgConInst = PackageProcessConfig::GetInstance();
+    std::string pkgName = "LoadPackageToDeviceByConfig_failed_test";
+    PackConfDetail packConfDetail;
+    packConfDetail.hostTruePath = "tmp123";
+    pkgConInst->configMap_[pkgName] = packConfDetail;
+    MOCKER_CPP(&ProcessModeManager::SupportLoadPkg)
+        .stubs()
+        .will(returnValue(true));
+    std::string hashcode = "12345666";
+    MOCKER(CalFileSha256HashValue)
+        .stubs()
+        .will(returnValue(hashcode));
+    MOCKER_CPP(&ProcessModeManager::IsCommonSinkHostAndDevicePkgSame).stubs().will(returnValue(false));
+    MOCKER_CPP(&ProcessModeManager::CompareAndSendCommonSinkPkg)
+        .stubs()
+        .will(returnValue(tsd::TSD_OK));
+    processModeManager.rspCode_ = ResponseCode::FAIL;
+    processModeManager.loadPackageErrorMsg_ = "cms verify failed. verifyFlag is not [Close], verifyFlag[XXX]";
+    auto ret = processModeManager.LoadPackageToDeviceByConfig();
+    EXPECT_EQ(ret, tsd::TSD_INTERNAL_ERROR);
+    EXPECT_TRUE(processModeManager.loadPackageErrorMsg_.empty());
+}
+
+TEST_F(ProcessManagerTest, LoadPackageToDeviceByConfig_failed_verify_failed_signature_verification_failed)
+{
+    MOCKER_CPP(&ProcessModeManager::IsSupportCommonInterface)
+        .stubs()
+        .will(returnValue(true));
+    MOCKER(drvHdcGetTrustedBasePathV2).stubs().will(returnValue(0));
+    MOCKER(drvHdcSendFileV2).stubs().will(returnValue(0));
+    MOCKER_CPP(&ClientManager::IsAdcEnv)
+        .stubs()
+        .will(returnValue(false));
+    ProcessModeManager processModeManager(deviceId, 0);
+    PackageProcessConfig *pkgConInst = PackageProcessConfig::GetInstance();
+    std::string pkgName = "LoadPackageToDeviceByConfig_failed_test";
+    PackConfDetail packConfDetail;
+    packConfDetail.hostTruePath = "tmp123";
+    pkgConInst->configMap_[pkgName] = packConfDetail;
+    MOCKER_CPP(&ProcessModeManager::SupportLoadPkg)
+        .stubs()
+        .will(returnValue(true));
+    std::string hashcode = "12345666";
+    MOCKER(CalFileSha256HashValue)
+        .stubs()
+        .will(returnValue(hashcode));
+    MOCKER_CPP(&ProcessModeManager::IsCommonSinkHostAndDevicePkgSame).stubs().will(returnValue(false));
+    MOCKER_CPP(&ProcessModeManager::CompareAndSendCommonSinkPkg)
+        .stubs()
+        .will(returnValue(tsd::TSD_OK));
+    processModeManager.rspCode_ = ResponseCode::FAIL;
+    processModeManager.loadPackageErrorMsg_ = "cms verify failed. Signature verification failed.";
+    auto ret = processModeManager.LoadPackageToDeviceByConfig();
+    EXPECT_EQ(ret, tsd::TSD_INTERNAL_ERROR);
+    EXPECT_TRUE(processModeManager.loadPackageErrorMsg_.empty());
+}
+
 TEST_F(ProcessManagerTest, GetShortSocVersion_Success) 
 { 
     MOCKER(halGetSocVersion).stubs().will(invoke(halGetSocVersionStub)); 

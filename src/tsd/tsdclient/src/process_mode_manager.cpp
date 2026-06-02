@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <regex>
 #include <chrono>
 #include <sys/file.h>
@@ -73,6 +74,42 @@ const std::map<std::string, std::vector<tsd::ChipType_t>> PKG_CHIP_SUPPORT_MAP =
 const int64_t SUPPORT_MAX_DEVICE_PER_HOST = 8;
 const std::string MUTEX_FILE_PREFIX = "sink_file_mutex_";
 using TimePoint = std::chrono::high_resolution_clock::time_point;
+std::string extractSubString(const std::string& input, const std::string& begin, const std::string& end)
+{
+    size_t pos = input.find(begin);
+    if (pos == std::string::npos) {
+        return "";
+    }
+    size_t left = pos + begin.length();
+    size_t right = input.find(end, left);
+    if (right == std::string::npos) {
+        return "";
+    }
+    return input.substr(left, right - left);
+}
+
+std::string ConstructVerifyPkgErrorReason(const std::string& loadPackageErrorMsg)
+{
+    std::string reason;
+    if (loadPackageErrorMsg.find("does not match") != std::string::npos) {
+        const std::string certType = extractSubString(loadPackageErrorMsg, "certType [", "]");
+        const std::string verifyFlag = extractSubString(loadPackageErrorMsg, "verifyFlag [", "]");
+        reason = "The current signature verification mode is [" + verifyFlag +
+                 "], which does not match the actual digital signature [" + certType +
+                 "] of the software package. Change the signature verification mode";
+    } else if (loadPackageErrorMsg.find("verifyFlag is not [Close]") != std::string::npos) {
+        const std::string verifyFlag = extractSubString(loadPackageErrorMsg, "verifyFlag [", "]");
+        reason = "The signature verification mode has been enabled. However, the soft package does not "
+                 "have a signature. Disable signature verification or use a software package whose "
+                 "digital signature matches the current signature verification mode [" +
+                 verifyFlag + "]";
+    } else if (loadPackageErrorMsg.find("Signature verification failed") != std::string::npos) {
+        reason = "Signature verification failed. The possible cause is that a multi-bit ECC error occurred "
+                 "on the device or the software package has been tampered with. Obtain the device log, check whether "
+                 "ECC errors are reported, and contact technical support at https://www.hiascend.com/support";
+    }
+    return reason;
+}
 }  // namespace
 
 namespace tsd {
@@ -2281,9 +2318,23 @@ TSD_StatusT ProcessModeManager::LoadPackageToDeviceByConfig()
         }
 
         if (static_cast<uint32_t>(rspCode_) != 0U) {
+            bool reportedFlag = false;
             if (!loadPackageErrorMsg_.empty()) {
                 TSD_ERROR("[Device error message] %s", loadPackageErrorMsg_.c_str());
+                if (loadPackageErrorMsg_.find("cms verify failed") != std::string::npos) {
+                    const std::string reason = ConstructVerifyPkgErrorReason(loadPackageErrorMsg_);
+                    if (!reason.empty()) {
+                        const std::vector<std::string> keys{"package_name", "reason"};
+                        const std::vector<std::string> values{pkgPureName, reason};
+                        REPORT_INPUT_ERROR("E30009", keys, values);
+                        reportedFlag = true;
+                    }
+                }
                 loadPackageErrorMsg_ = "";
+            }
+            if (reportedFlag == false) {
+                REPORT_INPUT_ERROR(
+                    "E39011", std::vector<std::string>{"package_name"}, std::vector<std::string>{pkgPureName});
             }
             TSD_ERROR("host and device checkcode compare failed package:%s", pkgPureName.c_str());
             return TSD_INTERNAL_ERROR;
