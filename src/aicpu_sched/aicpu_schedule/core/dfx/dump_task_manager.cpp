@@ -883,7 +883,6 @@ int32_t OpDumpTaskManager::DumpOpTaskDataforKfc(const KfcDumpTask &taskKey, void
     const uint32_t deviceId = iter->second->GetDeviceId();
     const std::string opName = iter->second->GetOpName();
 
-
     IDE_SESSION ideSession = DumpSessionManager::GetInstance().GetSession(hostPid, deviceId);
     if (ideSession == nullptr) {
         aicpusd_err("op name[%s], call IdeDumpStart failed, path[%s]. length [%u], streamId[%u], taskId[%u], index[%u]",

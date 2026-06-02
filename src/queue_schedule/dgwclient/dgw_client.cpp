@@ -38,8 +38,8 @@ constexpr uint16_t MAJOR_VERSION = 3U;
 constexpr uint32_t QUERY_LINK_STATUS_INTERVAL = 100000U;  // 100ms
 constexpr uint32_t QUERY_LINK_STATUS_UNIT = 1000000U;  // 1s
 constexpr uint16_t RESOURCE_ID_HOST_DEVICE_BIT_NUM = 14;
-constexpr uint16_t ROUCE_ID_DEVICE_ID_DATA_MASK = 0x3FFF;
-constexpr uint16_t ROUCE_ID_FRONT_PART_DATA_MASK = 0xC000;
+constexpr uint16_t ROUCE_ID_DEVICE_ID_DATA_MASK = 0x3FFFU;
+constexpr uint16_t ROUCE_ID_FRONT_PART_DATA_MASK = 0xC000U;
 
 std::vector<uint32_t> g_userDeviceInfo;
 bool g_hadGetVisibleDevices = false;
@@ -219,8 +219,8 @@ int32_t DgwClient::CreateHcomHandle(const std::string &rankTable, const int32_t 
     info.rankTableOffset = sizeof(HcomHandleInfo);
 
     std::list<std::pair<uintptr_t, size_t>> dataList;
-    dataList.emplace_back(std::make_pair(PtrToValue(&info), sizeof(HcomHandleInfo)));
-    dataList.emplace_back(std::make_pair(PtrToValue(rankTable.c_str()), rankTable.length()));
+    (void)dataList.emplace_back(std::make_pair(PtrToValue(&info), sizeof(HcomHandleInfo)));
+    (void)dataList.emplace_back(std::make_pair(PtrToValue(rankTable.c_str()), rankTable.length()));
 
     // operate config to server
     std::vector<int32_t> emptyVec;
@@ -261,7 +261,7 @@ int32_t DgwClient::DestroyHcomHandle(const uint64_t handle, const int32_t timeou
     info.hcomHandle = handle;
 
     std::list<std::pair<uintptr_t, size_t>> dataList;
-    dataList.emplace_back(std::make_pair(PtrToValue(&info), sizeof(HcomHandleInfo)));
+    (void)dataList.emplace_back(std::make_pair(PtrToValue(&info), sizeof(HcomHandleInfo)));
 
     // operate config to server
     std::vector<int32_t> emptyVec;
@@ -307,7 +307,7 @@ int32_t DgwClient::UpdateConfig(ConfigInfo &cfgInfo, std::vector<int32_t> &cfgRe
     if (isServerOldVersion_ && IsGroupOperationCmd(cfgInfo)) {
         Endpoint *endpoints = cfgInfo.cfg.groupCfg.endpoints;
         if (endpoints != nullptr) {
-            bqs::EndpointType type = endpoints->type;
+            const bqs::EndpointType type = endpoints->type;
             if (type == bqs::EndpointType::MEM_QUEUE &&
                 endpoints->attr.memQueueAttr.queueType == bqs::CLIENT_Q) {
                 BQS_LOG_ERROR("[DgwClient] isServerOldVersion CLIENT_Q function interception");
@@ -384,7 +384,7 @@ int32_t DgwClient::QueryConfig(const ConfigQuery &query, ConfigInfo &cfgInfo, co
     std::list<std::pair<uintptr_t, size_t>> dataList;
     // calculate query length: 1. config query
     const size_t qryLen = sizeof(ConfigQuery);
-    dataList.emplace_back(std::make_pair(PtrToValue(&query), sizeof(ConfigQuery)));
+    (void)dataList.emplace_back(std::make_pair(PtrToValue(&query), sizeof(ConfigQuery)));
     // here is to consider compatibility between client and server different versions
     std::unique_ptr<Route[]> spareRoutes = nullptr;
     std::unique_ptr<Endpoint[]> spareEndpoints = nullptr;
@@ -402,6 +402,8 @@ int32_t DgwClient::QueryConfig(const ConfigQuery &query, ConfigInfo &cfgInfo, co
             BQS_LOG_ERROR("[DgwClient] malloc failed on spareEndpoints.");
             return static_cast<int32_t>(BQS_STATUS_INNER_ERROR);
         }
+    } else {
+        BQS_LOG_INFO("[DgwClient] config cmd is %d.", static_cast<int32_t>(cfgInfo.cmd));
     }
     
     // calculate config length: 2.config info + 3.Routes or Endpoints
@@ -446,7 +448,7 @@ int32_t DgwClient::QueryConfigNum(ConfigQuery &query, const int32_t timeout)
     std::list<std::pair<uintptr_t, size_t>> dataList;
     // calculate query length: 1. config query
     const size_t qryLen = sizeof(ConfigQuery);
-    dataList.emplace_back(std::make_pair(PtrToValue(&query), sizeof(ConfigQuery)));
+    (void)dataList.emplace_back(std::make_pair(PtrToValue(&query), sizeof(ConfigQuery)));
     // calculate result length: 2.config results
     constexpr size_t retLen = sizeof(CfgRetInfo);
 
@@ -871,7 +873,7 @@ uint32_t HandleMemQueue(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
 
 uint32_t HandleGroup(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
 {
-    size_t groupAttrSize = sizeof(srcEndPoint.attr.groupAttr);
+    const size_t groupAttrSize = sizeof(srcEndPoint.attr.groupAttr);
     const auto cpyRet = memcpy_s(
         (void *)(&dstEndPoint.attr.groupAttr), groupAttrSize, (void *)(&srcEndPoint.attr.groupAttr), groupAttrSize);
     if (cpyRet != EOK) {
@@ -883,7 +885,7 @@ uint32_t HandleGroup(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
 
 uint32_t HandleCommChannel(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
 {
-    size_t channelAttrSize = sizeof(srcEndPoint.attr.channelAttr);
+    const size_t channelAttrSize = sizeof(srcEndPoint.attr.channelAttr);
     const auto cpyRet = memcpy_s((void *)(&dstEndPoint.attr.channelAttr), channelAttrSize,
         (void *)(&srcEndPoint.attr.channelAttr), channelAttrSize);
     if (cpyRet != EOK) {
@@ -924,7 +926,6 @@ uint32_t EndpointTransformMemQ2Q(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
         BQS_LOG_ERROR("[EndpointTransformMemQ2Q] should not reach here");
         return static_cast<int32_t>(BQS_STATUS_INNER_ERROR);
     }
-    return static_cast<int32_t>(BQS_STATUS_OK);
 }
 
 int32_t EndpointTransformQ2MemQ(std::unique_ptr<Endpoint[]> &endpoints, uint32_t endpointNum)
@@ -955,10 +956,10 @@ int32_t GroupQueueTransform(Endpoint *endpoints, uint32_t endpointNum, std::uniq
     }
 
     for (uint32_t rdx = 0; rdx < endpointNum; rdx++) {
-        uint32_t ret = EndpointTransformMemQ2Q(spareEndpoints[rdx], endpoints[rdx]);
+        const uint32_t ret = EndpointTransformMemQ2Q(spareEndpoints[rdx], endpoints[rdx]);
         if (ret != static_cast<int32_t>(BQS_STATUS_OK)) {
             BQS_LOG_ERROR("[GroupQueueTransform] transfer error ret=%u", ret);
-            return ret;
+            return static_cast<int32_t>(ret);
         }
     }
     return static_cast<int32_t>(BQS_STATUS_OK);
@@ -983,16 +984,16 @@ int32_t MemQueueAttr2queueAttrTransform(Route *routes, uint32_t routeNum, std::u
         spareRoutes[rdx].status = routes[rdx].status;
         // src copy
         uint32_t ret = EndpointTransformMemQ2Q(spareRoutes[rdx].src, routes[rdx].src);
-        if (ret != static_cast<int32_t>(BQS_STATUS_OK)) {
+        if (ret != static_cast<uint32_t>(BQS_STATUS_OK)) {
             BQS_LOG_ERROR("[MemQueueAttr2queueAttrTransform] transfer error ret=%u", ret);
-            return ret;
+            return static_cast<int32_t>(ret);
         }
 
         // dst copy
         ret = EndpointTransformMemQ2Q(spareRoutes[rdx].dst, routes[rdx].dst);
-        if (ret != static_cast<int32_t>(BQS_STATUS_OK)) {
+        if (ret != static_cast<uint32_t>(BQS_STATUS_OK)) {
             BQS_LOG_ERROR("[MemQueueAttr2queueAttrTransform] transfer error ret=%u", ret);
-            return ret;
+            return static_cast<int32_t>(ret);
         }
     }
     return static_cast<int32_t>(BQS_STATUS_OK);
@@ -1003,7 +1004,7 @@ int32_t DgwClient::ChangeDynamicScheduleDeviceId(const ConfigInfo &cfgInfo)
     BQS_LOG_INFO("[DgwClient] begin to process dynamic schedule device id.");
     if (cfgInfo.cfg.dynamicSchedCfgV2->requestQ.deviceType == 0) {
         uint32_t logicDeviceId = cfgInfo.cfg.dynamicSchedCfgV2->requestQ.deviceId;
-        auto cRet = ChangeUserDeviceIdToLogicDeviceId(cfgInfo.cfg.dynamicSchedCfgV2->requestQ.deviceId, logicDeviceId);
+        const auto cRet = ChangeUserDeviceIdToLogicDeviceId(cfgInfo.cfg.dynamicSchedCfgV2->requestQ.deviceId, logicDeviceId);
         if (cRet != static_cast<int32_t>(BQS_STATUS_OK)) {
             BQS_LOG_ERROR("[DgwClient] ChangeUserDeviceIdToLogicDeviceId failed ret [%d]", cRet);
             return static_cast<int32_t>(BQS_STATUS_PARAM_INVALID);
@@ -1012,7 +1013,7 @@ int32_t DgwClient::ChangeDynamicScheduleDeviceId(const ConfigInfo &cfgInfo)
     }
     if (cfgInfo.cfg.dynamicSchedCfgV2->responseQ.deviceType == 0) {
         uint32_t logicDeviceId = cfgInfo.cfg.dynamicSchedCfgV2->responseQ.deviceId;
-        auto cRet = ChangeUserDeviceIdToLogicDeviceId(cfgInfo.cfg.dynamicSchedCfgV2->responseQ.deviceId, logicDeviceId);
+        const auto cRet = ChangeUserDeviceIdToLogicDeviceId(cfgInfo.cfg.dynamicSchedCfgV2->responseQ.deviceId, logicDeviceId);
         if (cRet != static_cast<int32_t>(BQS_STATUS_OK)) {
             BQS_LOG_ERROR("[DgwClient] ChangeUserDeviceIdToLogicDeviceId failed ret [%d]", cRet);
             return static_cast<int32_t>(BQS_STATUS_PARAM_INVALID);
@@ -1026,12 +1027,12 @@ int32_t DgwClient::ProcessEndpointDeviceId(Endpoint &endpoint) const
 {
     BQS_LOG_INFO("[DgwClient] begin to process endpoint deviceId %u.", endpoint.resId);
     if (isProxy_ && QSFeatureCtrl::IsSupportSetVisibleDevices(g_chipType)) {
-        bool isHostQueue = ((endpoint.resId >> RESOURCE_ID_HOST_DEVICE_BIT_NUM) & 1) ? true : false;
+        const bool isHostQueue = ((endpoint.resId >> RESOURCE_ID_HOST_DEVICE_BIT_NUM) & 1U) ? true : false;
         if (!isHostQueue) {
-            uint32_t frontPart = endpoint.resId & ROUCE_ID_FRONT_PART_DATA_MASK;
-            uint32_t rearPart = endpoint.resId & ROUCE_ID_DEVICE_ID_DATA_MASK;
+            const uint32_t frontPart = endpoint.resId & ROUCE_ID_FRONT_PART_DATA_MASK;
+            const uint32_t rearPart = endpoint.resId & ROUCE_ID_DEVICE_ID_DATA_MASK;
             uint32_t tmpRearPart = rearPart;
-            auto cRet = ChangeUserDeviceIdToLogicDeviceId(rearPart, tmpRearPart);
+            const auto cRet = ChangeUserDeviceIdToLogicDeviceId(rearPart, tmpRearPart);
             if (cRet != static_cast<int32_t>(BQS_STATUS_OK)) {
                 BQS_LOG_ERROR("[DgwClient] ChangeUserDeviceIdToLogicDeviceId failed ret [%d]", cRet);
                 return static_cast<int32_t>(BQS_STATUS_PARAM_INVALID);
@@ -1063,16 +1064,16 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
             }
 
             for (uint32_t rdx = 0; rdx < routeNum; rdx++) {
-                auto pRet = ProcessEndpointDeviceId(routes[rdx].src) + ProcessEndpointDeviceId(routes[rdx].dst);
+                const auto pRet = ProcessEndpointDeviceId(routes[rdx].src) + ProcessEndpointDeviceId(routes[rdx].dst);
                 if (pRet != static_cast<int32_t>(BQS_STATUS_OK)) {
                     return static_cast<int32_t>(BQS_STATUS_PARAM_INVALID);
                 }
             }
 
             cfgLen += (sizeof(cfgInfo) + static_cast<size_t>(routeNum) * sizeof(Route));
-            dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
+            (void)dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
             if (!isServerOldVersion_) {
-                dataList.emplace_back(std::make_pair(PtrToValue(routes), routeNum * sizeof(Route)));
+                (void)dataList.emplace_back(std::make_pair(PtrToValue(routes), routeNum * sizeof(Route)));
             } else {
                 BQS_LOG_INFO("[CalcConfigInfoLen] old version try to transfer mem queue");
                 const auto cpyRet = memcpy_s(static_cast<void *>(spareRoutes.get()), routeNum * sizeof(Route),
@@ -1089,9 +1090,9 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
                     return ret;
                 }
                 if (ret == static_cast<int32_t>(BQS_STATUS_NO_NEED_MEM_QUEUE_TRANSFORM)) {
-                    dataList.emplace_back(std::make_pair(PtrToValue(routes), routeNum * sizeof(Route)));
+                    (void)dataList.emplace_back(std::make_pair(PtrToValue(routes), routeNum * sizeof(Route)));
                 } else {
-                    dataList.emplace_back(std::make_pair(PtrToValue(spareRoutes.get()), routeNum * sizeof(Route)));
+                    (void)dataList.emplace_back(std::make_pair(PtrToValue(spareRoutes.get()), routeNum * sizeof(Route)));
                 }
             }
             break;
@@ -1105,7 +1106,7 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
             }
             
             for (uint32_t rdx = 0; rdx < cfgInfo.cfg.groupCfg.endpointNum; rdx++) {
-                auto pRet = ProcessEndpointDeviceId(endpoints[rdx]);
+                const auto pRet = ProcessEndpointDeviceId(endpoints[rdx]);
                 if (pRet != static_cast<int32_t>(BQS_STATUS_OK)) {
                     return static_cast<int32_t>(BQS_STATUS_PARAM_INVALID);
                 }
@@ -1118,9 +1119,9 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
             }
             const size_t endpointsLen = endpointNum * sizeof(Endpoint);
             cfgLen += (sizeof(cfgInfo) + endpointsLen);
-            dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
+            (void)dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
             if (!isServerOldVersion_) {
-                dataList.emplace_back(std::make_pair(PtrToValue(endpoints), endpointsLen));
+                (void)dataList.emplace_back(std::make_pair(PtrToValue(endpoints), endpointsLen));
             } else {
                 BQS_LOG_INFO("[CalcConfigInfoLen] old version group try to transfer mem queue");
                 const auto cpyRet = memcpy_s(static_cast<void *>(spareEndpoints.get()), endpointNum * sizeof(Endpoint),
@@ -1137,9 +1138,9 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
                     return ret;
                 }
                 if (ret == static_cast<int32_t>(BQS_STATUS_NO_NEED_MEM_QUEUE_TRANSFORM)) {
-                    dataList.emplace_back(std::make_pair(PtrToValue(endpoints), endpointsLen));
+                    (void)dataList.emplace_back(std::make_pair(PtrToValue(endpoints), endpointsLen));
                 } else {
-                    dataList.emplace_back(std::make_pair(PtrToValue(spareEndpoints.get()), endpointsLen));
+                    (void)dataList.emplace_back(std::make_pair(PtrToValue(spareEndpoints.get()), endpointsLen));
                 }
             }
             break;
@@ -1148,20 +1149,20 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
         case ConfigCmd::DGW_CFG_CMD_DEL_GROUP:
         case ConfigCmd::DGW_CFG_CMD_SET_HCCL_PROTOCOL: {
             cfgLen += sizeof(cfgInfo);
-            dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
+            (void)dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
             break;
         }
         case ConfigCmd::DGW_CFG_CMD_INIT_DYNAMIC_SCHEDULE: {
             if (isProxy_ && QSFeatureCtrl::IsSupportSetVisibleDevices(g_chipType) && cfgInfo.cfg.dynamicSchedCfgV2 != nullptr) {
-                auto cRet = ChangeDynamicScheduleDeviceId(cfgInfo);
+                const auto cRet = ChangeDynamicScheduleDeviceId(cfgInfo);
                 if (cRet != static_cast<int32_t>(BQS_STATUS_OK)) {
                     return cRet;
                 }
             }
 
             cfgLen += sizeof(cfgInfo) + sizeof(DynamicSchedConfigV2);
-            dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
-            dataList.emplace_back(std::make_pair(PtrToValue(cfgInfo.cfg.dynamicSchedCfgV2),
+            (void)dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
+            (void)dataList.emplace_back(std::make_pair(PtrToValue(cfgInfo.cfg.dynamicSchedCfgV2),
                 sizeof(DynamicSchedConfigV2)));
             break;
         }
@@ -1169,8 +1170,8 @@ int32_t DgwClient::CalcConfigInfoLen(const ConfigInfo &cfgInfo, size_t &cfgLen,
         case ConfigCmd::DGW_CFG_CMD_CLEAR_AND_RESTART_SCHEDULE: {
             const size_t rootModelIdsLen = cfgInfo.cfg.reDeployCfg.rootModelNum * sizeof(uint32_t);
             cfgLen += sizeof(cfgInfo) + rootModelIdsLen;
-            dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
-            dataList.emplace_back(std::make_pair(cfgInfo.cfg.reDeployCfg.rootModelIdsAddr, rootModelIdsLen));
+            (void)dataList.emplace_back(std::make_pair(PtrToValue(&cfgInfo), sizeof(ConfigInfo)));
+            (void)dataList.emplace_back(std::make_pair(cfgInfo.cfg.reDeployCfg.rootModelIdsAddr, rootModelIdsLen));
             break;
         }
         default: {
@@ -1421,7 +1422,7 @@ int32_t DgwClient::WaitConfigEffect(const int32_t rsv, const int32_t timeout)
             BQS_LOG_INFO("[DgwClient] WaitConfigEffect not support");
             return static_cast<int32_t>(BQS_STATUS_NOT_SUPPORT);
         } else {
-            usleep(QUERY_LINK_STATUS_INTERVAL);
+            (void)usleep(QUERY_LINK_STATUS_INTERVAL);
         }
     }
     BQS_LOG_ERROR("[DgwClient] WaitConfigEffect Failed");
@@ -1432,7 +1433,7 @@ int32_t DgwClient::GetPlatformInfo(const uint32_t deviceId)
 {
     BQS_LOG_INFO("[DgwClient] begin to GetPlatformInfo, deviceId=%u", deviceId);
     int64_t hardwareVersion = 0;
-    auto drvRet = halGetDeviceInfo(deviceId, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION, &hardwareVersion);
+    const auto drvRet = halGetDeviceInfo(deviceId, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION, &hardwareVersion);
     if (drvRet != DRV_ERROR_NONE) {
         BQS_LOG_ERROR("get device info by halGetDeviceInfo failed, errorCode[%d] deviceId[%u]", drvRet, deviceId);
         return static_cast<int32_t>(BQS_STATUS_FAILED);
@@ -1447,8 +1448,8 @@ bool DgwClient::IsNumeric(const std::string& str) {
     if (str.empty()) {
         return false;
     }
-    for (char c : str) {
-        if (!isdigit(c)) {
+    for (const char c : str) {
+        if (!isdigit(static_cast<unsigned char>(c))) {
             return false;
         }
     }

@@ -2252,7 +2252,7 @@ bool ProcessModeManager::SupportLoadPkg(const std::string &pkgName) const
         return false;
     }
 
-    uint32_t currentChipType = GetPlatInfoChipType();
+    const uint32_t currentChipType = GetPlatInfoChipType();
     const size_t vecSize = iter->second.size();
     for (size_t index = 0; index < vecSize; index++) {
         if (currentChipType == static_cast<uint32_t>(iter->second[index])) {
@@ -2386,7 +2386,7 @@ bool ProcessModeManager::GetShortSocVersion(std::string &shortSocVersion) const
     fe::OptionalInfos optionalInfos;	 
     fe::PlatFormInfos platformInfos;	 
     fe::PlatformInfoManager::Instance().GetPlatformInfos(socVersion, platformInfos, optionalInfos);	 
-    bool ret = platformInfos.GetPlatformRes("version", "Short_SoC_version", shortSocVersion);
+    const bool ret = platformInfos.GetPlatformRes("version", "Short_SoC_version", shortSocVersion);
     if (!ret) {
         TSD_RUN_WARN("get short_soc_version by fe::PlatFormInfos::GetPlatformRes failed.");
         return false;

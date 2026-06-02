@@ -19,7 +19,7 @@ namespace bqs {
     } ChipType_t;
 
     bool QSFeatureCtrl::IsSupportSetVisibleDevices(int64_t chip) {
-        ChipType_t g_chipType = static_cast<ChipType_t>(chip);
+        const ChipType_t g_chipType = static_cast<ChipType_t>(chip);
         switch (g_chipType) {
             case CHIP_ASCEND_910A:
             case CHIP_ASCEND_910B:
@@ -32,10 +32,12 @@ namespace bqs {
     }
 
     bool QSFeatureCtrl::ShouldSetThreadFIFO(uint32_t deviceId) {
+        (void)deviceId;
         return false;
     }
 
     bool QSFeatureCtrl::ShouldAddToCGroup(uint32_t deviceId) {
+        (void)deviceId;
         return true;
     }
 
@@ -44,10 +46,12 @@ namespace bqs {
     }
 
     bool QSFeatureCtrl::ShouldDisableRecvRequestEvent(uint32_t deviceId) {
+        (void)deviceId;
         return false;
     }
 
     bool QSFeatureCtrl::ShouldSetPidPriority(uint32_t deviceId) {
+        (void)deviceId;
         return false;
     }
 }

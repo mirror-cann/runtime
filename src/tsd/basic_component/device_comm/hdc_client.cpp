@@ -301,7 +301,7 @@ namespace tsd {
     {
         hdcSessStat = HDC_SESSION_STATUS_CONNECT;
         int32_t halVersion;
-        drvError_t ret = halGetAPIVersion(&halVersion);
+        const drvError_t ret = halGetAPIVersion(&halVersion);
         if (ret != DRV_ERROR_NONE) {
             TSD_ERROR("Get driver api version failed, ret[%d].", static_cast<int32_t>(ret));
             return TSD_HDC_SESSION_STATUS_GET_FAILED;
@@ -309,7 +309,7 @@ namespace tsd {
         if (halVersion > HDC_SOCKET_STATUS_GET_VERSION) {
             const std::lock_guard<std::recursive_mutex> lkSessionMap(mutextForClientSessionMap_);
             for (auto iter = hdcClientSessionMap_.cbegin(); iter != hdcClientSessionMap_.cend(); iter++) {
-                TSD_StatusT getStatusRet = hdcCommon_.GetHdcAttrStatus(iter->second, hdcSessStat);
+                const TSD_StatusT getStatusRet = hdcCommon_.GetHdcAttrStatus(iter->second, hdcSessStat);
                 if (getStatusRet != TSD_OK) {
                     return TSD_HDC_SESSION_STATUS_GET_FAILED;
                 }
@@ -352,7 +352,7 @@ namespace tsd {
     void HdcClient::ClearClientPtr()
     {
         TSD_INFO("begin HdcClient::ClearClientPtr");
-        uint64_t index = KeyCompose(deviceId_, DeviceCommType::HDC);
+        const uint64_t index = KeyCompose(deviceId_, DeviceCommType::HDC);
         std::recursive_mutex *deviceCommMutex = MutexForDeviceCommMap();
         std::map<uint64_t, std::shared_ptr<DeviceComm>> *deviceCommMap = DeviceCommMap();
         if ((deviceCommMutex == nullptr) || (deviceCommMap == nullptr)) {
@@ -447,7 +447,7 @@ namespace tsd {
     TSD_StatusT HdcClient::RecvMsg(const uint32_t sessionId, HDCMessage& msg, const uint32_t timeout)
     {
         HDC_SESSION session = nullptr;
-        TSD_StatusT ret = GetHdcSession(sessionId, session);
+        const TSD_StatusT ret = GetHdcSession(sessionId, session);
         if (ret != TSD_OK) {
             TSD_RUN_WARN("[TsdEVENT] GetHdcSession was not successful, ret[%d]", ret);
             return TSD_HDC_RECV_MSG_ERROR;

@@ -120,7 +120,6 @@ namespace tsd {
         TSD_StatusT SendHdcDefaultMsg(HDC_SESSION const session, char_t * const hdcMsgBuf,
                                       const uint32_t size);
 
-
         /**
         * @ingroup HdcCommon
         * @brief   Receive 接收

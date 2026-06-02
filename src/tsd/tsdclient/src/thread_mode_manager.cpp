@@ -504,6 +504,7 @@ TSD_StatusT ThreadModeManager::CloseNetService()
 }
 TSD_StatusT ThreadModeManager::OpenNetService(const NetServiceOpenArgs *args)
 {
+    (void)args;
     return TSD_OPEN_NOT_SUPPORT_NET_SERVICE;
 }
 }  // namespace tsd

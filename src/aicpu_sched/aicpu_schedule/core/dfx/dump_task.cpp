@@ -1243,7 +1243,6 @@ StatusCode OpDumpTask::ProcessDumpStats(const std::string &dumpFilePath)
 
 StatusCode OpDumpTask::DoDumpStats(const std::string &dumpFilePath, const std::string &content)
 {
-
     IDE_SESSION ideSession = DumpSessionManager::GetInstance().GetSession(hostPid_, deviceId_);
     if (ideSession == nullptr) {
         aicpusd_err("op name[%s], call IdeDumpStart failed, path[%s].", opName_.c_str(), dumpFilePath.c_str());

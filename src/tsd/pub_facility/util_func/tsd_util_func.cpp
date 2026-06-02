@@ -109,7 +109,7 @@ namespace tsd {
 
     bool IsFpgaEnv()
     {
-        static bool isFpga = GetFlagFromEnv("DATAMASTER_RUN_MODE", "1");
+        static const bool isFpga = GetFlagFromEnv("DATAMASTER_RUN_MODE", "1");
         return isFpga;
     }
 
@@ -297,7 +297,7 @@ namespace tsd {
             
             count++;
             if (count > 0) {
-                closedir(dir);
+                (void)closedir(dir);
                 return false;
             }
         }
