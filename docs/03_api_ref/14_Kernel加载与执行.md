@@ -1371,18 +1371,18 @@ aclError aclrtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, aclrtStr
 
 | 参数名 | 输入/输出 | 说明                                                                                                  |
 | --- | :---: |-----------------------------------------------------------------------------------------------------|
-| func | 输入 | 核函数名（__global__声明的函数名，比如myKernel）。func也可以传入通过aclrtBinaryGetFunction、aclrtBinaryGetFunctionByEntry获取的aclrtFuncHandle，aclrtFuncHandle类型定义请参见[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)。                                   |
+| func | 输入 | 内核函数指针（可以是符号或[aclrtFuncHandle](25_数据类型及其操作接口.md#aclrtFuncHandle)）。                                  |
 | numBlocks | 输入 | 指定核函数将会在几个核上执行。                                                                                     |
 | stream | 输入 | 指定执行任务的Stream。类型定义请参见[aclrtStream](25_数据类型及其操作接口.md#aclrtStream)。                                   |
 | cfg | 输入 | 任务下发的配置信息。类型定义请参见[aclrtLaunchKernelCfg](25_数据类型及其操作接口.md#aclrtLaunchKernelCfg)。<br>不指定配置时，此处可传NULL。 |
-| args | 输入 | 参数数组指针。<br/>参数数组中的每个元素指向一个核函数参数数据。                                                                  |
+| args | 输入 | 参数数组指针。<br/>参数数组中的每个元素均指向核函数参数数据在Host侧的内存地址。                                                        |
 
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25_数据类型及其操作接口.md#aclError)。
 
 ### 约束说明
-如果args参数数组的大小与核函数的参数数量不一致，会导致未定义行为。
+参数数组中的元素顺序需与核函数参数顺序保持一致，且参数数组大小需与核函数参数数量保持一致，否则会导致未定义行为。
 
 ### 参考资源
 
