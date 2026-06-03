@@ -2058,7 +2058,116 @@ TEST_F(NewCloudV2ApiTest, rtCheckArchCompatibility_socVersion)
     error = rtCheckArchCompatibility("Ascend910B1", &canCompatible);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    // restore all type
+// restore all type
+    rtInstance->SetSocVersion(socBak);
+}
+
+TEST_F(NewCloudV2ApiTest, rtGetAiCoreCount_invalid_value)
+{
+    rtError_t error;
+    uint32_t aiCoreCnt = 0;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    std::string socBak = rtInstance->GetSocVersion();
+    rtInstance->SetSocVersion("Ascend910B1");
+
+    std::string invalidValue = "invalid_string";
+    std::string label = "SoCInfo";
+    std::string key = "ai_core_cnt";
+    MOCKER_CPP(&PlatformManagerV2::GetSocSpec)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::eq(label), mockcpp::eq(key), outBound(invalidValue))
+        .will(returnValue(RT_ERROR_NONE));
+
+    error = rtGetAiCoreCount(&aiCoreCnt);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    rtInstance->SetSocVersion(socBak);
+}
+
+TEST_F(NewCloudV2ApiTest, rtGetAiCpuCount_invalid_value)
+{
+    rtError_t error;
+    uint32_t aiCpuCnt = 0;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    std::string socBak = rtInstance->GetSocVersion();
+    rtInstance->SetSocVersion("Ascend910B1");
+
+    std::string invalidValue = "invalid_string";
+    std::string label = "SoCInfo";
+    std::string key = "ai_cpu_cnt";
+    MOCKER_CPP(&PlatformManagerV2::GetSocSpec)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::eq(label), mockcpp::eq(key), outBound(invalidValue))
+        .will(returnValue(RT_ERROR_NONE));
+
+    error = rtGetAiCpuCount(&aiCpuCnt);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    rtInstance->SetSocVersion(socBak);
+}
+
+TEST_F(NewCloudV2ApiTest, rtModelCheckArchVersion_invalid_soc_version)
+{
+    rtError_t error;
+    ApiImpl impl;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    std::string socBak = rtInstance->GetSocVersion();
+    rtInstance->SetSocVersion("Ascend910B1");
+
+    int32_t rtn = RT_ERROR_NOT_FOUND;
+    MOCKER_CPP(&PlatformManagerV2::GetSocSpec)
+        .stubs()
+        .will(returnValue(rtn));
+
+    error = impl.ModelCheckArchVersion("InvalidSocVersion");
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    error = impl.ModelCheckArchVersion("Ascend910B1");
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    rtInstance->SetSocVersion(socBak);
+}
+
+TEST_F(NewCloudV2ApiTest, rtModelCheckArchVersion_hardware_soc_version_invalid)
+{
+    rtError_t error;
+    ApiImpl impl;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    std::string socBak = rtInstance->GetSocVersion();
+    rtInstance->SetSocVersion("InvalidHardwareSoc");
+
+    std::string validNpuArch = "100";
+    MOCKER_CPP(&PlatformManagerV2::GetSocSpec)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(validNpuArch))
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_NOT_FOUND));
+
+    error = impl.ModelCheckArchVersion("Ascend910B1");
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
+    rtInstance->SetSocVersion(socBak);
+}
+
+TEST_F(NewCloudV2ApiTest, rtCheckArchCompatibility_hardware_soc_version_invalid)
+{
+    rtError_t error;
+    int32_t canCompatible = 0;
+    ApiImpl impl;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    std::string socBak = rtInstance->GetSocVersion();
+    rtInstance->SetSocVersion("InvalidHardwareSoc");
+
+    std::string validNpuArch = "100";
+    MOCKER_CPP(&PlatformManagerV2::GetSocSpec)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(validNpuArch))
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_NOT_FOUND));
+
+    error = impl.CheckArchCompatibility("InvalidHardwareSoc", "Ascend910B1", &canCompatible);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+
     rtInstance->SetSocVersion(socBak);
 }
 

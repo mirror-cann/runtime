@@ -5385,7 +5385,7 @@ rtError_t ApiImpl::GetAiCoreCount(uint32_t * const aiCoreCnt)
         const uint32_t aiCoreCount = std::stoi(result);
         *aiCoreCnt = aiCoreCount;
     } catch (...) {
-        RT_LOG(RT_LOG_ERROR, "ai_core_cnt [%s] is invalid.", result.c_str());
+        RT_LOG(RT_LOG_ERROR, "ai_core_cnt=%s is invalid.", result.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
     
@@ -5406,7 +5406,7 @@ rtError_t ApiImpl::GetAiCpuCount(uint32_t * const aiCpuCnt)
         const uint32_t aiCpuCount = std::stoi(result);
         *aiCpuCnt = aiCpuCount;
     } catch (...) {
-        RT_LOG(RT_LOG_ERROR, "ai_cpu_cnt [%s] is invalid.", result.c_str());
+        RT_LOG(RT_LOG_ERROR, "ai_cpu_cnt=%s is invalid.", result.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
     
@@ -6003,7 +6003,7 @@ rtError_t ApiImpl::CheckArchCompatibility(const char_t *socVersion, const char_t
     int32_t inputNpuArch;
     rtError_t ret = GetNpuArchByName(omSocVersion, &inputNpuArch);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version [%s] is invalid", omSocVersion);
+        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version=%s is invalid", omSocVersion);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -6011,7 +6011,7 @@ rtError_t ApiImpl::CheckArchCompatibility(const char_t *socVersion, const char_t
     int32_t hardwareNpuArch;
     ret = GetNpuArchByName(socVersion, &hardwareNpuArch);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version [%s] is invalid", socVersion);
+        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version=%s is invalid", socVersion);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -6023,7 +6023,7 @@ rtError_t ApiImpl::CheckArchCompatibility(const char_t *socVersion, const char_t
         *canCompatible = archVerCompatible;
     }
     RT_LOG(RT_LOG_INFO,
-        "Arch compatibility check result: canCompatible=%d, socVersion = %s.",
+        "Arch compatibility check result: canCompatible=%d, socVersion=%s.",
         *canCompatible,
         omSocVersion);
     return RT_ERROR_NONE;
@@ -7104,7 +7104,7 @@ rtError_t ApiImpl::ModelCheckArchVersion(const char_t *omsocVersion)
     int32_t inputNpuArch;
     rtError_t ret = GetNpuArchByName(omsocVersion, &inputNpuArch);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version [%s] is invalid", omsocVersion);
+        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version=%s is invalid", omsocVersion);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -7112,7 +7112,7 @@ rtError_t ApiImpl::ModelCheckArchVersion(const char_t *omsocVersion)
     int32_t hardwareNpuArch;
     ret = GetNpuArchByName(socVersion.c_str(), &hardwareNpuArch);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version [%s] is invalid", socVersion.c_str());
+        RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR, "Soc version=%s is invalid", socVersion.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
 
