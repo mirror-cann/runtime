@@ -1414,12 +1414,15 @@ rtError_t ApiImpl::SetupArgument(const void * const setupArg, const uint32_t siz
     char_t * const launchArgs = launchArg.args;
     const errno_t ret = memcpy_s(launchArgs + offset, sizeof(launchArg.args) - offset,
         setupArg, static_cast<size_t>(size));
-    std::string extendInfo = "destAddr=" + std::to_string(RtPtrToValue(launchArgs + offset)) +
-                             ", srcAddr=" + std::to_string(RtPtrToValue(setupArg)) +
-                             ", maxLen=" + std::to_string(sizeof(launchArg.args) - offset) + "(bytes)" +
-                             ", actualLen=" + std::to_string(static_cast<size_t>(size)) + "(bytes)";
-    COND_RETURN_AND_MSG_OUTER(ret != EOK, RT_ERROR_SEC_HANDLE, ErrorCode::EE1020,
-        __func__, "memcpy_s", std::to_string(ret).c_str(), strerror(ret), extendInfo.c_str());
+    if (ret != EOK) {
+        std::string extendInfo = "destAddr=" + std::to_string(RtPtrToValue(launchArgs + offset)) +
+                                 ", srcAddr=" + std::to_string(RtPtrToValue(setupArg)) +
+                                 ", maxLen=" + std::to_string(sizeof(launchArg.args) - offset) + "(bytes)" +
+                                 ", actualLen=" + std::to_string(static_cast<size_t>(size)) + "(bytes)";
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__,
+            "memcpy_s", std::to_string(ret).c_str(), strerror(ret), extendInfo.c_str());
+        return RT_ERROR_SEC_HANDLE;
+    }
     const uint32_t totalSize = size + offset;
     // allow out of order call SetupArgument
     if (totalSize > launchArg.argSize) {
@@ -2857,12 +2860,9 @@ rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void 
         offset += sizeof(paramLength);
         // append DsaUpdateParam, refer to DsaUpdateParam struct
         ret = memcpy_s(args + offset, sizeof(src), &src, sizeof(src));
-        std::string extendInfo2 = "destAddr=" + std::to_string(RtPtrToValue(args + offset)) +
-                                  ", srcAddr=" + std::to_string(RtPtrToValue(&src)) +
-                                  ", maxLen=" + std::to_string(sizeof(src)) + "(bytes)" +
-                                  ", actualLen=" + std::to_string(sizeof(src)) + "(bytes)";
-        COND_RETURN_AND_MSG_OUTER(ret != EOK, RT_ERROR_SEC_HANDLE, ErrorCode::EE1020,
-            __func__, "memcpy_s", std::to_string(ret).c_str(), strerror(ret), extendInfo2.c_str());
+        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy src, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+            args + offset, &src, sizeof(src), sizeof(src), static_cast<uint32_t>(ret));
         offset += sizeof(src);
         ret = memcpy_s(args + offset, sizeof(outputSqeAddr), &outputSqeAddr, sizeof(outputSqeAddr));
         COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
@@ -8458,12 +8458,15 @@ rtError_t ApiImpl::KernelArgsAppend(RtArgsHandle *argsHandle, void *para, size_t
     argsHandle->para[index].dataOffset = 0U;
     const uintptr_t offset = reinterpret_cast<uintptr_t>(argsHandle->buffer) + static_cast<uint64_t>(realParaOffset);
     const errno_t ret = memcpy_s(reinterpret_cast<void *>(offset), paraSize, para, paraSize);
-    std::string extendInfo3 = "destAddr=" + std::to_string(offset) +
-                              ", srcAddr=" + std::to_string(RtPtrToValue(para)) +
-                              ", maxLen=" + std::to_string(paraSize) + "(bytes)" +
-                              ", actualLen=" + std::to_string(paraSize) + "(bytes)";
-    COND_RETURN_AND_MSG_OUTER(ret != EOK, RT_ERROR_INVALID_VALUE, ErrorCode::EE1020,
-        __func__, "memcpy_s", std::to_string(ret).c_str(), strerror(ret), extendInfo3.c_str());
+    if (ret != EOK) {
+        std::string extendInfo = "destAddr=" + std::to_string(offset) +
+                                  ", srcAddr=" + std::to_string(RtPtrToValue(para)) +
+                                  ", maxLen=" + std::to_string(paraSize) + "(bytes)" +
+                                  ", actualLen=" + std::to_string(paraSize) + "(bytes)";
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__,
+            "memcpy_s", std::to_string(ret).c_str(), strerror(ret), extendInfo.c_str());
+        return RT_ERROR_INVALID_VALUE;
+    }
     argsHandle->argsSize = needOccupyOffset; // 本地append参数后，内存偏移的变化
     argsHandle->realUserParamNum++;
 
@@ -8711,12 +8714,12 @@ rtError_t ApiImpl::FuncGetName(const Kernel * const kernel, const uint32_t maxLe
 {
     const errno_t error = memcpy_s(name, static_cast<size_t>(maxLen), kernel->Name_().c_str(), kernel->Name_().length() + 1U);
     if (error != EOK) {
-        std::string extendInfo4 = "destAddr=" + std::to_string(RtPtrToValue(name)) +
+        std::string extendInfo = "destAddr=" + std::to_string(RtPtrToValue(name)) +
                                   ", srcAddr=" + std::to_string(RtPtrToValue(kernel->Name_().c_str())) +
                                   ", maxLen=" + std::to_string(static_cast<size_t>(maxLen)) + "(bytes)" +
                                   ", actualLen=" + std::to_string(kernel->Name_().length() + 1U) + "(bytes)";
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__,
-            "memcpy_s", std::to_string(error).c_str(), strerror(error), extendInfo4.c_str());
+            "memcpy_s", std::to_string(error).c_str(), strerror(error), extendInfo.c_str());
         return RT_ERROR_SEC_HANDLE;
     }
     return RT_ERROR_NONE;

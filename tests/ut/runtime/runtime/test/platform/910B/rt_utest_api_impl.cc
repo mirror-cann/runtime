@@ -52,6 +52,8 @@
 #include "thread_local_container.hpp"
 #include "rts.h"
 #include "maintenance_task.h"
+#include "model/capture_model_utils.hpp"
+#include "inner_thread_local.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -1987,4 +1989,115 @@ TEST_F(CloudV2ApiImplTest, GetErrorVerbose_CtxNull)
     EXPECT_EQ(errorInfo.hasDetail, 0U);
     EXPECT_EQ(errorInfo.tryRepair, 0U);
     EXPECT_EQ(errorInfo.errorType, RT_NO_ERROR);
+}
+
+TEST_F(CloudV2ApiImplTest, SetupArgument_MemcpyFailure_EE1020)
+{
+    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    ApiImpl impl;
+    
+    LaunchArgment &launchArg = ThreadLocalContainer::GetLaunchArg();
+    launchArg.argCount = 0U;
+    launchArg.argSize = 0U;
+    
+    errno_t memcpyErr = EINVAL;
+    MOCKER(memcpy_s).stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(memcpyErr));
+    
+    char_t testData[32] = "test_data";
+    rtError_t error = impl.SetupArgument(testData, sizeof(testData), 0);
+    
+    EXPECT_EQ(error, RT_ERROR_SEC_HANDLE);
+    
+    GlobalMockObject::verify();
+    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+}
+
+TEST_F(CloudV2ApiImplTest, KernelArgsAppend_MemcpyFailure_EE1020)
+{
+    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    ApiImpl impl;
+    ApiDecorator api(&impl);
+    
+    PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
+    Program *program = &stubProg;
+    int32_t fun1;
+    Kernel *k1 = new Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
+    k1->SetStub_(&fun1);
+    k1->userParaNum_ = 2;
+    k1->systemParaNum_ = 2;
+    k1->isSupportOverFlow_ = true;
+    k1->isNeedSetFftsAddrInArg_ = true;
+    
+    RtArgsHandle *argsHandle = nullptr;
+    rtError_t error = api.KernelArgsInit(k1, &argsHandle);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    errno_t memcpyErr = ERANGE;
+    MOCKER(memcpy_s).stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(memcpyErr));
+    
+    char_t testData[32] = "test_data";
+    ParaDetail *paramHandle = nullptr;
+    error = impl.KernelArgsAppend(argsHandle, testData, sizeof(testData), &paramHandle);
+    
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    
+    GlobalMockObject::verify();
+    delete k1;
+    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+}
+
+TEST_F(CloudV2ApiImplTest, CheckCaptureModeSupport_RelaxedMode_EE1016)
+{
+    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Context ctx(device, false);
+    
+    // Mock IsCaptureModeSupport 返回 false，触发错误上报
+    MOCKER_CPP(&Context::IsCaptureModeSupport).stubs().will(returnValue(false));
+    
+    // Mock GetThreadCaptureMode 返回 RELAXED
+    MOCKER_CPP(&InnerThreadLocalContainer::GetThreadCaptureMode).stubs()
+        .will(returnValue(RT_STREAM_CAPTURE_MODE_RELAXED));
+    
+    // Mock GetContextCaptureMode
+    MOCKER_CPP(&Context::GetContextCaptureMode).stubs()
+        .will(returnValue(RT_STREAM_CAPTURE_MODE_GLOBAL));
+    
+    // Mock GetCurrentTid
+    MOCKER_CPP(&PidTidFetcher::GetCurrentTid).stubs().will(returnValue(12345));
+    
+    bool result = CheckCaptureModeSupport(&ctx, "TestFunc");
+    EXPECT_FALSE(result);
+    
+    GlobalMockObject::verify();
+    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+}
+
+TEST_F(CloudV2ApiImplTest, CheckCaptureModeSupport_NonRelaxedMode_EE1016)
+{
+    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Context ctx(device, false);
+    
+    // Mock IsCaptureModeSupport 返回 false，触发错误上报
+    MOCKER_CPP(&Context::IsCaptureModeSupport).stubs().will(returnValue(false));
+    
+    // Mock GetThreadCaptureMode 返回 GLOBAL（非 RELAXED）
+    MOCKER_CPP(&InnerThreadLocalContainer::GetThreadCaptureMode).stubs()
+        .will(returnValue(RT_STREAM_CAPTURE_MODE_GLOBAL));
+    
+    // Mock GetContextCaptureMode
+    MOCKER_CPP(&Context::GetContextCaptureMode).stubs()
+        .will(returnValue(RT_STREAM_CAPTURE_MODE_THREAD_LOCAL));
+    
+    // Mock GetCurrentTid
+    MOCKER_CPP(&PidTidFetcher::GetCurrentTid).stubs().will(returnValue(67890));
+    
+    bool result = CheckCaptureModeSupport(&ctx, "TestFunc");
+    EXPECT_FALSE(result);
+    
+    GlobalMockObject::verify();
+    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
 }
