@@ -2053,7 +2053,6 @@ rtError_t Runtime::InitAicpuFlowGw(const uint32_t devId, const rtInitFlowGwInfo_
     }
 
     if (!isHaveDevice_) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "InitAicpuFlowGw failed, isHaveDevice_ is false.");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     InitFlowGwInfo info = {};
@@ -2083,7 +2082,6 @@ rtError_t Runtime::GetHdcConctStatus(const uint32_t devId, int32_t &hdcSessStat)
 {
 #if (!defined CFG_DEV_PLATFORM_PC)
     if (tsdGetHdcConctStatus_ == nullptr) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "GetHdcConctStatus failed, tsdGetHdcConctStatus_ is nullptr.");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -4816,7 +4814,6 @@ rtError_t Runtime::SetWatchDogDevStatus(const Device *device, rtDeviceStatus dev
         watchDogDevStatus_[deviceId][tsId] = deviceStatus;
         return RT_ERROR_NONE;
     } else {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "SetWatchDogDevStatus failed, device is nullptr.");
         return RT_ERROR_DEVICE_NULL;
     }
 }
