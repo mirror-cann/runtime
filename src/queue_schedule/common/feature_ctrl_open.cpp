@@ -10,13 +10,13 @@
 #include "queue_schedule_feature_ctrl.h"
 
 namespace bqs {
-    typedef enum tagChipType {
+    using  ChipType_t = enum {
         CHIP_ASCEND_910A = 1,
         CHIP_ASCEND_910B = 5,
         CHIP_ASCEND_950 = 15,
         CHIP_CLOUD_V5 = 16,
         CHIP_ASCEND_350 = 19,
-    } ChipType_t;
+    };
 
     bool QSFeatureCtrl::IsSupportSetVisibleDevices(int64_t chip) {
         const ChipType_t g_chipType = static_cast<ChipType_t>(chip);
@@ -42,6 +42,7 @@ namespace bqs {
     }
 
     bool QSFeatureCtrl::UseErrorLogThreshold(uint32_t deviceId) {
+        (void)deviceId;
         return false;
     }
 

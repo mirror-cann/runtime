@@ -95,7 +95,7 @@ void ProcessModeManager::StoreAllPkgHashValue(const HDCMessage &msg)
         return;
     }
 
-    for (auto j = 0; j < msg.package_hash_code_list_size(); j++) {
+    for (size_t j = 0; j < msg.package_hash_code_list_size(); j++) {
         SinkPackageHashCodeInfo tempNode = msg.package_hash_code_list(j);
         SetDeviceCommonSinkPackHashValue(tempNode.package_name(), tempNode.hash_code());
     }

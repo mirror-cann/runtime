@@ -67,7 +67,7 @@ public:
 
     static TSD_StatusT GetPlatformInfo(const uint32_t deviceId);
 
-    static bool CheckDestructFlag(const uint32_t &logicDevId);
+    static bool CheckDestructFlag(const uint32_t logicDevId);
 
     static void SetProfilingCallback(const MsprofReporterCallback &callback);
 

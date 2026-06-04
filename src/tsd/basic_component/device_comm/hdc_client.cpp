@@ -314,7 +314,7 @@ namespace tsd {
                     return TSD_HDC_SESSION_STATUS_GET_FAILED;
                 }
                 if (hdcSessStat == HDC_SESSION_STATUS_CLOSE) {
-                    auto const sessionId = iter->first;
+                    const uint32_t sessionId = iter->first;
                     TSD_RUN_INFO("Hdc socket close, sessionId[%u].", sessionId);
                     (void)hdcClientVerifyMap_.erase(sessionId);
                     (void)drvHdcSessionClose(iter->second);

@@ -261,6 +261,7 @@ namespace AicpuSchedule {
 
     int32_t AicpuModel::ModelLoad(const AicpuModelInfo * const modelInfo, const ModelCfgInfo * const cfgInfo)
     {
+        (void)cfgInfo;
         if (modelInfo == nullptr) {
             aicpusd_err("Model load failed, as param is null.");
             return AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;

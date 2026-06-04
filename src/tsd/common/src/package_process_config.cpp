@@ -174,7 +174,7 @@ namespace tsd {
         }
         std::string key = inputLine.substr(0, pos);
         Trim(key);
-        std::string value = inputLine.substr(pos + 1);
+        std::string value = inputLine.substr(pos + 1UL);
         Trim(value);
         const auto iter = configParaParseFuncMap_.find(key);
         if (iter == configParaParseFuncMap_.end()) {
@@ -334,7 +334,7 @@ namespace tsd {
             packageTitle = pkgTitle;
         } else {
             packageTitle = pkgTitle.substr(0, pos);
-            shortSocVersion = pkgTitle.substr(pos + 1);
+            shortSocVersion = pkgTitle.substr(pos + 1UL);
         }
         std::string fileDirWholePath;
         if (pkgName.find("-aicpu_legacy.tar.gz") != std::string::npos) {

@@ -37,9 +37,9 @@ constexpr pid_t DEFAULT_QS_PID = -1;
 constexpr uint16_t MAJOR_VERSION = 3U;
 constexpr uint32_t QUERY_LINK_STATUS_INTERVAL = 100000U;  // 100ms
 constexpr uint32_t QUERY_LINK_STATUS_UNIT = 1000000U;  // 1s
-constexpr uint16_t RESOURCE_ID_HOST_DEVICE_BIT_NUM = 14;
-constexpr uint16_t ROUCE_ID_DEVICE_ID_DATA_MASK = 0x3FFFU;
-constexpr uint16_t ROUCE_ID_FRONT_PART_DATA_MASK = 0xC000U;
+constexpr uint32_t RESOURCE_ID_HOST_DEVICE_BIT_NUM = 14;
+constexpr uint32_t ROUCE_ID_DEVICE_ID_DATA_MASK = 0x3FFFU;
+constexpr uint32_t ROUCE_ID_FRONT_PART_DATA_MASK = 0xC000U;
 
 std::vector<uint32_t> g_userDeviceInfo;
 bool g_hadGetVisibleDevices = false;
@@ -56,12 +56,12 @@ DgwClient::DgwClient(const uint32_t deviceId) : deviceId_(deviceId), qsPid_(DEFA
 }
 
 DgwClient::DgwClient(const uint32_t deviceId, const pid_t qsPid) : deviceId_(deviceId), qsPid_(qsPid), procSign_(),
-    curPid_(-1), curGroupId_(0U), piplineQueueId_(0U), initFlag_(false), isProxy_(false)
+    curPid_(-1), curGroupId_(0U), piplineQueueId_(0U), initFlag_(false), isProxy_(false), isServerOldVersion_(false)
 {
 }
 
 DgwClient::DgwClient(const uint32_t deviceId, const pid_t qsPid, const bool proxy) : deviceId_(deviceId),
-    qsPid_(qsPid), procSign_(), curPid_(-1), curGroupId_(0U), piplineQueueId_(0U), initFlag_(false), isProxy_(proxy)
+    qsPid_(qsPid), procSign_(), curPid_(-1), curGroupId_(0U), piplineQueueId_(0U), initFlag_(false), isProxy_(proxy), isServerOldVersion_(false)
 {
 }
 
@@ -282,14 +282,14 @@ int32_t DgwClient::DestroyHcomHandle(const uint64_t handle, const int32_t timeou
     return static_cast<int32_t>(BQS_STATUS_OK);
 }
 
-bool IsQueueOperationCmd(ConfigInfo &cfgInfo)
+static bool IsQueueOperationCmd(ConfigInfo &cfgInfo)
 {
     return ((cfgInfo.cmd == ConfigCmd::DGW_CFG_CMD_BIND_ROUTE) ||
             (cfgInfo.cmd == ConfigCmd::DGW_CFG_CMD_UNBIND_ROUTE) ||
             (cfgInfo.cmd == ConfigCmd::DGW_CFG_CMD_QRY_ROUTE));
 }
 
-bool IsGroupOperationCmd(ConfigInfo &cfgInfo)
+static bool IsGroupOperationCmd(ConfigInfo &cfgInfo)
 {
     return ((cfgInfo.cmd == ConfigCmd::DGW_CFG_CMD_ADD_GROUP) ||
             (cfgInfo.cmd == ConfigCmd::DGW_CFG_CMD_QRY_GROUP));
@@ -337,6 +337,8 @@ int32_t DgwClient::UpdateConfig(ConfigInfo &cfgInfo, std::vector<int32_t> &cfgRe
             BQS_LOG_ERROR("[DgwClient] malloc failed on spareEndpoints.");
             return static_cast<int32_t>(BQS_STATUS_INNER_ERROR);
         }
+    } else {
+        BQS_LOG_INFO("[DgwClient] config cmd is %d.", static_cast<int32_t>(cfgInfo.cmd));
     }
     auto ret = CalcConfigInfoLen(cfgInfo, cfgLen, dataList, spareRoutes, spareEndpoints);
     if (ret != static_cast<int32_t>(BQS_STATUS_OK)) {
@@ -864,14 +866,14 @@ int32_t DgwClient::CalcResultLen(const ConfigInfo &cfgInfo, size_t &retLen) cons
 }
 
 // Create a handler for each EndpointType
-uint32_t HandleMemQueue(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
+static uint32_t HandleMemQueue(Endpoint &dstEndPoint, const Endpoint &srcEndPoint)
 {
     dstEndPoint.type = bqs::EndpointType::QUEUE;
     dstEndPoint.attr.queueAttr.queueId = srcEndPoint.attr.memQueueAttr.queueId;
     return static_cast<int32_t>(BQS_STATUS_OK);
 }
 
-uint32_t HandleGroup(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
+static uint32_t HandleGroup(Endpoint &dstEndPoint, const Endpoint &srcEndPoint)
 {
     const size_t groupAttrSize = sizeof(srcEndPoint.attr.groupAttr);
     const auto cpyRet = memcpy_s(
@@ -883,7 +885,7 @@ uint32_t HandleGroup(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
     return static_cast<int32_t>(BQS_STATUS_OK);
 }
 
-uint32_t HandleCommChannel(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
+static uint32_t HandleCommChannel(Endpoint &dstEndPoint, const Endpoint &srcEndPoint)
 {
     const size_t channelAttrSize = sizeof(srcEndPoint.attr.channelAttr);
     const auto cpyRet = memcpy_s((void *)(&dstEndPoint.attr.channelAttr), channelAttrSize,
@@ -896,16 +898,16 @@ uint32_t HandleCommChannel(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
 }
 
 // Define the function pointer type
-using EndpointHandler = uint32_t (*)(Endpoint&, Endpoint&);
+using EndpointHandler = uint32_t (*)(Endpoint&, const Endpoint&);
 
 // Creating Table Mappings
 std::map<bqs::EndpointType, EndpointHandler> g_endpointHandlers = {
-    {bqs::EndpointType::MEM_QUEUE, HandleMemQueue},
-    {bqs::EndpointType::GROUP, HandleGroup},
-    {bqs::EndpointType::COMM_CHANNEL, HandleCommChannel},
+    {bqs::EndpointType::MEM_QUEUE, &HandleMemQueue},
+    {bqs::EndpointType::GROUP, &HandleGroup},
+    {bqs::EndpointType::COMM_CHANNEL, &HandleCommChannel},
 };
 
-uint32_t EndpointTransformMemQ2Q(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
+static uint32_t EndpointTransformMemQ2Q(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
 {
     if (srcEndPoint.type == bqs::EndpointType::MEM_QUEUE &&
         srcEndPoint.attr.memQueueAttr.queueType == bqs::CLIENT_Q) {
@@ -928,20 +930,20 @@ uint32_t EndpointTransformMemQ2Q(Endpoint &dstEndPoint, Endpoint &srcEndPoint)
     }
 }
 
-int32_t EndpointTransformQ2MemQ(std::unique_ptr<Endpoint[]> &endpoints, uint32_t endpointNum)
+static int32_t EndpointTransformQ2MemQ(std::unique_ptr<Endpoint[]> &endpoints, uint32_t endpointNum)
 {
     for (uint32_t rdx = 0; rdx < endpointNum; rdx++) {
         if (endpoints[rdx].type == bqs::EndpointType::QUEUE) {
             BQS_LOG_INFO("[EndpointTransformQ2MemQ] transfer q to memq");
             endpoints[rdx].type = bqs::EndpointType::MEM_QUEUE;
             endpoints[rdx].attr.memQueueAttr.queueId = endpoints[rdx].attr.queueAttr.queueId;
-            endpoints[rdx].attr.memQueueAttr.queueType = 0;
+            endpoints[rdx].attr.memQueueAttr.queueType = 0U;
         }
     }
     return static_cast<int32_t>(BQS_STATUS_OK);
 }
 
-int32_t GroupQueueTransform(Endpoint *endpoints, uint32_t endpointNum, std::unique_ptr<Endpoint[]> &spareEndpoints)
+static int32_t GroupQueueTransform(Endpoint *endpoints, uint32_t endpointNum, std::unique_ptr<Endpoint[]> &spareEndpoints)
 {
     bool isNeedTransform = false;
     for (uint32_t rdx = 0; rdx < endpointNum; rdx++) {
@@ -957,7 +959,7 @@ int32_t GroupQueueTransform(Endpoint *endpoints, uint32_t endpointNum, std::uniq
 
     for (uint32_t rdx = 0; rdx < endpointNum; rdx++) {
         const uint32_t ret = EndpointTransformMemQ2Q(spareEndpoints[rdx], endpoints[rdx]);
-        if (ret != static_cast<int32_t>(BQS_STATUS_OK)) {
+        if (ret != static_cast<uint32_t>(BQS_STATUS_OK)) {
             BQS_LOG_ERROR("[GroupQueueTransform] transfer error ret=%u", ret);
             return static_cast<int32_t>(ret);
         }
@@ -965,7 +967,7 @@ int32_t GroupQueueTransform(Endpoint *endpoints, uint32_t endpointNum, std::uniq
     return static_cast<int32_t>(BQS_STATUS_OK);
 }
 
-int32_t MemQueueAttr2queueAttrTransform(Route *routes, uint32_t routeNum, std::unique_ptr<Route[]> &spareRoutes)
+static int32_t MemQueueAttr2queueAttrTransform(Route *routes, uint32_t routeNum, std::unique_ptr<Route[]> &spareRoutes)
 {
     bool isNeedTransform = false;
     for (uint32_t rdx = 0; rdx < routeNum; rdx++) {
@@ -1376,7 +1378,7 @@ int32_t DgwClient::WaitConfigEffect(const uint64_t timeout)
             BQS_LOG_INFO("[DgwClient] WaitConfigEffect Success");
             return static_cast<int32_t>(BQS_STATUS_OK);
         } else {
-            sleep(1);
+            (void)sleep(1);
         }
     }
     BQS_LOG_ERROR("[DgwClient] WaitConfigEffect Failed");
@@ -1403,7 +1405,7 @@ int32_t DgwClient::WaitConfigEffect(const int32_t rsv, const int32_t timeout)
 
     // 隔1S发送一次事件到SERVER端检测建链是否成功
     int32_t cmdRet = static_cast<int32_t>(BQS_STATUS_FAILED);
-    for (uint64_t index = 0; index <= (QUERY_LINK_STATUS_UNIT / QUERY_LINK_STATUS_INTERVAL * timeout);
+    for (int32_t index = 0; index <= (QUERY_LINK_STATUS_UNIT / QUERY_LINK_STATUS_INTERVAL * timeout);
          index++) {
         event_sync_msg syncMsg = {};
         QsProcMsgRsp procMsgRsp = {};
@@ -1449,7 +1451,7 @@ bool DgwClient::IsNumeric(const std::string& str) {
         return false;
     }
     for (const char c : str) {
-        if (!isdigit(static_cast<unsigned char>(c))) {
+        if (!static_cast<bool>(isdigit(static_cast<unsigned char>(c)))) {
             return false;
         }
     }
@@ -1468,7 +1470,7 @@ void DgwClient::SplitString(const std::string &str, std::vector<std::string> &re
             return;
         }
         result.push_back(substr);
-        start = end + 1;
+        start = end + 1U;
         end = str.find(',', start);
     }
 
@@ -1503,7 +1505,7 @@ bool DgwClient::GetVisibleDevices()
     std::vector<std::string> splitInputStr;
     SplitString(inputStr, splitInputStr);
     BQS_LOG_INFO("[DgwClient] splitInputStr size [%zu]", splitInputStr.size());
-    for (uint32_t i = 0U; i < static_cast<uint32_t>(splitInputStr.size()); i++) {
+    for (size_t i = 0U; i < splitInputStr.size(); i++) {
         uint32_t tmpValue = 0U;
         try {
             tmpValue = static_cast<uint32_t>(std::stoi(splitInputStr[i]));

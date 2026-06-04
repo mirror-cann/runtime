@@ -46,7 +46,7 @@ std::mutex ClientManager::g_profilingCallbackMut;
 MsprofReporterCallback ClientManager::g_profilingCallback;
 SchedMode ClientManager::aicpuSchedMode_ =  AICPU_SCHED_MODE_INTERRUPT;
 
-bool ClientManager::CheckDestructFlag(const uint32_t &logicDevId)
+bool ClientManager::CheckDestructFlag(const uint32_t logicDevId)
 {
     const uint32_t inputDeviceId = logicDevId;
     uint32_t logicDeviceId = logicDevId;

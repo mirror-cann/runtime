@@ -12,7 +12,7 @@
 #define AICPUSD_PROC_MGR_SYS_OPERATOR_AGENT_H
 #include <vector>
 #include <cstdint>
-#include <pthread.h>
+#include <sys/types.h>
 
 namespace AicpuSchedule {
     /**

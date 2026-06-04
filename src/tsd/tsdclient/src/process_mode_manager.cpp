@@ -58,7 +58,7 @@ constexpr uint32_t CLOSE_PID_PER_LOOP = 50U;
 const std::string DRIVER_EXTEND_PKG_NAME = "Ascend-device-sw-plugin.tar.gz";
 constexpr uint32_t DRIVER_EXTEND_MAX_PROCESS_TIME = 140U;
 const std::string QUEUE_SCHEDULE_SO = "libqueue_schedule.so";
-constexpr uint32_t INVALID_NUMBER = 0xffffffffU;
+constexpr uint32_t INVALID_NUMBER = 0xFFFFFFFFU;
 constexpr uint32_t DEFUALT_NET_SERVICE = 2U;
 constexpr uint32_t SOC_VERSION_LEN = 50U;
 const std::map<std::string, std::vector<tsd::ChipType_t>> PKG_CHIP_SUPPORT_MAP = {
@@ -1329,7 +1329,7 @@ TSD_StatusT ProcessModeManager::LoadRuntimePkgToDevice()
     if (IsSupportCommonSink() &&
         (&drvHdcSendFileV2 != nullptr) &&
         (&drvHdcGetTrustedBasePathV2 != nullptr)) {
-        LoadPackageConfigInfoToDevice();
+        (void)LoadPackageConfigInfoToDevice();
         if (LoadCannHsPkgToDevice(UDF_PKG_NAME) != TSD_OK) {
             TSD_ERROR("Load package failed, package:%s", UDF_PKG_NAME.c_str());
             return TSD_INTERNAL_ERROR;
@@ -2382,10 +2382,10 @@ bool ProcessModeManager::GetShortSocVersion(std::string &shortSocVersion) const
         return false;
     }
     TSD_INFO("get soc_version:%s", socVersion);
-    fe::PlatformInfoManager::Instance().InitializePlatformInfo();	 
+    (void)fe::PlatformInfoManager::Instance().InitializePlatformInfo();	
     fe::OptionalInfos optionalInfos;	 
     fe::PlatFormInfos platformInfos;	 
-    fe::PlatformInfoManager::Instance().GetPlatformInfos(socVersion, platformInfos, optionalInfos);	 
+    (void)fe::PlatformInfoManager::Instance().GetPlatformInfos(socVersion, platformInfos, optionalInfos);	 
     const bool ret = platformInfos.GetPlatformRes("version", "Short_SoC_version", shortSocVersion);
     if (!ret) {
         TSD_RUN_WARN("get short_soc_version by fe::PlatFormInfos::GetPlatformRes failed.");

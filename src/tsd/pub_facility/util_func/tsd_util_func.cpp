@@ -302,7 +302,7 @@ namespace tsd {
             }
         }
 
-        closedir(dir);
+        (void)closedir(dir);
         return true;
     }
 
