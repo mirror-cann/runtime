@@ -53,7 +53,7 @@ rtError_t SnapshotCallbackManager::RegisterCallback(rtSnapShotStage stage, rtSna
         callBackList.end(),
         [callback](const SnapShotCallBackInfo &info) { return info.callback == callback; });
     COND_RETURN_AND_MSG_OUTER(callBackIter != callBackList.end(), RT_ERROR_SNAPSHOT_REGISTER_CALLBACK_FAILED, ErrorCode::EE1017,
-            __func__, "callback", "The callback function " + std::to_string(reinterpret_cast<uintptr_t>(callback)) +
+            __func__, "callback", "The callback function " + std::to_string(RtPtrToValue(callback)) +
             " has been registered for stage " + std::string(GetStageString(stage)) + " and cannot be registered again");
     callBackList.push_back({callback, args});
     RT_LOG(RT_LOG_EVENT, "register snapshot callback finish, stage:%s, callback=%p.", GetStageString(stage), callback);
@@ -80,7 +80,7 @@ rtError_t SnapshotCallbackManager::UnregisterCallback(rtSnapShotStage stage, rtS
         callBackList.end(),
         [callback](const SnapShotCallBackInfo &info) { return info.callback == callback; });
     COND_RETURN_AND_MSG_OUTER(callBackIter == callBackList.end(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
-            __func__, "callback", "The callback function " + std::to_string(reinterpret_cast<uintptr_t>(callback)) +
+            __func__, "callback", "The callback function " + std::to_string(RtPtrToValue(callback)) +
             " has not been registered for stage " + std::string(GetStageString(stage)));
     (void)callBackList.erase(callBackIter);
     RT_LOG(RT_LOG_EVENT, "unregister snapshot callback successfully, stage:%s, callback=%p.", GetStageString(stage), callback);
