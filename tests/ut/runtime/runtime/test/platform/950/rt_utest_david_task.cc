@@ -1327,19 +1327,25 @@ TEST_F(TaskTestDavid, SetStarsResultForHcclUbDdrcDavinciTask)
     logicCq.errorCode = AICPU_HCCL_OP_UB_DDRC_FAILED;
     faultEventFlag = 2;
     StarsV2SetStarsResultForDavinciTask(&taskInfo, logicCq);
-    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_AICPU_EXCEPTION);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_LOCAL_MEM_ERROR);
 
     taskInfo.stream->Device_()->SetDeviceRas(true);
     logicCq.errorCode = AICPU_HCCL_OP_UB_DDRC_FAILED;
     faultEventFlag = 3;
     StarsV2SetStarsResultForDavinciTask(&taskInfo, logicCq);
-    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_AICPU_EXCEPTION);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_LOCAL_MEM_ERROR);
 
     taskInfo.stream->Device_()->SetDeviceRas(true);
     logicCq.errorCode = AICPU_HCCL_OP_UB_DDRC_FAILED;
     faultEventFlag = 7;
     StarsV2SetStarsResultForDavinciTask(&taskInfo, logicCq);
     EXPECT_EQ(taskInfo.errorCode, TS_ERROR_LOCAL_MEM_ERROR);
+
+    taskInfo.stream->Device_()->SetDeviceRas(true);
+    logicCq.errorCode = AICPU_HCCL_OP_UB_DDRC_FAILED;
+    faultEventFlag = 9;
+    StarsV2SetStarsResultForDavinciTask(&taskInfo, logicCq);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_AICPU_EXCEPTION);
     
     logicCq.errorCode = AICPU_HCCL_OP_UB_DDRC_FAILED;
     faultEventFlag = 0;

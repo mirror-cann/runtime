@@ -69,8 +69,6 @@ const std::map<uint32_t, std::string> g_hcclRemoteMulBitEccEventIdBlkList = {
     {0x81978004U, "PCIE Dispatch Config Error."},
     {0x81B58002U, "UB Dispatch Input Error."},
     {0x81B58004U, "UB Dispatch Config Error."},
-    {0x813D8009U, "AIC AA Bus Error."},
-    {0x81B78009U, "UB AA bus error."},
     {0x81AF8000U, "UB Module error."},
     {0x81AF8004U, "UB software configuration error."},
     {0x81AF8008U, "UB Multi Bit Ecc."},
@@ -171,7 +169,6 @@ const std::map<uint32_t, std::string> g_l2MulBitEccEventIdBlkList = {
 const std::map<uint32_t, std::string> g_ubMemTimeoutEventIdBlkList = {
     {0x81B58002U, "UB Dispatch Input Error."},
     {0x81B58004U, "UB Dispatch Config Error."},
-    {0x81B78009U, "UB AA Bus Error."},
     {0x81AF8000U, "UB Module Excerption."},
     {0x81AF8004U, "UB Software Config Error."},
     {0x81AF8008U, "UB Multi Bit Ecc."},
@@ -182,7 +179,6 @@ const std::map<uint32_t, std::string> g_ubMemTimeoutEventIdBlkList = {
 const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList = {
     {0x81B58002U, "UB Dispatch Input Error."},
     {0x81B58004U, "UB Dispatch Config Error."},
-    {0x81B78009U, "UB AA Bus Error."},
     {0x81AF8000U, "UB Module Excerption."},
     {0x81AF8004U, "UB Software Config Error."},
     {0x81AF8008U, "UB Multi Bit Ecc."},

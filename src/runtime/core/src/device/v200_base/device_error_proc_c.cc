@@ -489,8 +489,7 @@ static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo 
 
     if (!IsHitBlacklist(faultEventInfo, eventCount, g_ubMemTimeoutEventIdBlkList)) {
         for (uint32_t faultIndex = 0; faultIndex < eventCount; faultIndex++) {
-            if (faultEventInfo[faultIndex].eventId == UB_POISON_ERROR_EVENT_ID &&
-                IsEventRasMatch(faultEventInfo[faultIndex], g_ubMemTrafficTimeoutFilter)) {
+            if (faultEventInfo[faultIndex].eventId == UB_REMOTE_MEM_TIMEOUT_EVENT_ID) {
                 errTaskPtr->mte_error = TS_ERROR_LINK_ERROR;
                 RT_LOG(RT_LOG_ERROR, "network link error, stream_id=%hu, task_id=%hu, errorCode=%#x.",
                     info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId,
@@ -507,7 +506,8 @@ static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo 
     AiCoreUnknownErrProc(dev, info);
 }
 
-static void GetMteDeviceFaultEvent(const Device * const dev, uint32_t &faultEventId, bool &isHitBlklist)
+static void GetMteDeviceFaultEvent(
+    const Device* const dev, uint32_t& faultEventId, bool& isHitBlklist, bool& isHitRemoteBlklist, bool& isHitWhitelist)
 {
     constexpr uint32_t maxFaultNum = 128U;
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
@@ -531,7 +531,9 @@ static void GetMteDeviceFaultEvent(const Device * const dev, uint32_t &faultEven
         }
     }
 
-    isHitBlklist = IsHitBlacklist(faultEventInfo, eventCount, g_mulBitEccEventIdBlkList);
+    isHitBlklist = IsHitBlacklist(faultEventInfo, eventCount, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList);
+    isHitRemoteBlklist = IsHitBlacklist(faultEventInfo, eventCount, g_hcclRemoteMulBitEccEventIdBlkList);
+    isHitWhitelist = IsFaultEventOccur(UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID, faultEventInfo, eventCount);
     if (IsFaultEventOccur(HBM_ECC_EVENT_ID, faultEventInfo, eventCount) && !isHitBlklist) {
         faultEventId = HBM_ECC_EVENT_ID;
     }
@@ -544,12 +546,12 @@ static void SetTaskMteErrByType(const rtErrorType errType, const Device * const 
     }
 
     /*
-     * L2_BUFFER_ECC    HBM_ECC_NOTIFY    HBM_ECC    hit_black_list   mte_error       fault_type
-     * YES              \                 \          NO               local_error     L2_BUFFER_ERROR
-     * NO               NOT_SUPPORT       YES        NO               local_error     HBM_UCE_ERROR
-     * NO               YES               \          NO               local_error     HBM_UCE_ERROR
-     * NO               NO                \          NO               remote_error    LINK_ERROR
-     * OTHERS                                                         0               AICORE_UNKNOWN_ERROR
+     * L2_BUFFER_ECC    HBM_ECC_NOTIFY    HBM_ECC    hit_black_list    hit_white_list    mte_error       fault_type
+     * YES              \                 \          NO                      \           local_error     L2_BUFFER_ERROR
+     * NO               NOT_SUPPORT       YES        NO                      \           local_error     HBM_UCE_ERROR
+     * NO               YES               \          NO                      \           local_error     HBM_UCE_ERROR
+     * NO               NO                \          NO                     YES          remote_error    LINK_ERROR
+     * OTHERS                                                                            0               AICORE_UNKNOWN_ERROR
      */
     if (errType == AICORE_ERROR) {
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_UNKNOWN_ERROR);
@@ -560,12 +562,15 @@ static void SetTaskMteErrByType(const rtErrorType errType, const Device * const 
 
     uint32_t faultEventId = 0U;
     bool isHitBlklist = false;
-    GetMteDeviceFaultEvent(dev, faultEventId, isHitBlklist);
+    bool isHitRemoteBlklist = false;
+    bool isHitWhitelist = false;
+    GetMteDeviceFaultEvent(dev, faultEventId, isHitBlklist, isHitRemoteBlklist, isHitWhitelist);
     bool hasL2BuffEcc = (faultEventId == L2_BUFFER_ECC_EVENT_ID);
     bool hasHbmEcc = (faultEventId == HBM_ECC_EVENT_ID);
     bool isHitHbmBlkList = !hasL2BuffEcc && isHitBlklist;
     RT_LOG(RT_LOG_ERROR, "support_hbm_ras_report=%d, has_l2_buffer_ecc_event=%d, has_hbm_ecc_notify_event=%d, "
-        "has_hbm_ecc_event=%d, hit_black_list=%d.", suppHbmRas, hasL2BuffEcc, hasMteHbmErr, hasHbmEcc, isHitBlklist);
+        "has_hbm_ecc_event=%d, hit_black_list=%d, hit_remote_blk_list=%d, hit_white_list=%d.", suppHbmRas, hasL2BuffEcc, hasMteHbmErr,
+        hasHbmEcc, isHitBlklist, isHitRemoteBlklist, isHitWhitelist);
 
     const uint16_t local_error = (errType == AICORE_ERROR) ? TS_ERROR_AICORE_MTE_ERROR : TS_ERROR_SDMA_POISON_ERROR;
     const uint16_t remote_error = TS_ERROR_SDMA_LINK_ERROR;
@@ -579,7 +584,7 @@ static void SetTaskMteErrByType(const rtErrorType errType, const Device * const 
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
         return;
     }
-    if (suppHbmRas && !hasMteHbmErr && !isHitHbmBlkList) {
+    if (suppHbmRas && !hasMteHbmErr && !isHitRemoteBlklist && isHitWhitelist) {
         errTaskPtr->mte_error = remote_error;
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
         return;

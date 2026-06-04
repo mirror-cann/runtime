@@ -115,15 +115,8 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
                 "CCU Launch task error status [%#x], subStatus [%#x], device_id=%u, stream_id=%d, task_id=%hu",
                 status, subStatus, devId, taskInfo->stream->Id_(), taskInfo->id);
     bool hasMteErr = HasMteErr(device);
-    if (status == CCU_TASK_LOCAL_MEM_ERROR && subStatus == CCU_TASK_LOCAL_MEM_ERROR_SUBSTATUS) {
-        if (hasMteErr && IsEventIdAndRasCodeMatch(devId, g_ubNonMemPoisonRasList) && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
-            taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
-            (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
-            RT_LOG(RT_LOG_ERROR,
-                "CCU Launch local HBM UCE fault occurred: device_id=%u, stream_id=%d, task_id=%hu, retCode=%u",
-                devId, taskInfo->stream->Id_(), taskInfo->id, taskInfo->mte_error);
-        }
-    } else if (status == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS) {
+    if ((status == CCU_TASK_LOCAL_MEM_ERROR) ||
+        (status == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS)) {
         if (hasMteErr && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
             (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
@@ -160,7 +153,7 @@ static void MapFusionCcuErrorCodeForFastRecovery(const uint8_t ccuStatus, TaskIn
                 taskInfo->mte_error, devId, taskInfo->stream->Id_(), taskInfo->id);
     bool hasMteErr = HasMteErr(device);
     if (ccuStatus == CCU_TASK_LOCAL_MEM_ERROR) {
-        if (hasMteErr && IsEventIdAndRasCodeMatch(devId, g_ubNonMemPoisonRasList) && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
+        if (hasMteErr && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
             (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
             RT_LOG(RT_LOG_ERROR,

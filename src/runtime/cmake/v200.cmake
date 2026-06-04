@@ -524,6 +524,7 @@ set(RUNTIME_INC_DIR_V201
 
 set(libruntime_v200_dev_info_src_files
     ${RUNTIME_DIR}/src/runtime/config/910_B_93/dev_info_proc_func.cc
+    ${RUNTIME_DIR}/src/runtime/config/950/dev_info_proc_func.cc
 )
 
 set(libruntime_v201_dev_info_src_files

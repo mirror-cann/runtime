@@ -150,7 +150,7 @@ drvError_t halGetFaultEvent(uint32_t devId, struct halEventFilter* filter,
         return DRV_ERROR_NONE;
     }
     if (faultEventFlag == 8) { // link error ras and event whitelist
-        *eventCount = 1;
+        *eventCount = 2;
         eventInfo[0].event_id = 0x81AF8009U;
         // subModuleId
         eventInfo[0].additional_info[23] = 0x03;
@@ -161,6 +161,13 @@ drvError_t halGetFaultEvent(uint32_t devId, struct halEventFilter* filter,
         eventInfo[0].additional_info[29] = 0x10;
         eventInfo[0].additional_info[30] = 0x00;
         eventInfo[0].additional_info[31] = 0x00;
+
+        eventInfo[1].event_id = 0x81AFAA02U;
+        return DRV_ERROR_NONE;
+    }
+    if (faultEventFlag == 9) { // UB Dispatch Input Error, in g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList
+        *eventCount = 1;
+        eventInfo[0].event_id = 0x81B58002U; 
         return DRV_ERROR_NONE;
     }
     *eventCount = 1;
