@@ -1039,7 +1039,7 @@ rtError_t SetKernelFunctionEntry(RtKernel * const kernels, const ElfKernelInfo *
 static rtError_t SetKernelSchedMode(RtKernel * const kernels, const ElfKernelInfo * const elfKernelInfo)
 {
     COND_RETURN_ERROR(elfKernelInfo->schedMode >= RT_SCHEM_MODE_END, RT_ERROR_INVALID_VALUE,
-            "unsupport schedMode: %u, valid range is [0, %d)", elfKernelInfo->schedMode, RT_SCHEM_MODE_END);
+            "Unsupported schedMode: %u, valid range is [0, %d)", elfKernelInfo->schedMode, RT_SCHEM_MODE_END);
     RtKernelMetaInfo * const metaInfo = &(kernels->metaInfo);
     metaInfo->schedMode = elfKernelInfo->schedMode;
     return RT_ERROR_NONE;

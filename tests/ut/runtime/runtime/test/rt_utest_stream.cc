@@ -2738,3 +2738,22 @@ TEST_F(StreamTest, SendFlipTaskWithStreamId_AllocTaskFail)
     DELETE_O(stubDevice);
     GlobalMockObject::verify();
 }
+TEST_F(StreamTest, recycle_model_delay_recycle_task_cannot_find_task)
+{
+    RawDevice *device = new RawDevice(0);
+    device->Init();
+
+    Stream *stream = new Stream(device, 0);
+    stream->Setup();
+    stream->SetBindFlag(true);
+    stream->streamId_ = 1;
+
+    stream->delayRecycleTaskid_.push_back(100);
+
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue((TaskInfo *)nullptr));
+
+    stream->RecycleModelDelayRecycleTask();
+
+    delete stream;
+    delete device;
+}

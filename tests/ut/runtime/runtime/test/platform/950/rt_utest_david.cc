@@ -1243,9 +1243,22 @@ static rtError_t StubGetDeviceFaultEventsError(const uint32_t deviceId, rtDmsFau
     return RT_ERROR_DRV_ERR;
 }
 
+static rtError_t StubGetDeviceFaultEventsFeatureNotSupported(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
+    uint32_t &eventCount, const uint32_t maxFaultNum)
+{
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
 TEST_F(DavidTaskTest, CheckAndPrintRasInfo_get_fault_events_error)
 {
     MOCKER(GetDeviceFaultEvents).stubs().will(invoke(StubGetDeviceFaultEventsError));
+    CheckAndPrintRasInfo(dev_);
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidTaskTest, CheckAndPrintRasInfo_get_fault_events_feature_not_supported)
+{
+    MOCKER(GetDeviceFaultEvents).stubs().will(invoke(StubGetDeviceFaultEventsFeatureNotSupported));
     CheckAndPrintRasInfo(dev_);
     GlobalMockObject::verify();
 }

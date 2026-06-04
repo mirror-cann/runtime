@@ -405,6 +405,40 @@ TEST_F(RuntimeTest, ut_OtherProfilerApiStartStopTest)
     delete dev;
 }
 
+TEST_F(RuntimeTest, ut_AicMetricStart_MdcTs1Scenario)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RawDevice *dev = new RawDevice(0);
+    uint64_t profConfig = PROF_AICORE_METRICS;
+    uint64_t type = 0ULL;
+    uint32_t originalTsNum = rtInstance->tsNum_;
+
+    rtInstance->tsNum_ = TS_NUM_ADC;
+    MOCKER_CPP_VIRTUAL(dev, &RawDevice::DevGetTsId).stubs().will(returnValue(1U));
+    rtInstance->AicMetricStart(profConfig, type, dev);
+    EXPECT_EQ(type, 0ULL);
+
+    rtInstance->tsNum_ = originalTsNum;
+    delete dev;
+}
+
+TEST_F(RuntimeTest, ut_AicMetricStop_MdcTs1Scenario)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RawDevice *dev = new RawDevice(0);
+    uint64_t profConfig = PROF_AICORE_METRICS;
+    uint64_t type = 0ULL;
+    uint32_t originalTsNum = rtInstance->tsNum_;
+
+    rtInstance->tsNum_ = TS_NUM_ADC;
+    MOCKER_CPP_VIRTUAL(dev, &RawDevice::DevGetTsId).stubs().will(returnValue(1U));
+    rtInstance->AicMetricStop(profConfig, type, dev);
+    EXPECT_EQ(type, 0ULL);
+
+    rtInstance->tsNum_ = originalTsNum;
+    delete dev;
+}
+
 TEST_F(RuntimeTest, ut_LoadFunction)
 {
     Runtime *rtInstance = (Runtime *)Runtime::Instance();

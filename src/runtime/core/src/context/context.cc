@@ -1083,7 +1083,7 @@ rtError_t Context::StreamCreate(const uint32_t prio, const uint32_t flag, Stream
     if ((flag & RT_STREAM_CP_PROCESS_USE) != 0U) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(device_);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support create coprocessor stream.",
+            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor streams.",
                 device_->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
@@ -1400,7 +1400,8 @@ rtError_t Context::ModelDestroy(Model *mdl)
     if (mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL) {
         CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
         if (captureModel->IsCapturing()) {
-            RT_LOG(RT_LOG_ERROR, "model is capturing, can't destroy, model_id=%u!", captureModel->Id_());
+            RT_LOG(RT_LOG_ERROR, "Model is in capture mode and cannot be destroyed, model_id=%u!",
+                captureModel->Id_());
             return RT_ERROR_MODEL_CAPTURED;
         }
 
@@ -1412,7 +1413,7 @@ rtError_t Context::ModelDestroy(Model *mdl)
             rawDev->PollEndGraphNotifyInfo();
 
             COND_RETURN_ERROR((count >= totalCheckCount), RT_ERROR_MODEL_RUNNING,
-                "model is still running, can't destroy, model_id=%u", captureModel->Id_());
+                "Model is still running and cannot be destroyed, model_id=%u", captureModel->Id_());
             std::this_thread::sleep_for(checkInterval);
             count++;
         }

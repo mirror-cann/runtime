@@ -6931,6 +6931,52 @@ TEST_F(ApiDavidTest, get_mem_uce_info_proc_fast_recover)
     device_->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
 }
 
+TEST_F(ApiDavidTest, get_mem_uce_info_proc_feature_not_supported)
+{
+    rtError_t error;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    device_ = rtInstance->DeviceRetain(0, 0);
+    device_->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
+    GlobalMockObject::verify();
+
+    MOCKER(halGetFaultEvent)
+        .stubs()
+        .will(invoke(stubhalGetFaultEvent_MTE));
+
+    MOCKER(halGetDeviceInfoByBuff)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+
+    rtErrorInfo errorInfo = {};
+    error = rtsGetErrorVerbose(0, &errorInfo);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    device_->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
+}
+
+TEST_F(ApiDavidTest, mem_uce_error_resume_feature_not_supported)
+{
+    rtError_t error;
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    device_ = rtInstance->DeviceRetain(0, 0);
+    device_->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
+    GlobalMockObject::verify();
+
+    rtErrorInfo errorInfo = {};
+    errorInfo.errorType = RT_ERROR_MEMORY;
+    errorInfo.tryRepair = 1U;
+    errorInfo.hasDetail = 1U;
+    errorInfo.detail.uceInfo.arraySize = 1;
+
+    MOCKER(halMemCtl)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+
+    error = rtsRepairError(0, &errorInfo);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    device_->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
+}
+
+
 TEST_F(ApiDavidTest, get_error_verbose_aicore_unknown_error)
 {
     rtError_t error;

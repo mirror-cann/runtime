@@ -753,3 +753,19 @@ TEST_F(ProgramTest, Program_build_tiling_tbl_For_David_NewFlow_and_kernelPos_0)
     delete mdl;
     delete program;
 }
+
+TEST_F(ProgramTest, GetKernelTypeAndMixTypeByMetaInfo_MixMain_InvalidKernelName)
+{
+    ElfProgram program;
+    RtKernel kernel;
+    rtKernelAttrType kernelAttrType = RT_KERNEL_ATTR_TYPE_AICORE;
+    uint8_t mixType = 0U;
+
+    (void)memset_s(&kernel, sizeof(RtKernel), 0, sizeof(RtKernel));
+    kernel.name = const_cast<char*>("test_kernel_invalid");
+    kernel.metaInfo.funcType = KERNEL_FUNCTION_TYPE_MIX_AIC_MAIN;
+    kernel.metaInfo.crossCoreSync = 0U;
+
+    rtError_t ret = program.GetKernelTypeAndMixTypeByMetaInfo(&kernel, kernelAttrType, mixType);
+    EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
+}

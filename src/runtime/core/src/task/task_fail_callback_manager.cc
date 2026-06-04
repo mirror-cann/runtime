@@ -96,7 +96,8 @@ void OpTaskFailCallbackNotify(rtExceptionInfo_t *const exceptionInfo)
     auto callback = program->opExceptionCallback_;
     void *userData = program->opExceptionCallbackUserData_;
     if (callback != nullptr) {
-        RT_LOG(RT_LOG_ERROR, "excute binary exception callback, binHandle=%p, binHandle_id=%u, stream_id=%u, task_id=%u, retcode=%u",
+        RT_LOG(RT_LOG_ERROR,
+            "execute binary exception callback, binHandle=%p, binHandle_id=%u, stream_id=%u, task_id=%u, retcode=%u",
             program, program->Id_(), exceptionInfo->streamid, exceptionInfo->taskid, exceptionInfo->retcode);
         callback(exceptionInfo, userData);
     }

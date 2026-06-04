@@ -1074,7 +1074,7 @@ bool Runtime::CheckHaveDevice()
             DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRet=%d, module type=%d, info type=%d.",
                 drvRet, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
         } else {
-            RT_LOG(RT_LOG_WARNING, "[Call][halGetDeviceInfo] failed, function does not support, module type=%d,"
+            RT_LOG(RT_LOG_WARNING, "[Call][halGetDeviceInfo] failed, function is not supported, module type=%d,"
                    " info type=%d.", MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
         }
     }
@@ -1193,7 +1193,7 @@ rtError_t Runtime::GetDcacheLockMixOpPath(std::string& dcacheLockMixOpPath) cons
 void Runtime::FindDcacheLockOp()
 {
     if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_DCACHE_LOCK)) {
-        RT_LOG(RT_LOG_INFO, "dcache lock feature does not support on chip type=%u.", chipType_);
+        RT_LOG(RT_LOG_INFO, "Dcache lock feature is not supported on chip type=%u.", chipType_);
         return;
     }
     std::string dcacheLockMixOpPath;
@@ -1567,7 +1567,7 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
             (strcmp(aivMixName, elfKernelInfo->name) == 0)) {
             if (kernelObj != nullptr) {
                 error = elfProg->MergeKernel(elfKernelInfo, kernelObj);
-                ERROR_RETURN(error, "merge kernel failed, kerneName=%s. retCode=%#x.",
+                ERROR_RETURN(error, "merge kernel failed, kernelName=%s. retCode=%#x.",
                     elfKernelInfo->name, static_cast<uint32_t>(error));
                 return RT_ERROR_NONE;
             }
@@ -1575,7 +1575,7 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
             isKernelFound = true;
             error = elfProg->BuildNewKernel(kernelName, elfKernelInfo, kernelObj);
             COND_RETURN_ERROR((kernelObj == nullptr), error,
-                "Kernel register failed, build new Kernel failed, kerneName=%s.", elfKernelInfo->name);
+                "Kernel register failed, build new Kernel failed, kernelName=%s.", elfKernelInfo->name);
 
             kernelObj->SetStub_(stubFunc);
             kernelObj->SetStubName_(stubName);
@@ -2659,7 +2659,7 @@ rtError_t Runtime::InitOpExecTimeout(Device *dev)
     if ((!isSupportScaleMdy) || (!isSupportOpTimeoutMs)) {
         timeoutConfig_.interval = GetKernelCreditScaleUS();
         timeoutConfig_.isInit = true;
-        RT_LOG(RT_LOG_INFO, "Does not support op execute timeout with ms.");
+        RT_LOG(RT_LOG_INFO, "Operation execution timeout in milliseconds is not supported.");
         return RT_ERROR_NONE;
     }
 
@@ -2921,7 +2921,7 @@ void Runtime::AicMetricStart(const uint64_t profConfig, uint64_t &type, const De
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AICORE_METRICS_MASK) != 0ULL) {
         if ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) { // mdc
-            RT_LOG(RT_LOG_WARNING, "mdc ts1 not support aicore metrics");
+            RT_LOG(RT_LOG_WARNING, "MDC TS1 does not support AICore metrics");
         } else {
             if ((dev->GetDevProfStatus() & PROF_AICORE_METRICS_MASK) == 0ULL) { // disabled
                 type |= PROF_AICORE_METRICS_MASK;
@@ -2942,7 +2942,7 @@ void Runtime::AivMetricStart(const uint64_t profConfig, uint64_t &type, const De
                 RT_LOG(RT_LOG_WARNING, "aivector metrics has already enabled, devId=%u", devId);
             }
         } else {
-            RT_LOG(RT_LOG_WARNING, "not support aivector metrics");
+            RT_LOG(RT_LOG_WARNING, "AIVector metrics are not supported");
         }
     }
 }
@@ -3243,7 +3243,7 @@ rtError_t Runtime::AiCpuProfilerStart(
     RT_LOG(RT_LOG_DEBUG,
         "profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 ", chipType_ = %d", profConfig, profSwitchHi, chipType_);
     if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_PROFILING_AICPU)) {
-        RT_LOG(RT_LOG_WARNING, "Not support aicpu profiling chipType_ = %d.", chipType_);
+        RT_LOG(RT_LOG_WARNING, "AICPU profiling is not supported for chipType_=%d.", chipType_);
         return RT_ERROR_NONE;
     }
 
@@ -3442,7 +3442,7 @@ void Runtime::AicMetricStop(const uint64_t profConfig, uint64_t &type, const Dev
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AICORE_METRICS_MASK) != 0ULL) {
         if ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) { // mdc
-            RT_LOG(RT_LOG_WARNING, "mdc ts1 not support aicore metrics");
+            RT_LOG(RT_LOG_WARNING, "MDC TS1 does not support AICore metrics");
         } else {
             if ((dev->GetDevProfStatus() & PROF_AICORE_METRICS_MASK) != 0ULL) { // enabled
                 type |= PROF_AICORE_METRICS_MASK;
@@ -3460,7 +3460,7 @@ void Runtime::AivMetricStop(const uint64_t profConfig, uint64_t &type, const Dev
             if  ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) { // mdc and ts1
                 type |= PROF_AIVECTORCORE_METRICS_MASK;
             } else {
-                RT_LOG(RT_LOG_WARNING, "not support aivector metrics");
+                RT_LOG(RT_LOG_WARNING, "AIVector metrics are not supported");
             }
         } else {
             RT_LOG(RT_LOG_WARNING, "aivector metrics has already disabled, devId=%u.", devId);
@@ -3569,7 +3569,7 @@ rtError_t Runtime::AiCpuProfilerStop(
     rtError_t error;
 
     if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_PROFILING_AICPU)) {
-        RT_LOG(RT_LOG_WARNING, "Not support aicpu profiling chipType_ = %d.", chipType_);
+        RT_LOG(RT_LOG_WARNING, "AICPU profiling is not supported for chipType_=%d.", chipType_);
         return RT_ERROR_NONE;
     }
 
@@ -4947,7 +4947,7 @@ void RuntimeRas::Run(const void * const param)
 void Runtime::ReportRasRun(void)
 {
     if (!IS_SUPPORT_CHIP_FEATURE(GetChipType(), RtOptionalFeatureType::RT_FEATURE_DFX_REPORT_RAS)) {
-        RT_LOG(RT_LOG_WARNING, "ChipType %d does not support reporting RAS.",
+        RT_LOG(RT_LOG_WARNING, "ChipType %d does not support RAS reporting.",
             static_cast<int32_t>(GetChipType()));
         return;
     }
@@ -5031,7 +5031,7 @@ void Runtime::ReportHBMRasProc(void)
         RT_LOG(RT_LOG_EVENT, "read fault event drv no resources");
     } else if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
         hbmRasProcFlag_ = HBM_RAS_NOT_SUPPORT;
-        RT_LOG(RT_LOG_EVENT, "read fault event not support");
+        RT_LOG(RT_LOG_EVENT, "Reading fault events is not supported");
     } else if (error == RT_ERROR_NONE && dmsEvent.eventId == HBM_ECC_NOTIFY_EVENT_ID) {
         RT_LOG(RT_LOG_ERROR, "get fault event, device_id=%u, assert=%u, event_id=0x%x.",
             dmsEvent.deviceId, dmsEvent.assertion, dmsEvent.eventId);
@@ -5303,7 +5303,7 @@ rtError_t Runtime::SaveModule(void)
 rtError_t Runtime::RestoreModule(void) const
 {
     rtError_t ret = RT_ERROR_NONE;
-    RT_LOG(RT_LOG_DEBUG, "backup begain");
+    RT_LOG(RT_LOG_DEBUG, "backup begin");
     for (const auto& node : moduleBackupList_) {
         void* devAddr = const_cast<void *>(node->devAddr);
         uint32_t memSize = node->memSize;

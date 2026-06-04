@@ -20,6 +20,7 @@
 #include "context.hpp"
 #include "stream.hpp"
 #include "model.hpp"
+#include "capture_model.hpp"
 #include "profiler.hpp"
 #include "profiler_struct.hpp"
 #include "thread_local_container.hpp"
@@ -1777,3 +1778,26 @@ TEST_F(ModelTest, cancel_surport_single_thread)
 }
 #endif
 #endif
+TEST_F(ModelTest, model_destroy_when_capturing)
+{
+    rtError_t error;
+    Model* model = nullptr;
+    Context* ctx = (Context*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(0)->GetVal();
+
+    error = ctx->ModelCreate(&model, RT_MODEL_CAPTURE_MODEL);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    CaptureModel* captureModel = dynamic_cast<CaptureModel*>(model);
+    EXPECT_NE(captureModel, nullptr);
+
+    captureModel->SetCaptureModelStatus(RtCaptureModelStatus::CAPTURE_ACTIVE);
+
+    error = ctx->ModelDestroy(captureModel);
+    EXPECT_EQ(error, RT_ERROR_MODEL_CAPTURED);
+
+    captureModel->SetCaptureModelStatus(RtCaptureModelStatus::READY);
+    error = ctx->ModelDestroy(captureModel);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    ((Runtime*)Runtime::Instance())->PrimaryContextRelease(0);
+}

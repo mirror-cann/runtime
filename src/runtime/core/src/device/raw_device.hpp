@@ -238,14 +238,14 @@ public:
     rtError_t AllocSPM(void **dptr, uint64_t size) override
     {
         COND_RETURN_ERROR(!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL), RT_ERROR_FEATURE_NOT_SUPPORT,
-            "MDC_AS31XM1X not support spm, so not support AllocSPM.");
+            "MDC_AS31XM1X does not support SPM, so AllocSPM is not supported.");
         return spmPool_->AllocSPM(dptr, size);
     }
 
     rtError_t FreeSPM(const void * const dptr) override
     {
         if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL)) {
-            RT_LOG(RT_LOG_INFO, "MDC_AS31XM1X not support spm, so not support FreeSPM.");
+            RT_LOG(RT_LOG_INFO, "MDC_AS31XM1X does not support SPM, so FreeSPM is not supported.");
             return RT_ERROR_NONE;
         }
         return spmPool_->FreeSPM(dptr);
@@ -272,7 +272,7 @@ public:
     bool IsSPM(const void *dptr) override
     {
         if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL)) {
-            RT_LOG(RT_LOG_INFO, "MDC_AS31XM1X not support spm, so not support IsSPM");
+            RT_LOG(RT_LOG_INFO, "MDC_AS31XM1X does not support SPM, so IsSPM is not supported");
             return false;
         }
         return spmPool_->IsSPM(dptr);

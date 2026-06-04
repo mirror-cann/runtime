@@ -468,7 +468,7 @@ rtError_t RawDevice::RegisterDcacheLockOp(Program *&dcacheLockOpProgram)
 rtError_t RawDevice::RegisterAndLaunchDcacheLockOp(Context *ctx)
 {
     if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_DCACHE_LOCK)) {
-        RT_LOG(RT_LOG_INFO, "dcache lock not support on type=%u.", GetChipType());
+        RT_LOG(RT_LOG_INFO, "Dcache lock is not supported on chip type=%u.", GetChipType());
         return RT_ERROR_NONE;
     }
 
@@ -643,7 +643,7 @@ rtError_t RawDevice::Init()
         error = spmPool_->Init();
         ERROR_GOTO(error, SPM_FREE, "Failed to init spm pool, retCode=%#x.", static_cast<uint32_t>(error));
     } else {
-        RT_LOG(RT_LOG_INFO, "AS31XM1X not support spm.");
+        RT_LOG(RT_LOG_INFO, "AS31XM1X does not support SPM.");
     }
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_EVENT_POOL) &&
         (runMode == RT_RUN_MODE_ONLINE)) {
@@ -960,7 +960,7 @@ static rtError_t GetOneAicoreQosCfg(const uint32_t deviceId, QosMasterConfigType
     const rtError_t error = NpuDriver::GetDeviceInfoByBuff(deviceId, MODULE_TYPE_QOS, INFO_TYPE_QOS_MASTER_CONFIG,
         static_cast<void *>(&aicoreQosCfg), &bufSize);
     COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support get aicore qos config.");
+        "Getting AICore QoS config is not supported.");
     if ((error != RT_ERROR_NONE) || (bufSize != static_cast<int32_t>(sizeof(QosMasterConfigType)))) {
         RT_LOG(RT_LOG_ERROR, "Calling drv api halGetDeviceInfoByBuff failed, bufSize is %d, expect bufSize is %d, error=%#x.",
             bufSize, sizeof(QosMasterConfigType), static_cast<uint32_t>(error));
@@ -981,7 +981,7 @@ rtError_t RawDevice::GetQosInfoByIpc()
     for(int i = 0; i < MAX_ACC_QOS_CFG_NUM; i++) {
         rtError_t error = GetOneAicoreQosCfg(deviceId_, aicoreQosCfg[i]);
         if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
-            RT_LOG(RT_LOG_WARNING, "Not support get aicore qos config.");
+            RT_LOG(RT_LOG_WARNING, "Getting AICore QoS config is not supported.");
             return RT_ERROR_NONE;
         }
         if (error != RT_ERROR_NONE) {
@@ -1216,7 +1216,7 @@ void RawDevice::ProfSwitchDisable()
     uint64_t profSwitch = 0UL;
     (void)driver_->MemCopySync(RtValueToPtr<void *>(profSwitchAddr_), sizeof(uint64_t), static_cast<const void *>(&profSwitch),
                                sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
-    RT_LOG(RT_LOG_INFO, "profling disable, device_id=%u", deviceId_);
+    RT_LOG(RT_LOG_INFO, "profiling disabled, device_id=%u", deviceId_);
     return;
 }
 
@@ -1229,7 +1229,7 @@ void RawDevice::ProfSwitchEnable()
     uint64_t profSwitch = 1UL;
     (void)driver_->MemCopySync(RtValueToPtr<void *>(profSwitchAddr_), sizeof(uint64_t), static_cast<const void *>(&profSwitch),
                                sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
-    RT_LOG(RT_LOG_INFO, "profling enable, device_id=%u", deviceId_);
+    RT_LOG(RT_LOG_INFO, "profiling enabled, device_id=%u", deviceId_);
     return;
 }
 
@@ -2000,7 +2000,7 @@ rtError_t RawDevice::GetStarsVersion()
 rtError_t RawDevice::AddAddrKernelNameMapTable(rtAddrKernelName_t &mapInfo)
 {
     if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_NAME_MAP_TABLE)) {
-        RT_LOG(RT_LOG_DEBUG, "platform does not support.");
+        RT_LOG(RT_LOG_DEBUG, "Current platform is not supported.");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     COND_PROC(mapInfo.addr == 0U, return RT_ERROR_NONE);

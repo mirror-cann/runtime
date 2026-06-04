@@ -1555,7 +1555,7 @@ rtError_t ElfProgram::GetKernelTypeAndMixTypeByMetaInfo(const RtKernel * const e
     }
 
     if (result != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Get kernel type and mix type failed, kerneName=%s, funcType=%lu, crossCoreSync=%lu.",
+        RT_LOG(RT_LOG_ERROR, "Get kernel type and mix type failed, kernelName=%s, funcType=%lu, crossCoreSync=%lu.",
             elfkernelInfo->name, funcType, crossCoreSync);
     }
 
@@ -1595,17 +1595,17 @@ rtError_t ElfProgram::GetKernelTypeAndMixType(const RtKernel * const elfkernelIn
     ERROR_RETURN(error, "Ger kernel type and mix type failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     COND_RETURN_INFO((kernelAttrType != static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID)), RT_ERROR_NONE,
-        "Get kernel type success, kerneName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
+        "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
         elfkernelInfo->name, metaInfo->funcType, kernelAttrType, mixType);
 
     GetKernelTypeAndMixTypeByName(elfkernelInfo->name, kernelAttrType, mixType);
     COND_RETURN_INFO((kernelAttrType != static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID)), RT_ERROR_NONE,
-        "Get kernel type success, kerneName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
+        "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
         elfkernelInfo->name, metaInfo->funcType, kernelAttrType, mixType);
 
     kernelAttrType = GetDefaultKernelAttrType();
 
-    RT_LOG(RT_LOG_INFO, "Get kernel type success, kerneName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
+    RT_LOG(RT_LOG_INFO, "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
         elfkernelInfo->name, metaInfo->funcType, kernelAttrType, mixType);
 
     return RT_ERROR_NONE;
@@ -1741,7 +1741,7 @@ rtError_t ElfProgram::RegisterAllKernelCommon(void)
         Kernel *kernelTmp = const_cast<Kernel*>(GetKernelByName(tripKernelName.c_str()));
         if (kernelTmp != nullptr) {
             error = MergeKernel(elfKernelInfo, kernelTmp);
-            ERROR_RETURN(error, "merge kernel failed, kerneName=%s. retCode=%#x.",
+            ERROR_RETURN(error, "merge kernel failed, kernelName=%s. retCode=%#x.",
                 tripKernelName.c_str(), static_cast<uint32_t>(error));
             continue;
         }
@@ -1749,7 +1749,7 @@ rtError_t ElfProgram::RegisterAllKernelCommon(void)
         Kernel *kernelObj = nullptr;
         error = BuildNewKernel(tripKernelName, elfKernelInfo, kernelObj);
         COND_RETURN_ERROR((kernelObj == nullptr), error,
-            "Kernel register failed, build new Kernel failed, kerneName=%s.", elfKernelInfo->name);
+            "Kernel register failed, build new Kernel failed, kernelName=%s.", elfKernelInfo->name);
 
         error = KernelNameMapAdd(kernelObj);
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,

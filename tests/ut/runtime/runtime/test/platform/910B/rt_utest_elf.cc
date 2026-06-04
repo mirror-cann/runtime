@@ -1305,6 +1305,10 @@ TEST_F(CloudV2ELFTest, UpdateKernelsInfo)
     kernelInfo->taskRation[1] = 0U; // init value 0
     kernelInfo->dfxAddr = nullptr;
     kernelInfo->dfxSize = 0ULL;
+    kernelInfo->schedMode = RT_SCHEM_MODE_NORMAL;
+    kernelInfo->paramCount = 0;
+    kernelInfo->minStackSize = 100;
+    kernelInfo->isSupportFuncEntry = false;
     std::map<std::string, ElfKernelInfo *> kernelInfoMap;
 
     std::string kernelName = "test-update-kernels-info";
@@ -1312,6 +1316,13 @@ TEST_F(CloudV2ELFTest, UpdateKernelsInfo)
 
     rtError_t rtn = UpdateKernelsInfo(kernelInfoMap, &newKernels, &elfData);
     EXPECT_EQ(rtn, RT_ERROR_NONE);
+
+    kernelInfo->schedMode = RT_SCHEM_MODE_END;
+    kernelName = "test";
+    kernelInfoMap[kernelName] = kernelInfo;
+    rtn = UpdateKernelsInfo(kernelInfoMap, &newKernels, &elfData);
+    EXPECT_EQ(rtn, RT_ERROR_INVALID_VALUE);
+
     delete [] newKernels.name;
     delete kernelInfo;
     kernelInfo = NULL;

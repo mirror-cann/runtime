@@ -1454,7 +1454,8 @@ rtError_t ApiImpl::StreamCreate(Stream ** const stm, const int32_t priority, con
     RT_LOG(RT_LOG_DEBUG, "device failMode is %llu.", failMode);
     if (failMode != CONTINUE_ON_FAILURE && (flags & RT_STREAM_CP_PROCESS_USE) != 0U) {
         RT_LOG(RT_LOG_EVENT,
-            "Not support set failure mode for coprocessor stream, flags=%u, failMode=%llu.", flags, failMode);
+            "Setting failure mode for coprocessor streams is not supported, flags=%u, failMode=%llu.", flags,
+            failMode);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -1471,7 +1472,7 @@ rtError_t ApiImpl::StreamCreate(Stream ** const stm, const int32_t priority, con
     rtError_t error = curCtx->StreamCreate(static_cast<uint32_t>(priority), flags, stm, grp, false, isAutoSplitEnable);
 
     COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Create stream failed, not support flags=%u", flags);
+                     "Create stream failed: flags=%u are not supported", flags);
     ERROR_RETURN(error, "Create stream failed, priority=%d, flags=%u.", priority, flags);
 
     if (failMode != CONTINUE_ON_FAILURE) {
@@ -1568,7 +1569,8 @@ rtError_t ApiImpl::StreamWaitEvent(Stream * const stm, Event * const evt, const 
     const bool supFlag = ((evt->IsNewMode()) || ((!evt->IsNotify()) && (evt->GetEventFlag() == RT_EVENT_DEFAULT))) &&
             (curStm->GetModelNum() != 0);
     COND_RETURN_WARN(supFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support current mode bind stream, mode=%d, flag=%" PRIu64 ", isNotify=%d, isModel=%d, stream_id=%d.",
+        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64
+        ", isNotify=%d, isModel=%d, stream_id=%d.",
         evt->IsNewMode(), evt->GetEventFlag(), evt->IsNotify(), (curStm->GetModelNum() != 0U), curStm->Id_());
     COND_RETURN_AND_MSG_INVALID_CONTEXT(curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT, 
         "stream " + std::to_string(curStm->Id_()));
@@ -1961,7 +1963,7 @@ rtError_t ApiImpl::EventCreate(Event ** const evt, const uint64_t flag)
     if (flag == RT_EVENT_MC2) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support create coprocessor event.",
+            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor events.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
@@ -2053,14 +2055,14 @@ rtError_t ApiImpl::EventRecord(Event * const evt, Stream * const stm)
     const bool supportFlag = (evt->IsNewMode() || (evt->GetEventFlag() == RT_EVENT_DEFAULT)) &&
         (curStm->GetModelNum() != 0);
     COND_RETURN_WARN(supportFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support current mode bind stm, mode=%d, flag=%" PRIu64 ", isModel=%d.",
+        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64 ", isModel=%d.",
         evt->IsNewMode(), evt->GetEventFlag(), (curStm->GetModelNum() != 0U));
     COND_RETURN_AND_MSG_INVALID_CONTEXT(curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT, 
         "stream " + std::to_string(curStm->Id_()));
 
     if (evt->ToBeCaptured(curStm)) {
         COND_RETURN_WARN(!evt->IsNewMode(), RT_ERROR_FEATURE_NOT_SUPPORT,
-            "Not support call rtEventCreate or rtEventCreateWithFlag without external flag, mode=%d",
+            "Calling rtEventCreate or rtEventCreateWithFlag without the external flag is not supported, mode=%d",
             evt->IsNewMode());
         COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, __func__,
             StreamFlagsToString(curStm->Flags()), "stream flag",
@@ -2102,7 +2104,7 @@ rtError_t ApiImpl::EventReset(Event * const evt, Stream * const stm)
     const bool supportFlag = (evt->IsNewMode()) || ((!evt->IsNotify())
         && (evt->GetEventFlag() == RT_EVENT_DEFAULT) && (curStm->GetModelNum() != 0));
     COND_RETURN_WARN(supportFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support current mode bind stm, mode=%d, flag=%" PRIu64 ", isModel=%d.",
+        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64 ", isModel=%d.",
         evt->IsNewMode(), evt->GetEventFlag(), (curStm->GetModelNum() != 0U));
     COND_RETURN_AND_MSG_INVALID_CONTEXT(curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT, 
         "stream " + std::to_string(curStm->Id_()));
@@ -2124,7 +2126,8 @@ rtError_t ApiImpl::EventReset(Event * const evt, Stream * const stm)
         }
     } else {
         if ((curStm != curCtx->DefaultStream_()) && (evt->ToBeCaptured(curStm))) {
-            RT_LOG(RT_LOG_WARNING, "Not support call rtEventCreate or rtEventCreateWithFlag without external flag");
+            RT_LOG(RT_LOG_WARNING,
+                "Calling rtEventCreate or rtEventCreateWithFlag without the external flag is not supported");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
@@ -3365,7 +3368,8 @@ rtError_t ApiImpl::DeviceCanAccessPeer(int32_t * const canAccessPeer, const uint
 
     const rtRunMode runMode = static_cast<rtRunMode>(NpuDriver::RtGetRunMode());
     if (runMode == RT_RUN_MODE_OFFLINE) {
-        RT_LOG(RT_LOG_ERROR, "feature not support in offline, drv devId=%u, peer=%u", devId, peerDevice);
+        RT_LOG(RT_LOG_ERROR, "This feature is not supported in offline mode, drv devId=%u, peer=%u", devId,
+            peerDevice);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
@@ -3582,7 +3586,7 @@ rtError_t ApiImpl::DeviceSetLimit(const int32_t devId, const rtLimitType_t type,
         Runtime *rt = Runtime::Instance();
         rt->SetDeviceCustomerStackSize(val);
     } else if (type == RT_LIMIT_TYPE_SIMT_PRINTF_FIFO_SIZE) {
-        RT_LOG(RT_LOG_WARNING, "limit type not support, type=%u", static_cast<uint32_t>(type));
+        RT_LOG(RT_LOG_WARNING, "Limit type is not supported, type=%u", static_cast<uint32_t>(type));
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     } else if (type == RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE) {
         Runtime *rt = Runtime::Instance();
@@ -3827,7 +3831,8 @@ rtError_t ApiImpl::DeviceSetTsId(const uint32_t tsId)
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "GetDrvSentinelMode failed");
     const bool sentinelMode = Runtime::Instance()->GetSentinelMode();
     if (sentinelMode) {
-        COND_RETURN_ERROR(tsId == RT_TSC_ID, RT_ERROR_INVALID_VALUE, "sentinelMode or single f not support set tsid=0");
+        COND_RETURN_ERROR(tsId == RT_TSC_ID, RT_ERROR_INVALID_VALUE,
+            "tsid=0 is not supported in sentinelMode or single-f mode");
     }
 
     if ((InnerThreadLocalContainer::GetCurCtx() == nullptr) && (InnerThreadLocalContainer::GetCurRef() != nullptr)) {
@@ -4632,7 +4637,7 @@ rtError_t ApiImpl::NotifyCreate(const int32_t deviceId, Notify ** const retNotif
     if (flag == RT_NOTIFY_MC2) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support create coprocessor notify.",
+            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor notify.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
@@ -4701,7 +4706,7 @@ rtError_t ApiImpl::NotifyReset(Notify * const inNotify)
     }
 
     if (!dev->CheckFeatureSupport(TS_FEATURE_MC2_ENHANCE)) {
-        RT_LOG(RT_LOG_ERROR, "feature not support because tsch version too low");
+        RT_LOG(RT_LOG_ERROR, "This feature is not supported because the tsch version is too low");
         RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -4723,7 +4728,7 @@ rtError_t ApiImpl::ResourceClean(int32_t devId, rtIdType_t type)
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->CheckFeatureSupport(TS_FEATURE_TASK_ABORT)) {
-        RT_LOG(RT_LOG_WARNING, "feature not support because tsch version too low");
+        RT_LOG(RT_LOG_WARNING, "This feature is not supported because the tsch version is too low");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     Driver * const curDrv = curCtx->Device_()->Driver_();
@@ -4819,7 +4824,7 @@ rtError_t ApiImpl::IpcOpenNotify(Notify ** const retNotify, const char_t * const
     if ((flag & RT_NOTIFY_FLAG_DOWNLOAD_TO_DEV) != 0) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support ipc open coprocessor notify.",
+            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support opening IPC coprocessor notifies.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
@@ -4944,7 +4949,7 @@ rtError_t ApiImpl::LabelGoto(Label * const lbl, Stream * const stm)
 #ifndef CFG_DEV_PLATFORM_PC
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
     COND_RETURN_ERROR_MSG_INNER(ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT,
-                                "Can not support old label goto for 64k label.");
+                                "Old label goto is not supported for 64K labels.");
 #endif
     return lbl->Goto(stm);
 }
@@ -5293,7 +5298,7 @@ rtError_t ApiImpl::LabelGotoEx(Label * const lbl, Stream * const stm)
 #ifndef CFG_DEV_PLATFORM_PC
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
     COND_RETURN_ERROR_MSG_INNER(ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Can not support old label goto for 64k label.");
+        "Old label goto is not supported for 64K labels.");
 #endif
     return lbl->StreamGoto(stm);
 }
@@ -5523,11 +5528,11 @@ rtError_t ApiImpl::GetOverflowDetectionCapability(rtChipType_t chipType, int64_t
         if (isSupport) {
             *val = static_cast<int64_t>(RT_CAPABILITY_SUPPORT);
         } else {
-            RT_LOG(RT_LOG_WARNING, "query aicpu dump not support in chipType=%d", chipType);
+            RT_LOG(RT_LOG_WARNING, "Querying AICPU dump is not supported on chipType=%d", chipType);
             *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
         }
  	} else {
-        RT_LOG(RT_LOG_WARNING, "query aicpu dump not support because not setdevice");
+        RT_LOG(RT_LOG_WARNING, "Querying AICPU dump is not supported because no device has been set");
         *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
     }
     return RT_ERROR_NONE;
@@ -5537,7 +5542,7 @@ rtError_t ApiImpl::SetGroup(const int32_t groupId)
 {
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
-        RT_LOG(RT_LOG_ERROR, "Device group not support in chipType=%d", chipType);
+        RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
         RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -5551,7 +5556,7 @@ rtError_t ApiImpl::GetGroupCount(uint32_t * const cnt)
 {
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
-        RT_LOG(RT_LOG_ERROR, "Device group not support in chipType=%d", chipType);
+        RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
         RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -5565,7 +5570,7 @@ rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const gro
 {
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
-        RT_LOG(RT_LOG_ERROR, "Device group not support in chipType=%d", chipType);
+        RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
         RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -5720,7 +5725,7 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
                       "Current Context is null, drv devId[%u].", deviceId);
     error = NpuDriver::GetAllFaultEvent(deviceId, faultEventInfo, maxFaultNum, &eventCount);
     COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Not support get fault event");
+                     "Getting fault events is not supported");
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "can not get fault event of device_id=%u, error=%d", deviceId, error);
         return error;
@@ -5739,7 +5744,7 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
     (void)mmGetTimeOfDay(&tv[index++], nullptr);
     error = NpuDriver::GetSmmuFaultValid(deviceId, isSmmuFault);
     COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Not support get fault smmu valid");
+                     "Getting the fault SMMU valid status is not supported");
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "can not get smmu of device_id=%u, error=%d", deviceId, error);
         return error;
@@ -5861,7 +5866,7 @@ rtError_t ApiImpl::NpuClearFloatDebugStatus(const uint32_t checkMode, Stream * c
         NULL_PTR_RETURN_MSG_OUTER(device, RT_ERROR_INVALID_VALUE);
         RT_LOG(RT_LOG_INFO, "device_id=%u, tschversion=%u", device->Id_(), device->GetTschVersion());
         if (!(device->CheckFeatureSupport(TS_FEATURE_OVER_FLOW_DEBUG))) {
-            RT_LOG(RT_LOG_WARNING, "current ts version does not support NpuClearFloatDebugStatus");
+            RT_LOG(RT_LOG_WARNING, "The current ts version does not support NpuClearFloatDebugStatus");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
 
@@ -5877,7 +5882,7 @@ rtError_t ApiImpl::NpuClearFloatDebugStatus(const uint32_t checkMode, Stream * c
             sizeof(hostTmp), &hostTmp, sizeof(hostTmp), RT_MEMCPY_HOST_TO_DEVICE);
         ERROR_RETURN(ret, "Failed to Memcpy from host to device");
     } else {
-        RT_LOG(RT_LOG_WARNING, "not support in current chiptype=%d!", chipType);
+        RT_LOG(RT_LOG_WARNING, "Current chipType=%d is not supported.", chipType);
         ret = RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     return ret;
@@ -5898,7 +5903,7 @@ rtError_t ApiImpl::NpuGetFloatDebugStatus(void * const outputAddrPtr, const uint
         NULL_PTR_RETURN_MSG_OUTER(device, RT_ERROR_INVALID_VALUE);
         RT_LOG(RT_LOG_INFO, "device_id=%u, tschversion=%u", device->Id_(), device->GetTschVersion());
         if (!device->CheckFeatureSupport(TS_FEATURE_OVER_FLOW_DEBUG)) {
-            RT_LOG(RT_LOG_WARNING, "current ts version does not support NpuGetFloatDebugStatus");
+            RT_LOG(RT_LOG_WARNING, "The current ts version does not support NpuGetFloatDebugStatus");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
         return curCtx->NpuGetFloatStatus(outputAddrPtr, outputSize, checkMode, stm, true);
@@ -5914,7 +5919,7 @@ rtError_t ApiImpl::NpuGetFloatDebugStatus(void * const outputAddrPtr, const uint
             sizeof(hostTmp), RT_MEMCPY_HOST_TO_DEVICE);
         ERROR_RETURN(ret, "Failed to Memcpy from host to device");
     } else {
-        RT_LOG(RT_LOG_WARNING, "not support in current chip type=%d!", chipType);
+        RT_LOG(RT_LOG_WARNING, "Current chip type=%d is not supported.", chipType);
         ret = RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     return ret;
@@ -5930,7 +5935,7 @@ rtError_t ApiImpl::SetOpWaitTimeOut(const uint32_t timeout)
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, "GetDevProperties fail");
     const auto eventWaitTimeoutProp = prop.eventWaitTimeout;
     if (eventWaitTimeoutProp == EventWaitTimeoutType::SET_OP_WAIT_TIMEOUT_NOT_SUPPORT) {
-        RT_LOG(RT_LOG_WARNING, "Unsupport chip type, chipType=%d.", chipType);
+        RT_LOG(RT_LOG_WARNING, "Unsupported chip type, chipType=%d.", chipType);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     if (eventWaitTimeoutProp == EventWaitTimeoutType::SET_OP_WAIT_TIMEOUT_NEED_TS_VERSION) {
@@ -7360,7 +7365,7 @@ rtError_t ApiImpl::AiCpuTaskSupportCheck()
     COND_RETURN_WITH_NOLOG(!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(),
         RtOptionalFeatureType::RT_FEATURE_TASK_AICPU_DOT_SUPPORT_CHECK), RT_ERROR_NONE);
     COND_RETURN_ERROR_MSG_INNER(rtInstance->GetAicpuCnt() == 0,
-        RT_ERROR_FEATURE_NOT_SUPPORT, "not support aicpu task!");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "AICPU tasks are not supported!");
     return RT_ERROR_NONE;
 }
 
@@ -7416,7 +7421,7 @@ rtError_t ApiImpl::StreamClear(Stream * const stm, rtClearStep_t step)
     }
 
     if (!dev->CheckFeatureSupport(TS_FEATURE_MC2_ENHANCE)) {
-        RT_LOG(RT_LOG_ERROR, "Failed to clear stream because tsch version does not support this feature.");
+        RT_LOG(RT_LOG_ERROR, "Failed to clear stream because the tsch version does not support this feature.");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -8338,7 +8343,7 @@ rtError_t ApiImpl::KernelArgsInit(Kernel * const funcHandle, RtArgsHandle **args
 
 rtError_t ApiImpl::KernelArgsAppendPlaceHolder(RtArgsHandle *argsHandle, ParaDetail **paraHandle)
 {
-    RT_LOG(RT_LOG_DEBUG, "enter append place holder ");
+    RT_LOG(RT_LOG_DEBUG, "enter append place holder");
     // 开始排布数据区之后不允许再排布参数区
     COND_RETURN_AND_MSG_OUTER(argsHandle->isGotPhBuff, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, 
         "appending placeholder or common parameter after getting placeholder buffer");
@@ -8383,10 +8388,10 @@ rtError_t ApiImpl::KernelArgsAppendPlaceHolder(RtArgsHandle *argsHandle, ParaDet
 
 rtError_t ApiImpl::KernelArgsGetPlaceHolderBuffer(RtArgsHandle *argsHandle, ParaDetail *paraHandle, size_t dataSize, void **bufferAddr)
 {
-    RT_LOG(RT_LOG_DEBUG, "get placeholer start, dataSize=%zu", dataSize);
+    RT_LOG(RT_LOG_DEBUG, "get placeholder start, dataSize=%zu", dataSize);
     // 对非place holder的参数如果获取Buffer做拦截
     COND_RETURN_ERROR_MSG_INNER(paraHandle->type == 0U,
-        RT_ERROR_INVALID_VALUE, "param type=0 not support get placeholer buffer");
+        RT_ERROR_INVALID_VALUE, "param type=0 does not support getting the placeholder buffer");
 
     // 开始排布数据区之后不允许再排布参数区
     COND_RETURN_AND_MSG_OUTER(argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, 
@@ -8407,14 +8412,14 @@ rtError_t ApiImpl::KernelArgsGetPlaceHolderBuffer(RtArgsHandle *argsHandle, Para
     // 内存占用不能超过最大内存偏移
     const size_t needOccupyOffset = realParaOffset + dataSize;
     COND_RETURN_ERROR_MSG_INNER((needOccupyOffset > argsHandle->bufferSize),
-        RT_ERROR_INVALID_VALUE, "get placeholer buff fail,size overflow,needOccupyOffset=%zu, total=%zu",
+        RT_ERROR_INVALID_VALUE, "get placeholder buffer failed, size overflow, needOccupyOffset=%zu, total=%zu",
         needOccupyOffset, argsHandle->bufferSize);
     argsHandle->isGotPhBuff = true;
     paraHandle->dataOffset = realParaOffset;
     *bufferAddr = RtPtrToPtr<void *>(RtPtrToPtr<uint8_t *>(argsHandle->buffer) + paraHandle->dataOffset);
     argsHandle->argsSize = needOccupyOffset;
 
-    RT_LOG(RT_LOG_DEBUG, "get placeholer end, dataSize=%zu, dataOffset=%zu, needOccupyOffset=%zu",
+    RT_LOG(RT_LOG_DEBUG, "get placeholder end, dataSize=%zu, dataOffset=%zu, needOccupyOffset=%zu",
         dataSize, realParaOffset, needOccupyOffset);
 
     return RT_ERROR_NONE;
@@ -9338,7 +9343,7 @@ rtError_t ApiImpl::CheckHostAtomicSupport(int32_t deviceId, bool &supported)
     RT_LOG(RT_LOG_INFO, "the topoType=%ld", topoType);
 
     if (topoType != HOST_DEVICE_CONNECT_TYPE_UB) {
-        RT_LOG(RT_LOG_INFO, "the topoType not support atomic, topoType=%ld", topoType);
+        RT_LOG(RT_LOG_INFO, "Atomic operations are not supported for topoType=%ld", topoType);
         return RT_ERROR_NONE;
     }
 
@@ -9366,7 +9371,7 @@ rtError_t ApiImpl::CheckP2PAtomicSupport(int32_t srcDeviceId, int32_t dstDeviceI
 
     if (topoType != TOPOLOGY_HCCS && topoType != TOPOLOGY_SIO &&
         topoType != TOPOLOGY_HCCS_SW && topoType != TOPOLOGY_UB) {
-        RT_LOG(RT_LOG_INFO, "the topoType not support atomic, topoType=%ld", topoType);
+        RT_LOG(RT_LOG_INFO, "Atomic operations are not supported for topoType=%ld", topoType);
         return RT_ERROR_NONE;
     }
 

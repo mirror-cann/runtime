@@ -90,7 +90,8 @@ static rtError_t ParseDebugOptions(const nlohmann::json &kernelJson)
     try {
         const auto &debugOptions = kernelJson["debugOptions"].get<std::string>();
         if (debugOptions.find("printf") != std::string::npos) {
-            RT_LOG(RT_LOG_ERROR, "kernel debug option 'printf' does not support, debugOptions=[%s]", debugOptions.c_str());
+            RT_LOG(RT_LOG_ERROR, "Kernel debug option 'printf' is not supported, debugOptions=[%s]",
+                debugOptions.c_str());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     } catch (nlohmann::json::exception &e) {
@@ -239,7 +240,7 @@ rtError_t BinaryLoader::ParseKernelJsonFile(ElfProgram * const prog) const
     ParseInterCrossSync(kernelJsonObj, prog);
 
     error = ParseDebugOptions(kernelJsonObj);
-    ERROR_RETURN(error, "Parse degbug options failed, json=[%s]", jsonFileRealPath.c_str());
+    ERROR_RETURN(error, "Parse debug options failed, json=[%s]", jsonFileRealPath.c_str());
 
     rtKernelAttrType kernelAttrType = static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID);
     /* jsonMagic > optionMagic > defaultMagic */

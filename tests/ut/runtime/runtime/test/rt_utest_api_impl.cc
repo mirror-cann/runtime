@@ -1784,3 +1784,27 @@ TEST_F(ApiImplTest, OpenEventHandle_Test)
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete apiDecorator_;
 }
+
+TEST_F(ApiImplTest, memcpyAsyncCheckLocationNotSupportUserMem)
+{
+    rtError_t error;
+    ApiImpl impl;
+    ApiErrorDecorator apiError(&impl);
+    Context *curCtx = Runtime::Instance()->CurrentContext();
+    RawDevice *device = (RawDevice *)(curCtx->Device_());
+    bool isSupportUserMem = device->IsSupportUserMem();
+
+    device->isDrvSupportUserMem_ = false;
+
+    void *src = malloc(64);
+    void *dst = malloc(64);
+    rtMemcpyKind_t copyKind = RT_MEMCPY_HOST_TO_HOST;
+    bool isD2HorH2DInvolvePageableMemory = false;
+
+    error = apiError.MemcpyAsyncCheckLocation(false, copyKind, src, dst, false, isD2HorH2DInvolvePageableMemory);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    device->isDrvSupportUserMem_ = isSupportUserMem;
+    free(src);
+    free(dst);
+}

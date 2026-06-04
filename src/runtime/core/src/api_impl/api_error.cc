@@ -276,7 +276,7 @@ rtError_t ApiErrorDecorator::CheckArgsWithType(const Kernel *kernel, const RtArg
             break;
         case RT_ARGS_ARRAY: {
             COND_RETURN_WARN(kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU, RT_ERROR_FEATURE_NOT_SUPPORT,
-                "aicpu kernel not support.");
+                "AICPU kernel is not supported.");
             COND_RETURN_AND_MSG_OUTER(!kernel->HasParamSummary(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1001,
                 "kernel does not have param info.");
             if (kernel->GetParamCount() > 0U) {
@@ -1066,9 +1066,10 @@ rtError_t ApiErrorDecorator::StreamWaitEvent(Stream * const stm, Event * const e
         ((evt->GetEventFlag() & (~static_cast<uint32_t>(RT_EVENT_MC2))) != 0U))),
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1006, __func__, "evt.eventFlag_=" + std::to_string(evt->GetEventFlag()));
     COND_RETURN_WARN(((evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC)) && (stm != nullptr) &&
-        (stm->IsCapturing())), RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in capture stream flag");
+        (stm->IsCapturing())), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "IPC event is not supported when the capture stream flag is set.");
     COND_RETURN_WARN(evt->IsEventWithoutWaitTask(), RT_ERROR_FEATURE_NOT_SUPPORT,
-        "flag=%" PRIu64 " does not support, not need wait for event.", evt->GetEventFlag());
+        "flag=%" PRIu64 " is not supported, and there is no need to wait for the event.", evt->GetEventFlag());
     return impl_->StreamWaitEvent(stm, evt, timeout);
 }
 
@@ -1209,7 +1210,7 @@ rtError_t ApiErrorDecorator::StreamSetMode(Stream * const stm, const uint64_t st
     Stream *curStm = Runtime::Instance()->GetCurStream(stm);
     NULL_PTR_RETURN_MSG_OUTER(curStm, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN((curStm->Flags() & RT_STREAM_CP_PROCESS_USE) != 0U, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Not support coprocessor stream flag=%u, stream_id=%d", curStm->Flags(), curStm->Id_());
+                     "Coprocessor stream flag=%u is not supported, stream_id=%d", curStm->Flags(), curStm->Id_());
 #ifndef CFG_DEV_PLATFORM_PC
     const rtError_t error = impl_->StreamSetMode(curStm, stmMode);
     ERROR_RETURN(error, "set stream mode failed.");
@@ -1292,7 +1293,7 @@ rtError_t ApiErrorDecorator::EventDestroySync(Event *evt)
 {
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN(evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtEventDestroySync api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtEventDestroySync API");
     return impl_->EventDestroySync(evt);
 }
 
@@ -1305,7 +1306,8 @@ rtError_t ApiErrorDecorator::EventRecord(Event * const evt, Stream * const stm)
         ((evt->GetEventFlag() & (~static_cast<uint32_t>(RT_EVENT_MC2))) != 0U))),
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1006, __func__, "evt.eventFlag_=" + std::to_string(evt->GetEventFlag()));
     COND_RETURN_WARN(((evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC)) && (stm != nullptr) &&
-        (stm->IsCapturing())), RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in capture stream flag");
+        (stm->IsCapturing())), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "IPC events are not supported when the capture stream flag is set.");
     const rtError_t error = impl_->EventRecord(evt, stm);
     COND_RETURN_ERROR((error != RT_ERROR_NONE) && (error != RT_ERROR_FEATURE_NOT_SUPPORT),
         error, "Record event failed.");
@@ -1317,7 +1319,7 @@ rtError_t ApiErrorDecorator::GetEventID(Event * const evt, uint32_t * const evtI
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(evtId, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN(evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtGetEventID api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtGetEventID API");
     return impl_->GetEventID(evt, evtId);
 }
 
@@ -1330,9 +1332,9 @@ rtError_t ApiErrorDecorator::EventReset(Event * const evt, Stream * const stm)
         ((evt->GetEventFlag() & (~static_cast<uint32_t>(RT_EVENT_MC2))) != 0U))),
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1006, __func__, "evt.eventFlag_=" + std::to_string(evt->GetEventFlag()));
     COND_RETURN_WARN(evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtEventReset api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtEventReset API");
     COND_RETURN_WARN(evt->IsEventWithoutWaitTask(), RT_ERROR_FEATURE_NOT_SUPPORT,
-        "flag=%" PRIu64 " does not support, not need reset for event.", evt->GetEventFlag());
+        "flag=%" PRIu64 " is not supported, and there is no need to reset the event.", evt->GetEventFlag());
     const rtError_t error = impl_->EventReset(evt, stm);
     COND_RETURN_ERROR((error != RT_ERROR_NONE) && (error != RT_ERROR_FEATURE_NOT_SUPPORT),
         error, "Reset event failed.");
@@ -1358,11 +1360,11 @@ rtError_t ApiErrorDecorator::EventQuery(Event * const evt)
 {
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN(evt->IsNewMode(), RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support current mode, mode=%d", static_cast<int32_t>(evt->IsNewMode()));
+        "The current mode is not supported, mode=%d", static_cast<int32_t>(evt->IsNewMode()));
     COND_RETURN_WARN(evt->GetEventFlag() == RT_EVENT_EXTERNAL, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "The external event does not support to query status.");
+        "The external event does not support querying status.");
     COND_RETURN_WARN(evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtEventQuery api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtEventQuery API");
     COND_RETURN_AND_MSG_OUTER(evt->IsCapturing(), RT_ERROR_EVENT_CAPTURED, 
         ErrorCode::EE1006, __func__, "event " + std::to_string(evt->EventId_()) + " during the capture stage");
     return impl_->EventQuery(evt);
@@ -1373,7 +1375,7 @@ rtError_t ApiErrorDecorator::EventQueryStatus(Event * const evt, rtEventStatus_t
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(status, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN(evt->GetEventFlag() == RT_EVENT_EXTERNAL, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "The external event does not support to query status.");
+        "The external event does not support querying status.");
     COND_RETURN_AND_MSG_OUTER(evt->IsCapturing(), RT_ERROR_EVENT_CAPTURED, 
         ErrorCode::EE1006, __func__, "event " + std::to_string(evt->EventId_()) + " during the capture stage");
     return impl_->EventQueryStatus(evt, status);
@@ -1384,11 +1386,11 @@ rtError_t ApiErrorDecorator::EventQueryWaitStatus(Event * const evt, rtEventWait
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(status, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN(evt->IsNewMode(), RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support current mode, mode=%d", static_cast<int32_t>(evt->IsNewMode()));
+        "The current mode is not supported, mode=%d", static_cast<int32_t>(evt->IsNewMode()));
     COND_RETURN_WARN(evt->GetEventFlag() == RT_EVENT_EXTERNAL, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "The external event does not support to query status.");
+        "The external event does not support querying status.");
     COND_RETURN_WARN(evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtEventQueryWaitStatus api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtEventQueryWaitStatus API");
     COND_RETURN_AND_MSG_OUTER(evt->IsCapturing(), RT_ERROR_EVENT_CAPTURED, 
         ErrorCode::EE1006, __func__, "event " + std::to_string(evt->EventId_()) + " during the capture stage");
     return impl_->EventQueryWaitStatus(evt, status);
@@ -1404,10 +1406,10 @@ rtError_t ApiErrorDecorator::EventElapsedTime(float32_t * const retTime, Event *
     COND_RETURN_AND_MSG_OUTER(endEvt->IsCapturing(), RT_ERROR_EVENT_CAPTURED, 
         ErrorCode::EE1006, __func__, "endEvent " + std::to_string(endEvt->EventId_()) + " during the capture stage");
     COND_RETURN_WARN((startEvt->GetEventFlag() == RT_EVENT_EXTERNAL || endEvt->GetEventFlag() == RT_EVENT_EXTERNAL),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "The external event does not support to get elapsed time.");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "The external event does not support getting elapsed time.");
     COND_RETURN_WARN((startEvt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC) ||
         endEvt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC)),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtEventElapsedTime api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtEventElapsedTime API");
     return impl_->EventElapsedTime(retTime, startEvt, endEvt);
 }
 
@@ -1416,9 +1418,9 @@ rtError_t ApiErrorDecorator::EventGetTimeStamp(uint64_t * const retTime, Event *
     NULL_PTR_RETURN_MSG_OUTER(retTime, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
     COND_RETURN_WARN(evt->GetEventFlag() == RT_EVENT_EXTERNAL, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "The external event does not support to get timestamp.");
+        "The external event does not support getting timestamp.");
     COND_RETURN_WARN(evt->GetEventFlag() == static_cast<uint32_t>(RT_EVENT_IPC),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support ipc event in rtEventGetTimeStamp api");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "IPC events are not supported by the rtEventGetTimeStamp API");
     COND_RETURN_AND_MSG_OUTER(evt->IsCapturing(), RT_ERROR_EVENT_CAPTURED, 
         ErrorCode::EE1006, __func__, "event " + std::to_string(evt->EventId_()) + " during the capture stage");
     return impl_->EventGetTimeStamp(retTime, evt);
@@ -1536,7 +1538,7 @@ rtError_t ApiErrorDecorator::HostRegister(void *ptr, uint64_t size, rtHostRegist
     ZERO_RETURN_AND_MSG_OUTER(size);
     constexpr uint32_t validFlags = RT_HOST_REGISTER_IOMEMORY | RT_HOST_REGISTER_READONLY;
     if ((static_cast<uint32_t>(type) & (~validFlags)) != 0U) {
-        RT_LOG(RT_LOG_WARNING, "not support this type, current type=%u, valid flags are combinations of [%u, %u] or 0",
+        RT_LOG(RT_LOG_WARNING, "Current type=%u is not supported. Valid flags are combinations of [%u, %u] or 0",
             type, RT_HOST_REGISTER_IOMEMORY, RT_HOST_REGISTER_READONLY);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -1608,7 +1610,7 @@ rtError_t ApiErrorDecorator::HostMemMapCapabilities(uint32_t deviceId, rtHacType
         hacType, RT_HAC_TYPE_MAX);
     error = impl_->HostMemMapCapabilities(realDeviceId, hacType, capabilities);
     if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
-        RT_LOG(RT_LOG_WARNING, "HostMemMapCapabilities not support on drv deviceId %u", realDeviceId);
+        RT_LOG(RT_LOG_WARNING, "HostMemMapCapabilities is not supported on drv deviceId %u", realDeviceId);
     } else {
         ERROR_RETURN(error, "query host memory capabilities failed.");
     }   
@@ -1750,7 +1752,7 @@ rtError_t ApiErrorDecorator::MemcpyAsync(void *const dst, const uint64_t destMax
     NULL_PTR_RETURN_MSG(curCtx->Device_(), RT_ERROR_DEVICE_NULL);
     const uint32_t runMode = curCtx->Device_()->Driver_()->GetRunMode();
     COND_RETURN_WARN(((copyKind == RT_MEMCPY_HOST_TO_HOST) && (runMode == RT_RUN_MODE_ONLINE)),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "Not support h2h");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "H2H is not supported");
     COND_RETURN_WARN(((addrCfg == nullptr) && (dst == src)),    /* 在check kind/loc之后校验（校验顺序会影响return值） */
         RT_ERROR_NONE, "The src and dst are the same, no need to copy, return.");
 
@@ -1903,7 +1905,8 @@ rtError_t ApiErrorDecorator::RtsMemcpy(void * const dst, const uint64_t destMax,
     const rtChipType_t chipType = rtInstance->GetChipType();
     COND_RETURN_WARN(((!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MEM_MBUF_COPY)) &&
         ((cfgInfo.checkBitmap == WITHOUT_CHECK_KIND) || (cfgInfo.checkBitmap == NOT_CHECK_KIND_BUT_CHECK_PINNED))),
-        ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "chip type(%d) not support mbuf copy, return.", static_cast<int32_t>(chipType));
+        ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "Chip type(%d) does not support mbuf copy. Return.",
+        static_cast<int32_t>(chipType));
 
     COND_RETURN_OUT_ERROR_MSG_CALL(((kind == RT_MEMCPY_KIND_DEFAULT) && 
         ((cfgInfo.checkBitmap == WITHOUT_CHECK_KIND) || (cfgInfo.checkBitmap == NOT_CHECK_KIND_BUT_CHECK_PINNED))),
@@ -2218,13 +2221,13 @@ rtError_t ApiErrorDecorator::MemcpyAsyncCheckLocation(bool checkKind, rtMemcpyKi
         if (isUserRequireToCheckPinnedMem) {
             /* 用户指定CHECK_MEMORY_PINNED，如果驱动不支持GET_USER_MALLOC_ATTR，则返回特性不支持 */
             ERROR_RETURN(RT_ERROR_FEATURE_NOT_SUPPORT, 
-                "Fail to check pinned memory that required by user because not support GET_USER_MALLOC_ATTR feature.");
+                "Failed to check pinned memory required by the user because the GET_USER_MALLOC_ATTR feature is not supported.");
         } else {
             /* 
              * 用户未指定CHECK_MEMORY_PINNED，如果驱动不支持GET_USER_MALLOC_ATTR，则打印Info，流程继续。
              * 如果用GetLocationType获取new/malloc内存的Location，drvMemGetAttribute会报错；因此无法校验该场景的Location。
              */
-            RT_LOG(RT_LOG_INFO, "Not support GET_USER_MALLOC_ATTR feature, continue.");
+            RT_LOG(RT_LOG_INFO, "GET_USER_MALLOC_ATTR is not supported. Continue.");
             return RT_ERROR_NONE;
         }
     }
@@ -2370,7 +2373,7 @@ rtError_t ApiErrorDecorator::MemCopy2DCheckParam(const void * const dst, const u
         width, "less than or equal to " + std::to_string(RT_MAX_MEMCPY2D_WIDTH)); 
     COND_RETURN_WARN(((kind != RT_MEMCPY_DEFAULT) && (kind != RT_MEMCPY_HOST_TO_DEVICE) &&
         (kind != RT_MEMCPY_DEVICE_TO_HOST) && (kind != RT_MEMCPY_DEVICE_TO_DEVICE)), RT_ERROR_FEATURE_NOT_SUPPORT,
-        "this memcpy2d feature only support kind is host2device, device2host or device2device.");
+        "This memcpy2d feature supports only host2device, device2host, or device2device kinds.");
 
     return RT_ERROR_NONE;
 }
@@ -2384,7 +2387,7 @@ rtError_t ApiErrorDecorator::MemCopy2DSync(void * const dst, const uint64_t dstP
     ERROR_RETURN_MSG_CALL(ERR_MODULE_GE, error, "check memcpy2d param failure, retCode=%#x.", static_cast<uint32_t>(error));
     COND_RETURN_WARN(((curKind != RT_MEMCPY_DEFAULT) && (curKind != RT_MEMCPY_HOST_TO_DEVICE) &&
         (curKind != RT_MEMCPY_DEVICE_TO_HOST)), RT_ERROR_FEATURE_NOT_SUPPORT,
-        "this memcpy2d feature only support kind is host2device or device2host.");
+        "This memcpy2d feature supports only host2device or device2host kinds.");
     rtMemcpyKind_t copyKind = curKind;
     rtMemLocationType srcLocationType = RT_MEMORY_LOC_MAX;
     rtMemLocationType dstLocationType = RT_MEMORY_LOC_MAX;
@@ -2398,7 +2401,7 @@ rtError_t ApiErrorDecorator::MemCopy2DSync(void * const dst, const uint64_t dstP
     error = MemcpyKindAutoCorrect(srcLocationType, dstLocationType, &copyKind);
     COND_RETURN_OUT_ERROR_MSG_CALL((error != RT_ERROR_NONE) || ((copyKind != RT_MEMCPY_HOST_TO_DEVICE) &&
         (copyKind != RT_MEMCPY_DEVICE_TO_HOST)), RT_ERROR_INVALID_VALUE,
-        "Memcpy2d sync only support h2d or d2h, srcLocType=%d(%s), srcLocType=%d(%s), dstLocType=%d(%s), "
+        "Memcpy2d sync support only h2d or d2h, srcLocType=%d(%s), srcLocType=%d(%s), dstLocType=%d(%s), "
         "dstRealLocType=%d(%s), copyKind=%d, is invalid in default kind!", srcLocationType,
         MemLocationTypeToStr(srcLocationType), srcRealLocation, MemLocationTypeToStr(srcRealLocation), dstLocationType,
         MemLocationTypeToStr(dstLocationType), dstRealLocation, MemLocationTypeToStr(dstRealLocation), copyKind);
@@ -2428,10 +2431,10 @@ rtError_t ApiErrorDecorator::MemCopy2DAsync(void * const dst, const uint64_t dst
         (copyKind != RT_MEMCPY_DEVICE_TO_HOST) &&
         (copyKind != RT_MEMCPY_DEVICE_TO_DEVICE)),
         RT_ERROR_INVALID_VALUE,
-        "Memcpy2d Async only support h2d, d2h or d2d, kind=%d, reviseKind=%d", kind, copyKind);
+        "Memcpy2d Async support only h2d, d2h, or d2d, kind=%d, reviseKind=%d", kind, copyKind);
 
     COND_RETURN_WARN(((copyKind != RT_MEMCPY_HOST_TO_DEVICE) && (copyKind != RT_MEMCPY_DEVICE_TO_HOST) && (copyKind != RT_MEMCPY_DEVICE_TO_DEVICE)),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "only support h2d, d2h or d2d");
+        RT_ERROR_FEATURE_NOT_SUPPORT, "Only h2d, d2h, or d2d are supported");
 
     if (isD2HorH2DInvolvePageableMemory ) {
         /* 把异步拷贝转化为隐式流同步 + 同步拷贝，以避免异步访问pageable内存引起的PA异常 */
@@ -3572,7 +3575,7 @@ rtError_t ApiErrorDecorator::IpcSetNotifyName(Notify * const inNotify, char_t * 
     const Runtime *const rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_IPC_NOTIFY)) {
-        RT_LOG(RT_LOG_WARNING, "chipType=%d does not support, return.", chipType);
+        RT_LOG(RT_LOG_WARNING, "chipType=%d is not supported. Return.", chipType);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -5086,7 +5089,7 @@ rtError_t ApiErrorDecorator::GetDeviceSatStatus(void * const outputAddrPtr, cons
     COND_RETURN_ERROR(outputAddrPtr == nullptr, RT_ERROR_INVALID_VALUE,
         "Check param failed, outputAddrPtr can not be null.");
     COND_RETURN_ERROR(outputSize != OVERFLOW_OUTPUT_SIZE,
-        RT_ERROR_INVALID_VALUE, "output size %lu is invalid, only support %lu bytes",
+        RT_ERROR_INVALID_VALUE, "Output size %lu is invalid. Only %lu bytes are supported",
         outputSize, OVERFLOW_OUTPUT_SIZE);
     COND_RETURN_AND_MSG_OUTER((stm != nullptr) && (stm->IsCapturing()), RT_ERROR_STREAM_CAPTURED, 
         ErrorCode::EE1006, __func__, "stream " + std::to_string(stm->Id_()) + " during the capture stage");
@@ -5230,7 +5233,7 @@ rtError_t ApiErrorDecorator::MallocPhysical(rtDrvMemHandle* handle, size_t size,
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         NULL_PTR_RETURN_MSG(curCtx->Device_(), RT_ERROR_DEVICE_NULL);
         COND_RETURN_WARN((!(NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_SVM_VMM_NORMAL_GRANULARITY))), 
-            RT_ERROR_DRV_NOT_SUPPORT, "[drv api] driver not support alloc mem via numa id feature.");
+            RT_ERROR_DRV_NOT_SUPPORT, "[drv api] driver does not support the alloc mem via numa id feature.");
         // rt location type covert drv location type
         prop->side = DRV_MEM_HOST_NUMA_SIDE;
     }
@@ -6268,7 +6271,7 @@ rtError_t ApiErrorDecorator::FunctionGetBinary(const Kernel *const funcHandle, P
 rtError_t ApiErrorDecorator::FunctionGetParamCount(const Kernel *funcHandle, size_t *paramCount)
 {
     COND_RETURN_WARN(funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "aicpu kernel not support.");
+        "AICPU kernels are not supported.");
     COND_RETURN_AND_MSG_OUTER(!funcHandle->HasParamSummary(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1001,
         "kernel does not have param info.");
     
@@ -6279,7 +6282,7 @@ rtError_t ApiErrorDecorator::FunctionGetParamInfo(const Kernel *funcHandle, size
                                                     size_t *paramOffset, size_t *paramSize)
 {
     COND_RETURN_WARN(funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "aicpu kernel not support.");
+        "AICPU kernels are not supported.");
     COND_RETURN_AND_MSG_OUTER(!funcHandle->HasParamSummary(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1001,
         "kernel does not have param info.");
     

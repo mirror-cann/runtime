@@ -96,7 +96,8 @@ rtError_t DeviceMsgHandler::CheckGetDevMsgCtrlValid(const rtGetDevMsgCtrlInfo_t 
     const auto error = dev_->Driver_()->DeviceGetBareTgid(&pid);
     ERROR_RETURN(error, "Call driver api DeviceGetBareTgid failed, device id=%u.", dev_->Id_());
     COND_RETURN_ERROR_MSG_INNER(ctrlInfo->pid != pid, RT_ERROR_INVALID_VALUE,
-                                "The pid of error message is not matched, device pid=%u, host pid=%u.", ctrlInfo->pid,
+                                "The PID of the error message does not match, device pid=%u, host pid=%u.",
+                                ctrlInfo->pid,
                                 pid);
 
     COND_RETURN_ERROR_MSG_INNER(
@@ -125,7 +126,7 @@ rtError_t DeviceMsgHandler::HandleMsg()
 
     auto * const ctrlInfo = RtPtrToPtr<rtGetDevMsgCtrlInfo_t *, char_t *>(hostBuf.get());
     error = CheckGetDevMsgCtrlValid(ctrlInfo);
-    ERROR_RETURN(error, "Failed to chack GetDevMsgCtrlInfo.");
+    ERROR_RETURN(error, "Failed to check GetDevMsgCtrlInfo.");
 
     // 2. memset device ms ctrl info
     error = devDrv->MemSetSync(devMemAddr_, destMax, 0U, sizeof(rtGetDevMsgCtrlInfo_t));

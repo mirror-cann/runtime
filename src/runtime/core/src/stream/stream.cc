@@ -1547,7 +1547,7 @@ rtError_t Stream::TearDown(const bool terminal, bool flag)
         const uint16_t taskId = delayRecycleTaskid_.back();
         recycleTask = dev->GetTaskFactory()->GetTask(stmId, taskId);
         if (recycleTask == nullptr) {
-            RT_LOG(RT_LOG_WARNING, "can't find task from factory, stream_id=%d task_id=%u",
+            RT_LOG(RT_LOG_WARNING, "Cannot find task from the factory, stream_id=%d task_id=%u",
                    stmId, static_cast<uint32_t>(taskId));
             delayRecycleTaskid_.pop_back();
             continue;
@@ -4833,7 +4833,7 @@ void Stream::FillTaskExtendInfo(const TaskInfo* task, TraceEvent& record) const
 
 void Stream::SetTraceKernelArgs(const AicTaskInfo *const aicTaskInfo, const uint16_t taskId, TraceArgs &args) const
 {
-    RT_LOG(RT_LOG_DEBUG, "Start to set trace kernel agrs, device_id=%u, stream_id=%d, taskId=%u.",
+    RT_LOG(RT_LOG_DEBUG, "Start to set trace kernel args, device_id=%u, stream_id=%d, taskId=%u.",
         device_->Id_(), Id_(), taskId);
     const void *const deviceAddr = aicTaskInfo->comm.args;
     const uint32_t argsSize = aicTaskInfo->comm.argsSize;
@@ -5074,7 +5074,7 @@ void Stream::RecycleModelDelayRecycleTask()
     for (const uint16_t taskId : delayRecycleTaskid_) {
         TaskInfo* recycleTask = factory->GetTask(streamId_, taskId);
         if (recycleTask == nullptr) {
-            RT_LOG(RT_LOG_WARNING, "can't find task from factory, stream_id=%d task_id=%u", streamId_, taskId);
+            RT_LOG(RT_LOG_WARNING, "Cannot find task from the factory, stream_id=%d task_id=%u", streamId_, taskId);
             continue;
         }
         (void)device_->GetTaskFactory()->Recycle(recycleTask);

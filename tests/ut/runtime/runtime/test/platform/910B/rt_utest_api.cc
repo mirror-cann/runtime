@@ -3434,3 +3434,20 @@ TEST_F(CloudV2ApiTest, rtMemcpyAsync_convert_mapped_addr_host_to_device)
     
     GlobalMockObject::verify();
 }
+
+TEST_F(CloudV2ApiTest, rtHostMemMapCapabilities_feature_not_support)
+{
+    rtError_t error;
+    ApiImpl impl;
+    ApiErrorDecorator apiError(&impl);
+    uint32_t deviceId = 0;
+    rtHacType hacType = RT_HAC_TYPE_STARS;
+    rtHostMemMapCapability capabilities;
+
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::HostMemMapCapabilities)
+        .stubs()
+        .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+
+    error = apiError.HostMemMapCapabilities(deviceId, hacType, &capabilities);
+    EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
+}

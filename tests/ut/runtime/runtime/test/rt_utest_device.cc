@@ -2293,3 +2293,59 @@ TEST_F(DeviceTest, PushAndFlushFftsPlusArgHandle)
     dev.FreeFftsPlusArgHandleCache();
     EXPECT_EQ(dev.fftsPlusArgHandleCache_.size(), 0U);
 }
+
+TEST_F(DeviceTest, prof_switch_enable_success)
+{
+    RawDevice *device = new RawDevice(0);
+    device->Init();
+
+    device->profSwitchAddr_ = 0x1000UL;
+
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::CheckFeatureSupport)
+        .stubs()
+        .will(returnValue(true));
+
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
+
+    device->ProfSwitchEnable();
+
+    delete device;
+}
+
+TEST_F(DeviceTest, prof_switch_disable_success)
+{
+    RawDevice *device = new RawDevice(0);
+    device->Init();
+
+    device->profSwitchAddr_ = 0x1000UL;
+
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::CheckFeatureSupport)
+        .stubs()
+        .will(returnValue(true));
+
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
+
+    device->ProfSwitchDisable();
+
+    delete device;
+}
+
+
+TEST_F(DeviceTest, get_qos_info_by_ipc_feature_not_support)
+{
+    RawDevice *device = new RawDevice(0);
+    device->Init();
+
+    MOCKER(halGetDeviceInfoByBuff)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+
+    rtError_t error = device->GetQosInfoByIpc();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    delete device;
+}

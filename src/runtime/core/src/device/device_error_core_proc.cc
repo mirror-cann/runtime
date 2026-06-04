@@ -405,7 +405,7 @@ static bool CheckSmmuFault(const uint32_t deviceId)
     bool isSmmuFault = false;
     rtError_t error = NpuDriver::GetSmmuFaultValid(deviceId, isSmmuFault);
     if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
-        RT_LOG(RT_LOG_EVENT, "Not support get fault smmu valid");
+        RT_LOG(RT_LOG_EVENT, "Getting fault SMMU valid status is not supported");
         return false;
     } else if (error == RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Get isSmmuFault is %d.", isSmmuFault);
@@ -420,7 +420,8 @@ bool IsSmmuFault(const uint32_t deviceId)
 {
     bool isSmmuFault = false;
     rtError_t error = NpuDriver::GetSmmuFaultValid(deviceId, isSmmuFault);
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, false, "Not support get fault smmu valid");
+    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, false,
+        "Getting fault SMMU valid status is not supported");
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "can not get smmu of device_id=%u, error=%d", deviceId, error);
         return false;
@@ -527,7 +528,7 @@ rtError_t GetDeviceFaultEvents(const uint32_t deviceId, rtDmsFaultEvent* const f
     rtError_t error = RT_ERROR_NONE;
     error = NpuDriver::GetAllFaultEvent(deviceId, faultEventInfo, maxFaultNum, &eventCount);
     COND_RETURN_ERROR(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Not support get fault event.");
+        "Getting fault events is not supported.");
     COND_RETURN_ERROR((error != RT_ERROR_NONE) || (eventCount > maxFaultNum), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
         "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.", deviceId,
             eventCount, maxFaultNum, static_cast<uint32_t>(error));
