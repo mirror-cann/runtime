@@ -76,7 +76,7 @@ target_compile_options(prof_api_stest PRIVATE
     -g
     -pipe
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -145,7 +145,7 @@ target_compile_options(prof_api_c_stest PRIVATE
     -g
     -pipe
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )

@@ -8,6 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "op_analyzer_pmu.h"
+#include <algorithm>
 #include "data_struct.h"
 
 namespace Dvvp {

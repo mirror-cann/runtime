@@ -99,7 +99,7 @@ target_include_directories(acp_stest PRIVATE
 target_compile_options(acp_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -Werror
 )
 

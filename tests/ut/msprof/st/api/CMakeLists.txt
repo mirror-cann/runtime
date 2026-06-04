@@ -408,7 +408,7 @@ target_include_directories(api_david_stest PRIVATE
 target_compile_options(api_david_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -463,7 +463,7 @@ target_include_directories(api_mini_v3_stest PRIVATE
 target_compile_options(api_mini_v3_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -520,7 +520,7 @@ target_include_directories(api_mdc_mini_v3_stest PRIVATE
 target_compile_options(api_mdc_mini_v3_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -575,7 +575,7 @@ target_include_directories(api_cloud_stest PRIVATE
 target_compile_options(api_cloud_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -632,7 +632,7 @@ target_include_directories(api_mdc_stest PRIVATE
 target_compile_options(api_mdc_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -693,7 +693,7 @@ target_include_directories(acl_api_stest PRIVATE
 target_compile_options(acl_api_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -750,7 +750,7 @@ target_include_directories(api_david_v121_stest PRIVATE
 target_compile_options(api_david_v121_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
@@ -804,7 +804,7 @@ target_include_directories(api_tiny_stest PRIVATE
 target_compile_options(api_tiny_stest PRIVATE
     -g
     -Wall
-    -std=c++11
+    -std=c++14
     -fno-access-control
     -Werror
 )
