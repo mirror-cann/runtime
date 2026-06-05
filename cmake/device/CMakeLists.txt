@@ -67,6 +67,7 @@ cann_pack_targets_and_files(
   OUTPUT "cann-tsch-compat.tar.gz"
   FILES "${tsch_fw_sign_file}"
   TARGETS queue_schedule_so aicpu_sharder aicpu_prof aicpu_processer aicpu_scheduler_so aicpu_custom_scheduler_so queue_schedule aicpu_scheduler sign_tsch_fw
+  SIZE_LIMIT 5364
   MANIFEST "aicpu_compat_bin_hash.cfg"
 )
 
@@ -87,7 +88,6 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/cann-tsch-compat.ini
   DESTINATION compat
   COMPONENT npu-runtime
-  OPTIONAL
 )
 
 set_cann_subprj_package()
