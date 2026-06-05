@@ -154,6 +154,14 @@ message SinkPackageHashCodeInfo
     string hash_code = 2;
 }
 
+// 插件包(cann-xxx-compat.tar.gz)版本信息
+message PluginPackageVersionInfo
+{
+    string package_name = 1; // 插件包名 例如 cann-hcomm-compat.tar.gz
+    string version = 2;      // 版本号 例如 8.5.0
+    string timestamp = 3;    // 时间戳 例如 20260114_115609804
+}
+
 message HDCMessage
 {
     enum MsgType
@@ -307,4 +315,6 @@ message HDCMessage
     repeated SinkPackageConfig sink_pkg_con_list = 69; // 下沉包配置文件
     string package_config_hash_code = 70; // 下沉包配置文件hash值
     repeated SinkPackageHashCodeInfo package_hash_code_list = 71; // 下沉包所有hashcode
+    repeated PluginPackageVersionInfo device_plugin_versions = 72; // device侧插件包(compat)版本信息及更新状态
+    repeated PluginPackageVersionInfo host_plugin_versions = 73; // host侧插件包(compat)版本信息，请求时携带
 }

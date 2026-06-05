@@ -275,11 +275,77 @@ namespace tsd {
             SinkPackageConfig *curConf = hdcMsg.add_sink_pkg_con_list();
             curConf->set_package_name(iter->first);
             curConf->set_file_dec_dst_dir(static_cast<uint32_t>(iter->second.decDstDir));
+            // 对于 compat plugin 包，附带 host 侧解析得到的 version/timestamp
+            if (iter->second.decDstDir != DeviceInstallPath::COMPAT_PLUGIN_PATH) {
+                continue;
+            }
+            const auto verIt = hostPluginVersions_.find(iter->first);
+            if (verIt == hostPluginVersions_.end() || verIt->second.Empty()) {
+                continue;
+            }
+
+            PluginPackageVersionInfo *info = hdcMsg.add_host_plugin_versions();
+            info->set_package_name(iter->first);
+            info->set_version(verIt->second.version);
+            info->set_timestamp(verIt->second.timestamp);
         }
         const std::string hashCode = CalFileSha256HashValue(
             GetHostFilePath(COMMON_SINK_PKG_CONFIG_DIR, COMMON_SINK_PKG_CONFIG_NAME));
         hdcMsg.set_package_config_hash_code(hashCode);
         TSD_INFO("set config hash code:%s", hashCode.c_str());
+    }
+
+    void PackageProcessConfig::RefreshHostPluginVersions()
+    {
+        for (auto &kv : configMap_) {
+            if (kv.second.decDstDir != DeviceInstallPath::COMPAT_PLUGIN_PATH) {
+                continue;
+            }
+            const std::string &pkgName = kv.first;
+            const std::string &hostFile = kv.second.hostTruePath;
+            PluginPkgVersion info;
+            if (hostFile.empty()) {
+                TSD_RUN_INFO("host plugin pkg:%s has empty host path, skip parse ini", pkgName.c_str());
+                hostPluginVersions_[pkgName] = info;
+                continue;
+            }
+            // .ini 与 .tar.gz 同名同路径
+            std::string iniPath = hostFile;
+            const std::string suffix = ".tar.gz";
+            if ((iniPath.size() > suffix.size()) &&
+                (iniPath.compare(iniPath.size() - suffix.size(), suffix.size(), suffix) == 0)) {
+                iniPath = iniPath.substr(0U, iniPath.size() - suffix.size()) + ".ini";
+            } else {
+                iniPath += ".ini";
+            }
+            if (!PluginPkgVersionUtil::ParseIniFile(iniPath, info)) {
+                TSD_RUN_WARN("parse plugin pkg:%s ini file:%s failed, fallback to checkcode compare",
+                             pkgName.c_str(), iniPath.c_str());
+            } else {
+                TSD_RUN_INFO("host plugin pkg:%s ini parsed, version:%s timestamp:%s",
+                             pkgName.c_str(), info.version.c_str(), info.timestamp.c_str());
+            }
+            hostPluginVersions_[pkgName] = info;
+        }
+    }
+
+    PluginPkgVersion PackageProcessConfig::GetHostPluginVersion(const std::string &pkgName) const
+    {
+        const auto it = hostPluginVersions_.find(pkgName);
+        if (it == hostPluginVersions_.end()) {
+            return PluginPkgVersion{};
+        }
+        return it->second;
+    }
+
+    bool PackageProcessConfig::HasCompatPluginPackage() const
+    {
+        for (const auto &kv : configMap_) {
+            if (kv.second.decDstDir == DeviceInstallPath::COMPAT_PLUGIN_PATH) {
+                return true;
+            }
+        }
+        return false;
     }
 
     bool PackageProcessConfig::IsNeedToUpdateConfig(const HDCMessage &hdcMsg) const

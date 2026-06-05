@@ -8,6 +8,9 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include <sys/file.h>
+#include <cstdio>
+#include <fstream>
+#include <unistd.h>
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
 #include "tsd/status.h"
@@ -16,6 +19,7 @@
 #include "inc/package_process_config.h"
 #include "inc/client_manager.h"
 #include "inc/process_mode_manager.h"
+#include "inc/plugin_pkg_version.h"
 #include "device_comm.h"
 #include "tsd_hdc_client.h"
 #include "inc/weak_ascend_hal.h"
@@ -143,6 +147,30 @@ namespace {
         return DRV_ERROR_NONE;
     }
 
+    drvError_t halGetDeviceInfoPluginFlag0(uint32_t, int32_t, int32_t, int64_t *value)
+    {
+        *value = 0;
+        return DRV_ERROR_NONE;
+    }
+
+    drvError_t halGetDeviceInfoPluginFlag1(uint32_t, int32_t, int32_t, int64_t *value)
+    {
+        *value = 1;
+        return DRV_ERROR_NONE;
+    }
+
+    drvError_t halGetDeviceInfoPluginFlag2(uint32_t, int32_t, int32_t, int64_t *value)
+    {
+        *value = 2;
+        return DRV_ERROR_NONE;
+    }
+
+    drvError_t halGetDeviceInfoPluginFlagInvalid(uint32_t, int32_t, int32_t, int64_t *value)
+    {
+        *value = 3;
+        return DRV_ERROR_NONE;
+    }
+
     drvError_t drvGetPlatformInfoFake(uint32_t *info)
     {
         cout <<"enter drvGetPlatformInfoFake"<< endl;
@@ -225,6 +253,7 @@ protected:
         ClientManager::SetRunMode(valueStr);
         GlobalMockObject::verify();
         GlobalMockObject::reset();
+        tsd::PackageProcessConfig::GetInstance()->hostPluginVersions_.clear();
     }
 };
 
@@ -2847,6 +2876,45 @@ TEST_F(ProcessManagerTest, LoadPackageToDeviceByConfig_Success)
     EXPECT_EQ(processModeManager.LoadPackageToDeviceByConfig(), TSD_OK);
 }
 
+TEST_F(ProcessManagerTest, LoadSinglePackageToDevice_TschCompat_NotSupported_Skip)
+{
+    ProcessModeManager processModeManager(deviceId, 0);
+    PackConfDetail detail = {};
+    detail.loadAsPerSocFlag = true;
+    MOCKER_CPP(&ProcessModeManager::IsSupportCommonInterface).stubs().will(returnValue(false));
+    MOCKER_CPP(&PackageProcessConfig::GetPkgHostAndDeviceDstPath).stubs().will(returnValue(TSD_OK));
+    MOCKER_CPP(&ProcessModeManager::CompareAndSendCommonSinkPkg)
+        .expects(mockcpp::never()).will(returnValue(TSD_OK));
+    EXPECT_EQ(processModeManager.LoadSinglePackageToDevice("cann-tsch-compat.tar.gz", detail, 0, ""), TSD_OK);
+}
+
+TEST_F(ProcessManagerTest, LoadSinglePackageToDevice_TschCompat_Supported_PassesGate)
+{
+    // 当 IsSupportCommonInterface 返回 true 时，不在 TSCH_COMPAT 门控处提前返回，
+    // 而是继续后续流程；此处用 GetPkgHostAndDeviceDstPath 返回错误来观测是否“穿过门控”。
+    ProcessModeManager processModeManager(deviceId, 0);
+    PackConfDetail detail = {};
+    detail.loadAsPerSocFlag = true;
+    MOCKER_CPP(&ProcessModeManager::IsSupportCommonInterface).stubs().will(returnValue(true));
+    MOCKER_CPP(&PackageProcessConfig::GetPkgHostAndDeviceDstPath)
+        .stubs().will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
+    EXPECT_EQ(processModeManager.LoadSinglePackageToDevice("cann-tsch-compat.tar.gz", detail, 0, ""),
+              TSD_INTERNAL_ERROR);
+}
+
+TEST_F(ProcessManagerTest, LoadSinglePackageToDevice_OtherPkg_NotGatedByTschCompatBit)
+{
+    // 即使 TSD_SUPPORT_CANN_TSCH_COMPAT 视为不支持，其他包也不应被该位拦截。
+    ProcessModeManager processModeManager(deviceId, 0);
+    PackConfDetail detail = {};
+    detail.loadAsPerSocFlag = true;
+    MOCKER_CPP(&ProcessModeManager::IsSupportCommonInterface).stubs().will(returnValue(false));
+    MOCKER_CPP(&PackageProcessConfig::GetPkgHostAndDeviceDstPath)
+        .stubs().will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
+    EXPECT_EQ(processModeManager.LoadSinglePackageToDevice("aicpu_hcomm.tar.gz", detail, 0, ""),
+              TSD_INTERNAL_ERROR);
+}
+
 TEST_F(ProcessManagerTest, GetCurHostMutexFile)
 {
     ProcessModeManager processModeManager(deviceId, 0);
@@ -3168,4 +3236,314 @@ TEST_F(ProcessManagerTest, GetDriverVersion)
     EXPECT_TRUE(processModeManager.UseStoredCapabityInfo(TSD_CAPABILITY_DRIVER_VERSION, ptrRes));
     EXPECT_EQ(result, 0UL);
     GlobalMockObject::verify();
+}
+
+// ============================================================================
+// 插件包(compat plugin)版本兼容机制 UT
+// ============================================================================
+
+namespace {
+    // 在 /tmp 下生成一个临时 ini 文件，调用方负责删除
+    std::string MakeTempIniFile(const std::string &content)
+    {
+        char path[] = "/tmp/plugin_pkg_ut_XXXXXX";
+        int fd = mkstemp(path);
+        if (fd < 0) {
+            return "";
+        }
+        if (!content.empty()) {
+            (void)write(fd, content.data(), content.size());
+        }
+        close(fd);
+        return std::string(path);
+    }
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_CompareVersion_NumericSegments)
+{
+    using tsd::PluginPkgVersionUtil;
+    EXPECT_EQ(PluginPkgVersionUtil::CompareVersion("8.5.0", "8.5.0"), 0);
+    EXPECT_LT(PluginPkgVersionUtil::CompareVersion("8.5.0", "8.5.1"), 0);
+    EXPECT_GT(PluginPkgVersionUtil::CompareVersion("8.10.0", "8.5.0"), 0);
+    EXPECT_GT(PluginPkgVersionUtil::CompareVersion("9.0.0", "8.99.99"), 0);
+    // 长度不同：8.5 vs 8.5.0 等价
+    EXPECT_EQ(PluginPkgVersionUtil::CompareVersion("8.5", "8.5.0"), 0);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_CompareVersion_NonNumericFallback)
+{
+    using tsd::PluginPkgVersionUtil;
+    // 非纯数字段降级为字典序
+    EXPECT_LT(PluginPkgVersionUtil::CompareVersion("8.a", "8.b"), 0);
+    EXPECT_GT(PluginPkgVersionUtil::CompareVersion("8.b", "8.a"), 0);
+    EXPECT_EQ(PluginPkgVersionUtil::CompareVersion("8.a", "8.a"), 0);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_CompareTimestamp)
+{
+    using tsd::PluginPkgVersionUtil;
+    EXPECT_EQ(PluginPkgVersionUtil::CompareTimestamp("20260114_115609804", "20260114_115609804"), 0);
+    EXPECT_LT(PluginPkgVersionUtil::CompareTimestamp("20260114_115609804", "20260115_115609804"), 0);
+    EXPECT_GT(PluginPkgVersionUtil::CompareTimestamp("20260114_115609805", "20260114_115609804"), 0);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_Compare_VersionThenTimestamp)
+{
+    using tsd::PluginPkgVersionUtil;
+    tsd::PluginPkgVersion a{"8.5.0", "20260114_115609804"};
+    tsd::PluginPkgVersion b{"8.5.0", "20260114_115609804"};
+    EXPECT_EQ(PluginPkgVersionUtil::Compare(a, b), 0);
+
+    tsd::PluginPkgVersion newerV{"8.5.1", "20260101_000000000"};
+    EXPECT_GT(PluginPkgVersionUtil::Compare(newerV, a), 0);
+    EXPECT_LT(PluginPkgVersionUtil::Compare(a, newerV), 0);
+
+    tsd::PluginPkgVersion newerTs{"8.5.0", "20270101_000000000"};
+    EXPECT_GT(PluginPkgVersionUtil::Compare(newerTs, a), 0);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ParseLine)
+{
+    using tsd::PluginPkgVersionUtil;
+    std::string k, v;
+    EXPECT_TRUE(PluginPkgVersionUtil::ParseLine("version=8.5.0", k, v));
+    EXPECT_EQ(k, "version");
+    EXPECT_EQ(v, "8.5.0");
+    EXPECT_TRUE(PluginPkgVersionUtil::ParseLine("  timestamp = 20260114_115609804  ", k, v));
+    EXPECT_EQ(k, "timestamp");
+    EXPECT_EQ(v, "20260114_115609804");
+    // 注释 / 空行 / 非法行
+    EXPECT_FALSE(PluginPkgVersionUtil::ParseLine("# comment", k, v));
+    EXPECT_FALSE(PluginPkgVersionUtil::ParseLine("", k, v));
+    EXPECT_FALSE(PluginPkgVersionUtil::ParseLine("no_equal_sign", k, v));
+    EXPECT_FALSE(PluginPkgVersionUtil::ParseLine("=onlyvalue", k, v));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_GetIniNameByPkgName)
+{
+    using tsd::PluginPkgVersionUtil;
+    EXPECT_EQ(PluginPkgVersionUtil::GetIniNameByPkgName("cann-hcomm-compat.tar.gz"), "cann-hcomm-compat.ini");
+    EXPECT_EQ(PluginPkgVersionUtil::GetIniNameByPkgName("cann-tsch-compat.tar.gz"), "cann-tsch-compat.ini");
+    // 没有 .tar.gz 后缀也能兜底
+    EXPECT_EQ(PluginPkgVersionUtil::GetIniNameByPkgName("foo"), "foo.ini");
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ParseIniFile_Success)
+{
+    using tsd::PluginPkgVersionUtil;
+    std::string path = MakeTempIniFile("# header comment\nversion=8.5.0\ntimestamp=20260114_115609804\n");
+    ASSERT_FALSE(path.empty());
+    tsd::PluginPkgVersion info;
+    EXPECT_TRUE(PluginPkgVersionUtil::ParseIniFile(path, info));
+    EXPECT_EQ(info.version, "8.5.0");
+    EXPECT_EQ(info.timestamp, "20260114_115609804");
+    EXPECT_FALSE(info.Empty());
+    (void)remove(path.c_str());
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ParseIniFile_MissingVersion)
+{
+    using tsd::PluginPkgVersionUtil;
+    std::string path = MakeTempIniFile("timestamp=20260114_115609804\n");
+    ASSERT_FALSE(path.empty());
+    tsd::PluginPkgVersion info;
+    EXPECT_FALSE(PluginPkgVersionUtil::ParseIniFile(path, info));
+    (void)remove(path.c_str());
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ParseIniFile_FileNotExist)
+{
+    using tsd::PluginPkgVersionUtil;
+    tsd::PluginPkgVersion info;
+    EXPECT_FALSE(PluginPkgVersionUtil::ParseIniFile("/tmp/path_must_not_exist_xxxxxx_abc.ini", info));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ParseIniFile_KeyCaseInsensitive)
+{
+    using tsd::PluginPkgVersionUtil;
+    // Version / TIMESTAMP / 混合大小写均应被识别
+    std::string path = MakeTempIniFile("Version=8.5.0\nTIMESTAMP=20260114_115609804\n");
+    ASSERT_FALSE(path.empty());
+    tsd::PluginPkgVersion info;
+    EXPECT_TRUE(PluginPkgVersionUtil::ParseIniFile(path, info));
+    EXPECT_EQ(info.version, "8.5.0");
+    EXPECT_EQ(info.timestamp, "20260114_115609804");
+    (void)remove(path.c_str());
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_IsCompatPluginPackage)
+{
+    ProcessModeManager pm(deviceId, 0);
+    tsd::PackConfDetail detail;
+    detail.decDstDir = tsd::DeviceInstallPath::COMPAT_PLUGIN_PATH;
+    EXPECT_TRUE(pm.IsCompatPluginPackage(detail));
+    detail.decDstDir = tsd::DeviceInstallPath::AICPU_KERNELS_PATH;
+    EXPECT_FALSE(pm.IsCompatPluginPackage(detail));
+    detail.decDstDir = tsd::DeviceInstallPath::OM_PATH;
+    EXPECT_FALSE(pm.IsCompatPluginPackage(detail));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_GetPluginUpdateStrategy_DrvNotForce)
+{
+    ProcessModeManager pm(deviceId, 0);
+    MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoPluginFlag0));
+    EXPECT_EQ(pm.GetPluginUpdateStrategy(), tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE);
+    // 第二次调用走缓存
+    EXPECT_EQ(pm.GetPluginUpdateStrategy(), tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE);
+    EXPECT_TRUE(pm.hasComputedPluginStrategy_);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_GetPluginUpdateStrategy_DrvForce)
+{
+    ProcessModeManager pm(deviceId, 0);
+    MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoPluginFlag1));
+    EXPECT_EQ(pm.GetPluginUpdateStrategy(), tsd::PluginUpdateStrategy::PLUGIN_FORCE_UPDATE);
+    EXPECT_TRUE(pm.hasComputedPluginStrategy_);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_GetPluginUpdateStrategy_DrvNoUpdate)
+{
+    ProcessModeManager pm(deviceId, 0);
+    MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoPluginFlag2));
+    EXPECT_EQ(pm.GetPluginUpdateStrategy(), tsd::PluginUpdateStrategy::PLUGIN_NO_UPDATE);
+    EXPECT_TRUE(pm.hasComputedPluginStrategy_);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_GetPluginUpdateStrategy_DrvFail_FallbackNotForce)
+{
+    ProcessModeManager pm(deviceId, 0);
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
+    EXPECT_EQ(pm.GetPluginUpdateStrategy(), tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE);
+    // 失败不缓存，可重新尝试
+    EXPECT_FALSE(pm.hasComputedPluginStrategy_);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_GetPluginUpdateStrategy_DrvInvalidValue_FallbackNotForce)
+{
+    ProcessModeManager pm(deviceId, 0);
+    MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoPluginFlagInvalid));
+    EXPECT_EQ(pm.GetPluginUpdateStrategy(), tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE);
+    EXPECT_FALSE(pm.hasComputedPluginStrategy_);
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_NoUpdateStrategy)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NO_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    EXPECT_FALSE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_DrvFail_FallbackNotForce)
+{
+    ProcessModeManager pm(deviceId, 0);
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.4.0", "20260114_115609804"};
+    // DRV 失败退化为 NOT_FORCE_UPDATE 走版本比较：host 新于 device 需装包
+    EXPECT_TRUE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_ForceUpdate)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    // FORCE_UPDATE 也走 checkcode 兑底：hash 不一致时才下发
+    pm.pkgHostHashValue_["cann-hcomm-compat.tar.gz"] = "hash_host";
+    pm.pkgDeviceHashValue_["cann-hcomm-compat.tar.gz"] = "hash_dev";
+    EXPECT_TRUE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_ForceUpdate_HashSame)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    // FORCE_UPDATE 但 host/device checkcode 一致 => 不下发
+    pm.pkgHostHashValue_["cann-hcomm-compat.tar.gz"] = "same";
+    pm.pkgDeviceHashValue_["cann-hcomm-compat.tar.gz"] = "same";
+    EXPECT_FALSE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_DeviceVersionEmpty)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    // device 侧未上报该包版本号 => 回落到 checkcode 比较
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"", ""};
+    pm.pkgHostHashValue_["cann-hcomm-compat.tar.gz"] = "hash_host";
+    pm.pkgDeviceHashValue_["cann-hcomm-compat.tar.gz"] = "hash_dev";
+    EXPECT_TRUE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_DeviceVersionEmpty_HashSame)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"", ""};
+    // device 未上报版本，但 checkcode 一致（上轮已下发同版本包）=> 不重复下发
+    pm.pkgHostHashValue_["cann-hcomm-compat.tar.gz"] = "same";
+    pm.pkgDeviceHashValue_["cann-hcomm-compat.tar.gz"] = "same";
+    EXPECT_FALSE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_HostNewer)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.1", "20260114_115609804"};
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    EXPECT_TRUE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_HostOlder)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.4.0", "20260114_115609804"};
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    EXPECT_FALSE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_SameVersion_SkipDirectly)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    // 版本+时间戳完全相等：不再回落 checkcode，直接跳过下发
+    pm.pkgHostHashValue_["cann-hcomm-compat.tar.gz"] = "hash_host";
+    pm.pkgDeviceHashValue_["cann-hcomm-compat.tar.gz"] = "hash_dev";
+    EXPECT_FALSE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ShouldLoadCompatPluginPkg_HostIniMissing)
+{
+    ProcessModeManager pm(deviceId, 0);
+    pm.pluginUpdateStrategy_ = tsd::PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    pm.hasComputedPluginStrategy_ = true;
+    pm.devicePluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    // 不写入 hostPluginVersions_，模拟 .ini 缺失 → 跳过下发 + WARN
+    pm.pkgHostHashValue_["cann-hcomm-compat.tar.gz"] = "h1";
+    pm.pkgDeviceHashValue_["cann-hcomm-compat.tar.gz"] = "h2";
+    EXPECT_FALSE(pm.ShouldLoadCompatPluginPkg("cann-hcomm-compat.tar.gz"));
+}
+
+TEST_F(ProcessManagerTest, PluginVersion_ConstructOpenMsg_DoesNotCarryPluginInfo)
+{
+    // openmsg 不携带任何插件包版本信息，该信息仅通过专用查询消息传递
+    ProcessModeManager pm(deviceId, 0);
+    PackageProcessConfig::GetInstance()->hostPluginVersions_["cann-hcomm-compat.tar.gz"] = {"8.5.0", "20260114_115609804"};
+    HDCMessage hdcMsg;
+    TsdStartStatusInfo info{true, true, false};
+    EXPECT_EQ(pm.ConstructOpenMsg(hdcMsg, info), tsd::TSD_OK);
+    EXPECT_EQ(hdcMsg.device_plugin_versions_size(), 0);
 }

@@ -14,6 +14,7 @@
 #include <memory>
 #include <chrono>
 #include <string>
+#include <vector>
 #include "tsd/status.h"
 #include "tsd_log.h"
 #include "tsd_scope_guard.h"
@@ -92,6 +93,8 @@ namespace tsd {
 
     constexpr uint32_t TSD_SUPPORT_COMMON_SINK_PKG_CONFIG = 8U;
 
+    constexpr uint32_t TSD_SUPPORT_CANN_TSCH_COMPAT = 9U;
+
     constexpr uint32_t MAX_DEVNUM_PER_OS = 64U;  // 当前单OS上芯片最大数是64个
 
     constexpr uint32_t TSDCLIENT_SUPPORT_NEW_ERRORCODE= 1U;
@@ -107,6 +110,15 @@ namespace tsd {
     constexpr uint64_t S_TO_MS = 1000UL;
 
     void Trim(std::string& str);
+
+    // 修副本中任意空白字符（含空格/制表符/换行/回车等）的首尾
+    void TrimWhitespace(std::string& str);
+
+    // 按字符 sep 切分，不跳过空串
+    std::vector<std::string> SplitByChar(const std::string &s, char sep);
+
+    // 两串完全为数字时按数值比较，否则字典序。返回 -1/0/1
+    int32_t CompareSegmentNumeric(const std::string &a, const std::string &b);
 
     uint64_t CalFileSize(const std::string &filePath);
 

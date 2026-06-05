@@ -17,6 +17,7 @@
 #include "tsd/status.h"
 #include "tsd_log.h"
 #include "proto/tsd_message.pb.h"
+#include "inc/plugin_pkg_version.h"
 
 namespace tsd {
 enum class DeviceInstallPath {
@@ -61,6 +62,10 @@ public:
     TSD_StatusT GetPkgHostAndDeviceDstPath(const std::string &pkgName, std::string &orgFile, std::string &dstFile,
         const pid_t hostPid);
     std::string GetPackageHostTruePath(const std::string &pkgName);
+    // 遍历 configMap_ ，对 compat 插件包解析同名 .ini 文件，刷新 host 侧插件包版本信息
+    void RefreshHostPluginVersions();
+    PluginPkgVersion GetHostPluginVersion(const std::string &pkgName) const;
+    bool HasCompatPluginPackage() const;
 private:
     bool SetConfigDataOnServer(const SinkPackageConfig &hdcConfig);
     bool SetConfigDataOnHost(std::ifstream &inFile, const std::string &fileName, const std::string &pkgTitle);
@@ -76,6 +81,7 @@ private:
     bool ParseLoadAsPerSocFlag(const std::string &para, PackConfDetail &tempNode) const;
 private:
     std::map<std::string, PackConfDetail> configMap_;
+    std::map<std::string, PluginPkgVersion> hostPluginVersions_;
     std::mutex configMut_;
     bool finishParse_ = false;
     std::string hashCode_;

@@ -43,6 +43,7 @@ add_library(tsdclient SHARED
     src/process_mode_manager.cpp
     src/process_mode_base.cpp
     src/process_mode_msg_parse.cpp
+    src/plugin_pkg_version.cpp
     src/thread_mode_manager.cpp
     ${BASE_DIR}/pub_facility/env_manager/env_internal_api.cpp
     ${BASE_DIR}/common/src/package_worker.cpp

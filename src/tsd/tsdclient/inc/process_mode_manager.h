@@ -12,6 +12,8 @@
 #define INNER_INC_PROCESS_MODE_MANAGER_H
 
 #include "inc/client_manager.h"
+#include "inc/package_process_config.h"
+#include "inc/plugin_pkg_version.h"
 #include "device_comm.h"
 #include "driver/ascend_hal.h"
 #include "proto/tsd_message.pb.h"
@@ -399,6 +401,10 @@ private:
      */
     void SaveDeviceCheckCode(const HDCMessage &msg);
 
+    void HandleNormalPackageCheckCodeRsp(const HDCMessage &msg);
+    void HandleCannHsCheckCodeRsp(const HDCMessage &msg);
+    void HandleDevicePluginVersionRsp(const HDCMessage &msg);
+
     TSD_StatusT WaitCapabilityRsp(const int32_t type, const uint64_t ptr);
 
     bool UseStoredCapabityInfo(const int32_t type, const uint64_t ptr);
@@ -425,6 +431,18 @@ private:
     TSD_StatusT LoadPackageConfigInfoToDevice();
 
     TSD_StatusT LoadPackageToDeviceByConfig();
+
+    TSD_StatusT GetTrustedBasePathFromDevice(int32_t &peerNode, std::string &dstDirPreFix);
+
+    TSD_StatusT LoadSinglePackageToDevice(const std::string &pkgPureName, const PackConfDetail &detail,
+        int32_t peerNode, const std::string &dstDirPreFix);
+
+    void ReportSinkPkgRspError(const std::string &pkgPureName);
+
+    bool IsCompatPluginPackage(const PackConfDetail &detail) const;
+    PluginUpdateStrategy GetPluginUpdateStrategy();
+    bool ShouldLoadCompatPluginPkg(const std::string &pkgPureName);
+    bool CompareHostDeviceCompatPluginVersion(const std::string &pkgPureName);
 
     void SetDeviceCommonSinkPackHashValue(const std::string pkgName, const std::string hashValue)
     {
@@ -514,6 +532,10 @@ private:
     std::map<std::string, std::string> pkgDeviceHashValue_;
     bool hasSendConfigFile_;
     std::string loadPackageErrorMsg_;
+    // ====== 插件包版本兼容机制相关状态 ======
+    std::map<std::string, PluginPkgVersion> devicePluginVersions_;
+    bool hasComputedPluginStrategy_ = false;
+    PluginUpdateStrategy pluginUpdateStrategy_ = PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
 };
 }  // namespace tsd
 #endif  // INNER_INC_PROCESS_MODE_MANAGER_H

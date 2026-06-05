@@ -67,7 +67,7 @@ const std::map<std::string, std::vector<tsd::ChipType_t>> PKG_CHIP_SUPPORT_MAP =
     {"aicpu_hcomm.tar.gz", {tsd::CHIP_DC, tsd::CHIP_ASCEND_910B, tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}},
     {"cann-hcomm-compat.tar.gz", {tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}},
     {HCCD_PKG_NAME, {tsd::CHIP_ASCEND_910B}},
-    {"cann-tsch-compat.tar.gz", {}},
+    {"cann-tsch-compat.tar.gz", {tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}},
     {UDF_PKG_NAME, {tsd::CHIP_ASCEND_910B}},
     {HIXL_PKG_NAME, {tsd::CHIP_ASCEND_910B, tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}}
 };
@@ -2190,10 +2190,15 @@ TSD_StatusT ProcessModeManager::LoadPackageConfigInfoToDevice()
         TSD_ERROR("Parsing config data was not successful");
         return TSD_INTERNAL_ERROR;
     }
+    // 刷新 host 侧 compat 插件包版本信息，并随后随 CONFIG 消息一起下发
+    pkgConInst->RefreshHostPluginVersions();
 
     HDCMessage msg;
     msg.set_real_device_id(logicDeviceId_);
     msg.set_type(HDCMessage::TSD_UPDATE_PACKAGE_PROCESS_CONFIG);
+    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
+    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
+    signPid->set_proc_pid(static_cast<uint32_t>(procSign_.tgid));
     pkgConInst->ConstructPkgConfigMsg(msg);
 
     ret = devCommClient_->CommSendMsg(tsdSessionId_, msg);
@@ -2219,6 +2224,14 @@ TSD_StatusT ProcessModeManager::CompareAndSendCommonSinkPkg(const std::string &p
     SinkPackageHashCodeInfo *pkgHostInfo = msg.add_package_hash_code_list();
     pkgHostInfo->set_package_name(pkgPureName);
     pkgHostInfo->set_hash_code(hostPkgHash);
+    // 若该包为 compat plugin，则随 checkcode 请求一并携带 host 侧 version/timestamp
+    const PluginPkgVersion hostVer = PackageProcessConfig::GetInstance()->GetHostPluginVersion(pkgPureName);
+    if (!hostVer.Empty()) {
+        PluginPackageVersionInfo *info = msg.add_host_plugin_versions();
+        info->set_package_name(pkgPureName);
+        info->set_version(hostVer.version);
+        info->set_timestamp(hostVer.timestamp);
+    }
     msg.set_package_worker_type(static_cast<uint32_t>(PackageWorkerType::PACKAGE_WORKER_COMMON_SINK));
     msg.set_package_max_process_time(DRIVER_EXTEND_MAX_PROCESS_TIME);
     msg.set_package_type(static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_COMMON_SINK));
@@ -2265,6 +2278,89 @@ bool ProcessModeManager::SupportLoadPkg(const std::string &pkgName) const
     return false;
 }
 
+TSD_StatusT ProcessModeManager::GetTrustedBasePathFromDevice(int32_t &peerNode, std::string &dstDirPreFix)
+{
+    peerNode = 0;
+    constexpr uint32_t hdcNameMax = 256U;
+    char_t path[hdcNameMax] = { };
+    const int32_t drvRet = drvHdcGetTrustedBasePathV2(peerNode, static_cast<int32_t>(logicDeviceId_), &path[0],
+        hdcNameMax);
+    if (drvRet != DRV_ERROR_NONE) {
+        TSD_ERROR("[TsdClient][deviceId_=%u] drvHdcGetTrustedBasePathV2 failed, ret[%d]", logicDeviceId_, drvRet);
+        return TSD_INTERNAL_ERROR;
+    }
+    dstDirPreFix = std::string(path);
+    return TSD_OK;
+}
+
+TSD_StatusT ProcessModeManager::LoadSinglePackageToDevice(const std::string &pkgPureName, const PackConfDetail &detail,
+    int32_t peerNode, const std::string &dstDirPreFix)
+{
+    PackageProcessConfig *pkgConInst = PackageProcessConfig::GetInstance();
+    std::string orgFile;
+    std::string dstFile = dstDirPreFix;
+    TSD_RUN_INFO("begin to load package:%s to device:%u", pkgPureName.c_str(), logicDeviceId_);
+    if ((!detail.loadAsPerSocFlag) && (!SupportLoadPkg(pkgPureName))) {
+        TSD_RUN_INFO("current package:%s does not need to load to device:%u", pkgPureName.c_str(), logicDeviceId_);
+        return TSD_OK;
+    }
+    if ((pkgPureName == "cann-tsch-compat.tar.gz") && (!IsSupportCommonInterface(TSD_SUPPORT_CANN_TSCH_COMPAT))) {
+        TSD_RUN_INFO("device does not support cann-tsch-compat package, skip load to device:%u", logicDeviceId_);
+        return TSD_OK;
+    }
+    if (pkgConInst->GetPkgHostAndDeviceDstPath(pkgPureName, orgFile, dstFile, procSign_.tgid) != TSD_OK) {
+        return TSD_INTERNAL_ERROR;
+    }
+    if (orgFile.empty()) {
+        TSD_RUN_INFO("cannot find package:%s, optional is true skip", pkgPureName.c_str());
+        return TSD_OK;
+    }
+    const std::string hostPkgHash = CalFileSha256HashValue(orgFile);
+    SetHostCommonSinkPackHashValue(pkgPureName, hostPkgHash);
+    // 对于 compat plugin 包，需要根据版本号与升级策略决定是否加载（优先级高于 CHECKCODE）
+    if (IsCompatPluginPackage(detail) && !ShouldLoadCompatPluginPkg(pkgPureName)) {
+        TSD_RUN_INFO("skip load compat plugin package:%s by version/strategy check", pkgPureName.c_str());
+        return TSD_OK;
+    }
+    if (!IsCompatPluginPackage(detail) && IsCommonSinkHostAndDevicePkgSame(pkgPureName)) {
+        TSD_RUN_INFO("current package:%s is same as device, skip load", pkgPureName.c_str());
+        return TSD_OK;
+    }
+    if (CompareAndSendCommonSinkPkg(pkgPureName, hostPkgHash, peerNode, orgFile, dstFile) != TSD_OK) {
+        TSD_ERROR("compare and send package to device failed package:%s", pkgPureName.c_str());
+        return TSD_INTERNAL_ERROR;
+    }
+    if (static_cast<uint32_t>(rspCode_) != 0U) {
+        ReportSinkPkgRspError(pkgPureName);
+        return TSD_INTERNAL_ERROR;
+    }
+    TSD_RUN_INFO("load package:%s to device:%u success", pkgPureName.c_str(), logicDeviceId_);
+    return TSD_OK;
+}
+
+void ProcessModeManager::ReportSinkPkgRspError(const std::string &pkgPureName)
+{
+    bool reportedFlag = false;
+    if (!loadPackageErrorMsg_.empty()) {
+        TSD_ERROR("[Device error message] %s", loadPackageErrorMsg_.c_str());
+        const bool isCmsVerifyFail = (loadPackageErrorMsg_.find("cms verify failed") != std::string::npos);
+        const std::string reason = isCmsVerifyFail ? ConstructVerifyPkgErrorReason(loadPackageErrorMsg_)
+                                                   : std::string{};
+        if (!reason.empty()) {
+            const std::vector<std::string> keys{"package_name", "reason"};
+            const std::vector<std::string> values{pkgPureName, reason};
+            REPORT_INPUT_ERROR("E30009", keys, values);
+            reportedFlag = true;
+        }
+        loadPackageErrorMsg_ = "";
+    }
+    if (!reportedFlag) {
+        REPORT_INPUT_ERROR("E39011", std::vector<std::string>{"package_name"},
+            std::vector<std::string>{pkgPureName});
+    }
+    TSD_ERROR("host and device checkcode compare failed package:%s", pkgPureName.c_str());
+}
+
 TSD_StatusT ProcessModeManager::LoadPackageToDeviceByConfig()
 {
     if ((IsSupportCommonSink() == false) ||
@@ -2276,73 +2372,97 @@ TSD_StatusT ProcessModeManager::LoadPackageToDeviceByConfig()
     }
 
     int32_t peerNode = 0;
-    constexpr uint32_t hdcNameMax = 256U;
-    char_t path[hdcNameMax] = { };
-    const int32_t drvRet = drvHdcGetTrustedBasePathV2(peerNode, static_cast<int32_t>(logicDeviceId_), &path[0],
-        hdcNameMax);
-    if (drvRet != DRV_ERROR_NONE) {
-        TSD_ERROR("[TsdClient][deviceId_=%u] drvHdcGetTrustedBasePathV2 failed, ret[%d]", logicDeviceId_, drvRet);
+    std::string dstDirPreFix;
+    if (GetTrustedBasePathFromDevice(peerNode, dstDirPreFix) != TSD_OK) {
         return TSD_INTERNAL_ERROR;
     }
-    
+
     PackageProcessConfig *pkgConInst = PackageProcessConfig::GetInstance();
     std::map<std::string, PackConfDetail> configMap = pkgConInst->GetAllPackageConfigInfo();
-    std::string dstDirPreFix = std::string(path);
 
     for (auto iter = configMap.begin(); iter != configMap.end(); iter++) {
-        std::string pkgPureName = iter->first;
-        std::string orgFile;
-        std::string dstFile = dstDirPreFix;
-        TSD_RUN_INFO("begin to load package:%s to device:%u", pkgPureName.c_str(), logicDeviceId_);
-        if ((!iter->second.loadAsPerSocFlag) && (!SupportLoadPkg(pkgPureName))) {
-            TSD_RUN_INFO("current package:%s does not need to load to device:%u", pkgPureName.c_str(), logicDeviceId_);
-            continue;
-        }
-        if (pkgConInst->GetPkgHostAndDeviceDstPath(iter->first, orgFile, dstFile, procSign_.tgid) != TSD_OK) {
+        if (LoadSinglePackageToDevice(iter->first, iter->second, peerNode, dstDirPreFix) != TSD_OK) {
             return TSD_INTERNAL_ERROR;
         }
-        if (orgFile.empty()) {
-            TSD_RUN_INFO("cannot find package:%s, optional is true skip", pkgPureName.c_str());
-            continue;
-        }
-        const std::string hostPkgHash = CalFileSha256HashValue(orgFile);
-        SetHostCommonSinkPackHashValue(pkgPureName, hostPkgHash);
-        if (IsCommonSinkHostAndDevicePkgSame(pkgPureName)) {
-            TSD_RUN_INFO("current package:%s is same as device, skip load", pkgPureName.c_str());
-            continue;
-        }
-        
-        if (CompareAndSendCommonSinkPkg(pkgPureName, hostPkgHash, peerNode, orgFile, dstFile) != TSD_OK) {
-            TSD_ERROR("compare and send package to device failed package:%s", pkgPureName.c_str());
-            return TSD_INTERNAL_ERROR;
-        }
-
-        if (static_cast<uint32_t>(rspCode_) != 0U) {
-            bool reportedFlag = false;
-            if (!loadPackageErrorMsg_.empty()) {
-                TSD_ERROR("[Device error message] %s", loadPackageErrorMsg_.c_str());
-                if (loadPackageErrorMsg_.find("cms verify failed") != std::string::npos) {
-                    const std::string reason = ConstructVerifyPkgErrorReason(loadPackageErrorMsg_);
-                    if (!reason.empty()) {
-                        const std::vector<std::string> keys{"package_name", "reason"};
-                        const std::vector<std::string> values{pkgPureName, reason};
-                        REPORT_INPUT_ERROR("E30009", keys, values);
-                        reportedFlag = true;
-                    }
-                }
-                loadPackageErrorMsg_ = "";
-            }
-            if (reportedFlag == false) {
-                REPORT_INPUT_ERROR(
-                    "E39011", std::vector<std::string>{"package_name"}, std::vector<std::string>{pkgPureName});
-            }
-            TSD_ERROR("host and device checkcode compare failed package:%s", pkgPureName.c_str());
-            return TSD_INTERNAL_ERROR;
-        }
-        TSD_RUN_INFO("load package:%s to device:%u success", pkgPureName.c_str(), logicDeviceId_);
     }
 
     return TSD_OK;
+}
+
+bool ProcessModeManager::IsCompatPluginPackage(const PackConfDetail &detail) const
+{
+    return detail.decDstDir == DeviceInstallPath::COMPAT_PLUGIN_PATH;
+}
+
+PluginUpdateStrategy ProcessModeManager::GetPluginUpdateStrategy()
+{
+    if (hasComputedPluginStrategy_) {
+        return pluginUpdateStrategy_;
+    }
+
+    int64_t flag = 0;
+    auto drvRet = halGetDeviceInfo(logicDeviceId_, MODULE_TYPE_SYSTEM, INFO_TYPE_SWPLUGIN_UPGRADE_POLICY, &flag);
+    if (drvRet != DRV_ERROR_NONE) {
+        TSD_RUN_WARN("[TsdClient][deviceId=%u] halGetDeviceInfo(INFO_TYPE_SWPLUGIN_UPGRADE_POLICY) failed, retCode[%d],"
+                     " fallback to PLUGIN_NOT_FORCE_UPDATE", logicDeviceId_, drvRet);
+        return PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    }
+    if (flag < static_cast<int64_t>(PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE) ||
+        flag > static_cast<int64_t>(PluginUpdateStrategy::PLUGIN_NO_UPDATE)) {
+        TSD_RUN_WARN("[TsdClient][deviceId=%u] invalid plugin update strategy from DRV: %lld,"
+                     " fallback to PLUGIN_NOT_FORCE_UPDATE", logicDeviceId_, flag);
+        return PluginUpdateStrategy::PLUGIN_NOT_FORCE_UPDATE;
+    }
+    pluginUpdateStrategy_ = static_cast<PluginUpdateStrategy>(flag);
+    hasComputedPluginStrategy_ = true;
+    TSD_RUN_INFO("[TsdClient][deviceId=%u] plugin update strategy from DRV = %lld", logicDeviceId_, flag);
+    return pluginUpdateStrategy_;
+}
+
+bool ProcessModeManager::ShouldLoadCompatPluginPkg(const std::string &pkgPureName)
+{
+    const PluginUpdateStrategy strategy = GetPluginUpdateStrategy();
+    if (strategy == PluginUpdateStrategy::PLUGIN_NO_UPDATE) {
+        TSD_RUN_INFO("plugin update strategy is PLUGIN_NO_UPDATE, skip pkg:%s", pkgPureName.c_str());
+        return false;
+    }
+    if (strategy == PluginUpdateStrategy::PLUGIN_FORCE_UPDATE) {
+        // 即使强制更新策略，仍需按 checkcode 兑底，内容完全一致时避免重复传输
+        TSD_RUN_INFO("plugin update strategy is PLUGIN_FORCE_UPDATE, fallback to checkcode compare pkg:%s",
+                     pkgPureName.c_str());
+        return !IsCommonSinkHostAndDevicePkgSame(pkgPureName);
+    }
+    return CompareHostDeviceCompatPluginVersion(pkgPureName);
+}
+
+bool ProcessModeManager::CompareHostDeviceCompatPluginVersion(const std::string &pkgPureName)
+{
+    const PluginPkgVersion hostInfo = PackageProcessConfig::GetInstance()->GetHostPluginVersion(pkgPureName);
+    const auto itDev = devicePluginVersions_.find(pkgPureName);
+    const PluginPkgVersion deviceInfo = (itDev != devicePluginVersions_.end()) ? itDev->second : PluginPkgVersion{};
+
+    if (deviceInfo.version.empty()) {
+        TSD_RUN_INFO("device plugin pkg:%s version unavailable, fallback to checkcode compare",
+                     pkgPureName.c_str());
+        return !IsCommonSinkHostAndDevicePkgSame(pkgPureName);
+    }
+    if (hostInfo.Empty()) {
+        // 本地读不到插件包版本信息（.ini 缺失或解析失败），无法进行版本决策，跳过下发
+        TSD_RUN_WARN("[TsdClient][deviceId=%u] host plugin pkg:%s version info unavailable, skip",
+                     logicDeviceId_, pkgPureName.c_str());
+        return false;
+    }
+    const int32_t cmp = PluginPkgVersionUtil::Compare(hostInfo, deviceInfo);
+    if (cmp > 0) {
+        TSD_RUN_INFO("host plugin pkg:%s newer than device, load. host[%s/%s] device[%s/%s]",
+                     pkgPureName.c_str(), hostInfo.version.c_str(), hostInfo.timestamp.c_str(),
+                     deviceInfo.version.c_str(), deviceInfo.timestamp.c_str());
+        return true;
+    }
+    TSD_RUN_INFO("host plugin pkg:%s %s device, skip. host[%s/%s] device[%s/%s]",
+                 pkgPureName.c_str(), (cmp < 0 ? "older than" : "equals"), hostInfo.version.c_str(),
+                 hostInfo.timestamp.c_str(), deviceInfo.version.c_str(), deviceInfo.timestamp.c_str());
+    return false;
 }
 
 std::string ProcessModeManager::GetCurHostMutexFile(bool useCannPath) const

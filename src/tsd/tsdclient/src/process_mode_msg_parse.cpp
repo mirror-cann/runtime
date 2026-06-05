@@ -134,6 +134,9 @@ void ProcessModeManager::DeviceMsgProcess(const HDCMessage &msg)
         supportOmInnerDec_ = ((msg.tsd_rsp_code() == 0U) ? true : false);
     }
     StoreAllPkgHashValue(msg);
+    if (msgType == HDCMessage::TSD_UPDATE_PACKAGE_PROCESS_CONFIG_RSP) {
+        HandleDevicePluginVersionRsp(msg);
+    }
     TSD_INFO("[TsdClient] DeviceMsgProc recvMsg realDeviceId[%u] msgType[%u] localDevId[%u] rspCode[%u]"
              "heterogeneousSubPid[%u], tsdSupportLevel_[%u]", realDeviceId, static_cast<uint32_t>(msgType), deviceId,
              msg.tsd_rsp_code(), openSubPid_, tsdSupportLevel_);
@@ -147,6 +150,56 @@ void ProcessModeManager::ServerToClientMsgProc(const uint32_t sessionID, const H
         std::dynamic_pointer_cast<ProcessModeManager>(ClientManager::GetInstance(realDeviceId, DIE_MODE, false));
     TSD_CHECK_NULLPTR_VOID(client);
     client->DeviceMsgProcess(msg);
+}
+
+void ProcessModeManager::HandleNormalPackageCheckCodeRsp(const HDCMessage &msg)
+{
+    const uint32_t packageType = static_cast<uint32_t>(msg.package_type());
+    constexpr uint32_t packageTypeMax = static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_MAX);
+    if (packageType >= packageTypeMax) {
+        TSD_ERROR("The package type is larger than the max, max=%u, type=%u", packageTypeMax, packageType);
+        return;
+    }
+    if (packageType == static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_COMMON_SINK)) {
+        StoreAllPkgHashValue(msg);
+    } else {
+        packagePeerCheckCode_[packageType] = msg.check_code();
+    }
+    deviceIdle_ = msg.device_idle();
+    if (!deviceIdle_) {
+        TSD_RUN_WARN("device has process is running, skip load driver extend package");
+    }
+    rspCode_ = ((msg.tsd_rsp_code() == 0U) ? ResponseCode::SUCCESS : ResponseCode::FAIL);
+    loadPackageErrorMsg_ = msg.error_info().error_log();
+}
+
+void ProcessModeManager::HandleCannHsCheckCodeRsp(const HDCMessage &msg)
+{
+    if (msg.package_hash_code_list_size() == 0) {
+        TSD_ERROR("Get package hash size from msg failed, is empty");
+        return;
+    }
+    std::string pkgName = msg.package_hash_code_list(0).package_name();
+    std::string deviceHashValue = msg.package_hash_code_list(0).hash_code();
+    SetDeviceCommonSinkPackHashValue(pkgName, deviceHashValue);
+    rspCode_ = (msg.tsd_rsp_code() == 0U) ? ResponseCode::SUCCESS : ResponseCode::FAIL;
+    TSD_INFO("Set check code for %s success. rsp=%u", pkgName.c_str(), rspCode_);
+}
+
+void ProcessModeManager::HandleDevicePluginVersionRsp(const HDCMessage &msg)
+{
+    devicePluginVersions_.clear();
+    for (int32_t i = 0; i < msg.device_plugin_versions_size(); ++i) {
+        const auto &info = msg.device_plugin_versions(i);
+        PluginPkgVersion ver;
+        ver.version = info.version();
+        ver.timestamp = info.timestamp();
+        devicePluginVersions_[info.package_name()] = ver;
+        TSD_RUN_INFO("device plugin pkg:%s version:%s timestamp:%s",
+                     info.package_name().c_str(), ver.version.c_str(), ver.timestamp.c_str());
+    }
+    rspCode_ = ((msg.tsd_rsp_code() == 0U) ? ResponseCode::SUCCESS : ResponseCode::FAIL);
+    TSD_RUN_INFO("device plugin info rsp, pkgCount:%d", msg.device_plugin_versions_size());
 }
 
 void ProcessModeManager::SaveDeviceCheckCode(const HDCMessage &msg)
@@ -174,33 +227,9 @@ void ProcessModeManager::SaveDeviceCheckCode(const HDCMessage &msg)
             tsdSupportLevel_ = msg.capability_level();
         }
     } else if (msgType == HDCMessage::TSD_GET_DEVICE_PACKAGE_CHECKCODE_NORMAL_RSP) {
-        const uint32_t packageType = static_cast<uint32_t>(msg.package_type());
-        constexpr uint32_t packageTypeMax = static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_MAX);
-        if (packageType >= packageTypeMax) {
-            TSD_ERROR("The package type is larger than the max, max=%u, type=%u", packageTypeMax, packageType);
-            return;
-        }
-        if (packageType == static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_COMMON_SINK)) {
-            StoreAllPkgHashValue(msg);
-        } else {
-            packagePeerCheckCode_[packageType] = msg.check_code();
-        }
-        deviceIdle_ = msg.device_idle();
-        if (!deviceIdle_) {
-            TSD_RUN_WARN("device has process is running, skip load driver extend package");
-        }
-        rspCode_ = ((msg.tsd_rsp_code() == 0U) ? ResponseCode::SUCCESS : ResponseCode::FAIL);
-        loadPackageErrorMsg_ = msg.error_info().error_log();
+        HandleNormalPackageCheckCodeRsp(msg);
     } else if (msgType == HDCMessage::TSD_GET_DEVICE_CANN_HS_CHECKCODE_RSP) {
-        if (msg.package_hash_code_list_size() == 0) {
-            TSD_ERROR("Get package hash size from msg failed, is empty");
-            return;
-        }
-        std::string pkgName = msg.package_hash_code_list(0).package_name();
-        std::string deviceHashValue = msg.package_hash_code_list(0).hash_code();
-        SetDeviceCommonSinkPackHashValue(pkgName, deviceHashValue);
-        rspCode_ = (msg.tsd_rsp_code() == 0U) ? ResponseCode::SUCCESS : ResponseCode::FAIL;
-        TSD_INFO("Set check code for %s success. rsp=%u", pkgName.c_str(), rspCode_);
+        HandleCannHsCheckCodeRsp(msg);
     } else {
         TSD_RUN_INFO("not support msgType[%u]", static_cast<uint32_t>(msgType));
     }

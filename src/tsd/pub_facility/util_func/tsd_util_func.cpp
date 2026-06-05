@@ -12,6 +12,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cctype>
 #include <csignal>
 #include <cstring>
 #include <dirent.h>
@@ -45,6 +46,66 @@ namespace tsd {
         }
         (void)str.erase(static_cast<size_t>(0), str.find_first_not_of(" "));
         (void)str.erase(str.find_last_not_of(" ") + static_cast<size_t>(1));
+    }
+
+    void TrimWhitespace(std::string& str)
+    {
+        auto isSpace = [](unsigned char c) { return std::isspace(c) != 0; };
+        while (!str.empty() && isSpace(static_cast<unsigned char>(str.back()))) {
+            str.pop_back();
+        }
+        size_t pos = 0U;
+        while (pos < str.size() && isSpace(static_cast<unsigned char>(str[pos]))) {
+            ++pos;
+        }
+        if (pos > 0U) {
+            (void)str.erase(0U, pos);
+        }
+    }
+
+    std::vector<std::string> SplitByChar(const std::string &s, char sep)
+    {
+        std::vector<std::string> tokens;
+        std::string cur;
+        for (char c : s) {
+            if (c == sep) {
+                tokens.emplace_back(std::move(cur));
+                cur.clear();
+            } else {
+                cur.push_back(c);
+            }
+        }
+        tokens.emplace_back(std::move(cur));
+        return tokens;
+    }
+
+    int32_t CompareSegmentNumeric(const std::string &a, const std::string &b)
+    {
+        auto allDigit = [](const std::string &s) {
+            return !s.empty() && std::all_of(s.begin(), s.end(),
+                [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; });
+        };
+        const bool aDigit = allDigit(a);
+        const bool bDigit = allDigit(b);
+        if (aDigit && bDigit) {
+            std::string aa = a;
+            std::string bb = b;
+            size_t pa = aa.find_first_not_of('0');
+            size_t pb = bb.find_first_not_of('0');
+            aa = (pa == std::string::npos) ? "0" : aa.substr(pa);
+            bb = (pb == std::string::npos) ? "0" : bb.substr(pb);
+            if (aa.size() != bb.size()) {
+                return (aa.size() < bb.size()) ? -1 : 1;
+            }
+            if (aa == bb) {
+                return 0;
+            }
+            return (aa < bb) ? -1 : 1;
+        }
+        if (a == b) {
+            return 0;
+        }
+        return (a < b) ? -1 : 1;
     }
 
     uint64_t CalFileSize(const std::string &filePath)
