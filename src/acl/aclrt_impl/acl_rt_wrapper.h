@@ -328,6 +328,12 @@
     _(aclError, aclrtMemManagedPrefetchBatchAsync, (const void** ptrs, size_t* sizes, size_t count, aclrtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags, aclrtStream stream), (ptrs, sizes, count, prefetchLocs, prefetchLocIdxs, numPrefetchLocs, flags, stream)) \
     _(aclError, aclrtDeviceGetHostAtomicCapabilities, (uint32_t* capabilities, const aclrtAtomicOperation* operations, const uint32_t count, int32_t deviceId), (capabilities, operations, count, deviceId)) \
     _(aclError, aclrtDeviceGetP2PAtomicCapabilities, (uint32_t* capabilities, const aclrtAtomicOperation* operations, const uint32_t count, int32_t srcDeviceId, int32_t dstDeviceId), (capabilities, operations, count, srcDeviceId, dstDeviceId)) \
+    _(aclError, aclrtGetSymbolAddress, (const void *symbol, void **devPtr), (symbol, devPtr)) \
+    _(aclError, aclrtGetSymbolSize, (const void *symbol, size_t *size), (symbol, size)) \
+    _(aclError, aclrtMemcpyFromSymbol, (void *dst, size_t dstMax, const void *symbol, size_t count, size_t offset, aclrtMemcpyKind kind), (dst, dstMax, symbol, count, offset, kind)) \
+    _(aclError, aclrtMemcpyFromSymbolAsync, (void *dst, size_t dstMax, const void *symbol, size_t count, size_t offset, aclrtMemcpyKind kind, aclrtStream stream), (dst, dstMax, symbol, count, offset, kind, stream)) \
+    _(aclError, aclrtMemcpyToSymbol, (const void *symbol, const void *src, size_t count, size_t offset, aclrtMemcpyKind kind), (symbol, src, count, offset, kind)) \
+    _(aclError, aclrtMemcpyToSymbolAsync, (const void *symbol, const void *src, size_t count, size_t offset, aclrtMemcpyKind kind, aclrtStream stream), (symbol, src, count, offset, kind, stream)) \
     _(aclError, aclrtMemMapSelectedLink, (void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx), (virPtrDst, size, virPtrSrc, linkIdx)) \
 
 // aclrtAllocator interface map list

@@ -314,6 +314,12 @@ namespace acl {
         AclrtMemsetD32,      
         AclrtMemsetD32Async, 
         AclrtGetFuncBySymbol,
+        AclrtGetSymbolAddress,
+        AclrtGetSymbolSize,
+        AclrtMemcpyFromSymbol,
+        AclrtMemcpyFromSymbolAsync,
+        AclrtMemcpyToSymbol,
+        AclrtMemcpyToSymbolAsync,
         // this is the end, can not add after AclRtProfTypeEnd
         AclRtProfTypeEnd
     };

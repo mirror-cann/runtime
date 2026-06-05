@@ -1081,6 +1081,14 @@ rtError_t aclStub::rtGetFuncBySymbol(const void *symbol, rtFuncHandle *funcHandl
   return RT_ERROR_NONE;
 }
 
+rtError_t aclStub::rtSymbolLookup(const void *hostVar, void **devPtr, size_t *size)
+{
+    (void)hostVar;
+    (void)devPtr;
+    (void)size;
+    return RT_ERROR_NONE;
+}
+
 rtError_t aclStub::rtCreateLaunchArgs(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum,
     void* argsData, rtLaunchArgsHandle* argsHandle)
 {
@@ -3583,8 +3591,13 @@ rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char_t *name, voi
 
 rtError_t rtGetFuncBySymbol(const void *symbol, rtFuncHandle *funcHandle)
 {
-  *funcHandle = (rtFuncHandle)0x01U;
-  return MockFunctionTest::aclStubInstance().rtGetFuncBySymbol(symbol, funcHandle);
+    *funcHandle = (rtFuncHandle)0x01U;
+    return MockFunctionTest::aclStubInstance().rtGetFuncBySymbol(symbol, funcHandle);
+}
+
+rtError_t rtSymbolLookup(const void *hostVar, void **devPtr, size_t *size)
+{
+    return MockFunctionTest::aclStubInstance().rtSymbolLookup(hostVar, devPtr, size);
 }
 
 rtError_t rtCreateLaunchArgs(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum,

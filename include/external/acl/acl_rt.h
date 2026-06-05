@@ -2360,6 +2360,106 @@ ACL_FUNC_VISIBILITY aclError aclrtMemcpy2dAsync(void *dst,
                                                 aclrtStream stream);
 
 /**
+ * @ingroup AscendCL
+ * @brief Find the device address associated with symbol.
+ *
+ * @param symbol [IN]    Device symbol reference.
+ * @param devPtr [OUT]   Device pointer associated with symbol.
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval ACL_ERROR_RT_INVALID_SYMBOL invalid device symbol.
+ * @retval ACL_ERROR_INVALID_PARAM for error input.
+ */
+ACL_FUNC_VISIBILITY aclError aclrtGetSymbolAddress(const void *symbol, void **devPtr);
+
+/**
+ * @ingroup AscendCL
+ * @brief Get the size of the object associated with a symbol.
+ *
+ * @param symbol [IN]    Device symbol reference.
+ * @param size [OUT]     Size of object associated with symbol.
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval ACL_ERROR_RT_INVALID_SYMBOL invalid device symbol.
+ * @retval ACL_ERROR_INVALID_PARAM for error input.
+ */
+ACL_FUNC_VISIBILITY aclError aclrtGetSymbolSize(const void *symbol, size_t *size);
+
+/**
+ * @ingroup AscendCL
+ * @brief Copy data from the given symbol on the device.
+ *
+ * @param dst [IN]       Destination address pointer.
+ * @param dstMax [IN]    The max length of destination buffer in bytes.
+ * @param symbol [IN]    Device symbol reference.
+ * @param count [IN]     The number of bytes to copy.
+ * @param offset [IN]    Offset from start of symbol in bytes.
+ * @param kind [IN]      Copy type.
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval ACL_ERROR_RT_INVALID_SYMBOL invalid device symbol.
+ * @retval ACL_ERROR_INVALID_PARAM for error input.
+ */
+ACL_FUNC_VISIBILITY aclError aclrtMemcpyFromSymbol(void *dst, size_t dstMax, const void *symbol,
+                                                    size_t count, size_t offset, aclrtMemcpyKind kind);
+
+/**
+ * @ingroup AscendCL
+ * @brief Asynchronously copy data from the given symbol on the device.
+ *
+ * @param dst [IN]       Destination address pointer.
+ * @param dstMax [IN]    The max length of destination buffer in bytes.
+ * @param symbol [IN]    Device symbol reference.
+ * @param count [IN]     The number of bytes to copy.
+ * @param offset [IN]    Offset from start of symbol in bytes.
+ * @param kind [IN]      Copy type.
+ * @param stream [IN]    Asynchronous task stream.
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval ACL_ERROR_RT_INVALID_SYMBOL invalid device symbol.
+ * @retval ACL_ERROR_INVALID_PARAM for error input.
+ */
+ACL_FUNC_VISIBILITY aclError aclrtMemcpyFromSymbolAsync(void *dst, size_t dstMax, const void *symbol,
+                                                         size_t count, size_t offset, aclrtMemcpyKind kind,
+                                                         aclrtStream stream);
+
+/**
+ * @ingroup AscendCL
+ * @brief Copy data to the symbol on the device.
+ *
+ * @param symbol [IN]    Device symbol reference.
+ * @param src [IN]       Source address pointer.
+ * @param count [IN]     The number of bytes to copy.
+ * @param offset [IN]    Offset from start of symbol in bytes.
+ * @param kind [IN]      Copy type.
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval ACL_ERROR_RT_INVALID_SYMBOL invalid device symbol.
+ * @retval ACL_ERROR_INVALID_PARAM for error input.
+ */
+ACL_FUNC_VISIBILITY aclError aclrtMemcpyToSymbol(const void *symbol, const void *src,
+                                                  size_t count, size_t offset, aclrtMemcpyKind kind);
+
+/**
+ * @ingroup AscendCL
+ * @brief Asynchronously copy data to the symbol on the device.
+ *
+ * @param symbol [IN]    Device symbol reference.
+ * @param src [IN]       Source address pointer.
+ * @param count [IN]     The number of bytes to copy.
+ * @param offset [IN]    Offset from start of symbol in bytes.
+ * @param kind [IN]      Copy type.
+ * @param stream [IN]    Asynchronous task stream.
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval ACL_ERROR_RT_INVALID_SYMBOL invalid device symbol.
+ * @retval ACL_ERROR_INVALID_PARAM for error input.
+ */
+ACL_FUNC_VISIBILITY aclError aclrtMemcpyToSymbolAsync(const void *symbol, const void *src,
+                                                       size_t count, size_t offset, aclrtMemcpyKind kind,
+                                                       aclrtStream stream);
+
+/**
 * @ingroup AscendCL
 * @brief Asynchronous initialize memory
 * and set contents of memory to specified value async

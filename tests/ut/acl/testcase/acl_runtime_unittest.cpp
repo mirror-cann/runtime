@@ -8752,7 +8752,7 @@ TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetParamInfo_BothOutputNullptrTest)
 {
     void *func = (void *)0x01;
     size_t paramIndex = 0;
-    
+
     aclError ret = aclrtFunctionGetParamInfo(func, paramIndex, nullptr, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
@@ -8773,4 +8773,262 @@ TEST_F(UTEST_ACL_Runtime, aclrtFunctionGetAvailDynUbufPerBlock_OutputNullptrTest
 
     aclError ret = aclrtFunctionGetAvailDynUbufPerBlock(func, flags, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtGetSymbolAddressTest)
+{
+    int hostVar = 0;
+    void *devPtr = nullptr;
+
+    // 参数校验：symbol 为 nullptr（显式 cast 避免命中模板重载）
+    aclError ret = aclrtGetSymbolAddress(static_cast<const void *>(nullptr), &devPtr);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：devPtr 为 nullptr
+    ret = aclrtGetSymbolAddress(hostVar, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 符号未找到
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_INVALID_SYMBOL));
+    ret = aclrtGetSymbolAddress(hostVar, &devPtr);
+    EXPECT_EQ(ret, ACL_ERROR_RT_INVALID_SYMBOL);
+
+    // 成功场景：校验 devPtr 出参被正确填充
+    void *expectedDevPtr = reinterpret_cast<void *>(0x1234);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(expectedDevPtr), Return(RT_ERROR_NONE)));
+    ret = aclrtGetSymbolAddress(hostVar, &devPtr);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(devPtr, expectedDevPtr);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtMemcpyFromSymbolTest)
+{
+    char dst[10] = {};
+    int hostVar = 0;
+    size_t symbolSize = 100;
+
+    // 参数校验：dst 为 nullptr
+    aclError ret = aclrtMemcpyFromSymbol(nullptr, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：count > dstMax
+    ret = aclrtMemcpyFromSymbol(dst, 5, hostVar, 10, 0, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 非法
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 5, 0, (aclrtMemcpyKind)999);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 不支持 ACL_MEMCPY_HOST_TO_DEVICE
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 符号未找到
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_INVALID_SYMBOL));
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_ERROR_RT_INVALID_SYMBOL);
+
+    // 边界检查：offset + count > symbolSize
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(5), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 5, 3, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 溢出保护：offset + count 溢出 size_t（返回 ACL_ERROR_FAILURE）
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 1, SIZE_MAX, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+
+    // 成功场景：ACL_MEMCPY_DEVICE_TO_HOST
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    // 成功场景：ACL_MEMCPY_DEFAULT
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyFromSymbol(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEFAULT);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtMemcpyFromSymbolAsyncTest)
+{
+    char dst[10] = {};
+    int hostVar = 0;
+    aclrtStream stream = (aclrtStream)0x10;
+    size_t symbolSize = 100;
+
+    // 参数校验：dst 为 nullptr
+    aclError ret = aclrtMemcpyFromSymbolAsync(nullptr, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：count > dstMax
+    ret = aclrtMemcpyFromSymbolAsync(dst, 5, hostVar, 10, 0, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 非法
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 0, (aclrtMemcpyKind)999, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 不支持 ACL_MEMCPY_HOST_TO_DEVICE
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：stream 为 nullptr
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 符号未找到
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_INVALID_SYMBOL));
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_ERROR_RT_INVALID_SYMBOL);
+
+    // 边界检查：offset + count > symbolSize
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(5), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 3, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 溢出保护：offset + count 溢出 size_t
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 1, SIZE_MAX, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+
+    // 成功场景：ACL_MEMCPY_DEVICE_TO_HOST
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpyAsync(_, _, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    // 成功场景：ACL_MEMCPY_DEFAULT
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpyAsync(_, _, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyFromSymbolAsync(dst, 10, hostVar, 5, 0, ACL_MEMCPY_DEFAULT, stream);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtMemcpyToSymbolTest)
+{
+    int hostVar = 0;
+    char src[10] = {};
+    size_t symbolSize = 100;
+
+    // 参数校验：src 为 nullptr
+    aclError ret = aclrtMemcpyToSymbol(hostVar, nullptr, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 非法
+    ret = aclrtMemcpyToSymbol(hostVar, src, 5, 0, (aclrtMemcpyKind)999);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 不支持 ACL_MEMCPY_DEVICE_TO_HOST
+    ret = aclrtMemcpyToSymbol(hostVar, src, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 符号未找到
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_INVALID_SYMBOL));
+    ret = aclrtMemcpyToSymbol(hostVar, src, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(ret, ACL_ERROR_RT_INVALID_SYMBOL);
+
+    // 边界检查：offset + count > symbolSize
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(5), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyToSymbol(hostVar, src, 5, 3, ACL_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 溢出保护：offset + count 溢出 size_t
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyToSymbol(hostVar, src, 1, SIZE_MAX, ACL_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+
+    // 成功场景：ACL_MEMCPY_HOST_TO_DEVICE
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyToSymbol(hostVar, src, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    // 成功场景：ACL_MEMCPY_DEFAULT
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyToSymbol(hostVar, src, 5, 0, ACL_MEMCPY_DEFAULT);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtMemcpyToSymbolAsyncTest)
+{
+    int hostVar = 0;
+    char src[10] = {};
+    aclrtStream stream = (aclrtStream)0x10;
+    size_t symbolSize = 100;
+
+    // 参数校验：src 为 nullptr
+    aclError ret = aclrtMemcpyToSymbolAsync(hostVar, nullptr, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 非法
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 0, (aclrtMemcpyKind)999, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：kind 不支持 ACL_MEMCPY_DEVICE_TO_HOST
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 0, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 参数校验：stream 为 nullptr
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 符号未找到
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_INVALID_SYMBOL));
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    EXPECT_EQ(ret, ACL_ERROR_RT_INVALID_SYMBOL);
+
+    // 边界检查：offset + count > symbolSize
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(5), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 3, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    // 溢出保护：offset + count 溢出 size_t
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 1, SIZE_MAX, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+
+    // 成功场景：ACL_MEMCPY_HOST_TO_DEVICE
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpyAsync(_, _, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 0, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    // 成功场景：ACL_MEMCPY_DEFAULT
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtSymbolLookup(_, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(symbolSize), Return(RT_ERROR_NONE)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpyAsync(_, _, _, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtMemcpyToSymbolAsync(hostVar, src, 5, 0, ACL_MEMCPY_DEFAULT, stream);
+    EXPECT_EQ(ret, ACL_SUCCESS);
 }

@@ -20,6 +20,8 @@
 #include "runtime/rt_stars.h"
 #include "runtime/rt_mem_queue.h"
 #include "runtime/rt_inner_mem.h"
+#include "runtime/inner_kernel.h"
+#include "utils/math_utils.h"
 #include "common/log_inner.h"
 #include "common/error_codes_inner.h"
 #include "common/prof_reporter.h"
@@ -2395,6 +2397,220 @@ aclError aclrtMemManagedPrefetchBatchAsyncImpl(const void** ptrs, size_t* sizes,
     const rtError_t rtErr = rtMemManagedPrefetchBatchAsync(ptrs, sizes, count, uvmPrefetchLocs, prefetchLocIdxs, numPrefetchLocs, flags, static_cast<rtStream_t>(stream));
     ACL_DELETE_ARRAY_AND_SET_NULL(uvmPrefetchLocs);
     ACL_REQUIRES_CALL_RTS_OK(rtErr, rtMemManagedPrefetchBatchAsync);
+    return ACL_SUCCESS;
+}
+
+aclError aclrtGetSymbolAddressImpl(const void *symbol, void **devPtr)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtGetSymbolAddress);
+    ACL_LOG_DEBUG("start to execute aclrtGetSymbolAddress.");
+
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(symbol);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(devPtr);
+
+    size_t size = 0UL;
+    const rtError_t rtErr = rtSymbolLookup(symbol, devPtr, &size);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtSymbolLookup failed, runtime result = %d.", rtErr);
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
+    return ACL_SUCCESS;
+}
+
+aclError aclrtGetSymbolSizeImpl(const void *symbol, size_t *size)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtGetSymbolSize);
+    ACL_LOG_DEBUG("start to execute aclrtGetSymbolSize.");
+
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(symbol);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(size);
+
+    void *devPtr = nullptr;
+    const rtError_t rtErr = rtSymbolLookup(symbol, &devPtr, size);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtSymbolLookup failed, runtime result = %d.", rtErr);
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
+    return ACL_SUCCESS;
+}
+
+static aclError GetSymbolInfo(const void *symbol, size_t count, size_t offset,
+                                void **symbolAddr, size_t *symbolSize)
+{
+    *symbolAddr = nullptr;
+    *symbolSize = 0UL;
+    const rtError_t rtErr = rtSymbolLookup(symbol, symbolAddr, symbolSize);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtSymbolLookup failed, runtime result = %d.", rtErr);
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
+
+    size_t totalSize = 0UL;
+    ACL_CHECK_ASSIGN_SIZET_ADD(offset, count, totalSize);
+    if (totalSize > *symbolSize) {
+        ACL_LOG_ERROR("[Check][Offset]offset[%zu] + count[%zu] must be <= symbolSize[%zu].",
+            offset, count, *symbolSize);
+        acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_MSG,
+            std::vector<const char *>({"param", "value", "reason"}),
+            std::vector<const char *>({"offset+count", std::to_string(totalSize).c_str(),
+            "must be <= symbolSize"}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+
+    return ACL_SUCCESS;
+}
+
+static aclError CheckMemcpyFromSymbol(void *dst, const void *symbol, size_t count, size_t dstMax,
+                                      aclrtMemcpyKind kind)
+{
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(symbol);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(dst);
+
+    if (count > dstMax) {
+        ACL_LOG_ERROR("[Check][Count]count[%zu] must not be greater than dstMax[%zu].", count, dstMax);
+        acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_MSG,
+            std::vector<const char *>({"param", "value", "reason"}),
+            std::vector<const char *>({"count", std::to_string(count).c_str(), "must not be greater than dstMax"}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+
+    if ((kind != ACL_MEMCPY_DEVICE_TO_HOST) && (kind != ACL_MEMCPY_DEFAULT)) {
+        ACL_LOG_ERROR("[Check][Kind]kind[%d] only support ACL_MEMCPY_DEVICE_TO_HOST or ACL_MEMCPY_DEFAULT",
+            static_cast<int32_t>(kind));
+        acl::AclErrorLogManager::ReportInputError(acl::INVALID_VALUE_MSG,
+            std::vector<const char *>({"func", "value", "param", "expect"}),
+            std::vector<const char *>({__func__, acl::GetMemcpyKindDesc(kind), "kind",
+            "ACL_MEMCPY_DEVICE_TO_HOST or ACL_MEMCPY_DEFAULT"}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+
+    return ACL_SUCCESS;
+}
+
+aclError aclrtMemcpyFromSymbolImpl(void *dst, size_t dstMax, const void *symbol,
+                                    size_t count, size_t offset, aclrtMemcpyKind kind)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtMemcpyFromSymbol);
+    ACL_LOG_DEBUG("start to execute aclrtMemcpyFromSymbol, count = %zu, offset = %zu.", count, offset);
+
+    aclError ret = CheckMemcpyFromSymbol(dst, symbol, count, dstMax, kind);
+    if (ret != ACL_SUCCESS) {
+        return ret;
+    }
+    
+    void *symbolAddr = nullptr;
+    size_t symbolSize = 0UL;
+    ret = GetSymbolInfo(symbol, count, offset, &symbolAddr, &symbolSize);
+    if (ret != ACL_SUCCESS) {
+        return ret;
+    }
+
+    void *srcAddr = static_cast<void *>(static_cast<uint8_t *>(symbolAddr) + offset);
+    const rtError_t copyErr = rtMemcpy(dst, dstMax, srcAddr, count, RT_MEMCPY_DEVICE_TO_HOST);
+    if (copyErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtMemcpy failed, runtime result = %d.", copyErr);
+        return ACL_GET_ERRCODE_RTS(copyErr);
+    }
+    return ACL_SUCCESS;
+}
+
+aclError aclrtMemcpyFromSymbolAsyncImpl(void *dst, size_t dstMax, const void *symbol,
+                                         size_t count, size_t offset, aclrtMemcpyKind kind,
+                                         aclrtStream stream)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtMemcpyFromSymbolAsync);
+    ACL_LOG_DEBUG("start to execute aclrtMemcpyFromSymbolAsync, count = %zu, offset = %zu.", count, offset);
+
+    aclError aclErr = CheckMemcpyFromSymbol(dst, symbol, count, dstMax, kind);
+    if (aclErr != ACL_SUCCESS) {
+        return aclErr;
+    }
+
+    void *symbolAddr = nullptr;
+    size_t symbolSize = 0UL;
+    aclErr = GetSymbolInfo(symbol, count, offset, &symbolAddr, &symbolSize);
+    if (aclErr != ACL_SUCCESS) {
+        return aclErr;
+    }
+
+    void *srcAddr = static_cast<void *>(static_cast<uint8_t *>(symbolAddr) + offset);
+    const rtError_t copyErr = rtMemcpyAsync(dst, dstMax, srcAddr, count, RT_MEMCPY_DEVICE_TO_HOST, stream);
+    if (copyErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtMemcpyAsync failed, runtime result = %d.", copyErr);
+        return ACL_GET_ERRCODE_RTS(copyErr);
+    }
+    return ACL_SUCCESS;
+}
+
+static aclError CheckMemcpyToSymbol(const void *symbol, const void *src,
+                                    aclrtMemcpyKind kind)
+{
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(symbol);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(src);
+
+    if ((kind != ACL_MEMCPY_HOST_TO_DEVICE) && (kind != ACL_MEMCPY_DEFAULT)) {
+        ACL_LOG_ERROR("[Check][Kind]kind[%d] only support ACL_MEMCPY_HOST_TO_DEVICE or ACL_MEMCPY_DEFAULT",
+            static_cast<int32_t>(kind));
+        acl::AclErrorLogManager::ReportInputError(acl::INVALID_VALUE_MSG,
+            std::vector<const char *>({"func", "value", "param", "expect"}),
+            std::vector<const char *>({__func__, acl::GetMemcpyKindDesc(kind), "kind",
+            "ACL_MEMCPY_HOST_TO_DEVICE or ACL_MEMCPY_DEFAULT"}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+    return ACL_SUCCESS;
+}
+
+aclError aclrtMemcpyToSymbolImpl(const void *symbol, const void *src, size_t count,
+                                 size_t offset, aclrtMemcpyKind kind)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtMemcpyToSymbol);
+    ACL_LOG_DEBUG("start to execute aclrtMemcpyToSymbol, count = %zu, offset = %zu.", count, offset);
+
+    aclError ret = CheckMemcpyToSymbol(symbol, src, kind);
+    if (ret != ACL_SUCCESS) {
+        return ret;
+    }
+
+    void *symbolAddr = nullptr;
+    size_t symbolSize = 0UL;
+    ret = GetSymbolInfo(symbol, count, offset, &symbolAddr, &symbolSize);
+    if (ret != ACL_SUCCESS) {
+        return ret;
+    }
+
+    void *dstAddr = static_cast<void *>(static_cast<uint8_t *>(symbolAddr) + offset);
+    const rtError_t copyErr = rtMemcpy(dstAddr, symbolSize - offset, src, count, RT_MEMCPY_HOST_TO_DEVICE);
+    if (copyErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtMemcpy failed, runtime result = %d.", copyErr);
+        return ACL_GET_ERRCODE_RTS(copyErr);
+    }
+    return ACL_SUCCESS;
+}
+
+aclError aclrtMemcpyToSymbolAsyncImpl(const void *symbol, const void *src, size_t count,
+                                      size_t offset, aclrtMemcpyKind kind, aclrtStream stream)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtMemcpyToSymbolAsync);
+    ACL_LOG_DEBUG("start to execute aclrtMemcpyToSymbolAsync, count = %zu, offset = %zu.", count, offset);
+
+    aclError aclErr = CheckMemcpyToSymbol(symbol, src, kind);
+    if (aclErr != ACL_SUCCESS) {
+        return aclErr;
+    }
+
+    void *symbolAddr = nullptr;
+    size_t symbolSize = 0UL;
+    aclErr = GetSymbolInfo(symbol, count, offset, &symbolAddr, &symbolSize);
+    if (aclErr != ACL_SUCCESS) {
+        return aclErr;
+    }
+
+    void *dstAddr = static_cast<void *>(static_cast<uint8_t *>(symbolAddr) + offset);
+    const rtError_t copyErr = rtMemcpyAsync(dstAddr, symbolSize - offset, src, count, RT_MEMCPY_HOST_TO_DEVICE, stream);
+    if (copyErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("rtMemcpyAsync failed, runtime result = %d.", copyErr);
+        return ACL_GET_ERRCODE_RTS(copyErr);
+    }
     return ACL_SUCCESS;
 }
 

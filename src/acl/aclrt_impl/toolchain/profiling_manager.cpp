@@ -310,6 +310,12 @@ namespace acl {
         {AclProfType::AclrtMemsetD32,                           "aclrtMemsetD32"},
         {AclProfType::AclrtMemsetD32Async,                      "aclrtMemsetD32Async"},
         {AclProfType::AclrtGetFuncBySymbol,                     "aclrtGetFuncBySymbol"},
+        {AclProfType::AclrtGetSymbolAddress,                    "aclrtGetSymbolAddress"},
+        {AclProfType::AclrtGetSymbolSize,                       "aclrtGetSymbolSize"},
+        {AclProfType::AclrtMemcpyFromSymbol,                    "aclrtMemcpyFromSymbol"},
+        {AclProfType::AclrtMemcpyFromSymbolAsync,               "aclrtMemcpyFromSymbolAsync"},
+        {AclProfType::AclrtMemcpyToSymbol,                      "aclrtMemcpyToSymbol"},
+        {AclProfType::AclrtMemcpyToSymbolAsync,                 "aclrtMemcpyToSymbolAsync"},
 };
 
 aclError RegisterType(const uint32_t index) {

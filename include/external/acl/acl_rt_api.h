@@ -221,6 +221,48 @@ static inline aclError aclrtMemManagedPrefetchBatchAsync(const T **ptrs, size_t 
                                                 prefetchLocs, prefetchLocIdxs, numPrefetchLocs, flags, stream);
 }
 
+template <typename T>
+static inline aclError aclrtGetSymbolAddress(const T &symbol, void **devPtr)
+{
+    return ::aclrtGetSymbolAddress(static_cast<const void*>(&symbol), devPtr);
+}
+
+template <typename T>
+static inline aclError aclrtGetSymbolSize(const T &symbol, size_t *size)
+{
+    return ::aclrtGetSymbolSize(static_cast<const void*>(&symbol), size);
+}
+
+template <typename T>
+static inline aclError aclrtMemcpyFromSymbol(void *dst, size_t dstMax, const T &symbol,
+                                            size_t count, size_t offset, aclrtMemcpyKind kind)
+{
+    return ::aclrtMemcpyFromSymbol(dst, dstMax, static_cast<const void*>(&symbol), count, offset, kind);
+}
+
+template <typename T>
+static inline aclError aclrtMemcpyFromSymbolAsync(void *dst, size_t dstMax, const T &symbol,
+                                                 size_t count, size_t offset, aclrtMemcpyKind kind,
+                                                 aclrtStream stream)
+{
+    return ::aclrtMemcpyFromSymbolAsync(dst, dstMax, static_cast<const void*>(&symbol), count, offset, kind, stream);
+}
+
+template <typename T>
+static inline aclError aclrtMemcpyToSymbol(const T &symbol, const void *src,
+                                          size_t count, size_t offset, aclrtMemcpyKind kind)
+{
+    return ::aclrtMemcpyToSymbol(static_cast<const void*>(&symbol), src, count, offset, kind);
+}
+
+template <typename T>
+static inline aclError aclrtMemcpyToSymbolAsync(const T &symbol, const void *src,
+                                               size_t count, size_t offset, aclrtMemcpyKind kind,
+                                               aclrtStream stream)
+{
+    return ::aclrtMemcpyToSymbolAsync(static_cast<const void*>(&symbol), src, count, offset, kind, stream);
+}
+
 #endif // __cplusplus
 
 #endif // INC_EXTERNAL_ACL_ACL_RT_API_H_
