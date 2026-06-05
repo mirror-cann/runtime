@@ -35,6 +35,7 @@
 #include "../../rt_utest_config_define.hpp"
 #include "model_execute_task.h"
 #include "notify_task.h"
+#include "../../task_test_helper.h"
 using namespace testing;
 using namespace cce::runtime;
 
@@ -142,7 +143,9 @@ TEST_F(StarsTaskTest, DoCompleteStarsError_david)
     ASSERT_NE(taskFactory, nullptr);
     TaskInfo *errTask = taskFactory->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, ret);
     taskFactory->SetSerialId(stream, errTask);
-    AicTaskInit(errTask, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(errTask, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(errTask->type, TS_TASK_TYPE_KERNEL_AICORE);
 
     rtStarsCqeSwStatus_t sw_status;

@@ -1307,7 +1307,7 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo(
         dev->Id_(),
         streamId,
         taskId,
-        GetSchemMode(aicTaskInfo),
+        aicTaskInfo->schemMode,
         aicTaskInfo->comm.dim,
         slotInfo.aicOwnBitmap,
         slotInfo.aivOwnBitmap0,

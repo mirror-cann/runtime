@@ -48,6 +48,7 @@
 #include "runtime_keeper.h"
 #include "mockcpp/mockcpp.hpp"
 #include "uma_arg_loader.hpp"
+#include "task_test_helper.h"
 #include "driver/ascend_hal.h"
 #include "osal.hpp"
 #include "api.hpp"
@@ -445,7 +446,9 @@ TEST_F(TaskTest, davinci_kernel_task_print_mixCtx)
     kernel->SetMixType(MIX_AIC);
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, aicKernel, aicKernel->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel;
 
     task.u.aicTaskInfo.comm.args = (void *)0x1;
     task.u.aicTaskInfo.comm.argsSize = 256U;
@@ -486,8 +489,10 @@ TEST_F(TaskTest, davinci_mix_kernel_task_print)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    Kernel *kernel = CreateTestKernelWithMixType(RT_KERNEL_ATTR_TYPE_AICORE, MIX_AIC_AIV_MAIN_AIC);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_MIX, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     rtStreamDestroy(stream);
 }
@@ -536,8 +541,10 @@ TEST_F(TaskTest, davinci_kernel_aic_task_print)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
 
     uint32_t errorcode[3] = {10, 1, 0};
@@ -556,8 +563,10 @@ TEST_F(TaskTest, davinci_kernel_aic_task_print1)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
 
     uint32_t errorcode[3] = {10, 1, 0};
     SetResult(&task, (const uint32_t *)errorcode, 1);
@@ -575,8 +584,10 @@ TEST_F(TaskTest, davinci_kernel_task_print2)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
 
     const uint32_t argsSize = sizeof(uint32_t) + sizeof(uint64_t) * 2;
@@ -622,8 +633,10 @@ TEST_F(TaskTest, davinci_kernel_task_print3)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     uint32_t errorcode[3] = {10, 1, 0};
     SetResult(&task, (const uint32_t *)errorcode, 1);
@@ -642,8 +655,10 @@ TEST_F(TaskTest, davinci_kernel_task_print4)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
 
     const uint32_t argsSize = sizeof(uint32_t) + sizeof(uint64_t) * 2;
@@ -675,8 +690,10 @@ TEST_F(TaskTest, davinci_kernel_task_print5)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
 
     const uint32_t argsSize = sizeof(uint32_t) + sizeof(uint64_t);
     char args[argsSize] = {};
@@ -698,8 +715,10 @@ TEST_F(TaskTest, davinci_kernel_task_print6)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
 
     const uint32_t argsSize = sizeof(uint32_t) * 3 + sizeof(uint64_t);
     char args[argsSize] = {};
@@ -749,8 +768,10 @@ TEST_F(TaskTest, davinci_kernel_task_print7)
     device->simtEnable_ = true;
     Stream *stream = new Stream(device, 0);
 
+    Kernel *testKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, stream);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, testKernel, testKernel->GetKernelAttrType(), 1, nullptr);
+    delete testKernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
@@ -946,8 +967,10 @@ TEST_F(TaskTest, davinci_kernel_task_ref_module)
     Device *dev = (rt_ut::UnwrapOrNull<Stream>(stream))->Device_();
     {
         TaskInfo task = {};
+        Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
         InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-        AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+        AicTaskInit(&task, aicKernel, aicKernel->GetKernelAttrType(), 1, nullptr);
+        delete aicKernel;
         TaskUnInitProc(&task);
     }
     rtStreamDestroy(stream);
@@ -1464,8 +1487,10 @@ TEST_F(TaskTest, kernel_task_async_copy_wait)
     EXPECT_EQ(error, RT_ERROR_NONE);
     taskStream = rt_ut::UnwrapOrNull<Stream>(taskStreamHandle);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, taskStream);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.u.aicTaskInfo.comm.dim, 1U);
 
     Handle hdl;
@@ -1524,8 +1549,10 @@ TEST_F(TaskTest, kernel_task_no_complete)
     EXPECT_EQ(error, RT_ERROR_NONE);
     taskStream = rt_ut::UnwrapOrNull<Stream>(taskStreamHandle);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, taskStream);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.u.aicTaskInfo.comm.dim, 1U);
 
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
@@ -1555,7 +1582,9 @@ TEST_F(TaskTest, PreCheckTaskErr)
     InitByStream(&davinciKernelTask, rt_ut::UnwrapOrNull<Stream>(stream));
     AicpuTaskInit(&davinciKernelTask, (uint16_t)1, (uint32_t)0);
     PreCheckTaskErr(&davinciKernelTask, devId);
-    AicTaskInit(&davinciKernelTask, RT_KERNEL_ATTR_TYPE_VECTOR, (uint16_t)1, nullptr);
+    Kernel *vecKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
+    AicTaskInit(&davinciKernelTask, vecKernel, vecKernel->GetKernelAttrType(), (uint16_t)1, nullptr);
+    delete vecKernel;
     PreCheckTaskErr(&davinciKernelTask, devId);
 }
 
@@ -1657,7 +1686,7 @@ TEST_F(TaskTest, ConstructSqe)
     InitByStream(&task, stream_);
     EXPECT_NE(task.stream, nullptr);
     task.u.aicTaskInfo.kernel = kernel;
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_VECTOR, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
 
     rtStarsSqe_t sqe = {};
     ToConstructSqe(&task, &sqe);
@@ -1678,7 +1707,9 @@ TEST_F(TaskTest, AllocSqeDevBuf)
     EXPECT_NE(task.stream, nullptr);
 
     task.isUpdateSinkSqe = true;
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr, true);
+    Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, aicKernel, aicKernel->GetKernelAttrType(), 1, nullptr, true);
+    delete aicKernel;
     EXPECT_NE(task.u.aicTaskInfo.sqeDevBuf, nullptr);
 
     DavinciTaskUnInit(&task);
@@ -1704,7 +1735,9 @@ TEST_F(TaskTest, ConstructSqe_MACH_AI_MIX_KERNEL_01)
     EXPECT_EQ(rtInstance->GetBiuperfProfFlag(), true);
     InitByStream(&task, stream_);
     EXPECT_NE(task.stream, nullptr);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel2;
     AicTaskInfo *aicTaskInfo = &(task.u.aicTaskInfo);
     aicTaskInfo->kernel = kernel;
     aicTaskInfo->kernel->funcType_ = KERNEL_FUNCTION_TYPE_AIC;
@@ -1735,7 +1768,9 @@ TEST_F(TaskTest, ConstructSqe_MACH_AI_MIX_KERNEL_02)
     EXPECT_EQ(rtInstance->GetBiuperfProfFlag(), true);
     InitByStream(&task, stream_);
     EXPECT_NE(task.stream, nullptr);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, aicKernel3, aicKernel3->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel3;
     AicTaskInfo *aicTaskInfo = &(task.u.aicTaskInfo);
     aicTaskInfo->kernel = kernel;
     aicTaskInfo->kernel->funcType_ = KERNEL_FUNCTION_TYPE_AIV;
@@ -1766,7 +1801,9 @@ TEST_F(TaskTest, ConstructSqe_MACH_AI_MIX_KERNEL_03)
     EXPECT_EQ(rtInstance->GetBiuperfProfFlag(), true);
     InitByStream(&task, stream_);
     EXPECT_NE(task.stream, nullptr);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, aicKernel4, aicKernel4->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel4;
     AicTaskInfo *aicTaskInfo = &(task.u.aicTaskInfo);
     aicTaskInfo->kernel = kernel;
     aicTaskInfo->kernel->funcType_ = KERNEL_FUNCTION_TYPE_INVALID;
@@ -1792,7 +1829,9 @@ TEST_F(TaskTest, ConstructSqe_MACH_AI_MIX_KERNEL_04)
     Program *program = &stubProg;
     Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_MIX, 10);
 
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_MIX, 1, nullptr);
+    Kernel *mixKernel = CreateTestKernelWithMixType(RT_KERNEL_ATTR_TYPE_AICORE, MIX_AIC_AIV_MAIN_AIC);
+    AicTaskInit(&task, mixKernel, mixKernel->GetKernelAttrType(), 1, nullptr);
+    delete mixKernel;
     task.u.aicTaskInfo.kernel = kernel;
 
     rtStarsSqe_t sqe = {};
@@ -2624,7 +2663,9 @@ TEST_F(TaskTest, SetSerialId)
     TaskInfo davinciKernelTask_ = {};
     InitByStream(&davinciKernelTask_, stream);
     davinciKernelTask_.id = 65533;
-    AicTaskInit(&davinciKernelTask_, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&davinciKernelTask_, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
 
     device->GetTaskFactory()->SetSerialId(stream, &davinciKernelTask_);
     ((Runtime *)Runtime::Instance())->SetDisableThread(disableThread);
@@ -3142,8 +3183,10 @@ TEST_F(TaskTest, davinci_kernel_task_abort)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     uint32_t errorcode[3] = {10, 1, 0};
     SetResult(&task, (const uint32_t *)errorcode, 1);
@@ -3372,8 +3415,10 @@ TEST_F(TaskTest, WaitAsyncCopyCompleteForUpdateTask)
     error = rtStreamCreate((rtStream_t *)&taskStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, taskStream);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.u.aicTaskInfo.comm.dim, 1U);
 
     Handle hdl;

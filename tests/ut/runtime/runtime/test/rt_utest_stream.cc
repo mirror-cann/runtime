@@ -43,6 +43,7 @@
 #include "thread_local_container.hpp"
 #include "capture_adapt.hpp"
 #include "data/elf.h"
+#include "task_test_helper.h"
 using namespace testing;
 using namespace cce::runtime;
 
@@ -1270,7 +1271,9 @@ TEST_F(StreamTest, davinci_task_recycle_test)
     TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(task, nullptr);
 
-    AicTaskInit(task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     stream->AddTaskToStream(task);
     EXPECT_EQ(stream->davinciTaskTail_, 1);
     stream->SetIsSupportASyncRecycle(false);
@@ -1338,7 +1341,9 @@ TEST_F(StreamTest, davinci_task_del_test)
     // DavinciKernelTask
     TaskInfo task = {};
     InitByStream(&task, stream);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     task.id = 1;
     stream->AddTaskToStream(&task);
     EXPECT_EQ(stream->davinciTaskTail_, 1);
@@ -1431,7 +1436,9 @@ TEST_F(StreamTest, public_task_recycle_test)
     rtError_t errCode = RT_ERROR_NONE;
     TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(task, nullptr);
-    AicTaskInit(task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     stream->AddTaskToStream(task);
     EXPECT_EQ(stream->davinciTaskTail_, 1);
 
@@ -1462,7 +1469,9 @@ TEST_F(StreamTest, process_task_test)
 
     TaskInfo task = {};
     InitByStream(&task, stream);
-    AicTaskInit(&task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     task.stream = stream;
 
@@ -1789,7 +1798,9 @@ TEST_F(StreamTest, StarsStmDfxCheck_test)
     rtError_t errCode = RT_ERROR_NONE;
     TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(task, nullptr);
-    AicTaskInit(task, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
+    delete kernel;
     stream->AddTaskToStream(task);
     EXPECT_EQ(stream->davinciTaskTail_, 1);
 

@@ -46,6 +46,7 @@
 #include "stub_task.hpp"
 #include "model_execute_task.h"
 #include "event_task.h"
+#include "../../task_test_helper.h"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -155,7 +156,9 @@ TEST_F(CloudV2StarsEngineTest, StateDown)
     Program *program = &stubProg;
     Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    AicTaskInit(&task0, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task0, aicKernel1, aicKernel1->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel1;
     task0.u.aicTaskInfo.kernel = kernel;
     EXPECT_EQ(task0.type, TS_TASK_TYPE_KERNEL_AICORE);
     Runtime *rtInstance = (Runtime *)Runtime::Instance();
@@ -180,7 +183,9 @@ TEST_F(CloudV2StarsEngineTest, SubmitNormalTask_01)
     Program *program = &stubProg;
     Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    AicTaskInit(&task0, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task0, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel2;
     task0.u.aicTaskInfo.kernel = kernel;
     EXPECT_EQ(task0.type, TS_TASK_TYPE_KERNEL_AICORE);
 
@@ -1637,7 +1642,9 @@ TEST_F(CloudV2StarsEngineTest, WaitTask3)
     Program *program = &stubProg;
     Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    AicTaskInit(&task0, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task0, aicKernel3, aicKernel3->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel3;
     task0.u.aicTaskInfo.kernel = kernel;
     ret = engine_->SubmitTask(&task0);
 
@@ -1659,7 +1666,9 @@ TEST_F(CloudV2StarsEngineTest, WaitTask4)
     Program *program = &stubProg;
     Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    AicTaskInit(&task0, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task0, aicKernel4, aicKernel4->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel4;
     task0.u.aicTaskInfo.kernel = kernel;
     ret = engine_->SubmitTask(&task0);
 
@@ -1680,7 +1689,9 @@ TEST_F(CloudV2StarsEngineTest, WaitTask5)
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
     Program *program = &stubProg;
     Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
-    AicTaskInit(&task0, RT_KERNEL_ATTR_TYPE_AICORE, 1, nullptr);
+    Kernel *aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    AicTaskInit(&task0, aicKernel5, aicKernel5->GetKernelAttrType(), 1, nullptr);
+    delete aicKernel5;
     task0.u.aicTaskInfo.kernel = kernel;
     ret = engine_->SubmitTask(&task0);
 

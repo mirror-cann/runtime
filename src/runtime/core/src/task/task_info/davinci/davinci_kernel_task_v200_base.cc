@@ -342,9 +342,8 @@ static void ConstructDavidMixSqeForDavinciTask(TaskInfo *taskInfo, rtDavidSqe_t 
     }
 
     SetMixStartPcAndParam(taskInfo, command);
-    uint16_t curSchemMode = GetSchemMode(kernel, schemMode);
-    sqe->schem = curSchemMode;
-    if (curSchemMode == RT_SCHEM_MODE_BATCH) {
+    sqe->schem = schemMode;
+    if (schemMode == RT_SCHEM_MODE_BATCH) {
         const uint16_t sqeType = sqe->header.type;
         const uint16_t blockDim = sqe->header.blockDim;
         CheckBlockDim(stm, sqeType, blockDim);
