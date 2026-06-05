@@ -288,7 +288,7 @@ int32_t ProfParamsAdapter::CheckApiConfigIsValid(SHARED_PTR_ALIA<analysis::dvvp:
             return PROFILING_SUCCESS;
         case ACL_PROF_STORAGE_LIMIT:
             params->storageLimit = config;
-            if (ParamValidation::instance()->CheckStorageLimit(params)) {
+            if (ParamValidation::instance()->CheckStorageLimit(params, "ACL_PROF_STORAGE_LIMIT")) {
                 return PROFILING_SUCCESS;
             }
             break;

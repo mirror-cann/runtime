@@ -72,7 +72,8 @@ public:
     bool IsValidSwitch(const std::string &switchStr);
     bool CheckParamL0L1Invalid(const std::string &switchName, const std::string &switchStr);
     bool CheckParamEmptyInvalid(const std::string &switchName, const std::string &switchStr) const;
-    bool CheckStorageLimit(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const;
+    bool CheckStorageLimit(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params,
+        const std::string &paramName = "storage_limit") const;
     bool CheckInstrProfilingFreqValid(const uint32_t instrFreq) const;
     bool CheckArgRange(const std::string &switchName, const std::string &value, uint32_t min, uint32_t max) const;
     bool CheckLlcConfigValid(const std::string &config) const;

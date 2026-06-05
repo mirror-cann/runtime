@@ -108,7 +108,8 @@ TEST_F(MSPROF_ACL_CORE_STEST, acl_app) {
     MOCKER_CPP(&Msprofiler::Api::ProfAclMgr::CallbackInitPrecheck)
         .stubs()
         .will(returnValue(PROFILING_SUCCESS));
-    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit)
+    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit,
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
         .stubs()
         .will(returnValue(false));
 
@@ -1696,7 +1697,8 @@ TEST_F(MSPROF_ACL_CORE_STEST, MsprofInitPureCpu) {
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
         .stubs()
         .will(returnValue(true));
-    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit)
+    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit,
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
         .stubs()
         .will(returnValue(false))
         .then(returnValue(true));
@@ -2565,7 +2567,7 @@ TEST_F(MSPROF_ACL_CORE_STEST, MsprofGeOptionsParamConstruct) {
     EXPECT_EQ(MSPROF_ERROR_NONE, profAclMgr.MsprofGeOptionsParamConstruct("hello", inputCfgPbo));
     configManger->Uninit();
     MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit,
-        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const)
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
         .stubs()
         .will(returnValue(false))
         .then(returnValue(true));

@@ -468,6 +468,8 @@ TEST_F(COMMON_VALIDATION_PARAM_VALIDATION_TEST, CheckStorageLimit) {
     params->storageLimit = "MB";
     bool ret = ParamValidation::instance()->CheckStorageLimit(params);
     EXPECT_EQ(false, ret);
+    ret = ParamValidation::instance()->CheckStorageLimit(params, "ACL_PROF_STORAGE_LIMIT");
+    EXPECT_EQ(false, ret);
 
     params->storageLimit = "10MB0";
     ret = ParamValidation::instance()->CheckStorageLimit(params);

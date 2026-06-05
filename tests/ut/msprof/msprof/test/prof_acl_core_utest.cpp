@@ -1127,7 +1127,8 @@ TEST_F(MSPROF_ACL_CORE_UTEST, acl_app) {
     MOCKER_CPP(&Msprofiler::Api::ProfAclMgr::CallbackInitPrecheck)
         .stubs()
         .will(returnValue(PROFILING_SUCCESS));
-    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit)
+    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit,
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
         .stubs()
         .will(returnValue(false));
 
@@ -2016,7 +2017,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofGeOptionsParamConstruct) {
     EXPECT_EQ(MSPROF_ERROR_NONE, profAclMgr.MsprofGeOptionsParamConstruct("hello", inputCfgPbo));
     configManger->Uninit();
     MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit,
-        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const)
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
         .stubs()
         .will(returnValue(false))
         .then(returnValue(true));
@@ -2096,7 +2097,8 @@ TEST_F(MSPROF_ACL_CORE_UTEST, DISABLED_MsprofInitPureCpu_part2) {
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
         .stubs()
         .will(returnValue(true));
-    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit)
+    MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckStorageLimit,
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
         .stubs()
         .will(returnValue(false))
         .then(returnValue(true));
@@ -5564,10 +5566,17 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfParamsAdapter_CheckApiConfigIsValid_StorageLim
     auto a = NewAdapter();
     auto p = NewParams();
     EXPECT_EQ(PROFILING_FAILED, a->CheckApiConfigIsValid(nullptr, ACL_PROF_STORAGE_LIMIT, ""));
-    MOCKER_CPP(&ParamValidation::CheckStorageLimit).stubs().will(returnValue(true));
+    MOCKER_CPP(&ParamValidation::CheckStorageLimit,
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
+        .expects(once())
+        .with(eq(p), eq(std::string("ACL_PROF_STORAGE_LIMIT")))
+        .will(returnValue(true));
     EXPECT_EQ(PROFILING_SUCCESS, a->CheckApiConfigIsValid(p, ACL_PROF_STORAGE_LIMIT, "100"));
     GlobalMockObject::verify();
-    MOCKER_CPP(&ParamValidation::CheckStorageLimit).stubs().will(returnValue(false));
+    MOCKER_CPP(&ParamValidation::CheckStorageLimit,
+        bool(ParamValidation::*)(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams>, const std::string &) const)
+        .stubs()
+        .will(returnValue(false));
     EXPECT_EQ(PROFILING_FAILED, a->CheckApiConfigIsValid(p, ACL_PROF_STORAGE_LIMIT, "100"));
 }
 
