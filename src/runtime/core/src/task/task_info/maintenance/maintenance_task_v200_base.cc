@@ -142,16 +142,6 @@ static bool MaintenanceTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    TaskFuncSingle allocDsaAddrFuncs = {
-        .toCommandFunc = nullptr,
-        .toSqeFunc = nullptr,
-        .doCompleteSuccFunc = &DoCompleteSuccess,
-        .taskUnInitFunc = nullptr,
-        .waitAsyncCpCompleteFunc = nullptr,
-        .printErrorInfoFunc = &PrintErrorInfoCommon,
-        .setResultFunc = nullptr,
-        .setStarsResultFunc = &SetStarsResultCommonForDavid,
-    };
     TaskFuncSingle getDeviceMsgFuncs = {
         .toCommandFunc = &ToCommandBodyForGetDevMsgTask,
         .toSqeFunc = nullptr,
@@ -186,14 +176,12 @@ static bool MaintenanceTaskRegister()
     const auto& chips = GetDavidChips();
     for (auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MAINTENANCE, maintenanceFuncs);
-        RegTaskFunc(chip, TS_TASK_TYPE_ALLOC_DSA_ADDR, allocDsaAddrFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_GET_DEVICE_MSG, getDeviceMsgFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_GET_STARS_VERSION, getStarsVersionFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_TSFW_AICPU_MSG_VERSION, aicpuMsgVersionFuncs);
     }
 
     RegDavidSqeFunc(TS_TASK_TYPE_MAINTENANCE, &ConstructDavidSqeForMaintenanceTask);
-    RegDavidSqeFunc(TS_TASK_TYPE_ALLOC_DSA_ADDR, &ConstructDavidSqeBase);
     RegDavidSqeFunc(TS_TASK_TYPE_GET_DEVICE_MSG, &ConstructDavidSqeForGetDevMsgTask);
     RegDavidSqeFunc(TS_TASK_TYPE_GET_STARS_VERSION, &ConstructDavidSqeBase);
     RegDavidSqeFunc(TS_TASK_TYPE_TSFW_AICPU_MSG_VERSION, &ConstructDavidSqeForAicpuMsgVersionTask);

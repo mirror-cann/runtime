@@ -21,7 +21,6 @@
 #include "task_res.hpp"
 #include "ctrl_stream.hpp"
 #include "coprocessor_stream.hpp"
-#include "tsch_stream.hpp"
 #include "engine_stream_observer.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "scheduler.hpp"

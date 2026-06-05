@@ -142,11 +142,6 @@ public:
         return primaryStream_;
     }
 
-    Stream *TsFFtsDsaStream_() const override
-    {
-        return tsFftsDsaStream_;
-    }
-
     Stream *CtrlStream_() const override
     {
         return ctrlStream_;
@@ -907,8 +902,6 @@ private:
     rtError_t AllocStackPhyAddrForDcache();
     rtError_t Alloc32kStackAddrForDcache();
     rtError_t GetStarsVersion();
-    rtError_t TschStreamSetup();
-    rtError_t TschStreamAllocDsaAddr() const;
     rtError_t SetSupportHcomcpuFlag();
     static void *MallocBufferForSqIdMem(const size_t size, void * const para);
     static void FreeBufferForSqIdMem(void * const addr, void * const para);
@@ -929,7 +922,6 @@ private:
     rtError_t ParseSimdPrintInfo();
 
     Stream *primaryStream_;
-    Stream *tsFftsDsaStream_;
     Stream *ctrlStream_;
     ArgLoader *argLoader_;
     UbArgLoader *ubArgLoader_;

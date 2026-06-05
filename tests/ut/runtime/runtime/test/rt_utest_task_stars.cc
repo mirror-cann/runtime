@@ -958,25 +958,6 @@ TEST_F(StarsTaskTest, DataDumpLoadInfoTask)
     SetStarsResult(&task, cqe);
 }
 
-TEST_F(StarsTaskTest, AllocDsaAddrTask)
-{
-    rtError_t ret;
-    Model *model;
-    Stream *stream;
-    rtStream_t streamHandle = nullptr;
-    ret = rtStreamCreate(&streamHandle, 0);
-    EXPECT_EQ(ret, RT_ERROR_NONE);
-    stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
-
-    TaskInfo task = {};
-    InitByStream(&task, stream);
-    AllocDsaAddrTaskInit(&task, 1);
-
-    rtStarsSqe_t command = {};
-    ToConstructSqe(&task, &command);
-    rtStreamDestroy(streamHandle);
-}
-
 void DvppGrpCallbackFunc(rtDvppGrpRptInfo_t *report)
 {
     UNUSED(report);
@@ -1307,6 +1288,8 @@ TEST_F(StarsTaskTest, DsaFftsplusErrorProc)
     dsa_sqe->sqeHeader.type = RT_STARS_SQE_TYPE_DSA;
     dsa_sqe->paramAddrValBitmap = 0x1f;
     TaskInfo task = {};
+    rtFftsPlusSqe_t fftsSqe = {};
+    fftsPlusTaskInfo.fftsPlusSqe = &fftsSqe;
 
     MOCKER(FillFftsPlusSqe)
         .stubs()
@@ -1327,6 +1310,8 @@ TEST_F(StarsTaskTest, FftsPlusTaskInitTest)
     dsa_sqe->sqeHeader.type = RT_STARS_SQE_TYPE_DSA;
     dsa_sqe->paramAddrValBitmap = 0x1f;
     TaskInfo task = {};
+    rtFftsPlusSqe_t fftsSqe = {};
+    fftsPlusTaskInfo.fftsPlusSqe = &fftsSqe;
 
     MOCKER(FillFftsPlusSqe)
         .stubs()
@@ -1335,11 +1320,19 @@ TEST_F(StarsTaskTest, FftsPlusTaskInitTest)
     InitByStream(&task, stream_);
     error = FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-    fftsPlusTaskInfo.descBufLen = PCIE_BAR_COPY_SIZE + 1;
+    std::vector<uint8_t> descBuf(CONTEXT_LEN, 0U);
+    auto * const ctx = reinterpret_cast<rtFftsPlusComCtx_t *>(descBuf.data());
+    ctx->contextType = RT_CTX_TYPE_AICORE;
+    fftsPlusTaskInfo.descBuf = descBuf.data();
+    fftsPlusTaskInfo.descBufLen = descBuf.size();
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
     error = FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+
+    ctx->contextType = RT_CTX_TYPE_DSA;
+    error = FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
+    EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(StarsTaskTest, FillFftsPlusSqeTest)

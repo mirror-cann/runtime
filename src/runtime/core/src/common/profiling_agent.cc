@@ -110,7 +110,6 @@ rtError_t ProfilingAgent::RegisterProfTypeInfo() const
         {TS_TASK_TYPE_SET_STREAM_MODE, "SET_STREAM_MODE"},
         {TS_TASK_TYPE_IPCINT_NOTICE, "IPC_INT_NOTICE"},
         {TS_TASK_TYPE_MODEL_LOAD, "reserve"}, // reserve but not support task type
-        {TS_TASK_TYPE_ALLOC_DSA_ADDR, "ALLOC_DSA_ADDR"},
         {TS_TASK_TYPE_FLIP, "FLIP_TASK"},
         {TS_TASK_TYPE_MODEL_TASK_UPDATE, "MODEL_TASK_UPDATE"},
         {TS_TASK_TYPE_AICPU_INFO_LOAD, "AICPU_LOADINFO"},

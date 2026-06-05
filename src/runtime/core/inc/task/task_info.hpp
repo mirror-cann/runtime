@@ -136,7 +136,6 @@ typedef struct tagTaskInfoStru {
         DebugUnRegForStreamTaskInfo debugUnRegisterForStreamTask;
         TimeoutSetTaskInfo timeoutSetTask;
         GetDevMsgTaskInfo getDevMsgTask;
-        AllocDsaAddrInfoTaskInfo allocDsaAddrTask;
         FlipTaskInfo flipTask;
         SqLockUnlockTaskInfo sqLockUnlockTask;
         CmoAddrTaskInfo cmoAddrTaskInfo;

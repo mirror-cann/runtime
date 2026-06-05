@@ -62,20 +62,6 @@ void ToCommandBodyForMaintenanceTask(TaskInfo * const taskInfo, rtCommand_t *con
 }
 #endif
 
-#if F_DESC("AllocDsaAddrTask")
-rtError_t AllocDsaAddrTaskInit(TaskInfo * const taskInfo, const uint16_t sqId)
-{
-    AllocDsaAddrInfoTaskInfo *dsaTaskInfo = &(taskInfo->u.allocDsaAddrTask);
-    TaskCommonInfoInit(taskInfo);
-
-    taskInfo->type = TS_TASK_TYPE_ALLOC_DSA_ADDR;
-    taskInfo->typeName = "ALLOC_DSA_ADDR";
-    dsaTaskInfo->sqId = sqId;
-
-    return RT_ERROR_NONE;
-}
-#endif
-
 #if F_DESC("GetDevMsgTask")
 rtError_t GetDevMsgTaskInit(TaskInfo* taskInfo, const void * const devMemAddr,
                             const uint32_t devMemSize,

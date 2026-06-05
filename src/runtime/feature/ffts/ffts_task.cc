@@ -109,6 +109,45 @@ void LogFftsPlusContextDetail(TaskInfo *taskInfo, const uint32_t devId, const ui
             contextId, j, buf[j]);
     }
 }
+
+rtError_t CheckFftsPlusDsaContext(const void * const descBuf, const uint64_t descBufLen)
+{
+    if (descBufLen == 0U) {
+        return RT_ERROR_NONE;
+    }
+    COND_RETURN_ERROR_MSG_INNER(descBuf == nullptr, RT_ERROR_INVALID_VALUE,
+        "fftsplus desc buffer is null, desc_buf_len=%" PRIu64 ".", descBufLen);
+    COND_RETURN_ERROR_MSG_INNER((descBufLen % CONTEXT_LEN) != 0U, RT_ERROR_INVALID_VALUE,
+        "fftsplus desc buffer length is invalid, desc_buf_len=%" PRIu64 ".", descBufLen);
+
+    const uint32_t contextNum = static_cast<uint32_t>(descBufLen / CONTEXT_LEN);
+    const auto * const contextBuf = static_cast<const uint8_t *>(descBuf);
+    for (uint32_t i = 0U; i < contextNum; ++i) {
+        const auto * const context =
+            reinterpret_cast<const rtFftsPlusComCtx_t *>(contextBuf + (static_cast<uint64_t>(i) * CONTEXT_LEN));
+        COND_RETURN_ERROR_MSG_INNER(context->contextType == RT_CTX_TYPE_DSA, RT_ERROR_FEATURE_NOT_SUPPORT,
+            "fftsplus dsa context is not supported after dsa stream deletion, context_id=%u.", i);
+    }
+    return RT_ERROR_NONE;
+}
+
+rtError_t CheckFftsPlusDsaContextFromDevice(TaskInfo *taskInfo, const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo)
+{
+    FftsPlusTaskInfo * const fftsPlusTask = &taskInfo->u.fftsPlusTask;
+    if (fftsPlusTask->descBufLen == 0U) {
+        return RT_ERROR_NONE;
+    }
+    COND_RETURN_ERROR_MSG_INNER(fftsPlusTaskInfo->descBuf == nullptr, RT_ERROR_INVALID_VALUE,
+        "fftsplus device desc buffer is null, desc_buf_len=%" PRIu64 ".", fftsPlusTask->descBufLen);
+
+    std::vector<uint8_t> hostDesc(static_cast<size_t>(fftsPlusTask->descBufLen));
+    const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemCopySync(hostDesc.data(), fftsPlusTask->descBufLen,
+        fftsPlusTaskInfo->descBuf, fftsPlusTask->descBufLen, RT_MEMCPY_DEVICE_TO_HOST);
+    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
+        "copy fftsplus device desc to host failed, retCode=%#x, desc_buf_len=%" PRIu64 ".",
+        error, fftsPlusTask->descBufLen);
+    return CheckFftsPlusDsaContext(hostDesc.data(), fftsPlusTask->descBufLen);
+}
 } // namespace 
 
 constexpr const uint16_t STARS_DATADUMP_LOADINFO_END_BITMAP = 0x20U;
@@ -177,8 +216,7 @@ rtError_t FillFftsPlusSqe(TaskInfo* taskInfo, const void * const devMem)
             timeoutConfig, fftsPlusTask->fftsSqe.timeout, fftsPlusTask->fftsSqe.subType);
     }
 
-    const Stream *dsaStm = taskInfo->stream->Device_()->TsFFtsDsaStream_();
-    fftsPlusTask->fftsSqe.dsaSqId = static_cast<uint16_t>((dsaStm != nullptr) ? dsaStm->GetSqId() : 0U);
+    fftsPlusTask->fftsSqe.dsaSqId = 0U;
 
     const uint64_t stackPhyBase =
         static_cast<uint64_t>(reinterpret_cast<uintptr_t>(device->GetStackPhyBase32k()));
@@ -354,6 +392,8 @@ rtError_t FftsPlusTaskInit(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t * cons
     fftsPlusTask->descBufLen = fftsPlusTaskInfo->descBufLen;
     error = RT_ERROR_INVALID_VALUE;
     if (descAddrType == RT_FFTS_PLUS_CTX_DESC_ADDR_TYPE_HOST) {
+        error = CheckFftsPlusDsaContext(fftsPlusTaskInfo->descBuf, fftsPlusTask->descBufLen);
+        COND_PROC(error != RT_ERROR_NONE, return error);
         if ((taskInfo->stream->Device_() != nullptr) &&
             (taskInfo->stream->Device_()->ArgLoader_() != nullptr) &&
             (taskInfo->stream->Device_()->ArgLoader_()->CheckPcieBar()) &&
@@ -367,6 +407,8 @@ rtError_t FftsPlusTaskInit(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t * cons
         COND_PROC(error != RT_ERROR_NONE, return error);
         error = FillFftsPlusSqe(taskInfo, fftsPlusTask->descAlignBuf);
     } else if (descAddrType == RT_FFTS_PLUS_CTX_DESC_ADDR_TYPE_DEVICE) {
+        error = CheckFftsPlusDsaContextFromDevice(taskInfo, fftsPlusTaskInfo);
+        COND_PROC(error != RT_ERROR_NONE, return error);
         fftsPlusTask->descAlignBuf = const_cast<void *>(fftsPlusTaskInfo->descBuf);
         RT_LOG(RT_LOG_INFO, "stream_id=%d, task_id=%u, Device addr:descAlignBuf=%" PRIu64 ", descBufLen=%" PRIu64 ".",
             taskInfo->stream->Id_(), taskInfo->id, fftsPlusTask->descAlignBuf, fftsPlusTask->descBufLen);

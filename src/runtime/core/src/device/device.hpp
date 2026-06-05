@@ -206,7 +206,6 @@ public:
     virtual ArgLoader *ArgLoader_() const = 0;
     virtual UbArgLoader *UbArgLoaderPtr() const = 0;
     virtual Stream *PrimaryStream_() const = 0;
-    virtual Stream *TsFFtsDsaStream_() const = 0;
     virtual Stream *CtrlStream_() const = 0;
     virtual uint32_t Id_() const = 0;
     virtual uint16_t GetTsdQos() const = 0;

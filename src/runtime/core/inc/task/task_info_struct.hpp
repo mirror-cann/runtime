@@ -142,11 +142,6 @@ struct ProfilingEnableTaskInfo {
     uint8_t reserved : 4; // reserved 4 bits
 };
 
-struct AllocDsaAddrInfoTaskInfo {
-    uint16_t sqId;
-    uint16_t rev;
-};
-
 struct ProfilingDisableTaskInfo {
     uint64_t pid;
     uint8_t isRtsProfEn;

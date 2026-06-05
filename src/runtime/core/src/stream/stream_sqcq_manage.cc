@@ -233,9 +233,6 @@ rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream * const newStm)
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     rtStreamInfoExMsg_t infoEx{};
     uint32_t drvFlag = (TSDRV_FLAG_SPECIFIED_SQ_ID | TSDRV_FLAG_SPECIFIED_CQ_ID);
-    if (newStm->GetTsSqAllocType() == SQ_ALLOC_TYPE_TS_FFTS_DSA) {
-        drvFlag |= TSDRV_FLAG_ONLY_SQCQ_ID;
-    }
     rtError_t error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(), device_->DevGetTsId(), drvFlag,
         &sqId, &cqId, info, sizeof(info), RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, retCode=%#x.", error);
@@ -244,19 +241,17 @@ rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream * const newStm)
         "stream_id=%u, sqId=%u, cqId=%u, tmp_sq_id=%u, tmp_cq_id=%u.",
         streamId, newStm->GetSqId(), newStm->GetCqId(), sqId, cqId);
 
-    if (newStm->GetTsSqAllocType() != SQ_ALLOC_TYPE_TS_FFTS_DSA) {
-        drvFlag = TSDRV_FLAG_SPECIFIED_CQ_ID;
-        error = device_->Driver_()->LogicCqAllocateV2(
-            device_->Id_(), device_->DevGetTsId(), streamId, logicCqId, newStm->IsBindDvppGrp(), drvFlag);
-        COND_RETURN_ERROR(((error != RT_ERROR_NONE) || (newStm->GetLogicalCqId() != logicCqId)), error,
-            "LogicCqAllocateV2 fail, stream_id=%u, logicCqId=%u, tmpLogicCqId=%u, retCode=%d.",
-            streamId, newStm->GetLogicalCqId(), logicCqId, error);
- 
-        error = device_->Driver_()->StreamBindLogicCq(device_->Id_(), device_->DevGetTsId(), streamId, logicCqId);
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-            "StreamBindLogicCq failed, streamId=%d, deviceId=%u, sqId=%u, logicCqId=%u, ret=%d.",
-            streamId, device_->Id_(), newStm->GetSqId(), logicCqId, error);
-    }
+    drvFlag = TSDRV_FLAG_SPECIFIED_CQ_ID;
+    error = device_->Driver_()->LogicCqAllocateV2(
+        device_->Id_(), device_->DevGetTsId(), streamId, logicCqId, newStm->IsBindDvppGrp(), drvFlag);
+    COND_RETURN_ERROR(((error != RT_ERROR_NONE) || (newStm->GetLogicalCqId() != logicCqId)), error,
+        "LogicCqAllocateV2 fail, stream_id=%u, logicCqId=%u, tmpLogicCqId=%u, retCode=%d.",
+        streamId, newStm->GetLogicalCqId(), logicCqId, error);
+
+    error = device_->Driver_()->StreamBindLogicCq(device_->Id_(), device_->DevGetTsId(), streamId, logicCqId);
+    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
+        "StreamBindLogicCq failed, streamId=%d, deviceId=%u, sqId=%u, logicCqId=%u, ret=%d.",
+        streamId, device_->Id_(), newStm->GetSqId(), logicCqId, error);
 
     RT_LOG(RT_LOG_DEBUG, "ReAllocSqCqId sq cq success: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, logicCqId=%u.",
            device_->Id_(), streamId, sqId, cqId, logicCqId);
@@ -285,9 +280,6 @@ rtError_t StreamSqCqManage::ReAllocDavidSqCqId(const Stream * const stream)
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     FillStreamInfoEx(stream, infoEx);
     uint32_t drvFlag = (TSDRV_FLAG_SPECIFIED_SQ_ID | TSDRV_FLAG_SPECIFIED_CQ_ID);
-    if (stream->GetTsSqAllocType() == SQ_ALLOC_TYPE_TS_FFTS_DSA) {
-        drvFlag |= TSDRV_FLAG_ONLY_SQCQ_ID;
-    }
     rtError_t error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(), device_->DevGetTsId(), drvFlag,
         &sqId, &cqId, info, sizeof(info), RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, ret=%#x.", error);

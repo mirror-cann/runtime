@@ -70,31 +70,6 @@ static void DoCompleteSuccessForMaintenanceTask(TaskInfo * const taskInfo, const
 }
 #endif
 
-#if F_DESC("AllocDsaAddrTask")
-static void ConstructSqeForAllocDsaAddrTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
-{
-    AllocDsaAddrInfoTaskInfo *dsaTaskInfo = &(taskInfo->u.allocDsaAddrTask);
-    Stream *const stm = taskInfo->stream;
-
-    RtStarsPhSqe *const sqe = &(command->phSqe);
-    sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
-    sqe->ie = 0U;
-    sqe->pre_p = 1U;
-    sqe->post_p = 0U;
-    sqe->wr_cqe = 1U;
-    sqe->res0 = 0U;
-    sqe->rt_streamID = static_cast<uint16_t>(stm->Id_());
-    sqe->task_id = taskInfo->id;
-    sqe->task_type = TS_TASK_TYPE_ALLOC_DSA_ADDR;
-    sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
-    sqe->u.allocDsaAddrInfo.sq_id = dsaTaskInfo->sqId;
-    PrintSqe(command, "AllocDsaAddrTask");
-    RT_LOG(RT_LOG_INFO, "Send AllocDsaAddrTask succ, "
-        "sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, task_type=%u, dsa_sq_id=%u.",
-        sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, sqe->task_type, dsaTaskInfo->sqId);
-}
-#endif
-
 #if F_DESC("GetDevMsgTask")
 static void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
 {
@@ -181,16 +156,6 @@ static bool MaintenanceTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    TaskFuncSingle allocDsaAddrFuncs = {
-        .toCommandFunc = nullptr,
-        .toSqeFunc = &ConstructSqeForAllocDsaAddrTask,
-        .doCompleteSuccFunc = &DoCompleteSuccess,
-        .taskUnInitFunc = nullptr,
-        .waitAsyncCpCompleteFunc = nullptr,
-        .printErrorInfoFunc = &PrintErrorInfoCommon,
-        .setResultFunc = &SetResultCommon,
-        .setStarsResultFunc = &SetStarsResultCommon,
-    };
     TaskFuncSingle getDeviceMsgFuncs = {
         .toCommandFunc = &ToCommandBodyForGetDevMsgTask,
         .toSqeFunc = &ConstructSqeForGetDevMsgTask,
@@ -215,7 +180,6 @@ static bool MaintenanceTaskRegister()
     const auto& chips = GetV100Chips();
     for (auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MAINTENANCE, maintenanceFuncs);
-        RegTaskFunc(chip, TS_TASK_TYPE_ALLOC_DSA_ADDR, allocDsaAddrFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_GET_DEVICE_MSG, getDeviceMsgFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_GET_STARS_VERSION, getStarsVersionFuncs);
     }

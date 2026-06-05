@@ -1981,24 +1981,6 @@ TEST_F(DeviceTest, device_check_tsch_capability)
     delete dev;
 }
 #endif
-TEST_F(DeviceTest, TschStreamTest)
-{
-    RawDevice dev(0);
-    dev.Init();
-    rtError_t ret = dev.TschStreamAllocDsaAddr();
-    EXPECT_EQ(ret, RT_ERROR_NONE);
-    dev.chipType_ = static_cast<rtChipType_t>(PLAT_GET_CHIP(static_cast<uint64_t>(0x500)));
-    
-    MOCKER_CPP_VIRTUAL(*(dev.Driver_()),&Driver::LogicCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(*(dev.Driver_()),&Driver::CtrlSqCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    dev.TschStreamSetup();
-    dev.TschStreamAllocDsaAddr();
-}
-
 TEST_F(DeviceTest, DevInvalidParamTest)
 {
     RawDevice dev(0);

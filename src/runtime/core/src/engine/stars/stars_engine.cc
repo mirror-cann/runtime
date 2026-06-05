@@ -1288,7 +1288,6 @@ rtError_t StarsEngine::SubmitSend(TaskInfo * const workTask, uint32_t * const fl
     }
 
     if ((workTask->type == TS_TASK_TYPE_MAINTENANCE) ||
-        (workTask->type == TS_TASK_TYPE_ALLOC_DSA_ADDR) ||
         (workTask->type == TS_TASK_TYPE_GET_STARS_VERSION)) {
         isNeedStreamSync = true;
     }

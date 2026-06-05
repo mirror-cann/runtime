@@ -82,7 +82,6 @@ class CaptureModel;
 
 typedef enum TagtsSqAllocType {
     SQ_ALLOC_TYPE_RT_DEFAULT = 0,
-    SQ_ALLOC_TYPE_TS_FFTS_DSA = 1,
 } RtSqAllocType;
 
 typedef enum TagStreamFailureMode {
@@ -1016,11 +1015,6 @@ public:
 
     virtual rtError_t CreateStreamTaskRes(void);
     void ReleaseStreamTaskRes(void);
-    virtual rtError_t AllocDsaSqAddr() const
-    {
-        return RT_ERROR_NONE;
-    }
-
     void SetMaxTaskId(const bool isDisableThread);
 
     uint16_t GetMaxTaskId() const

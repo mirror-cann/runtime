@@ -135,7 +135,6 @@ set(runtimeut_common_src_stream_list
     ${TOP_DIR}/src/runtime/core/src/stream/stream.cc
     ${TOP_DIR}/src/runtime/core/src/stream/ctrl_stream.cc
     ${TOP_DIR}/src/runtime/core/src/stream/coprocessor_stream.cc
-    ${TOP_DIR}/src/runtime/core/src/stream/tsch_stream.cc
     ${TOP_DIR}/src/runtime/core/src/stream/stream_factory.cc
 )
 

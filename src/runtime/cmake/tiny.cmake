@@ -121,7 +121,6 @@ set(libruntime_stream_common_src_files
     ${RUNTIME_CORE_DIR}/src/stream/stream.cc
     ${RUNTIME_CORE_DIR}/src/stream/ctrl_stream.cc
     ${RUNTIME_CORE_DIR}/src/stream/coprocessor_stream.cc
-    ${RUNTIME_CORE_DIR}/src/stream/tsch_stream.cc
     ${RUNTIME_CORE_DIR}/src/stream/stream_factory.cc
 )
 

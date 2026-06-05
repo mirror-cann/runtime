@@ -347,14 +347,7 @@ void FillFftsMixSqeForDavinciTask(TaskInfo* taskInfo, rtStarsSqe_t *const comman
     sqe->fftsType = RT_FFTS_PLUS_TYPE;
     sqe->kernelCredit = static_cast<uint8_t>(GetAicoreKernelCredit(aicTaskInfo->timeout));
     FillFftsPlusMixSqeSubtask(aicTaskInfo, &sqe->subType);
-    const Stream *dsaStm = stm->Device_()->TsFFtsDsaStream_();
-
-    uint16_t dsaSqId = 0U;
-    if (dsaStm != nullptr) {
-        dsaSqId = static_cast<uint16_t>(dsaStm->GetSqId());
-    }
-
-    sqe->dsaSqId = dsaSqId;
+    sqe->dsaSqId = 0U;
     sqe->totalContextNum = 1U;
     sqe->readyContextNum = 1U;
     sqe->preloadContextNum = 1U;

@@ -2,7 +2,7 @@
 
 ## 1. 模块概述
 
-- **功能介绍**：Stream 模块负责管理任务队列，实现异步执行和同步机制。通过 SQ（Submission Queue）和 CQ（Completion Queue）机制与硬件交互，支持多种流类型（普通流、控制流、协处理器流、TSCH流、David流、XPU流）。
+- **功能介绍**：Stream 模块负责管理任务队列，实现异步执行和同步机制。通过 SQ（Submission Queue）和 CQ（Completion Queue）机制与硬件交互，支持多种流类型（普通流、控制流、协处理器流、David流、XPU流）。
 - **设计目标**：
   - 提供高效的异步任务执行机制
   - 支持多种流类型适配不同场景
@@ -143,7 +143,6 @@ graph TB
     subgraph Derivatives["Stream 派生类"]
         CtrlStream["CtrlStream<br/>控制流"]
         CoprocessorStream["CoprocessorStream<br/>协处理器流"]
-        TschStream["TschStream<br/>TS调度流"]
         DavidStream["DavidStream<br/>David架构流"]
         XpuStream["XpuStream<br/>XPU架构流"]
     end
@@ -449,13 +448,6 @@ classDiagram
         +Setup() rtError_t
     }
     
-    class TschStream {
-        +Setup() rtError_t
-        +GetTsSqAllocType() RtSqAllocType
-        +AllocDsaSqAddr() rtError_t
-        -RtSqAllocType type_
-    }
-    
     class DavidStream {
         +Setup() rtError_t
         +StarsAddTaskToStream() rtError_t
@@ -476,7 +468,6 @@ classDiagram
     NoCopy <|-- DvppGrp
     Stream <|-- CtrlStream
     Stream <|-- CoprocessorStream
-    Stream <|-- TschStream
     Stream <|-- DavidStream
     Stream <|-- XpuStream
     Stream --> DvppGrp : 关联
@@ -488,7 +479,6 @@ classDiagram
 |------|---------|------|---------|
 | CtrlStream | Stream | 控制流，固定SQ深度1022 | isCtrlStream_=true |
 | CoprocessorStream | Stream | 协处理器流，远程处理 | TSDRV_FLAG_REMOTE_ID |
-| TschStream | Stream | TS调度流，DSA支持 | TSDRV_FLAG_ONLY_SQCQ_ID |
 | DavidStream | Stream | David/Stars架构流 | 重写大量方法 |
 | XpuStream | Stream | XPU架构流 | 重写核心方法 |
 | DvppGrp | NoCopy | DVPP组管理（非Stream派生） | 提供logicCq |
@@ -619,9 +609,8 @@ classDiagram
 | SQ/CQ 管理 | `src/runtime/core/src/stream/stream_sqcq_manage.hpp` | SQ/CQ ID 分配与复用 |
 | 控制流 | `src/runtime/core/src/stream/ctrl_stream.hpp` | CtrlStream 定义 |
 | 协处理器流 | `src/runtime/core/src/stream/coprocessor_stream.hpp` | CoprocessorStream |
-| TS调度流 | `src/runtime/core/src/stream/tsch_stream.hpp` | TschStream，DSA支持 |
 | David流 | `src/runtime/core/src/stream/stream_david.hpp` | DavidStream，Stars架构 |
-| XPU流 | `src/runtime/core/src/stream/stream_xpu.hpp` | XpuStream |
+| XPU流 | `src/runtime/feature/xpu/stream_xpu.hpp` | XpuStream |
 | DVPP组 | `src/runtime/core/inc/stream/dvpp_grp.hpp` | DvppGrp（非Stream派生） |
 | 流创建分发 | `src/runtime/core/src/stream/v200/stream_creator_c.cc` | CreateStreamAndGet 实现 |
 

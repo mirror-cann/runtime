@@ -22,7 +22,6 @@
 #include "task_res.hpp"
 #include "ctrl_stream.hpp"
 #include "coprocessor_stream.hpp"
-#include "tsch_stream.hpp"
 #include "engine_stream_observer.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "scheduler.hpp"
@@ -1477,21 +1476,6 @@ TEST_F(StreamTest, process_task_test)
 }
 
 
-TEST_F(StreamTest, tsch_stream_test)
-{
-    RawDevice *device = new RawDevice(0);
-    device->Init();
-
-    TschStream *tsStream = new TschStream(device, 0, SQ_ALLOC_TYPE_TS_FFTS_DSA);
-    rtError_t error = tsStream->Setup();
-    EXPECT_EQ(error, RT_ERROR_NONE);
-    error = tsStream->AllocDsaSqAddr();
-    // EXPECT_EQ(error, RT_ERROR_NONE);
-
-    delete tsStream;
-    delete device;
-}
-
 TEST_F(StreamTest, StreamSetupTest)
 {
     Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
@@ -1503,20 +1487,6 @@ TEST_F(StreamTest, StreamSetupTest)
 
     delete stream;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
-}
-
-TEST_F(StreamTest, tsch_stream_error_test)
-{
-    RawDevice *device = new RawDevice(0);
-    device->Init();
-
-    MOCKER_CPP(&StreamSqCqManage::AllocStreamSqCq).stubs().will(returnValue(RT_ERROR_SQ_NO_EXIST_SQ_TO_REUSE));
-    TschStream *tsStream = new TschStream(device, 0, SQ_ALLOC_TYPE_TS_FFTS_DSA);
-    rtError_t error = tsStream->Setup();
-    EXPECT_EQ(error, RT_ERROR_SQ_NO_EXIST_SQ_TO_REUSE);
-
-    delete tsStream;
-    delete device;
 }
 
 TEST_F(StreamTest, stream_setup_fail)

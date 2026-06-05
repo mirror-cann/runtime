@@ -430,7 +430,7 @@ TEST_F(EngineTest, engine_ReportTimeoutProc)
 
 TEST_F(EngineTest, engine_GetKernelNameForAiCoreorAiv)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device *device = device_;
     const void *stubFunc = (void *)0x03;
     const char *stubName = "efg";
     Kernel *kernel = NULL;
@@ -446,23 +446,23 @@ TEST_F(EngineTest, engine_GetKernelNameForAiCoreorAiv)
         .will(ignoreReturnValue());
     kernel = new (std::nothrow) Kernel("efg", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
 
     std::unique_ptr<DirectHwtsEngine> aicpuErrObj = std::make_unique<DirectHwtsEngine>(device_);
-    Stream *stm = new Stream(device, 1);
-    stm->streamId_ = 1;
+    Stream *stm = stream_;
     rtError_t errCode = RT_ERROR_NONE;
     TaskInfo * const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
 
     AicTaskInit(kernTask, RT_KERNEL_ATTR_TYPE_CUBE, (uint16_t)1, nullptr);
     EXPECT_EQ(kernTask->type, TS_TASK_TYPE_KERNEL_AICORE);
     kernTask->u.aicTaskInfo.kernel = kernel;
+    MOCKER_CPP(&TaskFactory::GetTask)
+        .stubs()
+        .with(stm->Id_(), kernTask->id)
+        .will(returnValue(kernTask));
     std::string kernelNameStr = aicpuErrObj->GetKernelNameForAiCoreorAiv(stm->Id_(), kernTask->id);
     EXPECT_STREQ("efg", kernelNameStr.c_str());
     device->GetTaskFactory()->Recycle(kernTask);
-    DELETE_O(stm);
     DELETE_O(kernel);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
 }
 
 rtError_t StubQueryCqShm1(RawDevice *device, uint32_t streamId, rtShmQuery_t &shmInfo)

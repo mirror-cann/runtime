@@ -169,11 +169,6 @@ struct RtStarsMaintaince {
     uint16_t target_id;
     uint8_t  reserved[44];
 };
-struct RtAllocDsaAddr {
-    uint16_t sq_id;
-    uint8_t  reserved[46];
-};
-
 struct RtMdlTaskUpdate {
     uint64_t descBufOffset; // rtFftsPlusTaskInfo_t-->descBuf
     uint64_t tilingKeyOffset;
@@ -278,7 +273,6 @@ struct RtStarsPhSqe {
         RtStreamOverflowSwitch stream_overflow_switch_info;
         RtGetDevMsg get_dev_msg_info;
         RtStreamSetTag stream_set_tag_info;
-        RtAllocDsaAddr allocDsaAddrInfo;
         RtDebugStatus  debugStatusInfo;
         RtFlipTaskTag flip_task_info;
         RtUpdateAddrTaskTag updateAddrInfo;

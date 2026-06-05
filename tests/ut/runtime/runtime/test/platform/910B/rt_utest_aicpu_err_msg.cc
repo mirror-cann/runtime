@@ -24,6 +24,16 @@
 using namespace testing;
 using namespace cce::runtime;
 
+namespace {
+void DeleteFakeStream(Stream * const stream)
+{
+    if (stream != nullptr) {
+        stream->streamId_ = -1;
+    }
+    delete stream;
+}
+}
+
 class CloudV2AicpuErrMsgTest : public testing::Test {
 protected:
     static void SetUpTestCase()
@@ -352,7 +362,7 @@ TEST_F(CloudV2AicpuErrMsgTest, RecordErrMsg_test)
     aicoreErrMsg->taskId = kernTask->id;
 
     device->GetTaskFactory()->Recycle(kernTask);
-    DELETE_O(stm);
+    DeleteFakeStream(stm);
     DELETE_O(aicpuErrObj);
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
 }
@@ -431,7 +441,7 @@ TEST_F(CloudV2AicpuErrMsgTest, FaultForAiCore1)
     EXPECT_EQ(exceptFlag2, true);
 
     device->GetTaskFactory()->Recycle(kernTask);
-    DELETE_O(stm);
+    DeleteFakeStream(stm);
     DELETE_O(kernel);
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
 }

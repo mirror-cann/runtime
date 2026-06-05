@@ -19,8 +19,6 @@ rtError_t MaintenanceTaskInit(TaskInfo * const taskInfo, const MtType type, cons
                               bool flag, const uint32_t idType = UINT32_MAX);
 void ToCommandBodyForMaintenanceTask(TaskInfo * const taskInfo, rtCommand_t *const command);
 
-rtError_t AllocDsaAddrTaskInit(TaskInfo * const taskInfo, const uint16_t sqId);
-
 rtError_t GetDevMsgTaskInit(TaskInfo* taskInfo, const void *const devMemAddr,
     const uint32_t devMemSize, const rtGetDevMsgType_t messageType);
 void ToCommandBodyForGetDevMsgTask(TaskInfo* taskInfo, rtCommand_t * const command);

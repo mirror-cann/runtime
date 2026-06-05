@@ -15,7 +15,6 @@
 #include "uma_arg_loader.hpp"
 #include "runtime.hpp"
 #include "ctrl_stream.hpp"
-#include "tsch_stream.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "program.hpp"
 #include "module.hpp"
@@ -55,7 +54,6 @@ constexpr uint32_t WAIT_PRINTF_THREAD_TIME_MAX = 1000U;
 RawDevice::RawDevice(const uint32_t devId)
     : GroupDevice(),
       primaryStream_(nullptr),
-      tsFftsDsaStream_(nullptr),
       ctrlStream_(nullptr),
       argLoader_(nullptr),
       ubArgLoader_(nullptr),
@@ -113,7 +111,6 @@ RawDevice::~RawDevice() noexcept
     DeleteStream(ctrlStream_);
     DELETE_O(ctrlRes_);
     DeleteStream(primaryStream_);
-    DeleteStream(tsFftsDsaStream_);
     ctrlSQ_.reset();
     DELETE_O(argLoader_);
     DELETE_O(ubArgLoader_);
@@ -226,13 +223,6 @@ rtError_t RawDevice::InitRawDriver()
 rtError_t RawDevice::ResourceRestore()
 {
     rtError_t ret = RT_ERROR_NONE;
-    // ts ffts stream不在ctx上管理，需要随device恢复
-    if (tsFftsDsaStream_ != nullptr) {
-        ret = tsFftsDsaStream_->ReAllocStreamId();
-        ERROR_RETURN(ret, "Realloc dsaStream id %d failed, deviceId=%u, ret=%#x.",
-            tsFftsDsaStream_->Id_(), deviceId_, ret);
-    }
-
     ret = GetStarsVersion();
     ERROR_RETURN(ret, "GetStarsVersion failed, ret=%#x, deviceId=%u", ret, deviceId_);
 
@@ -240,12 +230,6 @@ rtError_t RawDevice::ResourceRestore()
         ret = deviceErrorProc_->RingBufferRestore();
     }
     ERROR_RETURN(ret, "RingBuffer restore failed, ret=%#x, deviceId=%u", ret, deviceId_);
-
-    ret = TschStreamAllocDsaAddr();
-    if (ret != RT_ERROR_NONE) {
-        ret = TschStreamAllocDsaAddr();
-    }
-    ERROR_RETURN(ret, "TschStreamAllocDsaAddr failed, ret=%#x, deviceId=%u", ret, deviceId_);
 
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_DCACHE_LOCK_DOT_ALLOC_STACK)) {
         if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_16K_STACK)) {
@@ -1046,9 +1030,6 @@ rtError_t RawDevice::Start()
     RT_LOG(RT_LOG_INFO, "new primary Stream ok, Runtime_alloc_size %zu(bytes), stream_id=%d.",
         sizeof(Stream), primaryStream_->Id_());
 
-    error = TschStreamSetup();
-    ERROR_GOTO(error, ERROR_FREE, "Tsch stream setup failed, retCode=%#x.", static_cast<uint32_t>(error));
-
     if (IsStarsPlatform()) {
         error = AllocStackPhyBase();
         ERROR_GOTO_MSG_INNER(error, ERROR_FREE, "Failed to allocate stack phy, retCode=%#x.", static_cast<uint32_t>(error));
@@ -1108,11 +1089,6 @@ rtError_t RawDevice::Start()
             sizeof(AicpuErrMsg));
         errMsgObj_->SetErrMsgBufAddr();
     }
-    error = TschStreamAllocDsaAddr();
-    if (error != RT_ERROR_NONE) {
-        error = TschStreamAllocDsaAddr();
-    }
-    ERROR_GOTO_MSG_INNER(error, ERROR_STOP, "Failed to allocate dsa addr, retCode=%#x.", static_cast<uint32_t>(error));
 #else
     Runtime::Instance()->RtTimeoutConfigInit();
 #endif
@@ -1843,41 +1819,6 @@ rtError_t RawDevice::FreeEventIdFromDrv(const int32_t eventId, const uint32_t ev
 ERROR_RECYCLE:
     (void)GetTaskFactory()->Recycle(tsk);
 ERROR_RETURN:
-    return error;
-}
-
-rtError_t RawDevice::TschStreamSetup()
-{
-    if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_RAND_GENERATOR)) {
-        return RT_ERROR_NONE;
-    }
-
-    COND_RETURN_INFO(tsFftsDsaStream_ != nullptr, RT_ERROR_NONE, "there has ffts dsa stream");
-
-    tsFftsDsaStream_ = new (std::nothrow) TschStream(this, 0U, SQ_ALLOC_TYPE_TS_FFTS_DSA);
-    COND_RETURN_AND_MSG_OUTER(tsFftsDsaStream_ == nullptr, RT_ERROR_STREAM_NEW,
-        ErrorCode::EE1013, sizeof(TschStream));
-
-    const rtError_t error = tsFftsDsaStream_->Setup();
-    if (error != RT_ERROR_NONE) {
-        DeleteStream(tsFftsDsaStream_);
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Ffts dsa stream setup failed.");
-        return error;
-    }
-    RT_LOG(RT_LOG_INFO, "Tsch setup ffts dsa stream ok, stream_id=%d", tsFftsDsaStream_->Id_());
-    return RT_ERROR_NONE;
-}
-
-rtError_t RawDevice::TschStreamAllocDsaAddr() const
-{
-    if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_RAND_GENERATOR)) {
-        return RT_ERROR_NONE;
-    }
-
-    COND_RETURN_INFO(tsFftsDsaStream_ == nullptr, RT_ERROR_NONE, "there has ffts dsa stream");
-    const rtError_t error = tsFftsDsaStream_->AllocDsaSqAddr();
-
-    RT_LOG(RT_LOG_INFO, "send alloc dsa sq task, stream_id=%d, retCode:%d", tsFftsDsaStream_->Id_(), error);
     return error;
 }
 

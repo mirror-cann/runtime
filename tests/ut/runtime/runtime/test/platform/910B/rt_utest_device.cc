@@ -36,6 +36,7 @@
 #undef protected
 #include "rdma_task.h"
 #include "platform/platform_info.h"
+#include <vector>
 
 using namespace testing;
 using namespace cce::runtime;
@@ -257,6 +258,14 @@ uint16_t CloudV2DeviceTest::g_tId = 0;
 uint32_t CloudV2DeviceTest::g_printType = 0;
 uint32_t CloudV2DeviceTest::g_reportElementIndex = 0;
 
+static void DeleteFakeStream(Stream * const stream)
+{
+    if (stream != nullptr) {
+        stream->streamId_ = -1;
+    }
+    delete stream;
+}
+
 TEST_F(CloudV2DeviceTest, STARS_FFTSPLUS_ERROR_PROC)
 {
     Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
@@ -319,7 +328,7 @@ TEST_F(CloudV2DeviceTest, STARS_FFTSPLUS_ERROR_PROC)
     }
 
     (void)device->GetTaskFactory()->Recycle(tsk);
-    delete stm;
+    DeleteFakeStream(stm);
     delete errorProc;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
     Runtime::Instance()->SetDisableThread(oldDisableThread);
@@ -354,37 +363,38 @@ TEST_F(CloudV2DeviceTest, PrintStreamTimeoutSnapshotInfo_test)
 
     Stream *stm = new Stream(device, 1);
     stm->streamId_ = 1;
+    std::vector<TaskInfo *> tasks;
     g_printType = 2;
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, error));
     device->SetSnapshotFlag(true);
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_EVENT_RECORD, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_EVENT_RECORD, error));
     device->SetSnapshotFlag(true);
     g_printType = 3;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_STREAM_WAIT_EVENT, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_STREAM_WAIT_EVENT, error));
     device->SetSnapshotFlag(true);
     g_printType = 4;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_NOTIFY_RECORD, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_NOTIFY_RECORD, error));
     device->SetSnapshotFlag(true);
     g_printType = 5;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_NOTIFY_WAIT, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_NOTIFY_WAIT, error));
     device->SetSnapshotFlag(true);
     g_printType = 6;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICPU, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICPU, error));
     device->SetSnapshotFlag(true);
     g_printType = 7;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
@@ -397,7 +407,7 @@ TEST_F(CloudV2DeviceTest, PrintStreamTimeoutSnapshotInfo_test)
     errorProc->deviceRingBufferAddr_ = hostAddr.get();
     EXPECT_NE(errorProc->deviceRingBufferAddr_, nullptr);
 
-    device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICPU, error);
+    tasks.push_back(device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICPU, error));
     device->SetSnapshotFlag(true);
     g_printType = 7;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
@@ -405,8 +415,13 @@ TEST_F(CloudV2DeviceTest, PrintStreamTimeoutSnapshotInfo_test)
 
     error = errorProc->ProcCleanRingbuffer();
     errorProc->deviceRingBufferAddr_ = nullptr;
+    for (TaskInfo * const task : tasks) {
+        if (task != nullptr) {
+            (void)device->GetTaskFactory()->Recycle(task);
+        }
+    }
     delete errorProc;
-    delete stm;
+    DeleteFakeStream(stm);
     MOCKER_CPP(&Stream::StarsWaitForTask).stubs().will(returnValue(RT_ERROR_NONE));
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
 }
@@ -1662,7 +1677,7 @@ TEST_F(CloudV2DeviceTest, STARS_AicoreTimeoutDfx)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     (void)device->GetTaskFactory()->Recycle(tsk);
-    delete stm;
+    DeleteFakeStream(stm);
     delete errorProc;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
@@ -1714,7 +1729,7 @@ TEST_F(CloudV2DeviceTest, STARS_AicoreTimeoutDfx1)
     GlobalMockObject::verify();
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    delete stm;
+    DeleteFakeStream(stm);
     delete errorProc;
     DELETE_O(kernel);
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
@@ -1755,7 +1770,7 @@ TEST_F(CloudV2DeviceTest, STARS_AicoreTimeoutDfx2)
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
     GlobalMockObject::verify();
-    delete stm;
+    DeleteFakeStream(stm);
     delete errorProc;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
     auto error = rtDeviceReset(1);
@@ -1790,7 +1805,7 @@ TEST_F(CloudV2DeviceTest, STARS_AicoreTimeoutDfx3)
     rtError_t ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(&errorInfo, 0, device, errorProc);
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    delete stm;
+    DeleteFakeStream(stm);
     delete errorProc;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
     auto error = rtDeviceReset(1);
@@ -1868,7 +1883,7 @@ TEST_F(CloudV2DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus)
         .will(returnValue(&taskInfo));
     errorProc->ProcessStarsTimeoutDfxSlotInfo4FftsPlus(&errorInfo, device, 0);
     GlobalMockObject::verify();
-    delete stm;
+    DeleteFakeStream(stm);
     free(fftsPlusTaskInfo->descAlignBuf);
     delete errorProc;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
@@ -1916,7 +1931,7 @@ TEST_F(CloudV2DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus1)
         .will(returnValue(&taskInfo));
     errorProc->ProcessStarsTimeoutDfxSlotInfo4FftsPlus(&errorInfo, device, 0);
     GlobalMockObject::verify();
-    delete stm;
+    DeleteFakeStream(stm);
     free(fftsPlusTaskInfo->descAlignBuf);
     delete errorProc;
     ((Runtime *)Runtime::Instance())->DeviceRelease(device);
@@ -2455,23 +2470,6 @@ TEST_F(CloudV2DeviceTest, device_check_tsch_capability)
     delete dev;
 }
 #endif
-TEST_F(CloudV2DeviceTest, TschStreamTest)
-{
-    RawDevice dev(0);
-    dev.Init();
-    rtError_t ret = dev.TschStreamAllocDsaAddr();
-    EXPECT_EQ(ret, RT_ERROR_NONE);
-    dev.chipType_ = static_cast<rtChipType_t>(PLAT_GET_CHIP(static_cast<uint64_t>(0x500)));
-    MOCKER_CPP_VIRTUAL(*(dev.Driver_()),&Driver::LogicCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(*(dev.Driver_()),&Driver::CtrlSqCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    dev.TschStreamSetup();
-    dev.TschStreamAllocDsaAddr();
-}
-
 TEST_F(CloudV2DeviceTest, DevInvalidParamTest)
 {
     RawDevice dev(0);
