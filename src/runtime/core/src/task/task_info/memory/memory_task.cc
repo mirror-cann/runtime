@@ -798,7 +798,7 @@ void SetStarsResultForMemcpyAsyncTask(TaskInfo * const taskInfo, const rtLogicCq
     }
 }
 
-bool GetModuleIdByMemcpyAddr(Driver * const driver, void *memcpyAddr, uint32_t *moduleId)
+bool GetModuleIdByMemcpyAddr(Driver const * const driver, void *memcpyAddr, uint32_t *moduleId)
 {
     if (driver == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Get module id failed, driver is nullptr.");
@@ -811,7 +811,7 @@ bool GetModuleIdByMemcpyAddr(Driver * const driver, void *memcpyAddr, uint32_t *
     return true;
 }
 
-void PrintModuleIdProc(Driver * const driver, char_t * const errStr, void *src, void *dst, int32_t &countNum)
+void PrintModuleIdProc(Driver const * const driver, char_t * const errStr, void *src, void *dst, int32_t &countNum)
 {
     uint32_t srcModuleId = static_cast<uint32_t>(SVM_INVALID_MODULE_ID);
     uint32_t dstModuleId = static_cast<uint32_t>(SVM_INVALID_MODULE_ID);

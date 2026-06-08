@@ -2063,7 +2063,7 @@ rtError_t NpuDriver::CheckSupportPcieBarCopy(const uint32_t deviceId, uint32_t &
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId)
+rtError_t NpuDriver::GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) const
 {
     UNUSED(memcpyAddr);
     UNUSED(moduleId);

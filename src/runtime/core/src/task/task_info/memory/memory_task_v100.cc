@@ -440,8 +440,8 @@ void PrintAsyncPtrProc(Driver * const driver, char_t * const errStr, void *memcp
         countNum += snprintf_truncated_s(errStr + countNum,
             static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum),
             ", src_addr=%#" PRIx64 ", dst_addr=%#" PRIx64, addrInfo.src, addrInfo.dst);
-        PrintModuleIdProc(driver, errStr, reinterpret_cast<void *>(addrInfo.src),
-            reinterpret_cast<void *>(addrInfo.dst), countNum);
+        PrintModuleIdProc(driver, errStr, RtValueToPtr<void *>(addrInfo.src),
+            RtValueToPtr<void *>(addrInfo.dst), countNum);
     }
 }
 #endif

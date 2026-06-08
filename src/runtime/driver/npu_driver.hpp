@@ -666,7 +666,7 @@ public:
     drvError_t MemCopySyncAdapter(void * const dst, const uint64_t destMax, const void * const src,
         const uint64_t size, const rtMemcpyKind_t kind, const uint32_t devId) override;
     rtError_t ResourceReset(const uint32_t deviceId, const uint32_t tsId, drvIdType_t type) override;
-    rtError_t GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) override;
+    rtError_t GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) const override;
     static rtError_t Support1GHugePageCtrl();
     rtError_t SqArgsCopyWithUb(uint32_t devId, struct halSqTaskArgsInfo *sqArgs) override;
     rtError_t ResetSqCq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,

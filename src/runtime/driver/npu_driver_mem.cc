@@ -2567,7 +2567,7 @@ rtError_t NpuDriver::CheckSupportPcieBarCopy(const uint32_t deviceId, uint32_t &
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId)
+rtError_t NpuDriver::GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) const
 {
     size_t moduleidSize = 0U;
     const drvError_t drvRet = halMemCtl(static_cast<int32_t>(CTRL_TYPE_GET_ADDR_MODULE_ID), memcpyAddr, sizeof(uint64_t),

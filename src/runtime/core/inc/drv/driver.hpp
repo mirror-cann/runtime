@@ -649,7 +649,7 @@ public:
     virtual drvError_t MemCopySyncAdapter(void * const dst, const uint64_t destMax, const void * const src,
         const uint64_t size, const rtMemcpyKind_t kind, const uint32_t devId) = 0;
     virtual rtError_t ResourceReset(const uint32_t deviceId, const uint32_t tsId, drvIdType_t type) = 0;
-    virtual rtError_t GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) = 0;
+    virtual rtError_t GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) const = 0;
     virtual rtError_t SqArgsCopyWithUb(uint32_t devId, struct halSqTaskArgsInfo *sqArgs) = 0;
     virtual rtError_t ResetSqCq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, 
         const uint32_t streamFlag) = 0;
