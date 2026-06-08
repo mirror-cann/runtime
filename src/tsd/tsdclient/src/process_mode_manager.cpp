@@ -67,7 +67,7 @@ const std::map<std::string, std::vector<tsd::ChipType_t>> PKG_CHIP_SUPPORT_MAP =
     {"aicpu_hcomm.tar.gz", {tsd::CHIP_DC, tsd::CHIP_ASCEND_910B, tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}},
     {"cann-hcomm-compat.tar.gz", {tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}},
     {HCCD_PKG_NAME, {tsd::CHIP_ASCEND_910B}},
-    {"cann-tsch-compat.tar.gz", {tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}},
+    {"cann-tsch-compat.tar.gz", {}},
     {UDF_PKG_NAME, {tsd::CHIP_ASCEND_910B}},
     {HIXL_PKG_NAME, {tsd::CHIP_ASCEND_910B, tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}}
 };
@@ -2440,7 +2440,6 @@ bool ProcessModeManager::CompareHostDeviceCompatPluginVersion(const std::string 
     const PluginPkgVersion hostInfo = PackageProcessConfig::GetInstance()->GetHostPluginVersion(pkgPureName);
     const auto itDev = devicePluginVersions_.find(pkgPureName);
     const PluginPkgVersion deviceInfo = (itDev != devicePluginVersions_.end()) ? itDev->second : PluginPkgVersion{};
-
     if (deviceInfo.version.empty()) {
         TSD_RUN_INFO("device plugin pkg:%s version unavailable, fallback to checkcode compare",
                      pkgPureName.c_str());
