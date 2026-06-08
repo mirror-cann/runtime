@@ -692,7 +692,7 @@ public:
     DumpSessionManager() = default;
     ~DumpSessionManager() = default;
 
-    IDE_SESSION GetSession(int32_t hostPid, uint32_t devcieId);
+    IDE_SESSION GetSession(int32_t hostPid, uint32_t deviceId);
     IDE_SESSION ReacquireSession(int32_t hostPid, uint32_t deviceId);
     void CloseAllSessions();
     IDE_SESSION CreateIdeDumpSession(int32_t hostPid, uint32_t deviceId) const;

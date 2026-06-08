@@ -555,6 +555,7 @@ namespace AicpuSchedule {
         (void)Destroy();
         noThreadFlag_ = true;
         UpdateOrInsertStartFlag(deviceVec[0], false);
+        AicpuSchedule::DumpSessionManager::GetInstance().CloseAllSessions();
         AicpuSchedule::AicpuMonitor::GetInstance().StopMonitor();
         AicpuSchedule::AicpuEventManager::GetInstance().SetRunningFlag(false);
         AicpuSchedule::AicpuSdPeriodStatistic::GetInstance().StopStatistic();

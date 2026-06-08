@@ -89,6 +89,12 @@ TEST_F(HostCpuSchedulerStubUt, HostCpuSchedulerStubUtSuccess)
     TsdDestroy(0, type, 0, 0);
     StartupResponse(0, type, 0, 0);
     WaitForShutDown(0);
+
+    AicpuSchedule::DumpSessionManager::GetInstance().GetSession(0, 0);
+    AicpuSchedule::DumpSessionManager::GetInstance().ReacquireSession(0, 0);
+    AicpuSchedule::DumpSessionManager::GetInstance().CloseAllSessions();
+    AicpuSchedule::DumpSessionManager::GetInstance().CreateIdeDumpSession(0, 0);
+
     AicpuSchedule::OpDumpTaskManager::GetInstance().ClearResource();
     AicpuSchedule::OpDumpTaskManager::GetInstance().DumpOpInfo(0, 0, 0, 0);
     AicpuSchedule::OpDumpTaskManager::GetInstance().DumpOpInfoForUnknowShape(0, 0);

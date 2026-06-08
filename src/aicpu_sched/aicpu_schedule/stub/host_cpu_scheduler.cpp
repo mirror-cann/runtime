@@ -252,6 +252,41 @@ int32_t OpDumpTaskManager::LoadOpMappingInfo(const char_t * const infoAddr, cons
     return AICPU_SCHEDULE_OK;
 }
 
+DumpSessionManager &DumpSessionManager::GetInstance()
+{
+    static DumpSessionManager instance;
+    return instance;
+}
+
+IDE_SESSION DumpSessionManager::GetSession(int32_t hostPid, uint32_t deviceId)
+{
+    UNUSED(hostPid);
+    UNUSED(deviceId);
+    sessionsMap_.clear();
+    return nullptr;
+}
+
+IDE_SESSION DumpSessionManager::ReacquireSession(int32_t hostPid, uint32_t deviceId)
+{
+    UNUSED(hostPid);
+    UNUSED(deviceId);
+    sessionsMap_.clear();
+    return nullptr;
+}
+
+void DumpSessionManager::CloseAllSessions()
+{
+    sessionsMap_.clear();
+    return;
+}
+
+IDE_SESSION DumpSessionManager::CreateIdeDumpSession(int32_t hostPid, uint32_t deviceId) const
+{
+    UNUSED(hostPid);
+    UNUSED(deviceId);
+    return nullptr;
+}
+
 int32_t AicpuQueueEventProcess::ProcessQsMsg(const event_info &event)
 {
     UNUSED(event);

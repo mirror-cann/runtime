@@ -1521,13 +1521,13 @@ DumpSessionManager &DumpSessionManager::GetInstance()
     return instance;
 }
 
-IDE_SESSION DumpSessionManager::GetSession(int32_t hostPid, uint32_t devcieId)
+IDE_SESSION DumpSessionManager::GetSession(int32_t hostPid, uint32_t deviceId)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     const uint64_t threadId = GetTid();
     if (sessionsMap_.find(threadId) == sessionsMap_.end()) {
         auto startTime = std::chrono::steady_clock::now();
-        sessionsMap_[threadId] = CreateIdeDumpSession(hostPid, devcieId);
+        sessionsMap_[threadId] = CreateIdeDumpSession(hostPid, deviceId);
         auto endTime = std::chrono::steady_clock::now();
         const double drUs = std::chrono::duration<double, std::micro>(endTime - startTime).count();
         aicpusd_run_info("thread[%lu] create ide dump session success, cost time is [%.2lf]us.",threadId, drUs);
