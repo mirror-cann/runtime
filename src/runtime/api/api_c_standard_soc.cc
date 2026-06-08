@@ -767,7 +767,7 @@ rtError_t rtCmoTaskLaunch(rtCmoTaskInfo_t *taskInfo, rtStream_t stm, uint32_t fl
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_CMO) &&
         !IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_ASYNC_CMO)) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) not support, return.", static_cast<int32_t>(chipType));
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support, return.", static_cast<int32_t>(chipType));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
 
@@ -1401,7 +1401,7 @@ rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char *name, void 
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
-        RT_LOG(RT_LOG_WARNING, "XPU not support rtBinaryGetGlobal");
+        RT_LOG(RT_LOG_WARNING, "XPU does not support rtBinaryGetGlobal");
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
     const rtError_t ret = apiInstance->BinaryGetGlobal(RtPtrToPtr<Program *>(binHandle), name, dptr, size);
@@ -1444,7 +1444,7 @@ rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount)
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
-        RT_LOG(RT_LOG_WARNING, "XPU not support rtFunctionGetParamCount");
+        RT_LOG(RT_LOG_WARNING, "XPU does not support rtFunctionGetParamCount");
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
     const Kernel *kernel = RtPtrToPtr<const Kernel *>(func);
@@ -1463,7 +1463,7 @@ rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex,
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
-        RT_LOG(RT_LOG_WARNING, "XPU not support rtFunctionGetParamInfo");
+        RT_LOG(RT_LOG_WARNING, "XPU does not support rtFunctionGetParamInfo");
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
     const Kernel *kernel = RtPtrToPtr<const Kernel *>(func);
@@ -1508,7 +1508,7 @@ rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
-        RT_LOG(RT_LOG_WARNING, "XPU not support rtLaunchKernelWithArgsArray");
+        RT_LOG(RT_LOG_WARNING, "XPU does not support rtLaunchKernelWithArgsArray");
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
     Kernel *kernel = nullptr;
@@ -1664,7 +1664,7 @@ rtError_t rtsNotifySetImportPid(rtNotify_t notify, int32_t pid[], int num)
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_IPC_NOTIFY)) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) not support NotifySetImportPid.",
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support NotifySetImportPid.",
             static_cast<int32_t>(chipType));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }

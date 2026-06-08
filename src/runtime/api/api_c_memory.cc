@@ -409,7 +409,7 @@ rtError_t rtsGetMemcpyDescSize(rtMemcpyKind kind, size_t *descSize)
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!rtInstance->ChipIsHaveStars()) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) not support rtsGetMemcpyDescSize.",
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support rtsGetMemcpyDescSize.",
             static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
@@ -431,7 +431,7 @@ rtError_t rtsSetMemcpyDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, void *srcAddr
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!rtInstance->ChipIsHaveStars()) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) not support rtsSetMemcpyDesc.",
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support rtsSetMemcpyDesc.",
             static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
@@ -452,7 +452,7 @@ rtError_t rtsMemcpyAsyncWithDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, rtMemcp
     const Runtime * const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!rtInstance->ChipIsHaveStars()) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) not support rtsMemcpyAsyncWithDesc.",
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support rtsMemcpyAsyncWithDesc.",
             static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
@@ -916,7 +916,7 @@ rtError_t rtsIpcMemClose(const char_t *key)
 
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) not support IpcMemClose.", chipType);
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support IpcMemClose.", chipType);
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
 

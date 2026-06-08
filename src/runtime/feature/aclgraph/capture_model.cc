@@ -104,7 +104,7 @@ rtError_t CaptureModel::SetNotifyBeforeExecute(Stream * const exeStm, CaptureMod
  
             error = apiObj->NotifyWait(notify, exeStm, MAX_UINT32_NUM);
             COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-                " Notify wait failed, exe stream_id=%d, notify id=%d, add stream_id=%d, retCode=%#x.",
+                "Notify wait failed, exe stream_id=%d, notify id=%d, add stream_id=%d, retCode=%#x.",
                 exeStm->Id_(), notify->GetNotifyId(), streamObj.first->Id_(), error);
             i++;
         }
@@ -136,7 +136,7 @@ rtError_t CaptureModel::SetNotifyAfterExecute(Stream * const exeStm, CaptureMode
                 exeStm->Id_(), notify->GetNotifyId(), streamObj.first->Id_(), error);
             error = apiObj->NotifyWait(notify, streamObj.first, MAX_UINT32_NUM);
             COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-                " Notify wait failed, exe stream_id=%d, notify_id=%d, add stream_id=%d, retCode=%#x.",
+                "Notify wait failed, exe stream_id=%d, notify_id=%d, add stream_id=%d, retCode=%#x.",
                 exeStm->Id_(), notify->GetNotifyId(), streamObj.first->Id_(), error);
             i++;
         }
@@ -502,7 +502,7 @@ rtError_t CaptureModel::BuildSqCq(Stream * const exeStream)
             loopCnt++;
             error = apiObj->ModelEndGraph(this, origCaptureStream, 0U);
             COND_PROC(error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES && loopCnt == 1U, RT_LOG(RT_LOG_EVENT,
-                "Begain for trying free Notify for model %u", Id_()));
+                "Begin for trying free Notify for model %u", Id_()));
             COND_PROC(error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES, (void)mmSleep(1U));
             COND_PROC(error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES, (void)Context_()->TryRecycleCaptureModelResource(0U, 1U, this));
         } while (error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES && loopCnt < 3000U); // loop 3000 times and wait

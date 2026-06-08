@@ -548,3 +548,21 @@ TEST_F(CloudV2IpcApiTest, MemGetAllocationPropertiesFromHandle_Prop_decorator)
     error = rtsIpcMemClose("aaa");
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
+
+TEST_F(CloudV2IpcApiTest, ipc_memory_close_NotSupportChip)
+{
+    rtError_t error;
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtChipType_t oldChipType = rtInstance->GetChipType();
+    rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+
+    GlobalContainer::SetRtChipType(CHIP_MINI);
+    rtInstance->SetChipType(CHIP_MINI);
+
+    error = rtsIpcMemClose("test_key");
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}

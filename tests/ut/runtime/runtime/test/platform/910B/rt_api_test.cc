@@ -126,6 +126,25 @@ TEST_F(CloudV2ApiAbnormalTest, rtsMemcpyAsyncWithDescTest)
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
+TEST_F(CloudV2ApiAbnormalTest, rtsMemcpyAsyncWithDesc_NotSupportChipFailed)
+{
+    rtError_t error;
+    char desc[32];
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtChipType_t oldChipType = rtInstance->GetChipType();
+    rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+
+    GlobalContainer::SetRtChipType(CHIP_CLOUD);
+    rtInstance->SetChipType(CHIP_CLOUD);
+
+    error = rtsMemcpyAsyncWithDesc(desc, RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE, nullptr, nullptr);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}
+
 TEST_F(CloudV2ApiAbnormalTest, rtsGetMemcpyDescSize_NonDavidChip_Success)
 {
     rtError_t error;

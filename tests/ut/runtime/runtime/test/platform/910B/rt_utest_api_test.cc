@@ -2213,6 +2213,25 @@ TEST_F(NewCloudV2ApiTest, api_rtCmoTaskLaunch)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
+TEST_F(NewCloudV2ApiTest, rtCmoTaskLaunch_NotSupportChip)
+{
+    rtError_t error;
+    rtCmoTaskInfo_t cmoTask = {0};
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtChipType_t oldChipType = rtInstance->GetChipType();
+    rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+
+    GlobalContainer::SetRtChipType(CHIP_MINI);
+    rtInstance->SetChipType(CHIP_MINI);
+
+    error = rtCmoTaskLaunch(&cmoTask, nullptr, 0);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}
+
 TEST_F(NewCloudV2ApiTest, api_rtCmoAsync)
 {
     Runtime *rtInstance = (Runtime *)Runtime::Instance();

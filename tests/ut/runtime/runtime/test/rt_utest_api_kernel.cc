@@ -739,6 +739,41 @@ TEST_F(ApiKernelTest, TestRtFunctionGetParamInfo_ApiImplOtherError)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
+TEST_F(ApiKernelTest, TestXPUChipNotSupport)
+{
+    rtError_t error;
+    size_t paramOffset = 0;
+    size_t paramSize = 0;
+    size_t paramCount = 0;
+    uint32_t numBlocks = 1;
+    rtStream_t stm = nullptr;
+    rtKernelLaunchCfg_t cfg = {};
+    void* argsArray[2] = {(void*)0x10, (void*)0x20};
+    ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
+    uint64_t tilingKey = 0;
+    Kernel kernel("testKernel", tilingKey, &program, RT_KERNEL_ATTR_TYPE_AICORE, 2048, 1024, 0, 0, 0);
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtChipType_t oldChipType = rtInstance->GetChipType();
+    rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+
+    GlobalContainer::SetRtChipType(CHIP_XPU);
+    rtInstance->SetChipType(CHIP_XPU);
+
+    error = rtFunctionGetParamInfo(static_cast<const void*>(&kernel), 0, &paramOffset, &paramSize);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    error = rtFunctionGetParamCount(static_cast<const void*>(&kernel), &paramCount);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    error = rtLaunchKernelWithArgsArray(static_cast<void*>(&kernel), numBlocks, stm, &cfg, argsArray);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}
+
+
 TEST_F(ApiKernelTest, TestRtFunctionGetAvailDynUbufPerBlock_ApiImplSuccess)
 {
     ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);

@@ -5021,6 +5021,29 @@ TEST_F(ApiTest, ipc_set_notify_pid3)
     GlobalContainer::SetRtChipType(chipType);
 }
 
+TEST_F(ApiTest, rtsNotifySetImportPid_ChipNotSupport)
+{
+    Notify notifyObj(0, 0);
+    InitEmbeddedInnerHandle<Notify>(&notifyObj);
+    rtNotify_t notify = reinterpret_cast<rtNotify_t>(notifyObj.GetInnerHandle());
+    rtError_t error;
+    int32_t pid[] = {1};
+    int num = 1;
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtChipType_t oldChipType = rtInstance->GetChipType();
+    rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+
+    GlobalContainer::SetRtChipType(CHIP_MINI);
+    rtInstance->SetChipType(CHIP_MINI);
+
+    error = rtsNotifySetImportPid(notify, pid, num);
+    EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}
+
 TEST_F(ApiTest, rts_ipc_open_with_flag_succ)
 {
     ApiImpl apiImpl;

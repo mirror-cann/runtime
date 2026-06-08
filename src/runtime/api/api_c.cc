@@ -2097,7 +2097,7 @@ VISIBILITY_DEFAULT
 rtError_t rtLabelCreate(rtLabel_t *lbl)
 {
     UNUSED(lbl);
-    RT_LOG(RT_LOG_WARNING, "feature not support");
+    RT_LOG(RT_LOG_WARNING, "feature is not supported");
     return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
@@ -3187,7 +3187,7 @@ rtError_t rtProfilingCommandHandle(uint32_t type, void *data, uint32_t len)
         RT_LOG(RT_LOG_INFO, "Profiling type: %u", type);
         return rtProfSetProSwitch(data, len);
     } else {
-        RT_LOG(RT_LOG_WARNING, "Not support the type: %u", type);
+        RT_LOG(RT_LOG_WARNING, "The type: %u is not supported", type);
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
 }

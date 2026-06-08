@@ -246,11 +246,10 @@ static void ShowFftsPlusTaskDebug(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t
         return;
     }
 
-    RT_LOG(RT_LOG_INFO, " descBuf=%p, descAlignBuf=%p", fftsPlusTask->descBuf, fftsPlusTask->descAlignBuf);
+    RT_LOG(RT_LOG_INFO, "descBuf=%p, descAlignBuf=%p", fftsPlusTask->descBuf, fftsPlusTask->descAlignBuf);
 
     // print context for debug
-    RT_LOG(RT_LOG_INFO, "========FftsPlusTask-begin-context,descBufLen_=%" PRIu64 "========",
-            fftsPlusTask->descBufLen);
+    RT_LOG(RT_LOG_INFO, "FftsPlusTask-begin-context,descBufLen_=%" PRIu64, fftsPlusTask->descBufLen);
     for (uint32_t i = 0U; i < (fftsPlusTask->descBufLen / 128U); i++) {
         RT_LOG(RT_LOG_INFO, "stream_id=%d,task_id=%u,FftsPlusTask-The %u context:", taskInfo->stream->Id_(),
             taskInfo->id, i);
@@ -259,7 +258,7 @@ static void ShowFftsPlusTaskDebug(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t
             RT_LOG(RT_LOG_INFO, "FftsPlusTask-The %u context-buf[%u]=%#010x.", i, j, buf[j]);
         }
     }
-    RT_LOG(RT_LOG_INFO, "========FftsPlusTask-end-context=======");
+    RT_LOG(RT_LOG_INFO, "FftsPlusTask-end-context");
 
     return;
 }
@@ -563,7 +562,7 @@ void SqeTaskUpdateForFftsPlus(TaskInfo* taskInfo, rtStarsSqe_t * const fftsplusS
     }
 
     if (!device->CheckFeatureSupport(TS_FEATURE_FFTSPLUS_TASKID_SAME_FIX)) {
-        RT_LOG(RT_LOG_DEBUG, "driver version not support");
+        RT_LOG(RT_LOG_DEBUG, "driver version is not supported");
         return;
     }
     if ((fftsplusSqe->fftsPlusSqe.subType != RT_STARS_FFTSPLUS_HCCL_WITHOUT_AICAIV_FLAG) &&
@@ -863,8 +862,8 @@ static void DumpContext(TaskInfo *taskInfo)
     const uint32_t printNum = (totalCtxNum < 10U) ? totalCtxNum : 10U;
     const uint32_t copySize = printNum * CONTEXT_LEN;
 
-    RT_LOG(RT_LOG_ERROR, "=====dump contexts begin, stream_id=%d, task_id=%u, "
-        "total_ctx_num=%u, print_num=%u, descAlignBuf=%p, descBufLen=%llu=====",
+    RT_LOG(RT_LOG_ERROR, "dump contexts begin, stream_id=%d, task_id=%u, "
+        "total_ctx_num=%u, print_num=%u, descAlignBuf=%p, descBufLen=%llu",
         taskInfo->stream->Id_(), taskInfo->id, totalCtxNum, printNum,
         fftsPlusTask->descAlignBuf, fftsPlusTask->descBufLen);
 
@@ -893,7 +892,7 @@ static void DumpContext(TaskInfo *taskInfo)
         }
     }
 
-    RT_LOG(RT_LOG_ERROR, "=====dump contexts end, stream_id=%d, task_id=%u=====",
+    RT_LOG(RT_LOG_ERROR, "dump contexts end, stream_id=%d, task_id=%u",
         taskInfo->stream->Id_(), taskInfo->id);
 }
 
