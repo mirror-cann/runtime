@@ -428,3 +428,38 @@ TEST_F(PackageProcessConfigTest, ParseLoadAsPerSocFlag_Failed)
     const auto ret = pkgcfg->ParseLoadAsPerSocFlag(para, tempNode);
     EXPECT_EQ(ret, false);
 }
+
+// 覆盖 RefreshHostPluginVersions 中加锁写 hostPluginVersions_ 的两条 lock_guard 分支：
+// 1) compat 包 hostTruePath 为空 -> empty 分支加锁写入空版本
+// 2) compat 包 hostTruePath 非空 -> 末尾加锁写入解析结果
+TEST_F(PackageProcessConfigTest, RefreshHostPluginVersions_LockBranches)
+{
+    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    pkgcfg->configMap_.clear();
+    pkgcfg->hostPluginVersions_.clear();
+
+    // 分支1：compat 包，hostTruePath 为空 -> 命中 empty 分支的 lock_guard
+    PackConfDetail compatEmptyPath = {};
+    compatEmptyPath.decDstDir = DeviceInstallPath::COMPAT_PLUGIN_PATH;
+    compatEmptyPath.hostTruePath = "";
+    pkgcfg->configMap_["cann-emptypath-compat.tar.gz"] = compatEmptyPath;
+
+    // 分支2：compat 包，hostTruePath 非空（ini 不存在解析失败回退）-> 命中末尾的 lock_guard
+    PackConfDetail compatNonEmptyPath = {};
+    compatNonEmptyPath.decDstDir = DeviceInstallPath::COMPAT_PLUGIN_PATH;
+    compatNonEmptyPath.hostTruePath = "./cann-nonexist-compat.tar.gz";
+    pkgcfg->configMap_["cann-nonexist-compat.tar.gz"] = compatNonEmptyPath;
+
+    pkgcfg->RefreshHostPluginVersions();
+
+    // 两个包都应被加锁写入 hostPluginVersions_
+    ASSERT_NE(pkgcfg->hostPluginVersions_.find("cann-emptypath-compat.tar.gz"),
+              pkgcfg->hostPluginVersions_.end());
+    EXPECT_TRUE(pkgcfg->hostPluginVersions_["cann-emptypath-compat.tar.gz"].Empty());
+    ASSERT_NE(pkgcfg->hostPluginVersions_.find("cann-nonexist-compat.tar.gz"),
+              pkgcfg->hostPluginVersions_.end());
+    EXPECT_TRUE(pkgcfg->hostPluginVersions_["cann-nonexist-compat.tar.gz"].Empty());
+
+    pkgcfg->configMap_.clear();
+    pkgcfg->hostPluginVersions_.clear();
+}

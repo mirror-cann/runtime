@@ -269,7 +269,7 @@ namespace tsd {
         return true;
     }
 
-    void PackageProcessConfig::ConstructPkgConfigMsg(HDCMessage &hdcMsg) const
+    void PackageProcessConfig::ConstructPkgConfigMsg(HDCMessage &hdcMsg)
     {
         for (auto iter = configMap_.begin(); iter != configMap_.end(); iter++) {
             SinkPackageConfig *curConf = hdcMsg.add_sink_pkg_con_list();
@@ -279,6 +279,7 @@ namespace tsd {
             if (iter->second.decDstDir != DeviceInstallPath::COMPAT_PLUGIN_PATH) {
                 continue;
             }
+            std::lock_guard<std::mutex> lock(hostPluginVersionMut_);
             const auto verIt = hostPluginVersions_.find(iter->first);
             if (verIt == hostPluginVersions_.end() || verIt->second.Empty()) {
                 continue;
@@ -306,6 +307,7 @@ namespace tsd {
             PluginPkgVersion info;
             if (hostFile.empty()) {
                 TSD_RUN_INFO("host plugin pkg:%s has empty host path, skip parse ini", pkgName.c_str());
+                std::lock_guard<std::mutex> lock(hostPluginVersionMut_);
                 hostPluginVersions_[pkgName] = info;
                 continue;
             }
@@ -325,12 +327,14 @@ namespace tsd {
                 TSD_RUN_INFO("host plugin pkg:%s ini parsed, version:%s timestamp:%s",
                              pkgName.c_str(), info.version.c_str(), info.timestamp.c_str());
             }
+            std::lock_guard<std::mutex> lock(hostPluginVersionMut_);
             hostPluginVersions_[pkgName] = info;
         }
     }
 
-    PluginPkgVersion PackageProcessConfig::GetHostPluginVersion(const std::string &pkgName) const
+    PluginPkgVersion PackageProcessConfig::GetHostPluginVersion(const std::string &pkgName)
     {
+        std::lock_guard<std::mutex> lock(hostPluginVersionMut_);
         const auto it = hostPluginVersions_.find(pkgName);
         if (it == hostPluginVersions_.end()) {
             return PluginPkgVersion{};

@@ -52,7 +52,7 @@ public:
     PackConfDetail GetConfigDetailInfo(const std::string &srcPath);
     TSD_StatusT ParseConfigDataFromProtoBuf(const HDCMessage &hdcMsg);
     TSD_StatusT ParseConfigDataFromFile(const std::string &pkgTitle);
-    void ConstructPkgConfigMsg(HDCMessage &hdcMsg) const;
+    void ConstructPkgConfigMsg(HDCMessage &hdcMsg);
     bool IsNeedToUpdateConfig(const HDCMessage &hdcMsg) const;
     bool IsConfigPackageInfo(const std::string &oriPkgName);
     std::map<std::string, PackConfDetail> GetAllPackageConfigInfo() const
@@ -64,7 +64,7 @@ public:
     std::string GetPackageHostTruePath(const std::string &pkgName);
     // 遍历 configMap_ ，对 compat 插件包解析同名 .ini 文件，刷新 host 侧插件包版本信息
     void RefreshHostPluginVersions();
-    PluginPkgVersion GetHostPluginVersion(const std::string &pkgName) const;
+    PluginPkgVersion GetHostPluginVersion(const std::string &pkgName);
     bool HasCompatPluginPackage() const;
 private:
     bool SetConfigDataOnServer(const SinkPackageConfig &hdcConfig);
@@ -87,6 +87,7 @@ private:
     std::string hashCode_;
     using SingleParaParseFunc = bool (PackageProcessConfig::*)(const std::string &, PackConfDetail &) const;
     const std::map<std::string, SingleParaParseFunc> configParaParseFuncMap_;
+    std::mutex hostPluginVersionMut_;
 };
 }
 #endif // TSD_PACKAGE_PROCESS_CONFIG_H

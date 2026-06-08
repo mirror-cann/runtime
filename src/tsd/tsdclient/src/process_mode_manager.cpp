@@ -137,7 +137,7 @@ TSD_StatusT ProcessModeManager::OpenProcess(const uint32_t rankSize)
         return TSD_OK;
     }
 
-    TSD_StatusT ret = LoadPackageConfigInfoToDevice();
+    TSD_StatusT ret = LoadPackageConfigInfoToDevice(true);
     TSD_CHECK(ret == TSD_OK, ret, "Load package config info to device failed.");
     const TimePoint finLoadCfg = std::chrono::high_resolution_clock::now();
 
@@ -1329,7 +1329,7 @@ TSD_StatusT ProcessModeManager::LoadRuntimePkgToDevice()
     if (IsSupportCommonSink() &&
         (&drvHdcSendFileV2 != nullptr) &&
         (&drvHdcGetTrustedBasePathV2 != nullptr)) {
-        (void)LoadPackageConfigInfoToDevice();
+        (void)LoadPackageConfigInfoToDevice(false);
         if (LoadCannHsPkgToDevice(UDF_PKG_NAME) != TSD_OK) {
             TSD_ERROR("Load package failed, package:%s", UDF_PKG_NAME.c_str());
             return TSD_INTERNAL_ERROR;
@@ -2156,7 +2156,7 @@ TSD_StatusT ProcessModeManager::CloseNetService()
     }
 }
 
-TSD_StatusT ProcessModeManager::LoadPackageConfigInfoToDevice()
+TSD_StatusT ProcessModeManager::LoadPackageConfigInfoToDevice(const bool hasPluginVersion)
 {
     if ((IsSupportCommonSink() == false) ||
         (&drvHdcSendFileV2 == nullptr) ||
@@ -2190,8 +2190,10 @@ TSD_StatusT ProcessModeManager::LoadPackageConfigInfoToDevice()
         TSD_ERROR("Parsing config data was not successful");
         return TSD_INTERNAL_ERROR;
     }
-    // 刷新 host 侧 compat 插件包版本信息，并随后随 CONFIG 消息一起下发
-    pkgConInst->RefreshHostPluginVersions();
+    if (hasPluginVersion) {
+        // 刷新 host 侧 compat 插件包版本信息，并随后随 CONFIG 消息一起下发
+        pkgConInst->RefreshHostPluginVersions();
+    }
 
     HDCMessage msg;
     msg.set_real_device_id(logicDeviceId_);
