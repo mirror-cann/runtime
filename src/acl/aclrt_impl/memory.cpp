@@ -1670,10 +1670,10 @@ aclError aclrtGetBufUserDataImpl(const aclrtMbuf buf, void *dataPtr, size_t size
     ACL_PROFILING_REG(acl::AclProfType::AclrtGetBufUserData);
     // The current default private data area size is 96B, if offset+size exceeds 96, an error is reported
     if (size + offset > MEM_SIZE_MAX) {
-        ACL_LOG_ERROR("%s failed because the sum of size and offset greater than %u, size=%zu, offset=%zu.", __func__,
+        ACL_LOG_ERROR("%s failed because the sum of size and offset is greater than %u, size=%zu, offset=%zu.", __func__,
             MEM_SIZE_MAX, size, offset);
         const std::string sizeVal = std::to_string(size);
-        std::string errMsg = acl::AclErrorLogManager::FormatStr("the sum of size and offset greater than %u, size=%zu, offset=%zu.",
+        std::string errMsg = acl::AclErrorLogManager::FormatStr("the sum of size and offset is greater than %u, size=%zu, offset=%zu.",
             MEM_SIZE_MAX, size, offset);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
             std::vector<const char *>({"func", "value", "param", "reason"}),
@@ -1710,10 +1710,10 @@ aclError aclrtSetBufUserDataImpl(aclrtMbuf buf, const void *dataPtr, size_t size
     ACL_PROFILING_REG(acl::AclProfType::AclrtSetBufUserData);
     // The current default private data area size is 96B, if offset+size exceeds 96, an error is reported
     if (size + offset > MEM_SIZE_MAX) {
-        ACL_LOG_ERROR("%s failed because the sum of size and offset greater than %u, size=%zu, offset=%zu.", __func__,
+        ACL_LOG_ERROR("%s failed because the sum of size and offset is greater than %u, size=%zu, offset=%zu.", __func__,
             MEM_SIZE_MAX, size, offset);
         const std::string sizeVal = std::to_string(size);
-        std::string errMsg = acl::AclErrorLogManager::FormatStr("the sum of size and offset greater than %u, size=%zu, offset=%zu",
+        std::string errMsg = acl::AclErrorLogManager::FormatStr("the sum of size and offset is greater than %u, size=%zu, offset=%zu",
             MEM_SIZE_MAX, size, offset);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
             std::vector<const char *>({"func", "value", "param", "reason"}),
@@ -2238,7 +2238,7 @@ aclError aclrtMemGetAddressRangeImpl(void *ptr, void **pbase, size_t *psize)
     ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(ptr);
     const rtError_t rtErr = rtMemGetAddressRange(ptr, pbase, psize);
     if (rtErr != RT_ERROR_NONE) {
-        ACL_LOG_CALL_ERROR("call  aclrtMemGetAddressRange failed, runtime result = %d.", static_cast<int32_t>(rtErr));
+        ACL_LOG_CALL_ERROR("call aclrtMemGetAddressRange failed, runtime result = %d.", static_cast<int32_t>(rtErr));
         return ACL_GET_ERRCODE_RTS(rtErr);
     }
     ACL_LOG_INFO("successfully execute aclrtMemGetAddressRange");
@@ -2261,7 +2261,7 @@ aclError aclrtMemP2PMapImpl(void *devPtr, size_t size, int32_t dstDevId, uint64_
     }
     rtErr = rtMemPrefetchToDevice(devPtr, size, phyId);
     if (rtErr != RT_ERROR_NONE) {
-        ACL_LOG_CALL_ERROR("call  aclrtMemP2PMap failed, runtime result = %d.", static_cast<int32_t>(rtErr));
+        ACL_LOG_CALL_ERROR("call aclrtMemP2PMap failed, runtime result = %d.", static_cast<int32_t>(rtErr));
         return ACL_GET_ERRCODE_RTS(rtErr);
     }
     ACL_LOG_INFO("successfully execute aclrtMemP2PMap");

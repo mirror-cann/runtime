@@ -6213,6 +6213,17 @@ TEST_F(UTEST_ACL_Runtime, aclrtGetBufUserData_failed_with_size_offset_exceed_max
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 
+TEST_F(UTEST_ACL_Runtime, aclrtSetBufUserData_failed_with_size_offset_exceed_max)
+{
+    aclrtMbuf mbuf = reinterpret_cast<aclrtMbuf>(0x01);
+    char data[100] = {0};
+    size_t size = 50;
+    size_t offset = 50;  // size + offset = 100 > MEM_SIZE_MAX(96)
+
+    auto ret = aclrtSetBufUserData(mbuf, data, size, offset);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+}
+
 TEST_F(UTEST_ACL_Runtime, aclrtBinaryLoadFromData_failed_with_invalid_args)
 {
     void *data = (void*)0x01;
@@ -8046,6 +8057,19 @@ TEST_F(UTEST_ACL_Runtime, aclrtMemGetAddressRange)
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
 
+TEST_F(UTEST_ACL_Runtime, aclrtMemGetAddressRange_failed_with_rt_error)
+{
+    void *ptr = (void*)0xff;
+    void *pbase = nullptr;
+    size_t psize = 0;
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGetAddressRange(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+
+    aclError ret = aclrtMemGetAddressRange(ptr, &pbase, &psize);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+}
+
 TEST_F(UTEST_ACL_Runtime, aclrtMemPoolCreate)
 {
     aclrtMemPool memPool = 0;
@@ -8240,6 +8264,22 @@ TEST_F(UTEST_ACL_Runtime, aclrtMemP2PMap)
         .WillOnce(Return((ACL_ERROR_RT_PARAM_INVALID)))
         .WillRepeatedly(Return(RT_ERROR_NONE));
     ret = aclrtMemP2PMap(devPtr, size, dstDevId, flags);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtMemP2PMap_failed_with_rtMemPrefetchToDevice_error)
+{
+    void *devPtr = (void *)0x01;
+    size_t size = 1;
+    int32_t dstDevId = 0;
+    uint64_t flags = 0;
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetDevicePhyIdByIndex(_, _))
+        .WillRepeatedly(Return(RT_ERROR_NONE));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemPrefetchToDevice(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+
+    aclError ret = aclrtMemP2PMap(devPtr, size, dstDevId, flags);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(UTEST_ACL_Runtime, aclmdlRIDestroyRegisterCallback)

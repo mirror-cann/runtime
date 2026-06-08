@@ -1014,9 +1014,9 @@ acltdtChannelHandle *acltdtCreateChannelWithCapacity(uint32_t deviceId, const ch
     ACL_REQUIRES_NOT_NULL_RET_NULL_INPUT_REPORT(name);
     ACL_LOG_INFO("acltdtCreateChannelWithCapacity devId is %u, name is %s, capacity is %zu", deviceId, name, capacity);
     if (strlen(name) + 1 > RT_MQ_MAX_NAME_LEN) {
-        ACL_LOG_ERROR("name [%s] length %zu can not be larger than %d", name, (strlen(name) + 1U), RT_MQ_MAX_NAME_LEN);
+        ACL_LOG_ERROR("name [%s] length %zu cannot be larger than %d", name, (strlen(name) + 1U), RT_MQ_MAX_NAME_LEN);
         std::string errMsg =
-            acl::AclErrorLogManager::FormatStr("name [%s] length %zu can not be larger than %d", name, (strlen(name) + 1U), RT_MQ_MAX_NAME_LEN);
+            acl::AclErrorLogManager::FormatStr("name [%s] length %zu cannot be larger than %d", name, (strlen(name) + 1U), RT_MQ_MAX_NAME_LEN);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
             std::vector<const char *>({"func", "value", "param", "reason"}),
             std::vector<const char *>({__func__, name, "name", errMsg.c_str()}));

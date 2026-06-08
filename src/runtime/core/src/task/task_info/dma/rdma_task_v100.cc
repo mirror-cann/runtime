@@ -201,7 +201,7 @@ static void ConstructSqeNoSinkModeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsS
     sqe->write_addr_high = static_cast<uint32_t>((dbAddr >> UINT32_BIT_NUM) & MASK_17_BIT);
 
     PrintSqe(command, "RdmaDbSendNoSink");
-    RT_LOG(RT_LOG_INFO, "RdmaDbSendTask no-sink device_id=%d, stream_id=%d, die_id=%u, task_id=%hu, sqProducerIdx=%u, "
+    RT_LOG(RT_LOG_INFO, "RdmaDbSendTask no-sink device_id=%d, stream_id=%d, die_id=%u, task_id=%hu, sqProducerIdx=%u,"
         " dbAddr=%#" PRIx64" dbVal:%#" PRIx64,
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->u.rdmaDbSendTask.taskDbIndex.dbIndexStars.dieId,
         taskInfo->id, taskInfo->u.rdmaDbSendTask.taskDbInfo.cmd.sqProducerIdx, dbAddr, dbVal);
