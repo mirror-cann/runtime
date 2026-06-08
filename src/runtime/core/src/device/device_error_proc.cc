@@ -714,8 +714,9 @@ rtError_t DeviceErrorProc::ProcErrorInfo(const TaskInfo * const taskPtr)
     return ProcTaskErrorWithoutLock(taskPtr);
 }
 
-void GetStreamAndTaskIdFromErrorInfo(const uint32_t errorType, 
-    const StarsDeviceErrorInfo* const errorInfo, StreamTaskId &streamTaskId)
+template <typename ErrorInfo>
+static void GetStreamAndTaskIdFromErrorInfo(const uint32_t errorType,
+    const ErrorInfo* const errorInfo, StreamTaskId &streamTaskId)
 {
     switch (errorType) {
         case AICORE_ERROR:
@@ -827,10 +828,7 @@ rtError_t DeviceErrorProc::ProcessReportRingBuffer(const DevRingBufferCtlInfo * 
             head = (head + 1U) % depth;
             continue;
         }
-        StarsDeviceErrorInfo procErrorInfo = {};
-        CopyRingBufferPayload(procErrorInfo, rbErrorInfo, copySize);
-
-        GetStreamAndTaskIdFromErrorInfo(info->errorType, &procErrorInfo, sTaskId);
+        GetStreamAndTaskIdFromErrorInfo(info->errorType, rbErrorInfo, sTaskId);
         error = device_->GetStreamSqCqManage()->GetStreamSharedPtrById(static_cast<uint32_t>(sTaskId.streamId), stm);
         COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), RT_ERROR_TASK_MONITOR);
 
@@ -1587,7 +1585,7 @@ static uint32_t CollectCoreExtInfos(
         if (!IsMatchedRingBufferExtType(baseType, nextInfo->errorType)) {
             break;
         }
-        const ExtInfo* extData = reinterpret_cast<const ExtInfo*>(nextInfo + 1);
+        const ExtInfo* extData = RtPtrToPtr<const ExtInfo*, const RingBufferElementInfo*>(nextInfo + 1);
         if (nextInfo->errorType == static_cast<uint32_t>(AICORE_EXT_ERROR) && *aicExt == nullptr) {
             *aicExt = extData;
             extElementCount++;
