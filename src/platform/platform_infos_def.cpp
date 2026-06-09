@@ -89,7 +89,15 @@ map<string, vector<string>> PlatFormInfos::GetVectorCoreIntrinsicDtype() {
   return platform_infos_impl_->GetVectorCoreIntrinsicDtype();
 }
 
+bool PlatFormInfos::GetPlatformResWithOutLock(const string &label, const string &key, string &val) {
+  if (platform_infos_impl_ == nullptr) {
+    return true;
+  }
+  return platform_infos_impl_->GetPlatformRes(label, key, val);
+}
+
 bool PlatFormInfos::GetPlatformRes(const string &label, const string &key, string &val) {
+  std::lock_guard<std::mutex> lock_guard(plt_info_mutex);
   if (platform_infos_impl_ == nullptr) {
     return true;
   }
@@ -105,6 +113,7 @@ bool PlatFormInfos::GetPlatformResWithLock(const string &label, const string &ke
 }
 
 bool PlatFormInfos::GetPlatformRes(const std::string &label, std::map<std::string, std::string> &res) {
+  std::lock_guard<std::mutex> lock_guard(plt_info_mutex);
   if (platform_infos_impl_ == nullptr) {
     return true;
   }
@@ -170,12 +179,12 @@ void PlatFormInfos::SetCoreNumByCoreType(const std::string &core_type) {
 
     std::lock_guard<std::mutex> lock_guard(plt_info_mutex);
     try {
-      (void)GetPlatformRes("SoCInfo", core_type_str, core_num_str);
+      (void)GetPlatformResWithOutLock("SoCInfo", core_type_str, core_num_str);
       core_num_ = core_num_str.empty() ? 0 : std::stoi(core_num_str.c_str());
       if (customized_types.count(core_type) > 0) {
         core_num_str.clear();
         core_type_str = "mix_vector_core_cnt";
-        (void)GetPlatformRes("SoCInfo", core_type_str, core_num_str);
+        (void)GetPlatformResWithOutLock("SoCInfo", core_type_str, core_num_str);
         core_num_ = core_num_str.empty() ? core_num_ : std::stoi(core_num_str.c_str());
       }
     } catch (...) {
@@ -217,7 +226,7 @@ uint32_t PlatFormInfos::GetCoreNumByType(const std::string &core_type)
     std::string core_num_str;
     uint32_t core_num = 0;
     try {
-        (void)GetPlatformRes("SoCInfo", core_type_str, core_num_str);
+        (void)GetPlatformResWithOutLock("SoCInfo", core_type_str, core_num_str);
         core_num = core_num_str.empty() ? 0 : std::stoi(core_num_str.c_str());
     } catch (...) {
         PF_LOGW("Unable to load core_num[%s].", core_num_str.c_str());
@@ -281,7 +290,8 @@ std::map<std::string, std::vector<std::string>>  PlatFormInfos::GetFixPipeDtypeM
 }
 
 void PlatFormInfos::SetPlatformRes(const std::string &label, std::map<std::string, std::string> &res) {
-  if (platform_infos_impl_ == nullptr) {
+    std::lock_guard<std::mutex> lock_guard(plt_info_mutex);
+    if (platform_infos_impl_ == nullptr) {
     return;
   }
   platform_infos_impl_->SetPlatformRes(label, res);

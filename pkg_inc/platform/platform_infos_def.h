@@ -47,10 +47,6 @@ class PlatFormInfos {
   void GetLocalMemSize(const LocalMemType &mem_type, uint64_t &size);
   void GetLocalMemBw(const LocalMemType &mem_type, uint64_t &bw_size);
 
-  std::map<std::string, std::vector<std::string>> GetAICoreIntrinsicDtype() const;
-  std::map<std::string, std::vector<std::string>> GetVectorCoreIntrinsicDtype() const;
-  bool GetPlatformRes(const std::string &label, const std::string &key, std::string &val) const;
-
   void SetAICoreIntrinsicDtype(std::map<std::string, std::vector<std::string>> &intrinsic_dtypes);
   void SetVectorCoreIntrinsicDtype(std::map<std::string, std::vector<std::string>> &intrinsic_dtypes);
   void SetPlatformRes(const std::string &label, std::map<std::string, std::string> &res);
@@ -66,6 +62,8 @@ class PlatFormInfos {
  private:
   friend class PlatformInfosUtils;
   bool InitByInstance();
+  bool GetPlatformResWithOutLock(const std::string &label, const std::string &key, std::string &val);
+
   uint32_t core_num_ {0};
   PlatFormInfosImplPtr platform_infos_impl_ {nullptr};
 };
@@ -81,11 +79,6 @@ class OptionalInfos {
   std::string GetL1FusionFlag();
   std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
 
-  std::string GetSocVersion() const;
-  std::string GetCoreType() const;
-  uint32_t GetAICoreNum() const;
-  std::string GetL1FusionFlag() const;
-  std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap() const;
   void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>> &fixpipe_dtype_map);
   void SetSocVersion(std::string soc_version);
   void SetSocVersionWithLock(std::string soc_version);

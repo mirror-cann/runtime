@@ -4,6 +4,7 @@ set(SLOG_STUB_FILES
         ${CMAKE_CURRENT_LIST_DIR}/../depends/slog/slog_stub.cc)
 
 set (PLATFORM_SRC_FILES
+        ${TOP_DIR}/src/platform/acl_platform.cpp
         ${TOP_DIR}/src/platform/platform_info.cpp
         ${TOP_DIR}/src/platform/platform_infos_def.cpp
         ${TOP_DIR}/src/platform/platform_infos_impl.cpp
@@ -14,7 +15,8 @@ set (PLATFORM_SRC_FILES
 set(PLATFORM_UT_FILES
         ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_instance_utest.cpp
         ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_ge_instance_utest.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_v2_instance_utest.cpp)
+        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_v2_instance_utest.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_acl_utest.cpp)
 
 add_executable(platform_utest
         ${SLOG_STUB_FILES}
@@ -39,6 +41,7 @@ target_include_directories(platform_utest PRIVATE
         ${TOP_DIR}/src/runtime/inc
         ${TOP_DIR}/pkg_inc
         ${TOP_DIR}/pkg_inc/platform
+        ${TOP_DIR}/include/external
         ${TOP_DIR}/abl/slog/inc
         ${TOP_DIR}/metadef/inc/external
         ${TOP_DIR}/metadef/inc/external/platform
@@ -47,6 +50,7 @@ target_include_directories(platform_utest PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/../depends/proto
         ${TOP_DIR}/src/platform/proto/platform_infos_proto/
         ${CMAKE_BINARY_DIR}/proto/platform_infos_proto/
+        ${CMAKE_BINARY_DIR}/libc_sec/source/include
         )
 
 target_include_directories(platform_stub_ut PRIVATE
@@ -90,11 +94,13 @@ target_link_libraries(platform_utest PRIVATE
         GTestShared::gtest_main
         GTestShared::gmock
         GTestShared::gmock_main
+        c_sec
         -lrt
         -ldl
         -lgcov
         ascend_protobuf
         mockcpp
+        $<BUILD_INTERFACE:c_sec_headers>
         $<BUILD_INTERFACE:intf_ut_pub>
         $<BUILD_INTERFACE:slog_headers>
 )
@@ -105,11 +111,13 @@ target_link_libraries(platform_stub_ut PRIVATE
         GTestShared::gtest_main
         GTestShared::gmock
         GTestShared::gmock_main
+        c_sec
         -lrt
         -ldl
         -lgcov
         ascend_protobuf
         mockcpp
+        $<BUILD_INTERFACE:c_sec_headers>
         $<BUILD_INTERFACE:intf_ut_pub>
         $<BUILD_INTERFACE:slog_headers>
 )

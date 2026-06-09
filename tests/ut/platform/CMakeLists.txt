@@ -1,6 +1,7 @@
 set(CMAKE_CXX_STANDARD 14)
 
 file(GLOB FE_SRC_CPP_1 RELATIVE ${CMAKE_CURRENT_LIST_DIR}
+        "${TOP_DIR}/src/platform/acl_platform.cpp"
         "${TOP_DIR}/src/platform/platform_info.cpp"
         "${TOP_DIR}/src/platform/platform_infos_def.cpp"
         "${TOP_DIR}/src/platform/platform_infos_impl.cpp"
@@ -18,6 +19,7 @@ set_target_properties(platform_llt
 
 target_include_directories(platform_llt PRIVATE
         ${TOP_DIR}/include/dfx/base
+        ${TOP_DIR}/include/external
         ${TOP_DIR}/pkg_inc
         ${TOP_DIR}/pkg_inc/base
         ${CMAKE_BINARY_DIR}/proto/platform_infos_proto
@@ -82,6 +84,7 @@ set_target_properties(platform_llt_tiling
 
 target_include_directories(platform_llt_tiling PRIVATE
         ${TOP_DIR}/include/dfx/base
+        ${TOP_DIR}/include/external
         ${TOP_DIR}/pkg_inc
         ${TOP_DIR}/pkg_inc/base
         ${CMAKE_BINARY_DIR}/proto/platform_infos_proto

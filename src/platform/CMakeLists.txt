@@ -3,6 +3,7 @@ project(platform)
 add_library(platform_headers INTERFACE)
 
 set(STATICPLATFORMFILE
+    ${CMAKE_CURRENT_LIST_DIR}/acl_platform.cpp
     ${CMAKE_CURRENT_LIST_DIR}/platform_info.cpp
     ${CMAKE_CURRENT_LIST_DIR}/platform_infos_def.cpp
     ${CMAKE_CURRENT_LIST_DIR}/platform_infos_impl.cpp
@@ -24,6 +25,7 @@ if((DEFINED PRODUCT) AND (PRODUCT STREQUAL "ascend031"))
         "stub/platform_manager_v2_stub.cpp")
 else()
         set(PLATFORMFILE
+        "acl_platform.cpp"
         "platform_info.cpp"
         "platform_infos_def.cpp"
         "platform_infos_impl.cpp"
@@ -67,6 +69,7 @@ target_include_directories(platform PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/proto/google
         ${RUNTIME_DIR}/pkg_inc
+        ${RUNTIME_DIR}/include/external
         ${RUNTIME_DIR}/src/dfx/error_manager
         ${RUNTIME_DIR}/include/dfx/base
         $<INSTALL_INTERFACE:include>
@@ -97,6 +100,7 @@ target_include_directories(platform_static PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/inc
         ${RUNTIME_DIR}/src/dfx/error_manager
         ${RUNTIME_DIR}/include/dfx/base
+        ${RUNTIME_DIR}/include/external
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:include/platform>
         $<INSTALL_INTERFACE:include/platform/platform>
