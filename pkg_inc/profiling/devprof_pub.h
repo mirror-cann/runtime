@@ -11,6 +11,12 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  *
  */
+
+/**
+ * This header file is not part of the public API. Compatibility is not guaranteed,
+ * and it will be deprecated in future versions.
+ */
+
 #ifndef DEVPROF_PUB_H
 #define DEVPROF_PUB_H
 

@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     aclrtCreateStream(&stream);
 
     // profiling初始化
-    // 设置数据落盘路径
+    // 设置数据落盘路径，如果不调用aclprofInit设置数据落盘路径，可以调用aclprofSetConfig设置
     std::string aclProfPath = "./output";
     aclprofInit(aclProfPath.c_str(), aclProfPath.length());
     INFO_LOG("profiling init done");
