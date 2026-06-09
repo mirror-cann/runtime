@@ -288,6 +288,21 @@ STATIC void TraceRecorderListAppend(TraceDirList *dirList, TraceDirNode *newNode
     (void)AdiagLockRelease(&dirList->lock);
 }
 
+STATIC TraceDirNode *TraceRecorderListFind(TraceDirList *dirList, const char *dirPath)
+{
+    (void)AdiagLockGet(&dirList->lock);
+    TraceDirNode *curNode = dirList->head;
+    while (curNode != NULL) {
+        if (strcmp(curNode->dirPath, dirPath) == 0) {
+            (void)AdiagLockRelease(&dirList->lock);
+            return curNode;
+        }
+        curNode = curNode->next;
+    }
+    (void)AdiagLockRelease(&dirList->lock);
+    return NULL;
+}
+
 STATIC void TraceRecorderSaveNode(const TraceDirInfo *dirInfo, TraceDirNode *dirNew)
 {
     // if exit_event, no need to aging
@@ -367,6 +382,15 @@ const TraceDirNode *TraceRecorderGetDirPath(const TraceDirInfo *dirInfo)
         return NULL;
     }
 
+    if (strncmp(dirInfo->eventName, TRACER_EVENT_EXIT, strlen(TRACER_EVENT_EXIT)) != 0) {
+        TraceDirList *dirList = (dirInfo->isDevice) ? &g_recorderMgr->deviceDirList : &g_recorderMgr->hostDirList;
+        TraceDirNode *existNode = TraceRecorderListFind(dirList, dirNew->dirPath);
+        if (existNode != NULL) {
+            ADIAG_SAFE_FREE(dirNew);
+            return existNode;
+        }
+    }
+
     TraceRecorderSaveNode(dirInfo, dirNew);
     return dirNew;
 }
@@ -386,15 +410,18 @@ TraStatus TraceRecorderGetFd(const TraceDirInfo *dirInfo, const TraceFileInfo *f
     char filePath[MAX_FULLPATH_LEN + 1U] = { 0 };
     int32_t ret = snprintf_s(filePath, MAX_FULLPATH_LEN + 1U, MAX_FULLPATH_LEN,
         "%s/%s_tracer_%s%s", dir->dirPath, fileInfo->tracerName, fileInfo->objName, fileInfo->suffix);
-    (void)AdiagLockRelease(&g_recorderMgr->lock);
     if (ret == -1) {
-        ADIAG_ERR("snprintf_s file path failed, ret=%d, strerr=%s.", ret, strerror(AdiagGetErrorCode()));
+        int32_t errCode = AdiagGetErrorCode();
+        (void)AdiagLockRelease(&g_recorderMgr->lock);
+        ADIAG_ERR("snprintf_s file path failed, ret=%d, strerr=%s.", ret, strerror(errCode));
         return TRACE_FAILURE;
     }
     int32_t fileFd = TraceOpen(filePath, (uint32_t)O_CREAT | (uint32_t)O_WRONLY | (uint32_t)O_APPEND,
         TRACE_FILE_MODE);
+    int32_t errCode = (fileFd < 0) ? AdiagGetErrorCode() : 0;
+    (void)AdiagLockRelease(&g_recorderMgr->lock);
     ADIAG_CHK_EXPR_ACTION(fileFd < 0, return TRACE_FAILURE,
-        "open file failed, file=%s, strerr=%s.", filePath, strerror(AdiagGetErrorCode()));
+        "open file failed, file=%s, strerr=%s.", filePath, strerror(errCode));
 
     *fd = fileFd;
     return TRACE_SUCCESS;
