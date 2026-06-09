@@ -809,12 +809,15 @@ aclError aclrtMemsetD32Impl(void* ptr, size_t memSize, uint32_t value, size_t N)
 
     const size_t requiredBytes = N * sizeof(uint32_t);
     if (memSize < requiredBytes) {
-        ACL_LOG_INNER_ERROR("memory size is not enough, required %zu bytes but only %zu bytes",
-                            requiredBytes, memSize);
-        const std::vector<const char*> paramNames = {"param", "value", "reason"};
-        const std::vector<const char*> paramValues = {"N", std::to_string(N).c_str(),
-                                                      "N * 4 must be less than or equal to memSize"};
-        acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_MSG, paramNames, paramValues);
+        ACL_LOG_ERROR("[Check][PARAM]N * 4 must be less than or equal to memSize, but N=%zu, memSize=%zu, requiredBytes=%zu",
+                      N, memSize, requiredBytes);
+        const std::string nVal = std::to_string(N);
+        std::string errMsg = acl::AclErrorLogManager::FormatStr(
+            "N × 4 (%zu) is greater than memSize (%zu), which does not meet the requirement",
+            requiredBytes, memSize);
+        acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
+            std::vector<const char *>({"func", "value", "param", "reason"}),
+            std::vector<const char *>({"aclrtMemsetD32", nVal.c_str(), "N", errMsg.c_str()}));
         return ACL_ERROR_INVALID_PARAM;
     }
 
@@ -865,12 +868,15 @@ aclError aclrtMemsetD32AsyncImpl(void* ptr, size_t memSize, uint32_t value,
 
     const size_t requiredBytes = N * sizeof(uint32_t);
     if (memSize < requiredBytes) {
-        ACL_LOG_INNER_ERROR("memory size is not enough, required %zu bytes but only %zu bytes",
-                            requiredBytes, memSize);
-        const std::vector<const char*> paramNames = {"param", "value", "reason"};
-        const std::vector<const char*> paramValues = {"N", std::to_string(N).c_str(),
-                                                      "N * 4 must be less than or equal to memSize"};
-        acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_MSG, paramNames, paramValues);
+        ACL_LOG_ERROR("[Check][PARAM]N * 4 must be less than or equal to memSize, but N=%zu, memSize=%zu, requiredBytes=%zu",
+                      N, memSize, requiredBytes);
+        const std::string nVal = std::to_string(N);
+        std::string errMsg = acl::AclErrorLogManager::FormatStr(
+            "N × 4 (%zu) is greater than memSize (%zu), which does not meet the requirement",
+            requiredBytes, memSize);
+        acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
+            std::vector<const char *>({"func", "value", "param", "reason"}),
+            std::vector<const char *>({"aclrtMemsetD32Async", nVal.c_str(), "N", errMsg.c_str()}));
         return ACL_ERROR_INVALID_PARAM;
     }
 
