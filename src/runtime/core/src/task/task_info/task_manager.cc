@@ -645,7 +645,7 @@ void TaskFailCallBack(const uint32_t streamId, const uint32_t taskId,
                        (retCode == TS_MODEL_ABORT_NORMAL)), ,
                       "task ok, stream_id=%u, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
     if (dev->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT) {
-        RT_LOG(RT_LOG_EVENT, "Do not call task fail callback in task abort status!");
+        RT_LOG(RT_LOG_WARNING, "Do not call task fail callback in task abort status!");
         return;
     }
 
