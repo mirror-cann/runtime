@@ -122,7 +122,8 @@ static uint16_t GetAicpuKernelCreditInternal(uint64_t timeout, bool defaultNever
     }
 
     if (defaultNeverTimeout &&
-        std::abs(Runtime::Instance()->GetCurChipProperties().KernelCreditScale) == RT_MC_KERNEL_CREDIT_SCALE) {
+        (std::abs(Runtime::Instance()->GetCurChipProperties().KernelCreditScale - RT_MC_KERNEL_CREDIT_SCALE) <
+ 	    std::numeric_limits<float>::epsilon())) {
         TransExeTimeoutCfgToKernelCreditNeverTimeout(tmpTimeout, kernelCredit);
     } else {
         TransExeTimeoutCfgToKernelCredit(tmpTimeout, kernelCredit);
