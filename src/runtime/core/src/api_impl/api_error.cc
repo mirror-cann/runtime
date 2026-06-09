@@ -4993,7 +4993,9 @@ rtError_t ApiErrorDecorator::GetStreamOverflowSwitch(Stream * const stm, uint32_
 
 rtError_t ApiErrorDecorator::SetStreamPriorityValue(Stream * const stm, const uint32_t streamPriority)
 {
-    NULL_PTR_RETURN_MSG_OUTER(stm, RT_ERROR_INVALID_VALUE); 
+    NULL_PTR_RETURN_MSG_OUTER(stm, RT_ERROR_INVALID_VALUE);
+    COND_RETURN_AND_MSG_OUTER(((stm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) || (stm->Flags() & RT_STREAM_AICPU)) != 0U, 
+        RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, "flags=" + std::to_string(stm->Flags()));
     return impl_->SetStreamPriorityValue(stm, streamPriority);
 }
 
@@ -5001,6 +5003,8 @@ rtError_t ApiErrorDecorator::GetStreamPriorityValue(Stream * const stm, uint32_t
 {
     NULL_PTR_RETURN_MSG_OUTER(streamPriority, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(stm, RT_ERROR_INVALID_VALUE);
+    COND_RETURN_AND_MSG_OUTER(((stm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) || (stm->Flags() & RT_STREAM_AICPU)) != 0U, 
+        RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, "flags=" + std::to_string(stm->Flags()));
     return impl_->GetStreamPriorityValue(stm, streamPriority);
 }
 
