@@ -16,14 +16,13 @@ extern "C" {
 #endif /* __cpluscplus */
 #endif /* __cpluscplus */
 
-extern mmCond   cond;
-extern mmMutexFC  mtxfc;
+extern mmCond cond;
+extern mmMutexFC mtxfc;
 extern int socketFlag;
-extern  mmThreadKey g_thread_log_key;
-
+extern mmThreadKey g_thread_log_key;
 
 extern INT32 getIdleSocketid();
-extern VOID* UTtest_callback(VOID * pstArg);
+extern VOID* UTtest_callback(VOID* pstArg);
 extern VOID* client_socket(VOID* p);
 extern VOID* server_socket(VOID* p);
 extern VOID* thread_func(VOID *arg);
@@ -39,9 +38,9 @@ extern VOID* poll_client_namepipe(VOID* p);
 extern int utFilter(const struct dirent *entry);
 extern VOID* msgqueue_server(VOID* p);
 extern VOID* msgqueue_client(VOID* p);
-extern VOID *tlsTestThread1(VOID *p);
-extern VOID *tlsTestThread2(VOID *p);
-extern void *thread_action(void* arg);
+extern VOID* tlsTestThread1(VOID *p);
+extern VOID* tlsTestThread2(VOID *p);
+extern void* thread_action(void* arg);
 
 #ifdef __cplusplus
 #if __cplusplus

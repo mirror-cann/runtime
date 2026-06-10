@@ -495,7 +495,7 @@ INT32 mmSACleanup(VOID)
  */
 static VOID mmTimerCallBack(union sigval userData)
 {
-    const mmUserBlock_t * const tmp = (mmUserBlock_t *)userData.sival_ptr;
+    const mmUserBlock_t* const tmp = (mmUserBlock_t *)userData.sival_ptr;
     tmp->procFunc(tmp->pulArg);
     return;
 }
@@ -1217,7 +1217,7 @@ INT32 mmGetMacFree(mmMacInfo *list, INT32 count)
 }
 
 /*
- * 描述:内部使用, 查找是否存在关键字的信息,buf为 xxx   :   xxx 形式
+ * 描述:内部使用, 查找是否存在关键字的信息, buf为 xxx   :   xxx 形式
  * 参数:buf--需要查找的当前行数的字符串
  *      bufLen--字符串长度
  *      pattern--关键字子串

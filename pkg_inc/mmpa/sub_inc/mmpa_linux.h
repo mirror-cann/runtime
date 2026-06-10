@@ -17,7 +17,6 @@ extern "C" {
 #endif  // __cpluscplus
 #endif  // __cpluscplus
 
-
 #define MMPA_MACINFO_DEFAULT_SIZE 18
 #define MMPA_CPUDESC_DEFAULT_SIZE 64
 
@@ -63,7 +62,7 @@ typedef struct {
     const CHAR *dli_sname;
     VOID *dli_saddr;
     size_t dli_size; /* ELF only */
-    INT32 dli_bind; /* ELF only */
+    INT32 dli_bind;  /* ELF only */
     INT32 dli_type;
 } mmDlInfo;
 
@@ -123,10 +122,10 @@ typedef enum {
 typedef struct {
     mmPollHandle handle;            // The file descriptor or handle of poll is required
     mmPollType pollType;            // Operation type requiring poll
-                                  // read or recv or ioctl
+                                    // read or recv or ioctl
     INT32 ioctlCode;                // IOCTL operation code, dedicated to IOCTL
     mmComPletionKey completionKey;  // The default value is blank, which is used in windows
-                                  // The data used to receive the difference between which handle is readable
+                                    // The data used to receive the difference between which handle is readable
 } mmPollfd;
 
 typedef struct {
@@ -249,8 +248,8 @@ typedef struct {
 
 #define M_WAIT_NOHANG WNOHANG  // Non blocking waiting
 #define M_WAIT_UNTRACED \
-  WUNTRACED  // If the subprocess enters the suspended state, it will return immediately
-             // But the end state of the subprocess is ignored
+    WUNTRACED  // If the subprocess enters the suspended state, it will return immediately
+               // But the end state of the subprocess is ignored
 #define M_UMASK_USRREAD S_IRUSR
 #define M_UMASK_GRPREAD S_IRGRP
 #define M_UMASK_OTHREAD S_IROTH
@@ -277,7 +276,6 @@ typedef struct {
 #define M_X_OK X_OK
 #define M_W_OK W_OK
 #define M_R_OK R_OK
-
 
 #define MM_DT_DIR DT_DIR
 #define MM_DT_REG DT_REG
@@ -496,6 +494,7 @@ MMPA_FUNC_VISIBILITY INT32 mmSetThreadName(mmThread *threadHandle, const CHAR *n
  * execution failure returns EN_ERROR
  */
 MMPA_FUNC_VISIBILITY INT32 mmGetThreadName(mmThread *threadHandle, CHAR *name, INT32 size);
+
 /*
  * Function:Set the thread name of the currently executing thread - call inside the thread body
  * Input:name:Thread name to be set
@@ -503,6 +502,7 @@ MMPA_FUNC_VISIBILITY INT32 mmGetThreadName(mmThread *threadHandle, CHAR *name, I
  * execution failure returns EN_ERROR
  */
 MMPA_FUNC_VISIBILITY INT32 mmSetCurrentThreadName(const CHAR *name);
+
 /*
  * Function:Get the thread name of the currently executing thread - in body call
  * Input:name:The name of the thread to get, and the cache is allocated by the user，size>=MMPA_THREADNAME_SIZE
@@ -510,6 +510,7 @@ MMPA_FUNC_VISIBILITY INT32 mmSetCurrentThreadName(const CHAR *name);
  * execution failure returns EN_ERROR
  */
 MMPA_FUNC_VISIBILITY INT32 mmGetCurrentThreadName(CHAR *name, INT32 size);
+
 MMPA_FUNC_VISIBILITY INT32 mmGetFileSize(const CHAR *fileName, ULONGLONG *length);
 MMPA_FUNC_VISIBILITY INT32 mmIsDir(const CHAR *fileName);
 MMPA_FUNC_VISIBILITY INT32 mmGetOsName(CHAR *name, INT32 nameSize);
@@ -542,7 +543,7 @@ MMPA_FUNC_VISIBILITY VOID mmAlignFree(VOID *addr);
         if (mmSysGetEnv != NULL)                                            \
         {                                                                   \
             value = mmSysGetEnv(IdName);                                    \
-            if (value != NULL) {break;}                                     \
+            if (value != NULL) { break; }                                   \
         }                                                                   \
         const char* env_name = #IdName;                                     \
         if (strncmp(env_name, "MM_ENV_", sizeof("MM_ENV_") - 1UL) == 0) {   \
@@ -550,14 +551,14 @@ MMPA_FUNC_VISIBILITY VOID mmAlignFree(VOID *addr);
         } else {                                                            \
             value = NULL;                                                   \
         }                                                                   \
-    } while(0)
+    } while (0)
 
 #define MM_SYS_SET_ENV(IdName, value, overwrite, ret)                           \
     do {                                                                        \
         if (mmSysSetEnv != NULL)                                                \
         {                                                                       \
             ret = mmSysSetEnv(IdName, value, overwrite);                        \
-            if (ret != EN_INVALID_PARAM) {break;}                               \
+            if (ret != EN_INVALID_PARAM) { break; }                             \
         }                                                                       \
         const char* env_name = #IdName;                                         \
         if (strncmp(env_name, "MM_ENV_", sizeof("MM_ENV_") - 1UL) == 0) {       \
@@ -565,14 +566,14 @@ MMPA_FUNC_VISIBILITY VOID mmAlignFree(VOID *addr);
         } else {                                                                \
             ret = EN_INVALID_PARAM;                                             \
         }                                                                       \
-    } while(0)
+    } while (0)
 
 #define MM_SYS_UNSET_ENV(IdName, ret)                                       \
     do {                                                                    \
         if (mmSysUnsetEnv != NULL)                                          \
         {                                                                   \
             ret = mmSysUnsetEnv(IdName);                                    \
-            if (ret != EN_INVALID_PARAM) {break;}                           \
+            if (ret != EN_INVALID_PARAM) { break; }                         \
         }                                                                   \
         const char* env_name = #IdName;                                     \
         if (strncmp(env_name, "MM_ENV_", sizeof("MM_ENV_") - 1UL) == 0) {   \
@@ -580,7 +581,7 @@ MMPA_FUNC_VISIBILITY VOID mmAlignFree(VOID *addr);
         } else {                                                            \
             ret = EN_INVALID_PARAM;                                         \
         }                                                                   \
-    } while(0)
+    } while (0)
 
 #ifdef __cplusplus
 #if __cplusplus

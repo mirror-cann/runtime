@@ -16,28 +16,29 @@
 
 namespace error_message {
 struct ErrorManagerContext {
-  uint64_t work_stream_id = 0; // default value 0, invalid value
-  uint64_t reserved[7] = {0};
+    uint64_t work_stream_id = 0; // default value 0, invalid value
+    uint64_t reserved[7] = {0};
 };
 
 enum class ErrorMessageMode : uint32_t {
-  // 0:内置模式，采用上下文粒度记录错误码，1：以进程为粒度
-  INTERNAL_MODE = 0U,
-  PROCESS_MODE = 1U,
-  // add mode here
-  ERR_MSG_MODE_MAX = 10U
+    // 0:内置模式，采用上下文粒度记录错误码，1：以进程为粒度
+    INTERNAL_MODE = 0U,
+    PROCESS_MODE = 1U,
+    // add mode here
+    ERR_MSG_MODE_MAX = 10U
 };
+
 using char_t = char;
 using unique_const_char_array = std::unique_ptr<const char_t[]>;
 struct ErrMsgRawItem {
-  unique_const_char_array error_id;
-  unique_const_char_array error_title;
-  unique_const_char_array error_message;
-  unique_const_char_array possible_cause;
-  unique_const_char_array solution;
-  std::vector<unique_const_char_array> args_key;
-  std::vector<unique_const_char_array> args_value;
-  unique_const_char_array report_time;
+    unique_const_char_array error_id;
+    unique_const_char_array error_title;
+    unique_const_char_array error_message;
+    unique_const_char_array possible_cause;
+    unique_const_char_array solution;
+    std::vector<unique_const_char_array> args_key;
+    std::vector<unique_const_char_array> args_value;
+    unique_const_char_array report_time;
 };
 
 /**

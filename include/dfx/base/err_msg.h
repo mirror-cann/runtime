@@ -64,32 +64,32 @@
 #endif
 
 #define REPORT_INNER_ERR_MSG(error_code, format, ...)                                                                  \
-  (void) error_message::ReportInnerErrMsg(__FILE__, __FUNCTION__, __LINE__, (error_code), (format), ##__VA_ARGS__)
+    (void) error_message::ReportInnerErrMsg(__FILE__, __FUNCTION__, __LINE__, (error_code), (format), ##__VA_ARGS__)
 
 #define REPORT_USER_DEFINED_ERR_MSG(error_code, format, ...)                                                           \
-  (void) error_message::ReportUserDefinedErrMsg((error_code), (format), ##__VA_ARGS__)
+    (void) error_message::ReportUserDefinedErrMsg((error_code), (format), ##__VA_ARGS__)
 
 #define REPORT_PREDEFINED_ERRMSG_CHOOSER(_1, _2, _3, NAME, ...) NAME
 
 #define REPORT_PREDEFINED_ERRMSG_1PARAMS(error_code) error_message::ReportPredefinedErrMsg(error_code)
 
 #define REPORT_PREDEFINED_ERRMSG_3PARAMS(error_code, key, value)                                                       \
-  error_message::ReportPredefinedErrMsg((error_code), (key), (value))
+    error_message::ReportPredefinedErrMsg((error_code), (key), (value))
 
 #define REPORT_PREDEFINED_ERR_MSG(...)                                                                                 \
-  REPORT_PREDEFINED_ERRMSG_CHOOSER(__VA_ARGS__, REPORT_PREDEFINED_ERRMSG_3PARAMS, ,                                    \
-                                   REPORT_PREDEFINED_ERRMSG_1PARAMS)(__VA_ARGS__)
+    REPORT_PREDEFINED_ERRMSG_CHOOSER(__VA_ARGS__, REPORT_PREDEFINED_ERRMSG_3PARAMS, ,                                  \
+                                     REPORT_PREDEFINED_ERRMSG_1PARAMS)(__VA_ARGS__)
 
 #define REG_FORMAT_ERROR_MSG(error_msg, error_msg_len)                                                                 \
-  REG_FORMAT_ERROR_MSG_UNIQ_HELPER((error_msg), (error_msg_len), __COUNTER__)
+    REG_FORMAT_ERROR_MSG_UNIQ_HELPER((error_msg), (error_msg_len), __COUNTER__)
 
 #define REG_FORMAT_ERROR_MSG_UNIQ_HELPER(error_msg, error_msg_len, counter)                                            \
-  REG_FORMAT_ERROR_MSG_UNIQ((error_msg), (error_msg_len), counter)
+    REG_FORMAT_ERROR_MSG_UNIQ((error_msg), (error_msg_len), counter)
 
 #define REG_FORMAT_ERROR_MSG_UNIQ(error_msg, error_msg_len, counter)                                                   \
-  static const auto &register_error_msg_##counter ATTRIBUTE_USED = []() -> int32_t {                                   \
-    return error_message::RegisterFormatErrorMessage((error_msg), (error_msg_len));                                    \
-  }()
+    static const auto &register_error_msg_##counter ATTRIBUTE_USED = []() -> int32_t {                                 \
+        return error_message::RegisterFormatErrorMessage((error_msg), (error_msg_len));                                \
+    }()
 
 namespace error_message {
 constexpr size_t const LIMIT_PER_MSG = 1024U;
@@ -103,6 +103,7 @@ using char_t = char;
  */
 GE_FUNC_HOST_VISIBILITY GE_FUNC_DEV_VISIBILITY
 int32_t RegisterFormatErrorMessage(const char *error_msg, size_t error_msg_len) WEAK_SYMBOL;
+
 /**
  * Report inner error message
  * @param [in] file_name: report file name
@@ -145,7 +146,6 @@ int32_t ReportPredefinedErrMsg(const char *error_code, const std::vector<const c
  */
 GE_FUNC_HOST_VISIBILITY GE_FUNC_DEV_VISIBILITY
 int32_t ReportPredefinedErrMsg(const char *error_code) WEAK_SYMBOL;
-
 }  // namespace error_message
 
 namespace ge {

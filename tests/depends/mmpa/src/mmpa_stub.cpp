@@ -27,7 +27,7 @@ INT32 aclStub::mmDladdr(VOID *addr, mmDlInfo *info)
     return 0;
 }
 
-INT32 mmScandir(const CHAR *path, mmDirent ***entryList, mmFilter filterFunc,  mmSort sort)
+INT32 mmScandir(const CHAR *path, mmDirent ***entryList, mmFilter filterFunc, mmSort sort)
 {
     return 0;
 }
@@ -36,7 +36,7 @@ VOID mmScandirFree(mmDirent **entryList, INT32 count)
 {
 }
 
-INT32 mmScandir2(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filterFunc,  mmSort2 sort)
+INT32 mmScandir2(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filterFunc, mmSort2 sort)
 {
     if ((path == NULL) || (entryList == NULL)) {
         return EN_INVALID_PARAM;
@@ -80,7 +80,7 @@ INT32 mmRealPath(const CHAR *path, CHAR *realPath, INT32 realPathLen)
     return ret;
 }
 
-INT32 mmStatGet(const CHAR *path,  mmStat_t *buffer)
+INT32 mmStatGet(const CHAR *path, mmStat_t *buffer)
 {
     if ((path == nullptr) || (buffer == nullptr)) {
         return EN_INVALID_PARAM;
@@ -109,7 +109,6 @@ mmTimespec mmGetTickCount()
 INT32 mmGetTid()
 {
     INT32 ret = (INT32)syscall(SYS_gettid);
-
     if (ret < MMPA_ZERO) {
         return EN_ERROR;
     }

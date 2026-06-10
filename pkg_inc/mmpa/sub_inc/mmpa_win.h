@@ -40,8 +40,8 @@ typedef CONDITION_VARIABLE mmCond;
 
 typedef VOID *(*userProcFunc)(VOID *pulArg);
 typedef struct {
-  userProcFunc procFunc;
-  VOID *pulArg;
+    userProcFunc procFunc;
+    VOID *pulArg;
 } mmUserBlock_t;
 
 typedef DWORD mmThreadKey;
@@ -56,7 +56,7 @@ typedef int mmSemTimeout_t;
 typedef long mmAtomicType;
 typedef long long mmAtomicType64;
 typedef DWORD mmExitCode;
-typedef DWORD  mmErrorMsg;
+typedef DWORD mmErrorMsg;
 typedef int mmKey_t;
 typedef HANDLE mmMsgid;
 typedef long int mmOfft_t;
@@ -69,17 +69,17 @@ typedef VOID mmshmId_ds;
 typedef long long MM_LONG;
 
 typedef enum {
-  DT_DIR = FILE_ATTRIBUTE_DIRECTORY,
+    DT_DIR = FILE_ATTRIBUTE_DIRECTORY,
 } mmDtype;
 
 typedef struct {
-  unsigned char d_type;
-  char d_name[MAX_PATH];  // file name
+    unsigned char d_type;
+    char d_name[MAX_PATH];  // file name
 } mmDirent;
 
 typedef struct {
-  unsigned long d_type;
-  char d_name[MAX_PATH];  // file name
+    unsigned long d_type;
+    char d_name[MAX_PATH];  // file name
 } mmDirent2;
 
 typedef int (*mmFilter)(const mmDirent *entry);
@@ -88,80 +88,80 @@ typedef int (*mmSort)(const mmDirent **a, const mmDirent **b);
 typedef int (*mmSort2)(const mmDirent2 **a, const mmDirent2 **b);
 
 typedef struct {
-  VOID *sendBuf;
-  INT32 sendLen;
+    VOID *sendBuf;
+    INT32 sendLen;
 } mmIovSegment;
 typedef PVOID mmInAddr;
 
 typedef enum {
-  pollTypeRead = 1,  // pipeline reading
-  pollTypeRecv,      // socket receive
-  pollTypeIoctl,     // ioctl read
+    pollTypeRead = 1,  // pipeline reading
+    pollTypeRecv,      // socket receive
+    pollTypeIoctl,     // ioctl read
 } mmPollType;
 
 typedef struct {
-  HANDLE completionHandle;
-  mmPollType overlapType;
-  OVERLAPPED oa;
+    HANDLE completionHandle;
+    mmPollType overlapType;
+    OVERLAPPED oa;
 } mmComPletionKey, *pmmComPletionKey;
 
 typedef struct {
-  VOID *priv;              // User defined private content
-  mmPollHandle bufHandle;  // Value of handle corresponding to buf
-  mmPollType bufType;      // Data types polled to
-  VOID *buf;
-  UINT32 bufLen;
-  UINT32 bufRes;
+    VOID *priv;              // User defined private content
+    mmPollHandle bufHandle;  // Value of handle corresponding to buf
+    mmPollType bufType;      // Data types polled to
+    VOID *buf;
+    UINT32 bufLen;
+    UINT32 bufRes;
 } mmPollData, *pmmPollData;
 
 typedef VOID (*mmPollBack)(pmmPollData);
 typedef struct {
-  mmPollHandle handle;            // The file descriptor or handle of poll is required
-  mmPollType pollType;            // Operation type requiring poll，read or recv or ioctl
-  INT32 ioctlCode;                // IOCTL operation code, dedicated to IOCTL
-  mmComPletionKey completionKey;  // The default value is blank, which will be used in windows to receive the data with
-                                  // different handle
+    mmPollHandle handle;            // The file descriptor or handle of poll is required
+    mmPollType pollType;            // Operation type requiring poll，read or recv or ioctl
+    INT32 ioctlCode;                // IOCTL operation code, dedicated to IOCTL
+    mmComPletionKey completionKey;  // The default value is blank, which will be used in windows to receive the data with
+                                    // different handle
 } mmPollfd;
 
 typedef struct {
-  OVERLAPPED oa;
-  HANDLE completionHandle;
-  WSABUF DataBuf;
+    OVERLAPPED oa;
+    HANDLE completionHandle;
+    WSABUF DataBuf;
 } PRE_IO_DATA, *PPRE_IO_DATA;
 
 typedef OVERLAPPED mmOverLap;
 
 typedef struct {
-  UINT32 createFlag;
-  INT32 oaFlag;  // Overlap operation is supported if it is not 0
+    UINT32 createFlag;
+    INT32 oaFlag;  // Overlap operation is supported if it is not 0
 } mmCreateFlag;
 
 typedef struct {
-  VOID *inbuf;
-  INT32 inbufLen;
-  VOID *outbuf;
-  INT32 outbufLen;
-  mmOverLap *oa;
+    VOID *inbuf;
+    INT32 inbufLen;
+    VOID *outbuf;
+    INT32 outbufLen;
+    mmOverLap *oa;
 } mmIoctlBuf;
 
 typedef struct {
-  HANDLE timerQueue;
-  HANDLE timerHandle;
+    HANDLE timerQueue;
+    HANDLE timerHandle;
 } mmTimerHandle;
 
 typedef struct {
-  LONG tv_sec;
-  LONG tv_usec;
+    LONG tv_sec;
+    LONG tv_usec;
 } mmTimeval;
 
 typedef struct {
-  INT32 tz_minuteswest;  // How many minutes is it different from Greenwich
-  INT32 tz_dsttime;      // DST correction type
+    INT32 tz_minuteswest;  // How many minutes is it different from Greenwich
+    INT32 tz_dsttime;      // DST correction type
 } mmTimezone;
 
 typedef struct {
-  MM_LONG tv_sec;
-  MM_LONG tv_nsec;
+    MM_LONG tv_sec;
+    MM_LONG tv_nsec;
 } mmTimespec;
 
 typedef mmTimerHandle mmTimer;
@@ -175,59 +175,59 @@ typedef int mmMode_t;
 typedef int MODE;
 
 typedef struct {
-  const char *name;
-  int has_arg;
-  int *flag;
-  int val;
+    const char *name;
+    int has_arg;
+    int *flag;
+    int val;
 } mmStructOption;
 
 typedef struct {
-  ULONGLONG totalSize;
-  ULONGLONG freeSize;
-  ULONGLONG availSize;
+    ULONGLONG totalSize;
+    ULONGLONG freeSize;
+    ULONGLONG availSize;
 } mmDiskSize;
 
 typedef struct {
-  const char *dli_fname;
-  void *dli_fbase;
-  const char *dli_sname;
-  void *dli_saddr;
-  size_t dli_size; /* ELF only */
-  int dli_bind; /* ELF only */
-  int dli_type;
+    const char *dli_fname;
+    void *dli_fbase;
+    const char *dli_sname;
+    void *dli_saddr;
+    size_t dli_size; /* ELF only */
+    int dli_bind; /* ELF only */
+    int dli_type;
 } mmDlInfo;
 
 typedef struct {
-  char addr[MMPA_MACINFO_DEFAULT_SIZE];  // ex:aa-bb-cc-dd-ee-ff\0
+    char addr[MMPA_MACINFO_DEFAULT_SIZE];  // ex:aa-bb-cc-dd-ee-ff\0
 } mmMacInfo;
 
 typedef struct {
-  char arch[MMPA_CPUDESC_DEFAULT_SIZE];
-  char manufacturer[MMPA_CPUDESC_DEFAULT_SIZE];  // vendor
-  char version[MMPA_CPUDESC_DEFAULT_SIZE];       // modelname
-  INT32 frequency;                               // cpu frequency
-  INT32 maxFrequency;                            // max speed
-  INT32 ncores;                                  // cpu cores
-  INT32 nthreads;                                // cpu thread count
-  INT32 ncounts;                                 // logical cpu nums
+    char arch[MMPA_CPUDESC_DEFAULT_SIZE];
+    char manufacturer[MMPA_CPUDESC_DEFAULT_SIZE];  // vendor
+    char version[MMPA_CPUDESC_DEFAULT_SIZE];       // modelname
+    INT32 frequency;                               // cpu frequency
+    INT32 maxFrequency;                            // max speed
+    INT32 ncores;                                  // cpu cores
+    INT32 nthreads;                                // cpu thread count
+    INT32 ncounts;                                 // logical cpu nums
 } mmCpuDesc;
 
 typedef struct {
-  char **argv;
-  INT32 argvCount;
-  char **envp;
-  INT32 envpCount;
+    char **argv;
+    INT32 argvCount;
+    char **envp;
+    INT32 envpCount;
 } mmArgvEnv;
 
 // Windows currently does not support properties other than thread separation properties
 typedef struct {
-  INT32 detachFlag;  // Thread detach property: 0 do not detach 1 detach
-  INT32 priorityFlag;
-  INT32 priority;
-  INT32 policyFlag;
-  INT32 policy;
-  INT32 stackFlag;
-  UINT32 stackSize;
+    INT32 detachFlag;  // Thread detach property: 0 do not detach 1 detach
+    INT32 priorityFlag;
+    INT32 priority;
+    INT32 policyFlag;
+    INT32 policy;
+    INT32 stackFlag;
+    UINT32 stackSize;
 } mmThreadAttr;
 
 typedef VOID (*mmPf)(VOID);
