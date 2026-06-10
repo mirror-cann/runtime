@@ -163,7 +163,7 @@ rtError_t StarsResumeRtsq(const rtLogicCqReport_t *logicCq, const TaskInfo * con
 
     RT_LOG(RT_LOG_WARNING, "Begin to query sq status, stream_id=%d.", failStm->Id_());
     error = PollingSqDisable(logicCq, failStm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to query the SQ disabling status in polling mode, retCode=%#x.",
+    ERROR_RETURN_MSG_INNER(error, "Failed to query the SQ disabled status in polling mode, retCode=%#x.",
         static_cast<uint32_t>(error));
 
     if (taskInfo->type == static_cast<uint16_t>(TS_TASK_TYPE_MULTIPLE_TASK)) {

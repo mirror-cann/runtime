@@ -939,7 +939,6 @@ rtError_t Stream::AllocAutoSplitContext()
     COND_RETURN_AND_MSG_OUTER(autoSplitCtx_ == nullptr, RT_ERROR_STREAM_NEW,
         ErrorCode::EE1013, sizeof(AutoSplitSqContext));
 
-    autoSplitCtx_->masterStream = nullptr;  // master stream 此字段为空
     autoSplitCtx_->exposedStreamId = streamId_;
     autoSplitCtx_->curStreamSqeCount = 0U;
 

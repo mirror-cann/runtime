@@ -1153,7 +1153,6 @@ rtError_t Context::CreateAutoSplitSlaveStream(Stream * const masterStm, Stream *
 
     // 设置 slave stream 的 AutoSplitCtx 关联信息
     AutoSplitSqContext *slaveCtx = slaveStream->GetAutoSplitCtx();
-    slaveCtx->masterStream = masterStm;
     slaveCtx->exposedStreamId = masterStm->Id_();
     slaveStream->SetAutoSplitSq(true);
     slaveStream->SetIsSlaveStream(true);

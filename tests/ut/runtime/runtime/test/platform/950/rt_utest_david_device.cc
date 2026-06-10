@@ -228,6 +228,28 @@ TEST_F(DeviceTestDavid, ProcessReportRingBuffer_Test)
     rtDeviceReset(1);
 }
 
+TEST_F(DeviceTestDavid, AllocSqRegVirtualAddr)
+{
+    rtSetDevice(1);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
+    rtError_t expectRet = 1;
+    uint64_t sqRegVirtualAddr = 2U;
+
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::GetSqRegVirtualAddrBySqid).stubs()
+        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&DeviceSqCqPool::SetSqRegVirtualAddrToDevice).stubs()
+        .will(returnValue(expectRet));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::UnmapSqRegVirtualAddrBySqid).stubs()
+        .will(returnValue(RT_ERROR_NONE));
+
+    rtError_t ret = deviceSqCqPool->AllocSqRegVirtualAddr(1U, sqRegVirtualAddr);
+    EXPECT_EQ(ret, expectRet);
+
+    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    rtDeviceReset(1);
+}
+
 TEST_F(DeviceTestDavid, AddAddrKernelNameMapTableTest)
 {
     RawDevice dev(0);

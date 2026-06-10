@@ -119,14 +119,22 @@ rtError_t DeviceSqCqPool::SetSqRegVirtualAddrToDevice(const uint32_t sqId, const
 rtError_t DeviceSqCqPool::AllocSqRegVirtualAddr(const uint32_t sqId, uint64_t &sqRegVirtualAddr) const
 {
     uint32_t addrLen = 0U;
-    rtError_t error = device_->Driver_()->GetSqRegVirtualAddrBySqid(static_cast<int32_t>(device_->Id_()),
+    auto driver = device_->Driver_();
+    rtError_t error = driver->GetSqRegVirtualAddrBySqid(static_cast<int32_t>(device_->Id_()),
         device_->DevGetTsId(), sqId, &sqRegVirtualAddr, &addrLen);
     ERROR_RETURN(error, "Failed to get sq reg virtual addr, deviceId=%u, sqId=%u.", device_->Id_(), sqId);
     RT_LOG(RT_LOG_DEBUG, "Success to get sq=%u sq reg virtual addr length=%u.", sqId, addrLen);
 
     error = SetSqRegVirtualAddrToDevice(sqId, sqRegVirtualAddr);
-    ERROR_RETURN(error, "Failed to copy sqid=%u virtual addr to device, error=0x%#x.", sqId,
-        static_cast<uint32_t>(error));
+    if (error != RT_ERROR_NONE) {
+        if (driver->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_MAP_SQ_ADDR_TO_USER_SPACE))  {
+            (void)driver->UnmapSqRegVirtualAddrBySqid(
+                static_cast<int32_t>(device_->Id_()), device_->DevGetTsId(), sqId);
+        }
+        RT_LOG(RT_LOG_ERROR, "Failed to copy sqid=%u virtual addr to device, error=%#x.", sqId,
+            static_cast<uint32_t>(error));
+        return error;
+    }
 
     return RT_ERROR_NONE;
 }

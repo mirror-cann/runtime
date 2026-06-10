@@ -408,7 +408,6 @@ TEST_F(DavidStreamTest, auto_split_stream_destroy)
     ASSERT_NE(realStream, nullptr);
     realStream->SetAutoSplitSq(true);
     AutoSplitSqContext *autoSplitCtx_ = new (std::nothrow) AutoSplitSqContext();
-    autoSplitCtx_->masterStream = nullptr;
     autoSplitCtx_->curStreamSqeCount = 0U;
     realStream->SetIsSlaveStream(false);
     realStream->SetAutoSplitCtx(autoSplitCtx_);
@@ -448,7 +447,6 @@ TEST_F(DavidStreamTest, auto_split_task_clean)
     realStream->SetIsSlaveStream(false);
     realStream->SetAutoSplitCtx(autoSplitCtx_);
     realStream->SetSqBaseAddr(100);
-    autoSplitCtx_->masterStream = nullptr;
     autoSplitCtx_->curStreamSqeCount = 0U;
     realStream->streamSwitchInfo_ = new (std::nothrow) struct sq_switch_stream_info[1U]();
     rtModel_t rtModel;

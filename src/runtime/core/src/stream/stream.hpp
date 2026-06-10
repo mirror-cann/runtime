@@ -143,7 +143,6 @@ struct TaskGroup {
 
 // 自动切分SQ上下文结构体
 struct AutoSplitSqContext {
-    Stream *masterStream{nullptr};            // slave stream指向master
     std::vector<Stream *> slaveStreams;       // master stream的slave列表
     int32_t exposedStreamId{-1};              // 对外暴露的streamId (master的)
     uint32_t curStreamSqeCount{0U};           // 当前stream已分配的SQE数量
@@ -1325,9 +1324,6 @@ public:
     void SetAutoSplitCtx(AutoSplitSqContext * ctx) { autoSplitCtx_ = ctx; }
     bool IsSlaveStream() const { return isSlaveStream_; }
     void SetIsSlaveStream(bool isSlave) { isSlaveStream_ = isSlave; }
-    Stream* GetMasterStream() const {
-        return (autoSplitCtx_ != nullptr) ? autoSplitCtx_->masterStream : nullptr;
-    }
     int32_t GetExposedStreamId() const {
         return (autoSplitCtx_ != nullptr) ? autoSplitCtx_->exposedStreamId : streamId_;
     }
