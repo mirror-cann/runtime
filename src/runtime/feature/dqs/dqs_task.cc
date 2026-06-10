@@ -1297,7 +1297,7 @@ static void ConstructDqsSchedEndInstr(const uint16_t sqId, const uint64_t mbufLi
 {
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
     constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
-    constexpr rtStarsCondIsaRegister_t r2 = RT_STARS_COND_ISA_REGISTER_R1;
+    constexpr rtStarsCondIsaRegister_t r2 = RT_STARS_COND_ISA_REGISTER_R2;
 
     // 调度完成，对快照统计信息做重置
     ResetMbufListOpSnapshot(r1, mbufListOpSnapshotAddr, sqe);
