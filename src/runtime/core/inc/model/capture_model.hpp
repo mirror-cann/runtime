@@ -14,6 +14,7 @@
 #include "task_info.hpp"
 #include "stream.hpp"
 #include "device_sq_cq_pool.hpp"
+#include "jetty_pool.h"
 #include <unordered_set>
 
 namespace cce {
@@ -264,14 +265,17 @@ public:
     rtError_t ReleaseNotifyId(void);
     rtError_t UpdateNotifyId(Stream * const exeStream);
     // endGraph + alloc sq cq + Send sqe + bind sq cq + load complete + update task
-    rtError_t BuildSqCq(Stream * const exeStream);
+    rtError_t BuildResource(Stream * const exeStream);
     void DeconstructSqCq(void);
     rtError_t ReleaseSqCq(uint32_t &releaseNum);
-    void CaptureModelExecuteFinish(void);
+    void CaptureModelExecuteFinish(const uint32_t errCode);
     rtError_t MarkStreamActiveTask(TaskInfo *streamActiveTask); // the task of stream active is need updated
                                                                 // after sq cq is allocated
     rtError_t RestoreForSoftwareSq(Device * const dev);
-    
+
+    rtError_t BindJettyForUbdma();
+    rtError_t RecycleAllJetty(uint32_t &h2dCount, uint32_t &d2dCount);
+    rtError_t ReleaseAllJetty();
 private:
     rtError_t AllocSqAddr(void) const;  // alloc sq addr
     rtError_t AllocSqCqProc(const uint32_t streamNum) const;
@@ -284,7 +288,12 @@ private:
     rtError_t BindSqCqAndSendSqe(void);
     rtError_t BindStreamToModel(void);
     void ReportCacheTrackData();
-
+    rtError_t BindJetty(Stream * const stm, JettyType type);
+    rtError_t RecycleJetty(int32_t streamId, JettyType type, uint32_t &count);
+    rtError_t ReleaseJetty(int32_t streamId, JettyType type);
+    rtError_t UnbindLargeJetty(int32_t streamId, JettyType type);
+    rtError_t ReleaseAllLargeJetty();
+    rtError_t RefreshJettyInfoList();
     RtCaptureModelStatus captureModelStatus_{RtCaptureModelStatus::NONE};
     mutable uint32_t cacheOpInfoSwitch_{0U}; // aclgraph stream status: 0: false, 1:true
     std::map<int32_t, std::map<uint32_t, std::unique_ptr<uint8_t []>>> shapeInfos_;
@@ -313,6 +322,7 @@ private:
     bool trackDataReportFlag_{false};
     std::atomic<uint32_t> seqId_{0};
     std::set<void *> argLoaderBackup_;
+    std::mutex jettyMutex_;
 };
 }
 }

@@ -4621,6 +4621,62 @@ drvError_t halAsyncDmaCreateBatch(uint32_t devId, struct halAsyncDmaInputBatchPa
 drvError_t halAsyncDmaDestroyBatch(uint32_t devId, struct halAsyncDmaDestroyBatchPara *para);
 
 /**
+ * @ingroup driver
+ * @brief  async dma jetty create
+ * @attention null
+ * @param [in] devId: logic devid
+ * @param [in] in:   see struct halAsyncDmaJettyCreateIn
+ * @param [out] out:  see struct halAsyncDmaJettyCreateOut
+ * @return   0 for success, others for fail
+ */
+drvError_t halAsyncDmaJettyCreate(uint32_t devId, struct halAsyncDmaJettyCreateIn *in,
+    struct halAsyncDmaJettyCreateOut *out);
+
+/**
+ * @ingroup driver
+ * @brief  async dma jetty destroy
+ * @attention null
+ * @param [in] devId: logic devid
+ * @param [in]  para: see struct halAsyncJettyDestroyPara
+ * @return   0 for success, others for fail
+ */
+drvError_t halAsyncDmaJettyDestroy(uint32_t devId, struct halAsyncJettyDestroyPara *para);
+
+/**
+ * @ingroup driver
+ * @brief  async dma jetty query
+ * @attention null
+ * @param [in] devId: logic devid
+ * @param [in] in:   see struct halAsyncDmaJettyQueryIn
+ * @param [out] out:  see struct halAsyncDmaJettyQueryOut
+ * @return   0 for success, others for fail
+ */
+drvError_t halAsyncDmaJettyQuery(uint32_t devId, struct halAsyncDmaJettyQueryIn *in,
+    struct halAsyncDmaJettyQueryOut *out);
+
+/**
+ * @ingroup driver
+ * @brief  async dma wqe convert
+ * @attention null
+ * @param [in] devId: logic devid
+ * @param [in] in:   see struct halAsyncDmaWqeInputPara
+ * @param [out] out:  see struct halAsyncDmaWqeOutputPara
+ * @return   0 for success, others for fail
+ */
+drvError_t halAsyncDmaWqeConvert(uint32_t devId, struct halAsyncDmaWqeInputPara *in,
+    struct halAsyncDmaWqeOutputPara *out);
+
+/**
+ * @ingroup driver
+ * @brief  fill wqe to async dma jetty
+ * @attention null
+ * @param [in] devId: logic devid
+ * @param [in]  para: see struct halAsyncDmaJettyFillInfo
+ * @return   0 for success, others for fail
+ */
+drvError_t halAsyncDmaJettyWqeFill(uint32_t devId, struct halAsyncDmaJettyFillInfo *para);
+
+/**
 * @ingroup driver
 * @brief  ACL IO control interface
 * @attention null

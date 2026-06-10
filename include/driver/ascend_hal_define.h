@@ -1142,6 +1142,7 @@ struct drvMemSharingPara {
 #define TSDRV_FLAG_TASK_SINK_SQ (0x1U << 14) /* only support async cpy task sink */
 #define TSDRV_FLAG_RTS_RSV_SQCQ_ID (0x1 << 15)
 #define TSDRV_FLAG_NO_SQ_MEM (0x1 << 16)
+#define TSDRV_FLAG_PRE_ASYNC_SQ (0x1U << 17) /* specified whether to pre init async chan for sq*/
 
 #define TSDRV_FLAG_SPECIFIED_SQ_MEM (0x1U << 31) /* used for internal */
 
@@ -1264,11 +1265,14 @@ struct halSqTaskArgsInfo {
     uint32_t rsv[SQCQ_RESV_LENGTH - 4];
 };
 
-enum drv_async_dma_type {
+typedef enum drv_async_dma_type {
     DRV_ASYNC_DMA_TYPE_NORMAL = 0U,
     DRV_ASYNC_DMA_TYPE_SQE_UPDATE,
+    DRV_ASYNC_DMA_TYPE_2D,
+    DRV_ASYNC_DMA_TYPE_BATCH,
+    DRV_ASYNC_DMA_TYPE_NOP,
     DRV_ASYNC_DMA_TYPE_MAX
-};
+} drvAsyncDmaType_t;
 
 struct drv_sqe_update_info {
     uint32_t sq_id;
@@ -1370,6 +1374,138 @@ struct halAsyncDmaDestroyBatchPara {
     unsigned int sqId;
     unsigned int ci;                /* current jetty ci */
     unsigned int rsv[TRS_ASYNC_CPY_BATCH_DESTROY_RSV_LEN];
+};
+
+typedef enum tagDrvAsyncDmaJettyType {
+    DRV_ASYNC_DMA_JETTY_TYPE_CACHE_LOCK_DWQE = 0x0,
+    DRV_ASYNC_DMA_JETTY_TYPE_NORMAL,
+    DRV_ASYNC_DMA_JETTY_TYPE_MAX
+} drvAsyncDmaJettyType_t;
+
+typedef enum tagDrvAsyncDmaJettyPiMode {
+    DRV_ASYNC_DMA_JETTY_PI_MODE_ABSOLUTE = 0x0,
+    DRV_ASYNC_DMA_JETTY_PI_MODE_RELATIVELY,
+    DRV_ASYNC_DMA_JETTY_PI_MODE_MAX
+} drvAsyncDmaJettyPiMode_t;
+
+typedef enum tagDrvAsyncJettyDmaDir {
+    TRS_ASYNC_JETTY_HOST_DEVICE = 0,
+    TRS_ASYNC_JETTY_DEVICE_TO_DEVICE = 1,
+    TRS_ASYNC_JETTY_MAX_DIR = 2
+} drvAsyncDmaJettyDir_t;
+
+#define TRS_ASYNC_DMA_JETTY_HANDLE_RSV_LEN 8
+#define TRS_ASYNC_DMA_JETTY_HANDLE_LEN 48
+struct halAsyncJettyHandle {
+    char handle[TRS_ASYNC_DMA_JETTY_HANDLE_LEN];
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_HANDLE_RSV_LEN];
+};
+
+#define TRS_ASYNC_DMA_JETTY_INPUT_RSV_LEN 16
+struct halAsyncDmaJettyCreateIn {
+    drvAsyncDmaJettyType_t jettyType;
+    drvAsyncDmaJettyPiMode_t piMode;
+    drvAsyncDmaJettyDir_t dir;
+    unsigned int depth;             /* wqe bb index */
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_INPUT_RSV_LEN];
+};
+
+#define TRS_ASYNC_DMA_JETTY_OUTPUT_RSV_LEN 16
+struct halAsyncDmaJettyCreateOut {
+    struct halAsyncJettyHandle *jettyHandle;
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_OUTPUT_RSV_LEN];
+};
+
+#define TRS_ASYNC_DMA_JETTY_DESTROY_RSV_LEN 16
+struct halAsyncJettyDestroyPara {
+    struct halAsyncJettyHandle *jettyHandle;
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_DESTROY_RSV_LEN];
+};
+
+#define TRS_ASYNC_DMA_JETTY_QUERY_IN_RSV_LEN 16
+struct halAsyncDmaJettyQueryIn {
+    struct halAsyncJettyHandle *jettyHandle;
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_QUERY_IN_RSV_LEN];
+};
+
+#define TRS_ASYNC_DMA_JETTY_QUERY_OUT_RSV_LEN 16
+struct halAsyncDmaJettyQueryOut {
+    unsigned int dieId;
+    unsigned int funcId;
+    unsigned int jettyId;
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_QUERY_OUT_RSV_LEN];
+};
+
+struct drvNormalWqeInputPara { /* normal */
+    drvAsyncDmaType_t asyncDmaType;
+    unsigned long long len;
+    uint8_t *src;
+    union {
+        uint8_t *dst;
+        struct drv_sqe_update_info info;
+    };
+};
+
+struct drvBatchWqeInputPara { /* batch */
+    unsigned long long *dst;
+    unsigned long long *src;
+    unsigned long long *len;
+    unsigned long long count;
+};
+
+struct drv2dWqeInputPara { /* 2d */
+    unsigned long long *dst;        /* destination memory address */
+    unsigned long long dpitch;      /* pitch of destination memory */
+    unsigned long long *src;        /* source memory address */
+    unsigned long long spitch;      /* pitch of source memory */
+    unsigned long long width;       /* width of matrix transfer */
+    unsigned long long height;      /* height of matrix transfer */
+    unsigned long long fixedSize;   /* Input: already converted size */
+};
+
+struct drvNopWqeInputPara {
+    unsigned long long nopCnt;
+};
+
+#define TRS_ASYNC_DMA_WQE_CONVERT_IN_RSV_LEN 16
+struct halAsyncDmaWqeInputPara {
+    drvAsyncDmaType_t wqeType;
+    unsigned char *wqeBuffer;
+    unsigned long long wqeBufferLen;
+    union {
+        struct drvNormalWqeInputPara normal;
+        struct drvBatchWqeInputPara batch;
+        struct drv2dWqeInputPara matrix2d;
+        struct drvNopWqeInputPara nop;
+    };
+
+    unsigned int rsv[TRS_ASYNC_DMA_WQE_CONVERT_IN_RSV_LEN];
+};
+
+
+#define TRS_ASYNC_DMA_WQE_CONVERT_OUT_RSV_LEN 16
+struct halAsyncDmaWqeOutputPara {
+    unsigned int wqeCnt;
+    /* 
+     * batch: already complete-converted array element;
+     * others: 0 for partially-converted, 1 for complete-converted
+     */
+    unsigned long long fixedCnt;
+    /*
+     * batch: the actual-converted size for the next partially-converted array element;
+     * others: fixedSize return the actual-converted size if fixedCnt is 1, otherwise return 0
+     */
+    unsigned long long fixedSize;
+    unsigned int rsv[TRS_ASYNC_DMA_WQE_CONVERT_OUT_RSV_LEN];
+};
+
+#define TRS_ASYNC_DMA_JETTY_WQE_FILL_RSV_LEN 16
+struct halAsyncDmaJettyFillInfo {
+    struct halAsyncJettyHandle *jettyHandle;
+    unsigned long long offset;
+    unsigned char *srcWqe;
+    unsigned long long size;
+    unsigned int rsv[TRS_ASYNC_DMA_JETTY_WQE_FILL_RSV_LEN];
 };
 
 struct tsdrv_ctrl_msg {

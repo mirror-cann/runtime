@@ -34,6 +34,7 @@
 #include "rdma_task.h"
 #include "stream_task.h"
 #include "thread_local_container.hpp"
+#include "stream_jetty_handler.h"
 #undef private
 #undef protected
 
@@ -179,7 +180,7 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_INFO)
     captureModel->UpdateNotifyId(stm);
     captureModel->ReleaseSqCq(releaseNum);
 
-    captureModel->BuildSqCq(stm);
+    captureModel->BuildResource(stm);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1062,10 +1063,10 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_normal)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     CaptureModel *captureMdl1 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1));
-    captureMdl1->CaptureModelExecuteFinish();
+    captureMdl1->CaptureModelExecuteFinish(RT_ERROR_NONE);
     uint32_t releaseNum;
     captureMdl1->ReleaseSqCq(releaseNum);
-    captureMdl1->BuildSqCq(rt_ut::UnwrapOrNull<Stream>(streamExe));
+    captureMdl1->BuildResource(rt_ut::UnwrapOrNull<Stream>(streamExe));
 
     error = rtModelDestroy(model1);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1188,11 +1189,16 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_try_recycle)
         static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)));
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    error = (RtPtrToPtr<Context *>(ctx))->TryRecycleCaptureModelJettyResource(
+        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)),
+        JettyType::JETTY_TYPE_H2D);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
     CaptureModel *captureMdl1 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1));
-    captureMdl1->CaptureModelExecuteFinish();
+    captureMdl1->CaptureModelExecuteFinish(RT_ERROR_NONE);
 
     CaptureModel *captureMdl2 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model2));
-    captureMdl2->CaptureModelExecuteFinish();
+    captureMdl2->CaptureModelExecuteFinish(RT_ERROR_NONE);
 
     error = rtModelDestroy(model1);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1266,10 +1272,10 @@ TEST_F(CloudV2CaptureModelTest, poll_end_graph_notify)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 3);
+        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 3, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 30);
+        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 30, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rawDevice->ClearEndGraphNotifyInfoByModel(rt_ut::UnwrapOrNull<Model>(model2));
@@ -1307,11 +1313,11 @@ TEST_F(CloudV2CaptureModelTest, poll_end_graph_notify)
     rawDevice->PollEndGraphNotifyInfo();
 
     error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49);
+        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49);
+        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelDestroy(model1);
@@ -1390,7 +1396,7 @@ TEST_F(CloudV2CaptureModelTest, cascade_stream)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model));
-    captureMdl->CaptureModelExecuteFinish();
+    captureMdl->CaptureModelExecuteFinish(RT_ERROR_NONE);
 
     ret = rtModelDestroy(model);
     EXPECT_EQ(ret, RT_ERROR_NONE);

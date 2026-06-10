@@ -366,6 +366,16 @@ public:
         firstExecuteFlag_.store(firstExecuteFlag);
     }
 
+    bool GetNeedUpdateUBPi() const
+    {
+        return needUpdateUbPi_.load();
+    }
+
+    void SetNeedUpdateUBPi(bool needUpdateUbPi)
+    {
+        needUpdateUbPi_.store(needUpdateUbPi);
+    }
+
     void *GetFuncCallHostMem() const
     {
         return funcCallHostMem_;
@@ -460,6 +470,16 @@ public:
     std::vector<UbAsyncJettyInfo> GetD2dJettyInfo() const
     {
         return d2dJettyInfoList_;
+    }
+
+    void ClearH2dJettyInfoList()
+    {
+        h2dJettyInfoList_.clear();
+    }
+
+    void ClearD2dJettyInfoList()
+    {
+        d2dJettyInfoList_.clear();
     }
 
     bool GetUbModelD2dFlag() const
@@ -572,6 +592,7 @@ private:
     std::list<Stream *> headStreams_;
     std::mutex firstExecuteMutex_;
     std::atomic<bool> firstExecuteFlag_;
+    std::atomic<bool> needUpdateUbPi_;
     void *funcCallHostMem_;
     uint64_t funCallMemSize_;
     uint64_t funcCallSvmMem_; // device侧内存

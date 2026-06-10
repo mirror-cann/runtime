@@ -31,7 +31,7 @@ rtError_t CheckCaptureModelSupportSoftwareSq(Device* const dev) { UNUSED(dev); r
 
 rtError_t CheckCaptureModelForUpdate(const Stream* stm) { UNUSED(stm); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-bool IsSoftwareSqCaptureModel(Model * const mdl) { UNUSED(mdl); return false; }
+bool IsSoftwareSqCaptureModel(const Model * const mdl) { UNUSED(mdl); return false; }
 
 bool CheckCaptureModeSupport(const Context* ctx, const char* funcName) { UNUSED(ctx); UNUSED(funcName); return true; }
 

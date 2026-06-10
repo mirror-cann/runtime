@@ -550,6 +550,7 @@ void ConstructDavidSqeForProfilingDisableTask(TaskInfo * const taskInfo, rtDavid
 void ConstructDavidSqeForProfilerTraceExTask(TaskInfo *taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr);
 void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
     uint64_t sqBaseAddr);
+void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const command);
 void StarsV2MemcpyAsyncTaskUnInit(TaskInfo * const taskInfo);
 void StarsV2DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t devId);
 rtError_t UbDbSendTaskInit(TaskInfo *taskInfo, const rtUbDbInfo_t *dbInfo, const uint16_t source);

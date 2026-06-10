@@ -398,6 +398,8 @@ set(libruntime_v100_src_files
     ${RUNTIME_CORE_DIR}/src/stream/stream_state_callback_manager.cc
     ${RUNTIME_CORE_DIR}/src/event/event_state_callback_manager.cc
     ${RUNTIME_CORE_DIR}/src/plugin_manage/v200/plugin_old_arch.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/jetty_stub.cc
+    ${RUNTIME_CORE_DIR}/src/task/v200/task_david_stub.cc
     ${libruntime_src_files_optional}
     ${xpu_tprt_api_file}
     ${xpu_tprt_src_file}
@@ -422,6 +424,7 @@ set(RUNTIME_INC_DIR_OPEN
     ${RUNTIME_DIR}/src/runtime/core/inc/kernel
     ${RUNTIME_DIR}/src/runtime/core/inc/launch
     ${RUNTIME_DIR}/src/runtime/core/inc/model
+    ${RUNTIME_DIR}/src/runtime/feature/jetty
     ${RUNTIME_DIR}/src/runtime/core/inc/notify
     ${RUNTIME_DIR}/src/runtime/core/inc/profiler
     ${RUNTIME_DIR}/src/runtime/core/inc/soc

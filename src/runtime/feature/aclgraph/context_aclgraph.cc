@@ -23,6 +23,7 @@
 #include "capture_adapt.hpp"
 #include "buffer_allocator.hpp"
 #include "memcpy_c.hpp"
+#include "stream_jetty_handler.h"
 
 namespace cce {
 namespace runtime {
@@ -247,10 +248,11 @@ rtError_t Context::StreamBeginCapture(Stream * const stm, const rtStreamCaptureM
 
     if ((stm->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH_SOFTWARE_ENABLE)) && 
         (stm->Device_()->CheckFeatureSupport(TS_FEATURE_SOFTWARE_SQ_ENABLE)) &&
-        (NpuDriver::CheckIsSupportFeature(device_->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND)) &&
-        (!Runtime::Instance()->GetConnectUbFlag())) {
+        (NpuDriver::CheckIsSupportFeature(device_->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND))) {
         CaptureModel *captureModelTmp = dynamic_cast<CaptureModel *>(captureModel);
         captureModelTmp->SetSoftwareSqEnable();
+        RT_LOG(RT_LOG_DEBUG, "Capture model set software sq enable, device_id=%u, model_id=%u",
+            device_->Id_(), captureModel->Id_());
     }
 
     std::unique_lock<std::mutex> taskLock(captureLock_);
@@ -485,6 +487,19 @@ rtError_t Context::StreamEndCapture(Stream * const stm, Model ** const captureMd
             "capture model load complete failed, device_id=%u, origin stream_id=%d, "
             "capture model_id=%u, stream_id=%d, retCode=%#x.",
             device_->Id_(), stm->Id_(), captureModel->Id_(), captureStream->Id_(), error);
+    } else if (Runtime::Instance()->GetConnectUbFlag()) {
+        // ub + software sq enable
+        for (Stream *innerStm : captureModelTmp->StreamList_()) {
+            if (innerStm != nullptr) {
+                error = StreamJettyHandler::FillNopWqeOnCaptureEnd(innerStm, JettyType::JETTY_TYPE_H2D);
+                COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, ClearCaptureModel(this, stm, captureModel),
+                    "Failed to fill nop wqe, retCode=%#x.", static_cast<uint32_t>(error));
+
+                error = StreamJettyHandler::FillNopWqeOnCaptureEnd(innerStm, JettyType::JETTY_TYPE_D2D);
+                COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, ClearCaptureModel(this, stm, captureModel),
+                    "Failed to fill nop wqe, retCode=%#x.", static_cast<uint32_t>(error));
+            }
+        }
     }
 
     (void)captureModel->ModelExecuteType();

@@ -21,6 +21,7 @@
 #include "ctrl_sq.hpp"
 #include "program.hpp"
 #include "soma.hpp"
+#include "jetty_manager.h"
 namespace cce {
 namespace runtime {
 
@@ -326,6 +327,11 @@ public:
     MemoryPoolManager *GetKernelMemoryPool() const override
     {
         return kernelMemPoolMng_;
+    }
+
+    JettyManager *GetJettyManager() const override
+    {
+        return jettyManager_.get();
     }
 
     uint32_t GetTschVersion() const override
@@ -790,7 +796,7 @@ public:
     rtError_t GetPrintFifoAddrAndCreateThread(uint64_t * const addr, const uint32_t model) override;
 
     rtError_t StoreEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos) override;
-    rtError_t DeleteEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos) override;
+    rtError_t DeleteEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos, const uint32_t errCode) override;
     rtError_t ClearEndGraphNotifyInfoByModel(Model* captureModel) override;
     void PollEndGraphNotifyInfo();
     void PollEndGraphNotifyInfoByModelId(const uint32_t modelId);
@@ -950,6 +956,7 @@ private:
     MemoryPoolManager* kernelMemPoolMng_;
     uint64_t devProfStatus_;
     StreamSqCqManage *streamSqCqManage_;
+    std::unique_ptr<JettyManager> jettyManager_;
     uint32_t tschVersion_{static_cast<uint32_t>(TS_VERSION_LATEST)};
     uint32_t isSupportHcomcpu_{0U};
     DeviceErrorProc *deviceErrorProc_;

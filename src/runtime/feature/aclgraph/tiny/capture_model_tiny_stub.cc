@@ -64,13 +64,13 @@ rtError_t CaptureModel::ReleaseNotifyId(void) { return RT_ERROR_FEATURE_NOT_SUPP
 
 rtError_t CaptureModel::UpdateNotifyId(Stream * const exeStream) { UNUSED(exeStream); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t CaptureModel::BuildSqCq(Stream * const exeStream) { UNUSED(exeStream); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t CaptureModel::BuildResource(Stream * const exeStream) { UNUSED(exeStream); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
 void CaptureModel::DeconstructSqCq(void) {}
 
 rtError_t CaptureModel::ReleaseSqCq(uint32_t &releaseNum) { UNUSED(releaseNum); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-void CaptureModel::CaptureModelExecuteFinish(void) {}
+void CaptureModel::CaptureModelExecuteFinish(const uint32_t errCode) { UNUSED(errCode); }
 
 rtError_t CaptureModel::MarkStreamActiveTask(TaskInfo *streamActiveTask) { UNUSED(streamActiveTask); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 

@@ -90,6 +90,7 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_DRV_OPER_NOT_PERMITTED] = {ACL_ERROR_RT_NO_PERMISSION, "driver error:operation no permitted"};
     rtErrMap_[RT_ERROR_DRV_NO_EVENT_RESOURCES] = {ACL_ERROR_RT_NO_EVENT_RESOURCE, "driver error:no event resource"};
     rtErrMap_[RT_ERROR_DRV_NO_STREAM_RESOURCES] = {ACL_ERROR_RT_NO_STREAM_RESOURCE, "driver error:no stream resource"};
+    rtErrMap_[RT_ERROR_JETTY_POOL_NO_RESOURCES] = {ACL_ERROR_RT_NO_STREAM_RESOURCE, "driver error:no stream resource"};
     rtErrMap_[RT_ERROR_DRV_NO_NOTIFY_RESOURCES] = {ACL_ERROR_RT_NO_NOTIFY_RESOURCE, "driver error:no notify resource"};
     rtErrMap_[RT_ERROR_DRV_NO_MODEL_RESOURCES] = {ACL_ERROR_RT_NO_MODEL_RESOURCE, "driver error:no model resource"};
     rtErrMap_[RT_ERROR_DRV_NOT_SUPPORT] = {ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "driver error:feature not support"};

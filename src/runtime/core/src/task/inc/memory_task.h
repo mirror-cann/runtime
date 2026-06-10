@@ -25,16 +25,15 @@ rtError_t MemcpyAsyncTaskInitV2(TaskInfo * const taskInfo, void *const dst, cons
     const uint64_t height, const uint32_t kind, const uint64_t fixedSize);
 rtError_t MemcpyAsyncTaskInitV3(TaskInfo * const taskInfo, uint32_t cpyType, const void *srcAddr,
     void *desAddr, const uint64_t cpySize, const rtTaskCfgInfo_t *cfgInfo, const rtD2DAddrCfgInfo_t * const addrCfg);
-rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, void** const dsts,
-    void** const srcs, const uint64_t* const sizes, const uint64_t count, const uint64_t fixedSize);
+rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, AsyncDmaBatchInfo &batchInfo);
 rtError_t MemcpyAsyncD2HTaskInit(TaskInfo * const taskInfo, const void *srcAddr, const uint64_t cpySize,
     uint32_t sqId, uint32_t pos);
-rtError_t ConvertAsyncDma(TaskInfo * const taskInfo, TaskInfo * const updateTaskInfo, bool isSqeUpdate = false);
+rtError_t ConvertAsyncDma(TaskInfo * const taskInfo);
+rtError_t ConvertAsyncDmaForTaskUpdate(TaskInfo * const taskInfo, TaskInfo * const updateTaskInfo);
 rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const uint64_t dstPitch,
     const void *const src, const uint64_t srcPitch, const uint64_t width, const uint64_t height,
     const uint64_t fixedSize);
-rtError_t ConvertAsyncDmaBatch(TaskInfo * const taskInfo, void** const dsts,
-    void** const srcs, const uint64_t* const sizes, const uint64_t count, const uint64_t fixedSize);
+rtError_t ConvertAsyncDmaBatch(TaskInfo * const taskInfo, AsyncDmaBatchInfo &batchInfo);
 void ToCommandBodyForMemcpyAsyncTask(TaskInfo * const taskInfo, rtCommand_t *const command);
 void SetStarsResultForMemcpyAsyncTask(TaskInfo * const taskInfo, const rtLogicCqReport_t &logicCq);
 void PrintErrorInfoForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t devId);

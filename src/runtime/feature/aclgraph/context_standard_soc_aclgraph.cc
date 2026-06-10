@@ -56,5 +56,45 @@ rtError_t Context::TryRecycleCaptureModelResource(const uint32_t allocSqNum, con
     return error;
 }
 
+rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel * const excludeMdl, JettyType type)
+{
+    if (!Runtime::Instance()->GetConnectUbFlag()) {
+        return RT_ERROR_NONE;
+    }
+    uint32_t totalRelease = 0U;
+    uint32_t h2dCount = 0U;
+    uint32_t d2dCount = 0U;
+    rtError_t error = RT_ERROR_NONE;
+    modelLock_.Lock();
+    for (Model *model : models_) {
+        if ((model != nullptr) && (model->GetModelType() == RT_MODEL_CAPTURE_MODEL)) {
+            CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(model);
+            if (totalRelease > 0U) {
+                break;
+            }
+            if (!captureMdl->IsSoftwareSqEnable() || (captureMdl == excludeMdl) ||
+                captureMdl->IsCaptureModelRunning()) {
+                continue;
+            }
+
+            h2dCount = 0U;
+            d2dCount = 0U;
+            if (captureMdl->ModelSqOperTryLock()) {
+                error = captureMdl->RecycleAllJetty(h2dCount, d2dCount);
+                captureMdl->ModelSqOperUnLock();
+                COND_PROC(error != RT_ERROR_NONE, break);
+            }
+
+            if (type == JettyType::JETTY_TYPE_H2D) {
+                totalRelease += h2dCount;
+            } else {
+                totalRelease += d2dCount;
+            }
+        }
+    }
+    modelLock_.Unlock();
+
+    return (totalRelease > 0U) ? RT_ERROR_NONE : RT_ERROR_JETTY_POOL_NO_RESOURCES;
+}
 } // namespace runtime
 } // namespace cce

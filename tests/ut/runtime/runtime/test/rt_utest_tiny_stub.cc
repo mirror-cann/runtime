@@ -48,6 +48,9 @@
 #include "capture_model.hpp"
 #include "capture_adapt.hpp"
 #include "capture_model_utils.hpp"
+#include "jetty_manager.h"
+#include "jetty_pool.h"
+#include "stream_jetty_handler.h"
 #include "device_snapshot.hpp"
 #include "snapshot_process_helper.hpp"
 #include "snapshot_callback_manager.hpp"
@@ -926,11 +929,11 @@ TEST_F(TinyStubTest, capture_model_task_stub)
 TEST_F(TinyStubTest, capture_model_sqcq_stub)
 {
     CaptureModel captureModel(RT_MODEL_NORMAL);
-    EXPECT_EQ(captureModel.BuildSqCq(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
+    EXPECT_EQ(captureModel.BuildResource(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
     captureModel.DeconstructSqCq();
     uint32_t releaseNum = 0;
     EXPECT_EQ(captureModel.ReleaseSqCq(releaseNum), RT_ERROR_FEATURE_NOT_SUPPORT);
-    captureModel.CaptureModelExecuteFinish();
+    captureModel.CaptureModelExecuteFinish(RT_ERROR_NONE);
     EXPECT_EQ(captureModel.MarkStreamActiveTask(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(captureModel.RestoreForSoftwareSq(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
 }
@@ -1298,4 +1301,18 @@ TEST_F(TinyStubTest, context_capture_info_stub)
     delete dev;
     dev = nullptr;
     ctx.device_ = nullptr;
+}
+
+TEST_F(TinyStubTest, jetty_stub)
+{
+    JettyManager mgr(0);
+    mgr.Clear();
+
+    JettyPool *pool = new JettyPool(0);
+    delete pool;
+
+    EXPECT_EQ(StreamJettyHandler::FillNopWqeOnCaptureEnd(nullptr, JettyType::JETTY_TYPE_H2D), RT_ERROR_NONE);
+    EXPECT_EQ(StreamJettyHandler::GetJettyTypeFromTask(nullptr), JettyType::JETTY_TYPE_MAX);
+    EXPECT_EQ(StreamJettyHandler::HandleUbDmaTask(nullptr, nullptr, JettyType::JETTY_TYPE_H2D, nullptr, nullptr),
+        RT_ERROR_NONE);
 }

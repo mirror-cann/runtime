@@ -243,5 +243,48 @@ rtError_t NpuDriver::StreamMemPoolTrim(const uint32_t deviceId, const uint64_t p
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
+rtError_t NpuDriver::AsyncDmaJettyCreate(
+    const uint32_t devId, const uint32_t piType, const uint32_t depth, const uint32_t dir, uint64_t* const handle)
+{
+    UNUSED(devId);
+    UNUSED(piType);
+    UNUSED(depth);
+    UNUSED(dir);
+    UNUSED(handle);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::AsyncDmaJettyDestroy(const uint32_t devId, const uint64_t handle)
+{
+    UNUSED(devId);
+    UNUSED(handle);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::AsyncDmaJettyQuery(
+    const uint32_t devId, const uint64_t handle, uint32_t& dieId, uint32_t& functionId, uint32_t& jettyId)
+{
+    UNUSED(devId);
+    UNUSED(handle);
+    UNUSED(dieId);
+    UNUSED(functionId);
+    UNUSED(jettyId);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::AsyncDmaWqeConvert(const uint32_t devId, AsyncWqeInputPara* input, AsyncWqeOutputPara* output)
+{
+    UNUSED(devId);
+    UNUSED(input);
+    UNUSED(output);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo* fillInfo)
+{
+    UNUSED(devId);
+    UNUSED(fillInfo);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 }
 }
