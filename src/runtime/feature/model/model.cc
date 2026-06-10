@@ -761,6 +761,7 @@ rtError_t Model::ConfigSqTail(void) const
 
 rtError_t Model::BuildSqCqForAutoSplit()
 {
+    COND_RETURN_ERROR_MSG_INNER(static_cast<uint32_t>(StreamList_().size()) == 0U, RT_ERROR_MODEL_STREAM, "The model does not contain any stream.");
     Device * const dev = Context_()->Device_();
     uint32_t streamNum = 0U;
     for (auto stm : StreamList_()) {
@@ -771,11 +772,15 @@ rtError_t Model::BuildSqCqForAutoSplit()
             "model_id=%u, retCode=%#x.", dev->Id_(), stm->Id_(), Id_(), static_cast<uint32_t>(ret));
     }
 
+    if (streamNum == 0U) {
+        return RT_ERROR_NONE;
+    }
+    
     if (modelSwitchInfo_ == nullptr) {
         modelSwitchInfo_ = new (std::nothrow) struct sq_switch_stream_info[streamNum]();
         COND_PROC_RETURN_AND_MSG_OUTER(modelSwitchInfo_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, 
             RT_LOG(RT_LOG_ERROR, "new sq switch info failed, model_id=%u, auto_split_sq=%d, sq_num=%u.", Id_(), IsAutoSplitSq(), streamNum),
-            sizeof(sq_switch_stream_info) * streamNum);  
+            sizeof(sq_switch_stream_info) * streamNum);
     }
     uint32_t index = 0U;
     for (auto stm : StreamList_()) {
