@@ -155,7 +155,7 @@ TEST_F(RtErrorCodeTest, RePortErrCode)
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1016, "MemCopySync", "Other threads of the current context are in the capture state");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, "rtMemCpy", "size", "size is not 0");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1018, "aclrtSetLabel", "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1019, "AddTaskToList", "stream task public buffer is full");
+    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1019, "Adding task to stream", "stream task public buffer is full");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, "rtGetSocVersion", "memcpy_s", "1", "count is greater than dest_max", "src=0x1, dest=0x2, dest_max=10, count=11.");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1021, "semaphore", "aclrtCreateStream");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, "1, 2, 2", "SetVisible", "not repeat");

@@ -2381,7 +2381,7 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
         if (!refObj.IncRef()) {
             do {
                 Device * const dev = DeviceRetain(devId, i);
-                NULL_PTR_GOTO_MSG_INNER(dev, CTX_FREE, err, RT_ERROR_DEVICE_RETAIN);
+                COND_GOTO_ERROR(dev == nullptr, CTX_FREE, err, RT_ERROR_DEVICE_RETAIN, "Check param failed, dev can not be NULL!");
 
                 ctx = new(std::nothrow) Context(dev, true);
                 COND_GOTO_MSG_OUTER(ctx == nullptr, CTX_FREE, err, RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013, sizeof(Context));

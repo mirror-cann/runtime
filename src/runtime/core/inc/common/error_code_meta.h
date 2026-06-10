@@ -125,7 +125,7 @@
     /* EE1019 - Execution_Error */                                            \
     X(EE1019, "EE1019",                                                       \
       ("func", "reason"),                                                     \
-      "%s (for delivering tasks to the stream) failed. "                      \
+      "%s failed. "                                                           \
       "Reason: %s. ErrorCode=EE1019.\n",                                      \
       DLOG_ERROR)                                                             \
     /* EE1020 - Invalid_Argument */                                           \

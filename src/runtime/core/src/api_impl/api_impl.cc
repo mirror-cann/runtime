@@ -3279,7 +3279,7 @@ rtError_t ApiImpl::SetDevice(const int32_t devId)
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "GetDrvSentinelMode failed");
     RefObject<Context *> *context = nullptr;
     context = rt->PrimaryContextRetain(static_cast<uint32_t>(devId));
-    NULL_PTR_RETURN_MSG(context, RT_ERROR_DEVICE_RETAIN);
+    NULL_PTR_RETURN(context, RT_ERROR_DEVICE_RETAIN);
 
     RT_LOG(RT_LOG_INFO, "SetCurRef = %p,drv devId=%u", context->GetVal(), devId);
     InnerThreadLocalContainer::SetCurRef(context);

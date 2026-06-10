@@ -3296,9 +3296,10 @@ rtError_t Stream::StarsAddTaskToStream(TaskInfo * const tsk, const uint32_t send
     if (bind) {
         // If model stream is already full, return STREAM_FULL. PendingNum add 1 in TaskSubmited. Because the task will
         // not be sent, pendingNum sub 1 is performed.
-        COND_PROC_RETURN_ERROR_MSG_INNER(posTail + sendSqeNum >= rtsqDepth, RT_ERROR_STREAM_FULL, pendingNum_.Sub(1),
-                               "The model stream is full, stream_id=%d, task_id=%u, posTail=%u, sendSqeNum=%u, rtsqDepth=%u.",
-                               streamId_, tsk->id, posTail, sendSqeNum, rtsqDepth);
+        COND_PROC_RETURN_AND_MSG_OUTER(posTail + sendSqeNum >= rtsqDepth, RT_ERROR_STREAM_FULL, ErrorCode::EE1019, pendingNum_.Sub(1),
+                               "Adding task to stream", "The model stream is full, stream_id=" + std::to_string(streamId_) + ", task_id=" 
+                               + std::to_string(tsk->id) + ", posTail=" + std::to_string(posTail) + ", sendSqeNum=" 
+                               + std::to_string(sendSqeNum) + ", rtsqDepth=" + std::to_string(rtsqDepth));
         const rtError_t ret = PackingTaskGroup(tsk, static_cast<uint16_t>(streamId_));
         COND_PROC_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, ret, SetTaskGroupErrCode(ret),
             "Pack task group failed, stream_id=%d, task_id=%hu.", streamId_, tsk->id);
@@ -3341,10 +3342,11 @@ rtError_t Stream::StarsAddTaskToStreamForModelUpdate(TaskInfo* const tsk, const 
     const uint32_t rtsqDepth = GetSqDepth();
     const uint32_t newPosTail = (posTail + sendSqeNum) % rtsqDepth;
     // If model stream is already full, return STREAM_FULL.
-    COND_RETURN_ERROR_MSG_INNER(
-        (posTail + sendSqeNum >= rtsqDepth), RT_ERROR_STREAM_FULL,
-        "The model stream is full, stream_id=%d, task_id=%u, posTail=%u, sendSqeNum=%u, rtsqDepth=%u.", streamId_, tsk->id,
-        posTail, sendSqeNum, rtsqDepth);
+    COND_RETURN_AND_MSG_OUTER(
+        (posTail + sendSqeNum >= rtsqDepth), RT_ERROR_STREAM_FULL, ErrorCode::EE1019,
+        "Adding task to stream for model update", "The model stream is full, stream_id=" + std::to_string(streamId_) + ", task_id=" 
+        + std::to_string(tsk->id) + ", posTail=" + std::to_string(posTail) + ", sendSqeNum=" 
+        + std::to_string(sendSqeNum) + ", rtsqDepth=" + std::to_string(rtsqDepth));
     taskPersistentTail_.Set(newPosTail);
     delayRecycleTaskid_.push_back(tsk->id);
 
@@ -3471,10 +3473,10 @@ rtError_t Stream::UpdateAllPersistentTask()
             "Value %u of sendSqeNum cannot be greater than the maximum number (%u) of SQEs allowed by the task. task_id=%hu, task_type=%d(%s).",
             sendSqeNum, SQE_NUM_PER_STARS_TASK_MAX, workTask->id, workTask->type, workTask->typeName);
         if (workTask->updateFlag == RT_TASK_UPDATE || workTask->updateFlag == RT_TASK_KEEP) {
-            COND_RETURN_ERROR_MSG_INNER(
-                (totalSendSqeNum + sendSqeNum) >= STREAM_SQ_MAX_DEPTH, RT_ERROR_STREAM_FULL,
-                "The total number of SQEs(%u) cannot be greater than or equal to the SQ depth %u.",
-                totalSendSqeNum + sendSqeNum, STREAM_SQ_MAX_DEPTH);
+            COND_RETURN_AND_MSG_OUTER(
+                (totalSendSqeNum + sendSqeNum) >= STREAM_SQ_MAX_DEPTH, RT_ERROR_STREAM_FULL, ErrorCode::EE1019,
+                "Updating all persistent tasks", "The total number of SQEs " + std::to_string(totalSendSqeNum + sendSqeNum) 
+                + " cannot be greater than or equal to the SQ depth " + std::to_string(STREAM_SQ_MAX_DEPTH));
         }
         switch (workTask->updateFlag) {
             case RT_TASK_UPDATE:

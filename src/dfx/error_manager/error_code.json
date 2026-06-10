@@ -616,7 +616,7 @@
       "errClass": "RTS Errors",
       "errTitle": "Execution_Error",
       "ErrCode": "EE1019",
-      "ErrMessage": "%s (for delivering tasks to the stream) failed. Reason: %s.",
+      "ErrMessage": "%s failed. Reason: %s.",
       "Arglist": "func, reason",
       "suggestion": {
         "Possible Cause": "N/A",

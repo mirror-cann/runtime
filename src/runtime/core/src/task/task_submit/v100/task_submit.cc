@@ -449,7 +449,7 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
     while (taskInfo == nullptr) {
         if (stm->GetBindFlag()) {
             stm->StreamUnLock();
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1019, "the number of pending tasks on the stream exceeds the limit");
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1019, "Allocating task info", "The number of pending tasks in the stream exceeds the limit");
             return RT_ERROR_STREAM_FULL;
         }
         stm->StreamUnLock();
