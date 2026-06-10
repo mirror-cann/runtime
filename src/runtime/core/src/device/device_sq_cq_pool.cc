@@ -206,7 +206,11 @@ rtError_t DeviceSqCqPool::AllocSqCqForAutoSplit(rtDeviceSqCqInfo_t * const sqCqI
     RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u", device_->Id_(), device_->DevGetTsId());
     COND_RETURN_INFO((sqCqInfo == nullptr), RT_ERROR_INVALID_VALUE,
         "sqCqInfo is nullptr, deviceId=%u.", device_->Id_());
-    rtError_t error = AllocSqCqFromDrv(sqCqInfo, TSDRV_FLAG_NO_SQ_MEM, PRE_ALLOC_SQ_CQ_RETRY_MAX_COUNT);
+    uint32_t drvFlag = static_cast<uint32_t>(TSDRV_FLAG_NO_SQ_MEM);
+    if (Runtime::Instance()->GetConnectUbFlag()) {
+        drvFlag |= static_cast<uint32_t>(TSDRV_FLAG_TASK_SINK_SQ);
+    }
+    rtError_t error = AllocSqCqFromDrv(sqCqInfo, drvFlag, PRE_ALLOC_SQ_CQ_RETRY_MAX_COUNT);
     COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, retCode=0x%#x.",
         static_cast<uint32_t>(error));
     error = AllocSqRegVirtualAddr(sqCqInfo->sqId, sqCqInfo->sqRegVirtualAddr);
@@ -214,8 +218,8 @@ rtError_t DeviceSqCqPool::AllocSqCqForAutoSplit(rtDeviceSqCqInfo_t * const sqCqI
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo->sqId, sqCqInfo->cqId),
         "Failed to alloc sq reg addr, retCode=0x%#x.", static_cast<uint32_t>(error));
 
-    RT_LOG(RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, error=%u",
-        sqCqInfo->sqId, sqCqInfo->cqId, error);
+    RT_LOG(RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, drvFlag=0x%x, error=%u",
+        sqCqInfo->sqId, sqCqInfo->cqId, drvFlag, error);
 
     return RT_ERROR_NONE;
 }

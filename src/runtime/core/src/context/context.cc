@@ -1377,8 +1377,7 @@ rtError_t Context::ModelCreate(Model ** const result, ModelType type)
     error = newModel->Setup(this);
     ERROR_GOTO(error, ERROR_RECYCLE, "Setup model failed, retCode=%#x.", error);
 
-    if (type == RT_MODEL_NORMAL && isHostSupport && isTsSupport &&
-            isDrvSupport && !(Runtime::Instance()->GetConnectUbFlag())) {
+    if (type == RT_MODEL_NORMAL && isHostSupport && isTsSupport && isDrvSupport) {
         newModel->SetAutoSplitSq(true);
     }
     modelLock_.Lock();

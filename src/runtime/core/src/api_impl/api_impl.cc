@@ -1465,7 +1465,7 @@ rtError_t ApiImpl::StreamCreate(Stream ** const stm, const int32_t priority, con
 
     bool isAutoSplitEnable = false;
     if (((flags & RT_STREAM_PERSISTENT) != 0U && (flags & RT_STREAM_AICPU) == 0U) && isHostSupport && isTsSupport &&
-            isDrvSupport && !(Runtime::Instance()->GetConnectUbFlag())) {
+            isDrvSupport) {
         isAutoSplitEnable = true;
     }
 
@@ -5468,7 +5468,6 @@ static rtError_t HandlePersistentStreamFeature(const rtChipType_t chipType, int6
 {
     rtError_t error = RT_ERROR_NONE;
     bool haveDevice = Runtime::Instance()->HaveDevice();
-    bool isUBFlag = Runtime::Instance()->GetConnectUbFlag();
     bool isChipSupport = IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MODEL_PERSISTENT_STREAM_UNLIMITED_DEPTH);
     *val = isChipSupport ? 
         static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
@@ -5476,7 +5475,7 @@ static rtError_t HandlePersistentStreamFeature(const rtChipType_t chipType, int6
         Device * const dev = curCtx->Device_();
         bool isTsSupport = dev->CheckFeatureSupport(TS_FEATURE_SOFTWARE_SQ_ENABLE);
         bool isDrvSupport = NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND);
-        *val = isChipSupport && isTsSupport && isDrvSupport && !isUBFlag ?
+        *val = isChipSupport && isTsSupport && isDrvSupport ?
             static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
     } else {
         *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT); 
