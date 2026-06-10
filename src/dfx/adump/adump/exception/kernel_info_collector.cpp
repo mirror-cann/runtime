@@ -28,14 +28,13 @@
 #include "adump_dsmi.h"
 #include "runtime/base.h"
 #include "exception_info_common.h"
+#include "kernel_symbol_locator.h"
 #include "kernel_info_collector.h"
 
 namespace Adx {
 namespace {
 const std::set<char> INVALID_FILE_NAME_CHAR = {' ', '.', '/', '\\'};
 constexpr uint64_t JSON_SUFFIX_LEN = 5;  // length of ".json"
-constexpr uint32_t ELF_STT_TYPE = 0xF;
-constexpr uint32_t ELF_STB_BIND = 4;
 }  // namespace
 
 int32_t StartCollectKernelAsync(std::shared_ptr<KernelInfoCollector> collector, const std::string &dumpPath) {
@@ -53,6 +52,11 @@ int32_t StartCollectKernelAsync(std::shared_ptr<KernelInfoCollector> collector, 
 
 void KernelInfoCollector::LoadKernelInfo(const rtExceptionArgsInfo &argsInfo)
 {
+    kernelBinHandle_ = nullptr;
+    kernelBinData_.clear();
+    kernelBinSize_ = 0;
+    kernelName_.clear();
+
     kernelBinHandle_ = argsInfo.exceptionKernelInfo.bin;  // binHandle
     kernelBinSize_ = argsInfo.exceptionKernelInfo.binSize;
     if ((argsInfo.exceptionKernelInfo.kernelName != nullptr) && (argsInfo.exceptionKernelInfo.kernelNameSize != 0)) {
@@ -63,9 +67,9 @@ void KernelInfoCollector::LoadKernelInfo(const rtExceptionArgsInfo &argsInfo)
              kernelName_.c_str());
 }
 
-int32_t KernelInfoCollector::InitFromBinHandle(rtBinHandle bin, const std::string &kernelName)
-{ 
-    kernelBinHandle_ = bin;
+int32_t KernelInfoCollector::InitFromBinHandle(rtBinHandle BinHandle, const std::string &kernelName)
+{
+    kernelBinHandle_ = BinHandle;
     kernelName_ = kernelName;
 
     return LoadKernelBinBuffer();
@@ -76,34 +80,21 @@ int32_t KernelInfoCollector::LoadKernelBinBuffer()
     if (kernelBinHandle_ == nullptr) {
         return ADUMP_SUCCESS;
     }
+    std::string binData;
     uint32_t binSize = 0;
-    void *binAddr = nullptr;
-    rtError_t rtRet = rtGetBinBuffer(kernelBinHandle_, RT_BIN_HOST_ADDR, &binAddr, &binSize);
-    if (rtRet != RT_ERROR_NONE || binAddr == nullptr || binSize == 0) {
-        IDE_LOGE("rtGetBinBuffer kernel bin addr failed, ret=%d, bin=%p.",
-            static_cast<int32_t>(rtRet), kernelBinHandle_);
+    int32_t ret = ExceptionInfoCommon::GetBinDataFromHandle(kernelBinHandle_, binData, binSize);
+    if (ret != ADUMP_SUCCESS) {
         kernelBinData_ = "";
         return ADUMP_FAILED;
     }
-
     kernelBinSize_ = binSize;
-    kernelBinData_ = std::string(static_cast<AdxStringBuffer>(binAddr), binSize);
-    IDE_LOGI("LoadKernelBinBuffer success, binHandle=%p, binAddr=%p, binSize=%u",
-        kernelBinHandle_, binAddr, binSize);
+    kernelBinData_ = binData;
     return ADUMP_SUCCESS;
 }
 
 std::string KernelInfoCollector::GetProcessedKernelName() const
 {
-    std::string kernelName = kernelName_;
-    std::string mixSuffix[] = {"_mix_aic", "_mix_aiv"};
-    for (const auto &suffix : mixSuffix) {
-        std::string::size_type pos = kernelName.find(suffix);
-        if (pos != std::string::npos) {
-            kernelName.replace(pos, suffix.size(), "");
-        }
-    }
-    return kernelName;
+    return ExceptionInfoCommon::GetKernelNameWithoutMixSuffix(kernelName_);
 }
 
 int32_t KernelInfoCollector::StartCollectKernel(const std::string &dumpPath) const
@@ -384,162 +375,4 @@ int32_t KernelInfoCollector::CollectKernelFile(const std::string &kernelName, co
     return ADUMP_SUCCESS;
 }
 
-int32_t KernelInfoCollector::GetExceptionRegInfo(const rtExceptionInfo &exception, ExceptionRegInfo &exceptionRegInfo)
-{
-    rtError_t rtRet = rtGetExceptionRegInfo(&exception, &exceptionRegInfo.errRegInfo, &exceptionRegInfo.coreNum);
-    IDE_CTRL_VALUE_FAILED(rtRet == RT_ERROR_NONE, return ADUMP_FAILED,
-        "Call rtGetExceptionRegInfo for error register information failed. ret: %d", static_cast<int32_t>(rtRet));
-    IDE_LOGE("Get error register information. coreNum=%u", exceptionRegInfo.coreNum);
-    return ADUMP_SUCCESS;
-}
-
-void KernelInfoCollector::GetKernelBinInfo(const rtExceptionInfo &exception, std::vector<char> &binData,
-    uint32_t *binSize)
-{
-    rtExceptionArgsInfo_t exceptionArgsInfo{};
-    rtExceptionExpandType_t exceptionTaskType = exception.expandInfo.type;
-    (void)ExceptionInfoCommon::GetExceptionInfo(exception, exceptionTaskType, exceptionArgsInfo);
-    void *binAddr = nullptr;
-    rtError_t rtRet = rtGetBinBuffer(exceptionArgsInfo.exceptionKernelInfo.bin, RT_BIN_HOST_ADDR, &binAddr, binSize);
-    IDE_CTRL_VALUE_FAILED((rtRet == RT_ERROR_NONE) && (binAddr != nullptr), return,
-        "Call rtGetBinBuffer for host kernel object failed. ret: %d", static_cast<int32_t>(rtRet));
-    binData.assign(static_cast<char*>(binAddr), static_cast<char*>(binAddr) + *binSize);
-    IDE_LOGI("Get host kernel object success. kernel size=%u", *binSize);
-}
-
-void KernelInfoCollector::DumpKernelErrorSymbols(const rtExceptionInfo &exception, ExceptionRegInfo &exceptionRegInfo)
-{
-    IDE_CTRL_VALUE_FAILED(GetExceptionRegInfo(exception, exceptionRegInfo) == ADUMP_SUCCESS, return,
-        "Get exception register information failed!");
-    std::vector<char> binData;
-    uint32_t binSize = 0;
-    GetKernelBinInfo(exception, binData, &binSize);
-    IDE_CTRL_VALUE_FAILED(!binData.empty(), return, "Get host kernel object failed!");
-    KernelSymbols kernelSymbols{false, false, 0, 0, {}};
-    ParseKernelSymbols(binData.data(), kernelSymbols);
-    PrintKernelErrorSymbols(kernelSymbols, exceptionRegInfo);
-}
-
-void KernelInfoCollector::DumpKernelErrorSymbols(const rtExceptionInfo &exception)
-{
-    ExceptionRegInfo exceptionRegInfo{0, nullptr};
-    DumpKernelErrorSymbols(exception, exceptionRegInfo);
-}
-
-bool KernelInfoCollector::EndsWith(const char* source, const char* suffix)
-{
-    if (!source || !suffix) {
-        return false;
-    }
-
-    size_t srcLen = strlen(source);
-    size_t suffixLen = strlen(suffix);
-    if (suffixLen > srcLen) {
-        return false;
-    }
-    return strncmp(source + srcLen - suffixLen, suffix, suffixLen) == 0;
-}
-
-void KernelInfoCollector::ParseSuperKernelSymbols(const Elf64_Sym *symbolTable, size_t symbolSize,
-    const char *strTable, KernelSymbols &kernelSymbols)
-{
-    uint32_t functionCount = 0;
-    uint32_t globalCount = 0;
-    for (uint64_t i = 0; i < symbolSize / sizeof(Elf64_Sym); i++) {
-        if ((symbolTable[i].st_info & ELF_STT_TYPE) == STT_FUNC) {
-            functionCount++;
-        }
-        if (static_cast<uint8_t>(symbolTable[i].st_info >> ELF_STB_BIND) == static_cast<uint8_t>(STB_GLOBAL)) {
-            globalCount++;
-        }
-
-        if ((symbolTable[i].st_info & ELF_STT_TYPE) != STT_FUNC) {
-            continue;
-        }
-        const char* name = strTable + symbolTable[i].st_name;
-        uint64_t offset = symbolTable[i].st_value;
-        uint64_t size = symbolTable[i].st_size;
-        IDE_LOGI("Function Symbol. offset=%08lx, size=%08lx, name=%s", offset, size, name);
-        KernelSymbolInfo symbolInfo{offset, size, std::string(name)};
-        kernelSymbols.symbols.emplace_back(symbolInfo);
-
-        // find global function symbol for entry symbol
-        if (static_cast<uint8_t>(symbolTable[i].st_info >> ELF_STB_BIND) != static_cast<uint8_t>(STB_GLOBAL)) {
-            continue;
-        }
-        if (!kernelSymbols.existAicBase && EndsWith(name, "_mix_aic")) {
-            kernelSymbols.aicBase = offset;
-            kernelSymbols.existAicBase = true;
-            IDE_LOGE("Find mix_aic entry function symbol. offset=%08lx, size=%08lx, name=%s", offset, size, name);
-        }
-        if (!kernelSymbols.existAivBase && EndsWith(name, "_mix_aiv")) {
-            kernelSymbols.aivBase = offset;
-            kernelSymbols.existAivBase = true;
-            IDE_LOGE("Find mix_aiv entry function symbol. offset=%08lx, size=%08lx, name=%s", offset, size, name);
-        }
-    }
-
-    if (functionCount <= globalCount) {
-        kernelSymbols.existAicBase = false;
-        kernelSymbols.existAivBase = false;
-        IDE_LOGE("It is Non-SuperKernel. functionCount=%u, globalCount=%u", functionCount, globalCount);
-    }
-}
-
-void KernelInfoCollector::ParseKernelSymbols(const char *elf, KernelSymbols &kernelSymbols)
-{
-    IDE_CTRL_VALUE_FAILED(elf != nullptr, return, "kernel object is nil");
-    const Elf64_Ehdr *ehdr = reinterpret_cast<const Elf64_Ehdr *>(elf);
-    uint64_t sectionCount = ehdr->e_shnum;
-    const Elf64_Shdr *sectionHeader = reinterpret_cast<const Elf64_Shdr *>(elf + ehdr->e_shoff);
-    const char *sectionStrTable = elf + sectionHeader[ehdr->e_shstrndx].sh_offset;
-    const char *strTable = nullptr;
-    const Elf64_Sym *symbolTable = nullptr;
-    size_t symbolSize = 0;
-    for (uint64_t i = 0; i < sectionCount; i++) {
-        if (sectionHeader[i].sh_type == SHT_NULL || sectionHeader[i].sh_type == SHT_NOBITS) {
-            continue;
-        }
-        const char *sectionName = sectionStrTable + sectionHeader[i].sh_name;
-        if (strcmp(".symtab", sectionName) == 0) {
-            symbolTable = reinterpret_cast<const Elf64_Sym *>(elf + sectionHeader[i].sh_offset);
-            symbolSize = sectionHeader[i].sh_size;
-        } else if (strcmp(".strtab", sectionName) == 0) {
-            strTable = elf + sectionHeader[i].sh_offset;
-        }
-    }
-    if (!symbolTable || !strTable) {
-        IDE_LOGE("readelf from kernel object error. Not find symtab[%p] or strtab[%p]", symbolTable, strTable);
-        return;
-    }
-    ParseSuperKernelSymbols(symbolTable, symbolSize, strTable, kernelSymbols);
-}
-
-void KernelInfoCollector::PrintKernelErrorSymbols(const KernelSymbols &kernelSymbols,
-    const ExceptionRegInfo &exceptionRegInfo)
-{
-    rtExceptionErrRegInfo_t coreErrRegInfo;
-    uint64_t offset = 0;
-    for (uint32_t i = 0; i < exceptionRegInfo.coreNum; i++) {
-        coreErrRegInfo = exceptionRegInfo.errRegInfo[i];
-        if (coreErrRegInfo.coreType == RT_CORE_TYPE_AIC && kernelSymbols.existAicBase) {
-            offset = coreErrRegInfo.currentPC - coreErrRegInfo.startPC;
-        } else if (coreErrRegInfo.coreType == RT_CORE_TYPE_AIV && kernelSymbols.existAivBase) {
-            offset = coreErrRegInfo.currentPC - coreErrRegInfo.startPC + kernelSymbols.aivBase;
-        } else {
-            continue;
-        }
-        IDE_LOGI("coreId=%u, coreType=%hhu, startPC=%lx, currentPC=%lx, offset=%lx",
-            coreErrRegInfo.coreId, coreErrRegInfo.coreType, coreErrRegInfo.startPC,
-            coreErrRegInfo.currentPC, offset);
-        for (const KernelSymbolInfo &symbolInfo: kernelSymbols.symbols) {
-            if (symbolInfo.offset <= offset && offset < symbolInfo.offset + symbolInfo.size) {
-                IDE_LOGE("[Dump][Exception] coreId=%u, coreType=%hhu, startPC=%lx, currentPC=%lx, offset=%lx, "
-                    "symbol name=%s, symbol size=%lx, symbol offset=%lx",
-                    coreErrRegInfo.coreId, coreErrRegInfo.coreType, coreErrRegInfo.startPC, coreErrRegInfo.currentPC,
-                    offset, symbolInfo.name.c_str(), symbolInfo.size, symbolInfo.offset);
-            }
-        }
-    }
-}
 }  // namespace Adx

@@ -15,13 +15,16 @@
 #include "sys_utils.h"
 #include "path.h"
 #include "exception_info_common.h"
+#include "kernel_symbol_locator.h"
 #include "dump_core.h"
 
 namespace Adx {
 int32_t DumpCore::DumpCoreFile(const rtExceptionInfo &exception)
 {
+    if (ExceptionInfoCommon::GetExceptionRegInfo(exception, exceptionRegInfo_) == ADUMP_SUCCESS) {
+        KernelSymbolLocator::DumpErrorSymbols(exception, exceptionRegInfo_);
+    }
     DumpCoreInfo(exception.deviceid);
-    KernelInfoCollector::DumpKernelErrorSymbols(exception, exceptionRegInfo_);
     DumpGlobalMemory(exception);
     DumpResourceInit();
 
@@ -44,8 +47,7 @@ void DumpCore::DumpGlobalMemory(const rtExceptionInfo &exception)
     std::vector<GlobalMemInfo> memInfoList;
 
     rtExceptionArgsInfo_t exceptionArgsInfo{};
-    rtExceptionExpandType_t exceptionTaskType = exception.expandInfo.type;
-    if (ExceptionInfoCommon::GetExceptionInfo(exception, exceptionTaskType, exceptionArgsInfo) != ADUMP_SUCCESS) {
+    if (ExceptionInfoCommon::GetExceptionInfo(exception, exceptionArgsInfo) != ADUMP_SUCCESS) {
         IDE_LOGE("Get exception args info failed.");
         return;
     }
@@ -228,8 +230,7 @@ void DumpCore::SaveCoreFile(const rtExceptionInfo &exception)
 {
     std::string kernelName;
     rtExceptionArgsInfo_t exceptionArgsInfo{};
-    rtExceptionExpandType_t exceptionTaskType = exception.expandInfo.type;
-    if (ExceptionInfoCommon::GetExceptionInfo(exception, exceptionTaskType, exceptionArgsInfo) != ADUMP_SUCCESS) {
+    if (ExceptionInfoCommon::GetExceptionInfo(exception, exceptionArgsInfo) != ADUMP_SUCCESS) {
         IDE_LOGE("Get exception args info failed.");
         kernelName = DEFAULT_KERNEL_NAME;
     } else {

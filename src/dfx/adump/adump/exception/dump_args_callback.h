@@ -32,12 +32,14 @@ public:
     int32_t DumpExtraTensors();
     int32_t Dump();
     int32_t DumpKernelBin();
+    int32_t DumpKernelErrorSymbols();
 
 private:
     int32_t QueryDfxInfo(std::vector<uint8_t> &dfxBuffer);
     int32_t QueryDfxIsTikInfo(rtFuncHandle funcHandle);
     void RecordDumpLog(const std::string &log);
     
+    rtExceptionInfo exception_;
     std::vector<std::string> logRecord_;
     std::vector<TensorBuffer> tensorBuffer_;
     std::vector<DumpWorkspace> workspaces_;

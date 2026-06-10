@@ -8,14 +8,17 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
+#include <set>
+#include <sstream>
+#include "securec.h"
 #include "dfx_args_parser.h"
 #include "dump_memory.h"
 #include "adump_dsmi.h"
 #include "log/adx_log.h"
-#include <cinttypes>
-#include <set>
 
 namespace Adx {
+uint64_t GetDFXInfoChunkCursor(uint8_t bufferId);
+
 namespace {
 constexpr uint32_t ATOMIC_INDEX_SIZE = 8;
 constexpr uint32_t BUFFER_ID_SHIFT_BITS = 31;
@@ -25,6 +28,16 @@ constexpr uint64_t MAGIC_NUM = 0xA5A5A5A500000000;
 constexpr uint64_t MAGIC_NUM_MASK = 0xFFFFFFFF00000000;
 constexpr uint64_t SPACE_MASK = 0x00000000FFFFFFFF;
 constexpr uint32_t ARGS_PER_STRING_MAX_LEN = 20;
+
+uint64_t ReadAtomicIndex(const uint8_t *data)
+{
+    uint64_t atomicIndex = 0;
+    if (memcpy_s(&atomicIndex, sizeof(atomicIndex), data, sizeof(atomicIndex)) != EOK) {
+        IDE_LOGE("Read atomicIndex failed, data=%p.", data);
+        return 0U;
+    }
+    return atomicIndex;
+}
 }
 
 DfxArgsParser::~DfxArgsParser()
@@ -153,7 +166,6 @@ const char* DfxArgsParser::GetPointerTypeName(DfxPointerType pointerType)
 
 int32_t DfxArgsParser::GetShapeData(uint64_t atomicIndex)
 {
-    IDE_LOGI("The atomicIndex is %llu", atomicIndex);
     uint8_t bufferId = static_cast<uint8_t>((atomicIndex & BUFFER_ID_MASK) >> BUFFER_ID_SHIFT_BITS);
     uint32_t offset = static_cast<uint32_t>(atomicIndex & OFFSET_MASK);
     uint32_t chunkSize = 0;
@@ -165,33 +177,33 @@ int32_t DfxArgsParser::GetShapeData(uint64_t atomicIndex)
         chunkSize = STATIC_RING_CHUNK_SIZE;
         chunkAddr = g_staticChunk;
     }
-    if (chunkAddr == nullptr) {
-        IDE_LOGE("The chunk memory is nullptr.");
-        return ADUMP_FAILED;
-    }
-    if (offset >= chunkSize) {
-        IDE_LOGE("The offset[%u] is over the max offset[%u].", offset, chunkSize);
-        return ADUMP_FAILED;
-    }
+    IDE_LOGI("Decode atomicIndex, atomicIndex=0x%llx, bufferId=%u, offset=%u, chunkAddr=%p, chunkSize=%u.",
+        atomicIndex, bufferId, offset, chunkAddr, chunkSize);
+
+    IDE_CTRL_VALUE_FAILED(chunkAddr != nullptr, return ADUMP_FAILED, "GetShapeData failed, the chunk memory is null.");
+    IDE_CTRL_VALUE_FAILED(offset < chunkSize, return ADUMP_FAILED,
+        "GetShapeData failed, offset is over chunk size, atomicIndex=0x%llx, bufferId=%u, offset=%u, chunkSize=%u.",
+        atomicIndex, bufferId, offset, chunkSize);
 
     uint64_t magicAndSpace = chunkAddr[offset];
     uint64_t magicNum = magicAndSpace & MAGIC_NUM_MASK;
     uint32_t space = static_cast<uint32_t>(magicAndSpace & SPACE_MASK);
-    IDE_LOGI("The space is %u", space);
-    if (magicNum != MAGIC_NUM) {
-        IDE_LOGE("The magic number is invalid, magic number:%llu", magicNum);
-        return ADUMP_FAILED;
-    }
-    if (space > DFX_MAX_TENSOR_NUM) {
-        IDE_LOGE("The space[%u] is over the max space[%u].", space, DFX_MAX_TENSOR_NUM);
-        return ADUMP_FAILED;
-    }
+    IDE_LOGI("Parse chunk header, magicAndSpace=0x%llx, magicNum=0x%llx, space=%u.", magicAndSpace, magicNum, space);
+
+    IDE_CTRL_VALUE_FAILED(magicNum == MAGIC_NUM, return ADUMP_FAILED,
+        "GetShapeData failed, magic is invalid, atomicIndex=0x%llx, magicAndSpace=0x%llx, magic=0x%llx, "
+        "magicMask=0x%llx.", atomicIndex, magicAndSpace, magicNum, MAGIC_NUM_MASK);
+    IDE_CTRL_VALUE_FAILED(space <= DFX_MAX_TENSOR_NUM, return ADUMP_FAILED,
+        "GetShapeData failed, space is over max, atomicIndex=0x%llx, magicAndSpace=0x%llx, space=%u, maxSpace=%u.",
+        atomicIndex, magicAndSpace, space, DFX_MAX_TENSOR_NUM);
 
     uint64_t dumpAtomicIndex = chunkAddr[offset + 1];
-    if (dumpAtomicIndex != atomicIndex) {
-        IDE_LOGE("The atomic index:%llu is not equal %llu", atomicIndex, dumpAtomicIndex);
-        return ADUMP_FAILED;
-    }
+    uint64_t chunkCursor = GetDFXInfoChunkCursor(bufferId);
+    uint64_t chunkRound = chunkCursor / chunkSize;
+    uint32_t chunkOffset = static_cast<uint32_t>(chunkCursor % chunkSize);
+    IDE_CTRL_VALUE_FAILED(dumpAtomicIndex == atomicIndex, return ADUMP_FAILED,
+        "GetShapeData failed, atomic index mismatch, atomicIndex=0x%llx, dumpAtomicIndex=0x%llx, chunkRound=%llu, "
+        "chunkOffset=%u.", atomicIndex, dumpAtomicIndex, chunkRound, chunkOffset);
 
     shapeDataAddr_ = chunkAddr + offset + RESERVE_SPACE;
     shapeDataMaxAddr_ = shapeDataAddr_ + space;
@@ -240,17 +252,18 @@ int32_t DfxArgsParser::InitTensorModeInfoInner(uint32_t currArgsIndex, const uin
             if (!CheckMagicMemory(addr + i)) {
                 continue;
             }
-            uint64_t atomicIndex = *reinterpret_cast<uint64_t *>(addr + i - 4);
+            uint64_t atomicIndex = ReadAtomicIndex(addr + i - 4);
             if (GetShapeData(atomicIndex) == ADUMP_SUCCESS) {
                 return ADUMP_SUCCESS;
             }
         }
-        IDE_LOGE("Can not find shape info.");
+        IDE_LOGE("Can not find shape info. tiling data addr=%p, size=%llu", argOnHost_[currArgsIndex], tilingDataSize);
         return ADUMP_FAILED;
     } else {
-        uint64_t atomicIndex = *reinterpret_cast<uint64_t *>(addr + tilingDataSize - ATOMIC_INDEX_SIZE);
+        uint64_t atomicIndex = ReadAtomicIndex(addr + tilingDataSize - ATOMIC_INDEX_SIZE);
         ret = GetShapeData(atomicIndex);
-        IDE_CHECK_RET(ret, return ADUMP_FAILED);
+        IDE_CTRL_VALUE_FAILED(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
+            "Can not find shape info. tiling data addr=%p, size=%llu", argOnHost_[currArgsIndex], tilingDataSize);
     }
 
     return ADUMP_SUCCESS;
@@ -437,7 +450,7 @@ int32_t DfxArgsParser::LoadDfxTensor(TensorBuffer &tensor, uint16_t argsInfoNum)
 {
     int32_t ret = ADUMP_SUCCESS;
     RecordDumpLog(StrUtils::Format(
-        "[Dump][Exception] begin to load tensor, index:%u, tensor type:%u(%s), pointer type:%u(%s)",
+        "[Dump][Exception] begin to load normal tensor, index:%u, tensor type:%u(%s), pointer type:%u(%s)",
         tensor.argIndex, static_cast<uint16_t>(tensor.tensorType), GetTensorTypeName(tensor.tensorType),
         static_cast<uint16_t>(tensor.pointerType), GetPointerTypeName(tensor.pointerType)));
     if (tensor.pointerType == DfxPointerType::LEVEL_2_POINTER_WITH_SHAPE) {
@@ -448,7 +461,7 @@ int32_t DfxArgsParser::LoadDfxTensor(TensorBuffer &tensor, uint16_t argsInfoNum)
         IDE_CHECK_RET(ret, return ADUMP_FAILED);
         IDE_LOGI("The tensor datatype size[%llu].", dataTypeSize);
         IDE_CTRL_VALUE_FAILED(GetIsDataTypeSizeByte(tensor.isDataTypeSizeByte), return ADUMP_FAILED,
-                              "Load data type size unit failed.");
+            "Load data type size unit failed.");
         tensor.dataTypeSize = dataTypeSize;
         ret = LoadDfxL2ShapePtrTensor(tensor);
         IDE_CHECK_RET(ret, return ADUMP_FAILED);
@@ -461,7 +474,7 @@ int32_t DfxArgsParser::LoadDfxTensor(TensorBuffer &tensor, uint16_t argsInfoNum)
         currDfxSize_ += sizeof(uint64_t) * (argsInfoNum - 1);
         tensor.size = 0;
     }
-    RecordDumpLog(StrUtils::Format("[Dump][Exception] end to load tensor, index:%u", tensor.argIndex));
+    RecordDumpLog(StrUtils::Format("[Dump][Exception] end to load normal tensor, index:%u", tensor.argIndex));
     return ADUMP_SUCCESS;
 }
 

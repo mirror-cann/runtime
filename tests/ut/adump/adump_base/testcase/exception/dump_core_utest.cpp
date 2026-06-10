@@ -25,9 +25,7 @@ using namespace Adx;
 
 class DUMP_CORE_UTEST : public testing::Test {
 protected:
-    virtual void SetUp() {
-        MOCKER(&Adx::KernelInfoCollector::ParseKernelSymbols).stubs().will(invoke(Adx::ParseKernelSymbolsStub));
-    }
+    virtual void SetUp() {}
     virtual void TearDown() {
         DumpManager::Instance().Reset();
         FreeExceptionRegInfo();
@@ -419,7 +417,6 @@ TEST_F(DUMP_CORE_UTEST, TEST_CORE_DUMP_RUNTIME_FUNC_FAILED)
 {
     uint32_t type = 5; // CHIP_CLOUD_V2
     MOCKER_CPP(&Adx::AdumpDsmi::DrvGetPlatformType).stubs().with(outBound(type)).will(returnValue(true));
-    MOCKER(&Adx::KernelInfoCollector::ParseKernelSymbols).stubs().will(invoke(Adx::ParseKernelSymbolsStub));
     rtExceptionInfo exceptionInfo = {0};
     exceptionInfo.streamid = 1;
     exceptionInfo.taskid = 1;

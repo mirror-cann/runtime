@@ -8,10 +8,11 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include <cstdarg>
-#include "str_utils.h"
 #include <algorithm>
+#include <cstring>
 #include <stdexcept>
 #include "securec.h"
+#include "str_utils.h"
 
 namespace Adx {
 constexpr size_t const LIMIT_PER_MESSAGE = 1024U;
@@ -47,6 +48,15 @@ std::string StrUtils::Replace(const std::string &s, const std::set<char> &oldCha
     std::string rs = s;
     (void)std::for_each(rs.begin(), rs.end(), replace);
     return rs;
+}
+
+bool StrUtils::EndsWith(const std::string &s, const char *suffix)
+{
+    if (suffix == nullptr) {
+        return false;
+    }
+    const size_t suffixLen = std::strlen(suffix);
+    return s.size() >= suffixLen && s.compare(s.size() - suffixLen, suffixLen, suffix) == 0;
 }
 
 std::vector<std::string> StrUtils::Split(const std::string &str, const char * const delimiter)

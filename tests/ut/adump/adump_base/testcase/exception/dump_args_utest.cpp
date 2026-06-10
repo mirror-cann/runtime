@@ -37,9 +37,7 @@ using namespace Adx;
 
 class DumpArgsUtest : public testing::Test {
 protected:
-    virtual void SetUp() {
-        MOCKER(&Adx::KernelInfoCollector::ParseKernelSymbols).stubs().will(invoke(Adx::ParseKernelSymbolsStub));
-    }
+    virtual void SetUp() {}
     virtual void TearDown()
     {
         ThreadManager::Instance().WaitAll();
@@ -1103,7 +1101,6 @@ TEST_F(DumpArgsUtest, Test_Dump_Args_With_Dfx_Static)
     MOCKER(dlsym).stubs().will(invoke(mmDlsym));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(dlerror).stubs().will(invoke(mmDlerror));
-    MOCKER(&Adx::KernelInfoCollector::ParseKernelSymbols).stubs().will(invoke(Adx::ParseKernelSymbolsStub));
     Tools::CaseWorkspace ws("Test_Dump_Args_With_Dfx_Static");
 
     DumpConfig dumpConf;
@@ -1352,7 +1349,6 @@ TEST_F(DumpArgsUtest, Test_Dump_Args_With_Dfx_Dynamic)
     EXPECT_EQ(AdumpSetDumpConfig(DumpType::ARGS_EXCEPTION, dumpConf), ADUMP_SUCCESS);
     uint32_t v2type = 5;
     MOCKER_CPP(&Adx::AdumpDsmi::DrvGetPlatformType).stubs().with(outBound(v2type)).will(returnValue(true));
-    MOCKER(&Adx::KernelInfoCollector::ParseKernelSymbols).stubs().will(invoke(Adx::ParseKernelSymbolsStub));
 
     rtExceptionInfo exceptionInfo = {0};
     exceptionInfo.streamid = 1;
@@ -2205,7 +2201,6 @@ TEST_F(DumpArgsUtest, Test_Dump_Args_For_MC2_CTX_910C)
     uint32_t v2type = 5; // CHIP_CLOUD_V2
     MOCKER_CPP(&Adx::AdumpDsmi::DrvGetPlatformType).stubs().with(outBound(v2type)).will(returnValue(true));
     MOCKER(rtGetSocVersion).stubs().will(invoke(rtGetSocVersionStub));
-    MOCKER(&Adx::KernelInfoCollector::ParseKernelSymbols).stubs().will(invoke(Adx::ParseKernelSymbolsStub));
 
     Tools::CaseWorkspace ws("Test_Dump_Args_For_MC2_CTX");
 

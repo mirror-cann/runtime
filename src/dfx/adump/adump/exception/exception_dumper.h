@@ -65,6 +65,7 @@ private:
     int32_t LoadTensorPluginLib();
     bool InitArgsExceptionMemory() const;
     bool NeedDumpException(const rtExceptionInfo &exception) const;
+    std::string GetDumpSceneName() const;
     void Exit() const;
     bool coredumpStatus_{ false };
     bool coredumpEnableComplete_{ true };

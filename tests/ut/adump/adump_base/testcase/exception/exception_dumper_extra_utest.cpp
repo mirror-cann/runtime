@@ -552,6 +552,27 @@ TEST_F(ExceptionDumperExtraUtest, DumpArgsExceptionInner_CallbackNone)
     EXPECT_NE(ret, ADUMP_SUCCESS);
 }
 
+TEST_F(ExceptionDumperExtraUtest, DumpArgsExceptionInner_CallbackInvalidMode)
+{
+    ExceptionDumper dumper;
+    DumpConfig config;
+    config.dumpStatus = "on";
+    config.dumpPath = "/tmp/adump_args_invalid_mode_test";
+    int32_t initRet = dumper.ExceptionDumperInit(DumpType::ARGS_EXCEPTION, config);
+    EXPECT_EQ(initRet, ADUMP_SUCCESS);
+
+    int32_t ret = dumper.RegisterExceptionDumpCallback(MockCallbackWithInvalidMode);
+    EXPECT_EQ(ret, ADUMP_SUCCESS);
+
+    rtExceptionInfo exception = {};
+    exception.deviceid = 0U;
+    exception.taskid = 1U;
+    exception.streamid = 8U;
+    exception.expandInfo.type = RT_EXCEPTION_AICORE;
+    ret = dumper.DumpException(exception);
+    EXPECT_NE(ret, ADUMP_SUCCESS);
+}
+
 TEST_F(ExceptionDumperExtraUtest, DumpArgsExceptionInner_UnsafeSlashInDisplayName)
 {
     ExceptionDumper dumper;

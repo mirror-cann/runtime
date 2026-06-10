@@ -170,4 +170,13 @@ static void __attribute__((constructor)) AdumpInit(void)
     (void)DumpManager::Instance();
 }
 #endif
+
+// 内部接口
+uint64_t GetDFXInfoChunkCursor(uint8_t bufferId)
+{
+    if (bufferId == 0U) {
+        return g_dynamicWriteIdx.load(std::memory_order_relaxed);
+    }
+    return g_staticWriteIdx.load(std::memory_order_relaxed);
+}
 }  // namespace Adx

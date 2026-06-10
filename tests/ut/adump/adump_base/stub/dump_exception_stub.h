@@ -11,14 +11,12 @@
 #define TEST_DUMP_EXCEPTION_STUB_H
 
 #include <vector>
-#include "kernel_info_collector.h"
 #include "adump_pub.h"
 
 extern std::vector<void *> g_exceptionRegInfoList;
 
 namespace Adx {
 void FreeExceptionRegInfo();
-void ParseKernelSymbolsStub(const char *elf, KernelSymbols &kernelSymbols);
 
 void SafeStrCopy(char *dest, const char *src, size_t maxLen);
 void SetKernelName(ExceptionDumpInfo &info, const char *name);
@@ -33,6 +31,8 @@ uint32_t MockCallbackWithAdditional(void *exceptionInfo, ExceptionDumpInfo *dump
                                    uint32_t dumpSize, uint32_t *realSize, ExceptionDumpMode *mode);
 uint32_t MockCallbackWithNone(void *exceptionInfo, ExceptionDumpInfo *dumpInfo,
                              uint32_t dumpSize, uint32_t *realSize, ExceptionDumpMode *mode);
+uint32_t MockCallbackWithInvalidMode(void *exceptionInfo, ExceptionDumpInfo *dumpInfo,
+                                     uint32_t dumpSize, uint32_t *realSize, ExceptionDumpMode *mode);
 
 uint32_t MockCallbackWithUnsafePathSlash(void *exceptionInfo, ExceptionDumpInfo *dumpInfo,
                                         uint32_t dumpSize, uint32_t *realSize, ExceptionDumpMode *mode);

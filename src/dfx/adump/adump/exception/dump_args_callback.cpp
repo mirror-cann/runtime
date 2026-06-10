@@ -11,7 +11,8 @@
 #include "dump_args_callback.h"
 #include "dfx_args_parser.h"
 #include "dump_memory.h"
-#include "kernel_info_collector.h"
+#include "exception_info_common.h"
+#include "kernel_symbol_locator.h"
 #include "log/adx_log.h"
 #include "log/hdc_log.h"
 
@@ -19,7 +20,8 @@ namespace Adx {
 
 DumpArgsCallback::DumpArgsCallback(const rtExceptionInfo &exception, const ExceptionDumpInfo &info,
                                      const std::string &dumpPath)
-    : info_(info),
+    : exception_(exception),
+      info_(info),
       dumpPath_(dumpPath),
       dumpFilePath_(dumpPath + "/" +
         std::string(info.kernelDisplayName[0] != '\0' ? info.kernelDisplayName : "exception_info") + "." +
@@ -43,12 +45,35 @@ int32_t DumpArgsCallback::DumpKernelBin()
         "Init for dump kernel bin failed. ret=%d, bin=%p, kernelName=%s.", ret, info_.bin, kernelName.c_str());
 
     ret = collector.StartCollectKernel(dumpPath_);
-    if (ret != ADUMP_SUCCESS) {
-        IDE_LOGW("StartCollectKernel failed, kernelName=%s.", kernelName.c_str());
-        return ADUMP_FAILED;
-    }
-    
+    IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
+        "StartCollectKernel failed, kernelName=%s.", kernelName.c_str());
+
     IDE_LOGI("DumpKernelBin success, kernelName=%s.", kernelName.c_str());
+    return ADUMP_SUCCESS;
+}
+
+int32_t DumpArgsCallback::DumpKernelErrorSymbols()
+{
+    std::string kernelName(info_.kernelName);
+    if (info_.bin == nullptr || kernelName.empty()) {
+        return ADUMP_SUCCESS;
+    }
+    KernelSymbolLocator locator;
+    int32_t ret = locator.InitFromBinHandle(info_.bin);
+    IDE_CTRL_VALUE_FAILED(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
+        "KernelSymbolLocator InitFromBinHandle failed for callback exception. ret=%d", ret);
+
+    ExceptionRegInfo exceptionRegInfo{0, nullptr};
+    ret = ExceptionInfoCommon::GetExceptionRegInfo(exception_, exceptionRegInfo);
+    IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
+        "Get exception register information failed for callback exception. ret=%d", ret);
+
+    locator.UpdateStartPCFromFuncAddr(info_.bin, kernelName.c_str());
+    ret = locator.LocateAndPrintErrorSymbolsForCore(info_.coreId, info_.coreType, exceptionRegInfo);
+    IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
+        "LocateAndPrintErrorSymbolsForCore failed for callback exception. ret=%d, coreId=%u, coreType=%u.",
+            ret, info_.coreId, info_.coreType);
+
     return ADUMP_SUCCESS;
 }
 
@@ -198,7 +223,7 @@ int32_t DumpArgsCallback::Dump()
 {
     int32_t ret = dumpFile_.Dump(logRecord_);
     IDE_CTRL_VALUE_FAILED(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
-        "[Dump][Exception] write callback exception to file failed, file: %s", dumpFilePath_.c_str());
+        "[Dump][Exception] Write callback exception to file failed, file: %s", dumpFilePath_.c_str());
 
     (void)mmChmod(dumpFilePath_.c_str(), M_IRUSR);  // readonly, 400
     IDE_LOGE("[Dump][Exception] dump exception to file, file: %s", dumpFilePath_.c_str());

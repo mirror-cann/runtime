@@ -18,7 +18,7 @@
 #include "dump_common.h"
 #include "register_config.h"
 #include "adump_platform_api.h"
-#include "kernel_info_collector.h"
+#include "kernel_symbol_locator.h"
 #include "inner_kernel.h"
 
 namespace Adx {

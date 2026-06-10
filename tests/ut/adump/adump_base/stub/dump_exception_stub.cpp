@@ -17,7 +17,6 @@
 #include "rts/rts_device.h"
 #include "rts/rts_stream.h"
 #include "rts/rts_kernel.h"
-#include "kernel_info_collector.h"
 #include "dump_exception_stub.h"
 
 namespace Adx {
@@ -27,18 +26,6 @@ void FreeExceptionRegInfo()
         free(ptr);
     }
     g_exceptionRegInfoList.clear();
-}
-
-void ParseKernelSymbolsStub(const char *elf, KernelSymbols &kernelSymbols)
-{
-    kernelSymbols.existAicBase = true;
-    kernelSymbols.aicBase = 0UL;
-    kernelSymbols.existAivBase = true;
-    kernelSymbols.aivBase = 1000UL;
-    KernelSymbolInfo aic_symbolInfo{0UL, 0UL, std::string("aic_symbol")};
-    kernelSymbols.symbols.emplace_back(aic_symbolInfo);
-    KernelSymbolInfo aiv_symbolInfo{1000UL, 1000UL, std::string("aiv_symbol")};
-    kernelSymbols.symbols.emplace_back(aiv_symbolInfo);
 }
 
 void SafeStrCopy(char *dest, const char *src, size_t maxLen)
@@ -123,6 +110,19 @@ uint32_t MockCallbackWithNone(void *exceptionInfo, ExceptionDumpInfo *dumpInfo,
     (void)dumpInfo;
     (void)dumpSize;
     return FillCallbackResult(0, ExceptionDumpMode::DUMP_MODE_NONE, realSize, mode);
+}
+
+uint32_t MockCallbackWithInvalidMode(void *exceptionInfo, ExceptionDumpInfo *dumpInfo,
+                                     uint32_t dumpSize, uint32_t *realSize, ExceptionDumpMode *mode)
+{
+    (void)exceptionInfo;
+    if (dumpInfo != nullptr && dumpSize > 0) {
+        dumpInfo[0] = {};
+        dumpInfo[0].coreType = 1;
+        dumpInfo[0].coreId = 1;
+        SetKernelName(dumpInfo[0], "invalid_mode_kernel");
+    }
+    return FillCallbackResult(1, static_cast<ExceptionDumpMode>(99U), realSize, mode);
 }
 
 uint32_t MockCallbackWithUnsafePathSlash(void *exceptionInfo, ExceptionDumpInfo *dumpInfo,

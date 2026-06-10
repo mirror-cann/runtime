@@ -235,10 +235,9 @@ int32_t DumpArgs::LoadArgsInfoWithSizeInfo(const rtExceptionArgsInfo_t &exceptio
 int32_t DumpArgs::LoadArgsExceptionInfo(const rtExceptionInfo &exception)
 {
     rtExceptionArgsInfo_t exceptionArgsInfo{};
-    rtExceptionExpandType_t exceptionTaskType = exception.expandInfo.type;
     rtExceptionExpandInfo_t exceptionExpandInfo = exception.expandInfo;
-    if (ExceptionInfoCommon::GetExceptionInfo(exception, exceptionTaskType, exceptionArgsInfo) != ADUMP_SUCCESS) {
-        IDE_LOGE("Get exception args info failed.");
+    if (ExceptionInfoCommon::GetExceptionInfo(exception, exceptionArgsInfo) != ADUMP_SUCCESS) {
+        IDE_LOGW("Get exception args info failed.");
         return ADUMP_FAILED;
     }
     kernelCollector_->LoadKernelInfo(exceptionArgsInfo);
