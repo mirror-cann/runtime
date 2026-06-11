@@ -48,6 +48,8 @@ rtError_t CheckAndGetTotalShareMemorySize(const Kernel * const kernel, uint32_t 
     if (totalSmSize > maxSmSize) {
         RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "dynamicShareMemSize",
             "the sum of dynamic shared memory and kernel shared memory exceeds the maximum limit");
+        RT_LOG(RT_LOG_ERROR, "kernelName=%s, kernelVfType=%u, dynamicShareMemSize=%u, shareMemSize=%u, maxSmSize=%u",
+            kernel->Name_().c_str(), kernelVfType, dynamicShareMemSize, kernel->ShareMemSize_(), maxSmSize);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -306,8 +308,8 @@ rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreD
     AicTaskInit(kernelTask, kernelAttrType, static_cast<uint16_t>(coreDim), flag, &localTaskCfg, false);
     // for simt
     error = CheckDynSizeValid(kernelTask, registeredKernel);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, kernel_name=%s, retCode=%#x.",
-        stm->Id_(), registeredKernel->Name_().c_str(), static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
+        stm->Id_(), static_cast<uint32_t>(error));
     error = static_cast<DavidStream *>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
     ERROR_RETURN_MSG_INNER(error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.",
         stm->Id_(), useArgPool, static_cast<uint32_t>(error));
@@ -418,8 +420,8 @@ rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t t
     }
     AicTaskInit(kernelTask, kernelAttrType, static_cast<uint16_t>(coreDim), flag, &taskCfg, false);
     error = CheckDynSizeValid(kernelTask, registeredKernel);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, kernel_name=%s, retCode=%#x.",
-        stm->Id_(), name.c_str(), static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
+        stm->Id_(), static_cast<uint32_t>(error));
     error = static_cast<DavidStream *>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
     ERROR_RETURN_MSG_INNER(error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.",
         stm->Id_(), useArgPool, static_cast<uint32_t>(error));
@@ -544,8 +546,8 @@ rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *s
     AicTaskInitByExtendAgrs(kernelTask, kernelAttrType, coreDim, extendAgrs);
 
     error = CheckDynSizeValid(kernelTask, kernel);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, kernel_name=%s, retCode=%#x.",
-        stm->Id_(), kernel->Name_().c_str(), static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
+        stm->Id_(), static_cast<uint32_t>(error));
     if (extendAgrs->argsArray != nullptr) {
         uint64_t paramTotalSize = kernel->GetParamTotalSize();
         useArgPool = useArgPool && (paramTotalSize <= STM_ARG_POOL_COPY_SIZE);

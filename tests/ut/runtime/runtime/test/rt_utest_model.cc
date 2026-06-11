@@ -1448,7 +1448,51 @@ uint32_t headStreamFlags, bool exeStreamIsNull = false)
     acl_unreg_func(binHandle);
 }
 
+TEST_F(ModelTest, TestBuildSqCqForAutoSplit_EmptyStreamList)
+{
+    rtError_t error;
+    Model* model = nullptr;
+    Context* ctx = (Context*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(0)->GetVal();
+    
+    error = ctx->ModelCreate(&model, RT_MODEL_NORMAL);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    error = model->BuildSqCqForAutoSplit();
+    EXPECT_EQ(error, RT_ERROR_MODEL_STREAM);
+    
+    error = ctx->ModelDestroy(model);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    ((Runtime*)Runtime::Instance())->PrimaryContextRelease(0);
+}
 
+TEST_F(ModelTest, TestBuildSqCqForAutoSplit_OnlyAicpuStreams)
+{
+    rtError_t error;
+    Model* model = nullptr;
+    Stream* stream = nullptr;
+    Context* ctx = (Context*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(0)->GetVal();
+    
+    error = ctx->ModelCreate(&model, RT_MODEL_NORMAL);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    error = ctx->StreamCreate(0, RT_STREAM_AICPU, &stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    error = model->AddStream(stream, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    error = model->BuildSqCqForAutoSplit();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    error = ctx->ModelDestroy(model);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    error = ctx->StreamDestroy(stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    ((Runtime*)Runtime::Instance())->PrimaryContextRelease(0);
+}
 
 /*
 * 1.模型首流为AICPU

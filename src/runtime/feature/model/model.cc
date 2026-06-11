@@ -761,6 +761,7 @@ rtError_t Model::ConfigSqTail(void) const
 
 rtError_t Model::BuildSqCqForAutoSplit()
 {
+    COND_RETURN_ERROR_MSG_INNER(static_cast<uint32_t>(StreamList_().size()) == 0U, RT_ERROR_MODEL_STREAM, "The model does not contain any stream.");
     Device * const dev = Context_()->Device_();
     uint32_t streamNum = 0U;
     for (auto stm : StreamList_()) {
@@ -769,6 +770,10 @@ rtError_t Model::BuildSqCqForAutoSplit()
         rtError_t ret = stm->AllocAutoSplitSqAddr();
         COND_RETURN_ERROR((ret != RT_ERROR_NONE), ret, "AllocAutoSplitSqAddr failed. device_id=%u, stream_id=%d, "
             "model_id=%u, retCode=%#x.", dev->Id_(), stm->Id_(), Id_(), static_cast<uint32_t>(ret));
+    }
+
+    if (streamNum == 0U) {
+        return RT_ERROR_NONE;
     }
 
     if (modelSwitchInfo_ == nullptr) {
