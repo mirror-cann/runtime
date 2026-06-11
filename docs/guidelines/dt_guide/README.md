@@ -8,8 +8,8 @@
 
 | 文档 | 内容 | 适用场景 |
 |------|------|---------|
-| [测试框架指南](测试框架指南.md) | gtest、gmock/mockcpp、公共桩、模块内 stub/data、构建接入方式 | 构造输入、打桩、组织测试资产时查阅 |
-| [UT用例开发指导](UT用例开发指导.md) | UT 设计 checklist、完整校验、全局状态恢复、兼容性测试建议 | 编写或补充 UT 时查阅 |
+| [测试框架指南](test_framework_guide.md) | gtest、gmock/mockcpp、公共桩、模块内 stub/data、构建接入方式 | 构造输入、打桩、组织测试资产时查阅 |
+| [UT用例开发指导](ut_case_development_guide.md) | UT 设计 checklist、完整校验、全局状态恢复、兼容性测试建议 | 编写或补充 UT 时查阅 |
 
 ## 基础知识
 

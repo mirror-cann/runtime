@@ -46,6 +46,11 @@
 <td style="word-wrap: break-word; overflow-wrap: break-word;">面向贡献者的架构文档。Runtime整体架构、模块设计、核心组件解析</td>
 <td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="design/README.md">架构指南</a></td>
 </tr>
+<tr>
+<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>📝 研发规范</b></td>
+<td style="word-wrap: break-word; overflow-wrap: break-word;">面向贡献者的规范指南，包括设计文档模板、编码规范、测试规范、代码检视规则</td>
+<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="guidelines/README.md">研发规范与贡献指南</a></td>
+</tr>
 </tbody>
 </table>
 
