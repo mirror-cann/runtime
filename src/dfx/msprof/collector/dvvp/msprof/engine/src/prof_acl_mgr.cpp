@@ -1610,7 +1610,7 @@ int32_t ProfAclMgr::MsprofAclJsonParamConstruct(NanoJson::Json &acljsonCfg)
 int32_t ProfAclMgr::MsprofAclJsonParamConstructTwo(NanoJson::Json &acljsonCfg)
 {
     params_->storageLimit = GetJsonStringParam(acljsonCfg, "storage_limit", MSVP_PROF_EMPTY_STRING);
-    if (!ParamValidation::instance()->CheckStorageLimit(params_)) {
+    if (!ParamValidation::instance()->CheckAclJsonStorageLimit(params_)) {
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     storageLimit_ = params_->storageLimit;

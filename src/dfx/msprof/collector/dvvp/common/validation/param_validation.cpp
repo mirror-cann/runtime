@@ -43,6 +43,23 @@ const std::map<std::string, ProfSocPmuType> SOC_PMU_MAP = {
     {SOC_PMU_NOC, ProfSocPmuType::PMU_TYPE_NOC}
 };
 
+enum class StorageLimitErrorType {
+    PARAM = 0,
+    CONFIG
+};
+
+static void ReportStorageLimitError(const std::string &storageLimit, const std::string &paramName,
+    const std::string &errReason, const StorageLimitErrorType errorType)
+{
+    if (errorType == StorageLimitErrorType::CONFIG) {
+        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config", "value", "reason"}),
+            std::vector<std::string>({paramName, storageLimit, errReason}));
+        return;
+    }
+    MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+        std::vector<std::string>({storageLimit, paramName, errReason}));
+}
+
 ParamValidation::ParamValidation()
 {
 }
@@ -979,8 +996,9 @@ bool ParamValidation::ProfStarsAcsqParamIsValid(const std::string &param)
     return true;
 }
 
-bool ParamValidation::CheckStorageLimit(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params,
-const std::string &paramName) const {
+static bool CheckStorageLimitInner(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params,
+    const std::string &paramName, const StorageLimitErrorType errorType)
+{
     const std::string &storageLimit = params->storageLimit;
     if (storageLimit.empty()) {
         MSPROF_LOGI("storage_limit is empty");
@@ -992,48 +1010,52 @@ const std::string &paramName) const {
     const uint32_t unitLen = strlen(STORAGE_LIMIT_UNIT);
     if (storageLimit.size() <= unitLen) {
         MSPROF_LOGE("storage_limit:%s, length is less than %u", storageLimit.c_str(), unitLen + 1);
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({storageLimit, paramName, errReason}));
+        ReportStorageLimitError(storageLimit, paramName, errReason, errorType);
         return false;
     }
 
     std::string unitStr = storageLimit.substr(storageLimit.size() - unitLen);
     if (unitStr != STORAGE_LIMIT_UNIT) {
         MSPROF_LOGE("storage_limit:%s, not end with MB", storageLimit.c_str());
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({storageLimit, paramName, errReason}));
+        ReportStorageLimitError(storageLimit, paramName, errReason, errorType);
         return false;
     }
 
     std::string digitStr = storageLimit.substr(0, storageLimit.size() - unitLen);
     if (!Utils::IsAllDigit(digitStr)) {
         MSPROF_LOGE("storage_limit:%s, invalid numbers", storageLimit.c_str());
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({storageLimit, paramName, errReason}));
+        ReportStorageLimitError(storageLimit, paramName, errReason, errorType);
         return false;
     } else if (digitStr.size() > 10) { // digitStr range is 0 ~ 4294967296, max length is 10
         MSPROF_LOGE("storage_limit:%s, valid range is 200~4294967296", storageLimit.c_str());
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({storageLimit, paramName, errReason}));
+        ReportStorageLimitError(storageLimit, paramName, errReason, errorType);
         return false;
     }
 
     uint64_t limit = stoull(digitStr);
     if (limit < STORAGE_LIMIT_DOWN_THD) {
         MSPROF_LOGE("storage_limit:%s, min value is %uMB", storageLimit.c_str(), STORAGE_LIMIT_DOWN_THD);
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({storageLimit, paramName, errReason}));
+        ReportStorageLimitError(storageLimit, paramName, errReason, errorType);
         params->storageLimit = std::to_string(STORAGE_LIMIT_DOWN_THD) + "MB";
         const std::string &storageLimitCur = params->storageLimit;
         MSPROF_LOGW("auto adjust storage_limit to:%s", storageLimitCur.c_str());
         return false;
     } else if (limit > UINT32_MAX) {
         MSPROF_LOGE("storage_limit:%s, max value is %uMB", storageLimit.c_str(), UINT32_MAX);
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({storageLimit, paramName, errReason}));
+        ReportStorageLimitError(storageLimit, paramName, errReason, errorType);
         return false;
     }
     return true;
+}
+
+bool ParamValidation::CheckStorageLimit(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params,
+const std::string &paramName) const {
+    return CheckStorageLimitInner(params, paramName, StorageLimitErrorType::PARAM);
+}
+
+bool ParamValidation::CheckAclJsonStorageLimit(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const
+{
+    return CheckStorageLimitInner(params, "storage_limit", StorageLimitErrorType::CONFIG);
 }
 
 bool ParamValidation::CheckInstrProfilingFreqValid(const uint32_t instrFreq) const
