@@ -620,7 +620,7 @@
       "Arglist": "func, reason",
       "suggestion": {
         "Possible Cause": "N/A",
-        "Solution": "1. Reduce the number of tasks delivered to the same stream. 2. Use multiple streams to submit tasks in parallel. 3. Before submitting a new task, call aclrtSynchronizeStream to wait until the submitted task is complete."
+        "Solution": "1. Reduce the number of tasks delivered to the same stream. 2. Use multiple streams to submit tasks in parallel."
       }
     },
     {
