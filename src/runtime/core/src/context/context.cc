@@ -1105,7 +1105,6 @@ rtError_t Context::StreamCreate(const uint32_t prio, const uint32_t flag, Stream
             newStream->Id_(), prio, flag);
     } else if (isSoftWareSqEnable) {
         newStream->SetSoftWareSqEnable();
-        newStream->SetSubCaptureModel();
         error = newStream->SetupWithoutBindSq();
         RT_LOG(RT_LOG_INFO, "Stream setup without bind sq, stream_id=%d, prio=%u, flag=%u.",
             newStream->Id_(), prio, flag);
