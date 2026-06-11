@@ -111,9 +111,9 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
     const auto device = taskInfo->stream->Device_();
     COND_RETURN_VOID(device == nullptr, "Invalid device");
     const uint32_t devId = device->Id_();
-    RT_LOG(RT_LOG_DEBUG,
-                "CCU Launch task error status [%#x], subStatus [%#x], device_id=%u, stream_id=%d, task_id=%hu",
-                status, subStatus, devId, taskInfo->stream->Id_(), taskInfo->id);
+    RT_LOG(RT_LOG_ERROR,
+ 	    "CCU Launch task error status=%#x, subStatus=%#x, device_id=%u, stream_id=%d, task_id=%hu",
+ 	    status, subStatus, devId, taskInfo->stream->Id_(), taskInfo->id);
     bool hasMteErr = HasMteErr(device);
     if ((status == CCU_TASK_LOCAL_MEM_ERROR) ||
         (status == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS)) {
@@ -143,16 +143,17 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
     }
 }
 
-static void MapFusionCcuErrorCodeForFastRecovery(const uint8_t ccuStatus, TaskInfo* taskInfo)
+static void MapFusionCcuErrorCodeForFastRecovery(const uint8_t ccuStatus, const uint8_t subStatus, TaskInfo* taskInfo)
 {
     const auto device = taskInfo->stream->Device_();
     COND_RETURN_VOID(device == nullptr, "Invalid device");
     const uint32_t devId = device->Id_();
-    RT_LOG(RT_LOG_DEBUG,
-                "fusion CCU Launch task mte_error=%u, device_id=%u, stream_id=%d, task_id=%hu",
-                taskInfo->mte_error, devId, taskInfo->stream->Id_(), taskInfo->id);
+    RT_LOG(RT_LOG_ERROR,
+ 	    "fusion CCU Launch task status=%#x, subStatus=%#x, device_id=%u, stream_id=%d, task_id=%hu.",
+ 	    ccuStatus, subStatus, devId, taskInfo->stream->Id_(), taskInfo->id);
     bool hasMteErr = HasMteErr(device);
-    if (ccuStatus == CCU_TASK_LOCAL_MEM_ERROR) {
+    if ((ccuStatus == CCU_TASK_LOCAL_MEM_ERROR) ||
+ 	    (ccuStatus == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS)) {
         if (hasMteErr && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
             (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
@@ -202,7 +203,8 @@ static void ParseAndGetCcuExceptionInfo(rtExceptionExpandInfo_t * const expandIn
         const rtMultiCCUExDetailInfo_t * const multiCcuInfo = &(expandInfo->u.fusionInfo.u.aicoreCcuInfo.ccuDetailMsg);
         for (uint8_t idx = 0U; idx < multiCcuInfo->ccuMissionNum; idx++) {
             const uint8_t ccuStatus = multiCcuInfo->missionInfo[idx].status;
-            MapFusionCcuErrorCodeForFastRecovery(ccuStatus, RtPtrToUnConstPtr<TaskInfo *>(taskInfo));
+            const uint8_t subStatus = multiCcuInfo->missionInfo[idx].subStatus;
+            MapFusionCcuErrorCodeForFastRecovery(ccuStatus, subStatus, RtPtrToUnConstPtr<TaskInfo *>(taskInfo));
         }
     } else {
     }

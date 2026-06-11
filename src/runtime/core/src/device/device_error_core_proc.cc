@@ -168,16 +168,6 @@ const std::map<uint32_t, std::string> g_l2MulBitEccEventIdBlkList = {
     {0x81AF8009U, "UB Posion Error."}
 };
 
-const std::map<uint32_t, std::string> g_ubMemTimeoutEventIdBlkList = {
-    {0x81B58002U, "UB Dispatch Input Error."},
-    {0x81B58004U, "UB Dispatch Config Error."},
-    {0x81AF8000U, "UB Module Excerption."},
-    {0x81AF8004U, "UB Software Config Error."},
-    {0x81AF8008U, "UB Multi Bit Ecc."},
-    {0x81B18008U, "UB_PORT Multi Bit Ecc."},
-    {0x81B1800DU, "UB_PORT Link Error."}
-};
-
 const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList = {
     {0x81B58002U, "UB Dispatch Input Error."},
     {0x81B58004U, "UB Dispatch Config Error."},
@@ -187,7 +177,7 @@ const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList = {
     {0x81AF8009U, "UB Posion Error."},
     {0x81B18008U, "UB_PORT Multi Bit Ecc."},
     {0x81B1800DU, "UB_PORT Link Error."}
-};
+};  // This blacklist is used for both TA ack timeout and UBMEM timeout.
 
 const EventRasFilter g_ubMemTrafficTimeoutFilter = {
     .eventId = UB_POISON_ERROR_EVENT_ID,

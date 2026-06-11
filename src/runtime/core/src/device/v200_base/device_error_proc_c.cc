@@ -484,7 +484,7 @@ static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo 
         return;
     }
 
-    if (!IsHitBlacklist(faultEventInfo, eventCount, g_ubMemTimeoutEventIdBlkList)) {
+    if (!IsHitBlacklist(faultEventInfo, eventCount, g_ccuTimeoutEventIdBlkList)) {
         for (uint32_t faultIndex = 0; faultIndex < eventCount; faultIndex++) {
             if (faultEventInfo[faultIndex].eventId == UB_REMOTE_MEM_TIMEOUT_EVENT_ID) {
                 errTaskPtr->mte_error = TS_ERROR_LINK_ERROR;

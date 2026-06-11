@@ -128,7 +128,7 @@ drvError_t halGetFaultEvent(uint32_t devId, struct halEventFilter* filter,
         eventInfo[1].event_id = 0x81B58002U; //blkList
         return DRV_ERROR_NONE;
     }
-    if (faultEventFlag == 6) { // UbBusError, in g_ubMemTimeoutEventIdBlkList
+    if (faultEventFlag == 6) { // UbBusError, in g_ccuTimeoutEventIdBlkList
         *eventCount = 1;
         eventInfo[0].event_id = 0x81B78009U;
         return DRV_ERROR_NONE;
@@ -149,19 +149,9 @@ drvError_t halGetFaultEvent(uint32_t devId, struct halEventFilter* filter,
         eventInfo[1].event_id = 0x81B58006U; //blkList
         return DRV_ERROR_NONE;
     }
-    if (faultEventFlag == 8) { // link error ras and event whitelist
+    if (faultEventFlag == 8) {
         *eventCount = 2;
-        eventInfo[0].event_id = 0x81AF8009U;
-        // subModuleId
-        eventInfo[0].additional_info[23] = 0x03;
-        // errorRegisterIndex
-        eventInfo[0].additional_info[24] = 0x03;
-        // rasCode, the 20th bit is 1
-        eventInfo[0].additional_info[28] = 0x00;
-        eventInfo[0].additional_info[29] = 0x10;
-        eventInfo[0].additional_info[30] = 0x00;
-        eventInfo[0].additional_info[31] = 0x00;
-
+        eventInfo[0].event_id = 0x80e01801U;
         eventInfo[1].event_id = 0x81AFAA02U;
         return DRV_ERROR_NONE;
     }
