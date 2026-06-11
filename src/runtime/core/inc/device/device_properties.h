@@ -48,6 +48,7 @@ constexpr uint32_t TINY_INIT_CNT_DEFAULT = 0U;
 constexpr uint32_t KERNEL_INFO_ALLOC_SIZE = 256U;
 constexpr uint32_t NORMAL_TASK_RATION = 2U;
 constexpr uint32_t DEFAULT_CUSTOM_STACK_SIZE_MAX = 196608U; // 192KB
+constexpr uint32_t TASK_FAIL_PRINT_FLUSH_TIMEOUT_DEFAULT = 500U;
 constexpr uint8_t ENABLED_TS_NUM_1 = 1U;
 constexpr uint8_t ENABLED_TS_NUM_2 = 2U;
 constexpr size_t MEMCPY_DESC_SIZE_V1 = 32U;
@@ -365,6 +366,7 @@ struct DevProperties final {
     uint64_t swapBufferUpdateRegOffset;
     uint32_t sqSwapShift;
     uint32_t swapBufferProfCfgOffset;
+    uint32_t taskFailPrintFlushTimeoutMs = TASK_FAIL_PRINT_FLUSH_TIMEOUT_DEFAULT;
 };
 }
 }

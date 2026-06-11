@@ -13,9 +13,6 @@
 
 namespace cce {
 namespace runtime {
-namespace {
-constexpr uint32_t MS_RECOVERY_TIMEOUT_THRESHOLD = 500U;
-} // namespace
 
 void TriggerMemoryCorruptionCheck(rtExceptionInfo_t *const exceptionInfo, const Device *dev, uint32_t realDeviceId,
     rtBinHandle binHandle, rtExceptionArgsInfo_t *kernelInfo)
@@ -49,7 +46,8 @@ void TaskFailCallBackNotify(rtExceptionInfo_t *const exceptionInfo)
 
     uint32_t timeout = 0U;
     const rtError_t error = GetOpExecuteMsTimeout(&timeout);
-    if ((error == RT_ERROR_NONE) && (timeout >= MS_RECOVERY_TIMEOUT_THRESHOLD)) {
+    const uint32_t threshold = dev->GetDevProperties().taskFailPrintFlushTimeoutMs;
+    if ((error == RT_ERROR_NONE) && (timeout >= threshold)) {
         (void)dev->ParseSimdPrintInfoWithLock();
     }
 

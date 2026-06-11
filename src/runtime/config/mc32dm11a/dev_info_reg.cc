@@ -234,6 +234,7 @@ static const DevProperties CHIP_MC32DM11A_PROPERTIES = {
     .swapBufferUpdateRegOffset = 0UL,
     .sqSwapShift = 0U,
     .swapBufferProfCfgOffset = 0U,
+    .taskFailPrintFlushTimeoutMs = 300U,
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_MC32DM11A, CHIP_MC32DM11A_PROPERTIES);
