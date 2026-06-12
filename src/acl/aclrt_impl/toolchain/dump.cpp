@@ -17,7 +17,6 @@
 #include "mmpa/mmpa_api.h"
 #include "adx_datadump_server.h"
 #include "adump_pub.h"
-#include "dump_shim.h"
 
 #include "common/json_parser.h"
 #include "common/error_codes_inner.h"
@@ -44,12 +43,7 @@ namespace acl {
     {
         ACL_LOG_INFO("start to execute HandleDumpCommand.");
 
-        const auto& funcs = acl::GetAdumpCallbacks();
-        if (funcs.serverInit == nullptr) {
-            ACL_LOG_INNER_ERROR("[Check][DumpCallback]Adump server init callback is not registered.");
-            return ACL_ERROR_INTERNAL_ERROR;
-        }
-        int32_t adxRet = funcs.serverInit();
+        int32_t adxRet = AdxDataDumpServerInit();
         if (adxRet != ADX_ERROR_NONE) {
             ACL_LOG_INNER_ERROR("[AdxDataDumpServer][Init]dump server run failed, adx errorCode = %d", adxRet);
             return ACL_ERROR_INTERNAL_ERROR;
@@ -57,15 +51,11 @@ namespace acl {
         acl::AclDump::GetInstance().SetAdxInitFromAclInitFlag(true);
 
         // base dump
-        acl::AdumpDumpConfigInfo configInfo;
+        Adx::DumpConfigInfo configInfo;
         configInfo.dumpConfigPath = configPath;
         configInfo.dumpConfigData = configStr;
         configInfo.dumpConfigSize = size;
-        if (funcs.setDumpConfig == nullptr) {
-            ACL_LOG_INNER_ERROR("[Check][DumpCallback]Adump set dump config callback is not registered.");
-            return ACL_ERROR_INTERNAL_ERROR;
-        }
-        adxRet = funcs.setDumpConfig(configInfo);
+        adxRet = Adx::AdumpSetDumpConfig(configInfo);
         if (adxRet != ADX_ERROR_NONE) {
             auto ret =
                 (adxRet == Adx::ADUMP_INPUT_FAILED) ? ACL_ERROR_INVALID_DUMP_CONFIG : ACL_ERROR_INTERNAL_ERROR;
@@ -125,12 +115,7 @@ aclError aclmdlInitDumpImpl()
         return ACL_ERROR_REPEAT_INITIALIZE;
     }
 
-    const auto& funcs = acl::GetAdumpCallbacks();
-    if (funcs.serverInit == nullptr) {
-        ACL_LOG_INNER_ERROR("[Check][DumpCallback]Adump server init callback is not registered.");
-        return ACL_ERROR_INTERNAL_ERROR;
-    }
-    const int32_t adxRet = funcs.serverInit();
+    const int32_t adxRet = AdxDataDumpServerInit();
     if (adxRet != ADX_ERROR_NONE) {
         ACL_LOG_CALL_ERROR("[AdxDataDumpServer][Init]dump server run failed, adx errorCode = %d", adxRet);
         return ACL_ERROR_INTERNAL_ERROR;
@@ -175,16 +160,11 @@ aclError aclmdlSetDumpImpl(const char *dumpCfgPath)
     // base dump
     if (!configStr.empty()) {
         ACL_LOG_INFO("Start to set dump.");
-        const auto& funcs = acl::GetAdumpCallbacks();
-        if (funcs.setDumpConfig == nullptr) {
-            ACL_LOG_INNER_ERROR("[Check][DumpCallback]Adump set dump config callback is not registered.");
-            return ACL_ERROR_INTERNAL_ERROR;
-        }
-        acl::AdumpDumpConfigInfo configInfo;
+        Adx::DumpConfigInfo configInfo;
         configInfo.dumpConfigPath = dumpCfgPath;
         configInfo.dumpConfigData = configStr.c_str();
         configInfo.dumpConfigSize = configStr.size();
-        const auto adxRet = funcs.setDumpConfig(configInfo);
+        const auto adxRet = Adx::AdumpSetDumpConfig(configInfo);
         if (adxRet != ADX_ERROR_NONE) {
             ret =
                 (adxRet == Adx::ADUMP_INPUT_FAILED) ? ACL_ERROR_INVALID_DUMP_CONFIG : ACL_ERROR_INTERNAL_ERROR;
@@ -219,23 +199,14 @@ aclError aclmdlFinalizeDumpImpl()
     }
 
     // close adump opened
-    const auto& funcs = acl::GetAdumpCallbacks();
-    if (funcs.unsetDump == nullptr) {
-        ACL_LOG_INNER_ERROR("[Check][DumpCallback]Adump unset dump callback is not registered.");
-        return ACL_ERROR_INTERNAL_ERROR;
-    }
-    int32_t adxRet = funcs.unsetDump();
+    int32_t adxRet = Adx::AdumpUnSetDump();
     if (adxRet != ADX_ERROR_NONE) {
         ACL_LOG_INNER_ERROR("[Set][Dump]set dump off failed, adx errorCode = %d", adxRet);
         return ACL_ERROR_INTERNAL_ERROR;
     }
 
     // close dump server
-    if (funcs.serverUnInit == nullptr) {
-        ACL_LOG_INNER_ERROR("[Check][DumpCallback]Adump server uninit callback is not registered.");
-        return ACL_ERROR_INTERNAL_ERROR;
-    }
-    adxRet = funcs.serverUnInit();
+    adxRet = AdxDataDumpServerUnInit();
     if (adxRet != ADX_ERROR_NONE) {
         ACL_LOG_CALL_ERROR("[AdxDataDumpServer][UnInit]generate dump file failed in disk, adx errorCode = %d", adxRet);
         return ACL_ERROR_INTERNAL_ERROR;
