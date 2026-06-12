@@ -30,7 +30,7 @@ uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
         (type == TS_TASK_TYPE_IPC_WAIT)) {
         return GetSendSqeNumForMemWaitTask(taskInfo);
     } else if (type == TS_TASK_TYPE_CAPTURE_CONDITION) {
-        return taskInfo->sqeNum;
+        return taskInfo->sqeNum; // 使用sqeNum必须在对应taskini中初始化
     } else {
         return 1U;
     }

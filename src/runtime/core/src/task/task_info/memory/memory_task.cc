@@ -23,6 +23,7 @@
 #include "event.hpp"
 #include "kernel_utils.hpp"
 #include "stream_jetty_handler.h"
+#include "capture_model_utils.hpp"
 
 namespace cce {
 namespace runtime {
@@ -1909,6 +1910,9 @@ static rtError_t CheckUpdatingTaskParams(TaskInfo* const taskInfo, rtTaskParams*
     COND_RETURN_ERROR(params->taskGrp != nullptr, RT_ERROR_INVALID_VALUE, "taskGrp must be nullptr");
     COND_RETURN_ERROR(params->opInfoPtr != nullptr, RT_ERROR_INVALID_VALUE, "opInfoPtr must be nullptr");
     COND_RETURN_ERROR(params->opInfoSize != 0U, RT_ERROR_INVALID_VALUE, "opInfoSize must be 0");
+
+    COND_RETURN_WARN(IsTaskBelongToSubCaptureMdl(taskInfo),
+        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support updating task parameters");
 
     return RT_ERROR_NONE;
 }

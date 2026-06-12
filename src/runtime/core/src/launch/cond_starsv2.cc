@@ -256,7 +256,6 @@ rtError_t StreamAddCondTask(CondHandle *condHandle, rtCondTaskParams params, Str
     std::function<void()> const errSubModelRecycle = [&condHandle, &params]() {
         condHandle->SubModelDestroy();
         memset_s(params.modelRIArray, params.size * sizeof(rtModel_t), 0x0U, params.size * sizeof(rtModel_t));
-        //condHandleTaskMap_也要清理 todo
     };
     ScopeGuard subModelErrRecycle(errSubModelRecycle);
 

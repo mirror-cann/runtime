@@ -32,8 +32,11 @@ bool CheckCaptureModeSupport(const Context* ctx, const char* funcName);
 bool NeedReBuildSqe(const TaskInfo *const task);
 bool IsUseHardwareEvent(Device * const dev);
 rtError_t AllocNotifyIdForSubModel(Model * const mdl, Notify *notify);
-rtError_t ReleaseNotifyResWhenSendEndGraphFailed(Model * const mdl, Notify *notify);
+rtError_t ReleaseNotify(Model * const mdl, Notify *notify);
 uint32_t FindStreamIdInSubModels(CaptureModel * const parentModel, const uint16_t sqId);
+bool IsStreamBindWithSubModel(Stream * const stream);
+bool IsTaskBelongToSubCaptureMdl(const TaskInfo * const task);
+
 }
 }
 

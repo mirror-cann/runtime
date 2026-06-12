@@ -747,7 +747,7 @@ rtError_t MdlAddEndGraph(Model * const mdl, Stream * const stm, const uint32_t f
         }
 
         error = NtyRecord(notify, stm);
-        ERROR_PROC_RETURN_MSG_INNER(error, (void)ReleaseNotifyResWhenSendEndGraphFailed(mdl, notify);,
+        ERROR_PROC_RETURN_MSG_INNER(error, (void)ReleaseNotify(mdl, notify);,
                                     "Notify record failed, retCode=%#x.", static_cast<uint32_t>(error));
 
         notify->SetEndGraphModel(mdl);

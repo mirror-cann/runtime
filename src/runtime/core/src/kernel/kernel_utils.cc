@@ -68,13 +68,6 @@ rtError_t ConvertTaskType(const TaskInfo * const task, rtTaskType *type)
     COND_RETURN_ERROR((task->stream == nullptr), RT_ERROR_INVALID_VALUE,
         "The stream associated with the task does not exist, taskId=%u.", task->id);
 
-    Model* const mdl = task->stream->Model_();
-    if (mdl != nullptr && mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL) {
-        CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
-        COND_RETURN_WARN(((captureModel != nullptr) && captureModel->IsSubCaptureModel()),
-            RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support querying task type");
-    }
-
     rtTaskType taskType = rtTaskType::RT_TASK_DEFAULT;
     if (task->taskOwner == static_cast<uint8_t>(TaskOwner::RT_TASK_INNER)) {
         *type = taskType;

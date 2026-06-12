@@ -1570,7 +1570,7 @@ rtError_t Context::ModelAddEndGraph(Model * const mdl, Stream * const stm, const
 
         error = notify->Record(stm);
         if (error != RT_ERROR_NONE) {
-            (void)ReleaseNotifyResWhenSendEndGraphFailed(mdl, notify);
+            (void)ReleaseNotify(mdl, notify);
             RT_LOG(RT_LOG_ERROR, "Notify record failed, retCode=%#x", error);
             return error;
         }

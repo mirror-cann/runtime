@@ -95,7 +95,7 @@ private:
     uint32_t condSize_{0U}; // 子模型个数
     uint64_t *devAddr_{nullptr}; // device ptr，用于存储条件值
     Context *context_{nullptr};
-    rtInnerObject handle_ {};
+    rtInnerObject handle_{};
     std::vector<Model *> subCaptureModels_; // 当前condHandle的model列表
     Notify *subModelNotify_{nullptr}; // 所有submodel共用同一个notify，避免重复申请
 };

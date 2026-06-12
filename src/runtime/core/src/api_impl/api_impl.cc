@@ -4961,10 +4961,7 @@ rtError_t ApiImpl::LabelSet(Label * const lbl, Stream * const stm)
     COND_RETURN_AND_MSG_INVALID_CONTEXT(stm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT, 
         "stream " + std::to_string(stm->Id_()));
 
-    Stream *captureStream = stm->GetCaptureStream();
-    if (captureStream != nullptr) {
-        COND_RETURN_WARN(captureStream->IsSubCaptureModel(), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support setting label");
-    }
+    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support setting label");
 
     return lbl->Set(stm);
 }
@@ -4979,16 +4976,13 @@ rtError_t ApiImpl::LabelGoto(Label * const lbl, Stream * const stm)
     COND_RETURN_AND_MSG_INVALID_CONTEXT(stm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT, 
         "stream " + std::to_string(stm->Id_()));
 
-    Stream *captureStream = stm->GetCaptureStream();
-    if (captureStream != nullptr) {
-        COND_RETURN_WARN(captureStream->IsSubCaptureModel(), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support goto label");
-    }
-
 #ifndef CFG_DEV_PLATFORM_PC
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
     COND_RETURN_ERROR_MSG_INNER(ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT,
                                 "Old label goto is not supported for 64K labels.");
 #endif
+
+    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support goto label");
     return lbl->Goto(stm);
 }
 
@@ -5323,10 +5317,7 @@ rtError_t ApiImpl::LabelSwitchByIndex(void * const ptr, const uint32_t maxVal, v
     COND_RETURN_AND_MSG_OUTER(stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, __func__,
             0, "stm->modelNum", "The stream is not bound to a model");
 
-    Stream *captureStream = stm->GetCaptureStream();
-    if (captureStream != nullptr) {
-        COND_RETURN_WARN(captureStream->IsSubCaptureModel(), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support switching label by index");
-    }
+    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support switching label by index");
 
     return CondLabelSwitchByIndex(ptr, maxVal, labelInfoPtr, stm);
 }
@@ -5339,10 +5330,7 @@ rtError_t ApiImpl::LabelGotoEx(Label * const lbl, Stream * const stm)
         "stream " + std::to_string(stm->Id_()));
     COND_RETURN_AND_MSG_INVALID_CONTEXT(lbl->Context_() != curCtx, RT_ERROR_LABEL_CONTEXT, "label");
 
-    Stream *captureStream = stm->GetCaptureStream();
-    if (captureStream != nullptr) {
-        COND_RETURN_WARN(captureStream->IsSubCaptureModel(), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support goto label extended");
-    }
+    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support goto label extended");
 
 #ifndef CFG_DEV_PLATFORM_PC
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
@@ -9156,6 +9144,9 @@ rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
         return RT_ERROR_INVALID_VALUE;
     }
 
+    COND_RETURN_WARN(IsTaskBelongToSubCaptureMdl(taskInfo),
+        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support querying task type");
+
     (void)memset_s(params, sizeof(rtTaskParams), 0, sizeof(rtTaskParams));
     error = ConvertTaskType(taskInfo, &params->type);
     ERROR_RETURN(error, "get task type failed, retCode=%d.", error);
@@ -9315,16 +9306,15 @@ rtError_t ApiImpl::StreamGetTasks(Stream * const stm, void **tasks, uint32_t *nu
         "The stream is not bound to a model.");
     Model* const mdl = stm->Model_();
     NULL_PTR_RETURN(mdl, RT_ERROR_MODEL_NULL);
-    Stream *captureStream = stm->GetCaptureStream();
-    if (captureStream != nullptr) {
-        COND_RETURN_WARN(captureStream->IsSubCaptureModel(), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support getting tasks");
-    }
+    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support getting tasks");
     return stm->StreamGetTasks(tasks, numTasks);
 }
 
 rtError_t ApiImpl::TaskGetType(rtTask_t task, rtTaskType *type)
 {
     const TaskInfo* const taskInfo = static_cast<const TaskInfo *>(task);
+    COND_RETURN_WARN(IsTaskBelongToSubCaptureMdl(taskInfo),
+        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support querying task type");
     return ConvertTaskType(taskInfo, type);
 }
 

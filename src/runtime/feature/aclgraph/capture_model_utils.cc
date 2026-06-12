@@ -296,7 +296,7 @@ rtError_t AllocNotifyIdForSubModel(Model * const mdl, Notify *notify)
     return RT_ERROR_NONE;
 }
 
-rtError_t ReleaseNotifyResWhenSendEndGraphFailed(Model * const mdl, Notify *notify)
+rtError_t ReleaseNotify(Model * const mdl, Notify *notify)
 {
     /* 非aclgraph的，走老流程 */
     if (mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL) {
@@ -348,6 +348,40 @@ uint32_t FindStreamIdInSubModels(CaptureModel * const parentModel, const uint16_
         }
     }
     return UINT32_MAX;
+}
+
+bool IsTaskBelongToSubCaptureMdl(const TaskInfo * const task)
+{
+    Stream *stm = task->stream;
+    COND_PROC((stm == nullptr), return false);
+
+    Model* const mdl = stm->Model_();
+    COND_PROC(mdl == nullptr, return false;);
+
+    CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
+    COND_PROC(captureModel == nullptr, return false;);
+
+    COND_RETURN_WARN(captureModel->IsSubCaptureModel(), true,
+        "model is sub ACL Graph, does not support current operation.");
+
+    return false;
+}
+
+bool IsStreamBindWithSubModel(Stream * const stream)
+{
+    Stream *captureStream = stream->GetCaptureStream();
+    COND_PROC(captureStream == nullptr, return false;);
+
+    Model * mdl = captureStream->Model_();
+    COND_PROC(mdl == nullptr, return false;);
+
+    CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
+    COND_PROC(captureModel == nullptr, return false;);
+
+    COND_RETURN_WARN(captureModel->IsSubCaptureModel(), true,
+        "stream belongs to sub ACL Graph, does not support current operation.");
+
+    return false;
 }
 
 } // namespace runtime
