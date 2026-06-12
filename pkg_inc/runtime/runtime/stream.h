@@ -16,6 +16,7 @@
 #include "base.h"
 #include "event.h"
 #include "runtime/rt_external_stream.h"
+#include "runtime/rt_external_model.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -250,15 +251,6 @@ RTS_API rtError_t rtStreamActive(rtStream_t activeStream, rtStream_t stm);
  */
 RTS_API rtError_t rtStreamSwitchN(void *ptr, uint32_t size, void *valuePtr, rtStream_t *trueStreamPtr,
                                   uint32_t elementSize, rtStream_t stm, rtSwitchDataType_t dataType);
-
-/*
- * @ingroup rt_model
- * @brief disable debug for dump overflow exception with stream
- * @param [in] stm: stream handle
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtDebugUnRegisterForStream(rtStream_t stm);
 
 /*
  * @ingroup dvrt_stream

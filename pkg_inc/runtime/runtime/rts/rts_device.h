@@ -126,17 +126,6 @@ RTS_API rtError_t rtsDeviceGetInfo(uint32_t deviceId, rtDevAttr attr, int64_t *v
 
 /**
  * @ingroup rts_device
- * @brief get device feature ability by device id, such as task schedule ability.
- * @param [in] deviceId
- * @param [in] devFeatureType
- * @param [out] val
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureType, int32_t *val);
-
-/**
- * @ingroup rts_device
  * @brief get priority range of current device
  * @param [in|out] leastPriority   least priority
  * @param [in|out] greatestPriority   greatest priority
@@ -341,36 +330,6 @@ RTS_API rtError_t rtsResetDeviceResLimit(const int32_t devId);
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtsGetDeviceResLimit(const int32_t devId, const rtDevResLimitType_t type, uint32_t *value);
-
-/**
- * @ingroup
- * @brief query ub device info
- * @param [in] cmd query info tpye
- * @param [in|out] info input/output parameter
- * @return RT_ERROR_NONE for ok, errno for failed
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void *devInfo);
-
-/**
- * @ingroup
- * @brief map resource va address
- * @param [in] resInfo resource info
- * @param [out] addrInfo resource address info
- * @return RT_ERROR_NONE for ok, errno for failed
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtGetDevResAddress(rtDevResInfo * const resInfo, rtDevResAddrInfo * const addrInfo);
-
-/**
- * @ingroup
- * @brief unmap resource va address
- * @param [in] resInfo resource info
- * @param [out] resAddress resource address
- * @return RT_ERROR_NONE for ok, errno for failed
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtReleaseDevResAddress(rtDevResInfo * const resInfo);
 
 /**
  * @ingroup

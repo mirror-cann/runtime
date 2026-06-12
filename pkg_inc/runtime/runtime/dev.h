@@ -124,24 +124,6 @@ typedef struct tagRtUuid {
 /**
  * @ingroup dvrt_dev
  * @brief get total device number.
- * @param
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtInit(void);
-
-/**
- * @ingroup dvrt_dev
- * @brief get total device number.
- * @param
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API void rtDeinit(void);
-
-/**
- * @ingroup dvrt_dev
- * @brief get total device number.
  * @param [in|out] cnt the device number
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
@@ -155,30 +137,6 @@ RTS_API rtError_t rtGetDeviceCount(int32_t *cnt);
  * @return RT_ERROR_DRV_ERR for error
  */
 RTS_API rtError_t rtGetDeviceIDs(uint32_t *devices, uint32_t len);
-
-/**
- * @ingroup dvrt_dev
- * @brief get device infomation.
- * @param [in] device   the device id
- * @param [in] moduleType   module type
- * @param [in] infoType   info type
- * @param [out] val   the device info
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_DRV_ERR for error
- */
-RTS_API rtError_t rtGetDeviceInfo(uint32_t deviceId, int32_t moduleType, int32_t infoType, int64_t *val);
-
-/**
-* @ingroup dvrt_dev
-* @brief get phy device infomation.
-* @param [int] phyId        the physic Id
-* @param [int] moduleType   module type
-* @param [int] infoType     info type
-* @param [out] val          the device info
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_DRV_ERR for error
-*/
-RTS_API rtError_t rtGetPhyDeviceInfo(uint32_t phyId, int32_t moduleType, int32_t infoType, int64_t *val);
 
 /**
  * @ingroup dvrt_dev
@@ -220,26 +178,6 @@ RTS_API rtError_t rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t *phyId);
 
 /**
  * @ingroup dvrt_dev
- * @brief enable direction:devIdDes---->phyIdSrc.
- * @param [in] devIdDes   the logical device id
- * @param [in] phyIdSrc   the physical device id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtEnableP2P(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t flag);
-
-/**
- * @ingroup dvrt_dev
- * @brief disable direction:devIdDes---->phyIdSrc.
- * @param [in] devIdDes   the logical device id
- * @param [in] phyIdSrc   the physical device id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtDisableP2P(uint32_t devIdDes, uint32_t phyIdSrc);
-
-/**
- * @ingroup dvrt_dev
  * @brief get cability of P2P omemry copy betwen device and peeredevic.
  * @param [in] devId   the logical device id
  * @param [in] peerDevice   the physical device id
@@ -248,17 +186,6 @@ RTS_API rtError_t rtDisableP2P(uint32_t devIdDes, uint32_t phyIdSrc);
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtDeviceCanAccessPeer(int32_t *canAccessPeer, uint32_t devId, uint32_t peerDevice);
-
-/**
- * @ingroup dvrt_dev
- * @brief get status
- * @param [in] devIdDes   the logical device id
- * @param [in] phyIdSrc   the physical device id
- * @param [in|out] status   status value
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtGetP2PStatus(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t *status);
 
 /**
  * @ingroup dvrt_dev
@@ -353,15 +280,6 @@ RTS_API rtError_t rtSetTSDevice(uint32_t tsId);
 
 /**
  * @ingroup dvrt_dev
- * @brief Setting Scheduling Type of Graph
- * @param [out] tsId   the ts id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtGetTSDevice(uint32_t *tsId);
-
-/**
- * @ingroup dvrt_dev
  * @brief init aicpu executor
  * @param [out] runtime run mode
  * @return RT_ERROR_NONE for ok
@@ -377,13 +295,6 @@ RTS_API rtError_t rtGetRunMode(rtRunMode *runMode);
  * @return RT_ERROR_DRV_ERR for can not get aicpu deploy
  */
 RTS_API rtError_t rtGetAicpuDeploy(rtAicpuDeployType_t *deployType);
-
-/**
- * @ingroup dvrt_dev
- * @brief set chipType
- * @return RT_ERROR_NONE for ok
- */
-RTS_API rtError_t rtSetSocVersion(const char_t *ver);
 
 /**
  * @ingroup dvrt_dev
@@ -421,62 +332,11 @@ RTS_API rtError_t rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus *devi
 
 /**
  * @ingroup dvrt_dev
- * @brief get status
- * @param [in] devId   the logical device id
- * @param [in] otherDevId   the other logical device id
- * @param [in] infoType   info type
- * @param [in|out] val   pair info
- * @return RT_ERROR_NONE for ok
- */
-RTS_API rtError_t rtGetPairDevicesInfo(uint32_t devId, uint32_t otherDevId, int32_t infoType, int64_t *val);
-
-/**
- * @ingroup dvrt_dev
- * @brief get status
- * @param [in] devId   the physic device id
- * @param [in] otherDevId   the other physic device id
- * @param [in] infoType   info type
- * @param [in|out] val   pair info
- * @return RT_ERROR_NONE for ok
- */
-RTS_API rtError_t rtGetPairPhyDevicesInfo(uint32_t devId, uint32_t otherDevId, int32_t infoType, int64_t *val);
-
-/**
- * @ingroup dvrt_dev
- * @brief get capability infomation.
- * @param [in] featureType  feature type
- * @param [in] featureInfo  info type
- * @param [out] val  the capability info RT_CAPABILITY_SUPPORT or RT_CAPABILITY_NOT_SUPPORT
- * @return RT_ERROR_NONE for ok
- */
-RTS_API rtError_t rtGetRtCapability(rtFeatureType_t featureType, int32_t featureInfo, int64_t *val);
-
-/**
- * @ingroup dvrt_dev
- * @brief set target device for current thread
- * @param [int] devId   the device id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtSetDeviceWithoutTsd(int32_t devId);
-
-/**
- * @ingroup dvrt_dev
  * @brief reset all opened device
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtDeviceResetWithoutTsd(int32_t devId);
-
-/**
- * @ingroup dvrt_dev
- * @brief get device message
- * @param [in] rtGetDevMsgType_t getMsgType:msg type
- * @param [in] GetMsgCallback callback:acl callback function
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtGetDevMsg(rtGetDevMsgType_t getMsgType, rtGetMsgCallback callback);
 
 /**
  * @ingroup dvrt_dev
@@ -531,15 +391,6 @@ RTS_API rtError_t rtGetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceI
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t * const util);
-/**
- * @ingroup
- * @brief get serverid by sdid
- * @param [int] sdid   sdid
- * @param [out] *srvId serverid
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtGetServerIDBySDID(uint32_t sdid, uint32_t *srvId);
 
 /**
  * @ingroup dvrt_dev
@@ -666,24 +517,6 @@ RTS_API rtError_t rtGetLogicDevIdByUserDevId(const int32_t userDevId, int32_t * 
 RTS_API rtError_t rtGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t * const userDevId);
 
 /**
-* @ingroup
-* @brief set debug dump mode
-* @param [in] mode    : dump mode
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API rtError_t rtDebugSetDumpMode(const uint64_t mode);
-
-/**
-* @ingroup
-* @brief get stalled core id in current process
-* @param [out] coreInfo    : physics core id used
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API rtError_t rtDebugGetStalledCore(rtDbgCoreInfo_t *const coreInfo);
-
-/**
 * @ingroup dvrt_dev
 * @brief Get device uuid
 * @param [in] devId user device ID
@@ -692,16 +525,6 @@ RTS_API rtError_t rtDebugGetStalledCore(rtDbgCoreInfo_t *const coreInfo);
 * @return ACL_ERROR_RT_FEATURE_NOT_SUPPORT for driver or device not support uuid feature
 */
 RTS_API rtError_t rtGetDeviceUuid(const int32_t devId, rtUuid_t *uuid);
-
-/**
- * @ingroup dvrt_dev
- * @brief set device with different flags
-* @param [in] deviceId    : device id
-* @param [in] flags    : flags
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtSetDeviceWithFlags(int32_t deviceId, uint64_t flags);
 
 #if defined(__cplusplus)
 }

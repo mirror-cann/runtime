@@ -12,6 +12,7 @@
 #define CCE_RUNTIME_CONFIG_H
 
 #include "base.h"
+#include "runtime/rt_external_device.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -123,18 +124,6 @@ RTS_API rtError_t rtGetAiCoreCount(uint32_t *aiCoreCnt);
  * @return aiCpuCnt
  */
 RTS_API rtError_t rtGetAiCpuCount(uint32_t *aiCpuCnt);
-
-/**
- * @ingroup
- * @brief get device feature ability by device id, such as task schedule ability.
- * @param [in] deviceId
- * @param [in] moduleType
- * @param [in] featureType
- * @param [out] val
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtGetDeviceCapability(int32_t deviceId, int32_t moduleType, int32_t featureType, int32_t *val);
 
 /**
  * @ingroup

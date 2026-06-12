@@ -273,19 +273,6 @@ RTS_API rtError_t rtDvppMalloc(void **devPtr, uint64_t size, const uint16_t modu
 
 /**
  * @ingroup dvrt_mem
- * @brief alloc device memory for dvpp, support set flag
- * @param [in|out] devPtr   memory pointer
- * @param [in] size   memory size
- * @param [in] flag   mem flag, can use mem attribute set read only.
- * @param [in] moduleid alloc memory module id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- * @return others is error
- */
-RTS_API rtError_t rtDvppMallocWithFlag(void **devPtr, uint64_t size, uint32_t flag, const uint16_t moduleId);
-
-/**
- * @ingroup dvrt_mem
  * @brief free device memory for dvpp
  * @param [in|out] devPtr   memory pointer
  * @return RT_ERROR_NONE for ok
@@ -416,32 +403,6 @@ RTS_API rtError_t rtInvalidCache(void *base, size_t len);
 
 /**
  * @ingroup dvrt_mem
- * @brief synchronized memcpy
- * @param [in] dst     destination address pointer
- * @param [in] destMax length of destination address memory
- * @param [in] src   source address pointer
- * @param [in] cnt   the number of byte to copy
- * @param [in] kind  memcpy type
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtMemcpy(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtMemcpyKind_t kind);
-
-/**
- * @ingroup dvrt_mem for mbuff
- * @brief synchronized memcpy
- * @param [in] dst     destination address pointer
- * @param [in] destMax length of destination address memory
- * @param [in] src   source address pointer
- * @param [in] cnt   the number of byte to copy
- * @param [in] kind   memcpy type
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtMemcpyEx(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtMemcpyKind_t kind);
-
-/**
- * @ingroup dvrt_mem
  * @brief host task memcpy
  * @param [in] dst   destination address pointer
  * @param [in] destMax length of destination address memory
@@ -483,20 +444,6 @@ RTS_API rtError_t rtMemcpyAsync(void *dst, uint64_t destMax, const void *src, ui
  */
 RTS_API rtError_t rtMemcpyAsyncWithoutCheckKind(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
                                                 rtMemcpyKind_t kind, rtStream_t stm);
-
-/**
- * @ingroup dvrt_mem
- * @brief dsa update memcpy
- * @param [in] streamId dsa streamId
- * @param [in] taskId dsa
- * @param [in] src   source device address pointer
- * @param [in] cnt   the number of byte to copy
- * @param [in] stm   asynchronized task stream
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtLaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void *src, uint64_t cnt,
-                                        rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -554,9 +501,6 @@ typedef struct {
     uint64_t src;
     uint64_t dst;
 } rtMemcpyAddrInfo;
-
-RTS_API rtError_t rtMemcpyAsyncPtr(void *memcpyAddrInfo, uint64_t destMax, uint64_t count,
-                                    rtMemcpyKind_t kind, rtStream_t stream, uint32_t qosCfg);
 
 RTS_API rtError_t rtMemcpyAsyncPtrV2(void *memcpyAddrInfo, uint64_t destMax, uint64_t count,
                                     rtMemcpyKind_t kind, rtStream_t stream, const rtTaskCfgInfo_t *cfgInfo);
@@ -676,15 +620,6 @@ RTS_API rtError_t rtMemcpy2d(void *dst, uint64_t dstPitch, const void *src, uint
  */
 RTS_API rtError_t rtMemcpy2dAsync(void *dst, uint64_t dstPitch, const void *src, uint64_t srcPitch, uint64_t width,
                                   uint64_t height, rtMemcpyKind_t kind, rtStream_t stm);
-
-/**
- * @ingroup dvrt_mem
- * @brief read mem info while holding the core
- * @param [in] param
- * @return RT_ERROR_NONE for ok, errno for failed
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtDebugReadAICore(rtDebugMemoryParam_t *const param);
 
 /**
  * @ingroup dvrt_mem
@@ -831,18 +766,6 @@ RTS_API rtError_t rtIpcCloseMemory(const void *ptr);
 
 /**
  * @ingroup dvrt_mem
- * @brief HCCL Async memory cpy
- * @param [in] sqIndex sq index
- * @param [in] wqeIndex moudle index
- * @param [in] stm asynchronized task stream
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- * @return RT_ERROR_DRV_ERR for driver error
- */
-RTS_API rtError_t rtRDMASend(uint32_t sqIndex, uint32_t wqeIndex, rtStream_t stm);
-
-/**
- * @ingroup dvrt_mem
  * @brief Ipc set mem pid
  * @param [in] name name to be queried
  * @param [in] pid  process id
@@ -852,18 +775,6 @@ RTS_API rtError_t rtRDMASend(uint32_t sqIndex, uint32_t wqeIndex, rtStream_t stm
  * @return RT_ERROR_DRV_ERR for driver error
  */
 RTS_API rtError_t rtSetIpcMemPid(const char_t *name, int32_t pid[], int32_t num);
-
-/**
- * @ingroup dvrt_mem
- * @brief HCCL Async memory cpy
- * @param [in] dbindex single device 0
- * @param [in] dbinfo doorbell info
- * @param [in] stm asynchronized task stream
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- * @return RT_ERROR_DRV_ERR for driver error
- */
-RTS_API rtError_t rtRDMADBSend(uint32_t dbIndex, uint64_t dbInfo, rtStream_t stm);
 
 
 typedef enum MemAccessFlags {
@@ -912,24 +823,6 @@ typedef enum tagAdviseMemType {
     RT_ADVISE_ACCESS_READWRITE = 3,
     RT_ADVISE_TYPE_MAX
 } rtAdviseMemType;
-
-/**
- * @ingroup rt_stars
- * @brief ub doorbell send
- * @param [in] dbSendInfo       dbSendInfo input
- * @param [in] stm              stm: stream handle
- * @return RT_ERROR_NONE for ok, others failed
- */
-RTS_API rtError_t rtUbDbSend(rtUbDbInfo_t *dbInfo,  rtStream_t stm);
- 
-/**
- * @ingroup rt_stars
- * @brief ub direct wqe send
- * @param [in] wqeInfo          wqeInfo input
- * @param [in] stm              stm: stream handle
- * @return RT_ERROR_NONE for ok, others failed
- */
-RTS_API rtError_t rtUbDirectSend(rtUbWqeInfo_t *wqeInfo, rtStream_t stm);
 /**
  * @ingroup dvrt_mem
  * @brief This command is used to reserve a virtual address range
@@ -955,20 +848,6 @@ RTS_API rtError_t rtReserveMemAddress(void** devPtr, size_t size, size_t alignme
  * @return RT_ERROR_DRV_ERR for driver error
  */
 RTS_API rtError_t rtReleaseMemAddress(void* devPtr);
-
-/**
- * @ingroup dvrt_mem
- * @brief This command is used to alloc physical memory.
- * @attention Only support ONLINE scene.
- * @param [out] handle Value of handle returned,all operations on this allocation are to be performed using this handle.
- * @param [in] size Size of the allocation requested.
- * @param [in] prop Properties of the allocation to create.
- * @param [in] flags Currently unused, must be zero.
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- * @return RT_ERROR_DRV_ERR for driver error
- */
-RTS_API rtError_t rtMallocPhysical(rtDrvMemHandle* handle, size_t size, rtDrvMemProp_t* prop, uint64_t flags);
 
 /**
  * @ingroup dvrt_mem

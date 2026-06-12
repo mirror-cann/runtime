@@ -14,6 +14,7 @@
 #include "base.h"
 #include "rt_ffts_plus.h"
 #include "runtime/rt_external_model.h"
+#include "runtime/rt_external_kernel.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -517,17 +518,6 @@ RTS_API rtError_t rtModelExit(rtModel_t mdl, rtStream_t stm);
 
 /**
  * @ingroup rt_model
- * @brief bind queue
- * @param [in] mdl     model to bind
- * @param [in] queueId   queueId to bind
- * @param [in] flag
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtModelBindQueue(rtModel_t mdl, uint32_t queueId, rtModelQueueFlag_t flag);
-
-/**
- * @ingroup rt_model
  * @brief set model group id
  * @param [in]    mdl     model
  * @param [in]     schGrpId    groupId  (0,4) 0:default invalid value   1-4 valid value Maximum support 4 groups
@@ -548,15 +538,6 @@ RTS_API rtError_t rtModelSetSchGroupId(rtModel_t mdl, const int16_t schGrpId);
  */
 RTS_API rtError_t rtModelTaskUpdate(rtStream_t desStm, uint32_t desTaskId, rtStream_t sinkStm,
                             rtMdlTaskUpdateInfo_t *para);
-
-/**
- * @ingroup rt_model
- * @brief no operation task
- * @param [in] stm
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtNopTask(rtStream_t stm);
 
 /**
  * @ingroup rt_model

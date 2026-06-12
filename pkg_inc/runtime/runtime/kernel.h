@@ -229,18 +229,6 @@ typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kerne
  */
 RTS_API rtError_t rtDevBinaryRegister(const rtDevBinary_t *bin, void **hdl);
 
-RTS_API rtError_t  rtGetNotifyAddress(rtNotify_t notify, uint64_t * const notifyAddres);
-
-/**
- * @ingroup rt_kernel
- * @brief register device binary with all kernel
- * @param [in] bin   device binary description
- * @param [out] hdl   device binary handle
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtRegisterAllKernel(const rtDevBinary_t *bin, void **hdl);
-
 /**
  * @ingroup rt_kernel
  * @brief register fast memeory device binary
@@ -258,16 +246,6 @@ RTS_API rtError_t rtBinaryRegisterToFastMemory(void *hdl);
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtDevBinaryUnRegister(void *hdl);
-
-/**
- * @ingroup rt_kernel
- * @brief register device binary metadata
- * @param [in] hdl    device binary description
- * @param [in] metadata  device binary metadata
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtMetadataRegister(void *hdl, const char_t *metadata);
 
 /**
  * @ingroup rt_kernel
@@ -361,15 +339,6 @@ RTS_API rtError_t rtKernelGetAddrAndPrefCnt(void *hdl, const uint64_t tilingKey,
 */
 RTS_API rtError_t rtKernelGetAddrAndPrefCntV2(void *hdl, const uint64_t tilingKey, const void * const stubFunc,
                                               const uint32_t flag, rtKernelDetailInfo_t *kernelInfo);
-
-/**
-* @ingroup rt_kernel
-* @brief set input argments size for exception
-* @param [in] sizeInfo argments size info
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API rtError_t rtSetExceptionExtInfo(const rtArgsSizeInfo_t * const sizeInfo);
 
 /**
  * @ingroup rt_kernel
@@ -477,23 +446,6 @@ RTS_API rtError_t rtKernelLaunchFwk(const char_t *opName, void *args, uint32_t a
                                     rtStream_t rtStream);
 
 /**
- * @ingroup rtCpuKernelLaunchWithFlag(abandoned)
- * @brief launch cpu kernel to device  with dump identifier
- * @param [in] soName        so name
- * @param [in] kernelName    kernel name
- * @param [in] numBlocks      block dimensions
- * @param [in] argsInfo      argments address for kernel function
- * @param [in] smDesc        shared memory description
- * @param [in] stm           associated stream
- * @param [in] flag          dump flag or others function flag
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtCpuKernelLaunchWithFlag(const void *soName, const void *kernelName, uint32_t numBlocks,
-                                            const rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm,
-                                            uint32_t flags);
-
-/**
  * @ingroup rtAicpuKernelLaunchWithFlag(in use)
  * @brief launch cpu kernel to device with dump identifier
  * @param [in] launchNames   names for kernel launch
@@ -508,56 +460,6 @@ RTS_API rtError_t rtCpuKernelLaunchWithFlag(const void *soName, const void *kern
 RTS_API rtError_t rtAicpuKernelLaunchWithFlag(const rtKernelLaunchNames_t *launchNames, uint32_t numBlocks,
                                               const rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm,
                                               uint32_t flags);
-
-/**
- * @ingroup rtAicpuKernelLaunchExWithArgs
- * @brief launch cpu kernel to device with dump identifier and kernelType
- * @param [in] kernelType    aicpu kernel type
- * @param [in] opName        address of op name
- * @param [in] numBlocks      block dimensions
- * @param [in] argsInfo      argments address for kernel function
- * @param [in] smDesc        shared memory description
- * @param [in] stm           associated stream
- * @param [in] flags         dump flag or others function flag
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtAicpuKernelLaunchExWithArgs(const uint32_t kernelType, const char_t * const opName,
-                                                const uint32_t numBlocks, const rtAicpuArgsEx_t *argsInfo,
-                                                rtSmDesc_t * const smDesc, const rtStream_t stm,
-                                                const uint32_t flags);
-
-/**
- * @ingroup rt_kernel
- * @brief L1 fusion dump addr transferred to device
- * @param [in] mdl    handle info
- * @param [in] addr     ddr address of L1 Fusion Dump
- * @param [in] dumpSize memory size
- * @param [in] flag     memory flag
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtDumpAddrSet(rtModel_t mdl, void *addr, uint32_t dumpSize, uint32_t flag);
-
-/**
- * @ingroup rt_kernel
- * @brief load dump info to aicpu
- * @param [in] dumpInfo   dump info
- * @param [in] length   length of dump info
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtDatadumpInfoLoad(const void *dumpInfo, uint32_t length);
-
-/**
- * @ingroup rt_kernel
- * @brief load aicpu info
- * @param [in] aicpuInfo   aicpu info
- * @param [in] length   length of aicpu info
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtAicpuInfoLoad(const void *aicpuInfo, uint32_t length);
 
 /**
  * @ingroup rt_kernel
@@ -667,24 +569,6 @@ RTS_API rtError_t rtLaunch(const void *stubFunc);
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtKernelConfigTransArg(const void *ptr, uint64_t size, uint32_t flag, void **args);
-
-/**
- * @ingroup rt_kernel
- * @brief start fusion kernels.
- * @param [in] stm   stream for fusion kernels
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtKernelFusionStart(rtStream_t stm);
-
-/**
- * @ingroup rt_kernel
- * @brief end fusion kernels.
- * @param [in] stm   stream for fusion kernels
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtKernelFusionEnd(rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -881,54 +765,6 @@ rtError_t rtBinaryUnLoad(rtBinHandle binHandle);
 
 /**
  * @ingroup rt_kernel
- * @brief get binary meta num
- * @param [in] binHandle  binary handle
- * @param [in] type       binary meta info type
- * @param [out] numOfMeta  num of binary meta info
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtBinaryGetMetaNum(const rtBinHandle binHandle, const rtBinaryMetaType type, size_t *numOfMeta);
-
-/**
- * @ingroup rt_kernel
- * @brief get binary meta info
- * @param [in] binHandle  binary handle
- * @param [in] type       binary meta info type
- * @param [in] numOfMeta  num of binary meta info
- * @param [out] data      binary meta info addr
- * @param [in] dataSize   binary meta info length
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtBinaryGetMetaInfo(const rtBinHandle binHandle, const rtBinaryMetaType type, const size_t numOfMeta,
-    void **data, const size_t *dataSize);
-
-/**
- * @ingroup rt_kernel
- * @brief get binary function meta info
- * @param [in] funcHandle  function handle
- * @param [in] type        function meta info type
- * @param [out] data       function meta info addr
- * @param [in] length      function meta info length
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-rtError_t rtFunctionGetMetaInfo(const rtFuncHandle funcHandle, const rtFunctionMetaType type, void *data, const uint32_t length);
-
-/**
- * @ingroup rt_kernel
- * @brief get binary function meta info size
- * @param [in] funcHandle  function handle
- * @param [in] type        function meta info type
- * @param [out] size       function meta info size
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-rtError_t rtFunctionGetMetaInfoSize(const rtFuncHandle funcHandle, const rtFunctionMetaType type, size_t *size);
-
-/**
- * @ingroup rt_kernel
  * @brief Kernel Launch to device
  * @param [in] funcHandle  function Handle
  * @param [in] numBlocks  block dimensions
@@ -1006,19 +842,6 @@ RTS_API rtError_t rtGetBinBuffer(const rtBinHandle binHandle, const rtBinBufferT
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtFreeKernelBin(char_t * const buffer);
-
-/**
- * @ingroup dvrt_mem
- * @brief HCCL copy ffts args
- * @param [in] stm task stream
- * @param [in] argsInfo args info
- * @param [out] devArgsAddr device mem addr for args
- * @param [out] argsHandle copy handler
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- * @return RT_ERROR_DRV_ERR for driver error
- */
-RTS_API rtError_t rtGetDevArgsAddr(rtStream_t stm, rtArgsEx_t *argsInfo, void **devArgsAddr, void **argsHandle);
 
 /**
  * @ingroup rt_kernel
@@ -1114,25 +937,6 @@ RTS_API rtError_t rtVectorCoreKernelLaunchWithHandle(void *hdl, const uint64_t t
  */
 RTS_API rtError_t rtVectorCoreKernelLaunch(const void *stubFunc, uint32_t numBlocks, rtArgsEx_t *argsInfo,
     rtSmDesc_t *smDesc, rtStream_t stm, uint32_t flags, const rtTaskCfgInfo_t *cfgInfo);
-/**
- * @ingroup rt_kernel
- * @brief CCU Kernel Launch to device
- * @param [in] taskInfo  task information of CCU
- * @param [in] stm  associated stream
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtCCULaunch(rtCcuTaskInfo_t *taskInfo,  rtStream_t const stm);
-
-/**
- * @brief Fusion Kernel Launch to device
- * @param [in] fusionInfo  task information about fusion kernel
- * @param [in] stm         associated stream
- * @param [in] argsInfo    args info about fusion kernel
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtFusionLaunch(void * const fusionInfo, rtStream_t const stm, rtFusionArgsEx_t *argsInfo);
 
 /**
  * @brief Cache shape data for profiling in aclgraph
@@ -1152,25 +956,6 @@ RTS_API rtError_t rtCacheLastTaskOpInfo(const void * const infoPtr, const size_t
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t *attrValue);
-
-/**
- * @ingroup rt_kernel
- * @brief set exception information callback handle to binHandle
- * @param [in] binHandle binary bin handle
- * @param [in] callback exception callback of binary bin handle
- * @param [in] userData exception userData of binary bin handle
- * @return RT_ERROR_NONE for ok
- */
-RTS_API rtError_t rtBinarySetExceptionCallback(rtBinHandle binHandle, rtOpExceptionCallback callback, void *userData);
-
-/**
- * @ingroup rt_kernel
- * @brief get func handle from exception information
- * @param [in] info pointer of exception information
- * @param [in] func kernel func of exception information
- * @return RT_ERROR_NONE for ok
- */
-RTS_API rtError_t rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, rtFuncHandle *func);
 
 #if defined(__cplusplus)
 }

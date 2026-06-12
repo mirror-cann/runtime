@@ -12,6 +12,7 @@
 
 #include "runtime/base.h"
 #include "runtime/rt_external_preload.h"
+#include "runtime/rt_external_kernel.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -46,15 +47,6 @@ RTS_API rtError_t rtRegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFi
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 RTS_API rtError_t rtUnRegKernelLaunchFillFunc(const char* symbol);
-
-/**
-* @ingroup rt_preload_task
-* @brief get l2cache offset
-* @param [in] deviceId   device id
-* @param [out]  offset l2cache offset
-* @return  0 for success, others for fail
-*/
-RTS_API rtError_t rtGetL2CacheOffset(uint32_t deviceId, uint64_t *offset);
 
 #if defined(__cplusplus)
 }
