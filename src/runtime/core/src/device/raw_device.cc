@@ -572,7 +572,7 @@ rtError_t RawDevice::Init()
         RT_LOG(RT_LOG_INFO, "Ddie_die_num=%hhu", davidDieNum_);
     }
     // get runMode to runMode_
-    uint32_t runMode = driver_->GetRunMode();
+    const uint32_t runMode = driver_->GetRunMode();
     SetRunMode(runMode);
     driver_->SetAllocNumaTsSupported();
     chipType_ = chipType;
@@ -1005,7 +1005,7 @@ rtError_t RawDevice::InitSwapBufferInfo()
     }
 
     uint64_t swapBufferBaseAddr = 0UL;
-    rtError_t error = driver_->GetSwapBufferInfo(deviceId_, tsId_, &swapBufferBaseAddr);
+    const rtError_t error = driver_->GetSwapBufferInfo(deviceId_, tsId_, &swapBufferBaseAddr);
     if (error == RT_ERROR_NONE) {
         properties_.swapBufferBaseAddr = swapBufferBaseAddr;
         RT_LOG(RT_LOG_INFO, "Get SwapBufferInfo success, baseAddr=0x%llx.", swapBufferBaseAddr);
@@ -2309,7 +2309,7 @@ rtError_t RawDevice::StoreEndGraphNotifyInfo(const uint32_t streamId, Model* cap
         captureModelExeInfoMap_.emplace(key, std::list<uint32_t>(numOfPos, endGraphNotifyPos));
     } else {
         std::list<uint32_t>& posList = captureModelExeInfoMap_[key];
-        posList.emplace_back(endGraphNotifyPos);
+        (void)posList.emplace_back(endGraphNotifyPos);
         numOfPos = posList.size();
     }
 

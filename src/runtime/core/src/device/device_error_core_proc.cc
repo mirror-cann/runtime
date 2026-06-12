@@ -802,7 +802,7 @@ bool IsHitBlacklist(const uint32_t deviceId, const std::map<uint32_t, std::strin
     const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
     ScopeGuard faultEventInfoRelease(releaseFunc);
 
-    const size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
+    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
     auto eRet = memset_s(faultEventInfo, totalSize, 0, totalSize);
     COND_RETURN_WARN(eRet != EOK, false, "Mem set error, ret=%d", eRet);
 
@@ -828,7 +828,7 @@ bool HasBlacklistEventOnDevice(const uint32_t deviceId, const std::map<uint32_t,
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
     COND_RETURN_AND_MSG_OUTER(faultEventInfo == nullptr, false, ErrorCode::EE1013,
         maxFaultNum * sizeof(rtDmsFaultEvent));
-    const size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
+    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
     (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
 
     const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
@@ -999,7 +999,7 @@ bool IsEventIdAndRasCodeMatch( const uint32_t deviceId, const std::vector<EventR
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
     COND_RETURN_AND_MSG_OUTER(faultEventInfo == nullptr, false, ErrorCode::EE1013,
         maxFaultNum * sizeof(rtDmsFaultEvent));
-    const size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
+    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
     (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
 
     const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
@@ -1351,20 +1351,20 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo4FftsPlus(
     uint16_t schemMode = 0U;
     uint16_t blockdim = 0U;
     if ((contextInfo.contextType == RT_CTX_TYPE_AICORE) || (contextInfo.contextType == RT_CTX_TYPE_AIV)) {
-        mapAddr.emplace_back(
+        (void)mapAddr.emplace_back(
             static_cast<uint64_t>(contextInfo.nonTailTaskStartPcH) << 32U | static_cast<uint64_t>(contextInfo.nonTailTaskStartPcL));
-        mapAddr.emplace_back(static_cast<uint64_t>(contextInfo.tailTaskStartPcH) << 32U | contextInfo.tailTaskStartPcL);
+        (void)mapAddr.emplace_back(static_cast<uint64_t>(contextInfo.tailTaskStartPcH) << 32U | contextInfo.tailTaskStartPcL);
         schemMode = contextInfo.schem;
         blockdim = contextInfo.tailBlockdim;
     } else if ((contextInfo.contextType == RT_CTX_TYPE_MIX_AIC) || (contextInfo.contextType == RT_CTX_TYPE_MIX_AIV)) {
         rtFftsPlusMixAicAivCtx_t *mixCtx = nullptr;
         mixCtx = RtPtrToPtr<rtFftsPlusMixAicAivCtx_t *, rtFftsPlusAicAivCtx_t *>(&contextInfo);
-        mapAddr.emplace_back(
+        (void)mapAddr.emplace_back(
             static_cast<uint64_t>(mixCtx->nonTailAicTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->nonTailAicTaskStartPcL));
-        mapAddr.emplace_back(static_cast<uint64_t>(mixCtx->tailAicTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->tailAicTaskStartPcL));
-        mapAddr.emplace_back(
+        (void)mapAddr.emplace_back(static_cast<uint64_t>(mixCtx->tailAicTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->tailAicTaskStartPcL));
+        (void)mapAddr.emplace_back(
             static_cast<uint64_t>(mixCtx->nonTailAivTaskStartPcH) << 32U | mixCtx->nonTailAivTaskStartPcL);
-        mapAddr.emplace_back(static_cast<uint64_t>(mixCtx->tailAivTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->tailAivTaskStartPcL));
+        (void)mapAddr.emplace_back(static_cast<uint64_t>(mixCtx->tailAivTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->tailAivTaskStartPcL));
         schemMode = mixCtx->schem;
         blockdim = mixCtx->tailBlockdim;
     } else {

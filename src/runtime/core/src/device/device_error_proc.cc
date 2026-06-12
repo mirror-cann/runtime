@@ -1467,7 +1467,7 @@ static void MergeCoreExtByIndex(CoreInfo& merged, const uint32_t coreNum, const 
     constexpr size_t mergedPayloadOffset = offsetof(MergedCoreInfo, aicCond);
     constexpr size_t extPayloadMaxSize = sizeof(ExtCoreInfo) - extPayloadOffset;
     constexpr size_t mergedPayloadMaxSize = sizeof(MergedCoreInfo) - mergedPayloadOffset;
-    const size_t payloadMaxCopySize = std::min(extPayloadMaxSize, mergedPayloadMaxSize);
+    constexpr size_t payloadMaxCopySize = std::min(extPayloadMaxSize, mergedPayloadMaxSize);
 
     const uint32_t extCoreNum = std::min<uint32_t>(extData->comm.coreNum, maxCoreNum);
     const uint32_t mergeNum = std::min<uint32_t>(coreNum, extCoreNum);
@@ -1648,7 +1648,7 @@ rtError_t DeviceErrorProc::ProcessOneElementInRingBufferImpl(
     constexpr size_t headSize = sizeof(DevRingBufferCtlInfo);
     if (elementSize == 0U) {
         RT_LOG(RT_LOG_ERROR, "The element size in ringbuffer is invalid.");
-        PrintRingbufferErrorInfo(ctlInfo);
+        (void)PrintRingbufferErrorInfo(ctlInfo);
         return RT_ERROR_INVALID_VALUE;
     }
     RT_LOG(RT_LOG_INFO, "it need to process %u errMessages, headSize=%zu, elementSize=%zu.",
