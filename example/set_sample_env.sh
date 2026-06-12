@@ -9,6 +9,9 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
 
+_set_soc_shell_options="$(set +o)"
+set -euo pipefail
+
 _set_soc_usage() {
     echo "Usage:"
     echo "  source example/set_sample_env.sh"
@@ -19,12 +22,17 @@ _set_soc_usage() {
 
 _set_soc_finish() {
     local ret="$1"
+    local shell_options="${_set_soc_shell_options}"
+
     unset -f _set_soc_usage _set_soc_finish _set_soc_normalize _set_soc_is_valid _set_soc_get_arch_dir \
         _set_soc_append_layout_candidate _set_soc_resolve_cann_layout _set_soc_select_cann_path \
         _set_soc_need_build_helper _set_soc_build_helper _set_soc_detect_by_acl _set_soc_append_ascendc_candidate \
         _set_soc_detect_ascendc_cmake_dir _set_soc_main
     unset _set_soc_ret _set_soc_acl_error _set_soc_cann_path _set_soc_include_dir _set_soc_lib_dir \
-        _set_soc_detected_version _set_soc_layout_candidates _set_soc_ascendc_candidates
+        _set_soc_detected_version _set_soc_layout_candidates _set_soc_ascendc_candidates \
+        _set_soc_shell_options
+
+    eval "${shell_options}"
     if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
         return "${ret}"
     fi
@@ -42,7 +50,7 @@ _set_soc_is_valid() {
 _set_soc_get_arch_dir() {
     local machine
 
-    machine="$(uname -m 2>/dev/null)"
+    machine="$(uname -m 2>/dev/null || true)"
     case "${machine}" in
         x86_64|amd64)
             printf "%s" "x86_64-linux"
@@ -84,7 +92,7 @@ _set_soc_resolve_cann_layout() {
     # CANN packages may expose host dev libraries under a target directory such as
     # aarch64-linux/devlib/linux/x86_64, so check that layout before target lib64.
     _set_soc_append_layout_candidate "${cann_path}/include" "${cann_path}/lib64"
-    machine="$(uname -m 2>/dev/null)"
+    machine="$(uname -m 2>/dev/null || true)"
     arch_dir="$(_set_soc_get_arch_dir)"
     if [[ -n "${arch_dir}" ]]; then
         _set_soc_append_layout_candidate "${cann_path}/${arch_dir}/include" "${cann_path}/${arch_dir}/lib64"
@@ -117,8 +125,8 @@ _set_soc_select_cann_path() {
     local path
     local candidates=()
 
-    [[ -n "${ASCEND_INSTALL_PATH}" ]] && candidates+=("${ASCEND_INSTALL_PATH}")
-    [[ -n "${ASCEND_HOME_PATH}" ]] && candidates+=("${ASCEND_HOME_PATH}")
+    [[ -n "${ASCEND_INSTALL_PATH:-}" ]] && candidates+=("${ASCEND_INSTALL_PATH}")
+    [[ -n "${ASCEND_HOME_PATH:-}" ]] && candidates+=("${ASCEND_HOME_PATH}")
     candidates+=("/usr/local/Ascend/cann")
 
     for path in "${candidates[@]}"; do
@@ -188,8 +196,7 @@ _set_soc_build_helper() {
         -o "${tmp_bin}"
     )
 
-    build_output="$("${compile_cmd[@]}" 2>&1)"
-    if [[ $? -ne 0 ]]; then
+    if ! build_output="$("${compile_cmd[@]}" 2>&1)"; then
         rm -f "${tmp_bin}"
         _set_soc_acl_error="Build ACL helper failed: ${build_output}"
         return 1
@@ -214,8 +221,7 @@ _set_soc_detect_by_acl() {
         return 1
     fi
 
-    output="$("${bin}" 2>&1)"
-    if [[ $? -ne 0 ]]; then
+    if ! output="$("${bin}" 2>&1)"; then
         _set_soc_acl_error="Run ACL helper failed: ${output}"
         return 1
     fi
@@ -248,7 +254,7 @@ _set_soc_detect_ascendc_cmake_dir() {
     local cmake_dir
 
     _set_soc_ascendc_candidates=()
-    machine="$(uname -m 2>/dev/null)"
+    machine="$(uname -m 2>/dev/null || true)"
     arch_dir="$(_set_soc_get_arch_dir)"
 
     # ASCENDC_CMAKE_DIR follows the same architecture split as ACL libraries.
@@ -273,8 +279,8 @@ _set_soc_detect_ascendc_cmake_dir() {
 
 _set_soc_main() {
     local script_dir
-    local soc_version
-    local ascendc_cmake_dir
+    local soc_version=""
+    local ascendc_cmake_dir=""
     local sourced=0
 
     [[ "${BASH_SOURCE[0]}" != "$0" ]] && sourced=1
@@ -293,8 +299,7 @@ _set_soc_main() {
         esac
     done
 
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    if [[ -z "${script_dir}" ]]; then
+    if ! script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; then
         echo "[ERROR]: Failed to get script directory."
         return 1
     fi
@@ -328,6 +333,9 @@ _set_soc_main() {
     return 0
 }
 
-_set_soc_main "$@"
-_set_soc_ret=$?
+if _set_soc_main "$@"; then
+    _set_soc_ret=0
+else
+    _set_soc_ret=$?
+fi
 _set_soc_finish "${_set_soc_ret}"
