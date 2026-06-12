@@ -4,7 +4,7 @@
       "errClass": "FE Errors",
       "errTitle": "Compilation_Error",
       "ErrCode": "E20001",
-      "ErrMessage": "Operator %s compilation failed.Optype is %s.",
+      "ErrMessage": "Operator %s compilation failed. Optype is %s.",
       "Arglist": "pass_name,pass_type",
       "suggestion": {
         "Possible Cause": "1. The operator has an invalid argument.  2. The operator implementation logic is abnormal.",
@@ -353,7 +353,7 @@
       }
     },
     {
-      "errClass": " TEFusion Errors",
+      "errClass": "TEFusion Errors",
       "errTitle": "Environment_Error_Import_Python_Module_Failed",
       "ErrCode": "E40020",
       "ErrMessage": "Failed to import Python module %s. Reason: %s.",
@@ -379,7 +379,7 @@
       "errTitle": "Invalid_Argument",
       "ErrCode": "E40022",
       "ErrMessage": "Value %s for parameter %s is invalid. The value must be %s.",
-      "Arglist": "invalid_value,argument,valid_range ",
+      "Arglist": "invalid_value,argument,valid_range",
       "suggestion": {
         "Possible Cause": "N/A",
         "Solution": "N/A"

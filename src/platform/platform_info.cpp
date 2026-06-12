@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unordered_set>
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <mutex>
 #include "platform/platform_info_def.h"
@@ -204,9 +205,9 @@ void PlatformInfoManager::ParseVersion(std::map<std::string, std::string> &versi
     platform_info_temp.str_info.ccec_aiv_version = ccec_aiv_version->second;
   }
 
-  std::map<std::string, std::string>::const_iterator is_support_a_icpu = version_map.find(STR_IS_SUPPORT_AICPU);
-  if (is_support_a_icpu != version_map.end()) {
-    platform_info_temp.str_info.is_support_ai_cpu_compiler = is_support_a_icpu->second;
+  std::map<std::string, std::string>::const_iterator is_support_aicpu = version_map.find(STR_IS_SUPPORT_AICPU);
+  if (is_support_aicpu != version_map.end()) {
+    platform_info_temp.str_info.is_support_ai_cpu_compiler = is_support_aicpu->second;
   }
 
   std::map<std::string, std::string>::const_iterator short_soc_version = version_map.find(SHORT_SOC_VERSION);
@@ -386,29 +387,54 @@ void PlatformInfoManager::ParseUBOfAICoreSpec(std::map<std::string, std::string>
   }
 }
 
-void PlatformInfoManager::ParseUnzipOfAICoreSpec(std::map<std::string, std::string> &ai_core_spec_map, PlatformInfo &platform_info_temp) {
+void PlatformInfoManager::ParseUnzipOfAICoreSpec(std::map<std::string, std::string> &ai_core_spec_map,
+                                                 PlatformInfo &platform_info_temp) {
   try {
     std::map<std::string, std::string>::const_iterator unzip_engines = ai_core_spec_map.find(CONVERT(unzip_engines));
     if (unzip_engines != ai_core_spec_map.end()) {
-      platform_info_temp.ai_core_spec.unzip_engines = static_cast<uint32_t>(stoll(unzip_engines->second));
+      unsigned long value = std::stoul(unzip_engines->second);
+      if (value > UINT32_MAX) {
+        PF_LOGE("unzip_engines value [%lu] exceeds uint32 range", value);
+        return;
+      }
+      platform_info_temp.ai_core_spec.unzip_engines = static_cast<uint32_t>(value);
     }
 
     std::map<std::string, std::string>::const_iterator unzip_max_ratios = ai_core_spec_map.find(CONVERT(unzip_max_ratios));
     if (unzip_max_ratios != ai_core_spec_map.end()) {
-      platform_info_temp.ai_core_spec.unzip_max_ratios = static_cast<uint32_t>(stoll(unzip_max_ratios->second));
+      unsigned long value = std::stoul(unzip_max_ratios->second);
+      if (value > UINT32_MAX) {
+        PF_LOGE("unzip_max_ratios value [%lu] exceeds uint32 range", value);
+        return;
+      }
+      platform_info_temp.ai_core_spec.unzip_max_ratios = static_cast<uint32_t>(value);
     }
 
     std::map<std::string, std::string>::const_iterator unzip_channels = ai_core_spec_map.find(CONVERT(unzip_channels));
     if (unzip_channels != ai_core_spec_map.end()) {
-      platform_info_temp.ai_core_spec.unzip_channels = static_cast<uint32_t>(stoll(unzip_channels->second));
+      unsigned long value = std::stoul(unzip_channels->second);
+      if (value > UINT32_MAX) {
+        PF_LOGE("unzip_channels value [%lu] exceeds uint32 range", value);
+        return;
+      }
+      platform_info_temp.ai_core_spec.unzip_channels = static_cast<uint32_t>(value);
     }
 
     std::map<std::string, std::string>::const_iterator unzip_is_tight = ai_core_spec_map.find(CONVERT(unzip_is_tight));
     if (unzip_is_tight != ai_core_spec_map.end()) {
-      platform_info_temp.ai_core_spec.unzip_is_tight = static_cast<uint8_t>(stoll(unzip_is_tight->second));
+      unsigned long value = std::stoul(unzip_is_tight->second);
+      if (value > UINT8_MAX) {
+        PF_LOGE("unzip_is_tight value [%lu] exceeds uint8 range", value);
+        return;
+      }
+      platform_info_temp.ai_core_spec.unzip_is_tight = static_cast<uint8_t>(value);
     }
-  } catch (...) {
-    PF_LOGE("Failed to load AICoreSpecs.");
+  } catch (const std::invalid_argument &e) {
+    PF_LOGE("Invalid argument in ParseUnzipOfAICoreSpec: %s", e.what());
+    return;
+  } catch (const std::out_of_range &e) {
+    PF_LOGE("Out of range in ParseUnzipOfAICoreSpec: %s", e.what());
+    return;
   }
 }
 
@@ -421,18 +447,64 @@ void PlatformInfoManager::ParseAICoreSpec(std::map<std::string, std::string> &ai
   return;
 }
 
-static double CalculateFraction(std::string fraction) {
+static double CalculateFraction(const std::string &fraction) {
+  if (fraction.empty()) {
+    PF_LOGE("CalculateFraction: input string is empty.");
+    return 0.0;
+  }
+
   size_t pos = fraction.find('/');
   try {
     if (pos == std::string::npos) {
-      return static_cast<double>(stod(fraction));
+      return std::stod(fraction);
     }
 
-    double numerator = static_cast<double>(stod(fraction.substr(0, pos - 1)));
-    double denominator = static_cast<double>(stod(fraction.substr(pos + 1)));
-    return (numerator / denominator);
+    if (pos == 0 || pos == fraction.length() - 1) {
+      PF_LOGE("CalculateFraction: invalid fraction format [%s], '/' at boundary.", fraction.c_str());
+      return 0.0;
+    }
+
+    std::string denominator_str = fraction.substr(pos + 1);
+    
+    // 在转换前检查字符串是否表示零值（避免浮点数直接比较）
+    std::string trimmed_denominator = denominator_str;
+    size_t start = trimmed_denominator.find_first_not_of(" \t");
+    size_t end = trimmed_denominator.find_last_not_of(" \t");
+    if (start != std::string::npos && end != std::string::npos) {
+      trimmed_denominator = trimmed_denominator.substr(start, end - start + 1);
+    }
+    if (trimmed_denominator == "0" || trimmed_denominator == "0.0" || 
+        trimmed_denominator == "0." || trimmed_denominator == "-0" ||
+        trimmed_denominator == "-0.0" || trimmed_denominator == "-0.") {
+      PF_LOGE("CalculateFraction: denominator is zero in [%s].", fraction.c_str());
+      return 0.0;
+    }
+    
+    double denominator = std::stod(denominator_str);
+    
+    // 使用 EPSILON 检查接近零的情况（避免直接比较浮点数）
+    constexpr double EPSILON = 1e-10;
+    if (std::abs(denominator) < EPSILON) {
+      PF_LOGE("CalculateFraction: denominator is too small [%s].", fraction.c_str());
+      return 0.0;
+    }
+    
+    double numerator = std::stod(fraction.substr(0, pos));
+    double result = numerator / denominator;
+    
+    // 检查结果是否有效
+    if (std::isinf(result) || std::isnan(result)) {
+      PF_LOGE("CalculateFraction: invalid result for [%s].", fraction.c_str());
+      return 0.0;
+    }
+    
+    return result;
+  } catch (const std::exception &e) {
+    PF_LOGE("CalculateFraction: failed to parse [%s], error: %s.", fraction.c_str(), e.what());
+    return 0.0;
   } catch (...) {
-    return 0;
+    PF_LOGE("CalculateFraction: unknown exception parsing [%s].", fraction.c_str());
+    return 0.0;
   }
 }
 
@@ -670,19 +742,34 @@ void PlatformInfoManager::ParseVectorCoreMemoryRates(std::map<std::string, std::
   }
 }
 
-void PlatformInfoManager::ParseCPUCache(std::map<std::string, std::string> &CPUCacheMap, PlatformInfo &platform_info_temp) {
+void PlatformInfoManager::ParseCPUCache(std::map<std::string, std::string> &CPUCacheMap,
+                                         PlatformInfo &platform_info_temp) {
   try {
     std::map<std::string, std::string>::const_iterator AICPUSyncBySW = CPUCacheMap.find(CONVERT(AICPUSyncBySW));
     if (AICPUSyncBySW != CPUCacheMap.end()) {
-      platform_info_temp.cpucache.AICPUSyncBySW = static_cast<uint32_t>(stod(AICPUSyncBySW->second));
+      unsigned long value = std::stoul(AICPUSyncBySW->second);
+      if (value > UINT32_MAX) {
+        PF_LOGE("AICPUSyncBySW value [%lu] exceeds uint32 range", value);
+        return;
+      }
+      platform_info_temp.cpucache.AICPUSyncBySW = static_cast<uint32_t>(value);
     }
 
     std::map<std::string, std::string>::const_iterator TSCPUSyncBySW = CPUCacheMap.find(CONVERT(TSCPUSyncBySW));
     if (TSCPUSyncBySW != CPUCacheMap.end()) {
-      platform_info_temp.cpucache.TSCPUSyncBySW = static_cast<uint32_t>(stod(TSCPUSyncBySW->second));
+      unsigned long value = std::stoul(TSCPUSyncBySW->second);
+      if (value > UINT32_MAX) {
+        PF_LOGE("TSCPUSyncBySW value [%lu] exceeds uint32 range", value);
+        return;
+      }
+      platform_info_temp.cpucache.TSCPUSyncBySW = static_cast<uint32_t>(value);
     }
-  } catch (...) {
-    PF_LOGE("Failed to load CPU cache.");
+  } catch (const std::invalid_argument &e) {
+    PF_LOGE("Invalid argument in ParseCPUCache: %s", e.what());
+    return;
+  } catch (const std::out_of_range &e) {
+    PF_LOGE("Out of range in ParseCPUCache: %s", e.what());
+    return;
   }
 }
 

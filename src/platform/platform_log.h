@@ -18,11 +18,15 @@
 #ifndef COMPILE_PLATFORM_STATIC
 #include "dlog_pub.h"
 #endif
+using char_t = char;
 /** Assigned FE name in log */
-const std::string PF_MODULE_NAME = "FE";
+constexpr const char_t *const PF_MODULE_NAME = "FE";
 
 inline pid_t PltGetTid() {
-  thread_local static pid_t tid = syscall(__NR_gettid);
+  thread_local static pid_t tid = []() {
+    const auto ret = syscall(__NR_gettid);
+    return (ret == -1) ? getpid() : static_cast<pid_t>(ret);  // 失败时降级为 PID
+  }();
   return tid;
 }
 

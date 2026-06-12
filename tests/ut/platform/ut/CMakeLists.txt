@@ -16,7 +16,10 @@ set(PLATFORM_UT_FILES
         ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_instance_utest.cpp
         ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_ge_instance_utest.cpp
         ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_v2_instance_utest.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_acl_utest.cpp)
+        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_manager_acl_utest.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_infos_def_utest.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_infos_utils_utest.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/testcase/platform_info_exception_utest.cpp)
 
 add_executable(platform_utest
         ${SLOG_STUB_FILES}

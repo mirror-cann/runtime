@@ -58,14 +58,11 @@ file(GLOB FE_SRC_CPP_1 RELATIVE ${CMAKE_CURRENT_LIST_DIR}
 
 add_library(platform SHARED
         ${FE_SRC_CPP_1}
-        ${PROTO_SRCS}
-        ${RUNTIME_DIR}/src/dfx/error_manager
-        ${RUNTIME_DIR}/include/dfx/base)
+        ${PROTO_SRCS})
 
 
 add_dependencies(platform platform_infos_proto)
 target_include_directories(platform PRIVATE
-        # ${CMAKE_CURRENT_LIST_DIR}/../dfx/include/log/toolchain
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/proto/google
         ${RUNTIME_DIR}/pkg_inc
@@ -90,9 +87,7 @@ target_compile_definitions(platform PRIVATE
 
 ADD_LIBRARY(platform_static STATIC
         ${STATICPLATFORMFILE}
-        ${PROTO_SRCS}
-        ${RUNTIME_DIR}/src/dfx/error_manager
-        ${RUNTIME_DIR}/include/dfx/base)
+        ${PROTO_SRCS})
 add_dependencies(platform_static platform_infos_proto)
 target_include_directories(platform_static PRIVATE
         # ${CMAKE_CURRENT_LIST_DIR}/../dfx/include/log/toolchain
