@@ -17,113 +17,11 @@
 #include "stream.h"
 #include "mem_base.h"
 #include "rt_stars_define.h"
+#include "runtime/rt_external_mem.h"
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-/**
- * @ingroup dvrt_mem
- * @brief memory type
- */
-#define RT_MEMORY_DEFAULT (0x0U)   // default memory on device
-#define RT_MEMORY_HBM (0x2U)       // HBM memory on device
-#define RT_MEMORY_RDMA_HBM (0x3U)  // RDMA-HBM memory on device
-#define RT_MEMORY_DDR (0x4U)       // DDR memory on device
-#define RT_MEMORY_SPM (0x8U)       // shared physical memory on device
-#define RT_MEMORY_P2P_HBM (0x10U)  // HBM memory on other 4P device
-#define RT_MEMORY_P2P_DDR (0x11U)  // DDR memory on other device
-#define RT_MEMORY_DDR_NC (0x20U)   // DDR memory of non-cache
-#define RT_MEMORY_TS (0x40U)       // Used for Ts memory
-#define RT_MEMORY_TS_4G (0x40U)    // Used for Ts memory(only 51)
-#define RT_MEMORY_HOST (0x81U)     // Memory on host
-#define RT_MEMORY_SVM (0x90U)      // Memory for SVM
-#define RT_MEMORY_HOST_SVM (0x90U) // Memory for host SVM
-#define RT_MEMORY_ATTACH_GLOBAL (0x01U) // Memory for UVM
-#define RT_MEMORY_RESERVED (0x100U)
-
-// MEMORY_UB (0x1U << 15U) It has been occupied by GE/FE. Do not use it.
-#define RT_MEMORY_L1 (0x1U << 16U)
-#define RT_MEMORY_L2 (0x1U << 17U)
-
-/**
- * @ingroup dvrt_mem
- * @brief memory info type for rtMemGetInfoByType
- */
-#define RT_MEM_INFO_TYPE_DDR_SIZE          (0x1U)   // DDR memory type 
-#define RT_MEM_INFO_TYPE_HBM_SIZE          (0x2U)   // HBM memory type
-#define RT_MEM_INFO_TYPE_DDR_P2P_SIZE      (0x3U)   // DDR P2P memory type
-#define RT_MEM_INFO_TYPE_HBM_P2P_SIZE      (0x4U)   // HBM P2P memory type
-#define RT_MEM_INFO_TYPE_ADDR_CHECK        (0x5U)   // check addr
-#define RT_MEM_INFO_TYPE_CTRL_NUMA_INFO    (0x6U)   // query device ctrl numa id config
-#define RT_MEM_INFO_TYPE_AI_NUMA_INFO      (0x7U)   // query device ai numa id config
-#define RT_MEM_INFO_TYPE_BAR_NUMA_INFO     (0x8U)   // query device bar numa id config
-#define RT_MEM_INFO_TYPE_SVM_GRP_INFO      (0x9U)   // query device svm group info
-#define RT_MEM_INFO_TYPE_UB_TOKEN_INFO     (0xAU)   // query device ub token info
-#define RT_MEM_INFO_TYPE_SYS_NUMA_INFO     (0xBU)   // query device sys numa id config
-#define RT_MEM_INFO_TYPE_MAX               (0xCU)   // max type
-
-/**
- * @ingroup dvrt_mem
- * @brief memory Policy
- */
-#define RT_MEMORY_POLICY_NONE (0x0U)                     // Malloc mem prior huge page, then default page
-#define RT_MEMORY_POLICY_HUGE_PAGE_FIRST (0x400U)    // Malloc mem prior huge page, then default page, 0x1U << 10U
-#define RT_MEMORY_POLICY_HUGE_PAGE_ONLY (0x800U)     // Malloc mem only use huge page, 0x1U << 11U
-#define RT_MEMORY_POLICY_DEFAULT_PAGE_ONLY (0x1000U)  // Malloc mem only use default page, 0x1U << 12U
-// Malloc mem prior huge page, then default page, for p2p, 0x1U << 13U
-#define RT_MEMORY_POLICY_HUGE_PAGE_FIRST_P2P (0x2000U)
-#define RT_MEMORY_POLICY_HUGE_PAGE_ONLY_P2P (0x4000U)     // Malloc mem only use huge page, use for p2p, 0x1U << 14U
-#define RT_MEMORY_POLICY_DEFAULT_PAGE_ONLY_P2P (0x8000U)  // Malloc mem only use default page, use for p2p, 0x1U << 15U
-#define RT_MEMORY_POLICY_HUGE1G_PAGE_ONLY (0x10000U)   // Malloc mem only use 1G huge page, 0x1U << 16U
-#define RT_MEMORY_POLICY_HUGE1G_PAGE_ONLY_P2P (0x20000U)   // Malloc mem only use 1G huge page, use for p2p, 0x1U << 17U
-
-/**
- * @ingroup dvrt_mem
- * @brief memory attribute
- */
-#define RT_MEMORY_ATTRIBUTE_DEFAULT (0x0U)
-// memory read only attribute, now only dvpp memory support.
-#define RT_MEMORY_ATTRIBUTE_READONLY (0x100000U)    // Malloc readonly, 1<<20.
-
-#define MEM_ALLOC_TYPE_BIT (0x3FFU)  // mem type bit in <0, 9>
-
-/**
- * @ingroup dvrt_mem
- * @brief virt mem type
- */
-#define RT_MEM_DVPP (0x0U)
-#define RT_MEM_DEV (0x4000000U) // MEM_DEV, 1<<26.
-
-#define RT_MEMORY_ALIGN_SIZE_BIT (27U) // mem align bit in <27, 31>
-#define RT_MEMORY_ALIGN_SIZE_MASK (0xf8000000U)
-
-/**
- * @ingroup dvrt_mem
- * @brief (memory type | memory Policy) or (RT_MEM_INFO_xxx)
- */
-typedef uint32_t rtMemType_t;
-
-/**
- * @ingroup dvrt_mem
- * @brief memory advise type
- */
-#define RT_MEMORY_ADVISE_EXE (0x02U)
-#define RT_MEMORY_ADVISE_THP (0x04U)
-#define RT_MEMORY_ADVISE_PLE (0x08U)
-#define RT_MEMORY_ADVISE_PIN (0x16U)
-
-
-/**
- * @ingroup dvrt_mem
- * @brief memory type mask for RT_MEM_INFO_TYPE_ADDR_CHECK
- */
-#define RT_MEM_MASK_SVM_TYPE    (0x1U)
-#define RT_MEM_MASK_DEV_TYPE    (0x2U)
-#define RT_MEM_MASK_HOST_TYPE   (0x4U)
-#define RT_MEM_MASK_DVPP_TYPE   (0x8U)
-#define RT_MEM_MASK_HOST_AGENT_TYPE (0x10U)
-#define RT_MEM_MASK_RSVD_TYPE   (0x20U)
 
 /**
  * @ingroup dvrt_mem
@@ -133,23 +31,6 @@ typedef uint32_t rtMemType_t;
 #define RT_MEM_HOST_REGISTER_IOMEMORY (0x4U)
 #define RT_MEM_HOST_REGISTER_READONLY (0x8U)
 #define RT_MEM_HOST_REGISTER_PINNED   (0x10000000U)
-
-/**
- * @ingroup dvrt_mem
- * @brief memory copy type
- */
-typedef enum tagRtMemcpyKind {
-    RT_MEMCPY_HOST_TO_HOST = 0,  // host to host
-    RT_MEMCPY_HOST_TO_DEVICE,    // host to device
-    RT_MEMCPY_DEVICE_TO_HOST,    // device to host
-    RT_MEMCPY_DEVICE_TO_DEVICE,  // device to device, 1P && P2P
-    RT_MEMCPY_MANAGED,           // managed memory
-    RT_MEMCPY_ADDR_DEVICE_TO_DEVICE,
-    RT_MEMCPY_HOST_TO_DEVICE_EX, // host  to device ex (only used for 8 bytes)
-    RT_MEMCPY_DEVICE_TO_HOST_EX, // device to host ex
-    RT_MEMCPY_DEFAULT,           // auto infer copy dir
-    RT_MEMCPY_RESERVED,
-} rtMemcpyKind_t;
 
 typedef enum tagRtMemInfoType {
     RT_MEMORYINFO_DDR,
@@ -323,18 +204,6 @@ typedef struct {
     };
 } rtMemInfo_t;
 
-typedef enum tagRtDebugMemoryType {
-    RT_MEM_TYPE_L0A = 1,
-    RT_MEM_TYPE_L0B = 2,
-    RT_MEM_TYPE_L0C = 3,
-    RT_MEM_TYPE_UB = 4,
-    RT_MEM_TYPE_L1 = 5,
-    RT_MEM_TYPE_DCACHE = 10,
-    RT_MEM_TYPE_ICACHE = 11,
-    RT_MEM_TYPE_REGISTER = 101,
-    RT_MEM_TYPE_REGISTER_DIRECT = 102,
-    RT_MEM_TYPE_MAX,
-} rtDebugMemoryType_t;
 
 typedef enum {
     RT_DEBUG_MEM_TYPE_L0A = 1,
@@ -348,18 +217,6 @@ typedef enum {
     RT_DEBUG_MEM_TYPE_REGISTER_DIRECT = 102,
     RT_DEBUG_MEM_TYPE_MAX,
 } rtDebugMemoryType;
-
-typedef struct tagRtDebugMemoryParam {
-    uint8_t coreType; // aic/aiv
-    uint8_t reserve;
-    uint16_t coreId;
-    rtDebugMemoryType_t debugMemType;
-    uint32_t elementSize;
-    uint32_t reserved;
-    uint64_t srcAddr;
-    uint64_t dstAddr;  // host addr
-    uint64_t memLen;
-} rtDebugMemoryParam_t;
 
 typedef struct {
     rtCoreType_t coreType; // aic/aiv
@@ -1008,16 +865,6 @@ RTS_API rtError_t rtSetIpcMemPid(const char_t *name, int32_t pid[], int32_t num)
  */
 RTS_API rtError_t rtRDMADBSend(uint32_t dbIndex, uint64_t dbInfo, rtStream_t stm);
 
-typedef void* rtDrvMemHandle;
-typedef struct DrvMemProp {
-    uint32_t side;
-    uint32_t devid;
-    uint32_t module_id;
-
-    uint32_t pg_type;
-    uint32_t mem_type;
-    uint64_t reserve;
-} rtDrvMemProp_t;
 
 typedef enum MemAccessFlags {
     RT_MEM_ACCESS_FLAGS_NONE = 0x0,
@@ -1057,31 +904,6 @@ typedef enum DrvMemGranularityOptions {
     RT_MEM_ALLOC_GRANULARITY_RECOMMENDED,
     RT_MEM_ALLOC_GRANULARITY_INVALID,
 } rtDrvMemGranularityOptions;
-
-typedef struct tagUbDbDetailInfo {
-    uint16_t functionId : 7;
-    uint16_t dieId : 1;
-    uint16_t rsv : 8;
-    uint16_t jettyId;
-    uint16_t piValue;
-} rtUbDbDetailInfo_t;
-
-typedef struct tagUbDbInfo {
-    uint8_t dbNum;
-    uint8_t wrCqe;
-    rtUbDbDetailInfo_t info[4];
-} rtUbDbInfo_t;
-
-typedef struct tagUbWqeInfo {
-    uint16_t wrCqe : 1;
-    uint16_t functionId : 7;
-    uint16_t dieId : 1;
-    uint16_t wqeSize : 1;
-    uint16_t rsv : 6;
-    uint16_t jettyId;
-    uint8_t *wqe;
-    uint16_t wqePtrLen;
-} rtUbWqeInfo_t;
 
 typedef enum tagAdviseMemType {
     RT_ADVISE_PERSISTENT = 0,

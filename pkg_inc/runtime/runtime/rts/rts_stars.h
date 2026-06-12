@@ -15,33 +15,11 @@
 
 #include "base.h"
 #include "rt_stars_define.h"
+#include "runtime/rt_external_stars.h"
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-#pragma pack(push)
-#pragma pack(1)
-typedef enum {
-    RT_DVPP_CMDLIST_NOT_FREE = 1U,
-    RT_DVPP_MAX
-} rtDvppAttrId;
-
-typedef union {
-    bool isCmdListNotFree;
-    uint32_t rsv[4];
-} rtDvppAttrVal_t;
-
-typedef struct {
-    rtDvppAttrId id;
-    rtDvppAttrVal_t value;
-} rtDvppAttr_t;
-
-typedef struct {
-    rtDvppAttr_t *attrs;
-    size_t numAttrs;
-} rtDvppCfg_t;
-#pragma pack(pop)
 
 typedef struct {
     uint8_t isAddr;           // 0: value, 1: addr
@@ -105,17 +83,6 @@ typedef struct {
     rtRandomParaInfo_t randomNum;
     uint8_t rsv[8];
 } rtRandomNumTaskInfo_t;
-
-/**
- * @ingroup rts_stars
- * @brief launch DVPP task
- * @param [in] sqe dvpp sqe
- * @param [in] sqeLen dvpp sqe length
- * @param [in] stm stream
- * @param [in] cfg dvpp option cfg
- * @return RT_ERROR_NONE for ok, others failed
- */
-RTS_API rtError_t rtLaunchDvppTask(const void *sqe, uint32_t sqeLen, rtStream_t stm, rtDvppCfg_t *cfg);
 
 /**
  * @ingroup rts_stars

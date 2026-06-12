@@ -12,6 +12,7 @@
 #define CCE_MEM_BASE_H
 
 #include "rt_stars_define.h"
+#include "runtime/rt_external_mem.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -91,64 +92,6 @@ typedef struct {
   rtMemLocation srcLoc;
   uint8_t rsv[16];
 } rtMemcpyBatchAttr;
-
-/*
-    新的接口命名规则，enum类型不加 _t 
-*/
-typedef enum { 
-    RT_MEM_ADVISE_NONE = 0,
-    RT_MEM_ADVISE_DVPP,
-    RT_MEM_ADVISE_TS,
-    RT_MEM_ADVISE_CACHED,
-} rtMallocAdvise;
-
-/*
- 与aclrtMemMallocPolicy保持一致
-*/
-typedef enum {
-    RT_MEM_MALLOC_HUGE_FIRST,
-    RT_MEM_MALLOC_HUGE_ONLY,
-    RT_MEM_MALLOC_NORMAL_ONLY,
-    RT_MEM_MALLOC_HUGE_FIRST_P2P,
-    RT_MEM_MALLOC_HUGE_ONLY_P2P,
-    RT_MEM_MALLOC_NORMAL_ONLY_P2P,
-    RT_MEM_MALLOC_HUGE1G_ONLY,
-    RT_MEM_MALLOC_HUGE1G_ONLY_P2P,
-    RT_MEM_TYPE_LOW_BAND_WIDTH = 0x0100,            // DDR type -> RT_MEMORY_DDR
-    RT_MEM_TYPE_HIGH_BAND_WIDTH = 0x1000,           // HBM type -> RT_MEMORY_HBM
-
-    RT_MEM_ACCESS_USER_SPACE_READONLY = 0x100000,   // use for dvpp
-} rtMallocPolicy;
-
-typedef enum {
-    RT_MEM_MALLOC_ATTR_RSV = 0,
-    RT_MEM_MALLOC_ATTR_MODULE_ID,   // 申请内存的模块id
-    RT_MEM_MALLOC_ATTR_DEVICE_ID,   // 指定deviceId申请内存
-    RT_MEM_MALLOC_ATTR_VA_FLAG,   // 设置VA相关特性
-    RT_MEM_MALLOC_ATTR_MAX
-} rtMallocAttr;
-
-typedef union {
-    uint16_t moduleId;  // 默认不配置时，为RUNTIME_ID
-    uint32_t deviceId;  // 默认不配置时，为ctx的deviceId
-    uint32_t vaFlag;   // 默认不配置时，不使能此VA相关特性
-    uint8_t rsv[8];     // 预留8字节
-} rtMallocAttrValue;
-
-typedef struct {
-    rtMallocAttr attr;
-    rtMallocAttrValue value;
-} rtMallocAttribute_t;
-
-typedef struct {
-    rtMallocAttribute_t *attrs;
-    size_t numAttrs;
-} rtMallocConfig_t;
-
-typedef struct {    // use for rtMallocAttrValue
-    uint16_t moduleId;
-    uint32_t deviceId;
-} rtConfigValue_t;
 
 typedef void* rtCmoDesc_t;
 

@@ -12,6 +12,7 @@
 #define CCE_RUNTIME_DEVICE_H
 
 #include "base.h"
+#include "runtime/rt_external_device.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -49,11 +50,6 @@ typedef enum tagRtRunMode {
     RT_RUN_MODE_RESERVED
 } rtRunMode;
 
-typedef enum tagRtXpuDevType {
-    RT_DEV_TYPE_DPU = 0,
-    RT_DEV_TYPE_REV
-} rtXpuDevType;
-
 typedef enum tagRtAicpuDeployType {
     AICPU_DEPLOY_CROSS_OS = 0x0,
     AICPU_DEPLOY_CROSS_PROCESS,
@@ -61,51 +57,6 @@ typedef enum tagRtAicpuDeployType {
     AICPU_DEPLOY_RESERVED
 } rtAicpuDeployType_t;
 
-typedef enum tagRtFeatureType {
-    FEATURE_TYPE_MEMCPY = 0,
-    FEATURE_TYPE_MEMORY,
-    FEATURE_TYPE_UPDATE_SQE,
-    FEATURE_TYPE_PERSISTENT_STREAM_UNLIMITED_DEPTH,
-    FEATURE_TYPE_AICPU_OVERFLOW_DUMP, // check new dump process for GE.
-    FEATURE_TYPE_RSV
-} rtFeatureType_t;
-
-typedef enum tagRtDeviceFeatureType {
-    FEATURE_TYPE_SCHE,
-    FEATURE_TYPE_BLOCKING_OPERATOR,
-    FEATURE_TYPE_FFTS_MODE,
-    FEATURE_TYPE_MEMQ_EVENT_CROSS_DEV,
-    FEATURE_TYPE_MODEL_TASK_UPDATE,
-    FEATURE_TYPE_END,
-} rtDeviceFeatureType_t;
-
-typedef enum tagMemcpyInfo {
-    MEMCPY_INFO_SUPPORT_ZEROCOPY = 0,
-    MEMCPY_INFO_RSV
-} rtMemcpyInfo_t;
-
-typedef enum tagMemoryInfo {
-    MEMORY_INFO_TS_LIMITED = 0,
-    MEMORY_INFO_RSV
-} rtMemoryInfo_t;
-
-typedef enum tagUpdateSQEInfo {
-    UPDATE_SQE_SUPPORT_DSA = 0
-} rtUpdateSQEInfo_t;
-
-typedef enum tagRtDeviceModuleType {
-    RT_MODULE_TYPE_SYSTEM = 0,  /**< system info*/
-    RT_MODULE_TYPE_AICPU,       /** < aicpu info*/
-    RT_MODULE_TYPE_CCPU,        /**< ccpu_info*/
-    RT_MODULE_TYPE_DCPU,        /**< dcpu info*/
-    RT_MODULE_TYPE_AICORE,      /**< AI CORE info*/
-    RT_MODULE_TYPE_TSCPU,       /**< tscpu info*/
-    RT_MODULE_TYPE_PCIE,        /**< PCIE info*/
-    RT_MODULE_TYPE_VECTOR_CORE, /**< VECTOR CORE info*/
-    RT_MODULE_TYPE_HOST_AICPU,   /**< HOST AICPU info*/
-    RT_MODULE_TYPE_QOS,         /**<qos info> */
-    RT_MODULE_TYPE_MEMORY      /**<memory info*/
-} rtDeviceModuleType_t;
 
 typedef enum tagRtPhyDeviceInfoType {
     RT_PHY_INFO_TYPE_CHIPTYPE = 0,
@@ -120,20 +71,6 @@ typedef enum tagRtMemRequestFeature {
     MEM_REQUEST_FEATURE_RESERVED
 } rtMemRequestFeature_t;
 
-// used for rtGetDevMsg callback function
-typedef void (*rtGetMsgCallback)(const char_t *msg, uint32_t len);
-
-typedef enum tagGetDevMsgType {
-    RT_GET_DEV_ERROR_MSG = 0,
-    RT_GET_DEV_RUNNING_STREAM_SNAPSHOT_MSG,
-    RT_GET_DEV_PID_SNAPSHOT_MSG,
-    RT_GET_DEV_MSG_RESERVE
-} rtGetDevMsgType_t;
-
-typedef enum {
-    QUERY_PROCESS_TOKEN,
-    QUERY_TYPE_BUFF
-} rtUbDevQueryCmd;
 
 typedef struct {
     uint64_t va;
@@ -142,49 +79,6 @@ typedef struct {
     uint32_t tokenValue;
 } rtMemUbTokenInfo;
 
-typedef enum {
-    RT_RES_TYPE_STARS_NOTIFY_RECORD = 0,
-    RT_RES_TYPE_STARS_CNT_NOTIFY_RECORD,
-    RT_RES_TYPE_STARS_RTSQ,
-    RT_RES_TYPE_CCU_CKE,
-    RT_RES_TYPE_CCU_XN,
-    RT_RES_TYPE_STARS_CNT_NOTIFY_BIT_WR,
-    RT_RES_TYPE_STARS_CNT_NOTIFY_ADD,
-    RT_RES_TYPE_STARS_CNT_NOTIFY_BIT_CLR,
-    RT_RES_TYPE_MAX
-} rtDevResType_t;
-
-typedef enum {
-    RT_PROCESS_CP1 = 0,    /* aicpu_scheduler */
-    RT_PROCESS_CP2,        /* custom_process */
-    RT_PROCESS_DEV_ONLY,   /* TDT */
-    RT_PROCESS_QS,         /* queue_scheduler */
-    RT_PROCESS_HCCP,       /* hccp server */
-    RT_PROCESS_USER,       /* user proc, can bind many on host or device. not surport quert from host pid */
-    RT_PROCESS_CPTYPE_MAX
-} rtDevResProcType_t;
-
-typedef enum {
-    RT_DEV_STATUS_INITING = 0x0,
-    RT_DEV_STATUS_WORK,
-    RT_DEV_STATUS_EXCEPTION,
-    RT_DEV_STATUS_SLEEP,
-    RT_DEV_STATUS_COMMUNICATION_LOST,
-    RT_DEV_STATUS_RESERVED
-} rtDevStatus_t;
-
-typedef struct {
-    uint32_t dieId;  // for ccu res need set devId, for others set 0
-    rtDevResProcType_t procType;
-    rtDevResType_t resType;
-    uint32_t resId;
-    uint32_t flag;
-} rtDevResInfo;
-
-typedef struct {
-    uint64_t *resAddress;
-    uint32_t *len;
-} rtDevResAddrInfo;
 
 typedef void *rtHdcServer_t;
 typedef void *rtHdcClient_t;
@@ -217,12 +111,6 @@ typedef enum {
     RT_HDC_SERVICE_TYPE_MAX
 } rtHdcServiceType_t;
 
-typedef struct tagRtDbgCoreInfo {
-	uint64_t aicBitmap0;
-    uint64_t aicBitmap1;
-	uint64_t aivBitmap0;
-	uint64_t aivBitmap1;
-} rtDbgCoreInfo_t;
 
 typedef enum tagRtDumpMode {
     RT_DEBUG_DUMP_ON_EXCEPTION = 1,
@@ -273,29 +161,7 @@ RTS_API rtError_t rtGetDeviceIDs(uint32_t *devices, uint32_t len);
  * @brief get device infomation.
  * @param [in] device   the device id
  * @param [in] moduleType   module type
-               typedef enum {
-                    MODULE_TYPE_SYSTEM = 0,   system info
-                    MODULE_TYPE_AICPU,        aicpu info
-                    MODULE_TYPE_CCPU,         ccpu_info
-                    MODULE_TYPE_DCPU,         dcpu info
-                    MODULE_TYPE_AICORE,       AI CORE info
-                    MODULE_TYPE_TSCPU,        tscpu info
-                    MODULE_TYPE_PCIE,         PCIE info
-               } DEV_MODULE_TYPE;
  * @param [in] infoType   info type
-               typedef enum {
-                    INFO_TYPE_ENV = 0,
-                    INFO_TYPE_VERSION,
-                    INFO_TYPE_MASTERID,
-                    INFO_TYPE_CORE_NUM,
-                    INFO_TYPE_OS_SCHED,
-                    INFO_TYPE_IN_USED,
-                    INFO_TYPE_ERROR_MAP,
-                    INFO_TYPE_OCCUPY,
-                    INFO_TYPE_ID,
-                    INFO_TYPE_IP,
-                    INFO_TYPE_ENDIAN,
-               } DEV_INFO_TYPE;
  * @param [out] val   the device info
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_DRV_ERR for error
@@ -579,15 +445,7 @@ RTS_API rtError_t rtGetPairPhyDevicesInfo(uint32_t devId, uint32_t otherDevId, i
  * @ingroup dvrt_dev
  * @brief get capability infomation.
  * @param [in] featureType  feature type
-               typedef enum tagRtFeatureType {
-                    FEATURE_TYPE_MEMCPY = 0,
-                    FEATURE_TYPE_RSV,
-               } rtFeatureType_t;
  * @param [in] featureInfo  info type
-               typedef enum tagMemcpyInfo {
-                    MEMCPY_INFO_SUPPORT_ZEROCOPY = 0,
-                    MEMCPY_INFO _RSV,
-               } rtMemcpyInfo_t;
  * @param [out] val  the capability info RT_CAPABILITY_SUPPORT or RT_CAPABILITY_NOT_SUPPORT
  * @return RT_ERROR_NONE for ok
  */
@@ -834,8 +692,6 @@ RTS_API rtError_t rtDebugGetStalledCore(rtDbgCoreInfo_t *const coreInfo);
 * @return ACL_ERROR_RT_FEATURE_NOT_SUPPORT for driver or device not support uuid feature
 */
 RTS_API rtError_t rtGetDeviceUuid(const int32_t devId, rtUuid_t *uuid);
-#define RT_DEVICE_FLAG_DEFAULT (0x0U)
-#define RT_DEVICE_FLAG_NOT_START_CPU_SCHED (0x1U)
 
 /**
  * @ingroup dvrt_dev

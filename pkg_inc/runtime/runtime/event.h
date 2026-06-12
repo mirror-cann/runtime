@@ -13,6 +13,7 @@
 
 #include "base.h"
 #include "rt_stars_define.h"
+#include "runtime/rt_external_event.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -120,15 +121,6 @@ typedef struct tagDmsFaultEvent {
     unsigned char osId;
     unsigned char resv[RT_DMS_MAX_EVENT_RESV_LENGTH]; /* reserve 32byte */
 } rtDmsFaultEvent;
-
-typedef struct tagNotifyPhyInfo {
-    uint32_t phyId;  /* phy id */
-    uint32_t tsId;   /* ts id */
-    uint32_t idType; /* SHR_ID_NOTIFY_TYPE */
-    uint32_t shrId;  /* notify id */
-    uint32_t flag;   /* RT_NOTIFY_FLAG_SHR_ID_SHADOW for remote id or shadow node */
-    uint32_t rsv[3];
-} rtNotifyPhyInfo;
 
 /**
  * @ingroup dvrt_event
@@ -405,28 +397,6 @@ RTS_API rtError_t rtGetNotifyID(rtNotify_t notify, uint32_t *notifyId);
 
 /**
  * @ingroup dvrt_event
- * @brief Get notify phy info
- * @param [in] notify the created/opened notify
- * @param [out] phyDevId phy device id
- * @param [out] tsId ts id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtNotifyGetPhyInfo(rtNotify_t notify, uint32_t *phyDevId, uint32_t *tsId);
-
-/**
- * @ingroup dvrt_event
- * @brief Get notify phy and pod info
- * @param [in] notify the created/opened notify
- * @param [out] phyDevId phy device id
- * @param [out] tsId ts id
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- */
-RTS_API rtError_t rtNotifyGetPhyInfoExt(rtNotify_t notify, rtNotifyPhyInfo *notifyInfo);
-
-/**
- * @ingroup dvrt_event
  * @brief Set a notify to IPC notify
  * @param [in] notify   notify to be set to IPC notify
  * @param [in] name   identification name
@@ -458,17 +428,6 @@ RTS_API rtError_t rtIpcOpenNotifyWithFlag(rtNotify_t *notify, const char_t *name
 
 /**
  * @ingroup dvrt_event
- * @brief Get the physical address corresponding to notify
- * @param [in] notify notify to be queried
- * @param [in] devAddrOffset  device physical address offset
- * @return RT_ERROR_NONE for ok
- * @return RT_ERROR_INVALID_VALUE for error input
- * @return RT_ERROR_DRV_ERR for driver error
- */
-RTS_API rtError_t rtNotifyGetAddrOffset(rtNotify_t notify, uint64_t *devAddrOffset);
-
-/**
- * @ingroup dvrt_event
  * @brief Ipc set notify pid
  * @param [in] name name to be queried
  * @param [in] pid  process id
@@ -487,22 +446,6 @@ RTS_API rtError_t rtSetIpcNotifyPid(const char_t *name, int32_t pid[], int32_t n
  * @return RT_ERROR_NONE for ok, others failed
  */
 RTS_API rtError_t rtWriteValue(rtWriteValueInfo_t * const info, rtStream_t const stm);
-
-/**
- * @ingroup dvrt_event
- * @brief set event work mode
- * @param [in] mode 0: default Software events; 1: HardWare events
- * @return RT_ERROR_NONE for ok, others failed
- */
-RTS_API rtError_t rtEventWorkModeSet(uint8_t mode);
-
-/**
- * @ingroup dvrt_event
- * @brief get event work mode
- * @param [out] mode 0: default Software events; 1: HardWare events
- * @return RT_ERROR_NONE for ok, others failed
- */
-RTS_API rtError_t rtEventWorkModeGet(uint8_t *mode);
 
 /**
  * @ingroup dvrt_event

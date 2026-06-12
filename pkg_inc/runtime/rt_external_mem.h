@@ -1057,7 +1057,8 @@ RTS_API rtError_t rtMemQueueQueryInfo(int32_t devId, uint32_t qid, rtMemQueueInf
 typedef enum tagMemQueueQueryCmd {
     RT_MQ_QUERY_QUE_ATTR_OF_CUR_PROC = 0, // input is qid(4bytes), output is rtMemQueueShareAttr_t
     RT_MQ_QUERY_QUES_OF_CUR_PROC = 1,
-    RT_MQ_QUERY_CMD_MAX = 2
+    RT_MQ_QUERY_QUES_ATTR_ENTITY_TYPE = 2,
+    RT_MQ_QUERY_CMD_MAX = 3
 } rtMemQueueQueryCmd_t;
 
 /**

@@ -417,6 +417,15 @@ typedef enum {
 
 /**
  * @ingroup rts_kernel
+ * @brief kernel launch option timeout value
+ */
+typedef struct {
+    uint32_t timeoutLow;  // low  32bit
+    uint32_t timeoutHigh; // high 32bit
+} rtTimeoutUs;
+
+/**
+ * @ingroup rts_kernel
  * @brief kernel launch option config value
  */
 typedef union {
@@ -429,7 +438,7 @@ typedef union {
     uint8_t isBlockTaskPrefetch;  // 任务下发时判断是否sqe后续需要刷新标记（tiling key依赖下沉场景）0:disable 1:enable
     uint8_t isDataDump; // 0:disable 1:enable
     uint16_t timeout;
-    uint64_t timeoutUs; // uint:us
+    rtTimeoutUs timeoutUs;  // uint:us
     uint32_t rsv[4];
 } rtLaunchKernelAttrVal_t;
 

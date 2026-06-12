@@ -15,52 +15,15 @@
 #include "elf_base.h"
 #include "stream.h"
 #include "rt_stars_define.h"
+#include "runtime/rt_external_kernel.h"
+#include "runtime/rt_external_stars.h"
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-/**
- * @ingroup rt_kernel
- * @brief shared memory data control
- */
-typedef struct tagRtSmData {
-    uint64_t L2_mirror_addr;          // preload or swap source addr
-    uint32_t L2_data_section_size;    // every data size
-    uint8_t L2_preload;               // 1 - preload from mirrorAddr, 0 - no preload
-    uint8_t modified;                 // 1 - data will be modified by kernel, 0 - no modified
-    uint8_t priority;                 // data priority
-    int8_t prev_L2_page_offset_base;  // remap source section offset
-    uint8_t L2_page_offset_base;      // remap destination section offset
-    uint8_t L2_load_to_ddr;           // 1 - need load out, 0 - no need
-    uint8_t reserved[2];              // reserved
-} rtSmData_t;
-
-/**
- * @ingroup rt_kernel
- * @brief shared memory description
- */
-typedef struct tagRtSmCtrl {
-    rtSmData_t data[8];  // data description
-    uint64_t size;       // max page Num
-    uint8_t remap[64];   /* just using for static remap mode, default:0xFF
-                          array index: virtual l2 page id, array value: physic l2 page id */
-    uint8_t l2_in_main;  // 0-DDR, 1-L2, default:0xFF
-    uint8_t reserved[3];
-} rtSmDesc_t;
 
 typedef rtSmDesc_t rtL2Ctrl_t;
-
-/**
- * @ingroup rt_kernel
- * @brief device binary type
- */
-typedef struct tagRtDevBinary {
-    uint32_t magic;    // magic number
-    uint32_t version;  // version of binary
-    const void *data;  // binary data
-    uint64_t length;   // binary length
-} rtDevBinary_t;
 
 /**
   * @ingroup rt_kernel
@@ -107,16 +70,6 @@ typedef struct rtKernelInfo {
     uint32_t module_size;
 } *rtKernelInfo_t;
 
-/**
- * @ingroup rt_kernel
- * @brief op name
- */
-typedef struct rtKernelLaunchNames {
-    const char_t *soName;      // defined for so name
-    const char_t *kernelName;  // defined for kernel type name
-    const char_t *opName;      // defined for operator name
-} rtKernelLaunchNames_t;
-
 typedef struct rtFunctionInfo {
     void *pcAddr;
     uint32_t prefetchCnt;
@@ -149,95 +102,11 @@ typedef struct tagRtArgsWithTiling {
     uint8_t reserved[6];
 } rtArgsWithTiling_t;
 
-/**
- * @ingroup rt_kernel
- * @brief host memory input struct
- */
-typedef struct rtHostInputInfo {
-    uint32_t addrOffset;
-    uint32_t dataOffset;
-} rtHostInputInfo_t;
-
-/**
- * @ingroup rt_kernel
- * @brief args struct
- */
-typedef struct tagRtArgsEx {
-    void *args;                     // args host mem addr
-    rtHostInputInfo_t *hostInputInfoPtr;     // nullptr means no host mem input
-    uint32_t argsSize;              // input + output + tiling addr size + tiling data size + host mem
-    uint32_t tilingAddrOffset;      // tiling addr offset
-    uint32_t tilingDataOffset;      // tiling data offset
-    uint16_t hostInputInfoNum;      // hostInputInfo num
-    uint8_t hasTiling;              // if has tiling: 0 means no tiling
-    uint8_t isNoNeedH2DCopy;        // is no need host to device copy: 0 means need H2D copy,
-                                    // others means doesn't need H2D copy.
-    uint8_t reserved[4];
-} rtArgsEx_t;
-
-typedef struct tagRtAicpuArgsEx {
-    void *args; // args host mem addr
-    rtHostInputInfo_t *hostInputInfoPtr; // nullptr means no host mem input
-    rtHostInputInfo_t *kernelOffsetInfoPtr; // KernelOffsetInfo, it is different for CCE Kernel and fwk kernel
-    uint32_t argsSize;
-    uint16_t hostInputInfoNum; // hostInputInfo num
-    uint16_t kernelOffsetInfoNum; // KernelOffsetInfo num
-    uint32_t soNameAddrOffset; // just for CCE Kernel, default value is 0xffff for FWK kernel
-    uint32_t kernelNameAddrOffset; // just for CCE Kernel, default value is 0xffff for FWK kernel
-    bool isNoNeedH2DCopy; // is no need host to device copy: 0 means need H2D copy,
-                               // other means doesn't need H2D copy.
-    uint16_t timeout;  // timeout for aicpu exit
-    uint8_t reserved;
-} rtAicpuArgsEx_t;
-
 typedef struct {
     rtAicpuArgsEx_t baseArgs;
     size_t cpuParamHeadOffset;
     uint32_t rsv[4];
 } rtCpuKernelArgs_t;
-
-typedef struct tagRtDvppTaskDesc {
-    rtStarsCommonSqe_t sqe;
-    uint16_t aicpuTaskPos ; // rtsq max dep is 1024
-    uint16_t reserved;
-} rtDvppTaskDesc_t;
-
-typedef struct tagRtAicpuTaskDesc {
-    rtKernelLaunchNames_t kernelLaunchNames;
-    uint16_t blockDim;
-    uint16_t isUnderstudyOp : 1; // dvpp op exist, set 1; otherwise set 0
-    uint16_t resverved : 15;
-    rtArgsEx_t argsInfo;
-} rtAicpuTaskDesc_t;
-
-typedef struct tagRtAicpuTaskDescByHandle {
-    void* funcHdl;
-    uint16_t blockDim;
-    uint16_t isUnderstudyOp : 1; // dvpp op exist, set 1; otherwise set 0
-    uint16_t resverved : 15;
-    rtArgsEx_t argsInfo;
-} rtAicpuTaskDescByHandle_t;
-
-typedef enum tagRtMultipleTaskType {
-    RT_MULTIPLE_TASK_TYPE_DVPP = 0,
-    RT_MULTIPLE_TASK_TYPE_AICPU = 1,
-    RT_MULTIPLE_TASK_TYPE_AICPU_BY_HANDLE = 2,
-    RT_MULTIPLE_TASK_TYPE_MAX
-} rtMultipleTaskType_t;
-
-typedef struct tagRtTaskDesc {
-    rtMultipleTaskType_t type; // only support AICPU or DVPP, will be checked in runtime api_error.
-    union {
-        rtDvppTaskDesc_t dvppTaskDesc;
-        rtAicpuTaskDesc_t aicpuTaskDesc;
-        rtAicpuTaskDescByHandle_t aicpuTaskDescByHandle;
-    } u;
-} rtTaskDesc_t;
-
-typedef struct tagRtMultipleTaskInfo {
-    uint32_t taskNum;
-    rtTaskDesc_t *taskDesc; // must memset0 after new obj
-} rtMultipleTaskInfo_t;
 
 typedef struct tagRtUncommonAicpuParams {
     size_t idx;
@@ -284,128 +153,6 @@ typedef enum tagRtBinBufferType {
     RT_BIN_TYPE_MAX,
 } rtBinBufferType_t;
 
-typedef union rtLaunchAttributeValue_union {
-    uint32_t blockDim;
-    RT_DEPRECATED_MESSAGE("Use dynUBufSize instead")
-    uint32_t dynamicShareMemSize; // DEPRECATED: Use dynUBufSize
-    uint32_t dynUBufSize;
-    struct {
-        uint32_t groupDim;
-        uint32_t groupBlockDim;
-    } Group;
-    uint8_t qos;
-    uint8_t partId;
-    uint8_t schemMode; // rtschemModeType_t 0:normal;1:batch;2:sync
-    uint32_t blockDimOffset;
-    uint8_t dumpflag; // dumpflag 0:fault 2:RT_KERNEL_DUMPFLAG
-} rtLaunchAttributeValue_t;
-
-typedef enum rtLaunchAttributeId {
-    RT_LAUNCH_ATTRIBUTE_BLOCKDIM = 0,
-    RT_LAUNCH_ATTRIBUTE_DYNAMIC_SHARE_MEM_SIZE
-        RT_DEPRECATED_MESSAGE("Use RT_LAUNCH_ATTRIBUTE_DYN_UBUF_SIZE instead") = 1, // DEPRECATED: Use RT_LAUNCH_ATTRIBUTE_DYN_UBUF_SIZE
-    RT_LAUNCH_ATTRIBUTE_DYN_UBUF_SIZE = 1,
-    RT_LAUNCH_ATTRIBUTE_GROUP = 2,
-    RT_LAUNCH_ATTRIBUTE_QOS = 3,
-    RT_LAUNCH_ATTRIBUTE_PARTID = 4,
-    RT_LAUNCH_ATTRIBUTE_SCHEMMODE = 5,
-    RT_LAUNCH_ATTRIBUTE_BLOCKDIM_OFFSET = 6,
-    RT_LAUNCH_ATTRIBUTE_DUMPFLAG = 7,
-    RT_LAUNCH_ATTRIBUTE_MAX = 8,
-} rtLaunchAttributeId_t;
-
-typedef struct rtLaunchAttribute {
-    rtLaunchAttributeId_t id;
-    rtLaunchAttributeValue_t value;
-} rtLaunchAttribute_t;
-
-typedef struct rtLaunchConfig {
-    rtLaunchAttribute_t* attrs;
-    uint32_t numAttrs;
-} rtLaunchConfig_t;
-
-#define FUSION_SUB_TASK_MAX_NUM     (2U)
-#define FUSION_SUB_TASK_MAX_CPU_NUM (1U)
-typedef struct tagRtAicpuArgs {
-    uint16_t kfcArgsFmtOffset;      // default value is 0xffff
-    uint16_t soNameAddrOffset;      // just for CCE Kernel, default value is 0xffff for FWK kernel
-    uint16_t kernelNameAddrOffset;  // just for CCE Kernel, default value is 0xffff for FWK kernel
-    uint16_t rev;
-} rtAicpuArgs_t;
-
-typedef struct tagRtFusionArgsEx {
-    void *args;                     // args host mem addr
-    rtHostInputInfo_t *hostInputInfoPtr;     // nullptr means no host mem input
-    uint32_t argsSize;              // input + output + host mem
-    uint16_t hostInputInfoNum;      // hostInputInfo num
-    uint8_t aicpuNum;               // aicpu task num
-    uint8_t isNoNeedH2DCopy;        // is no need host to device copy: 0 means need H2D copy,
-                                    // others means doesn't need H2D copy.
-    rtAicpuArgs_t aicpuArgs[FUSION_SUB_TASK_MAX_CPU_NUM]; // aicpuArgsInfo
-} rtFusionArgsEx_t;
-
-#define RT_CCU_INST_CNT_INVALID (0U)
-#define RT_CCU_INST_START_MAX   (32768U)
-typedef struct tagRtCcuTaskInfo {
-    uint8_t dieId;
-    uint8_t missionId;
-    uint16_t timeout;
-    uint16_t instStartId;
-    uint16_t instCnt;
-    uint32_t key;
-    uint32_t argSize;    // 1 or 13. 1 means 32B ccu sqe; 13 means 128B ccu sqe
-    uint64_t args[RT_CCU_SQE_ARGS_LEN];
-} rtCcuTaskInfo_t;
-
-typedef struct tagRtCcuTaskGroup {
-    uint32_t taskNum;
-    rtCcuTaskInfo_t ccuTaskInfo[FUSION_SUB_TASK_MAX_CCU_NUM];
-} rtCcuTaskGroup_t;
-
-typedef struct tagRtAicoreTaskInfo {
-    void *hdl;
-    uint64_t tilingKey;
-    rtLaunchConfig_t* config;
-    void *stubFunc;
-} rtAicoreFusionInfo_t;
-
-typedef struct tagRtAicpuTaskInfo {
-    uint32_t kernelType;
-    uint32_t flags;
-    uint32_t blockDim;
-} rtAicpuFusionInfo_t;
-
-typedef union {
-    rtAicoreFusionInfo_t aicoreInfo;
-    rtAicpuFusionInfo_t aicpuInfo;
-    rtCcuTaskGroup_t ccuInfo;
-} rtFusionSubTask_t;
-
-typedef enum {
-    RT_FUSION_HCOM_CPU = 0,
-    RT_FUSION_AICPU    = 1,
-    RT_FUSION_AICORE   = 2,
-    RT_FUSION_CCU      = 3,
-    RT_FUSION_END
-} rtFusionType_t;
-
-typedef struct tagRtFusionSubTaskInfo {
-    rtFusionType_t type;
-    rtFusionSubTask_t task;
-} rtFusionSubTaskInfo_t;
-
-/*
-    fusion sub tasks' arrangement should be set as:
-    1.aicpu + aic
-    2.hcom  + aic
-    3.ccu
-    4.ccu + aic
-*/
-typedef struct tagRtFunsionTaskInfo {
-    uint32_t subTaskNum;
-    rtFusionSubTaskInfo_t subTask[FUSION_SUB_TASK_MAX_NUM];
-} rtFunsionTaskInfo_t;
-
 typedef enum {
     RT_FUNCTION_ATTR_KERNEL_TYPE = 1,
     RT_FUNCTION_ATTR_KERNEL_RATIO,
@@ -444,45 +191,6 @@ typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kerne
  * @brief magic number of plain binary for aivector
  */
 #define RT_DEV_BINARY_MAGIC_PLAIN_AIVEC 0xabceed52U
-
-/**
- * @ingroup rt_kernel
- * @brief magic number of elf binary for aicore
- */
-#define RT_DEV_BINARY_MAGIC_ELF 0x43554245U
-
-/**
- * @ingroup rt_kernel
- * @brief magic number of elf binary for aicpu
- */
-#define RT_DEV_BINARY_MAGIC_ELF_AICPU 0x41415243U
-
-/**
- * @ingroup rt_kernel
- * @brief magic number of elf binary for aivector
- */
-#define RT_DEV_BINARY_MAGIC_ELF_AIVEC 0x41415246U
-
-/**
- * @ingroup rt_kernel
- * @brief magic number of elf binary for aicube
- */
-#define RT_DEV_BINARY_MAGIC_ELF_AICUBE 0x41494343U
-
-/**
- * @ingroup rt_kernel_flags
- * @brief kernel op bit flags
- */
-#define RT_KERNEL_DEFAULT (0x00U)
-#define RT_KERNEL_CONVERT (0x01U)
-#define RT_KERNEL_DUMPFLAG (0x02U)
-#define RT_FUSION_KERNEL_DUMPFLAG (0x04U)
-#define RT_KERNEL_CUSTOM_AICPU (0x08U)
-#define RT_KERNEL_FFTSPLUS_DYNAMIC_SHAPE_DUMPFLAG (0x10U)
-#define RT_KERNEL_FFTSPLUS_STATIC_SHAPE_DUMPFLAG  (0x20U)
-// cmdlist does not need to be released by the runtime.
-#define RT_KERNEL_CMDLIST_NOT_FREE                (0x40U)
-#define RT_KERNEL_USE_SPECIAL_TIMEOUT             (0x100U)
 
 // STARS topic scheduler sqe : topic_type
 #define RT_KERNEL_DEVICE_FIRST (0x10U)

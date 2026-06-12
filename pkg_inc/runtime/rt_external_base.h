@@ -164,6 +164,8 @@ typedef enum tagRtLimitType {
     RT_LIMIT_TYPE_SIMT_STACK_SIZE = 1,
     RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE = 2,
     RT_LIMIT_TYPE_STACK_SIZE = 3,  // max stack size for each core, bytes
+    RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE = 4,
+    RT_LIMIT_TYPE_SIMT_PRINTF_FIFO_SIZE = 5,
     RT_LIMIT_TYPE_RESERVED,
 } rtLimitType_t;
 

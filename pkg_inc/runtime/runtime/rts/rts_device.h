@@ -16,6 +16,7 @@
 
 #include "base.h"
 #include "dev.h"
+#include "runtime/rt_external_device.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -64,17 +65,6 @@ typedef enum {
     RT_DEV_ATTR_MAX
 } rtDevAttr;
 
-typedef enum { 
-    RT_FEATURE_TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV = 1U,
-    RT_FEATURE_SYSTEM_MEMQ_EVENT_CROSS_DEV       = 21U,
-
-    RT_FEATURE_AICPU_SCHEDULE_TYPE               = 10001U,
-
-    RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH           = 20001U,
-
-    RT_DEV_FEATURE_MAX 
-} rtDevFeatureType;
-
 // 通过HCCS连接的两个NPU之间的拓扑互联关系
 #define RT_DEVS_TOPOLOGY_HCCS     0x01ULL
 // 单个PCIe switch连接两个NPU之间的拓扑互联关系
@@ -89,19 +79,6 @@ typedef enum {
 #define RT_DEVS_TOPOLOGY_SIO      0x20ULL
 
 #define RT_DEVS_TOPOLOGY_HCCS_SW  0x40ULL
-
-// 拉起HCCP进程
-struct rtProcExtParam {
-    const char  *paramInfo;
-    uint64_t    paramLen;
-};
-
-struct rtNetServiceOpenArgs {
-    rtProcExtParam *extParamList;   // 拉起服务的参数列表
-    uint64_t     extParamCnt;    // 拉起服务的参数列表长度
-};
-
-#define RT_EXT_PARAM_CNT_MAX  127U
 
 typedef enum {
     RT_DEVS_INFO_TYPE_TOPOLOGY = 0,
@@ -461,21 +438,6 @@ RTS_API rtError_t rtsDebugSetDumpMode(const uint64_t mode);
 * @return RT_ERROR_INVALID_VALUE for error input
 */
 RTS_API rtError_t rtsDebugGetStalledCore(rtDbgCoreInfo_t *const coreInfo);
-
-/**
- * @ingroup
- * @brief Open NetService for HCCL
- * @param [in] args   service args
- * @return RT_ERROR_NONE for ok, errno for failed
- */
-RTS_API rtError_t rtOpenNetService(const rtNetServiceOpenArgs *args);
- 
-/**
- * @ingroup
- * @brief Close NetService for HCCL
- * @return RT_ERROR_NONE for ok, errno for failed
- */
-RTS_API rtError_t rtCloseNetService();
 
 typedef enum {
     RT_DEVICE_STATE_SET_PRE = 0,
