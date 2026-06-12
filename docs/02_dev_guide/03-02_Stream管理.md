@@ -58,7 +58,7 @@ myKernel<<<8, nullptr, nullptr>>>(devPtrIn, devPtrOut, size);
 aclrtMemcpyAsync(hostPtr, hostSize, devPtrOut, size, ACL_MEMCPY_DEVICE_TO_HOST, nullptr);
 
 // 同步默认stream
-aclrtStreamSynchronize(nullptr);
+aclrtSynchronizeStream(nullptr);
 
 // 复位Device（接口内部自动销毁默认Stream）
 aclrtResetDevice(0);
@@ -262,7 +262,6 @@ aclrtDestroyStream(stream);
 aclmdlRIDestroy(modelRI);
 ......
 ```
-
 
 
 

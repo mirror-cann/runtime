@@ -22,7 +22,7 @@
 - [`aclError aclrtActiveStream(aclrtStream activeStream, aclrtStream stream)`](#aclrtActiveStream)：激活Stream。异步接口。
 - [`aclError aclrtSwitchStream(void *leftValue, aclrtCondition cond, void *rightValue, aclrtCompareDataType dataType, aclrtStream trueStream, aclrtStream falseStream, aclrtStream stream)`](#aclrtSwitchStream)：根据条件在Stream之间跳转。异步接口。
 - [`aclError aclrtRegStreamStateCallback(const char *regName, aclrtStreamStateCallback callback, void *args)`](#aclrtRegStreamStateCallback)：注册Stream状态回调函数，不支持重复注册。
-- [`aclError aclrtStreamStop(aclrtStream stream)`](#acIrtStreamStop)：仅停止指定Stream上的正在执行的任务，不清理任务。
+- [`aclError aclrtStreamStop(aclrtStream stream)`](#aclrtStreamStop)：仅停止指定Stream上的正在执行的任务，不清理任务。
 - [`aclError aclrtPersistentTaskClean(aclrtStream stream)`](#aclrtPersistentTaskClean)：清理ACL\_STREAM\_PERSISTENT类型的Stream上的任务，适用于在不删除该类型Stream的情况下重新下发任务的场景。
 - [`aclError aclrtStreamGetPriority(aclrtStream stream, uint32_t *priority)`](#aclrtStreamGetPriority)：查询指定Stream的优先级。
 - [`aclError aclrtStreamGetFlags(aclrtStream stream, uint32_t *flags)`](#aclrtStreamGetFlags)：查询创建Stream时设置的flag标志。
@@ -214,43 +214,31 @@ aclError aclrtCreateStreamWithConfig(aclrtStream *stream, uint32_t priority, uin
 
     相比[aclrtCreateStream](#aclrtCreateStream)接口创建出来的Stream，在使用Stream时才会申请系统内部资源，导致下发任务的时长增加，使用本接口的**ACL\_STREAM\_FAST\_LAUNCH**模式创建Stream时，会在创建Stream时预申请系统内部资源，因此创建Stream的时长增加，下发任务的时长缩短，总体来说，创建一次Stream，使用多次的场景下，总时长缩短，但创建Stream时预申请内部资源会增加内存消耗。
 
-    ```
-    #define ACL_STREAM_FAST_LAUNCH      0x00000001U
-    ```
+    宏定义：`#define ACL_STREAM_FAST_LAUNCH 0x00000001U`
 
 -   **ACL\_STREAM\_FAST\_SYNC**：使用该flag创建出来的Stream，在调用[aclrtSynchronizeStream](#aclrtSynchronizeStream)接口时，会阻塞当前线程，主动查询任务的执行状态，一旦任务完成，立即返回。
 
     相比[aclrtCreateStream](#aclrtCreateStream)接口创建出来的Stream，在调用[aclrtSynchronizeStream](#aclrtSynchronizeStream)接口时，会一直被动等待Device上任务执行完成的通知，等待时间长，使用本接口的**ACL\_STREAM\_FAST\_SYNC**模式创建的Stream，没有被动等待，总时长缩短，但主动查询的操作会增加CPU的性能消耗。
 
-    ```
-    #define ACL_STREAM_FAST_SYNC        0x00000002U
-    ```
+    宏定义：`#define ACL_STREAM_FAST_SYNC 0x00000002U`
 
 -   **ACL\_STREAM\_PERSISTENT**：使用该flag创建出来的Stream，在该Stream上下发的任务不会立即执行、任务执行完成后也不会立即销毁，在销毁Stream时才会销毁任务相关的资源。该方式下创建的Stream用于与模型绑定，适用于模型构建场景，模型构建相关接口的说明请参见[aclmdlRIBindStream](15_模型运行实例管理.md#aclmdlRIBindStream)。
 
-    ```
-    #define ACL_STREAM_PERSISTENT       0x00000004U
-    ```
+    宏定义：`#define ACL_STREAM_PERSISTENT 0x00000004U`
 
 -   **ACL\_STREAM\_HUGE**：相比其他flag，使用该flag创建出来的Stream所能容纳的Task最大数量更大。
 
     当前版本设置该flag不生效。
 
-    ```
-    #define ACL_STREAM_HUGE             0x00000008U
-    ```
+    宏定义：`#define ACL_STREAM_HUGE 0x00000008U`
 
 -   **ACL\_STREAM\_CPU\_SCHEDULE**：使用该flag创建出来的Stream用于队列方式模型推理场景下承载AI CPU调度的相关任务。预留功能。
 
-    ```
-    #define ACL_STREAM_CPU_SCHEDULE     0x00000010U
-    ```
+    宏定义：`#define ACL_STREAM_CPU_SCHEDULE 0x00000010U`
 
 -   **ACL\_STREAM\_DEVICE\_USE\_ONLY**：表示该Stream仅在Device上调用。
 
-    ```
-    #define ACL_STREAM_DEVICE_USE_ONLY  0x00000020U
-    ```
+    宏定义：`#define ACL_STREAM_DEVICE_USE_ONLY 0x00000020U`
 
     仅如下型号支持ACL\_STREAM\_DEVICE\_USE\_ONLY：
 
@@ -772,7 +760,7 @@ aclError aclrtSetStreamAttribute(aclrtStream stream, aclrtStreamAttr stmAttrType
 
 ### 约束说明
 
--   溢出检测属性：调用该接口打开或关闭溢出检测开关后，仅对后续新下的任务生效，已下发的任务仍维持原样。
+-   溢出检测属性：调用该接口打开或关闭溢出检测开关后，仅对后续新下发的任务生效，已下发的任务仍维持原样。
 -   Failure Mode：不支持对Context默认Stream设置Failure Mode。
 
 
@@ -953,9 +941,9 @@ aclError aclrtRegStreamStateCallback(const char *regName, aclrtStreamStateCallba
 
 
 
-<a id="acIrtStreamStop"></a>
+<a id="aclrtStreamStop"></a>
 
-## acIrtStreamStop
+## aclrtStreamStop
 
 ```c
 aclError aclrtStreamStop(aclrtStream stream)
@@ -1105,7 +1093,7 @@ aclError aclrtStreamGetFlags(aclrtStream stream, uint32_t *flags)
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
 | stream | 输入 | 指定Stream。类型定义请参见[aclrtStream](25_数据类型及其操作接口.md#aclrtStream)。<br>若此处传入NULL，则获取的是默认Stream的flag。 |
-| flags | 输出 | 指向查询到的flag值的指针。<br>关于flag值的说明请参见[aclrtCreateStreamWithConfig](#aclrtCreateStreamWithConfig)接口中的flag参数说明。若创建Stream时配置了多个flag，返回值为各flag按位或运算后的结果，例如配置了0x01U和0x02U，则返回0x03U；若创建Stream是没有配置flag，则返回0。<br>对于默认Stream，不同产品型号的flag值可能存在差异，应以本接口查询到的值为准。 |
+| flags | 输出 | 指向查询到的flag值的指针。<br>关于flag值的说明请参见[aclrtCreateStreamWithConfig](#aclrtCreateStreamWithConfig)接口中的flag参数说明。若创建Stream时配置了多个flag，返回值为各flag按位或运算后的结果，例如配置了0x01U和0x02U，则返回0x03U；若创建Stream时没有配置flag，则返回0。<br>对于默认Stream，不同产品型号的flag值可能存在差异，应以本接口查询到的值为准。 |
 
 ### 返回值说明
 

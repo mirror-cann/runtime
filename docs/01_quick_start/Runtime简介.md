@@ -100,7 +100,7 @@ Runtime采用**主机-设备异步并行**的编程模式：
 | 功能模块           | 核心能力                             | 关键接口                                       |
 | ------------------ | ------------------------------------ | ---------------------------------------------- |
 | **运行时全局管理** | 初始化/去初始化、进程级配置、DFX功能 | `aclInit`、`aclFinalize`                       |
-| **Device管理**     | 设备设置、复位、查询、配置           | `aclrtSetDevice`、`aclrtResetDevice`           |
+| **Device管理**     | 设备设置、复位、查询、配置           | `aclrtSetDevice`、`aclrtResetDevice`、`aclrtResetDeviceForce` |
 | **Context管理**    | 上下文创建、销毁、切换               | `aclrtCreateContext`、`aclrtSetCurrentContext` |
 | **Stream管理**     | Stream创建、销毁、同步、属性配置     | `aclrtCreateStream`、`aclrtSynchronizeStream`  |
 | **Memory管理**     | 设备内存、主机内存申请/释放/拷贝     | `aclrtMalloc`、`aclrtMemcpy`                   |
@@ -108,7 +108,7 @@ Runtime采用**主机-设备异步并行**的编程模式：
 | **Event管理**      | Stream间同步、时间戳记录             | `aclrtCreateEvent`、`aclrtRecordEvent`         |
 <br>
 
-此外Runtime还提供一系列特性（如ACL Graph），Runtime功能架构如下图所示：
+此外，Runtime 还提供一系列特性（如 ACL Graph）。Runtime 功能架构如下图所示：
 
 ![](figures/逻辑架构图.png)
 

@@ -9,7 +9,7 @@
 - [`aclError aclrtGetNotifyId(aclrtNotify notify, uint32_t *notifyId)`](#aclrtGetNotifyId)：获取指定Notify的ID。
 - [`aclError aclrtNotifyBatchReset(aclrtNotify *notifies, size_t num)`](#aclrtNotifyBatchReset)：批量复位Notify。
 - [`aclError aclrtNotifyGetExportKey(aclrtNotify notify, char *key, size_t len, uint64_t flags)`](#aclrtNotifyGetExportKey)：将本进程中的指定Notify设置为IPC（Inter-Process Communication） Notify，并返回key（即Notify共享名称），用于在多Device上不同进程间实现任务同步。
-- [`aclError aclrtNotifySetImportPid(aclrtNotify notify, int32_t *pid, size_t num)`](#aclrtNotifySetImportPid)：设置共享Notify的进程白名单**。**
+- [`aclError aclrtNotifySetImportPid(aclrtNotify notify, int32_t *pid, size_t num)`](#aclrtNotifySetImportPid)：设置共享Notify的进程白名单。
 - [`aclError aclrtNotifySetImportPidInterServer(aclrtNotify notify, aclrtServerPid *serverPids, size_t num)`](#aclrtNotifySetImportPidInterServer)：设置共享Notify的进程白名单。
 - [`aclError aclrtNotifyImportByKey(aclrtNotify *notify, const char *key, uint64_t flags)`](#aclrtNotifyImportByKey)：在本进程中获取key的信息，并返回本进程可以使用的Notify指针。
 
@@ -311,7 +311,7 @@ aclError aclrtNotifyGetExportKey(aclrtNotify notify, char *key, size_t len, uint
 
     2.  调用[aclrtNotifyImportByKey](#aclrtNotifyImportByKey)获取key的信息，并返回本进程可以使用的Notify指针。建议flag使用ACL\_RT\_NOTIFY\_IMPORT\_FLAG\_ENABLE\_PEER\_ACCESS开启两个Device之间的数据交互。
 
-        调用[aclrtIpcMemImportByKey](11-07_IPC进程间内存共享.md#aclrtIpcMemImportByKey)接口前，需确保IPC Notify，不能提前释放。
+        调用[aclrtNotifyImportByKey](#aclrtNotifyImportByKey)接口前，需确保IPC Notify未提前释放。
 
     3.  调用[aclrtRecordNotify](#aclrtRecordNotify)接口下发Record任务。
     4.  调用[aclrtDestroyNotify](#aclrtDestroyNotify)接口销毁Notify。
@@ -409,7 +409,7 @@ aclError aclrtNotifySetImportPidInterServer(aclrtNotify notify, aclrtServerPid *
 
 设置共享Notify的进程白名单。
 
-该接口仅针对针对Atlas A3 训练系列产品/Atlas A3 推理系列产品中的超节点产品，
+该接口仅针对Atlas A3 训练系列产品/Atlas A3 推理系列产品中的超节点产品，
 
 ### 参数说明
 

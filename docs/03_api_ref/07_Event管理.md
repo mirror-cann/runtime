@@ -15,7 +15,7 @@
 - [`aclError aclrtSynchronizeEventWithTimeout(aclrtEvent event, int32_t timeout)`](#aclrtSynchronizeEventWithTimeout)：阻塞当前线程运行直到Event捕获的所有任务都执行完成（具体见[aclrtRecordEvent](#aclrtRecordEvent)接口参考Event捕获的细节），该接口是在接口[aclrtSynchronizeEvent](#aclrtSynchronizeEvent)基础上进行了增强，支持用户设置永久等待、或配置具体的超时时间，若配置具体的超时时间，则当应用程序异常时可根据所设置的超时时间自行退出。
 - [`aclError aclrtEventElapsedTime(float *ms, aclrtEvent startEvent, aclrtEvent endEvent)`](#aclrtEventElapsedTime)：统计两个Event之间的耗时。
 - [`aclError aclrtStreamWaitEvent(aclrtStream stream, aclrtEvent event)`](#aclrtStreamWaitEvent)：阻塞指定Stream的运行，直到指定的Event完成，支持多个Stream等待同一个Event的场景。异步接口。
-- [`aclError aclrtStreamWaitEventWithTimeout(aclrtStream stream, aclrtEvent event, int32_t timeout)`](#aclrtStreamWaitEventWithTimeout)：获取算子二进制数据在Device上的内存地址及内存大小。
+- [`aclError aclrtStreamWaitEventWithTimeout(aclrtStream stream, aclrtEvent event, int32_t timeout)`](#aclrtStreamWaitEventWithTimeout)：阻塞指定Stream的运行，直到指定的Event完成或等待超时，支持多个Stream等待同一个Event的场景。异步接口。
 - [`aclError aclrtSetOpWaitTimeout(uint32_t timeout)`](#aclrtSetOpWaitTimeout)：本接口用于设置等待Event完成的超时时间。
 - [`aclError aclrtEventGetTimestamp(aclrtEvent event, uint64_t *timestamp)`](#aclrtEventGetTimestamp)：获取Event的执行结束时间点（表示从AI处理器系统启动以来的时间）。
 - [`aclError aclrtGetEventId(aclrtEvent event, uint32_t *eventId)`](#aclrtGetEventId)：获取指定Event的ID。
@@ -639,7 +639,7 @@ aclError aclrtStreamWaitEventWithTimeout(aclrtStream stream, aclrtEvent event, i
 
 ### 功能说明
 
-获取算子二进制数据在Device上的内存地址及内存大小。
+阻塞指定Stream的运行，直到指定的Event完成或等待超时。支持多个Stream等待同一个Event，若等待超时则返回错误码。
 
 ### 参数说明
 
@@ -915,4 +915,3 @@ aclError aclrtIpcOpenEventHandle(aclrtIpcEventHandle handle, aclrtEvent *event)
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25_数据类型及其操作接口.md#aclError)。
-

@@ -20,7 +20,6 @@
 | [modules/memory/memory.md](modules/memory/memory.md) | Memory 内存管理，内存池和分配策略 |
 | [modules/kernel/kernel.md](modules/kernel/kernel.md) | Kernel 核函数管理，二进制加载与执行 |
 | [modules/event/event.md](modules/event/event.md) | Event 事件管理，同步机制 |
-| [modules/engine/engine.md](modules/engine/engine.md) | Engine 调度引擎，任务协调 |
 
 ## 特性文档
 
@@ -102,4 +101,4 @@ runtime/
 
 ---
 
-_本文档遵循 [开源仓架构文档模版](开源仓架构文档模版.md) 格式。_
+_本文档遵循开源仓架构文档模版格式。_
