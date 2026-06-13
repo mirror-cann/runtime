@@ -12,47 +12,13 @@
 <!-- ==================== 文档导航 ==================== -->
 ## 📚 文档导航
 
-<table width="100%" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
-<colgroup>
-<col width="15%">
-<col width="55%">
-<col width="30%">
-</colgroup>
-<thead>
-<tr>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">文档</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">定位与内容</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">入口</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>⚡ 快速入门</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">零基础起步，第一次接触 Runtime 的开发者。Runtime 简介 + 编程模型讲解，建议顺序阅读</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="01_quick_start/Runtime简介.md">Runtime 简介</a> · <a href="01_quick_start/Runtime编程模型.md">编程模型</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>📖 编程指南</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">深度开发手册，已跑通入门阶段 Hello CANN 后需要深入理解原理的开发者。原理解析 + 示例代码</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="02_dev_guide/00_dev_guide.md">编程指南</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>📋 API 参考</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">接口字典，开发过程中随时查阅函数定义。函数签名 + 参数说明 + 返回值</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="03_api_ref/01_概述.md">头文件说明</a> · <a href="03_api_ref/api_ref.md">API 参考</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>🏗️ 架构指南</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">面向贡献者的架构文档。Runtime 整体架构、模块设计、核心组件解析</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="design/README.md">架构指南</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>📝 研发规范</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">面向贡献者的规范指南，包括设计文档模板、编码规范、测试规范、代码检视规则</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="guidelines/README.md">研发规范与贡献指南</a></td>
-</tr>
-</tbody>
-</table>
+| 文档 | 定位与内容 | 入口 |
+|------|-----------|------|
+| **⚡ 快速入门** | 零基础起步，第一次接触 Runtime 的开发者。Runtime 简介 + 编程模型讲解，建议顺序阅读 | [Runtime 简介](01_quick_start/Runtime简介.md) · [编程模型](01_quick_start/Runtime编程模型.md) |
+| **📖 编程指南** | 深度开发手册，已跑通入门阶段 Hello CANN 后需要深入理解原理的开发者。原理解析 + 示例代码 | [编程指南](02_dev_guide/00_dev_guide.md) |
+| **📋 API 参考** | 接口字典，开发过程中随时查阅函数定义。函数签名 + 参数说明 + 返回值 | [头文件说明](03_api_ref/01_概述.md) · [API 参考](03_api_ref/api_ref.md) |
+| **🏗️ 架构指南** | 面向贡献者的架构文档。Runtime 整体架构、模块设计、核心组件解析 | [架构指南](design/README.md) |
+| **📝 研发规范** | 面向贡献者的规范指南，包括设计文档模板、编码规范、测试规范、代码检视规则 | [研发规范与贡献指南](guidelines/README.md) |
 
 ---
 
@@ -63,156 +29,44 @@
 
 ### 🌱 入门阶段
 
-<table width="100%" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
-<colgroup>
-<col width="15%">
-<col width="55%">
-<col width="30%">
-</colgroup>
-<thead>
-<tr>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">学习步骤</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">内容说明</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">入口</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>环境准备</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">CANN 一键安装</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="https://www.hiascend.com/cann/download">CANN 一键安装</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>概念原理</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">Runtime 核心概念与编程模型：Host-Device 架构、Context、Stream、同步异步、典型执行流程</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="01_quick_start/Runtime简介.md">Runtime 简介</a> · <a href="01_quick_start/Runtime编程模型.md">编程模型</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>Hello CANN</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">第一个可运行的 Runtime 程序，完成最小计算闭环</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/0_quickstart/0_hello_cann/README.md">Hello CANN</a></td>
-</tr>
-</tbody>
-</table>
+| 学习步骤 | 内容说明 | 入口 |
+|---------|---------|------|
+| **环境准备** | CANN 一键安装 | [CANN 一键安装](https://www.hiascend.com/cann/download) |
+| **概念原理** | Runtime 核心概念与编程模型：Host-Device 架构、Context、Stream、同步异步、典型执行流程 | [Runtime 简介](01_quick_start/Runtime简介.md) · [编程模型](01_quick_start/Runtime编程模型.md) |
+| **Hello CANN** | 第一个可运行的 Runtime 程序，完成最小计算闭环 | [Hello CANN](../example/0_quickstart/0_hello_cann/README.md) |
 
 ---
 
 ### 🚀 进阶阶段
 
-<table width="100%" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
-<colgroup>
-<col width="15%">
-<col width="55%">
-<col width="30%">
-</colgroup>
-<thead>
-<tr>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">主题</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">核心内容</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">对应样例</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>初始化</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括环境初始化、设备资源配置、日志管理等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/1_basic_features/device/0_device_normal/README.md">device_normal</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>内存管理</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括 Host 内存管理、Device 内存管理、多流同步内存、内存拷贝（同步/异步）、物理内存共享 (pid) 等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/1_basic_features/memory/1_h2d_sync_memory_copy/README.md">h2d_sync_memory_copy</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>异步任务</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括 Stream 管理、Event 管理、Kernel 加载与执行、内存语义同步等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/1_basic_features/stream/0_simple_stream/README.md">simple_stream</a></td>
-</tr>
-</tbody>
-</table>
+| 主题 | 核心内容 | 对应样例 |
+|------|---------|---------|
+| **初始化** | 包括环境初始化、设备资源配置、日志管理等 | [device_normal](../example/1_basic_features/device/0_device_normal/README.md) |
+| **内存管理** | 包括 Host 内存管理、Device 内存管理、多流同步内存、内存拷贝（同步异步）、物理内存共享 (pid) 等 | [h2d_sync_memory_copy](../example/1_basic_features/memory/1_h2d_sync_memory_copy/README.md) |
+| **异步任务** | 包括 Stream 管理、Event 管理、Kernel 加载与执行、内存语义同步等 | [simple_stream](../example/1_basic_features/stream/0_simple_stream/README.md) |
 
 ---
 
 ### 🔥 高级阶段
 
-<table width="100%" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
-<colgroup>
-<col width="15%">
-<col width="55%">
-<col width="30%">
-</colgroup>
-<thead>
-<tr>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">主题</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">核心内容</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">对应样例</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>ACL Graph</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括单流捕获、跨流捕获、任务更新等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/2_advanced_features/model_ri/1_model_update/README.md">model_update</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>多设备编程</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括跨 Device 数据交互、P2P 内存访问、多卡并行调度等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/1_basic_features/device/2_device_P2P/README.md">device_P2P</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>进程间通信</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括 IPC Event 同步、IPC 内存共享（指定 PID/不指定 PID）等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/2_advanced_features/ipcevent/0_ipcevent/README.md">ipc_event</a> · <a href="../example/1_basic_features/memory/11_ipc_memory_withoutpid/README.md">ipc_memory</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>性能调优</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">包括 Profiling 采集并落盘、获取网络模型中算子的性能数据、可视化展示原始性能数据解析结果等</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="../example/5_performance/profiling/0_create_config/README.md">create_config</a></td>
-</tr>
-</tbody>
-</table>
+| 主题 | 核心内容 | 对应样例 |
+|------|---------|---------|
+| **ACL Graph** | 包括单流捕获、跨流捕获、任务更新等 | [model_update](../example/2_advanced_features/model_ri/1_model_update/README.md) |
+| **多设备编程** | 包括跨 Device 数据交互、P2P 内存访问、多卡并行调度等 | [device_P2P](../example/1_basic_features/device/2_device_P2P/README.md) |
+| **进程间通信** | 包括 IPC Event 同步、IPC 内存共享（指定 PID/不指定 PID）等 | [ipc_event](../example/2_advanced_features/ipcevent/0_ipcevent/README.md) · [ipc_memory](../example/1_basic_features/memory/11_ipc_memory_withoutpid/README.md) |
+| **性能调优** | 包括 Profiling 采集并落盘、获取网络模型中算子的性能数据、可视化展示原始性能数据解析结果等 | [create_config](../example/5_performance/profiling/0_create_config/README.md) |
 
 ---
 
 <!-- ==================== 常见问题 ==================== -->
 ## ❓ 常见问题
 
-<table width="100%" style="table-layout: fixed; width: 100%; border-collapse: collapse;">
-<colgroup>
-<col width="15%">
-<col width="55%">
-<col width="30%">
-</colgroup>
-<thead>
-<tr>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">问题类型</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">典型场景</th>
-<th align="left" style="word-wrap: break-word; overflow-wrap: break-word;">入口</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>进程重启失败</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">进程重启失败、资源申请不到</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="04_FAQ/用户进程异常退出后重启进程失败.md">用户进程异常退出后重启进程失败</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>内核版本不兼容</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">算子输出全为 0、内核版本不兼容</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="04_FAQ/低版本内核使用asan导致算子执行失败.md">低版本内核使用 asan 导致算子执行失败</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>休眠唤醒失败</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">休眠失败、hwts busy</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="04_FAQ/AI应用进程未退出导致休眠唤醒失败.md">AI 应用进程未退出导致休眠唤醒失败</a></td>
-</tr>
-<tr>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><b>析构崩溃</b></td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;">应用程序运行过程中出现 coredump 导致了崩溃，应用程序异常终止</td>
-<td style="word-wrap: break-word; overflow-wrap: break-word;"><a href="04_FAQ/析构函数中调用aclFinalize导致应用进程coredump.md">析构函数中调用 aclFinalize 导致应用进程 coredump</a></td>
-</tr>
-</tbody>
-</table>
+| 问题类型 | 典型场景 | 入口 |
+|---------|---------|------|
+| **入门阶段** | 初始化失败、Device 配置、版本兼容等入门常见问题 | [版本不匹配](04_FAQ/Runtime版本与CANN版本不匹配导致的问题.md) · [aclInit 失败](04_FAQ/aclInit初始化失败常见原因排查.md) · [aclrtSetDevice 失败](04_FAQ/aclrtSetDevice调用失败.md) · [默认机制](04_FAQ/如何理解默认Device和默认Stream机制.md) |
+| **基础开发** | 内存管理、Stream 同步、数据复制等基础 API 使用问题 | [内存申请失败](04_FAQ/aclrtMalloc内存申请失败常见原因.md) · [Stream 下发失败](04_FAQ/aclrtMemcpyAsync在错误的Stream上下发失败.md) · [内存策略](04_FAQ/如何选择合适的内存分配策略.md) · [同步机制](04_FAQ/Stream同步与Event同步的区别与选择.md) |
+| **进阶场景** | 多设备编程、ACL Graph、进程通信等复杂场景问题 | [多Device Stream](04_FAQ/多Device场景下Stream跨Device下发失败.md) · [ACL Graph 任务提交](04_FAQ/ACLGraph捕获过程中任务提交限制.md) · [IPC 页表对齐](04_FAQ/进程间IPC内存共享的页表对齐要求.md) · [P2P 配置失败](04_FAQ/跨DeviceP2P数据交互配置失败.md) |
+| **错误排查** | 错误码解读、算子异常、日志定位等诊断方法 | [异步错误码](04_FAQ/如何获取和解读Runtime异步错误码.md) · [算子输出异常](04_FAQ/算子执行输出全0的常见原因排查.md) · [遇错即停定位](04_FAQ/遇错即停模式下错误定位方法.md) · [plog 日志定位](04_FAQ/如何通过plog日志定位Device侧异常.md) |
 
 ---
 
