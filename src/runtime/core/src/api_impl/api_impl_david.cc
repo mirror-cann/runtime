@@ -1021,6 +1021,14 @@ rtError_t ApiImplDavid::GetCntNotifyAddress(CountNotify *const inCntNotify, uint
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     Device * const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
+    if (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_AICPUSD_LATER_PROCEDURE)) {
+        // Driver now only support NOTIFY_CNT_ST_SLICE for count notify
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM((regType != NOTIFY_CNT_ST_SLICE), RT_ERROR_INVALID_VALUE, 
+            regType, std::to_string(NOTIFY_CNT_ST_SLICE));
+    } else {
+        COND_RETURN_ERROR(regType == NOTIFY_TABLE_SLICE, RT_ERROR_INVALID_VALUE,
+            "CntNotify does not support getting notify table address.");
+    }
     const rtError_t error = inCntNotify->GetCntNotifyAddress(addr, regType);
     ERROR_RETURN_MSG_INNER(error, "GetCntNotifyAddress failed, device_id=%d, retCode=%#x", dev->Id_(),
         static_cast<uint32_t>(error));

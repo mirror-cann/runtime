@@ -1725,3 +1725,45 @@ TEST_F(TaskTestV201, ReportStreamSqInfoForProfiling_Disable)
     delete rtInstance->profiler_;
     rtInstance->profiler_ = nullptr;
 }
+
+TEST_F(TaskTestV201, TestGetCntNotifyAddr_TableSliceRejected)
+{
+    rtCntNotify_t inNotify;
+    rtError_t error = rtCntNotifyCreate(0, &inNotify);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    uint64_t notifyAddr = 0;
+    error = rtGetCntNotifyAddress(inNotify, &notifyAddr, NOTIFY_TABLE_SLICE);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    error = rtCntNotifyDestroy(inNotify);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
+TEST_F(TaskTestV201, TestGetCntNotifyAddr_SuccessWithAllRegTypes)
+{
+    rtCntNotify_t inNotify;
+    rtError_t error = rtCntNotifyCreate(0, &inNotify);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    MOCKER(halResAddrMap).defaults().will(returnValue(DRV_ERROR_NONE));
+    uint64_t notifyAddr = 0;
+
+    error = rtGetCntNotifyAddress(inNotify, &notifyAddr, NOTIFY_CNT_ST_SLICE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = rtGetCntNotifyAddress(inNotify, &notifyAddr, NOTIFY_CNT_ADD_SLICE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = rtGetCntNotifyAddress(inNotify, &notifyAddr, NOTIFY_CNT_BIT_WR_SLICE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = rtGetCntNotifyAddress(inNotify, &notifyAddr, NOTIFY_CNT_BIT_CLR_SLICE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = rtGetCntNotifyAddress(inNotify, &notifyAddr, NOTIFY_TYPE_MAX);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+
+    error = rtCntNotifyDestroy(inNotify);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}

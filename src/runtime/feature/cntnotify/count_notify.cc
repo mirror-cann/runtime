@@ -119,9 +119,26 @@ rtError_t CountNotify::Record(Stream * const streamIn, const rtCntNtyRecordInfo_
 
 rtError_t CountNotify::GetCntNotifyAddress(uint64_t &addr, rtNotifyType_t regType)
 {
-    UNUSED(regType);
+    rtDevResType_t devResType = RT_RES_TYPE_STARS_CNT_NOTIFY_RECORD;
+    switch (regType) {
+        case NOTIFY_CNT_ST_SLICE:
+            devResType = RT_RES_TYPE_STARS_CNT_NOTIFY_RECORD;
+            break;
+        case NOTIFY_CNT_ADD_SLICE:
+            devResType = RT_RES_TYPE_STARS_CNT_NOTIFY_ADD;
+            break;
+        case NOTIFY_CNT_BIT_WR_SLICE:
+            devResType = RT_RES_TYPE_STARS_CNT_NOTIFY_BIT_WR;
+            break;
+        case NOTIFY_CNT_BIT_CLR_SLICE:
+            devResType = RT_RES_TYPE_STARS_CNT_NOTIFY_BIT_CLR;
+            break;
+        default:
+            RT_LOG(RT_LOG_ERROR, "invalid notify type, type=%u", regType);
+            return RT_ERROR_INVALID_VALUE;
+    }
     rtDevResInfo resInfo = {
-        tsId_, RT_PROCESS_CP1, RT_RES_TYPE_STARS_CNT_NOTIFY_RECORD, notifyid_, 0U
+        tsId_, RT_PROCESS_CP1, devResType, notifyid_, 0U
     };
     uint64_t resAddr = 0U;
     uint32_t len = 0U;

@@ -100,9 +100,6 @@ rtError_t ApiErrorDecorator::GetCntNotifyAddress(CountNotify *const inCntNotify,
 {
     NULL_PTR_RETURN_MSG_OUTER(inCntNotify, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(cntNotifyAddress, RT_ERROR_INVALID_VALUE);
-    // Driver now only support NOTIFY_CNT_ST_SLICE for count notify
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((regType != NOTIFY_CNT_ST_SLICE), RT_ERROR_INVALID_VALUE, 
-        regType, std::to_string(NOTIFY_CNT_ST_SLICE));
     return impl_->GetCntNotifyAddress(inCntNotify, cntNotifyAddress, regType);
 }
 
