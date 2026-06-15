@@ -2553,6 +2553,9 @@ rtError_t rtSetOpExecuteTimeOut(uint32_t timeout)
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_TIMEOUT_CONFIG)) {
         COND_RETURN_WARN(rtInstance->GetAicpuCnt() == 0,
             ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "does not support rtSetOpExecuteTimeOut.");
+    } else {
+        COND_RETURN_WARN(IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_OP_EXE_TIMEOUT_CONFIG),
+            ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "does not support rtSetOpExecuteTimeOut.");
     }
     const rtError_t error = apiInstance->SetOpExecuteTimeOut(timeout, RT_TIME_UNIT_TYPE_S);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
