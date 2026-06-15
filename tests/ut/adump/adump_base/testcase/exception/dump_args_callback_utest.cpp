@@ -120,6 +120,28 @@ rtError_t RtFunctionGetIsTikMetaInfoFailed(const rtFuncHandle funcHandle, const 
     }
     return static_cast<rtError_t>(-1);
 }
+
+rtError_t RtBinaryGetFunctionByNameSuccess(rtBinHandle binHandle, const char *kernelName, rtFuncHandle *funcHandle)
+{
+    (void)binHandle;
+    (void)kernelName;
+    if (funcHandle != nullptr) {
+        *funcHandle = reinterpret_cast<rtFuncHandle>(static_cast<uintptr_t>(0x5f00U));
+    }
+    return RT_ERROR_NONE;
+}
+
+rtError_t RtsFuncGetAddrSuccess(const rtFuncHandle funcHandle, void **aicAddr, void **aivAddr)
+{
+    (void)funcHandle;
+    if (aicAddr != nullptr) {
+        *aicAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(0x1000U));
+    }
+    if (aivAddr != nullptr) {
+        *aivAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(0x2000U));
+    }
+    return RT_ERROR_NONE;
+}
 }
 
 class DumpArgsCallbackUtest : public testing::Test {
@@ -385,6 +407,45 @@ TEST_F(DumpArgsCallbackUtest, Test_DumpKernelErrorSymbols_LocateSuccess)
 
     MOCKER(&KernelSymbolLocator::InitFromBinHandle).stubs().will(returnValue(ADUMP_SUCCESS));
     MOCKER_CPP(&ExceptionInfoCommon::GetExceptionRegInfo).stubs().will(returnValue(ADUMP_SUCCESS));
+    MOCKER(&KernelSymbolLocator::LocateAndPrintErrorSymbolsForCore).stubs().will(returnValue(ADUMP_SUCCESS));
+
+    DumpArgsCallback callback(exception, info, ws.Root());
+    EXPECT_EQ(callback.DumpKernelErrorSymbols(), ADUMP_SUCCESS);
+}
+
+TEST_F(DumpArgsCallbackUtest, Test_DumpKernelErrorSymbols_SkEntryUpdatesStartPC)
+{
+    Tools::CaseWorkspace ws("Test_DumpKernelErrorSymbols_SkEntryUpdatesStartPC");
+    rtExceptionInfo exception = {0};
+    InitExceptionInfo(exception);
+    ExceptionDumpInfo info = {0};
+    InitKernelBinInfo(info);
+
+    MOCKER(&KernelSymbolLocator::InitFromBinHandle).stubs().will(returnValue(ADUMP_SUCCESS));
+    MOCKER_CPP(&ExceptionInfoCommon::GetExceptionRegInfo).stubs().will(returnValue(ADUMP_SUCCESS));
+    // 异常自身被拉起的 kernel 为 sk_entry（aclgraph+SK 场景），才会触发 UpdateStartPCFromFuncAddr。
+    MOCKER_CPP(&ExceptionInfoCommon::GetExceptionFuncName).stubs().will(returnValue(std::string("sk_entry_mix_aic")));
+    MOCKER(rtBinaryGetFunctionByName).expects(once()).will(invoke(RtBinaryGetFunctionByNameSuccess));
+    MOCKER(rtsFuncGetAddr).expects(once()).will(invoke(RtsFuncGetAddrSuccess));
+    MOCKER(&KernelSymbolLocator::LocateAndPrintErrorSymbolsForCore).stubs().will(returnValue(ADUMP_SUCCESS));
+
+    DumpArgsCallback callback(exception, info, ws.Root());
+    EXPECT_EQ(callback.DumpKernelErrorSymbols(), ADUMP_SUCCESS);
+}
+
+TEST_F(DumpArgsCallbackUtest, Test_DumpKernelErrorSymbols_NonSkEntrySkipsStartPC)
+{
+    Tools::CaseWorkspace ws("Test_DumpKernelErrorSymbols_NonSkEntrySkipsStartPC");
+    rtExceptionInfo exception = {0};
+    InitExceptionInfo(exception);
+    ExceptionDumpInfo info = {0};
+    InitKernelBinInfo(info);
+
+    MOCKER(&KernelSymbolLocator::InitFromBinHandle).stubs().will(returnValue(ADUMP_SUCCESS));
+    MOCKER_CPP(&ExceptionInfoCommon::GetExceptionRegInfo).stubs().will(returnValue(ADUMP_SUCCESS));
+    // 异常自身被拉起的 kernel 非 sk_entry，不更新 startPC，UpdateStartPCFromFuncAddr 不应被调用。
+    MOCKER_CPP(&ExceptionInfoCommon::GetExceptionFuncName).stubs().will(returnValue(std::string("test_kernel")));
+    MOCKER(&KernelSymbolLocator::UpdateStartPCFromFuncAddr).expects(never());
     MOCKER(&KernelSymbolLocator::LocateAndPrintErrorSymbolsForCore).stubs().will(returnValue(ADUMP_SUCCESS));
 
     DumpArgsCallback callback(exception, info, ws.Root());

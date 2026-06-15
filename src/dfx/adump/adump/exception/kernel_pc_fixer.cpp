@@ -9,6 +9,7 @@
  */
 #include <initializer_list>
 #include <mutex>
+#include "securec.h"
 #include "runtime/base.h"
 #include "kernel_pc_fixer.h"
 #include "acc_error_info.h"
@@ -217,6 +218,32 @@ enum V200ErrorIdx {
     V200_ERROR_IDX_NUM
 };
 
+// V100 errReg 下标对应的 RTS 寄存器枚举名称，与 rtErrRegInfoIdxV100_t 顺序一致。
+const char* const V100_REG_NAMES[] = {
+    "AIC_ERR_0", "AIC_ERR_1", "AIC_ERR_2", "AIC_ERR_3",
+    "AIC_ERR_4", "AIC_ERR_5", "BIU_ERR_0", "BIU_ERR_1",
+    "CCU_ERR_0", "CCU_ERR_1", "CUBE_ERR_0", "CUBE_ERR_1",
+    "IFU_ERR_0", "IFU_ERR_1", "MTE_ERR_0", "MTE_ERR_1",
+    "VEC_ERR_0", "VEC_ERR_1", "FIXP_ERR_0", "FIXP_ERR_1",
+    "AIC_COND_0", "AIC_COND_1",
+};
+
+// V200 errReg 下标对应的 RTS 寄存器枚举名称，与 rtErrRegInfoIdxV200_t 顺序一致。
+const char* const V200_REG_NAMES[] = {
+    "SU_ERR_INFO_T0_0", "SU_ERR_INFO_T0_1", "SU_ERR_INFO_T0_2",
+    "SU_ERR_INFO_T0_3", "MTE_ERR_INFO_T0_0", "MTE_ERR_INFO_T0_1",
+    "MTE_ERR_INFO_T0_2", "MTE_ERR_INFO_T1_0", "MTE_ERR_INFO_T1_1",
+    "MTE_ERR_INFO_T1_2", "VEC_ERR_INFO_T0_0", "VEC_ERR_INFO_T0_1",
+    "VEC_ERR_INFO_T0_2", "VEC_ERR_INFO_T0_3", "VEC_ERR_INFO_T0_4",
+    "VEC_ERR_INFO_T0_5", "CUBE_ERR_INFO_T0_0", "CUBE_ERR_INFO_T0_1",
+    "L1_ERR_INFO_T0_0", "L1_ERR_INFO_T0_1", "SC_ERROR_T0_0",
+    "SU_ERROR_T0_0", "MTE_ERROR_T0_0", "MTE_ERROR_T1_0",
+    "VEC_ERROR_T0_0", "VEC_ERROR_T0_2", "CUBE_ERROR_T0_0",
+    "CUBE_ERROR_T0_1", "L1_ERROR_T0_0", "L1_ERROR_T0_1",
+    "SC_ERR_INFO_T0_0", "SC_ERR_INFO_T0_1", "SU_SPR_CONDITION_0",
+    "SU_SPR_CONDITION_1",
+};
+
 std::string GetV100BitName(uint32_t aicErrorIdx, uint32_t bit)
 {
     if (aicErrorIdx >= V100_AIC_ERR_NUM || bit >= UINT32_BIT_NUM) {
@@ -317,6 +344,22 @@ void InitV200CubeAndL1PcFixGroups(std::vector<std::vector<PcFixGroup>>& table)
     AddPcFixGroup(table[V200_L1_ERROR_T1_IDX], V200_L1_ERROR_T0_IDX, GenPcMask32(0, 21),
         {MakePcFixEntry(RT_V200_L1_ERR_INFO_T0_1, GenPcMask64(0, 30), GenPcMask64(2, 32))});
 }
+
+std::string BuildErrorRegistersStr(
+    const char* const regNames[], size_t regNameNum, const uint32_t errReg[], size_t errRegLen)
+{
+    constexpr size_t REG_ITEM_BUF_LEN = 128U;
+    std::string result;
+    for (size_t i = 0; i < regNameNum && i < errRegLen; i++) {
+        char item[REG_ITEM_BUF_LEN] = {0};
+        int len = snprintf_s(item, sizeof(item), sizeof(item) - 1, "%s=0x%x ", regNames[i], errReg[i]);
+        if (len < 0) {
+            continue;
+        }
+        result += item;
+    }
+    return result;
+}
 } // namespace
 
 // ===== CloudV2 PC 修正 =====
@@ -332,6 +375,15 @@ CloudV2PcFixer::CloudV2PcFixer()
         BuildV100ModuleMasks(i, moduleMasks);
         AppendV100PcFixGroups(moduleMasks, table_[i]);
     }
+}
+
+std::string CloudV2PcFixer::GetErrorRegisters(const uint32_t errReg[], size_t errRegLen) const
+{
+    if (errReg == nullptr || errRegLen == 0) {
+        return "";
+    }
+    constexpr size_t regNameNum = sizeof(V100_REG_NAMES) / sizeof(V100_REG_NAMES[0]);
+    return BuildErrorRegistersStr(V100_REG_NAMES, regNameNum, errReg, errRegLen);
 }
 
 std::string CloudV2PcFixer::GetErrorDescription(const uint32_t errReg[], size_t errRegLen)
@@ -381,6 +433,15 @@ CloudV4PcFixer::CloudV4PcFixer()
     InitV200CommonPcFixGroups(table_);
     InitV200VecPcFixGroups(table_);
     InitV200CubeAndL1PcFixGroups(table_);
+}
+
+std::string CloudV4PcFixer::GetErrorRegisters(const uint32_t errReg[], size_t errRegLen) const
+{
+    if (errReg == nullptr || errRegLen == 0) {
+        return "";
+    }
+    constexpr size_t regNameNum = sizeof(V200_REG_NAMES) / sizeof(V200_REG_NAMES[0]);
+    return BuildErrorRegistersStr(V200_REG_NAMES, regNameNum, errReg, errRegLen);
 }
 
 std::string CloudV4PcFixer::GetErrorDescription(const uint32_t errReg[], size_t errRegLen)

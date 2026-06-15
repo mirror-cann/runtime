@@ -752,6 +752,38 @@ rtError_t rtBinaryGetFunctionByName(rtBinHandle binHandle, const char *kernelNam
     return RT_ERROR_NONE;
 }
 
+rtError_t rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, rtFuncHandle *func)
+{
+    (void)info;
+    if (func == nullptr) {
+        return RT_ERROR_INVALID_VALUE;
+    }
+    *func = (rtFuncHandle)0x5f;
+    return RT_ERROR_NONE;
+}
+
+rtError_t rtsFuncGetName(const rtFuncHandle funcHandle, const uint32_t maxLen, char *const name)
+{
+    (void)funcHandle;
+    if (name == nullptr || maxLen == 0) {
+        return RT_ERROR_INVALID_VALUE;
+    }
+    name[0] = '\0';
+    return RT_ERROR_NONE;
+}
+
+rtError_t rtsFuncGetAddr(const rtFuncHandle funcHandle, void **aicAddr, void **aivAddr)
+{
+    (void)funcHandle;
+    if (aicAddr != nullptr) {
+        *aicAddr = nullptr;
+    }
+    if (aivAddr != nullptr) {
+        *aivAddr = nullptr;
+    }
+    return RT_ERROR_NONE;
+}
+
 rtError_t rtFunctionGetMetaInfoSize(rtFuncHandle funcHandle, rtFunctionMetaType type, size_t *size)
 {
     (void)funcHandle;

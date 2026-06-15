@@ -16,11 +16,9 @@
 #include "runtime/kernel.h"
 #include "kernel_symbol_locator.h"
 #include "exception_info_common.h"
+#include "str_utils.h"
 #include "log/adx_log.h"
 #include "log/hdc_log.h"
-
-extern "C" rtError_t rtsFuncGetAddr(const rtFuncHandle funcHandle, void** aicAddr, void** aivAddr)
-    __attribute__((weak));
 
 namespace Adx {
 namespace {
@@ -511,22 +509,11 @@ void KernelSymbolLocator::UpdateStartPCFromFuncAddr(rtBinHandle binHandle, const
     IDE_CTRL_VALUE_WARN(binHandle != nullptr && kernelName != nullptr && kernelName[0] != '\0', return,
         "Skip correcting startPC, binHandle=%p, kernelName=%p.", binHandle, kernelName);
 
-    const std::string lookupKernelName = ExceptionInfoCommon::GetKernelNameWithoutMixSuffix(kernelName);
-    rtFuncHandle funcHandle = nullptr;
-    rtError_t ret = rtBinaryGetFunctionByName(binHandle, lookupKernelName.c_str(), &funcHandle);
-    IDE_CTRL_VALUE_WARN(ret == RT_ERROR_NONE && funcHandle != nullptr, return,
-        "rtBinaryGetFunctionByName failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
-        static_cast<int32_t>(ret), binHandle, kernelName, lookupKernelName.c_str());
-    IDE_CTRL_VALUE_WARN(rtsFuncGetAddr != nullptr, return,
-        "rtsFuncGetAddr is unavailable, skip correcting startPC, kernelName=%s, lookupKernelName=%s.",
-        kernelName, lookupKernelName.c_str());
-
     void* aicAddr = nullptr;
     void* aivAddr = nullptr;
-    ret = rtsFuncGetAddr(funcHandle, &aicAddr, &aivAddr);
-    IDE_CTRL_VALUE_WARN(ret == RT_ERROR_NONE, return,
-        "rtsFuncGetAddr failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
-        static_cast<int32_t>(ret), binHandle, kernelName, lookupKernelName.c_str());
+    int32_t ret = ExceptionInfoCommon::GetKernelFuncAddr(binHandle, kernelName, aicAddr, aivAddr);
+    IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return,
+        "Get kernel func addr failed, skip correcting startPC, binHandle=%p, kernelName=%s.", binHandle, kernelName);
 
     if (aicAddr != nullptr) {
         kernelStartPC_.aicStartPC = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(aicAddr));
@@ -536,10 +523,10 @@ void KernelSymbolLocator::UpdateStartPCFromFuncAddr(rtBinHandle binHandle, const
         kernelStartPC_.aivStartPC = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(aivAddr));
         kernelStartPC_.hasAivStartPC = true;
     }
-    IDE_LOGI("Update kernel startPC from function address, kernelName=%s, lookupKernelName=%s, hasAicStartPC=%u, "
+    IDE_LOGI("Update kernel startPC from function address, kernelName=%s, hasAicStartPC=%u, "
         "aicStartPC=0x%lx, hasAivStartPC=%u, aivStartPC=0x%lx.",
-        kernelName, lookupKernelName.c_str(), static_cast<uint32_t>(kernelStartPC_.hasAicStartPC),
-        kernelStartPC_.aicStartPC, static_cast<uint32_t>(kernelStartPC_.hasAivStartPC), kernelStartPC_.aivStartPC);
+        kernelName, static_cast<uint32_t>(kernelStartPC_.hasAicStartPC), kernelStartPC_.aicStartPC,
+        static_cast<uint32_t>(kernelStartPC_.hasAivStartPC), kernelStartPC_.aivStartPC);
 }
 
 int32_t KernelSymbolLocator::InitFromBinHandle(rtBinHandle binHandle)
@@ -625,6 +612,10 @@ bool KernelSymbolLocator::GetLookupOffset(
     const rtExceptionErrRegInfo_t& coreInfo, uint64_t rawOffset, uint64_t& lookupOffset) const
 {
     lookupOffset = rawOffset;
+    // 仅 GE+SK 场景需要叠加 mix 入口基址，其余场景（含 aclgraph+SK）直接使用原始偏移。
+    if (!applyEntryBase_) {
+        return true;
+    }
     uint64_t entryBase = 0;
     bool hasEntryBase = false;
     if (coreInfo.coreType == RT_CORE_TYPE_AIC) {
@@ -673,6 +664,8 @@ bool KernelSymbolLocator::GetCorrectedStartPC(const rtExceptionErrRegInfo_t& cor
 void KernelSymbolLocator::PrintErrorForCore(rtExceptionErrRegInfo_t coreInfo)
 {
     uint32_t coreType = static_cast<uint32_t>(coreInfo.coreType);
+    IDE_LOGE("[Dump][Exception] Error register information. coreId=%u, coreType=%u, %s",
+        coreInfo.coreId, coreType, GetErrorRegisters(coreInfo).c_str());
     uint64_t fixedCurrentPC = FixPcByErrorRegs(coreInfo);
     uint64_t fixedStartPC = coreInfo.startPC;
     if (GetCorrectedStartPC(coreInfo, fixedStartPC)) {
@@ -770,6 +763,15 @@ std::string KernelSymbolLocator::GetErrorDescription(const rtExceptionErrRegInfo
     return fixer->GetErrorDescription(coreInfo.errReg, RT_ERR_REG_NUMS);
 }
 
+std::string KernelSymbolLocator::GetErrorRegisters(const rtExceptionErrRegInfo_t& coreInfo)
+{
+    PcFixerInterface* fixer = PcFixerFactory::GetInstance();
+    if (fixer == nullptr) {
+        return "";
+    }
+    return fixer->GetErrorRegisters(coreInfo.errReg, RT_ERR_REG_NUMS);
+}
+
 void KernelSymbolLocator::DumpErrorSymbols(const rtExceptionInfo& exception, ExceptionRegInfo& exceptionRegInfo)
 {
     rtExceptionArgsInfo_t exceptionArgsInfo{};
@@ -785,7 +787,9 @@ void KernelSymbolLocator::DumpErrorSymbols(const rtExceptionInfo& exception, Exc
     KernelSymbolLocator locator;
     ret = locator.InitFromBinBuffer(binData);
     IDE_CTRL_VALUE_FAILED(ret == ADUMP_SUCCESS, return, "Parse kernel symbols failed, skip dump error symbols.");
-    locator.UpdateStartPCFromFuncAddr(kernelInfo.bin, kernelInfo.kernelName);
+    // GE+SK 场景（te_superkernel 入口）查找偏移时需要叠加 mix 入口基址，且不更新 startPC。
+    const std::string exceptionFuncName = ExceptionInfoCommon::GetExceptionFuncName(exception);
+    locator.SetApplyEntryBase(StrUtils::StartsWith(exceptionFuncName, "te_superkernel"));
 
     ret = locator.LocateAndPrintErrorSymbols(exceptionRegInfo);
     IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return, "Locate kernel error symbols failed, ret=%d.", ret);

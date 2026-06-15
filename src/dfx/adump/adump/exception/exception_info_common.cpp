@@ -11,6 +11,7 @@
 #include <cstring>
 #include "exception_info_common.h"
 #include "kernel_symbol_locator.h"
+#include "runtime/rts/rts_kernel.h"
 #include "adump_pub.h"
 #include "str_utils.h"
 #include "log/adx_log.h"
@@ -100,6 +101,45 @@ std::string ExceptionInfoCommon::GetExceptionKernelName(const rtExceptionInfo &e
 
     const std::string kernelName(kernelInfo.kernelName, kernelInfo.kernelNameSize);
     return GetKernelNameWithoutMixSuffix(kernelName);
+}
+
+std::string ExceptionInfoCommon::GetExceptionFuncName(const rtExceptionInfo &exception)
+{
+    rtFuncHandle funcHandle = nullptr;
+    rtError_t ret = rtGetFuncHandleFromExceptionInfo(&exception, &funcHandle);
+    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE && funcHandle != nullptr, return "",
+        "rtGetFuncHandleFromExceptionInfo failed. ret=%d.", static_cast<int32_t>(ret));
+
+    char funcName[MAX_KERNELNAME_LEN] = {0};
+    ret = rtsFuncGetName(funcHandle, MAX_KERNELNAME_LEN, funcName);
+    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE, return "",
+        "rtsFuncGetName failed. ret=%d.", static_cast<int32_t>(ret));
+
+    IDE_LOGI("Exception funcName is %s.", funcName);
+    return std::string(funcName);
+}
+
+int32_t ExceptionInfoCommon::GetKernelFuncAddr(rtBinHandle binHandle, const std::string &kernelName,
+    void * &aicAddr, void * &aivAddr)
+{
+    aicAddr = nullptr;
+    aivAddr = nullptr;
+    IDE_CTRL_VALUE_WARN(binHandle != nullptr && !kernelName.empty(), return ADUMP_FAILED,
+        "Skip getting kernel func addr, binHandle=%p, kernelName=%s.", binHandle, kernelName.c_str());
+
+    const std::string lookupKernelName = GetKernelNameWithoutMixSuffix(kernelName);
+    rtFuncHandle funcHandle = nullptr;
+    rtError_t ret = rtBinaryGetFunctionByName(binHandle, lookupKernelName.c_str(), &funcHandle);
+    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE && funcHandle != nullptr, return ADUMP_FAILED,
+        "rtBinaryGetFunctionByName failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
+        static_cast<int32_t>(ret), binHandle, kernelName.c_str(), lookupKernelName.c_str());
+
+    ret = rtsFuncGetAddr(funcHandle, &aicAddr, &aivAddr);
+    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE, return ADUMP_FAILED,
+        "rtsFuncGetAddr failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
+        static_cast<int32_t>(ret), binHandle, kernelName.c_str(), lookupKernelName.c_str());
+
+    return ADUMP_SUCCESS;
 }
 
 KernelMixType ExceptionInfoCommon::GetKernelMixType(const std::string &kernelName)

@@ -23,6 +23,7 @@ public:
     static std::string Trim(const std::string &s);
     static std::string Replace(const std::string &s, const std::set<char> &oldChars, char newChar);
     static bool EndsWith(const std::string &s, const char *suffix);
+    static bool StartsWith(const std::string &s, const char *prefix);
 
     template <typename T>
     static std::string ToString(const std::vector<T> &v);

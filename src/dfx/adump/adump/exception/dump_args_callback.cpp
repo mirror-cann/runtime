@@ -13,6 +13,7 @@
 #include "dump_memory.h"
 #include "exception_info_common.h"
 #include "kernel_symbol_locator.h"
+#include "str_utils.h"
 #include "log/adx_log.h"
 #include "log/hdc_log.h"
 
@@ -55,7 +56,7 @@ int32_t DumpArgsCallback::DumpKernelBin()
 int32_t DumpArgsCallback::DumpKernelErrorSymbols()
 {
     std::string kernelName(info_.kernelName);
-    if (info_.bin == nullptr || kernelName.empty()) {
+    if (info_.bin == nullptr) {
         return ADUMP_SUCCESS;
     }
     KernelSymbolLocator locator;
@@ -68,7 +69,13 @@ int32_t DumpArgsCallback::DumpKernelErrorSymbols()
     IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
         "Get exception register information failed for callback exception. ret=%d", ret);
 
-    locator.UpdateStartPCFromFuncAddr(info_.bin, kernelName.c_str());
+    locator.SetApplyEntryBase(false);
+    // aclgraph+SK 场景（sk_entry 入口）需要更新SK子算子的startPC，其余算子不更新。
+    // 从excpetion中查询SK算子的funcName，不能直接使用SK子算子的kernelName判断。
+    const std::string exceptionFuncName = ExceptionInfoCommon::GetExceptionFuncName(exception_);
+    if (StrUtils::StartsWith(exceptionFuncName, "sk_entry")) {
+        locator.UpdateStartPCFromFuncAddr(info_.bin, kernelName.c_str());
+    }
     ret = locator.LocateAndPrintErrorSymbolsForCore(info_.coreId, info_.coreType, exceptionRegInfo);
     IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
         "LocateAndPrintErrorSymbolsForCore failed for callback exception. ret=%d, coreId=%u, coreType=%u.",

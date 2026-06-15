@@ -464,6 +464,7 @@ TEST_F(KernelSymbolLocatorUTest, GetLookupOffsetHandlesCoreTypesMissingBaseAndOv
 {
     KernelSymbolLocator locator;
     ASSERT_EQ(ADUMP_SUCCESS, locator.InitFromBinBuffer(MakeElf(ValidSymbols())));
+    locator.SetApplyEntryBase(true);
 
     uint64_t lookupOffset = 0;
     rtExceptionErrRegInfo_t core = MakeCore(0U, RT_CORE_TYPE_AIC, 0, 0);
@@ -487,6 +488,22 @@ TEST_F(KernelSymbolLocatorUTest, GetLookupOffsetHandlesCoreTypesMissingBaseAndOv
     locator.kernelSymbols_.aicBase = std::numeric_limits<uint64_t>::max();
     core.coreType = RT_CORE_TYPE_AIC;
     EXPECT_FALSE(locator.GetLookupOffset(core, 1ULL, lookupOffset));
+}
+
+TEST_F(KernelSymbolLocatorUTest, GetLookupOffsetSkipsEntryBaseWhenNotApplied)
+{
+    KernelSymbolLocator locator;
+    ASSERT_EQ(ADUMP_SUCCESS, locator.InitFromBinBuffer(MakeElf(ValidSymbols())));
+
+    // 默认不叠加 entry base（aclgraph+SK 等场景），直接返回原始偏移。
+    uint64_t lookupOffset = 0;
+    rtExceptionErrRegInfo_t core = MakeCore(0U, RT_CORE_TYPE_AIC, 0, 0);
+    EXPECT_TRUE(locator.GetLookupOffset(core, 0x10ULL, lookupOffset));
+    EXPECT_EQ(0x10ULL, lookupOffset);
+
+    core.coreType = RT_CORE_TYPE_AIV;
+    EXPECT_TRUE(locator.GetLookupOffset(core, 0x20ULL, lookupOffset));
+    EXPECT_EQ(0x20ULL, lookupOffset);
 }
 
 TEST_F(KernelSymbolLocatorUTest, StaticPcHelpersUseFactoryResult)

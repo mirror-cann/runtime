@@ -59,6 +59,15 @@ bool StrUtils::EndsWith(const std::string &s, const char *suffix)
     return s.size() >= suffixLen && s.compare(s.size() - suffixLen, suffixLen, suffix) == 0;
 }
 
+bool StrUtils::StartsWith(const std::string &s, const char *prefix)
+{
+    if (prefix == nullptr) {
+        return false;
+    }
+    const size_t prefixLen = std::strlen(prefix);
+    return s.size() >= prefixLen && s.compare(0, prefixLen, prefix) == 0;
+}
+
 std::vector<std::string> StrUtils::Split(const std::string &str, const char * const delimiter)
 {
     std::vector<std::string> resVec;

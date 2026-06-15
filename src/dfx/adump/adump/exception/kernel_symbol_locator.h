@@ -54,12 +54,14 @@ public:
     int32_t InitFromBinHandle(rtBinHandle binHandle);
     int32_t InitFromBinBuffer(const std::string& binData);
     void UpdateStartPCFromFuncAddr(rtBinHandle binHandle, const char* kernelName);
+    void SetApplyEntryBase(bool applyEntryBase) { applyEntryBase_ = applyEntryBase; }
 
     int32_t LocateAndPrintErrorSymbols(const ExceptionRegInfo& regInfo);
     int32_t LocateAndPrintErrorSymbolsForCore(uint32_t coreId, uint32_t coreType, ExceptionRegInfo exceptionRegInfo);
 
     static uint64_t FixPcByErrorRegs(const rtExceptionErrRegInfo& coreInfo);
     static std::string GetErrorDescription(const rtExceptionErrRegInfo& coreInfo);
+    static std::string GetErrorRegisters(const rtExceptionErrRegInfo& coreInfo);
     static void DumpErrorSymbols(const rtExceptionInfo& exception);
     static void DumpErrorSymbols(const rtExceptionInfo& exception, ExceptionRegInfo& exceptionRegInfo);
 
@@ -69,6 +71,8 @@ private:
     KernelSymbolSet kernelSymbols_;
     KernelStartPC kernelStartPC_;
     bool initialized_ = false;
+    // 仅 GE+SK 场景（te_superkernel 入口）查找偏移时需要叠加 mix 入口基址。
+    bool applyEntryBase_ = false;
 
     int32_t ParseElfSymbols(const char* elf, size_t elfSize, KernelSymbolSet& symbols);
     void PrintErrorForCore(rtExceptionErrRegInfo_t coreInfo);
