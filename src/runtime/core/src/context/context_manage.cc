@@ -186,7 +186,6 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
     uint64_t timeCost;
     uint64_t startTime;
     uint64_t currentTime;
-    uint32_t value = 0;
     Runtime *const rtInstance = Runtime::Instance();
     Device *dev = rtInstance->GetDevice(devId, 0U);
     mmGetTimeOfDay(&tv[index], nullptr);
@@ -237,6 +236,7 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
 
     currentTime = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS);
     if (dev != nullptr) {
+        uint32_t value = 0;
         (void)NpuDriver::GetPageFaultCount(static_cast<uint32_t>(devId), &value);
         dev->SetPageFaultBaseCnt(value);
         dev->SetPageFaultBaseTime(currentTime);
