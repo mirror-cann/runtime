@@ -799,7 +799,7 @@ bool IsHitBlacklist(const uint32_t deviceId, const std::map<uint32_t, std::strin
     std::vector<rtDmsFaultEvent> faultEventInfo(maxFaultNum);
 
     constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    auto eRet = memset_s(&faultEventInfo[0U], totalSize, 0, totalSize);
+    const auto eRet = memset_s(&faultEventInfo[0U], totalSize, 0, totalSize);
     COND_RETURN_WARN(eRet != EOK, false, "Mem set error, ret=%d", eRet);
 
     uint32_t eventCount = 0U;
