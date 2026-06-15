@@ -58,6 +58,9 @@ namespace {
         static_cast<uint64_t>(static_cast<uint64_t>(1U) << static_cast<uint64_t>(EVENT_FFTS_PLUS_MSG)) |
         static_cast<uint64_t>(static_cast<uint64_t>(1U) << EVENT_PROXY_MSG);
     constexpr const uint32_t SLEEP_USECS = 50000U;
+    // When there is no AICPU core, the AICPU schedule starts this number of work threads
+    // and binds them to the largest CTRLCPU cores.
+    constexpr size_t NO_AICPU_WORKER_NUM = 2UL;
 }
 
 namespace AicpuSchedule {
@@ -90,16 +93,22 @@ namespace AicpuSchedule {
         threadIdLists_.clear();
     }
 
+    size_t ThreadPool::GetWorkerNum()
+    {
+        const size_t aicpuNum = static_cast<size_t>(AicpuDrvManager::GetInstance().GetAicpuNum());
+        // When there is no AICPU core, the AICPU schedule still starts NO_AICPU_WORKER_NUM work threads.
+        return (aicpuNum == 0UL) ? NO_AICPU_WORKER_NUM : aicpuNum;
+    }
+
     int32_t ThreadPool::CreateWorker(const AicpuSchedMode schedMode)
     {
         Clear();
         AicpuSchedule::AicpuEventManager::GetInstance().SetRunningFlag(true);
         schedMode_ = schedMode;
-        size_t aicpuNum = AicpuDrvManager::GetInstance().GetAicpuNum();
+        size_t aicpuNum = GetWorkerNum();
         const std::vector<uint32_t> deviceVec = AicpuDrvManager::GetInstance().GetDeviceList();
-        if (aicpuNum == 0UL) {
-            aicpusd_run_info("aicpu total num=[0], create a aicpu worker");
-            aicpuNum = 1UL;
+        if (AicpuDrvManager::GetInstance().GetAicpuNum() == 0UL) {
+            aicpusd_run_info("aicpu total num=[0], create [%zu] aicpu workers", aicpuNum);
             hasAicpu_ = false;
         }
         sems_ = std::vector<sem_t>(static_cast<size_t>(aicpuNum));
@@ -117,7 +126,9 @@ namespace AicpuSchedule {
         sighandler_t const oldHandler = signal(SIGCHLD, SIG_DFL);
         aicpusd_info("set SIGCHLD to %d, old sighandler[%d], errno[%d]", SIG_DFL, oldHandler, errno);
 
-        const size_t aicpuNumPerDev = hasAicpu_ ? AicpuDrvManager::GetInstance().GetAicpuNumPerDevice() : 1UL;
+        // When there is no AICPU core, all work threads run on the same device (deviceVec[0]),
+        // so use aicpuNum as the per-device count to keep deviceVecInx at 0 for every worker.
+        const size_t aicpuNumPerDev = hasAicpu_ ? AicpuDrvManager::GetInstance().GetAicpuNumPerDevice() : aicpuNum;
         if (aicpuNumPerDev == 0) {
             aicpusd_err("aicpu Number error, %lu", aicpuNumPerDev);
             (void)signal(SIGCHLD, oldHandler);
@@ -321,6 +332,27 @@ namespace AicpuSchedule {
         return AICPU_SCHEDULE_OK;
     }
 
+    uint32_t ThreadPool::GetNoAicpuCcpuPhysIndex(const size_t threadIndex, const uint32_t deviceId) const
+    {
+        const uint32_t ccpuNum = AicpuDrvManager::GetInstance().GetCcpuNum();
+        if (ccpuNum == 0U) {
+            aicpusd_err("no ctrlcpu core available for no-aicpu worker[%zu]", threadIndex);
+            return INVALID_AICPU_ID;
+        }
+        // No AICPU core: bind work threads to the largest CTRLCPU cores. ccpuIdVec_ is sorted in
+        // ascending order, so the last element is the largest core. Worker 0 takes the largest core,
+        // worker 1 the second largest, and so on. When there are fewer cores than workers, the extra
+        // workers fall back to the smallest core.
+        uint32_t ccpuLogIndex = 0U;
+        if (static_cast<size_t>(ccpuNum) > threadIndex) {
+            ccpuLogIndex = ccpuNum - 1U - static_cast<uint32_t>(threadIndex);
+        }
+        const uint32_t physIndex = AicpuDrvManager::GetInstance().GetCcpuPhysIndex(ccpuLogIndex, deviceId);
+        aicpusd_info("no aicpu worker[%zu] bind to ctrlcpu logIndex[%u], physIndex[%u]",
+                     threadIndex, ccpuLogIndex, physIndex);
+        return physIndex;
+    }
+
     int32_t ThreadPool::SetAffinityBySelf(const size_t threadIndex, const uint32_t deviceId)
     {
         if (hasAicpu_ && (AddPidToTask(threadIndex) != AICPU_SCHEDULE_OK)) {
@@ -342,7 +374,7 @@ namespace AicpuSchedule {
             }
         }
         if (!hasAicpu_) {
-            physIndex = AicpuDrvManager::GetInstance().GetCcpuPhysIndex(aicpuLogIndex, deviceId);
+            physIndex = GetNoAicpuCcpuPhysIndex(threadIndex, deviceId);
         } else if (devNum > 0U) {
             physIndex = AicpuDrvManager::GetInstance().GetAicpuPhysIndexInVfMode(aicpuLogIndex, deviceId);
         } else {
@@ -379,7 +411,7 @@ namespace AicpuSchedule {
         } else {
             physIndex = hasAicpu_?
                         AicpuDrvManager::GetInstance().GetAicpuPhysIndex(aicpuLogIndex, deviceId):
-                        AicpuDrvManager::GetInstance().GetCcpuPhysIndex(aicpuLogIndex, deviceId);
+                        GetNoAicpuCcpuPhysIndex(threadIndex, deviceId);
         }
         const pid_t tid = static_cast<pid_t>(GetTid());
 

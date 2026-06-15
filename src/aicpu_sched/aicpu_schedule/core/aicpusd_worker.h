@@ -33,6 +33,11 @@ public:
 
     void PostSem(const size_t threadIndex);
 
+    // Return the number of work threads that the thread pool will create. When there is no AICPU
+    // core, the AICPU schedule starts NO_AICPU_WORKER_NUM threads, otherwise one per AICPU core.
+    // This is the single source of truth shared by CreateWorker and AicpuMonitor::InitMonitor.
+    static size_t GetWorkerNum();
+
     void SetThreadSchedModeByTsd();
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool &operator=(const ThreadPool&) = delete;
@@ -44,6 +49,7 @@ private:
     int32_t CreateOneWorker(const size_t threadIndex, const uint32_t deviceId);
     static void Work(const size_t threadIndex, const uint32_t deviceId, const AicpuSchedMode schedMode);
     int32_t SetAffinity(const size_t threadIndex, const uint32_t deviceId);
+    uint32_t GetNoAicpuCcpuPhysIndex(const size_t threadIndex, const uint32_t deviceId) const;
     int32_t WriteTidForAffinity(const size_t threadIndex);
     int32_t AddPidToTask(const size_t threadIndex);
     int32_t SetAffinityByPm(const size_t threadIndex, const uint32_t deviceId);

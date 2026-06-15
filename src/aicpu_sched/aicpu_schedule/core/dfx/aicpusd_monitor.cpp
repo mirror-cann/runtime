@@ -24,6 +24,7 @@
 #include "aicpusd_lastword.h"
 #include "aicpusd_resource_manager.h"
 #include "aicpusd_threads_process.h"
+#include "aicpusd_worker.h"
 
 namespace {
 // aicpu task timeout
@@ -123,7 +124,7 @@ int32_t AicpuMonitor::InitMonitor(const uint32_t devId, const bool isOnline)
         return AICPU_SCHEDULE_OK;
     }
     deviceId_ = devId;
-    aicpuCoreNum_ = AicpuSchedule::AicpuDrvManager::GetInstance().GetAicpuNum();
+    aicpuCoreNum_ = static_cast<uint32_t>(AicpuSchedule::ThreadPool::GetWorkerNum());
     if (aicpuCoreNum_ != 0U) {
         monitorTaskInfo_.reset(new (std::nothrow) TaskInfoForMonitor[aicpuCoreNum_]);
         if (monitorTaskInfo_ == nullptr) {

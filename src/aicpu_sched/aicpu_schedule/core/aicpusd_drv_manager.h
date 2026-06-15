@@ -183,6 +183,11 @@ namespace AicpuSchedule {
             return ccpuIdVec_;
         }
 
+        uint32_t GetCcpuNum() const
+        {
+            return static_cast<uint32_t>(ccpuIdVec_.size());
+        }
+
     private:
         AicpuDrvManager() : deviceVec_({}), deviceNum_(0UL), coreNumPerDev_(0U), hostPid_(0), groupId_(0U),
                             hasThread_(false), isInit_(false), aicpuNumPerDev_(0U), aicpuBaseId_(0U), dcpuBase_(0U),

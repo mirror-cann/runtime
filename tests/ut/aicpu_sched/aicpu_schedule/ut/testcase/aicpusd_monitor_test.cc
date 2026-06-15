@@ -192,6 +192,31 @@ TEST_F(AicpuMonitorTEST, Init_Success_02) {
     unsetenv("DATAMASTER_RUN_MODE");
 }
 
+// No AICPU core: monitor should size its task info by the actual created worker thread number (2),
+// not by the AICPU core number (0).
+TEST_F(AicpuMonitorTEST, InitMonitor_NoAicpu_UsesWorkerThreadNum) {
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
+    MOCKER_CPP(&AicpuDrvManager::GetAicpuNum).stubs().will(returnValue(0U));
+    AicpuMonitor monitor;
+    const int32_t ret = monitor.InitMonitor(0, true);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    // NO_AICPU_WORKER_NUM == 2 work threads are created when there is no AICPU core.
+    EXPECT_EQ(monitor.aicpuCoreNum_, 2U);
+    EXPECT_NE(monitor.monitorTaskInfo_, nullptr);
+    EXPECT_NE(monitor.aicpuTaskTimer_, nullptr);
+}
+
+// With AICPU cores: monitor uses the AICPU core number as the worker thread number.
+TEST_F(AicpuMonitorTEST, InitMonitor_WithAicpu_UsesAicpuCoreNum) {
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
+    MOCKER_CPP(&AicpuDrvManager::GetAicpuNum).stubs().will(returnValue(4U));
+    AicpuMonitor monitor;
+    const int32_t ret = monitor.InitMonitor(0, true);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    EXPECT_EQ(monitor.aicpuCoreNum_, 4U);
+    EXPECT_NE(monitor.monitorTaskInfo_, nullptr);
+}
+
 TEST_F(AicpuMonitorTEST, SendKillMsgToTsdFail) {
     MOCKER(TsdDestroy)
         .stubs()
