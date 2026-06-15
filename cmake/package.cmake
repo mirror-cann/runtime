@@ -226,7 +226,7 @@ install(FILES
 )
 
 install(FILES
-    ${RUNTIME_DIR}/pkg_inc/toolchain/prof_api.h
+    ${RUNTIME_DIR}/pkg_inc/profiling/prof_api.h
     DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/pkg_inc/toolchain
     ${INSTALL_OPTIONAL}
     COMPONENT npu-runtime
@@ -329,7 +329,7 @@ install(DIRECTORY
 install(FILES
     ${RUNTIME_DIR}/pkg_inc/base/err_mgr.h
     ${RUNTIME_DIR}/pkg_inc/base/dlog_pub.h
-    ${RUNTIME_DIR}/pkg_inc/base/log_types.h
+    ${RUNTIME_DIR}/include/dfx/base/log_types.h
     ${RUNTIME_DIR}/pkg_inc/base/plog.h
     DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/pkg_inc/base
     ${INSTALL_OPTIONAL}

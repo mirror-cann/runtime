@@ -115,6 +115,7 @@ set(libSlogdInc
     ${TOP_DIR}/src/dfx/adump/external
     ${TOP_DIR}/src/dfx/adump/inc/adump
     ${TOP_DIR}/pkg_inc/trace
+    ${TOP_DIR}/src/dfx/trace/inc/toolchain
     ${LOG_SOURCE_PATH}/syslog/slog
     ${LOG_SOURCE_PATH}/syslog/slog/log_server
     ${LOG_SOURCE_PATH}/syslog/slog/log_server/log_pre_process

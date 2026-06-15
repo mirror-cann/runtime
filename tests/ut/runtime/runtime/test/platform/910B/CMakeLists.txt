@@ -504,6 +504,7 @@ set(RUNTIME_TEST_INC_DIR_COMMON
     ${TOP_DIR}/include
     ${TOP_DIR}/pkg_inc/tsd
     ${TOP_DIR}/pkg_inc/trace
+    ${TOP_DIR}/src/dfx/trace/inc/toolchain
     ${TOP_DIR}/pkg_inc/watchdog
     ${TOP_DIR}/pkg_inc/profiling
     ${TOP_DIR}/abl/atrace/inc/awatchdog/

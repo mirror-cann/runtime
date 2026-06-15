@@ -48,9 +48,9 @@ target_include_directories(asc_dumper PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace_dumper
     ${CMAKE_CURRENT_SOURCE_DIR}/../../utils
     ${LIBC_SEC_HEADER}
-    ${ATRACE_DIR}/inc/toolchain
     ${ATRACE_DIR}/../../../pkg_inc/mmpa
     ${ATRACE_DIR}/../../../pkg_inc/trace
+    ${ATRACE_DIR}/inc/toolchain
 )
 
 target_compile_options(asc_dumper PRIVATE

@@ -60,7 +60,7 @@ set(libtraceHeaderDir
     ${LIBC_SEC_HEADER}
     ${ATRACE_DIR}/../../../include/driver
     ${ATRACE_DIR}/../../../pkg_inc/trace
-    ${ATRACE_DIR}/../../../pkg_inc/dump
+    ${ATRACE_DIR}/inc/toolchain
 )
 
 ############################# libascend_trace.so(linux)   #############################
@@ -146,7 +146,7 @@ target_link_libraries(atrace_share
         $<BUILD_INTERFACE:intf_pub>
         $<BUILD_INTERFACE:slog_headers>
         $<BUILD_INTERFACE:mmpa_headers>
-        # $<BUILD_INTERFACE:adcore_headers>
+        $<BUILD_INTERFACE:adump_headers>
         $<$<STREQUAL:${PRODUCT_SIDE},host>:ascend_hal_stub>
         $<$<AND:$<STREQUAL:${PRODUCT_SIDE},device>,$<STREQUAL:${PRODUCT},pegasus>>:ascend_hal_stub>
         $<$<AND:$<STREQUAL:${PRODUCT_SIDE},device>,$<NOT:$<STREQUAL:${PRODUCT},pegasus>>>:ascend_hal>
@@ -236,7 +236,6 @@ target_link_libraries(utrace_share
         $<BUILD_INTERFACE:intf_pub>
         $<BUILD_INTERFACE:slog_headers>
         $<BUILD_INTERFACE:mmpa_headers>
-        # $<BUILD_INTERFACE:adcore_headers>
         $<$<STREQUAL:${PRODUCT_SIDE},host>:ascend_hal_stub>
         $<$<AND:$<STREQUAL:${PRODUCT_SIDE},device>,$<STREQUAL:${PRODUCT},pegasus>>:ascend_hal_stub>
         $<$<AND:$<STREQUAL:${PRODUCT_SIDE},device>,$<NOT:$<STREQUAL:${PRODUCT},pegasus>>>:ascend_hal>

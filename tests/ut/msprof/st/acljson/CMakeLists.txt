@@ -331,7 +331,9 @@ set(libmsprofHeaderDir
     ${TOP_DIR}/include/external/acl
     ${TOP_DIR}/src/dfx/error_manager
     ${TOP_DIR}/src/inc
-    ${TOP_DIR}/pkg_inc/dump
+    ${TOP_DIR}/src/dfx/adump/inc
+    ${TOP_DIR}/src/dfx/adump/inc/adump
+    ${TOP_DIR}/src/dfx/adump/inc/metadef
     ${TOP_DIR}/pkg_inc/aicpu_sched
     ${TOP_DIR}/pkg_inc/base
     ${TOP_DIR}/pkg_inc/runtime

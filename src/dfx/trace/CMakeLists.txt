@@ -44,6 +44,7 @@ set(ADIAG_COMMON_COMPILE_OPTIONS
 add_library(awatchdog_headers INTERFACE)
 target_include_directories(awatchdog_headers INTERFACE
     $<BUILD_INTERFACE:${ATRACE_DIR}/../../../pkg_inc/trace>
+    $<BUILD_INTERFACE:${RUNTIME_DIR}/src/dfx/trace/inc/toolchain>
     $<BUILD_INTERFACE:${RUNTIME_DIR}/pkg_inc/watchdog>
     $<BUILD_INTERFACE:${ATRACE_DIR}/../../../pkg_inc/watchdog>
     $<INSTALL_INTERFACE:include>

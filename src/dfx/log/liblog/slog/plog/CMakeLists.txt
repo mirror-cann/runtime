@@ -36,7 +36,7 @@ set(plogHeaderDir
     ${TOOLAHCIN_LOG_DIR}/liblog/slog
     ${TOOLAHCIN_LOG_DIR}/../../../pkg_inc/mmpa
     ${TOOLAHCIN_LOG_DIR}/../../../pkg_inc
-    ${TOOLAHCIN_LOG_DIR}/../../../pkg_inc/dump
+    ${TOOLAHCIN_LOG_DIR}/../adump/inc/adump
 )
 
 add_library(static_plog_cpp STATIC

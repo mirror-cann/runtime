@@ -59,8 +59,6 @@ set(libutraceHeaderDir
     ${ADIAG_DIR}/inc/utrace
     ${TOP_DIR}/abl/libc_sec/include
     ${TOP_DIR}/inc/driver
-    ${TOP_DIR}/runtime/src/dfx/adump/inc/adump
-    ${TOP_DIR}/runtime/src/dfx/adump/external
     ${TOP_DIR}/abl/atrace/common
 )
  
@@ -175,8 +173,6 @@ set(INCLUDE_DIR
     ${ATRACE_SOURCE_DIR}/utils
     ${TOP_DIR}/abl/libc_sec/include
     ${TOP_DIR}/inc/driver
-    ${TOP_DIR}/runtime/src/dfx/adump/inc/adump
-    ${TOP_DIR}/runtime/src/dfx/adump/external
     ${TOP_DIR}/abl/atrace/common
 )
 
@@ -221,6 +217,7 @@ target_link_libraries(trace_server_utest PRIVATE
     $<BUILD_INTERFACE:intf_llt_pub>
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:mmpa_headers>
+    $<BUILD_INTERFACE:adump_headers>
     c_sec
     utrace_share_utest
 )

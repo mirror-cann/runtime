@@ -89,7 +89,7 @@ inline const char *ProfGetModuleName(uint32_t moduleId)
     }
 }
 
-// Map a MsprofCommandHandleType (see src/dfx/msprof/inc/toolchain/aprof_pub.h) to a readable
+// Map a MsprofCommandHandleType (see pkg_inc/profiling/aprof_pub.h) to a readable
 // name. Out-of-range values return "UNKNOWN".
 inline const char *ProfGetCommandTypeName(uint32_t type)
 {

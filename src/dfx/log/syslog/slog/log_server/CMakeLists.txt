@@ -95,6 +95,7 @@ set(slogdHeaderDir
     ${RUNTIME_DIR}/inc/driver
     ${RUNTIME_DIR}/abl/libc_sec/include
     ${RUNTIME_DIR}/runtime/src/dfx/adump/external
+    ${RUNTIME_DIR}/src/dfx/trace/inc/toolchain
     ${RUNTIME_DIR}/abl/atrace/inc/trace_server
     ${RUNTIME_DIR}/abl/atrace/inc/utrace
 )
@@ -187,6 +188,7 @@ set(iamSlogdIncFiles
     ${RUNTIME_DIR}/kernel/vendor/nve/inlcude/linux/mtd
     ${RUNTIME_DIR}/inc/driver
     ${RUNTIME_DIR}/runtime/src/dfx/adump/external
+    ${RUNTIME_DIR}/src/dfx/trace/inc/toolchain
     ${MDC_LINUX_SDK_DIR}/include
     ${IAM_HEADER_DIR}/include
     ${RUNTIME_DIR}/manager/resmgr/secmgr/include/

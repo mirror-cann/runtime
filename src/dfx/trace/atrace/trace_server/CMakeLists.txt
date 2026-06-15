@@ -33,8 +33,6 @@ set(libutraceserverHeaderDir
     ${CMAKE_CURRENT_SOURCE_DIR}/../../inc/trace_server
     ${ATRACE_DIR}/common
     ${RUNTIME_DIR}/inc/driver
-    ${RUNTIME_DIR}/runtime/src/dfx/adump/inc/adump
-    ${RUNTIME_DIR}/runtime/src/dfx/adump/external
 )
 
 add_library(utrace_server_share
@@ -79,6 +77,7 @@ target_link_libraries(utrace_server_share
         $<BUILD_INTERFACE:intf_pub>
         $<BUILD_INTERFACE:slog_headers>
         $<BUILD_INTERFACE:mmpa_headers>
+        $<BUILD_INTERFACE:adump_headers>
         mmpa
         unified_dlog
         ascend_hal

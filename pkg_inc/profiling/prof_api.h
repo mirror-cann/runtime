@@ -12,11 +12,6 @@
  *
  */
 
-/**
- * This header file is not part of the public API. Compatibility is not guaranteed,
- * and it will be deprecated in future versions.
- */
-
 #ifndef PROF_API_H
 #define PROF_API_H
 

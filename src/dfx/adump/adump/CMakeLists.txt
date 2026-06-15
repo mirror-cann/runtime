@@ -34,7 +34,6 @@ add_library(adump_headers INTERFACE)
 target_include_directories(adump_headers INTERFACE
     $<BUILD_INTERFACE:${ADUMP_DIR}/inc>
     $<BUILD_INTERFACE:${ADUMP_DIR}/inc/adump>
-    $<BUILD_INTERFACE:${ADUMP_DIR}/inc/stackcore>
     $<BUILD_INTERFACE:${ADUMP_DIR}/external>
     $<BUILD_INTERFACE:${ADUMP_DIR}/inc/metadef>
     $<BUILD_INTERFACE:${ADUMP_DIR}/inc/metadef/external>

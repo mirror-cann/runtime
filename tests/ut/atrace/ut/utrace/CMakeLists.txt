@@ -97,11 +97,8 @@ set(INCLUDE_DIR
     ${TOP_DIR}/pkg_inc/trace
     ${TOP_DIR}/src/dfx/trace/inc/toolchain
     ${TOP_DIR}/src/dfx/trace/common
-    ${TOP_DIR}/src/dfx/adump/inc/adump
-    ${TOP_DIR}/src/dfx/adump/external
     ${TOP_DIR}/src/dfx/adump
     ${TOP_DIR}/include/driver
-    ${TOP_DIR}/src/dfx/adump/inc/adump
 )
 
 set(TEST_SRC
@@ -168,6 +165,7 @@ target_link_libraries(utrace_utest PRIVATE
     $<BUILD_INTERFACE:intf_llt_pub>
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:mmpa_headers>
+    $<BUILD_INTERFACE:adump_headers>
     dl
 )
 

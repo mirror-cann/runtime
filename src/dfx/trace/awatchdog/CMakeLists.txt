@@ -17,7 +17,6 @@ set(libawatchdogHeaderDir
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${ATRACE_DIR}/common
     ${ATRACE_DIR}/../../../include/driver
-    ${ATRACE_DIR}/inc/toolchain
     ${ATRACE_DIR}/../../../pkg_inc/mmpa
 )
 

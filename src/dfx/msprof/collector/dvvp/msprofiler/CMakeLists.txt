@@ -132,8 +132,8 @@ install_package(
             ${MSPROF_DIR}/inc/toolchain/prof_data_config.h
             ${MSPROF_DIR}/inc/toolchain/prof_engine.h
             ${MSPROF_DIR}/inc/toolchain/prof_reporter.h
-            ${MSPROF_DIR}/inc/toolchain/devprof_pub.h
-            ${MSPROF_DIR}/inc/toolchain/aprof_pub.h
+            ${RUNTIME_DIR}/pkg_inc/profiling/devprof_pub.h
+            ${RUNTIME_DIR}/pkg_inc/profiling/aprof_pub.h
     DESTINATION ${INSTALL_INCLUDE_DIR}/msprof/toolchain
 )
 ####################### libmsprofiler.so #########################

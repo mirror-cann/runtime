@@ -13,6 +13,7 @@ add_library(atrace_headers INTERFACE)
 target_include_directories(atrace_headers INTERFACE
     $<BUILD_INTERFACE:${ATRACE_DIR}/../../../pkg_inc/trace>
     $<BUILD_INTERFACE:${RUNTIME_DIR}/pkg_inc/trace>
+    $<BUILD_INTERFACE:${RUNTIME_DIR}/src/dfx/trace/inc/toolchain>
     $<INSTALL_INTERFACE:include>
     $<INSTALL_INTERFACE:include/atrace>
     $<INSTALL_INTERFACE:include/atrace/utrace>
