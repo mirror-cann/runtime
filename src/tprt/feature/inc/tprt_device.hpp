@@ -31,10 +31,10 @@ public:
     uint32_t TprtSqCqDeAlloc(const uint32_t sqId, const uint32_t cqId);
     TprtSqHandle *TprtGetSqHandleBySqId(uint32_t sqId);
     TprtCqHandle *TprtGetCqHandleByCqId(uint32_t cqId);
-    TprtWorker *TprtGetWorkHandleBySqHandle(TprtSqHandle *handle);
+    std::shared_ptr<TprtWorker> TprtGetWorkHandleBySqHandle(TprtSqHandle* handle);
 
     uint32_t TprtDeleteDevice();
-	uint32_t TprtDevOpSqCqInfo(TprtSqCqOpInfo_t *opInfo);
+    uint32_t TprtDevOpSqCqInfo(TprtSqCqOpInfo_t *opInfo);
     uint32_t TprtDevGetDevId_() const
     {
         return devId_;
@@ -48,11 +48,12 @@ private:
     std::mutex sqCqWorkerMapLock_;
     std::unordered_map<uint32_t, TprtSqHandle *> sqHandleMap_;      // key is sqId, value is Stream
     std::unordered_map<uint32_t, TprtCqHandle *> cqHandleMap_;
-    std::unordered_map<TprtSqHandle *, TprtWorker *> workerMap_;
+    std::unordered_map<TprtSqHandle *, std::shared_ptr<TprtWorker>> workerMap_;
     TprtTimer* timer_;
     std::mutex sqHandleMapLock_;
 
     void ProcessWaitingTask(uint32_t sqId, TprtSqHandle* sqHandle);
+    uint32_t CheckDuplicateSqCqId(uint32_t sqId, uint32_t cqId);
 };
 }
 }

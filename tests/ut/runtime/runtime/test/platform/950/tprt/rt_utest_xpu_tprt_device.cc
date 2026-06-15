@@ -28,18 +28,11 @@ protected:
         std::cout << "TprtDeviceTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TprtDeviceTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TprtDeviceTest end" << std::endl; }
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TprtDeviceTest, TprtSqCqAlloc_Success)
@@ -50,6 +43,7 @@ TEST_F(TprtDeviceTest, TprtSqCqAlloc_Success)
     TprtDevice* tprtDev = new TprtDevice(devId);
     uint32_t ret = tprtDev->TprtSqCqAlloc(sqId, cqId);
     EXPECT_EQ(ret, TPRT_SUCCESS);
+    tprtDev->TprtDeviceStop();
     DELETE_O(tprtDev);
 }
 
@@ -191,7 +185,7 @@ TEST_F(TprtDeviceTest, RunCheckTaskTimeout_WithSqHandles)
     uint32_t devId = 0;
     TprtDevice* tprtDev = new TprtDevice(devId);
     cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     uint32_t sqId = 1;
     TprtSqHandle* sqHandle = new TprtSqHandle(devId, sqId);
     sqHandle->SqSetSqState(TPRT_SQ_STATE_IS_RUNNING);
@@ -221,7 +215,7 @@ TEST_F(TprtDeviceTest, RunCheckTaskTimeout_SetWaitInfo)
     sqHandle->sqQueue_[sqHandle->sqHead_] = headTask;
     tprtDev->sqHandleMap_[sqId] = sqHandle;
 
-    TprtWorker* worker = new TprtWorker(devId, sqHandle, nullptr);
+    auto worker = std::make_shared<TprtWorker>(devId, sqHandle, nullptr);
     MOCKER_CPP(&TprtDevice::TprtGetWorkHandleBySqHandle).stubs().will(returnValue(worker));
 
     MOCKER_CPP(&TprtWorker::TprtWorkerProcessErrorCqe).stubs();
@@ -229,7 +223,6 @@ TEST_F(TprtDeviceTest, RunCheckTaskTimeout_SetWaitInfo)
     tprtDev->RunCheckTaskTimeout();
 
     sqHandle->Destructor();
-    DELETE_O(worker);
     DELETE_O(tprtDev);
 }
 
@@ -246,7 +239,7 @@ TEST_F(TprtDeviceTest, RunCheckTaskTimeout_Process)
     TprtDevice* tprtDev = new TprtDevice(0);
     tprtDev->sqHandleMap_[1] = sqHandle;
 
-    TprtWorker* worker = new TprtWorker(0, sqHandle, nullptr);
+    auto worker = std::make_shared<TprtWorker>(0, sqHandle, nullptr);
     MOCKER_CPP(&TprtDevice::TprtGetWorkHandleBySqHandle).stubs().will(returnValue(worker));
 
     MOCKER_CPP(&TprtWorker::TprtWorkerProcessErrorCqe).stubs();
@@ -264,7 +257,6 @@ TEST_F(TprtDeviceTest, RunCheckTaskTimeout_Process)
     tprtDev->RunCheckTaskTimeout();
 
     sqHandle->Destructor();
-    DELETE_O(worker);
     DELETE_O(tprtDev);
 }
 

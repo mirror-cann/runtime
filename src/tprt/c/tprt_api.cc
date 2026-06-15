@@ -141,7 +141,7 @@ uint32_t TprtSqPushTask(const uint32_t devId, const TprtTaskSendInfo_t *sendInfo
         TPRT_LOG(TPRT_LOG_ERROR, "device_id[%u] sq_id[%u] is invalid.", devId, sendInfo->sqId);
         return TPRT_SQ_HANDLE_INVALID;
     }
-    cce::tprt::TprtWorker *worker = dev->TprtGetWorkHandleBySqHandle(sqHandle);
+    auto worker = dev->TprtGetWorkHandleBySqHandle(sqHandle);
     if (worker == nullptr) {
         TPRT_LOG(TPRT_LOG_ERROR, "device_id[%u] sq_id[%u] worker is invalid.", devId, sendInfo->sqId);
         return TPRT_WORKER_INVALID;

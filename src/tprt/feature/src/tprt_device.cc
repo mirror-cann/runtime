@@ -102,21 +102,30 @@ uint32_t TprtDevice::TprtDeviceStop()
     }
     return TPRT_SUCCESS;
 }
-uint32_t TprtDevice::TprtSqCqAlloc(const uint32_t sqId, const uint32_t cqId)
-{
-    TprtSqHandle *sqHandle = nullptr;
-    TprtCqHandle *cqHandle = nullptr;
-    TprtWorker *worker = nullptr;
 
-    std::lock_guard<std::mutex> allocLock(sqCqWorkerMapLock_);
+uint32_t TprtDevice::CheckDuplicateSqCqId(uint32_t sqId, uint32_t cqId)
+{
     if (sqHandleMap_.find(sqId) != sqHandleMap_.end()) {
         TPRT_LOG(TPRT_LOG_ERROR, "Duplicate sq id. device_id=%u, sq_id=%u", devId_, sqId);
         return TPRT_SQ_HANDLE_INVALID;
     }
-
     if (cqHandleMap_.find(cqId) != cqHandleMap_.end()) {
         TPRT_LOG(TPRT_LOG_ERROR, "Duplicate cq id. device_id=%u, cq_id=%u", devId_, cqId);
         return TPRT_CQ_HANDLE_INVALID;
+    }
+    return TPRT_SUCCESS;
+}
+
+uint32_t TprtDevice::TprtSqCqAlloc(const uint32_t sqId, const uint32_t cqId)
+{
+    TprtSqHandle *sqHandle = nullptr;
+    TprtCqHandle *cqHandle = nullptr;
+    std::shared_ptr<TprtWorker> worker = nullptr;
+
+    std::lock_guard<std::mutex> allocLock(sqCqWorkerMapLock_);
+    const uint32_t dupRet = CheckDuplicateSqCqId(sqId, cqId);
+    if (dupRet != TPRT_SUCCESS) {
+        return dupRet;
     }
 
     std::function<void()> const errRecycle = [&sqId, &cqId, &sqHandle, &cqHandle, &worker, this]() {
@@ -125,8 +134,10 @@ uint32_t TprtDevice::TprtSqCqAlloc(const uint32_t sqId, const uint32_t cqId)
         if (this->workerMap_.find(sqHandle) != this->workerMap_.end()) { this->workerMap_.erase(sqHandle); }
         DELETE_O(sqHandle);
         DELETE_O(cqHandle);
-        DELETE_O(worker);
-    };
+        if (worker != nullptr) { 
+            worker->TprtWorkerFree();
+            worker.reset(); 
+    }};
     ScopeGuard allocErrRecycle(errRecycle);
     sqHandle = new (std::nothrow) TprtSqHandle(devId_, sqId);
     if (sqHandle == nullptr) {
@@ -142,9 +153,10 @@ uint32_t TprtDevice::TprtSqCqAlloc(const uint32_t sqId, const uint32_t cqId)
     }
     cqHandleMap_[cqId] = cqHandle;
 
-    worker = new (std::nothrow) TprtWorker(devId_, sqHandle, cqHandle);
-    if (worker == nullptr) {
-        TPRT_LOG(TPRT_LOG_ERROR, "New worker failed, device_id=%u, sq_id=%u", devId_, sqId);
+    try {
+        worker = std::make_shared<TprtWorker>(devId_, sqHandle, cqHandle);
+    } catch (const std::exception& e) {
+        TPRT_LOG(TPRT_LOG_ERROR, "New worker failed, device_id=%u, sq_id=%u, exception=%s", devId_, sqId, e.what());
         return TPRT_WORKER_NEW_FAILED;
     }
     workerMap_[sqHandle] = worker;
@@ -162,7 +174,7 @@ uint32_t TprtDevice::TprtSqCqDeAlloc(const uint32_t sqId, const uint32_t cqId)
 {
     TprtSqHandle *sqHandle = nullptr;
     TprtCqHandle *cqHandle = nullptr;
-    TprtWorker *workHandle = nullptr;
+    std::shared_ptr<TprtWorker> workHandle = nullptr;
     std::unique_lock<std::mutex> mapLock(sqCqWorkerMapLock_);
     auto sqItor = sqHandleMap_.find(sqId);
     if (sqItor != sqHandleMap_.end()) {
@@ -181,7 +193,7 @@ uint32_t TprtDevice::TprtSqCqDeAlloc(const uint32_t sqId, const uint32_t cqId)
 
         if (workHandle != nullptr) {
             workHandle->TprtWorkerFree();
-            DELETE_O(workHandle);
+            workHandle.reset();
         } else {
             TPRT_LOG(TPRT_LOG_WARNING, "work handle does not exist, sq_id=%u.", sqId);
         }
@@ -222,7 +234,7 @@ TprtCqHandle *TprtDevice::TprtGetCqHandleByCqId(uint32_t cqId)
     return nullptr;
 }
 
-TprtWorker *TprtDevice::TprtGetWorkHandleBySqHandle(TprtSqHandle *handle)
+std::shared_ptr<TprtWorker> TprtDevice::TprtGetWorkHandleBySqHandle(TprtSqHandle* handle)
 {
     std::unique_lock<std::mutex> mapLock(sqCqWorkerMapLock_);
     if (workerMap_.find(handle) != workerMap_.end()) {
@@ -300,7 +312,7 @@ void TprtDevice::ProcessWaitingTask(uint32_t sqId, TprtSqHandle* sqHandle)
     if (taskStatus == WAIT_TASK_IS_FINISHED) {
         sqHandle->SetTimeoutWaitInfo();
     } else if (taskStatus == WAIT_TASK_IS_TIMEOUT) {
-        TprtWorker* worker = this->TprtGetWorkHandleBySqHandle(sqHandle);
+        auto worker = this->TprtGetWorkHandleBySqHandle(sqHandle);
         if (worker == nullptr) {
             return;
         }

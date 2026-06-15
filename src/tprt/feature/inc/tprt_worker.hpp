@@ -32,15 +32,9 @@ public:
     void TprtWorkerFree();
     void TprtWorkerScheduleSq();
     void WorkerWakeUp();
-    TprtSqHandle *&GetSqHandle()
-    {
-        return sqHandle_;
-    }
-    TprtCqHandle *&GetCqHandle()
-    {
-        return cqHandle_;
-    }
-    void TprtWorkerProcessErrorCqe(TprtErrorType errorType, uint32_t errorCode, TprtSqe_t *task);
+    TprtSqHandle*& GetSqHandle() { return sqHandle_; }
+    TprtCqHandle*& GetCqHandle() { return cqHandle_; }
+    void TprtWorkerProcessErrorCqe(TprtErrorType errorType, uint32_t errorCode, TprtSqe_t* task);
 
 private:
     uint32_t devId_{0xFFFFFFFFU};

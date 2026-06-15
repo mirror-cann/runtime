@@ -9,7 +9,7 @@
  */
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
-#define private public 
+#define private public
 #include "utils.h"
 #include "tprt_api.h"
 #include "tprt_error_code.h"
@@ -30,15 +30,9 @@ protected:
         std::cout << "TprtApiTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TprtApiTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TprtApiTest end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
-    }
+    virtual void SetUp() { cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage(); }
 
     virtual void TearDown()
     {
@@ -49,7 +43,7 @@ protected:
 
 TEST_F(TprtApiTest, TprtDeviceOpen_cfg_error)
 {
-    TprtCfgInfo_t *cfg = nullptr;
+    TprtCfgInfo_t* cfg = nullptr;
     uint32_t devId = 0;
     uint32_t error = TprtDeviceOpen(devId, cfg);
     EXPECT_EQ(error, TPRT_INPUT_NULL);
@@ -65,9 +59,9 @@ TEST_F(TprtApiTest, TprtDeviceOpen_cfg_error)
 
 TEST_F(TprtApiTest, tprtSqCqCreate_Success)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -82,15 +76,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_Success)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
     EXPECT_EQ(error, TPRT_SUCCESS);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_sqInfo_nullptr_Fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -102,15 +96,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_sqInfo_nullptr_Fail)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,nullptr, &cqInfo);
+    uint32_t error = TprtSqCqCreate(devId, nullptr, &cqInfo);
     EXPECT_EQ(error, TPRT_INPUT_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_cqInfo_nullptr_Fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -121,15 +115,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_cqInfo_nullptr_Fail)
     sqInfo.reqId = sqId;
     sqInfo.inputType = TPRT_ALLOC_SQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, nullptr);
-    EXPECT_EQ(error, TPRT_INPUT_INVALID);   
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, nullptr);
+    EXPECT_EQ(error, TPRT_INPUT_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_sqInfo_inputType_error_fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -143,15 +137,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_sqInfo_inputType_error_fail)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
-    EXPECT_EQ(error, TPRT_INPUT_INVALID); 
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
+    EXPECT_EQ(error, TPRT_INPUT_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_cqInfo_inputType_error_fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -165,15 +159,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_cqInfo_inputType_error_fail)
     TprtSqCqInputInfo cqInfo = {0, TPRT_INVALID_TYPE};
     cqInfo.reqId = cqId;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
-    EXPECT_EQ(error, TPRT_INPUT_INVALID); 
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
+    EXPECT_EQ(error, TPRT_INPUT_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_sqInfo_reqId_error_fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 5U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -188,15 +182,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_sqInfo_reqId_error_fail)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
-    EXPECT_EQ(error, TPRT_INPUT_INVALID);   
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
+    EXPECT_EQ(error, TPRT_INPUT_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_cqInfo_reqId_error_fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 5U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -211,13 +205,13 @@ TEST_F(TprtApiTest, tprtSqCqCreate_cqInfo_reqId_error_fail)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
-    EXPECT_EQ(error, TPRT_INPUT_INVALID);   
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
+    EXPECT_EQ(error, TPRT_INPUT_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_getDevice_nullptr_fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
     manage->deviceMap_[0] = nullptr;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
@@ -233,15 +227,15 @@ TEST_F(TprtApiTest, tprtSqCqCreate_getDevice_nullptr_fail)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
 
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
-    EXPECT_EQ(error, TPRT_DEVICE_INVALID);  
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
+    EXPECT_EQ(error, TPRT_DEVICE_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtSqCqCreate_tprtSqCqAlloc_error_Fail)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -256,8 +250,8 @@ TEST_F(TprtApiTest, tprtSqCqCreate_tprtSqCqAlloc_error_Fail)
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
     MOCKER_CPP(&TprtDevice::TprtSqCqAlloc).stubs().will(returnValue(TPRT_SQ_HANDLE_INVALID));
-    uint32_t error = TprtSqCqCreate(devId,&sqInfo, &cqInfo);
-    EXPECT_EQ(error, TPRT_SQ_HANDLE_INVALID);  
+    uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
+    EXPECT_EQ(error, TPRT_SQ_HANDLE_INVALID);
 }
 
 TEST_F(TprtApiTest, tprtOpSqCqInfo_opInfo_null_error)
@@ -266,7 +260,6 @@ TEST_F(TprtApiTest, tprtOpSqCqInfo_opInfo_null_error)
     TprtSqCqOpInfo_t* opInfo = nullptr;
     uint32_t error = TprtOpSqCqInfo(devId, opInfo);
     EXPECT_EQ(error, TPRT_INPUT_INVALID);
-
 }
 
 TEST_F(TprtApiTest, tprtOpSqCqInfo_dev_null_error)
@@ -287,8 +280,8 @@ TEST_F(TprtApiTest, tprtOpSqCqInfo_sqHandle_null_error)
     opInfo.type = TPRT_CONFIG_SQ;
     opInfo.reqId = 1U;
     opInfo.prop = TPRT_SQCQ_PROP_SQ_SET_STATUS_QUIT;
-    TprtDevice *tprtDev = new TprtDevice(0);
-    TprtManage *manage = TprtManage::Instance();
+    TprtDevice* tprtDev = new TprtDevice(0);
+    TprtManage* manage = TprtManage::Instance();
     manage->deviceMap_[0] = tprtDev;
 
     uint32_t error = TprtOpSqCqInfo(devId, &opInfo);
@@ -302,10 +295,10 @@ TEST_F(TprtApiTest, tprtOpSqCqInfo_success)
     opInfo.type = TPRT_CONFIG_SQ;
     opInfo.reqId = 1U;
     opInfo.prop = TPRT_SQCQ_PROP_SQ_SET_STATUS_QUIT;
-    TprtDevice *tprtDev = new TprtDevice(0);
-    TprtSqHandle *sqHandle = new TprtSqHandle(0, 1);
+    TprtDevice* tprtDev = new TprtDevice(0);
+    TprtSqHandle* sqHandle = new TprtSqHandle(0, 1);
     tprtDev->sqHandleMap_[1] = sqHandle;
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->deviceMap_[0] = tprtDev;
 
     uint32_t error = TprtOpSqCqInfo(devId, &opInfo);
@@ -334,7 +327,7 @@ TEST_F(TprtApiTest, tprtCqReportRecv_cqeInfo_type_error)
     TprtReportCqeInfo_t repRecvInfo = {};
     repRecvInfo.type = TPRT_INVALID_TYPE;
     repRecvInfo.cqId = 1U;
-    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t *, TprtLogicCqReport_t *>(reportInfo);
+    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t*, TprtLogicCqReport_t*>(reportInfo);
     repRecvInfo.cqeNum = 32U;
     repRecvInfo.reportCqeNum = 32U;
 
@@ -349,7 +342,7 @@ TEST_F(TprtApiTest, tprtCqReportRecv_dev_null_error)
     TprtReportCqeInfo_t repRecvInfo = {};
     repRecvInfo.type = TPRT_QUERY_CQ_INFO;
     repRecvInfo.cqId = 1U;
-    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t *, TprtLogicCqReport_t *>(reportInfo);
+    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t*, TprtLogicCqReport_t*>(reportInfo);
     repRecvInfo.cqeNum = 32U;
     repRecvInfo.reportCqeNum = 32U;
 
@@ -364,13 +357,13 @@ TEST_F(TprtApiTest, tprtCqReportRecv_cqHandle_null_error)
     TprtReportCqeInfo_t repRecvInfo = {};
     repRecvInfo.type = TPRT_QUERY_CQ_INFO;
     repRecvInfo.cqId = 1U;
-    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t *, TprtLogicCqReport_t *>(reportInfo);
+    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t*, TprtLogicCqReport_t*>(reportInfo);
     repRecvInfo.cqeNum = 32U;
     repRecvInfo.reportCqeNum = 32U;
-    TprtDevice *tprtDev = new TprtDevice(0);
-    TprtSqHandle *sqHandle = new TprtSqHandle(0, 1);
+    TprtDevice* tprtDev = new TprtDevice(0);
+    TprtSqHandle* sqHandle = new TprtSqHandle(0, 1);
     tprtDev->sqHandleMap_[1] = sqHandle;
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->deviceMap_[0] = tprtDev;
 
     uint32_t error = TprtCqReportRecv(devId, &repRecvInfo);
@@ -384,15 +377,15 @@ TEST_F(TprtApiTest, tprtCqReportRecv_success)
     TprtReportCqeInfo_t repRecvInfo = {};
     repRecvInfo.type = TPRT_QUERY_CQ_INFO;
     repRecvInfo.cqId = 1U;
-    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t *, TprtLogicCqReport_t *>(reportInfo);
+    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t*, TprtLogicCqReport_t*>(reportInfo);
     repRecvInfo.cqeNum = 32U;
     repRecvInfo.reportCqeNum = 32U;
-    TprtDevice *tprtDev = new TprtDevice(0);
-    TprtSqHandle *sqHandle = new TprtSqHandle(0, 1);
+    TprtDevice* tprtDev = new TprtDevice(0);
+    TprtSqHandle* sqHandle = new TprtSqHandle(0, 1);
     tprtDev->sqHandleMap_[1] = sqHandle;
-    TprtCqHandle *cqHandle = new TprtCqHandle(0, 1);
+    TprtCqHandle* cqHandle = new TprtCqHandle(0, 1);
     tprtDev->cqHandleMap_[1] = cqHandle;
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->deviceMap_[0] = tprtDev;
 
     uint32_t error = TprtCqReportRecv(devId, &repRecvInfo);
@@ -406,16 +399,16 @@ TEST_F(TprtApiTest, tprtCqReportRecv_success_02)
     TprtReportCqeInfo_t repRecvInfo = {};
     repRecvInfo.type = TPRT_QUERY_CQ_INFO;
     repRecvInfo.cqId = 1U;
-    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t *, TprtLogicCqReport_t *>(reportInfo);
+    repRecvInfo.cqeAddr = TprtPtrToPtr<uint8_t*, TprtLogicCqReport_t*>(reportInfo);
     repRecvInfo.cqeNum = 32U;
     repRecvInfo.reportCqeNum = 32U;
-    TprtDevice *tprtDev = new TprtDevice(0);
-    TprtSqHandle *sqHandle = new TprtSqHandle(0, 1);
+    TprtDevice* tprtDev = new TprtDevice(0);
+    TprtSqHandle* sqHandle = new TprtSqHandle(0, 1);
     tprtDev->sqHandleMap_[1] = sqHandle;
-    TprtCqHandle *cqHandle = new TprtCqHandle(0, 1);
+    TprtCqHandle* cqHandle = new TprtCqHandle(0, 1);
     cqHandle->cqTail_.store(10);
     tprtDev->cqHandleMap_[1] = cqHandle;
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->deviceMap_[0] = tprtDev;
     manage->sqcqMaxDepth_ = 1024U;
 
@@ -425,9 +418,9 @@ TEST_F(TprtApiTest, tprtCqReportRecv_success_02)
 
 TEST_F(TprtApiTest, TprtSqCqDestroy_sqInfo_null_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -444,9 +437,9 @@ TEST_F(TprtApiTest, TprtSqCqDestroy_sqInfo_null_error)
 
 TEST_F(TprtApiTest, TprtSqCqDestroy_cqInfo_null_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -462,9 +455,9 @@ TEST_F(TprtApiTest, TprtSqCqDestroy_cqInfo_null_error)
 
 TEST_F(TprtApiTest, TprtSqCqDestroy_sqInfo_type_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -485,9 +478,9 @@ TEST_F(TprtApiTest, TprtSqCqDestroy_sqInfo_type_error)
 
 TEST_F(TprtApiTest, TprtSqCqDestroy_cqInfo_type_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxNum_ = 10U;
-    TprtDevice *tprtDev = new TprtDevice(0);
+    TprtDevice* tprtDev = new TprtDevice(0);
     manage->deviceMap_[0] = tprtDev;
     MOCKER(mmGetTid).stubs().will(returnValue(101));
 
@@ -517,7 +510,7 @@ TEST_F(TprtApiTest, TprtSqCqDestroy_GetDevice_null_error)
     TprtSqCqInputInfo cqInfo = {0, TPRT_INVALID_TYPE};
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_FREE_CQ_TYPE;
-    MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue((TprtDevice *)nullptr));
+    MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue((TprtDevice*)nullptr));
 
     uint32_t error = TprtSqCqDestroy(devId, &sqInfo, &cqInfo);
     EXPECT_EQ(error, TPRT_DEVICE_INVALID);
@@ -525,7 +518,7 @@ TEST_F(TprtApiTest, TprtSqCqDestroy_GetDevice_null_error)
 
 TEST_F(TprtApiTest, TprtSqPushTask_sendInfo_null_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 1024U;
     uint32_t devId = 0U;
     uint32_t error = TprtSqPushTask(devId, nullptr);
@@ -534,79 +527,82 @@ TEST_F(TprtApiTest, TprtSqPushTask_sendInfo_null_error)
 
 TEST_F(TprtApiTest, TprtSqPushTask_device_null_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 1024U;
     uint32_t devId = 0U;
     TprtSqe_t tprtSqe[5U] = {};
-    TprtSqe_t *sqeAddr = tprtSqe;
+    TprtSqe_t* sqeAddr = tprtSqe;
     TprtTaskSendInfo_t sendInfo = {};
     sendInfo.sqeNum = 1U;
     sendInfo.sqId = 1U;
-    MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue((TprtDevice *)nullptr));
+    MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue((TprtDevice*)nullptr));
     uint32_t error = TprtSqPushTask(devId, &sendInfo);
     EXPECT_EQ(error, TPRT_DEVICE_INVALID);
 }
 
 TEST_F(TprtApiTest, TprtSqPushTask_sqHandle_null_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 1024U;
     uint32_t devId = 0U;
     TprtSqe_t tprtSqe[5U] = {};
-    TprtSqe_t *sqeAddr = tprtSqe;
+    TprtSqe_t* sqeAddr = tprtSqe;
     TprtTaskSendInfo_t sendInfo = {};
     sendInfo.sqeNum = 1U;
     sendInfo.sqId = 1U;
-    TprtDevice *dev;
+    TprtDevice* dev;
     MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue(dev));
-    MOCKER_CPP(&TprtDevice::TprtGetSqHandleBySqId).stubs().will(returnValue((TprtSqHandle *)nullptr));
+    MOCKER_CPP(&TprtDevice::TprtGetSqHandleBySqId).stubs().will(returnValue((TprtSqHandle*)nullptr));
     uint32_t error = TprtSqPushTask(devId, &sendInfo);
     EXPECT_EQ(error, TPRT_SQ_HANDLE_INVALID);
 }
 
 TEST_F(TprtApiTest, TprtSqPushTask_worker_null_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 1024U;
     uint32_t devId = 0U;
     TprtSqe_t tprtSqe[5U] = {};
-    TprtSqe_t *sqeAddr = tprtSqe;
+    TprtSqe_t* sqeAddr = tprtSqe;
     TprtTaskSendInfo_t sendInfo = {};
     sendInfo.sqeNum = 1U;
     sendInfo.sqId = 1U;
-    TprtDevice *dev;
+    TprtDevice* dev;
     MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue(dev));
-    TprtSqHandle *sqHandle;
+    TprtSqHandle* sqHandle;
     MOCKER_CPP(&TprtDevice::TprtGetSqHandleBySqId).stubs().will(returnValue(sqHandle));
-    MOCKER_CPP(&TprtDevice::TprtGetWorkHandleBySqHandle).stubs().will(returnValue((TprtWorker *)nullptr));
+    MOCKER_CPP(&TprtDevice::TprtGetWorkHandleBySqHandle)
+        .stubs()
+        .will(returnValue(std::shared_ptr<TprtWorker>(nullptr)));
     uint32_t error = TprtSqPushTask(devId, &sendInfo);
     EXPECT_EQ(error, TPRT_WORKER_INVALID);
 }
 
 TEST_F(TprtApiTest, TprtSqPushTask_SqPushTask_error)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 1024U;
     uint32_t devId = 0U;
     TprtSqe_t tprtSqe[5U] = {};
-    TprtSqe_t *sqeAddr = tprtSqe;
+    TprtSqe_t* sqeAddr = tprtSqe;
     TprtTaskSendInfo_t sendInfo = {};
     sendInfo.sqeNum = 1U;
     sendInfo.sqId = 1U;
-    TprtDevice *dev;
+    TprtDevice* dev = new TprtDevice(devId);
     MOCKER_CPP(&TprtManage::GetDeviceByDevId).stubs().will(returnValue(dev));
-    TprtSqHandle *sqHandle;
+    TprtSqHandle* sqHandle;
     MOCKER_CPP(&TprtDevice::TprtGetSqHandleBySqId).stubs().will(returnValue(sqHandle));
-    TprtWorker *worker;
+    auto worker = std::make_shared<TprtWorker>(0, sqHandle, nullptr);
     MOCKER_CPP(&TprtDevice::TprtGetWorkHandleBySqHandle).stubs().will(returnValue(worker));
     MOCKER_CPP(&TprtSqHandle::SqPushTask).stubs().will(returnValue(TPRT_SQ_QUEUE_FULL));
     uint32_t error = TprtSqPushTask(devId, &sendInfo);
     EXPECT_EQ(error, TPRT_SQ_QUEUE_FULL);
+    DELETE_O(dev);
 }
 
 TEST_F(TprtApiTest, IsQueueFull_true)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 4U;
     uint16_t head = 0U;
     uint16_t tail = 3U;
@@ -618,11 +614,11 @@ TEST_F(TprtApiTest, IsQueueFull_true)
 
 TEST_F(TprtApiTest, TprtDeviceOpen_device_exits_error)
 {
-    TprtDevice *dev;
+    TprtDevice* dev;
     uint32_t devId = 0U;
     TprtCfgInfo_t cfg = {0U, 1024U, 100U, 1000U};
-    TprtDevice *device = new TprtDevice(devId);
-    TprtManage *manage = TprtManage::Instance();
+    TprtDevice* device = new TprtDevice(devId);
+    TprtManage* manage = TprtManage::Instance();
     manage->deviceMap_.insert(std::make_pair(devId, device));
     uint32_t error = manage->TprtDeviceOpen(devId, &cfg);
     EXPECT_EQ(error, TPRT_DEVICE_INVALID);
@@ -632,7 +628,7 @@ TEST_F(TprtApiTest, TprtDeviceOpen_device_exits_error)
 
 TEST_F(TprtApiTest, GetDefaultExeTimeout)
 {
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->defaultExeTimeout_ = 1000U;
     EXPECT_EQ(manage->TprtGetDefaultExeTimeout(), 1000U);
 }
