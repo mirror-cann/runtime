@@ -14,21 +14,39 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <securec.h>
 #include "acl_stub.h"
+#include "slog/inc/slog_stub_log_capture.h"
 
 void dlog_init(){}
 
-int aclStub::dlog_getlevel(int module_id, int *enable_event){ 
+int aclStub::dlog_getlevel(int module_id, int *enable_event){
 	return DLOG_DEBUG;
 }
 
-int dlog_getlevel(int module_id, int *enable_event){ 
+int dlog_getlevel(int module_id, int *enable_event){
 	return MockFunctionTest::aclStubInstance().dlog_getlevel(module_id, enable_event);
+}
+
+namespace {
+constexpr int LOG_MSG_MAX = 4096;
+char g_lastLogMsg[LOG_MSG_MAX] = {0};
 }
 
 int g_logLevel = DLOG_ERROR;
 void DlogRecord(int moduleId, int level, const char *fmt, ...) {
 	g_logLevel = level;
+	va_list args;
+	va_start(args, fmt);
+	int ret = vsnprintf_s(g_lastLogMsg, sizeof(g_lastLogMsg), sizeof(g_lastLogMsg) - 1U, fmt, args);
+	va_end(args);
+	if (ret < 0) {
+		g_lastLogMsg[0] = '\0';
+	}
+}
+
+const char *DlogStubGetLastLogMsg() {
+	return g_lastLogMsg;
 }
 
 void DlogErrorInner(int module_id, const char *fmt, ...){}
