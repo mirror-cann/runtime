@@ -1,0 +1,23 @@
+{
+  "skill_name": "faq-expansion-workflow",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我根据 Issue #535 创建一篇 FAQ，Issue标题是「ACL 查询显示此芯片有两个池，但没发现如何把两个池合并使用」",
+      "expected_output": "一篇针对 Issue #535 的 FAQ 文档，主题精准匹配issue（关于内存池查询和合并使用），包含现象描述、可能原因、处理步骤三段式结构，错误码已校验",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "根据 Issue #476 创建一篇关于 aclrtMalloc 申请大页内存限制的 FAQ",
+      "expected_output": "一篇针对性 FAQ，主题为 aclrtMalloc 大页内存限制，错误码需对照 rt_error_codes.h 校验，现象描述使用「现象N」格式，处理步骤标题使用「原因N」格式",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我遇到了 aclrtSetDevice 返回错误的问题，帮我写一篇 FAQ 文档",
+      "expected_output": "一篇关于 aclrtSetDevice 调用失败的 FAQ，错误码必须对照源码校验（107001=ACL_ERROR_RT_INVALID_DEVICEID），禁止虚构错误码或不存在的现象，每个现象有示例",
+      "files": []
+    }
+  ]
+}
