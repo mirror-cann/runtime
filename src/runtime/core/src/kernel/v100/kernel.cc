@@ -42,7 +42,7 @@ void SetAicoreArgsSuperKernel(TaskInfo* taskInfo, const rtArgsEx_t* argsInfo, St
     }
 }
 
-rtError_t CheckDynSizeValid(TaskInfo* taskInfo, const Kernel * const kernel)
+rtError_t CheckDynSizeValid(TaskInfo* const taskInfo, const Kernel * const kernel)
 {
     UNUSED(taskInfo);
     UNUSED(kernel);
