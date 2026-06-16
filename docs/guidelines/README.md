@@ -10,5 +10,6 @@
 | [coding-guidelines.md](coding-guidelines.md) | Runtime 代码实现时应遵守的统一编码规范 | 日常开发、自检、`/runtime-code-review`、PR 评审时 |
 | [ut-coding-guidelines.md](ut-coding-guidelines.md) | Runtime UT 代码的硬性规范，补充测试实现层面的约束 | 编写、修改、审查 UT 代码时 |
 | [DT用例开发总纲](dt_guide/README.md) | Runtime 仓 UT/ST 用例的组织方式、接入流程和通用规范 | 新增或修改测试时 |
+| [pre-commit使用方法](pre-commit_guide.md) | Runtime pre-commit 配置与使用说明，包含 clang-format 格式化和 OAT 合规检查 | 提交代码前安装、运行 |
 
 如果需要补充 Runtime 测试规范，请优先在本目录维护，避免规则散落在脚本、技能和临时文档中。

@@ -57,7 +57,7 @@ checkopts() {
   CUSTOM_SIGN_SCRIPT="${BASEPATH}/scripts/sign/community_sign_build.py"
   ENABLE_SIGN="OFF"
   ENABLE_BUILD_DEVICE="ON"
-  VERSION_INFO="8.5.0"
+  VERSION_INFO="9.1.0"
 
   if [ -z "$ASCEND_INSTALL_PATH" ]; then
     ASCEND_INSTALL_PATH="/usr/local/Ascend/cann"
