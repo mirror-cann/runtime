@@ -353,6 +353,10 @@ ACL_FUNC_VISIBILITY size_t aclDataTypeSize(aclDataType dataType);
  * @param line [IN]        Number of source lines where the log is located
  * @param fmt [IN]         the format of current log
  * @param ... [IN]         the value of current log
+ *
+ * @attention The formatted log string is limited to 1024 bytes (including the terminating null
+ *            character). Content exceeding this limit will be truncated (with a trailing
+ *            "...[truncated]" mark) rather than discarded.
  */
 ACL_FUNC_VISIBILITY void aclAppLog(aclLogLevel logLevel, const char *func, const char *file, uint32_t line,
                                    const char *fmt, ...);

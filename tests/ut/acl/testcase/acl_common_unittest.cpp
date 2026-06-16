@@ -34,6 +34,7 @@
 #include "runtime/config.h"
 #include "utils/file_utils.h"
 #include "acl_stub.h"
+#include "slog/inc/slog_stub_log_capture.h"
 #include "utils/hash_utils.h"
 
 #include "base/err_mgr.h"
@@ -2708,7 +2709,7 @@ TEST_F(UTEST_ACL_Common, aclAppLog_succ)
     EXPECT_TRUE(g_logLevel == ACL_ERROR);
 }
 
-TEST_F(UTEST_ACL_Common, aclAppLog_failed_1000bytes)
+TEST_F(UTEST_ACL_Common, aclAppLog_truncate_1000bytes)
 {
     aclLogLevel level = ACL_ERROR;
     const char *func = "UserFunc";
@@ -2726,10 +2727,11 @@ TEST_F(UTEST_ACL_Common, aclAppLog_failed_1000bytes)
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
     aclAppLog(level, func, file, line, fmt);
+    // 超长日志被截断后仍按原 level 落盘，不再被强制成 ERROR 误报。
     EXPECT_TRUE(g_logLevel == ACL_ERROR);
 }
 
-TEST_F(UTEST_ACL_Common, aclAppLog_failed_1100bytes)
+TEST_F(UTEST_ACL_Common, aclAppLog_truncate_1100bytes)
 {
     aclLogLevel level = ACL_ERROR;
     const char *func = "UserFunc";
@@ -2748,7 +2750,54 @@ TEST_F(UTEST_ACL_Common, aclAppLog_failed_1100bytes)
               "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"
               "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
     aclAppLog(level, func, file, line, fmt);
+    // 超长日志被截断后仍按原 level 落盘，不再被丢弃或误报。
     EXPECT_TRUE(g_logLevel == ACL_ERROR);
+    // 超长日志被截断后尾部应追加截断标记，提示用户内容不完整。
+    EXPECT_TRUE(strstr(DlogStubGetLastLogMsg(), "...[truncated]") != nullptr);
+}
+
+TEST_F(UTEST_ACL_Common, aclAppLog_truncate_keep_level)
+{
+    // 验证超长日志被截断后仍按调用级别输出，不会被强制成 ACL_ERROR。
+    aclLogLevel level = ACL_INFO;
+    const char *func = "UserFunc";
+    const char *file = "main.cpp";
+    uint32_t line = 88U;
+    const std::string fmt(1100U, 'a');
+    aclAppLog(level, func, file, line, fmt.c_str());
+    EXPECT_TRUE(g_logLevel == ACL_INFO);
+    // 截断标记应落在 MAX_LOG_STRING 预算内，最终落盘的日志总长不超过 1024 字节。
+    EXPECT_TRUE(strstr(DlogStubGetLastLogMsg(), "...[truncated]") != nullptr);
+    EXPECT_TRUE(strlen(DlogStubGetLastLogMsg()) < 1024U);
+}
+
+TEST_F(UTEST_ACL_Common, aclAppLog_short_keep_level)
+{
+    // 正常短日志按调用级别输出，且不追加截断标记。
+    aclLogLevel level = ACL_INFO;
+    const char *func = "UserFunc";
+    const char *file = "main.cpp";
+    uint32_t line = 88U;
+    aclAppLog(level, func, file, line, "short message");
+    EXPECT_TRUE(g_logLevel == ACL_INFO);
+    EXPECT_TRUE(strstr(DlogStubGetLastLogMsg(), "...[truncated]") == nullptr);
+}
+
+TEST_F(UTEST_ACL_Common, aclAppLog_invalid_format)
+{
+    // 非法格式化字符串（含 %n，安全函数会拒绝并返回 -1）应输出准确的错误提示。
+    // 运行时构造格式串，避免触发编译期 -Wformat 告警。
+    aclLogLevel level = ACL_ERROR;
+    const char *func = "UserFunc";
+    const char *file = "main.cpp";
+    uint32_t line = 88U;
+    char fmt[8] = {};
+    fmt[0] = '%';
+    fmt[1] = 'n';
+    int dummy = 0;
+    aclAppLog(level, func, file, line, fmt, &dummy);
+    EXPECT_TRUE(g_logLevel == ACL_ERROR);
+    EXPECT_TRUE(strstr(DlogStubGetLastLogMsg(), "format string is invalid") != nullptr);
 }
 
 TEST_F(UTEST_ACL_Common, FormatStr_failed_1100bytes)
