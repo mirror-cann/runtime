@@ -27,13 +27,13 @@ int add(int a, int b)
     return (a + b);
 }
 
-class Utest_mmpa_linux : public testing::Test
-{
+class Utest_mmpa_linux : public testing::Test {
 public:
     Utest_mmpa_linux() {}
 protected:
     virtual void SetUp() {}
-    virtual void TearDown() {
+    virtual void TearDown()
+    {
         GlobalMockObject::verify();
         GlobalMockObject::reset();
     }
@@ -685,7 +685,6 @@ TEST_F(Utest_mmpa_linux, Utest_mmOpen_01)
 
 TEST_F(Utest_mmpa_linux, Utest_mmOpen_02)
 {
-
     INT32 fd = mmOpen(NULL, (INT32)O_RDWR);
     ASSERT_EQ(EN_INVALID_PARAM, fd);
     INT ret = mmClose(fd);
@@ -722,7 +721,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmOpen2_01)
     fd = mmOpen2(NULL, O_CREAT | O_RDWR, 0);
     ASSERT_EQ(EN_INVALID_PARAM, fd);
 
-    fd = mmOpen2((CHAR*)("../tests/ut/mmpa/testcase/test.txt"), 16 , M_IREAD | M_IWRITE);
+    fd = mmOpen2((CHAR*)("../tests/ut/mmpa/testcase/test.txt"), 16, M_IREAD | M_IWRITE);
     ASSERT_EQ(EN_INVALID_PARAM, fd);
 
     fd = mmOpen2((CHAR*)("../tests/ut/mmpa/testcase/test.txt"), 0, M_IREAD | M_IWRITE);
@@ -740,11 +739,15 @@ TEST_F(Utest_mmpa_linux, Utest_mmOpen2_01)
 
 TEST_F(Utest_mmpa_linux, Utest_mmSocket_01)
 {
-    mmSockHandle listenfd, connfd, sockfd;
+    mmSockHandle listenfd;
+    mmSockHandle connfd;
+    mmSockHandle sockfd;
     INT32 ret = EN_OK;
 
-    mmThread stThreadHandleServer, stThreadHandleClient;
-    mmUserBlock_t stFuncBlockServer, stFuncBlockClient;
+    mmThread stThreadHandleServer;
+    mmThread stThreadHandleClient;
+    mmUserBlock_t stFuncBlockServer;
+    mmUserBlock_t stFuncBlockClient;
     INT32 p = getIdleSocketid();
     ret = mmSAStartup();
     ASSERT_EQ(EN_OK, ret);
@@ -768,7 +771,8 @@ TEST_F(Utest_mmpa_linux, Utest_mmSocket_01)
 
 TEST_F(Utest_mmpa_linux, Utest_mmSocket_02)
 {
-    mmSockHandle listenfd, connfd;
+    mmSockHandle listenfd;
+    mmSockHandle connfd;
     struct sockaddr_in serv_add;
     mmSocklen_t stAddrLen = sizeof(serv_add);
 
@@ -1291,8 +1295,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmCond_01)
 
 TEST_F(Utest_mmpa_linux, Utest_mmCond_02)
 {
-    mmThread stThreadHandleProducer1, stThreadHandleProducer2;
-    mmUserBlock_t stFuncBlockProducer1, stFuncBlockProducer2;
+    mmThread stThreadHandleProducer1;
+    mmThread stThreadHandleProducer2;
+    mmUserBlock_t stFuncBlockProducer1;
+    mmUserBlock_t stFuncBlockProducer2;
     stFuncBlockProducer1.procFunc = thread_func;
     stFuncBlockProducer2.procFunc = thread_func_time;
     stFuncBlockProducer1.pulArg = NULL;
@@ -1354,8 +1360,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmCond_03)
 
 TEST_F(Utest_mmpa_linux, Utest_mmCond_04)
 {
-    mmThread stThreadHandleProducer1, stThreadHandleProducer2;
-    mmUserBlock_t stFuncBlockProducer1, stFuncBlockProducer2;
+    mmThread stThreadHandleProducer1;
+    mmThread stThreadHandleProducer2;
+    mmUserBlock_t stFuncBlockProducer1;
+    mmUserBlock_t stFuncBlockProducer2;
     stFuncBlockProducer1.procFunc = thread_func;
     stFuncBlockProducer2.procFunc = thread_func_time;
     stFuncBlockProducer1.pulArg = NULL;
@@ -1396,7 +1404,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmGetProcessPrio_01)
     ASSERT_EQ(EN_INVALID_PARAM, ret);
     ret = mmGetProcessPrio(pid);
     EXPECT_TRUE(ret >= -20 && ret <= 19) ;
-    ret = mmSetProcessPrio(pid, processprio );
+    ret = mmSetProcessPrio(pid, processprio);
     ASSERT_EQ(EN_OK, ret);
     ret = mmGetProcessPrio(pid);
     ASSERT_EQ(processprio, ret);
@@ -1429,7 +1437,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmSetProcessPrio_01)
     INT32 ret;
     mmProcess pid;
     mmGetPidHandle(&pid);
-    ret = mmSetProcessPrio(-10, -21 );
+    ret = mmSetProcessPrio(-10, -21);
     ASSERT_EQ(EN_INVALID_PARAM, ret);
 }
 
@@ -1874,7 +1882,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmPoll_01)
     memset_s(&polledData, sizeof(polledData), 0, sizeof(mmPollData));
 
     polledData.buf = &ifr;
-    polledData.bufLen = sizeof( struct ifreq );
+    polledData.bufLen = sizeof(struct ifreq);
     MOCKER(poll)
         .stubs()
         .will(returnValue(1));
@@ -1911,11 +1919,15 @@ TEST_F(Utest_mmpa_linux, Utest_mmPoll_01)
 
 TEST_F(Utest_mmpa_linux, Utest_mmPoll_02)
 {
-    mmSockHandle listenfd, connfd, sockfd;
+    mmSockHandle listenfd;
+    mmSockHandle connfd;
+    mmSockHandle sockfd;
     INT32 ret = EN_OK;
 
-    mmThread stThreadHandleServer, stThreadHandleClient;
-    mmUserBlock_t stFuncBlockServer, stFuncBlockClient;
+    mmThread stThreadHandleServer;
+    mmThread stThreadHandleClient;
+    mmUserBlock_t stFuncBlockServer;
+    mmUserBlock_t stFuncBlockClient;
     INT32 p = getIdleSocketid();
     ret = mmSAStartup();
     ASSERT_EQ(EN_OK, ret);
@@ -1981,8 +1993,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmPoll_03)
 {
     INT32 ret = EN_OK;
     INT32 fd = 0;
-    mmThread stThreadHandleServer, stThreadHandleClient;
-    mmUserBlock_t stFuncBlockServer, stFuncBlockClient;
+    mmThread stThreadHandleServer;
+    mmThread stThreadHandleClient;
+    mmUserBlock_t stFuncBlockServer;
+    mmUserBlock_t stFuncBlockClient;
 
     stFuncBlockServer.procFunc = poll_server_pipe;
     stFuncBlockServer.pulArg = NULL;
@@ -2004,8 +2018,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmPoll_04)
 {
     INT32 ret = EN_OK;
     INT32 fd = 0;
-    mmThread stThreadHandleServer, stThreadHandleClient;
-    mmUserBlock_t stFuncBlockServer, stFuncBlockClient;
+    mmThread stThreadHandleServer;
+    mmThread stThreadHandleClient;
+    mmUserBlock_t stFuncBlockServer;
+    mmUserBlock_t stFuncBlockClient;
 
     stFuncBlockServer.procFunc = poll_server_namepipe;
     stFuncBlockServer.pulArg = NULL;
@@ -2063,7 +2079,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmCreateNamedPipe_01)
 TEST_F(Utest_mmpa_linux, Utest_mmCreatePipe_01)
 {
     INT32 ret = EN_OK;
-    char *fifo_name[MMPA_PIPE_COUNT] = {(CHAR*)"../tests/ut/mmpa/ut_pipe_read", (CHAR*)"../tests/ut/mmpa/ut_pipe_write"};
+    char *fifo_name[MMPA_PIPE_COUNT] = {
+        (CHAR*)"../tests/ut/mmpa/ut_pipe_read",
+        (CHAR*)"../tests/ut/mmpa/ut_pipe_write"
+    };
     int mode = 1;
     mmUnlink(fifo_name[0]);
     mmUnlink(fifo_name[1]);
@@ -2120,7 +2139,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmGetTimeOfDay_01)
     MOCKER(localtime_r)
         .stubs()
         .will(returnValue((struct tm*)NULL));
-    ret = mmGetLocalTime(&st); ;
+    ret = mmGetLocalTime(&st);
     ASSERT_EQ(EN_ERROR, ret);
     GlobalMockObject::reset();
 
@@ -2148,7 +2167,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmGetSystemTime_01)
     MOCKER(gmtime_r)
         .stubs()
         .will(returnValue((struct tm*)NULL));
-    ret = mmGetSystemTime(&st); ;
+    ret = mmGetSystemTime(&st);
     ASSERT_EQ(EN_ERROR, ret);
     GlobalMockObject::reset();
 }
@@ -2217,7 +2236,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmlseek_01)
     length = strlen(myString);
 
     ret = mmWrite(fd, myString, length);
-    ASSERT_EQ(strlen( "hello, mmpa!\n"), ret);
+    ASSERT_EQ(strlen("hello, mmpa!\n"), ret);
 
     ret = mmLseek(fd, 3, SEEK_SET);
     ASSERT_EQ(3, ret);
@@ -2255,7 +2274,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmFtruncate_01)
     length = strlen(myString);
 
     ret = mmWriteFile(pfd, myString, length);
-    ASSERT_EQ(strlen( "hello, mmpa!\n"), ret);
+    ASSERT_EQ(strlen("hello, mmpa!\n"), ret);
 
     ret = mmFtruncate(pfd, 10);
     ASSERT_EQ(EN_OK, ret);
@@ -2478,8 +2497,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmMsgQueue_02)
 {
     INT32 ret = EN_OK;
 
-    mmThread stThreadHandleServer, stThreadHandleClient;
-    mmUserBlock_t stFuncBlockServer, stFuncBlockClient;
+    mmThread stThreadHandleServer;
+    mmThread stThreadHandleClient;
+    mmUserBlock_t stFuncBlockServer;
+    mmUserBlock_t stFuncBlockClient;
 
     stFuncBlockServer.procFunc = msgqueue_server;
     stFuncBlockServer.pulArg = NULL;
@@ -2542,7 +2563,8 @@ TEST_F(Utest_mmpa_linux, Utest_mmTls_02)
     ASSERT_EQ(EN_OK, ret);
 
     mmThread stThreadHandle[2];
-    mmUserBlock_t stFuncBlock1, stFuncBlock2;
+    mmUserBlock_t stFuncBlock1;
+    mmUserBlock_t stFuncBlock2;
 
     stFuncBlock1.procFunc = tlsTestThread1;
     stFuncBlock1.pulArg = NULL;
@@ -2781,7 +2803,8 @@ TEST_F(Utest_mmpa_linux, Utest_mmGetCwd)
 
 TEST_F(Utest_mmpa_linux, Utest_mmWaitPid)
 {
-    mmProcess pc = 0, pr = 0;
+    mmProcess pc = 0;
+    mmProcess pr = 0;
     int status;
     pr = mmWaitPid(pc, NULL, -1);
     ASSERT_EQ(EN_INVALID_PARAM, pr);
@@ -2790,31 +2813,29 @@ TEST_F(Utest_mmpa_linux, Utest_mmWaitPid)
     printf("pr = %d\n", pr);
 
     pc = fork();
-    if ( pc < 0 ) {
+    if (pc < 0) {
         printf("fork error\n");
         exit(1);
-        }
-    else if ( pc == 0 ) {
+    } else if (pc == 0) {
         printf("child --- my parent is %d\n", mmGetPid());
         sleep(3);
         exit(0);
-    }
-    else {
+    } else {
         do {
             printf("father --- my id is %d\n", getppid());
             pr = mmWaitPid(pc, &status, M_WAIT_NOHANG);
-            if ( pr == 0 ) {
+            if (pr == 0) {
                 printf("No child exit\n");
                 sleep(1);
             }
-        } while (pr == 0 );
+        } while (pr == 0);
 
-        if ( pr == EN_ERR ) {
+        if (pr == EN_ERR) {
             printf("successfully get child %d\n", pc);
             printf("status is %x\n", status);
-        }
-        else
+        } else {
             printf("wait child error\n");
+        }
     }
 }
 
@@ -2862,7 +2883,10 @@ TEST_F(Utest_mmpa_linux, Utest_mmGetoptLong)
 
     CHAR *argv[30] = { (CHAR*)"./test", (CHAR*)"--name", (CHAR*)"qxh1", (CHAR*)"--version", (CHAR*)"--help" };
     INT32 c = (INT32)NULL;
-    INT32 f_v = -1, f_n = -1, f_h = -1, opt_index = -1;
+    INT32 f_v = -1;
+    INT32 f_n = -1;
+    INT32 f_h = -1;
+    INT32 opt_index = -1;
     mmStructOption opts[] = {
         { "version", 0, NULL, 'v' },
         { "name", 1, NULL, 'n' },

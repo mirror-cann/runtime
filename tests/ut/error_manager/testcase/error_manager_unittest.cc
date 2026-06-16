@@ -211,8 +211,7 @@ TEST_F(UtestErrorManager, ReportInterErrMessage_WorkStreamId)
 
     // error_message_per_work_id_.size() > kMaxWorkSize
     instance.error_context_.work_stream_id = id;
-    for (int i = 0; i < 1002; i++)
-    {
+    for (int i = 0; i < 1002; i++) {
         instance.error_message_per_work_id_[i] = std::vector<ErrorManager::ErrorItem>();
     }
     EXPECT_EQ(instance.ReportInterErrMessage("609999", "errmsg"), -1);
@@ -418,8 +417,7 @@ TEST_F(UtestErrorManager, ReadJsonFile)
     EXPECT_EQ(instance.ReadJsonFile("", nullptr), -1);
     EXPECT_EQ(instance.ReadJsonFile("json", nullptr), -1);
     std::ofstream out("out.json");
-    if (out.is_open())
-    {
+    if (out.is_open()) {
         out << "{\"name\":\"value\"}\n";
         out.close();
     }
@@ -431,8 +429,7 @@ TEST_F(UtestErrorManager, ParseJsonFile)
 {
     auto &instance = ErrorManager::GetInstance();
     std::ofstream out("out.json");
-    if (out.is_open())
-    {
+    if (out.is_open()) {
         out << "{\"name\":\"value\"}\n";
         out.close();
     }
@@ -441,24 +438,21 @@ TEST_F(UtestErrorManager, ParseJsonFile)
     EXPECT_EQ(instance.ParseJsonFormatString(PtrToPtr<nlohmann::json, void>(&json_file)), -1);
 
     std::ofstream out1("out1.json");
-    if (out1.is_open())
-    {
+    if (out1.is_open()) {
         out1 << "{\"error_info_list\":[\"err1\"]}";
         out1.close();
     }
     EXPECT_EQ(instance.ReadJsonFile("out1.json", &json_file), 0);
     EXPECT_EQ(instance.ParseJsonFormatString(PtrToPtr<nlohmann::json, void>(&json_file)), -1);
     std::ofstream out2("out2.json");
-    if (out2.is_open())
-    {
+    if (out2.is_open()) {
         out2 << "{\"error_info_list\":\"err1\"}";
         out2.close();
     }
     EXPECT_EQ(instance.ReadJsonFile("out2.json", &json_file), 0);
     EXPECT_EQ(instance.ParseJsonFormatString(PtrToPtr<nlohmann::json, void>(&json_file)), -1);
     std::ofstream out3("out3.json");
-    if (out3.is_open())
-    {
+    if (out3.is_open()) {
         out3 << "{\"error_info_list\":[{\"ErrCode\":\"1\", \"ErrMessage\":\"message\", \"Arglist\":\"1,2,3\"}]}";
         out3.close();
     }
@@ -540,7 +534,7 @@ void thread3()
     EXPECT_EQ(instance.ReportErrMessage("W14000", args_map), 0);
     EXPECT_EQ(instance.ReportInterErrMessage("E18888", "InterErr is thread_1"), 0);
     EXPECT_EQ(instance.ReportInterErrMessage("W18888", "InterWarning is thread_1"), 0);
-    cv.wait(lck, []{return done;});
+    cv.wait(lck, [] { return done; });
 
     EXPECT_EQ(instance.error_message_process_.size(), 4);
     EXPECT_EQ(instance.warning_messages_process_.size(), 4);
@@ -590,7 +584,7 @@ void thread5()
     EXPECT_EQ(instance.ReportErrMessage("W14000", args_map), 0);
     EXPECT_EQ(instance.ReportInterErrMessage("E18888", "InterErr is thread_1"), 0);
     EXPECT_EQ(instance.ReportInterErrMessage("W18888", "InterWarning is thread_1"), 0);
-    cv.wait(lck, []{return done;});
+    cv.wait(lck, [] { return done; });
 
     EXPECT_EQ(instance.error_message_process_.size(), 0);
     EXPECT_EQ(instance.warning_messages_process_.size(), 0);
@@ -653,7 +647,7 @@ void thread7()
     EXPECT_EQ(instance.ReportErrMessage("W14000", args_map), 0);
     EXPECT_EQ(instance.ReportInterErrMessage("E18888", "InterErr is thread_1"), 0);
     EXPECT_EQ(instance.ReportInterErrMessage("W18888", "InterWarning is thread_1"), 0);
-    cv.wait(lck, []{return done;});
+    cv.wait(lck, [] { return done; });
 
     EXPECT_EQ(instance.error_message_process_.size(), 0);
     EXPECT_EQ(instance.warning_messages_process_.size(), 0);
@@ -1206,7 +1200,7 @@ TEST_F(UtestErrorManager, ReportInnerErrMsgForC_Failed_MessageLengthExceedsLimit
 {
     EXPECT_EQ(ReportInnerErrMsgForC(__FILE__, __FUNCTION__, __LINE__, "E18888", kErrMsgFormat,
                                     std::string(1025U, 'a').c_str()),
-                                    -1);
+              -1);
     EXPECT_TRUE(std::string(error_message::GetErrMgrErrorMessage().get()).empty());
 }
 

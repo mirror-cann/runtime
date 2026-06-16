@@ -119,8 +119,8 @@ typedef struct {
     mmPollHandle handle;            // The file descriptor or handle of poll is required
     mmPollType pollType;            // Operation type requiring poll，read or recv or ioctl
     INT32 ioctlCode;                // IOCTL operation code, dedicated to IOCTL
-    mmComPletionKey completionKey;  // The default value is blank, which will be used in windows to receive the data with
-                                    // different handle
+    mmComPletionKey completionKey;  // The default value is blank, which will be used in windows to receive the data
+                                    // with different handle
 } mmPollfd;
 
 typedef struct {
