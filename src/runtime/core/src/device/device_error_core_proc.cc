@@ -164,7 +164,7 @@ const std::map<uint32_t, std::string> g_l2MulBitEccEventIdBlkList = {
     {0x81978004U, "PCIE Dispatch Config Error."},
     {0x81B58002U, "UB Dispatch Input Error."},
     {0x81B58004U, "UB Dispatch Config Error."},
-    {0x813D8009U, "AIC AA Ring Parity Error."},
+    {0x813D8005U, "AIC AA Ring Parity Error."},
     {0x81AF8009U, "UB Posion Error."}
 };
 
