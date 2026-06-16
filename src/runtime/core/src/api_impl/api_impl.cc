@@ -2009,14 +2009,15 @@ rtError_t ApiImpl::EventCreateEx(Event ** const evt, const uint64_t flag)
 
 rtError_t ApiImpl::EventDestroy(Event *evt)
 {
+    ResetEmbeddedInnerHandle<Event>(evt);
     EventStateCallbackManager::Instance().Notify(nullptr, evt, EventStatePeriod::EVENT_STATE_PERIOD_DESTROY);
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
         IpcEvent *eventIpc = dynamic_cast<IpcEvent *>(evt);
         IpcEventDestroy(&eventIpc, MAX_INT32_NUM, true);
-    } else {
-        RT_LOG(RT_LOG_INFO, "event destroy event_id=%d.", evt->EventId_());
-        TryToFreeEventIdAndDestroyEvent(&evt, evt->EventId_(), true);
+        return RT_ERROR_NONE;
     }
+    RT_LOG(RT_LOG_INFO, "event destroy event_id=%d.", evt->EventId_());
+    TryToFreeEventIdAndDestroyEvent(&evt, evt->EventId_(), true);
     return RT_ERROR_NONE;
 }
 
@@ -2036,8 +2037,14 @@ rtError_t ApiImpl::EventDestroySync(Event *evt)
         return EventDestroy(evt);
     }
 
+    ResetEmbeddedInnerHandle<Event>(evt);
     evt->SetDestroySync(true);
-    DestroyEventSync(evt);
+    const rtError_t error = DestroyEventSync(evt);
+    if (error != RT_ERROR_NONE) {
+        evt->SetDestroySync(false);
+        InitEmbeddedInnerHandle<Event>(evt);
+        return error;
+    }
     return RT_ERROR_NONE;
 }
 
@@ -3924,11 +3931,7 @@ rtError_t ApiImpl::ContextDestroy(Context * const inCtx)
         return error;
     }
     inCtx->SetTearDownExecuteResult(TEARDOWN_SUCCESS);
-    if (ContextManage::EraseContextFromSet(inCtx) == RT_ERROR_CONTEXT_NULL) {
-    }
-    if (inCtx->ContextOutUse() == 0U) {
-        delete inCtx;
-    }
+    (void)ContextManage::EraseContextAndDeleteIfNeeded(inCtx);
     return RT_ERROR_NONE;
 }
 

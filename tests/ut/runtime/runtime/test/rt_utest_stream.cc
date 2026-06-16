@@ -2208,6 +2208,46 @@ TEST_F(StreamTest, rtsStreamDestroy_default)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
+TEST_F(StreamTest, stream_handle_invalid_after_destroy)
+{
+    rtStream_t stream = nullptr;
+    rtError_t error = rtStreamCreate(&stream, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = rtStreamDestroy(stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    Stream *destroyedStream = nullptr;
+    EXPECT_EQ(GetValidatedObject<Stream>(stream, destroyedStream), RT_ERROR_INVALID_HANDLE);
+}
+
+TEST_F(StreamTest, stream_destroy_bound_stream_keeps_handle_valid)
+{
+    rtStream_t stream = nullptr;
+    rtModel_t model = nullptr;
+    rtError_t error = rtStreamCreate(&stream, 0);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    error = rtModelCreate(&model, 0);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Model *modelObj = rt_ut::UnwrapOrNull<Model>(model);
+    ASSERT_NE(streamObj, nullptr);
+    ASSERT_NE(modelObj, nullptr);
+    streamObj->SetModel(modelObj);
+
+    error = rtStreamDestroy(stream);
+    EXPECT_EQ(error, ACL_ERROR_RT_STREAM_MODEL);
+    Stream *validatedStream = nullptr;
+    EXPECT_EQ(GetValidatedObject<Stream>(stream, validatedStream), RT_ERROR_NONE);
+
+    streamObj->DelModel(modelObj);
+    error = rtModelDestroy(model);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    error = rtStreamDestroy(stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
 TEST_F(StreamTest, rtsStreamDestroy_force)
 {
     rtError_t error;

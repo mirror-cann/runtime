@@ -66,12 +66,7 @@ Runtime::~Runtime()
             priCtxs_[i][j].ResetVal();
             if (context != nullptr) {
                 if (context->GetCount() == 0ULL) {
-                    try {
-                        (void)context->TearDown();
-                    } catch (...) {
-                    }
-                    delete context;
-                    context = nullptr;
+                    TearDownAndDeleteContextNoThrow(context);
                 }
             }
         }
@@ -81,12 +76,7 @@ Runtime::~Runtime()
         const rtError_t ret = ContextManage::EraseContextFromSet(context);
         if (ret != RT_ERROR_CONTEXT_NULL) {
             if (context->ContextOutUse() == 0ULL) {
-                try {
-                    (void)context->TearDown();
-                } catch (...) {
-                }
-                delete context;
-                context = nullptr;
+                TearDownAndDeleteContextNoThrow(context);
             }
         }
     }

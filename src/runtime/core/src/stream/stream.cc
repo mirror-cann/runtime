@@ -1411,9 +1411,11 @@ rtError_t Stream::SubmitStreamRecycle(Stream* exeStream, bool isForceRecycle, ui
 rtError_t Stream::TearDown(const bool terminal, bool flag)
 {
     Runtime * const rt = Runtime::Instance();
+    if (destroyTaskRecycledOnTearDownOutput_ != nullptr) {
+        *destroyTaskRecycledOnTearDownOutput_ = false;
+    }
     TaskInfo submitDestroyTask = {};
     TaskInfo *tsk = nullptr;
-    TaskInfo *recycleTask = nullptr;
     Stream* exeStream = this;
     Device * const dev = device_;
     const int32_t stmId = streamId_;
@@ -1521,53 +1523,16 @@ rtError_t Stream::TearDown(const bool terminal, bool flag)
         }
     }
 
-    if (isSupportASyncRecycle_) {
-        tryWaitCnt = 0U;
-        dev->DelStreamFromMessageQueue(this);
-        while (isRecycleThreadProc_ && starsFlag) {
-            (void)mmSleep(1U);
-            // Wait RecycleThread done in 10s
-            if ((tryWaitCnt++) > 1000U) {
-                RT_LOG(RT_LOG_WARNING, "stream_id=%d, RecycleThread process over 1s.", stmId);
-                break;
-            }
-        }
-    }
-
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, delay recycle task num=%zu.", stmId, delayRecycleTaskid_.size());
-    if (!delayRecycleTaskid_.empty()) {
-        Profiler * const profilerPtr = Runtime::Instance()->Profiler_();
-        if (profilerPtr != nullptr) {
-            profilerPtr->EraseStream(this);
-        }
-    }
-
-    while (!delayRecycleTaskid_.empty()) {
-        const uint16_t taskId = delayRecycleTaskid_.back();
-        recycleTask = dev->GetTaskFactory()->GetTask(stmId, taskId);
-        if (recycleTask == nullptr) {
-            RT_LOG(RT_LOG_WARNING, "Cannot find task from the factory, stream_id=%d task_id=%u",
-                   stmId, static_cast<uint32_t>(taskId));
-            delayRecycleTaskid_.pop_back();
-            continue;
-        }
-        (void)dev->GetTaskFactory()->Recycle(recycleTask);
-        delayRecycleTaskid_.pop_back();
-    }
-
-    if (GetSubscribeFlag() != StreamSubscribeFlag::SUBSCRIBE_NONE) {
-        error = rt->UnSubscribeReport(this);
-        ERROR_RETURN_MSG_INNER(error, "Failed to unsubscribe streamId(%d), retCode=%#x.", stmId,
-            static_cast<uint32_t>(error));
-    }
+    WaitAsyncRecycleThreadOnTearDown(starsFlag);
+    RecycleDelayedTasksAfterTearDown();
+    error = UnsubscribeStreamReportOnTearDown(rt);
+    ERROR_RETURN_MSG_INNER(error, "Failed to unsubscribe streamId(%d), retCode=%#x.", stmId,
+        static_cast<uint32_t>(error));
 
     (void)SendFlipTaskWithStreamId(this);
     // on stars, there is no need to send destroy task
-    if (starsFlag || ((flags_ & RT_STREAM_CP_PROCESS_USE) != 0)) {
-        const std::lock_guard<std::mutex> stmLock(persistentTaskMutex_);
-        persistentTaskid_.clear();
-        ReportDestroyFlipTask();
-        return error;
+    if (ShouldSkipDestroyTaskSubmissionOnTearDown(starsFlag)) {
+        return FinalizeTearDownWithoutDestroyTask(starsFlag);
     }
     exeStream = this;
     if ((GetFailureMode() == ABORT_ON_FAILURE) || ((exeStream->Context_() != nullptr) &&
@@ -1600,9 +1565,78 @@ rtError_t Stream::TearDown(const bool terminal, bool flag)
 
 ERROR_FREE:
     if (tsk != nullptr && tsk->stream != nullptr) {
+        if ((tsk->stream == this) && (!tsk->stream->IsCtrlStream()) && IsNeedFreeStreamRes(tsk) &&
+            (!rt->GetDisableThread()) && (destroyTaskRecycledOnTearDownOutput_ != nullptr)) {
+            *destroyTaskRecycledOnTearDownOutput_ = true;
+            destroyTaskRecycledOnTearDownOutput_ = nullptr;
+        }
         (void)dev->GetTaskFactory()->Recycle(tsk);
     }
     return error;
+}
+
+void Stream::WaitAsyncRecycleThreadOnTearDown(const bool starsFlag)
+{
+    if (!isSupportASyncRecycle_) {
+        return;
+    }
+
+    uint32_t tryWaitCnt = 0U;
+    device_->DelStreamFromMessageQueue(this);
+    while (isRecycleThreadProc_ && starsFlag) {
+        (void)mmSleep(1U);
+        // Wait RecycleThread done in 10s
+        if ((tryWaitCnt++) > 1000U) {
+            RT_LOG(RT_LOG_WARNING, "stream_id=%d, RecycleThread process over 1s.", streamId_);
+            break;
+        }
+    }
+}
+
+void Stream::RecycleDelayedTasksAfterTearDown()
+{
+    RT_LOG(RT_LOG_INFO, "stream_id=%d, delay recycle task num=%zu.", streamId_, delayRecycleTaskid_.size());
+    if (!delayRecycleTaskid_.empty()) {
+        Profiler * const profilerPtr = Runtime::Instance()->Profiler_();
+        if (profilerPtr != nullptr) {
+            profilerPtr->EraseStream(this);
+        }
+    }
+
+    while (!delayRecycleTaskid_.empty()) {
+        const uint16_t taskId = delayRecycleTaskid_.back();
+        TaskInfo * const recycleTask = device_->GetTaskFactory()->GetTask(streamId_, taskId);
+        if (recycleTask == nullptr) {
+            RT_LOG(RT_LOG_WARNING, "Cannot find task from the factory, stream_id=%d task_id=%u",
+                   streamId_, static_cast<uint32_t>(taskId));
+            delayRecycleTaskid_.pop_back();
+            continue;
+        }
+        (void)device_->GetTaskFactory()->Recycle(recycleTask);
+        delayRecycleTaskid_.pop_back();
+    }
+}
+
+rtError_t Stream::UnsubscribeStreamReportOnTearDown(Runtime * const rt)
+{
+    if (GetSubscribeFlag() == StreamSubscribeFlag::SUBSCRIBE_NONE) {
+        return RT_ERROR_NONE;
+    }
+    return rt->UnSubscribeReport(this);
+}
+
+bool Stream::ShouldSkipDestroyTaskSubmissionOnTearDown(const bool starsFlag) const
+{
+    return starsFlag || ((flags_ & RT_STREAM_CP_PROCESS_USE) != 0);
+}
+
+rtError_t Stream::FinalizeTearDownWithoutDestroyTask(const bool starsFlag)
+{
+    UNUSED(starsFlag);
+    const std::lock_guard<std::mutex> stmLock(persistentTaskMutex_);
+    persistentTaskid_.clear();
+    ReportDestroyFlipTask();
+    return RT_ERROR_NONE;
 }
 
 rtError_t Stream::RecycleTaskWithCtrlsq(Device * const dev, const uint32_t logicCqId, const uint32_t recycleCnt)

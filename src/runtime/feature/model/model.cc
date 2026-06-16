@@ -101,14 +101,7 @@ Model::~Model() noexcept
     DELETE_A(modelSwitchInfo_);
     SetIsSendSqe(false);
 
-    {
-        const std::unique_lock<std::mutex> lk(labelMapMutex_);
-        isModelDelete_ = true;
-        for (auto &it : labelMap_) {
-            it.second->UnbindModel();
-        }
-        labelMap_.clear();
-    }
+    ResetBoundLabelsOnDestroy();
 
     CmoIdFree();
 
@@ -242,16 +235,18 @@ rtError_t Model::TearDown()
     error = ClearMemory();
     ERROR_RETURN_MSG_INNER(error, "Failed to clear memory, retCode=%#x.", static_cast<uint32_t>(error));
 
-    // unbind model from label
-    {
-        const std::unique_lock<std::mutex> lk(labelMapMutex_);
-        isModelDelete_ = true;
-        for (auto &it : labelMap_) {
-            it.second->UnbindModel();
-        }
-        labelMap_.clear();
-    }
+    ResetBoundLabelsOnDestroy();
     return ModelDestroyCallback();
+}
+
+void Model::ResetBoundLabelsOnDestroy()
+{
+    const std::unique_lock<std::mutex> lk(labelMapMutex_);
+    isModelDelete_ = true;
+    for (auto &it : labelMap_) {
+        it.second->UnbindModel();
+    }
+    labelMap_.clear();
 }
 
 void Model::ReplaceArgHandle(const uint16_t streamId, const uint16_t taskId, void *argHandle)
@@ -2098,8 +2093,13 @@ rtError_t Model::ModelDestroyUnregisterCallback(const rtCallback_t fn)
 
 rtError_t Model::ModelDestroyCallback()
 {
-    const std::unique_lock<std::mutex> mdlDestroyCallbackLock(mdlDestroyCallbackMutex_);
-    for (const auto& CallBackInfo : mdlDestroyCallbackSet_) {
+    std::vector<MdlDestroyCallbackInfo> callbackInfos;
+    {
+        const std::unique_lock<std::mutex> mdlDestroyCallbackLock(mdlDestroyCallbackMutex_);
+        callbackInfos.assign(mdlDestroyCallbackSet_.begin(), mdlDestroyCallbackSet_.end());
+    }
+
+    for (const auto& CallBackInfo : callbackInfos) {
         if (CallBackInfo.callback != nullptr) {
             RT_LOG(RT_LOG_DEBUG, "func [%p] mdlDestroy callback start.", CallBackInfo.callback);
             CallBackInfo.callback(CallBackInfo.ptr);

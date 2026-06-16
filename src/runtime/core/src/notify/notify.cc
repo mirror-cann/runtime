@@ -46,7 +46,11 @@ Notify::~Notify() noexcept
     if (driver_ == nullptr) {
         return;
     }
+    ReleaseDriverResourceOnDestroy();
+}
 
+void Notify::ReleaseDriverResourceOnDestroy()
+{
     if (isIpcNotify_) {
         if (isIpcCreator_) {
             (void)driver_->DestroyIpcNotify(ipcName_.c_str(), static_cast<int32_t>(deviceId_), notifyid_, tsId_);
@@ -56,10 +60,7 @@ Notify::~Notify() noexcept
         }
     } else if (notifyid_ != MAX_UINT32_NUM) {
         (void)driver_->NotifyIdFree(static_cast<int32_t>(deviceId_), notifyid_, tsId_, notifyFlag_);
-    } else {
-        // no operation
     }
-
     driver_ = nullptr;
 }
 

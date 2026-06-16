@@ -858,6 +858,40 @@ TEST_F(ApiTest, stream_wait_event_null)
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
+TEST_F(ApiTest, rtEventDestroySyncFailureRestoresHandle)
+{
+    rtEvent_t event = nullptr;
+    rtError_t error = rtEventCreate(&event);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    ASSERT_NE(eventObj, nullptr);
+
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    const rtChipType_t chipType = rtInstance->GetChipType();
+    rtInstance->SetChipType(CHIP_CLOUD);
+    GlobalContainer::SetRtChipType(CHIP_CLOUD);
+
+    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    ASSERT_NE(curCtx, nullptr);
+    Device * const dev = curCtx->Device_();
+    ASSERT_NE(dev, nullptr);
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
+    MOCKER_CPP(&Event::WaitForBusy).stubs().will(returnValue(RT_ERROR_STREAM_SYNC_TIMEOUT));
+
+    error = rtEventDestroySync(event);
+    EXPECT_EQ(error, ACL_ERROR_RT_STREAM_SYNC_TIMEOUT);
+    Event *validatedEvent = nullptr;
+    EXPECT_EQ(GetValidatedObject<Event>(event, validatedEvent), RT_ERROR_NONE);
+    EXPECT_EQ(validatedEvent, eventObj);
+
+    GlobalMockObject::verify();
+    rtInstance->SetChipType(chipType);
+    GlobalContainer::SetRtChipType(chipType);
+
+    error = rtEventDestroy(event);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
 TEST_F(ApiTest, stream_wait_event_default_stream)
 {
     rtError_t error;

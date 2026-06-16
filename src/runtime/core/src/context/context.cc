@@ -13,6 +13,7 @@
 #include "model_graph_task.h"
 #include "dump_task.h"
 #include <cinttypes>
+#include <exception>
 #include <queue>
 #include <thread>
 #include "securec.h"
@@ -76,6 +77,20 @@ constexpr uint64_t L1_SIZE = 1048576;
 constexpr uint64_t STREAM_ABORT_TIMEOUT = (60UL * RT_MS_PER_S); // 60s
 constexpr uint64_t REDUCE_ALIGN_SIZE = 0x4ULL;
 constexpr uint64_t REDUCE16_ALIGN_SIZE = 0x2ULL;
+
+bool ShouldRestoreStreamAfterTearDownFailure(
+    const Stream * const stm, const bool willDeleteOnTearDown, const bool destroyTaskRecycledStream,
+    const bool restoreBoundStream)
+{
+    if ((stm == nullptr) || destroyTaskRecycledStream) {
+        return false;
+    }
+
+    if (stm->Model_() != nullptr) {
+        return restoreBoundStream;
+    }
+    return !willDeleteOnTearDown;
+}
 
 rtError_t CheckMemoryParam(const rtDebugMemoryParam_t *const param)
 {
@@ -528,73 +543,375 @@ rtError_t Context::Setup()
 
 rtError_t Context::TearDown()
 {
-    modelLock_.Lock();
-    for (Model *tdModel : models_) {
-        RT_LOG(RT_LOG_INFO, "Tear down model abandon, model_id=%u.", tdModel->Id_());
-        delete tdModel;
-        tdModel = nullptr;
-    }
-
-    modelLock_.Unlock();
-    std::unique_lock<std::mutex> taskLock(streamLock_);
-    for (Stream * const tdStream : streams_) {
-        RT_LOG(RT_LOG_INFO, "Tear down stream abandon, stream_id=%d.", tdStream->Id_());
-        (void) TearDownStream(tdStream);
-    }
-    taskLock.unlock();
-    rtError_t error = RT_ERROR_NONE;
-    if (onlineStream_ != nullptr) {
-        error = TearDownStream(onlineStream_);
-        COND_LOG_ERROR(error != RT_ERROR_NONE, "Failed to tear down online stream, retCode=%#x.", error);
-        onlineStream_ = nullptr;
-    } else {
-        // no operation
-    }
-
-    const Stream *defaultStream = defaultStream_;
+    const Stream * const defaultStream = defaultStream_;
     NULL_PTR_RETURN_MSG(defaultStream, RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL);
+
+    TearDownModelsOnContextTearDown();
+
+    // Restored owner streams still point to this context. Return the error so ContextDestroy keeps the context alive
+    // for retry instead of deleting it with valid child stream handles.
+    const rtError_t ownerStreamError = TearDownOwnedStreamsOnContextTearDown();
+    if (ownerStreamError != RT_ERROR_NONE) {
+        return ownerStreamError;
+    }
+
+    rtError_t firstError = TearDownContextStream(onlineStream_, "online");
     if (!isPrimary_) {
-        error = TearDownStream(defaultStream_);
-        defaultStream_ = nullptr;
+        const rtError_t error = TearDownContextStream(defaultStream_, "default");
+        if ((firstError == RT_ERROR_NONE) && (error != RT_ERROR_NONE)) {
+            firstError = error;
+        }
     }
     if (InnerThreadLocalContainer::GetCurCtx() == this) {
         InnerThreadLocalContainer::SetCurCtx(nullptr);
     }
+    return firstError;
+}
+
+rtError_t Context::TearDownForFinalRelease()
+{
+    TearDownModelsOnContextTearDown();
+
+    rtError_t firstError = TearDownOwnedStreamsForPrimaryRelease();
+    const rtError_t onlineError = TearDownContextStreamForPrimaryRelease(onlineStream_, "online");
+    if ((firstError == RT_ERROR_NONE) && (onlineError != RT_ERROR_NONE)) {
+        firstError = onlineError;
+    }
+
+    if (!isPrimary_) {
+        if (defaultStream_ == nullptr) {
+            RT_LOG(RT_LOG_ERROR, "Non-primary context final release with null default stream.");
+            if (firstError == RT_ERROR_NONE) {
+                firstError = RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL;
+            }
+        }
+        const rtError_t defaultError = TearDownContextStreamForPrimaryRelease(defaultStream_, "default");
+        if ((firstError == RT_ERROR_NONE) && (defaultError != RT_ERROR_NONE)) {
+            firstError = defaultError;
+        }
+    } else if (defaultStream_ == nullptr) {
+        RT_LOG(RT_LOG_WARNING, "Primary context final release with null default stream.");
+    }
+
+    if (InnerThreadLocalContainer::GetCurCtx() == this) {
+        InnerThreadLocalContainer::SetCurCtx(nullptr);
+    }
+    return firstError;
+}
+
+void Context::TearDownModelsOnContextTearDown()
+{
+    std::list<Model *> modelsToDelete;
+    modelLock_.Lock();
+    for (Model *tdModel : models_) {
+        PrepareModelForDelete(tdModel);
+    }
+    modelsToDelete.swap(models_);
+    modelLock_.Unlock();
+
+    for (Model *tdModel : modelsToDelete) {
+        DeleteModelOnContextTearDown(tdModel);
+    }
+}
+
+rtError_t Context::TearDownOwnedStreamsOnContextTearDown()
+{
+    std::list<Stream *> streamsToDelete = TakeOwnedStreamsForTearDown();
+    rtError_t streamTearDownError = RT_ERROR_NONE;
+    for (Stream * const tdStream : streamsToDelete) {
+        const int32_t streamId = tdStream->Id_();
+        const bool willDeleteOnTearDown = WillStreamBeDeletedOnTearDown(tdStream);
+        RT_LOG(RT_LOG_INFO, "Tear down stream abandon, stream_id=%d.", tdStream->Id_());
+        ResetEmbeddedInnerHandle<Stream>(tdStream);
+        bool destroyTaskRecycledStream = false;
+        const rtError_t streamError = TearDownOwnedStream(tdStream, true, &destroyTaskRecycledStream);
+        bool restoredStream = false;
+        if ((streamError != RT_ERROR_NONE) &&
+            ShouldRestoreStreamAfterTearDownFailure(tdStream, willDeleteOnTearDown, destroyTaskRecycledStream, false)) {
+            InitEmbeddedInnerHandle<Stream>(tdStream);
+            RestoreOwnedStream(tdStream);
+            restoredStream = true;
+        }
+        if (streamError != RT_ERROR_NONE) {
+            if (restoredStream && (streamTearDownError == RT_ERROR_NONE)) {
+                streamTearDownError = streamError;
+            }
+            RT_LOG(RT_LOG_ERROR, "Failed to tear down abandoned stream, stream_id=%d, retCode=%#x.",
+                streamId, static_cast<uint32_t>(streamError));
+        }
+    }
+    return streamTearDownError;
+}
+
+rtError_t Context::TearDownOwnedStreamsForPrimaryRelease()
+{
+    std::list<Stream *> streamsToDelete = TakeOwnedStreamsForTearDown();
+    rtError_t firstError = RT_ERROR_NONE;
+    for (Stream *tdStream : streamsToDelete) {
+        const int32_t streamId = tdStream->Id_();
+        RT_LOG(RT_LOG_INFO, "Tear down stream abandon during final release, stream_id=%d.", tdStream->Id_());
+        const rtError_t error = TearDownStreamForPrimaryRelease(tdStream);
+        if (error != RT_ERROR_NONE) {
+            if (tdStream != nullptr) {
+                RestoreOwnedStream(tdStream);
+            }
+            RT_LOG(RT_LOG_ERROR, "Failed to tear down abandoned stream during final release, stream_id=%d, "
+                "retCode=%#x.", streamId, static_cast<uint32_t>(error));
+            if (firstError == RT_ERROR_NONE) {
+                firstError = error;
+            }
+        }
+    }
+    return firstError;
+}
+
+rtError_t Context::TearDownContextStream(Stream *&stream, const char * const streamName)
+{
+    if (stream == nullptr) {
+        return RT_ERROR_NONE;
+    }
+
+    Stream * const tdStream = stream;
+    const bool willDeleteOnTearDown = WillStreamBeDeletedOnTearDown(tdStream);
+    bool destroyTaskRecycledStream = false;
+    const rtError_t error = TearDownOwnedStream(tdStream, true, &destroyTaskRecycledStream);
+    if (error != RT_ERROR_NONE) {
+        if (willDeleteOnTearDown || destroyTaskRecycledStream) {
+            stream = nullptr;
+        }
+        RT_LOG(RT_LOG_ERROR, "Failed to tear down %s stream, retCode=%#x.", streamName, error);
+        return error;
+    }
+
+    stream = nullptr;
+    return RT_ERROR_NONE;
+}
+
+rtError_t Context::TearDownContextStreamForPrimaryRelease(Stream *&stream, const char * const streamName)
+{
+    if (stream == nullptr) {
+        return RT_ERROR_NONE;
+    }
+
+    Stream *tdStream = stream;
+    const rtError_t error = TearDownStreamForPrimaryRelease(tdStream);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "Failed to tear down %s stream during final release, retCode=%#x.", streamName, error);
+        stream = tdStream;
+        return error;
+    }
+
+    stream = nullptr;
     return error;
 }
 
-rtError_t Context::TearDownStream(Stream *stm, bool flag) const
+rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag)
 {
-    NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
-    bool isDelSelfStream = false;
+    NULL_PTR_RETURN_MSG(stream, RT_ERROR_STREAM_NULL);
 
-    COND_RETURN_ERROR_MSG_INNER(
-        stm->Model_() != nullptr, RT_ERROR_STREAM_MODEL,
-        "Failed to tear down stream because stream is bound, stream_id=%d, model_id=%u, retCode=%#x.", stm->Id_(),
-        stm->Model_()->Id_(), RT_ERROR_STREAM_INVALID);
+    Stream *tdStream = stream;
+    try {
+        FlushPendingTasksBeforeStreamTearDown(tdStream);
+    } catch (const std::exception &e) {
+        RT_LOG(RT_LOG_WARNING, "Flush pending stream tasks exception caught during final release, reason=%s.", e.what());
+        return RT_ERROR_STREAM_INVALID;
+    } catch (...) {
+        RT_LOG(RT_LOG_WARNING, "Unknown flush pending stream tasks exception caught during final release.");
+        return RT_ERROR_STREAM_INVALID;
+    }
+    ResetEmbeddedInnerHandle<Stream>(tdStream);
+    if (tdStream->NeedDelSelfStream()) {
+        const rtError_t deleteError = DeleteStreamNoThrowForPrimaryRelease(tdStream);
+        stream = tdStream;
+        return deleteError;
+    }
+
+    if (!Runtime::Instance()->IsExiting()) {
+        StreamStateCallbackManager::Instance().Notify(tdStream, false);
+    }
+    bool destroyTaskRecycledStream = false;
+    tdStream->SetDestroyTaskRecycledOnTearDownOutput(&destroyTaskRecycledStream);
+    const rtError_t error = tdStream->TearDown(false, flag);
+    tdStream->ClearDestroyTaskRecycledOnTearDownOutput();
+    if (error != RT_ERROR_NONE) {
+        return HandlePrimaryReleaseStreamTearDownFailure(stream, tdStream, error, destroyTaskRecycledStream);
+    }
+
+    const Runtime * const rtInstance = Runtime::Instance();
+    if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
+        (rtInstance->GetDisableThread())) {
+        const rtError_t deleteError = DeleteStreamNoThrowForPrimaryRelease(tdStream);
+        if (deleteError != RT_ERROR_NONE) {
+            stream = tdStream;
+            return deleteError;
+        }
+    }
+    stream = tdStream;
+    return RT_ERROR_NONE;
+}
+
+rtError_t Context::HandlePrimaryReleaseStreamTearDownFailure(Stream *&stream, Stream *tdStream, rtError_t error,
+    bool destroyTaskRecycledStream) const
+{
+    RT_LOG(RT_LOG_ERROR, "Failed to tear down stream during final release, retCode=%#x.",
+        static_cast<uint32_t>(error));
+    if (destroyTaskRecycledStream) {
+        RT_LOG(RT_LOG_WARNING, "Skip restoring stream after tear down failure during final release because destroy "
+            "task recycle has taken ownership.");
+        stream = nullptr;
+        return error;
+    }
+
+    if (tdStream->GetPendingNum() == 0U) {
+        const rtError_t deleteError = DeleteStreamNoThrowForPrimaryRelease(tdStream);
+        stream = tdStream;
+        if (deleteError != RT_ERROR_NONE) {
+            return deleteError;
+        }
+        return error;
+    }
+
+    InitEmbeddedInnerHandle<Stream>(tdStream);
+    RT_LOG(RT_LOG_WARNING, "Skip deleting stream after tear down failure during final release because pending tasks "
+        "still reference it. The stream is restored to its owner for retry, stream_id=%d, pending_num=%u.",
+        tdStream->Id_(), tdStream->GetPendingNum());
+    stream = tdStream;
+    return error;
+}
+
+rtError_t Context::DeleteStreamNoThrowForPrimaryRelease(Stream *&stream) const
+{
+    try {
+        DeleteStream(stream);
+        return RT_ERROR_NONE;
+    } catch (const std::exception &e) {
+        RT_LOG(RT_LOG_WARNING, "Delete stream exception caught during final release, reason=%s.", e.what());
+        stream = nullptr;
+        return RT_ERROR_STREAM_INVALID;
+    } catch (...) {
+        RT_LOG(RT_LOG_WARNING, "Unknown delete stream exception caught during final release.");
+        stream = nullptr;
+        return RT_ERROR_STREAM_INVALID;
+    }
+}
+
+void Context::PrepareModelForDelete(Model *mdl) const
+{
+    if (mdl == nullptr) {
+        return;
+    }
+
+    ResetEmbeddedInnerHandle<Model>(mdl);
+}
+
+void Context::DeleteModelOnContextTearDown(Model *mdl) const
+{
+    if (mdl == nullptr) {
+        return;
+    }
+
+    const uint32_t modelId = mdl->Id_();
+    RT_LOG(RT_LOG_INFO, "Tear down model abandon, model_id=%u.", modelId);
+    const rtError_t error = mdl->TearDown();
+    COND_LOG_ERROR(error != RT_ERROR_NONE, "Failed to tear down abandoned model, model_id=%u, retCode=%#x.",
+        modelId, static_cast<uint32_t>(error));
+    // Context teardown keeps the historical best-effort cleanup policy: log TearDown failure but still delete the
+    // abandoned model object to avoid leaving an ownerless host object.
+    delete mdl;
+}
+
+void Context::RestoreOwnedStream(Stream * const stm)
+{
+    if (stm == nullptr) {
+        return;
+    }
+
+    std::unique_lock<std::mutex> taskLock(streamLock_);
+    for (const Stream * const ownedStream : streams_) {
+        if (ownedStream == stm) {
+            return;
+        }
+    }
+    streams_.push_back(stm);
+}
+
+std::list<Stream *> Context::TakeOwnedStreamsForTearDown()
+{
+    std::list<Stream *> streamsToDelete;
+    std::unique_lock<std::mutex> taskLock(streamLock_);
+    streamsToDelete.swap(streams_);
+    return streamsToDelete;
+}
+
+void Context::FlushPendingTasksBeforeStreamTearDown(Stream *stm) const
+{
     for (uint32_t type = 0U; type < RT_HOST_TASK_TYPE_MAX; type++) {
         if (!(stm->IsPendingListEmpty(type))) {
             (void)stm->ExecPendingList(type);
         }
     }
-    isDelSelfStream = stm->NeedDelSelfStream();
-    if (isDelSelfStream) {
-        DeleteStream(stm);
-        return RT_ERROR_NONE;
-    }
+}
+
+rtError_t Context::TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destroyTaskRecycledStream) const
+{
     if (!Runtime::Instance()->IsExiting()) {
         StreamStateCallbackManager::Instance().Notify(stm, false);
     }
+    if (destroyTaskRecycledStream != nullptr) {
+        stm->SetDestroyTaskRecycledOnTearDownOutput(destroyTaskRecycledStream);
+    }
     const rtError_t error = stm->TearDown(false, flag);
-    ERROR_GOTO_MSG_INNER(
-        error, ERROR_FREE_STREAM, "Failed to tear down stream, retCode=%#x.", static_cast<uint32_t>(error));
+    if (error != RT_ERROR_NONE) {
+        if ((destroyTaskRecycledStream == nullptr) || !(*destroyTaskRecycledStream)) {
+            stm->ClearDestroyTaskRecycledOnTearDownOutput();
+        }
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to tear down stream, retCode=%#x.",
+            static_cast<uint32_t>(error));
+    } else {
+        stm->ClearDestroyTaskRecycledOnTearDownOutput();
+    }
 
-ERROR_FREE_STREAM:
     const Runtime * const rtInstance = Runtime::Instance();
-    if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE)|| (rtInstance->GetDisableThread())) {
+    const bool isRecycledByDestroyTask = (destroyTaskRecycledStream != nullptr) && (*destroyTaskRecycledStream);
+    if (!isRecycledByDestroyTask && (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
+        (rtInstance->GetDisableThread()))) {
         DeleteStream(stm);
     }
     return error;
+}
+
+bool Context::WillStreamBeDeletedOnTearDown(const Stream *stm) const
+{
+    if (stm == nullptr) {
+        return false;
+    }
+
+    const Runtime * const rtInstance = Runtime::Instance();
+    return stm->NeedDelSelfStream() ||
+        device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
+        ((rtInstance != nullptr) && rtInstance->GetDisableThread());
+}
+
+rtError_t Context::TearDownOwnedStream(Stream *stm, bool flag, bool *destroyTaskRecycledStream) const
+{
+    NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
+
+    COND_RETURN_ERROR_MSG_INNER(
+        stm->Model_() != nullptr, RT_ERROR_STREAM_MODEL,
+        "Failed to tear down stream because stream is bound, stream_id=%d, model_id=%u, retCode=%#x.", stm->Id_(),
+        stm->Model_()->Id_(), RT_ERROR_STREAM_INVALID);
+    FlushPendingTasksBeforeStreamTearDown(stm);
+    if (stm->NeedDelSelfStream()) {
+        DeleteStream(stm);
+        return RT_ERROR_NONE;
+    }
+    return TearDownStreamAndFinalize(stm, flag, destroyTaskRecycledStream);
+}
+
+rtError_t Context::TearDownStream(Stream *stm, bool flag) const
+{
+    bool destroyTaskRecycledStream = false;
+    return TearDownOwnedStream(stm, flag, &destroyTaskRecycledStream);
 }
 
 rtError_t Context::SyncStreamsWithTimeout(const std::list<Stream *> &streams, int32_t timeout, const mmTimespec start) const
@@ -1132,11 +1449,33 @@ ERROR_RETURN:
 
 rtError_t Context::StreamDestroy(Stream * const stm, bool flag)
 {
-    rtError_t error;
+    NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
+
+    const bool willDeleteOnTearDown = WillStreamBeDeletedOnTearDown(stm);
+    bool wasOwned = false;
     std::unique_lock<std::mutex> taskLock(streamLock_);
-    streams_.remove(stm);
+    for (auto it = streams_.begin(); it != streams_.end();) {
+        if (*it == stm) {
+            it = streams_.erase(it);
+            wasOwned = true;
+        } else {
+            ++it;
+        }
+    }
     taskLock.unlock();
-    error = TearDownStream(stm, flag);
+    ResetEmbeddedInnerHandle<Stream>(stm);
+    bool destroyTaskRecycledStream = false;
+    const rtError_t error = TearDownOwnedStream(stm, flag, &destroyTaskRecycledStream);
+    if ((error != RT_ERROR_NONE) &&
+        ShouldRestoreStreamAfterTearDownFailure(stm, willDeleteOnTearDown, destroyTaskRecycledStream, true)) {
+        InitEmbeddedInnerHandle<Stream>(stm);
+        if (wasOwned) {
+            RestoreOwnedStream(stm);
+        } else {
+            RT_LOG(RT_LOG_WARNING, "Stream destroy failed after stream was not found in owner list, stream_id=%d, "
+                "retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+        }
+    }
     return error;
 }
 
@@ -1428,9 +1767,10 @@ rtError_t Context::ModelDestroy(Model *mdl)
 
     modelLock_.Lock();
     ResetEmbeddedInnerHandle<Model>(mdl);
-    (void)mdl->TearDown();
     models_.remove(mdl);
     modelLock_.Unlock();
+
+    (void)mdl->TearDown();
     DELETE_O(mdl);
 
     return RT_ERROR_NONE;

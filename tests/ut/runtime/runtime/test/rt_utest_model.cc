@@ -639,6 +639,48 @@ rtError_t task_gen_callback(rtModel_t model, rtTaskInfo_t *taskInfo)
     return RT_ERROR_NONE;
 }
 
+namespace {
+struct ModelDestroyCallbackReentrantArgs {
+    Model *model{nullptr};
+    bool unregisterCalled{false};
+    bool registerCalled{false};
+};
+
+void SecondaryModelDestroyCallback(void *ptr)
+{
+    (void)ptr;
+}
+
+void ReentrantModelDestroyCallback(void *ptr)
+{
+    ModelDestroyCallbackReentrantArgs * const args = static_cast<ModelDestroyCallbackReentrantArgs *>(ptr);
+    if (args == nullptr || args->model == nullptr) {
+        return;
+    }
+    args->unregisterCalled =
+        (args->model->ModelDestroyUnregisterCallback(ReentrantModelDestroyCallback) == RT_ERROR_NONE);
+    args->registerCalled =
+        (args->model->ModelDestroyRegisterCallback(SecondaryModelDestroyCallback, nullptr) == RT_ERROR_NONE);
+}
+} // namespace
+
+TEST_F(ModelTest, ModelDestroyCallbackAllowsReentrantRegisterOps)
+{
+    Model model;
+    ModelDestroyCallbackReentrantArgs args{&model, false, false};
+
+    rtError_t error = model.ModelDestroyRegisterCallback(ReentrantModelDestroyCallback, &args);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = model.ModelDestroyCallback();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_TRUE(args.unregisterCalled);
+    EXPECT_TRUE(args.registerCalled);
+
+    error = model.ModelDestroyUnregisterCallback(SecondaryModelDestroyCallback);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
 
 
 #if 1
@@ -1543,6 +1585,23 @@ uint32_t headStreamFlags, bool exeStreamIsNull = false)
 * 2.执行器为EXECUTOR_NONE
 * 3.执行流为RT_STREAM_FORBIDDEN_DEFAULT
 */
+TEST_F(ModelTest, model_handle_invalid_after_destroy)
+{
+    rtError_t error;
+    rtModel_t model = nullptr;
+
+    error = rtModelCreate(&model, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = rtModelDestroy(model);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    Model *destroyedModel = nullptr;
+    error = GetValidatedObject<Model>(model, destroyedModel);
+    EXPECT_EQ(error, RT_ERROR_INVALID_HANDLE);
+    EXPECT_EQ(destroyedModel, nullptr);
+}
+
 #if 0
 TEST_F(ModelTest, acl_001_sink_model_exe)
 {
@@ -1765,6 +1824,7 @@ TEST_F(ModelTest, get_model_id)
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
+
 #if 0
 TEST_F(ModelTest, cancel_surport_single_thread)
 {

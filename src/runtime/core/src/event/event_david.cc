@@ -54,9 +54,9 @@ bool DavidEvent::TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeed
     const std::lock_guard<std::mutex> lock(taskMapMutex_);
     if (isNeedDestroy) { // call from EventDestroy
         SetIsNeedDestroy(isNeedDestroy_.Value() || isNeedDestroy);
-        return waitTaskMap_.empty() && recordResetMap_.empty();
+        return AreTaskMapsEmptyLocked();
     }
-    return isNeedDestroy_.Value() && waitTaskMap_.empty() && recordResetMap_.empty();
+    return isNeedDestroy_.Value() && AreTaskMapsEmptyLocked();
 }
 
 bool DavidEvent::DavidUpdateRecordMapAndDestroyEvent(TaskInfo *taskInfo)
@@ -67,7 +67,7 @@ bool DavidEvent::DavidUpdateRecordMapAndDestroyEvent(TaskInfo *taskInfo)
         return false;
     }
     recordResetMap_.erase(taskInfo);
-    return isNeedDestroy_.Value() && waitTaskMap_.empty() && recordResetMap_.empty();
+    return isNeedDestroy_.Value() && AreTaskMapsEmptyLocked();
 }
 
 bool DavidEvent::DavidUpdateWaitMapAndDestroyEvent(TaskInfo *taskInfo)
@@ -78,7 +78,7 @@ bool DavidEvent::DavidUpdateWaitMapAndDestroyEvent(TaskInfo *taskInfo)
         return false;
     }
     waitTaskMap_.erase(taskInfo);
-    return isNeedDestroy_.Value() && waitTaskMap_.empty() && recordResetMap_.empty();
+    return isNeedDestroy_.Value() && AreTaskMapsEmptyLocked();
 }
 
 rtError_t DavidEvent::GenEventId()

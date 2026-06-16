@@ -153,10 +153,34 @@ bool Event::TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeedDestr
     return isNeedDestroy_.Value() && idMap_.empty();
 }
 
+bool Event::AreTaskMapsEmptyLocked()
+{
+    return waitTaskMap_.empty() && recordResetMap_.empty();
+}
+
 bool Event::IsEventTaskEmpty()
 {
     const std::lock_guard<std::mutex> isEmptyLock(taskMapMutex_);
-    return waitTaskMap_.empty() && recordResetMap_.empty();
+    return AreTaskMapsEmptyLocked();
+}
+
+bool Event::HasPendingBusyWork()
+{
+    if (!IsEventTaskEmpty()) {
+        return true;
+    }
+    // Task maps and id map use independent locks. EventDestroy waits in a loop after the public handle is reset, so
+    // a transient cross-map snapshot is acceptable and will be rechecked in the next iteration.
+    const std::lock_guard<std::mutex> lock(idMapMutex_);
+    return !idMap_.empty();
+}
+
+rtError_t Event::ProcessBusyWaitIteration(const Runtime * const rtInstance)
+{
+    if (rtInstance->GetDisableThread()) {
+        return ReclaimTask(true);
+    }
+    return GetFailureStatus();
 }
 
 void Event::InsertWaitToMap(TaskInfo *tsk)
@@ -1061,23 +1085,15 @@ rtError_t Event::ElapsedTime(float32_t * const timeInterval, Event * const base)
 
 rtError_t Event::WaitForBusy()
 {
-    rtError_t error = RT_ERROR_NONE;
     const Runtime * const rtInstance = Runtime::Instance();
-    while (!IsEventTaskEmpty() || !idMap_.empty()) {
-        if (rtInstance->GetDisableThread()) {
-            error = ReclaimTask(true);
-            if (error != RT_ERROR_NONE) {
-                return error;
-            }
-        } else {
-            error = GetFailureStatus();
-            if (error != RT_ERROR_NONE) {
-                return error;
-            }
+    while (HasPendingBusyWork()) {
+        const rtError_t error = ProcessBusyWaitIteration(rtInstance);
+        if (error != RT_ERROR_NONE) {
+            return error;
         }
     }
     RT_LOG(RT_LOG_INFO, "device_id=%u, event_id=%d finished map already empty.", device_->Id_(), eventId_);
-    return error;
+    return RT_ERROR_NONE;
 }
 
 rtError_t Event::GetTimeStamp(uint64_t * const recTimestamp)

@@ -159,6 +159,7 @@ public:
 private:
     rtInnerObject handle_ {};
     rtError_t RevisedWait(Stream * const streamIn, const uint32_t timeout = 0);
+    void ReleaseDriverResourceOnDestroy();
     uint32_t notifyid_;
     uint32_t phyId_;
     std::string name_;

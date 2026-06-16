@@ -284,6 +284,7 @@ public:
     }
 
 protected:
+    bool AreTaskMapsEmptyLocked();
     Device           *device_;
     RecordTaskInfo   latestRecord_;
     Atomic<bool>     isNeedDestroy_;
@@ -304,6 +305,8 @@ protected:
 
 private:
     rtInnerObject handle_ {};
+    bool HasPendingBusyWork();
+    rtError_t ProcessBusyWaitIteration(const Runtime * const rtInstance);
     int32_t          freeEventId_;
     uint64_t         timeline_;
     bool             isNotify_;

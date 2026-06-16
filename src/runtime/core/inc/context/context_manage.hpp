@@ -23,6 +23,8 @@ public:
     static bool CheckContextIsValid(Context * const curCtx, const bool inUseFlag);
     static void InsertContext(Context * const insertCtx);
     static rtError_t EraseContextFromSet(Context * const eraseCtx);
+    static rtError_t EraseContextFromSetForRetainRollback(Context * const eraseCtx);
+    static rtError_t EraseContextAndDeleteIfNeeded(Context * const eraseCtx);
     static rtError_t DeviceAbort(const int32_t devId);
     static rtError_t Devicekill(const int32_t devId);
     static rtError_t DeviceQuery(const int32_t devId, const uint32_t step, const uint32_t timeout);

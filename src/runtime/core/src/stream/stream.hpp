@@ -69,6 +69,7 @@ constexpr uint32_t DEBUG_JSON_PRINT_VERBOSE = 0x1U;
 class Event;
 class Context;
 class Device;
+class Runtime;
 class Task;
 class EventRecordTask;
 class Model;
@@ -451,7 +452,6 @@ public:
 
     bool IsPersistentTaskFull();
     void FreePersistentTaskID(const Stream * const exeStream);
-
     // some works are not supported in model compile step,
     //      e.q. HCCL task need device memory but not supported now;
     //             so HCCL kernel task can't support arg memory 0 cpy in model loading step,
@@ -1494,6 +1494,20 @@ public:
         return isCtrlSQStream_;
     }
 private:
+    friend class Context;
+    void SetDestroyTaskRecycledOnTearDownOutput(bool * const output)
+    {
+        destroyTaskRecycledOnTearDownOutput_ = output;
+        if (destroyTaskRecycledOnTearDownOutput_ != nullptr) {
+            *destroyTaskRecycledOnTearDownOutput_ = false;
+        }
+    }
+
+    void ClearDestroyTaskRecycledOnTearDownOutput()
+    {
+        destroyTaskRecycledOnTearDownOutput_ = nullptr;
+    }
+
     void ConstructTraceEventFromTask(TaskInfo *const task, const uint32_t flags, TraceEvent &record) const;
 
     rtInnerObject handle_ {};
@@ -1514,6 +1528,11 @@ private:
     rtError_t AllocSqeBufferForAutoSplit();
     rtError_t AllocStreamIdForAutoSplit();
     rtError_t AllocSqCqForAutoSplitWithRetry();
+    void WaitAsyncRecycleThreadOnTearDown(const bool starsFlag);
+    void RecycleDelayedTasksAfterTearDown();
+    rtError_t UnsubscribeStreamReportOnTearDown(Runtime * const rt);
+    bool ShouldSkipDestroyTaskSubmissionOnTearDown(const bool starsFlag) const;
+    rtError_t FinalizeTearDownWithoutDestroyTask(const bool starsFlag);
 public:
     bool isDeviceSyncFlag = false;
     uint32_t streamResId;
@@ -1660,6 +1679,7 @@ private:
     void *argsHandle_{nullptr};
     StreamStatus streamStatus_{StreamStatus::NORMAL};
     bool isCtrlSQStream_{false};
+    bool *destroyTaskRecycledOnTearDownOutput_{nullptr};
 public:
     TaskResManage *taskResMang_{nullptr};
     bool isHasPcieBar_{false};

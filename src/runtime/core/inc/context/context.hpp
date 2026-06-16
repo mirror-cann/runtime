@@ -102,6 +102,7 @@ public:
 
     // destroy this context
     virtual rtError_t TearDown();
+    rtError_t TearDownForFinalRelease();
 
     // Wait event recorded to complete.
     rtError_t Synchronize(int32_t timeout);
@@ -300,6 +301,11 @@ public:
     {
         std::unique_lock<std::mutex> taskLock(streamLock_);
         try {
+            for (const Stream * const ownedStream : streams_) {
+                if (ownedStream == stm) {
+                    return;
+                }
+            }
             streams_.push_back(stm);
         } catch (std::exception &e) {
             RT_LOG(RT_LOG_ERROR, "%s", e.what());
@@ -512,6 +518,11 @@ public:
         isForceReset_ = isForceReset;
     }
 
+    bool IsContextForceReset() const
+    {
+        return isForceReset_;
+    }
+
     rtError_t UpdateEndGraphTask(Stream * const origCaptureStream, Stream * const exeStream, Notify *ntf) const;
     rtError_t UpdateSuModelExeStreamNotifyWaitSqe(TaskInfo *taskInfo,
         Stream * const exeStream) const;
@@ -547,6 +558,22 @@ public:
 private:
     rtError_t Init();
     rtError_t OnlineStreamInit(const rtChipType_t chipType);
+    void RestoreOwnedStream(Stream * const stm);
+    void FlushPendingTasksBeforeStreamTearDown(Stream *stm) const;
+    rtError_t TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destroyTaskRecycledStream = nullptr) const;
+    rtError_t TearDownOwnedStream(Stream *stm, bool flag, bool *destroyTaskRecycledStream = nullptr) const;
+    bool WillStreamBeDeletedOnTearDown(const Stream *stm) const;
+    void TearDownModelsOnContextTearDown();
+    rtError_t TearDownOwnedStreamsOnContextTearDown();
+    rtError_t TearDownOwnedStreamsForPrimaryRelease();
+    rtError_t TearDownContextStream(Stream *&stream, const char *streamName);
+    rtError_t TearDownContextStreamForPrimaryRelease(Stream *&stream, const char *streamName);
+    rtError_t TearDownStreamForPrimaryRelease(Stream *&stream, bool flag = true);
+    rtError_t HandlePrimaryReleaseStreamTearDownFailure(Stream *&stream, Stream *tdStream, rtError_t error,
+        bool destroyTaskRecycledStream) const;
+    rtError_t DeleteStreamNoThrowForPrimaryRelease(Stream *&stream) const;
+    void PrepareModelForDelete(Model *mdl) const;
+    void DeleteModelOnContextTearDown(Model *mdl) const;
 
     bool IsStreamNotSync(const uint32_t flags) const;
 
@@ -555,6 +582,7 @@ private:
     rtError_t CheckCaptureModelValidity(Model * const captureMdl) const;
     rtError_t SetOverflowAddr();
 protected:
+    std::list<Stream *> TakeOwnedStreamsForTearDown();
     Device *device_;
 
 private:

@@ -406,6 +406,351 @@ TEST_F(ContextTest, TEAR_DOWN_TEST)
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
+TEST_F(ContextTest, PrimaryContextReleaseRestoresContextWhenFinalReleaseFails)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    RefObject<Context*> * const secondRefObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_EQ(secondRefObject, refObject);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    const uint64_t refCountBeforeForceReset = refObject->GetRef();
+    ASSERT_GT(refCountBeforeForceReset, 1ULL);
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+
+    const bool forceResetBeforeRelease = ctx->IsContextForceReset();
+    MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    error = runtime->PrimaryContextRelease(devId, true);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(refObject->GetVal(false), ctx);
+    EXPECT_EQ(refObject->GetRef(), refCountBeforeForceReset);
+    EXPECT_EQ(ctx->IsContextForceReset(), forceResetBeforeRelease);
+
+    GlobalMockObject::reset();
+    runtime->SetDisableThread(disableThread);
+    error = runtime->PrimaryContextRelease(devId, true);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(refObject->GetRef(), 0ULL);
+}
+
+TEST_F(ContextTest, PrimaryContextRetainRollbackKeepsReferencedTscContext)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const uint32_t originTsNum = runtime->tsNum_;
+    const bool originSentinelMode = runtime->GetSentinelMode();
+    runtime->SetSentinelMode(false);
+    runtime->tsNum_ = 1U;
+
+    RefObject<Context *> * const firstRefObject =
+        static_cast<RefObject<Context *> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(firstRefObject, nullptr);
+    RefObject<Context *> * const secondRefObject =
+        static_cast<RefObject<Context *> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_EQ(secondRefObject, firstRefObject);
+    Context * const tscCtx = firstRefObject->GetVal();
+    ASSERT_NE(tscCtx, nullptr);
+    const uint64_t refCountBeforeRollback = firstRefObject->GetRef();
+    ASSERT_GT(refCountBeforeRollback, 1ULL);
+
+    runtime->tsNum_ = 2U;
+    RefObject<Context *> &tsvRefObj = runtime->priCtxs_[devId][RT_TSV_ID];
+    ASSERT_TRUE(tsvRefObj.TryIncAndSet(nullptr));
+
+    RefObject<Context *> * const failedRetain =
+        static_cast<RefObject<Context *> *>(runtime->PrimaryContextRetain(devId));
+    EXPECT_EQ(failedRetain, nullptr);
+    EXPECT_EQ(firstRefObject->GetVal(false), tscCtx);
+    EXPECT_EQ(firstRefObject->GetRef(), refCountBeforeRollback);
+    EXPECT_TRUE(ContextManage::CheckContextIsValid(tscCtx, false));
+
+    tsvRefObj.ResetValForAbort();
+    runtime->tsNum_ = 1U;
+    EXPECT_EQ(runtime->PrimaryContextRelease(devId), RT_ERROR_NONE);
+    EXPECT_EQ(runtime->PrimaryContextRelease(devId), RT_ERROR_NONE);
+    runtime->SetSentinelMode(originSentinelMode);
+    runtime->tsNum_ = originTsNum;
+}
+
+TEST_F(ContextTest, PrimaryContextRetainRollbackErasesInsertedContext)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    Device * const dev = runtime->GetDevice(static_cast<uint32_t>(devId), RT_TSC_ID);
+    ASSERT_NE(dev, nullptr);
+
+    Context *ctx = new (std::nothrow) Context(dev, true);
+    ASSERT_NE(ctx, nullptr);
+    ContextManage::InsertContext(ctx);
+    ASSERT_TRUE(ContextManage::CheckContextIsValid(ctx, false));
+
+    EXPECT_EQ(ContextManage::EraseContextFromSetForRetainRollback(ctx), RT_ERROR_NONE);
+    EXPECT_FALSE(ContextManage::CheckContextIsValid(ctx, false));
+
+    ctx->device_ = nullptr;
+    DELETE_O(ctx);
+}
+
+TEST_F(ContextTest, StreamDestroyRestoresOwnedStreamOnFailure)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+    EXPECT_FALSE(ctx->WillStreamBeDeletedOnTearDown(stream));
+    const size_t ownedStreamCount = ctx->streams_.size();
+
+    MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    error = ctx->StreamDestroy(stream, false);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(ctx->streams_.size(), ownedStreamCount);
+
+    bool found = false;
+    for (const Stream * const ownedStream : ctx->streams_) {
+        if (ownedStream == stream) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+
+    GlobalMockObject::reset();
+    error = ctx->StreamDestroy(stream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, StreamDestroyDoesNotRestoreRemovedStreamOnFailure)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+    EXPECT_FALSE(ctx->WillStreamBeDeletedOnTearDown(stream));
+    ctx->streams_.remove(stream);
+    const size_t ownedStreamCount = ctx->streams_.size();
+
+    MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    error = ctx->StreamDestroy(stream, false);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(ctx->streams_.size(), ownedStreamCount);
+
+    bool found = false;
+    for (const Stream * const ownedStream : ctx->streams_) {
+        if (ownedStream == stream) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_FALSE(found);
+
+    GlobalMockObject::reset();
+    error = ctx->StreamDestroy(stream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownReturnsOwnerStreamFailureAndKeepsStreamRestored)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+    EXPECT_FALSE(ctx->WillStreamBeDeletedOnTearDown(stream));
+    const size_t ownedStreamCount = ctx->streams_.size();
+
+    MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    error = ctx->TearDown();
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(ctx->streams_.size(), ownedStreamCount);
+    EXPECT_EQ(stream->Context_(), ctx);
+
+    bool found = false;
+    for (const Stream * const ownedStream : ctx->streams_) {
+        if (ownedStream == stream) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(found);
+
+    GlobalMockObject::reset();
+    error = ctx->StreamDestroy(stream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownSkipsRestoringBoundStreamFailure)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+
+    Model model;
+    stream->SetModel(&model);
+    error = ctx->TearDown();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    bool found = false;
+    for (const Stream * const ownedStream : ctx->streams_) {
+        if (ownedStream == stream) {
+            found = true;
+            break;
+        }
+    }
+    EXPECT_FALSE(found);
+
+    stream->DelModel(&model);
+    DELETE_O(stream);
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownKeepsOnlineStreamOnFailure)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+
+    Stream *onlineStream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &onlineStream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(onlineStream, nullptr);
+    ctx->streams_.remove(onlineStream);
+    ctx->onlineStream_ = onlineStream;
+    EXPECT_FALSE(ctx->WillStreamBeDeletedOnTearDown(onlineStream));
+    MOCKER_CPP_VIRTUAL(onlineStream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+
+    error = ctx->TearDown();
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(ctx->onlineStream_, onlineStream);
+    GlobalMockObject::reset();
+    error = ctx->StreamDestroy(onlineStream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    ctx->onlineStream_ = nullptr;
+
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownKeepsDefaultStreamOnFailure)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+
+    Stream *defaultStream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &defaultStream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(defaultStream, nullptr);
+    ctx->streams_.remove(defaultStream);
+    Stream * const savedDefaultStream = ctx->defaultStream_;
+    const bool savedPrimary = ctx->isPrimary_;
+    ctx->defaultStream_ = defaultStream;
+    ctx->isPrimary_ = false;
+    EXPECT_FALSE(ctx->WillStreamBeDeletedOnTearDown(defaultStream));
+    MOCKER_CPP_VIRTUAL(defaultStream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+
+    error = ctx->TearDown();
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(ctx->defaultStream_, defaultStream);
+    GlobalMockObject::reset();
+    error = ctx->StreamDestroy(defaultStream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    ctx->defaultStream_ = savedDefaultStream;
+    ctx->isPrimary_ = savedPrimary;
+
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
 TEST_F(ContextTest, SYNCHRONIZE_TEST)
 {
     int32_t devId;

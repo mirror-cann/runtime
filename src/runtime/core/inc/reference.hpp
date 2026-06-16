@@ -150,6 +150,21 @@ public:
         count_.Set(0ULL);
     }
 
+    // Restore the owner value when reset teardown fails after TryDecRef() moved count_ to REF_UPDATING.
+    bool RestoreValAfterFailedReset(T val, const uint64_t refCount = 1ULL)
+    {
+        if ((refCount == 0ULL) || ((refCount & REF_UPDATING) != 0ULL)) {
+            return false;
+        }
+        const T oldVal = value_;
+        value_ = val;
+        if (count_.CompareExchange(REF_UPDATING, refCount)) {
+            return true;
+        }
+        value_ = oldVal;
+        return false;
+    }
+
     // safe call after IncRef
     const T GetVal(bool polling = true) const
     {

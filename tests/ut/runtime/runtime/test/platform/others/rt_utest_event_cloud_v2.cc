@@ -21,6 +21,7 @@
 #include "scheduler.hpp"
 #include "task_info.hpp"
 #include "runtime.hpp"
+#include "api_impl.hpp"
 #include "context.hpp"
 #include "npu_driver.hpp"
 #undef protected
@@ -154,6 +155,26 @@ TEST_F(EventTest910, query)
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
+}
+
+TEST_F(EventTest910, event_destroy_invalidates_handle_when_delete_is_delayed)
+{
+    ApiImpl apiImpl;
+    Event *evt = new (std::nothrow) Event();
+    ASSERT_NE(evt, nullptr);
+    evt->RefreshEventId(1);
+    evt->EventIdCountAdd(1);
+    InitEmbeddedInnerHandle<Event>(evt);
+    rtEvent_t eventHandle = reinterpret_cast<rtEvent_t>(evt->GetInnerHandle());
+
+    const rtError_t error = apiImpl.EventDestroy(evt);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    Event *destroyedEvent = nullptr;
+    EXPECT_EQ(GetValidatedObject<Event>(eventHandle, destroyedEvent), RT_ERROR_INVALID_HANDLE);
+    EXPECT_EQ(destroyedEvent, nullptr);
+
+    delete evt;
 }
 
 TEST_F(EventTest910, event_elapse_arg)

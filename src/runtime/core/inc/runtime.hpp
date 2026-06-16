@@ -879,7 +879,26 @@ private:
     void KernelSetDfx(Program * const prog, const void * const kernelInfoExt, Kernel *kernelPtr) const;
     void PrimaryContextCallBack(const Context * const ctx, const uint32_t devId);
     void PrimaryContextCallBackAfterTeardown(const uint32_t devId) const;
-    void ProcContexRelease(Context *const ctx, const uint32_t devId, const bool isForceReset);
+    void TearDownAndDeleteContextNoThrow(Context *&ctx) const;
+    rtError_t AcquirePrimaryContextForRelease(
+        RefObject<Context *> &refObj, const uint32_t tsId, const bool isForceReset, bool &ret,
+        bool &shouldRelease, Context *&ctx, uint64_t &restoreRefCount);
+    rtError_t ProcContexRelease(
+        RefObject<Context *> &refObj, Context *const ctx, const uint32_t devId, const bool isForceReset,
+        const uint64_t restoreRefCount);
+    bool AcquirePrimaryXpuContextForRelease(Context *&ctx);
+    rtError_t FinalizePrimaryXpuContextRelease(Context *ctx);
+    void DetachContextOwnedStreams(Context *ctx) const;
+    rtError_t TearDownPrimaryContext(Context *ctx) const;
+    void RollbackFailedPrimaryContextRetain(Context *&ctx, RefObject<Context *> &refObj);
+    void RollbackTsvPrimaryContextRetainFailure(const uint32_t devId);
+    rtError_t StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted);
+    rtError_t PrepareDeviceRetain(
+        const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted);
+    void RollbackFailedDeviceRetain(
+        RefObject<Device *> &refObj, Device *&dev, const uint32_t devId, const uint32_t tsId,
+        const bool aicpuExecutorStarted) const;
+    void FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, const bool isForceReset);
     Device *DeviceAddObserver(Device *dev);
     rtError_t RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t numsDev,
         const uint32_t * const deviceList, const uint32_t cacheFlag);

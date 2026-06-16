@@ -49,6 +49,26 @@ rtError_t ContextManage::EraseContextFromSet(Context *const eraseCtx)
     return RT_ERROR_NONE;
 }
 
+rtError_t ContextManage::EraseContextFromSetForRetainRollback(Context *const eraseCtx)
+{
+    if (!g_ctxMan.EraseSetValueWithLock(eraseCtx)) {
+        return RT_ERROR_CONTEXT_NULL;
+    }
+    return RT_ERROR_NONE;
+}
+
+rtError_t ContextManage::EraseContextAndDeleteIfNeeded(Context *const eraseCtx)
+{
+    const rtError_t ret = EraseContextFromSet(eraseCtx);
+    // After erasing from the global set, new ContextProtect acquisitions through CheckContextIsValid() cannot start.
+    // ContextOutUse() only releases the protect reference acquired by EraseContextFromSet(); remaining users keep the
+    // context alive and are responsible for their own ContextOutUse().
+    if ((ret != RT_ERROR_CONTEXT_NULL) && (eraseCtx->ContextOutUse() == 0ULL)) {
+        delete eraseCtx;
+    }
+    return ret;
+}
+
 bool ContextManage::IsSupportDeviceAbort(const int32_t devId)
 {
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());

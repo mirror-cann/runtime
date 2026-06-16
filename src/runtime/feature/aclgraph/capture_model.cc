@@ -68,27 +68,13 @@ CaptureModel::~CaptureModel() noexcept
     }
     (void)Context_()->Device_()->ClearEndGraphNotifyInfoByModel(this);
 
-    for (Notify *notify : addStreamNotifyList_) {
-         DELETE_O(notify);
-    }
-    addStreamNotifyList_.clear();
- 
-    for (Notify *notify : executeNotifyList_) {
-         DELETE_O(notify);
-    }
-    executeNotifyList_.clear();
-
-    ArgLoader * const argLoaderObj = Context_()->Device_()->ArgLoader_();
-    for (auto argHandle : argLoaderBackup_) {
-        (void)argLoaderObj->Release(argHandle);
-    }
-    argLoaderBackup_.clear();
-
+    ReleaseNotifyListOnDestroy(addStreamNotifyList_);
+    ReleaseNotifyListOnDestroy(executeNotifyList_);
+    ReleaseArgLoaderBackupOnDestroy();
     for (auto condHandle : condHandles_) {
-         DELETE_O(condHandle);
+        DELETE_O(condHandle);
     }
-    condHandles_.clear(); 
-
+    condHandles_.clear();
 }
 rtError_t CaptureModel::SetNotifyBeforeExecute(Stream * const exeStm, CaptureModel* const captureMdl)
 {
@@ -263,6 +249,24 @@ rtError_t CaptureModel::ExecuteAsync(Stream * const stm)
 {
     return ExecuteCommon(stm, -1, RT_MODEL_CAPTURE_EXECUTE_ASYNC);
 }
+
+void CaptureModel::ReleaseNotifyListOnDestroy(std::vector<Notify *> &notifyList)
+{
+    for (Notify *notify : notifyList) {
+        DELETE_O(notify);
+    }
+    notifyList.clear();
+}
+
+void CaptureModel::ReleaseArgLoaderBackupOnDestroy()
+{
+    ArgLoader * const argLoaderObj = Context_()->Device_()->ArgLoader_();
+    for (auto argHandle : argLoaderBackup_) {
+        (void)argLoaderObj->Release(argHandle);
+    }
+    argLoaderBackup_.clear();
+}
+
 rtError_t CaptureModel::TearDown()
 {
     Profiler *profilerPtr = Runtime::Instance()->Profiler_();

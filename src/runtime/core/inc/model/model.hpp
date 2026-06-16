@@ -549,6 +549,7 @@ private:
     void SyncExeStream(void) const;
     rtError_t SendAicpuModelLoadMsg(Stream *stream) const;
     rtError_t ModelDestroyCallback();
+    void ResetBoundLabelsOnDestroy();
 
 private:
     int32_t id_ = MODEL_ID_INVALID;

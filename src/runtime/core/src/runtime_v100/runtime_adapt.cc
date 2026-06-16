@@ -64,12 +64,7 @@ Runtime::~Runtime()
             priCtxs_[i][j].ResetVal();
             if (context != nullptr) {
                 if (context->GetCount() == 0ULL) {
-                    try {
-                        (void)context->TearDown();
-                    } catch (...) {
-                    }
-                    delete context;
-                    context = nullptr;
+                    TearDownAndDeleteContextNoThrow(context);
                 }
             }
         }

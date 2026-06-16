@@ -1843,7 +1843,15 @@ static void PrintfTsdError(const uint32_t devId, const TDT_StatusType tdtStatus)
 // runtime on device, always start aicpu
 rtError_t Runtime::startAicpuExecutor(const uint32_t devId, const uint32_t tsId)
 {
+    return StartAicpuExecutorTracked(devId, tsId, nullptr);
+}
+
+rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted)
+{
     rtError_t error = RT_ERROR_NONE;
+    if (aicpuExecutorStarted != nullptr) {
+        *aicpuExecutorStarted = false;
+    }
     if ((tsId == RT_TSV_ID)) {
         return error;
     }
@@ -1884,6 +1892,9 @@ rtError_t Runtime::startAicpuExecutor(const uint32_t devId, const uint32_t tsId)
     if (tdtStatus != TSD_OK) {
         PrintfTsdError(devId, tdtStatus);
         return RT_ERROR_DRV_OPEN_TSD;
+    }
+    if (aicpuExecutorStarted != nullptr) {
+        *aicpuExecutorStarted = true;
     }
     RT_LOG(RT_LOG_INFO, "TsdOpen success, devId=%u, ret=%u", devId, error);
 #endif
@@ -2400,11 +2411,7 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
 
                 break;
             CTX_FREE:
-                if (ctx != nullptr) {
-                    (void)ctx->TearDown();
-                }
-                DELETE_O(ctx);
-                refObj.SetVal(nullptr);
+                RollbackFailedPrimaryContextRetain(ctx, refObj);
             } while (false);
         }
 
@@ -2419,15 +2426,7 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
                 refObj.ResetVal();
             }
             if (i == RT_TSV_ID) {
-                RefObject<Context *> &tscRefObj = priCtxs_[devId][RT_TSC_ID];
-                Context *tscCtx = tscRefObj.GetVal();
-                if (tscCtx != nullptr) {
-                    (void)tscCtx->TearDown();
-                }
-                DELETE_O(tscCtx);
-                if (!tscRefObj.DecRef()) {
-                    tscRefObj.ResetVal();
-                }
+                RollbackTsvPrimaryContextRetainFailure(devId);
             }
             return nullptr;
     }
@@ -2478,6 +2477,143 @@ void Runtime::PrimaryContextCallBackAfterTeardown(const uint32_t devId) const
     }
 }
 
+void Runtime::DetachContextOwnedStreams(Context *ctx) const
+{
+    if (ctx == nullptr) {
+        return;
+    }
+    if (ctx->DefaultStream_() != nullptr) {
+        ctx->DefaultStream_()->SetContext(nullptr);
+    }
+    if (ctx->GetCtrlSQStream() != nullptr) {
+        ctx->GetCtrlSQStream()->SetContext(nullptr);
+    }
+}
+
+rtError_t Runtime::TearDownPrimaryContext(Context *ctx) const
+{
+    const ContextProtect cp(ctx);
+    const rtError_t error = ctx->TearDownForFinalRelease();
+    if (error == RT_ERROR_NONE) {
+        DetachContextOwnedStreams(ctx);
+    }
+    return error;
+}
+
+void Runtime::TearDownAndDeleteContextNoThrow(Context *&ctx) const
+{
+    if (ctx == nullptr) {
+        return;
+    }
+    try {
+        (void)ctx->TearDownForFinalRelease();
+    } catch (...) {
+        RT_LOG(RT_LOG_WARNING, "TearDown exception caught during no-throw context cleanup.");
+    }
+    delete ctx;
+    ctx = nullptr;
+}
+
+void Runtime::RollbackFailedPrimaryContextRetain(Context *&ctx, RefObject<Context *> &refObj)
+{
+    if (ctx != nullptr) {
+        (void)ContextManage::EraseContextFromSetForRetainRollback(ctx);
+        (void)ctx->TearDownForFinalRelease();
+    }
+    DELETE_O(ctx);
+    refObj.SetVal(nullptr);
+}
+
+void Runtime::RollbackTsvPrimaryContextRetainFailure(const uint32_t devId)
+{
+    RefObject<Context *> &tscRefObj = priCtxs_[devId][RT_TSC_ID];
+    bool needReset = false;
+    if (!tscRefObj.TryDecRef(needReset)) {
+        return;
+    }
+    if (!needReset) {
+        return;
+    }
+
+    // needReset means TryDecRef() has moved count_ to REF_UPDATING, so concurrent IncRef/TryIncRef cannot add a new
+    // reference before ResetVal().
+    Context *tscCtx = tscRefObj.GetVal(false);
+    tscRefObj.ResetVal();
+    if (tscCtx != nullptr) {
+        (void)tscCtx->TearDownForFinalRelease();
+    }
+    DELETE_O(tscCtx);
+}
+
+rtError_t Runtime::AcquirePrimaryContextForRelease(
+    RefObject<Context *> &refObj, const uint32_t tsId, const bool isForceReset, bool &ret, bool &shouldRelease,
+    Context *&ctx, uint64_t &restoreRefCount)
+{
+    bool reset = false; // must be false.
+    shouldRelease = false;
+    ctx = nullptr;
+    restoreRefCount = 0ULL;
+    if (!isForceReset) {
+        ret = refObj.TryDecRef(reset);
+        const uint64_t refObjValue = refObj.GetRef();
+        RT_LOG(RT_LOG_INFO, "Context TryDecRef, ts_id=%u, count=0x%llx, reset:%hhu", tsId, refObjValue, reset);
+        if (!reset) {
+            return RT_ERROR_NONE;
+        }
+        restoreRefCount = 1ULL;
+    } else {
+        if (refObj.GetRef() == 0ULL) {
+            RT_LOG(RT_LOG_INFO, "Skip primary context release during force reset because ref count is 0, ts_id=%u.",
+                tsId);
+            return RT_ERROR_NONE;
+        }
+        uint64_t releasedRefCount = 0ULL;
+        while (!reset) {
+            ret = refObj.TryDecRef(reset);
+            if (!ret) {
+                RT_LOG_INNER_MSG(RT_LOG_ERROR, "PrimaryContextRelease failed during force reset, ref count is 0.");
+                return RT_ERROR_CONTEXT_DEL;
+            }
+            releasedRefCount++;
+        }
+        restoreRefCount = releasedRefCount;
+    }
+    ctx = refObj.GetVal(false);
+    if (unlikely(!ContextManage::CheckContextIsValid(ctx, true))) {
+        refObj.ResetVal();
+        return ret ? RT_ERROR_NONE : RT_ERROR_CONTEXT_DEL;
+    }
+    shouldRelease = true;
+    return RT_ERROR_NONE;
+}
+
+rtError_t Runtime::ProcContexRelease(
+    RefObject<Context *> &refObj, Context *const ctx, const uint32_t devId, const bool isForceReset,
+    const uint64_t restoreRefCount)
+{
+    Context *releaseCtx = ctx;
+    const bool originForceReset = releaseCtx->IsContextForceReset();
+    releaseCtx->SetContextForceReset(isForceReset);
+    refObj.SetPrimaryCtxCallBackFlag(true);
+    PrimaryContextCallBack(releaseCtx, devId);
+    const rtError_t error = TearDownPrimaryContext(releaseCtx);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "Primary context teardown failed, restore primary context owner, dev_id=%u, retCode=%#x.",
+            devId, error);
+        releaseCtx->SetContextForceReset(originForceReset);
+        refObj.SetPrimaryCtxCallBackFlag(false);
+        if (!refObj.RestoreValAfterFailedReset(releaseCtx, restoreRefCount)) {
+            RT_LOG(RT_LOG_ERROR, "Restore primary context owner failed after teardown failure, dev_id=%u.", devId);
+        }
+        return error;
+    }
+    (void)ContextManage::EraseContextAndDeleteIfNeeded(releaseCtx);
+    InnerThreadLocalContainer::SetCurRef(nullptr);
+    PrimaryContextCallBackAfterTeardown(devId);
+    refObj.ResetVal();
+    return RT_ERROR_NONE;
+}
+
 rtError_t Runtime::PrimaryContextRelease(const uint32_t devId, const bool isForceReset)
 {
     bool ret = false;
@@ -2492,54 +2628,25 @@ rtError_t Runtime::PrimaryContextRelease(const uint32_t devId, const bool isForc
     const bool sentinelMode = Runtime::Instance()->GetSentinelMode();
     for (uint32_t i = tsNum_; i > 0U; i--) {
         const uint32_t ts_id = i - 1U;
-        bool reset = false;  // must be false.
         RefObject<Context *> &refObj = priCtxs_[devId][ts_id];
         if((sentinelMode) && (ts_id == RT_TSC_ID)) {
  	        continue;
- 	    }
-        if (!isForceReset) {
-            ret = refObj.TryDecRef(reset);
-            const uint64_t refObjValue = refObj.GetRef();
-            RT_LOG(RT_LOG_INFO, "Context TryDecRef, ts_id=%u, count=0x%llx, reset:%hhu", ts_id, refObjValue, reset);
-            if (!reset) {
-                continue;
-            }
-        } else {
-            if (refObj.GetRef() == 0) {
-                RT_LOG_INNER_MSG(RT_LOG_ERROR, "PrimaryContextRelease failed, ref count is 0.");
-                return RT_ERROR_CONTEXT_DEL;
-            }
-            while (!reset) {
-                ret = refObj.TryDecRef(reset);
-            }
         }
-        Context *ctx = refObj.GetVal(false);
-        if (unlikely(!ContextManage::CheckContextIsValid(ctx, true))) {
-            refObj.ResetVal();
-            return ret ? RT_ERROR_NONE : RT_ERROR_CONTEXT_DEL;
+        Context *ctx = nullptr;
+        bool shouldRelease = false;
+        uint64_t restoreRefCount = 0ULL;
+        const rtError_t error =
+            AcquirePrimaryContextForRelease(refObj, ts_id, isForceReset, ret, shouldRelease, ctx, restoreRefCount);
+        if (error != RT_ERROR_NONE) {
+            return error;
         }
-        ctx->SetContextForceReset(isForceReset);
-        refObj.SetPrimaryCtxCallBackFlag(true);
-        PrimaryContextCallBack(ctx, devId);
-        {
-            const ContextProtect cp(ctx);
-            (void)ctx->TearDown();
-            if (ctx->DefaultStream_() != nullptr) {
-                ctx->DefaultStream_()->SetContext(nullptr);
-            }
-            if (ctx->GetCtrlSQStream() != nullptr) {
-                ctx->GetCtrlSQStream()->SetContext(nullptr);
-            }
+        if (!shouldRelease) {
+            continue;
         }
-        if (ContextManage::EraseContextFromSet(ctx) != RT_ERROR_CONTEXT_NULL) {
-            if (ctx->ContextOutUse() == 0ULL) {
-                delete ctx;
-                ctx = nullptr;
-            }
+        const rtError_t releaseError = ProcContexRelease(refObj, ctx, devId, isForceReset, restoreRefCount);
+        if (releaseError != RT_ERROR_NONE) {
+            return releaseError;
         }
-        InnerThreadLocalContainer::SetCurRef(nullptr);
-        PrimaryContextCallBackAfterTeardown(devId);
-        refObj.ResetVal();
     }
     return ret ? RT_ERROR_NONE : RT_ERROR_CONTEXT_DEL;
 }
@@ -2697,25 +2804,13 @@ Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
     if (!refObj.IncRef()) {
         do {
             TraHandle curAtraceHandle = -1;
-            if (DlogReportStart != nullptr) {
-                RT_LOG(RT_LOG_INFO, "[dlog api] DlogReportStart exist.");
-                error = DlogReportStart(static_cast<int32_t>(devId), LOG_SAVE_MODE_DEF_RUN);
-                COND_LOG(error != RT_ERROR_NONE, "call DlogReportStart api failed, retCode=%#x devId=%u.",
-                    error, devId);
-            }
             rtError_t errorTrace = RT_ERROR_NONE;
-            if (AtraceReportStart != nullptr) {
-                RT_LOG(RT_LOG_INFO, "[dlog api] AtraceReportStart exist.");
-                errorTrace = AtraceReportStart(static_cast<int32_t>(devId));
-                COND_LOG(errorTrace != RT_ERROR_NONE, "call AtraceReportStart api failed, retCode=%#x devId=%u.",
-                    errorTrace, devId);
-            }
-            DeviceStateCallbackManager::Instance().Notify(devId, false, DEV_CB_POS_FRONT, RT_DEVICE_STATE_SET_PRE);
-            error = startAicpuExecutor(devId, tsId);
-            ERROR_GOTO(error, DEV_LOG_STOP, "Start AI CPU executor failed, retCode=%#x, devId=%u.", error, devId);
+            bool aicpuExecutorStarted = false;
+            error = PrepareDeviceRetain(devId, tsId, errorTrace, aicpuExecutorStarted);
+            ERROR_GOTO(error, DEV_ROLLBACK, "Start AI CPU executor failed, retCode=%#x, devId=%u.", error, devId);
 
             dev = static_cast<Device *>(new (std::nothrow) RawDevice(devId));
-            COND_GOTO_MSG_OUTER(dev == nullptr, DEV_FREE, error, RT_ERROR_DEVICE_NEW, ErrorCode::EE1013, sizeof(RawDevice));
+            COND_GOTO_MSG_OUTER(dev == nullptr, DEV_ROLLBACK, error, RT_ERROR_DEVICE_NEW, ErrorCode::EE1013, sizeof(RawDevice));
             if (errorTrace == RT_ERROR_NONE) {
                 dev->SetTsLogToHostFlag(RUNTIME_BUILD_VERSION);
             }
@@ -2723,26 +2818,26 @@ Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
             RT_LOG(RT_LOG_INFO, "new dev ok id=%u, rawDevSize=%zu (bytes), ts_id=%u",
                 devId, sizeof(RawDevice), tsId);
             error = dev->DevSetTsId(tsId);
-            ERROR_GOTO(error, DEV_FREE, "Failed to set ts id.");
+            ERROR_GOTO(error, DEV_ROLLBACK, "Failed to set ts id.");
 
             error = dev->Init();
             if (GetIsUserSetSocVersion() &&
                 (GlobalContainer::GetSocVersion() != GlobalContainer::GetHardwareSocVersion())) {
                 std::string inputSocVersion = GlobalContainer::GetUserSocVersion();
                 ERROR_GOTO_MSG_INNER(
-                    RT_ERRORCODE_BASE, DEV_FREE,
+                    RT_ERRORCODE_BASE, DEV_ROLLBACK,
                     "The soc version=%s has been set,"
                     " device cannot be created on real soc version=%s, the current input soc version does not match "
                     "the NPU type.",
                     GlobalContainer::GetSocVersion().c_str(), GlobalContainer::GetHardwareSocVersion().c_str());
             }
 
-            ERROR_GOTO(error, DEV_FREE, "Failed to init device.");
+            ERROR_GOTO(error, DEV_ROLLBACK, "Failed to init device.");
 
             (void)DeviceAddObserver(dev);
 
             error = dev->Start();
-            ERROR_GOTO(error, DEV_FREE, "Failed to start device.");
+            ERROR_GOTO(error, DEV_ROLLBACK, "Failed to start device.");
 
             if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DFX_ATRACE)) {
                 InitAtrace(dev, curAtraceHandle);
@@ -2757,15 +2852,8 @@ Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
             OpenDeviceProfiling(devId, dev);
             break;
 
-        DEV_FREE:
-            DELETE_O(dev)
-            (void)StopAicpuExecutor(devId, tsId);
-        DEV_LOG_STOP:
-            refObj.SetVal(nullptr);
-            COND_PROC((AtraceReportStop != nullptr),
-                AtraceReportStop(static_cast<int32_t>(devId));)
-            COND_PROC((DlogReportStop != nullptr),
-                DlogReportStop(static_cast<int32_t>(devId));)
+        DEV_ROLLBACK:
+            RollbackFailedDeviceRetain(refObj, dev, devId, tsId, aicpuExecutorStarted);
         } while (false);
     }
 
@@ -2781,6 +2869,80 @@ DEV_DEC:
     }
     refObj.ChangeValStatus(refObj.STATUS_IDLE);
     return nullptr;
+}
+
+rtError_t Runtime::PrepareDeviceRetain(
+    const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted)
+{
+    if (DlogReportStart != nullptr) {
+        RT_LOG(RT_LOG_INFO, "[dlog api] DlogReportStart exist.");
+        const rtError_t error = DlogReportStart(static_cast<int32_t>(devId), LOG_SAVE_MODE_DEF_RUN);
+        COND_LOG(error != RT_ERROR_NONE, "call DlogReportStart api failed, retCode=%#x devId=%u.", error, devId);
+    }
+    errorTrace = RT_ERROR_NONE;
+    if (AtraceReportStart != nullptr) {
+        RT_LOG(RT_LOG_INFO, "[dlog api] AtraceReportStart exist.");
+        errorTrace = AtraceReportStart(static_cast<int32_t>(devId));
+        COND_LOG(errorTrace != RT_ERROR_NONE, "call AtraceReportStart api failed, retCode=%#x devId=%u.",
+            errorTrace, devId);
+    }
+    DeviceStateCallbackManager::Instance().Notify(devId, false, DEV_CB_POS_FRONT, RT_DEVICE_STATE_SET_PRE);
+    return StartAicpuExecutorTracked(devId, tsId, &aicpuExecutorStarted);
+}
+
+void Runtime::RollbackFailedDeviceRetain(
+    RefObject<Device *> &refObj, Device *&dev, const uint32_t devId, const uint32_t tsId,
+    const bool aicpuExecutorStarted) const
+{
+    DELETE_O(dev)
+    if (aicpuExecutorStarted) {
+        (void)StopAicpuExecutor(devId, tsId);
+    }
+    refObj.SetVal(nullptr);
+    COND_PROC((AtraceReportStop != nullptr),
+        AtraceReportStop(static_cast<int32_t>(devId));)
+    COND_PROC((DlogReportStop != nullptr),
+        DlogReportStop(static_cast<int32_t>(devId));)
+}
+
+void Runtime::FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, const bool isForceReset)
+{
+    const uint32_t devId = dev->Id_();
+    const uint32_t tsId = dev->DevGetTsId();
+    profConfLock_.Lock();
+    if ((profiler_ != nullptr) && (dev->GetDevProfStatus() != 0ULL)) {
+        StopProfiler(dev->GetDevProfStatus(), devId, dev);
+    }
+    dev->SetDevProfStatus(0x0ULL, false);
+    profConfLock_.Unlock();
+    dev->SetDeviceRelease();
+    (void)dev->Stop();
+    refObj.ResetVal();
+    if (!isExiting_) {
+        NotifyProcWhenReleaseDevice(devId);
+        RT_LOG(RT_LOG_INFO, "device_id=%u stop profiling", devId);
+    }
+    (void)SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_NORMAL);
+    if ((dev->GetAtraceHandle() >= 0) && (AtraceDestroy != nullptr)) {
+        AtraceDestroy(dev->GetAtraceHandle());  // handle的合法性校验由Atrace模块校验
+        AtraceEventDestroy(dev->GetAtraceEventHandle());
+    }
+
+    const uint32_t devRunningState = dev->GetDevRunningState();
+    // 1.drvrelease
+    DELETE_O(dev)
+
+    // 2.tsdclose
+    (void)StopAicpuExecutor(
+        devId, tsId, (isForceReset && devRunningState == static_cast<uint32_t>(DEV_RUNNING_DOWN)));
+
+    // 3.close log (in devicereset not in runtime destructor)
+    if (!isExiting_) {
+        COND_PROC((&AtraceReportStop != nullptr),
+            AtraceReportStop(static_cast<int32_t>(devId));)
+        COND_PROC((&DlogReportStop != nullptr),
+            DlogReportStop(static_cast<int32_t>(devId));)
+    }
 }
 
 Device *Runtime::GetDevice(const uint32_t devId, const uint32_t tsId, bool polling)
@@ -2799,7 +2961,6 @@ Device *Runtime::GetDevice(const uint32_t devId, const uint32_t tsId, bool polli
 void Runtime::DeviceRelease(Device *dev, const bool isForceReset)
 {
     COND_RETURN_VOID_WARN(dev == nullptr, "ptr device is NULL!");
-    const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
     for (auto &refObj : devices_) {
         if (refObj[tsId].GetVal() != dev) {
@@ -2810,40 +2971,7 @@ void Runtime::DeviceRelease(Device *dev, const bool isForceReset)
         }
         refObj[tsId].ChangeValStatus(refObj[tsId].STATUS_BUSY);
         if (!refObj[tsId].DecRef()) {
-            profConfLock_.Lock();
-            if ((profiler_ != nullptr) && (dev->GetDevProfStatus() != 0ULL)) {
-                StopProfiler(dev->GetDevProfStatus(), devId, dev);
-            }
-            dev->SetDevProfStatus(0x0ULL, false);
-            profConfLock_.Unlock();
-            dev->SetDeviceRelease();
-            (void)dev->Stop();
-            refObj[tsId].ResetVal();
-            if (!isExiting_) {
-                NotifyProcWhenReleaseDevice(devId);
-                RT_LOG(RT_LOG_INFO, "device_id=%u stop profiling", devId);
-            }
-            (void)SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_NORMAL);
-            if ((dev->GetAtraceHandle() >= 0) && (AtraceDestroy != nullptr)) {
-                AtraceDestroy(dev->GetAtraceHandle());  // handle的合法性校验由Atrace模块校验
-                AtraceEventDestroy(dev->GetAtraceEventHandle());
-            }
-
-            const uint32_t devRunningState = dev->GetDevRunningState();
-            // 1.drvrelease
-            DELETE_O(dev)
-
-            // 2.tsdclose
-            (void)StopAicpuExecutor(
-                devId, tsId, (isForceReset && devRunningState == static_cast<uint32_t>(DEV_RUNNING_DOWN)));
-
-            // 3.close log (in devicereset not in runtime destructor)
-            if (!isExiting_) {
-                COND_PROC((&AtraceReportStop != nullptr),
-                    AtraceReportStop(static_cast<int32_t>(devId));)
-                COND_PROC((&DlogReportStop != nullptr),
-                    DlogReportStop(static_cast<int32_t>(devId));)
-            }
+            FinalizeDeviceRelease(refObj[tsId], dev, isForceReset);
             refObj[tsId].ChangeValStatus(refObj[tsId].STATUS_IDLE);
             // 1、2、3 order cannot be changed (drv and log requirement)
             return;

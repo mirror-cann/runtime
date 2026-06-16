@@ -367,6 +367,8 @@ private:
     rtError_t UnBindSqCq(void);
     rtError_t UpdateStreamActiveTaskFuncCallMem(void);
     void ClearStreamActiveTask(void);
+    void ReleaseNotifyListOnDestroy(std::vector<Notify *> &notifyList);
+    void ReleaseArgLoaderBackupOnDestroy();
     Stream* GetOriginalCaptureStream(void) const;
     rtError_t ExecuteCommon(Stream * const stm, int32_t timeout, const uint8_t executeMode);
     rtError_t BindSqCqAndSendSqe(void);

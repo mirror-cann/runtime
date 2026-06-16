@@ -445,6 +445,7 @@ rtError_t ApiImplDavid::EventCreateEx(Event ** const evt, const uint64_t flag)
 
 rtError_t ApiImplDavid::EventDestroy(Event *evt)
 {
+    ResetEmbeddedInnerHandle<Event>(evt);
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
         IpcEvent *eventIpc = dynamic_cast<IpcEvent *>(evt);
         IpcEventDestroy(&eventIpc, MAX_INT32_NUM, true);
