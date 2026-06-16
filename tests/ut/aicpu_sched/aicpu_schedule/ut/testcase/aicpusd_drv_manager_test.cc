@@ -128,6 +128,16 @@ namespace {
         return DRV_ERROR_NONE;
     }
 
+    drvError_t halGetDeviceInfoFakeNotSupportVerify(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+    {
+        (void)devId;
+        (void)value;
+        if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_CUST_OP_ENHANCE)) {
+            return DRV_ERROR_NOT_SUPPORT;
+        }
+        return DRV_ERROR_NONE;
+    }
+
     drvError_t drvQueryProcessHostPidFake1(int pid, unsigned int *chip_id, unsigned int *vfid,
                                            unsigned int *host_pid, unsigned int *cp_type)
     {

@@ -79,7 +79,7 @@ namespace AicpuSchedule {
             aicpusd_err("The subevent id is invalid, id[%u].", eventInfo.comm.subevent_id);
             return AICPU_SCHEDULE_ERROR_UNKNOW_AICPU_EVENT;
         }
-        // Failed to execute the task , it need to handle error.
+        // Failed to execute the task , it needs to handle error.
         if (ret != AICPU_SCHEDULE_OK) {
             aicpusd_err("Failed to process aicpu event, eventId[%d].", custEventId);
             return ret;

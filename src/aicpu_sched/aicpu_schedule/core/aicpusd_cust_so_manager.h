@@ -130,7 +130,7 @@ namespace AicpuSchedule {
         /**
          * @ingroup AicpuCustSoManager
          * @brief it use to determine should support cust aicpu.
-         * @return true: support, false: not support
+         * @return true: support, false: not supported
          */
         bool IsSupportCustAicpu() const;
 

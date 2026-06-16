@@ -83,7 +83,7 @@ TSD_StatusT ThreadModeManager::Open(const uint32_t rankSize)
 
 TSD_StatusT ThreadModeManager::OpenAicpuSd()
 {
-    TSD_ERROR("[ThreadModeManager] OpenAicpuSd not support");
+    TSD_ERROR("[ThreadModeManager] OpenAicpuSd is not supported");
     return TSD_INTERNAL_ERROR;
 }
 
@@ -107,7 +107,7 @@ TSD_StatusT ThreadModeManager::StartCallAICPU()
         const std::string libPath = "/usr/lib64/libaicpu_scheduler.so";
         handle_ = mmDlopen(libPath.c_str(), MMPA_RTLD_NOW | MMPA_RTLD_GLOBAL);
         if (handle_ == nullptr) {
-            TSD_RUN_WARN("[ThreadModeManager] Can not open libaicpu_scheduler.so, deviceId[%u], reason[%s]",
+            TSD_RUN_WARN("[ThreadModeManager] Cannot open libaicpu_scheduler.so, deviceId[%u], reason[%s]",
                          logicDeviceId_, dlerror());
             const std::string helperPath = "libaicpu_scheduler.so";
             handle_ = mmDlopen(helperPath.c_str(), MMPA_RTLD_NOW | MMPA_RTLD_GLOBAL);
@@ -207,7 +207,7 @@ TSD_StatusT ThreadModeManager::UpdateProfilingConf(const uint32_t &flag)
 TSD_StatusT ThreadModeManager::LoadSysOpKernel()
 {
     if (!CheckPackageExists()) {
-        TSD_RUN_INFO("[TsdClient][deviceId_=%u] can not find aicpu packages", logicDeviceId_);
+        TSD_RUN_INFO("[TsdClient][deviceId_=%u] cannot find aicpu packages", logicDeviceId_);
         return TSD_OK;
     }
 
@@ -347,7 +347,7 @@ TSD_StatusT ThreadModeManager::StartCallQS(const uint32_t logicDeviceId)
         try {
             qsReschedIntervalValue = static_cast<uint32_t>(std::stoi(qsReschedInterval));
         } catch(...) {
-            TSD_INFO("QS_RESCHED_INTEVAL[%s] env variable can not convert to uint32 value", qsReschedInterval.c_str());
+            TSD_INFO("QS_RESCHED_INTEVAL[%s] env variable cannot convert to uint32 value", qsReschedInterval.c_str());
         }
     }
     const int32_t result = (*startQs_)(logicDeviceId, static_cast<uint32_t>(qsReschedIntervalValue));
@@ -379,7 +379,7 @@ TSD_StatusT ThreadModeManager::ProcessOpenSubProc(ProcOpenArgs *openArgs)
     TSD_RUN_INFO("[ThreadModeManager] enter into ProcessOpenSubProc subtype:%u",
                  static_cast<uint32_t>(openArgs->procType));
     if (openArgs->procType != TSD_SUB_PROC_ADPROF) {
-        TSD_ERROR("[ThreadModeManager] not support open in thread mode, procType:%u",
+        TSD_ERROR("[ThreadModeManager] open in thread mode is not supported, procType:%u",
                   static_cast<uint32_t>(openArgs->procType));
         return TSD_INTERNAL_ERROR;
     }
@@ -454,7 +454,7 @@ TSD_StatusT ThreadModeManager::ProcessCloseSubProcList(const ProcStatusParam *cl
     }
     TSD_RUN_INFO("[ThreadModeManager] enter ExecuteClosePidList cnt:%u, procType:%u", listSize, closeList[0].procType);
     if (closeList[0].procType != TSD_SUB_PROC_ADPROF) {
-        TSD_ERROR("[ThreadModeManager]not support close in thread mode, procType:%u",
+        TSD_ERROR("[ThreadModeManager] close in thread mode is not supported, procType:%u",
                   static_cast<uint32_t>(closeList[0].procType));
         return TSD_INTERNAL_ERROR;
     }

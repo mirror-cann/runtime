@@ -286,7 +286,7 @@ BqsStatus SubscribeManager::ResubscribeF2NF(const uint32_t queueId) const
 drvError_t SubscribeManager::DefalutSubscribe(const uint32_t queueId, const QUEUE_EVENT_TYPE eventType) const
 {
     if (deviceId_ != dstDeviceId_) {
-        BQS_LOG_ERROR("Subscribe queue[%u] on device[%u] to device[%u] fail for not support.",
+        BQS_LOG_ERROR("Subscribe queue[%u] on device[%u] to device[%u] failed because it is not supported.",
             queueId, deviceId_, dstDeviceId_);
         return DRV_ERROR_NOT_SUPPORT;
     }

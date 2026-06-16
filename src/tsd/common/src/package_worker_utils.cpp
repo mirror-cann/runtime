@@ -56,7 +56,7 @@ TSD_StatusT PackageWorkerUtils::MakeDirectory(const std::string &dirPath)
         return TSD_INTERNAL_ERROR;
     }
 
-    // chmod is necessary, because mkdir can not really change mode in rc
+    // chmod is necessary, because mkdir cannot really change mode in rc
     ret = chmod(dirPath.c_str(), (S_IRWXU|S_IRGRP|S_IXGRP));
     if (ret != 0) {
         TSD_ERROR("Change dir mode failed, ret=%d, path=%s, reason=%s",

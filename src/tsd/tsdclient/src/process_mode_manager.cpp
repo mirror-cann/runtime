@@ -286,7 +286,7 @@ TSD_StatusT ProcessModeManager::LoadSysOpKernel()
         }
     }
     if (!CheckPackageExists(loadAicpuKernelFlag)) {
-        TSD_RUN_INFO("[TsdClient][logicDeviceId_=%u] can not find aicpu packages", logicDeviceId_);
+        TSD_RUN_INFO("[TsdClient][logicDeviceId_=%u] cannot find aicpu packages", logicDeviceId_);
         return TSD_OK;
     }
 
@@ -469,7 +469,7 @@ TSD_StatusT ProcessModeManager::SendHostPackageComplex(const int32_t peerNode, c
     const std::string mutexFile = hostSoPath_ + mutexFileName;
     TSD_RUN_INFO("get host mutex file:%s, logicDeviceId:%u", mutexFile.c_str(), logicDeviceId_);
     if (!CheckRealPath(mutexFile)) {
-        TSD_INFO("Can not get realpath of mutexFile[%s]", mutexFile.c_str());
+        TSD_INFO("Cannot get realpath of mutexFile[%s]", mutexFile.c_str());
         return SendMsgAndHostPackage(peerNode, orgFile, dstFile, msg, compareCallBack, useCannPath);
     }
     const int32_t fileData = open(mutexFile.c_str(), O_RDONLY);
@@ -790,7 +790,7 @@ TSD_StatusT ProcessModeManager::GetDeviceCheckCode()
     }
     TSD_CHECK_NULLPTR(devCommClient_, TSD_INSTANCE_NOT_FOUND,
                       "[ProcessModeManager] devCommClient_ is null in Open function");
-    // tsd client only can hold one hdc session at the same time, so it need to be free before send package
+    // tsd client only can hold one hdc session at the same time, so it needs to be free before send package
     const ScopeGuard destroySessionGuard([this]() {
         this->devCommClient_->CommDestroy();
         devCommClient_ = nullptr;
@@ -854,7 +854,7 @@ TSD_StatusT ProcessModeManager::GetDeviceCheckCodeRetry(const HDCMessage &msg)
     }
     TSD_CHECK_NULLPTR(devCommClient_, TSD_INSTANCE_NOT_FOUND,
                       "[ProcessModeManager] devCommClient_ is null in Open function");
-    // tsd client only can hold one hdc session at the same time, so it need to be free before send package
+    // tsd client only can hold one hdc session at the same time, so it needs to be free before send package
     const ScopeGuard destroySessionGuard([this]() {
         this->devCommClient_->CommDestroy();
         devCommClient_ = nullptr;
@@ -1741,7 +1741,7 @@ bool ProcessModeManager::IsSupportCommonInterface(const uint32_t level)
     }
     ret = devCommClient_->CommRecvData(tsdSessionId_, true, COMMON_SUPPORT_TIMEOUT);
     if (ret != TSD_OK) {
-        TSD_RUN_INFO("not support TSD_CAPABILITY_LEVEL");
+        TSD_RUN_INFO("TSD_CAPABILITY_LEVEL is not supported");
         return false;
     }
     if (TSD_BITMAP_GET(tsdSupportLevel_, level)) {
@@ -2116,7 +2116,7 @@ TSD_StatusT ProcessModeManager::LoadDriverExtendPkg()
 TSD_StatusT ProcessModeManager::OpenNetService(const NetServiceOpenArgs *args)
 {
     if(!IsSupportCommonInterface(TSD_SUPPORT_MUL_HCCP)) {
-        TSD_RUN_INFO("current package not support open net service with args");
+        TSD_RUN_INFO("current package does not support opening net service with args");
         if (Open(DEFUALT_NET_SERVICE) != TSD_OK) {
             TSD_ERROR("open default net service failed");
             return TSD_OPEN_DEFAULT_NET_SERVICE_FAILED;
@@ -2145,7 +2145,7 @@ TSD_StatusT ProcessModeManager::OpenNetService(const NetServiceOpenArgs *args)
 TSD_StatusT ProcessModeManager::CloseNetService()
 {
     if(!IsSupportCommonInterface(TSD_SUPPORT_MUL_HCCP)) {
-        TSD_RUN_INFO("current package not support close net service with args");
+        TSD_RUN_INFO("current package does not support closing net service with args");
         return TsdClose(0U);
     } else {
         ProcStatusParam closeList;

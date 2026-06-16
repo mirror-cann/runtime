@@ -16,7 +16,7 @@
 uint32_t TsdOpen(const uint32_t logicDeviceId, const uint32_t rankSize)
 {
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     const std::shared_ptr<tsd::ClientManager> clientManager = tsd::ClientManager::GetInstance(logicDeviceId);
@@ -34,7 +34,7 @@ uint32_t TsdOpen(const uint32_t logicDeviceId, const uint32_t rankSize)
 uint32_t TsdOpenEx(const uint32_t logicDeviceId, const uint32_t rankSize, const uint32_t deviceMode)
 {
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     const ::std::shared_ptr<tsd::ClientManager> clientManager =
@@ -51,7 +51,7 @@ uint32_t TsdOpenEx(const uint32_t logicDeviceId, const uint32_t rankSize, const 
 uint32_t TsdOpenAicpuSd(const uint32_t logicDeviceId)
 {
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     const std::shared_ptr<tsd::ClientManager> clientManager = tsd::ClientManager::GetInstance(logicDeviceId);
@@ -67,7 +67,7 @@ uint32_t TsdOpenAicpuSd(const uint32_t logicDeviceId)
 uint32_t TsdClose(const uint32_t logicDeviceId)
 {
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     const std::shared_ptr<tsd::ClientManager> clientManager = tsd::ClientManager::GetInstance(logicDeviceId);
@@ -84,7 +84,7 @@ uint32_t TsdClose(const uint32_t logicDeviceId)
 uint32_t TsdCloseEx(const uint32_t logicDeviceId, const uint32_t flag)
 {
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     const std::shared_ptr<tsd::ClientManager> clientManager = tsd::ClientManager::GetInstance(logicDeviceId);
@@ -100,7 +100,7 @@ uint32_t TsdCloseEx(const uint32_t logicDeviceId, const uint32_t flag)
 uint32_t UpdateProfilingMode(const uint32_t logicDeviceId, const uint32_t flag)
 {
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     const std::shared_ptr<tsd::ClientManager> clientManager = tsd::ClientManager::GetInstance(logicDeviceId);
@@ -128,7 +128,7 @@ uint32_t TsdInitFlowGw(const uint32_t logicDeviceId, const InitFlowGwInfo * cons
 {
     TSD_RUN_INFO("TsdInitFlowGw Begin.");
     if (tsd::ClientManager::CheckDestructFlag(logicDeviceId)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         return tsd::TSD_OK;
     }
     if (initInfo == nullptr) {
@@ -154,7 +154,7 @@ uint32_t GetHdcConctStatus(const uint32_t logicDeviceId, int32_t *hdcSessStat)
     }
     if ((tsd::ClientManager::CheckDestructFlag(logicDeviceId)) ||
         (tsd::ClientManager::GetInstance(logicDeviceId) == nullptr)) {
-        // CheckDestructFlag true can not print log, resource(errDesc_) for tdt log may be destructed.
+        // CheckDestructFlag true cannot print log, resource(errDesc_) for tdt log may be destructed.
         *hdcSessStat = HDC_SESSION_STATUS_CONNECT;
         return tsd::TSD_OK;
     }

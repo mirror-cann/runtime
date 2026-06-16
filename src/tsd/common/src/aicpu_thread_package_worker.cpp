@@ -111,7 +111,7 @@ void AicpuThreadPackageWorker::SetDecompressPackagePath()
     }
 
     if (!CheckRealPath(pathEnv)) {
-        TSD_ERROR("Can not get realpath of env %s, val=%s", ENV_NAME_HOME.c_str(), pathEnv.c_str());
+        TSD_ERROR("Cannot get realpath of env %s, val=%s", ENV_NAME_HOME.c_str(), pathEnv.c_str());
         return;
     }
 

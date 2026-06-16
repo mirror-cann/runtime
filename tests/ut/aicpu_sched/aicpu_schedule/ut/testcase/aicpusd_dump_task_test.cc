@@ -609,6 +609,7 @@ TEST_F(AicpuDumpTaskTest, isSupportKfcDumpUTFfts) {
     MOCKER(dlsym).stubs().will(invoke(dlsymFake));
 
     std::shared_ptr<OpDumpTask> opDumpTask = std::make_shared<OpDumpTask>(0, 0);
+    opDumpTask->dumpMode_ = DumpMode::STATS_DUMP_DATA;
     opDumpTask->taskType_ = aicpu::dump::Task::FFTSPLUS;
     OpDumpTaskManager &taskManager = OpDumpTaskManager::GetInstance();
     taskManager.SetCustDumpTaskFlag(0, 0, false);
@@ -693,6 +694,16 @@ TEST_F(AicpuDumpTaskTest, DumpOpTaskDataforKfcUTFail) {
     const int32_t ret = taskManager.DumpOpTaskDataforKfc(taskKey, (void *)content.c_str(), length);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     taskManager.custDumpTaskMap_.clear();
+}
+
+TEST_F(AicpuDumpTaskTest, IsCustDumpTaskUTNotFound)
+{
+    OpDumpTaskManager &taskManager = OpDumpTaskManager::GetInstance();
+    taskManager.custDumpTaskMap_.clear();
+
+    const bool ret = taskManager.IsCustDumpTask(123U, 456U);
+
+    EXPECT_FALSE(ret);
 }
 
 TEST_F(AicpuDumpTaskTest, GetKfcDumpInfoUTSuccess) {

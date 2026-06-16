@@ -63,7 +63,7 @@ namespace AicpuSchedule {
 
     struct ProxyMsgAddGroup {
         uint32_t admin : 1;     /* admin permission, can add other proc to grp */
-        uint32_t read : 1;     /* rsv, not support */
+        uint32_t read : 1;     /* rsv, not supported */
         uint32_t write : 1;    /* read and write permission */
         uint32_t alloc : 1;
         int32_t  pid;

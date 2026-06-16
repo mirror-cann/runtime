@@ -75,7 +75,7 @@ namespace cce {
                                                                const aicpu::HwtsCceKernel *cceKernelBase) const
     {
         const auto paramKernelName = PtrToPtr<const void, const char_t>(ValueToPtr(cceKernelBase->kernelName));
-        // Check kernelName is null, do not support a nullptr kernel op name
+        // A nullptr kernel op name is not supported.
         if (paramKernelName == nullptr) {
             AE_ERR_LOG(AE_MODULE_ID, "Input param kernelName is null.");
             return AE_STATUS_BAD_PARAM;
@@ -104,7 +104,7 @@ namespace cce {
         }
 
         char_t *paramKernelSo = PtrToPtr<void, char_t>(ValueToPtr(cceKernelBase->kernelSo));
-        // Do not support find cce op kernel from whole process space;
+        // Finding a cce op kernel from the whole process space is not supported.
         // Only get aicpu op kernel a specific so lib.so, kernelSo should not be NULL.
         if (paramKernelSo == nullptr) {
             AE_ERR_LOG(AE_MODULE_ID, "Input param kernelSo is NULL.");

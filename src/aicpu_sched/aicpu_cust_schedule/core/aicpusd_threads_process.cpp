@@ -278,7 +278,7 @@ bool ComputeProcess::GetAndDoSplitKernelTask()
         return true;
     }
     if (retVal != DRV_ERROR_NONE) {
-        aicpusd_err("Can not get event, threadIndex=%u, ret=%d", threadIndex, retVal);
+        aicpusd_err("Cannot get event, threadIndex=%u, ret=%d", threadIndex, retVal);
         return false;
     }
 

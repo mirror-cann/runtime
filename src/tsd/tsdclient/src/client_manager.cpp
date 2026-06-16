@@ -268,7 +268,7 @@ bool ClientManager::CheckPackageExistsOnce(const uint32_t packageType)
     std::vector<std::string> packages;
     for (const std::string &fileName : files) { 
         TSD_INFO("[TsdClient][deviceId=%u] check file[%s], packageType[%u]", logicDeviceId_, fileName.c_str(), packageType);
-        // c regex, cannot use c++ regex here which g++ compiler not support
+        // c regex, cannot use c++ regex here because the g++ compiler does not support it
         if (ValidateStr(fileName.c_str(), packagePattern_[packageType].c_str())) {
             TSD_INFO("[TsdClient][deviceId=%u] find package[%s] in path[%s], packageType[%u]", logicDeviceId_, fileName.c_str(),
                      packagePath.c_str(), packageType);

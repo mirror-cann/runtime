@@ -75,7 +75,7 @@ namespace AicpuSchedule {
         TaskInfoExt dumpTaskInfo(static_cast<volatile uint32_t>(info.dump_stream_id),
                                         static_cast<volatile uint32_t>(info.dump_task_id));
         if (info.is_debug && FeatureCtrl::IsNoNeedDumpOpDebugProduct()) {
-            aicpusd_warn("Not support to dump Op debug, stream id[%u],"
+            aicpusd_warn("Op debug dump is not supported, stream id[%u],"
                             " task id[%u], stream id1[%u], task id1[%u], is model[%u],",
                             info.dump_stream_id, info.dump_task_id, info.debug_dump_stream_id, info.debug_dump_task_id,
                             info.is_model);

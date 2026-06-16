@@ -85,7 +85,7 @@ namespace AicpuSchedule {
 
     bool AicpuCustSoManager::IsSupportCustAicpu() const
     {
-        // only msgq mode not support cust aicpu
+        // msgq mode does not support cust aicpu
         if (schedMode_ == SCHED_MODE_MSGQ) {
             return false;
         }
@@ -317,13 +317,13 @@ namespace AicpuSchedule {
     int32_t AicpuCustSoManager::CreateSoftLinkToSoFile(const std::string &softLinkPath, const std::string &existedSoPath)
     {
         if (access(existedSoPath.c_str(), F_OK) != 0) {
-            aicpusd_err("The target path is not existed in device, can not create. linkPath=%s, targetPath=%s",
+            aicpusd_err("The target path is not existed in device, cannot create. linkPath=%s, targetPath=%s",
                         softLinkPath.c_str(), existedSoPath.c_str());
             return AICPU_SCHEDULE_ERROR_INNER_ERROR;
         }
 
         if (access(softLinkPath.c_str(), F_OK) == 0) {
-            aicpusd_info("The soft link has existed in device, can not create again. linkPath=%s, targetPath=%s",
+            aicpusd_info("The soft link has existed in device, cannot create again. linkPath=%s, targetPath=%s",
                         softLinkPath.c_str(), existedSoPath.c_str());
             return AICPU_SCHEDULE_OK;
         }

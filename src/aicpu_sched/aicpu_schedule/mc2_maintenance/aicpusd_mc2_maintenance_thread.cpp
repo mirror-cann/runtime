@@ -148,7 +148,7 @@ namespace AicpuSchedule {
             return AICPU_SCHEDULE_OK;
         }
         if (AicpuUtil::IsEnvValEqual(ENV_NAME_PROCMGR_AICPU_CPUSET, "1")) {
-            aicpusd_err("the chip not support, please check. type[%u]", type_);
+            aicpusd_err("the chip is not supported, please check. type[%u]", type_);
             return AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;
         } else {
             pthread_t threadId = pthread_self();

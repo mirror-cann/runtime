@@ -138,7 +138,7 @@ RouterServer &RouterServer::GetInstance()
 void RouterServer::HandleBqsMsg(event_info &info)
 {
     if (info.comm.event_id != EVENT_QS_MSG) {
-        BQS_LOG_ERROR("[RouterServer]Queue schedule do not support [%d] event",
+        BQS_LOG_ERROR("[RouterServer]Queue schedule does not support [%d] event",
                       static_cast<int32_t>(info.comm.event_id));
         return;
     }
@@ -374,7 +374,7 @@ BqsStatus RouterServer::AttachAndInitGroup()
             BQS_LOG_ERROR("[RouterServer]halGrpQuery of qs[%d] failed before attached,ret[%d]", curPid, drvRet);
             return BQS_STATUS_DRIVER_ERROR;
         }
-        // not in any group, can not do attach process
+        // not in any group, cannot do attach process
         if (groupInfoLen == 0U) {
             BQS_LOG_ERROR("[RouterServer]QS should be add sharepool group before initial by aicpu or acl.");
             return BQS_STATUS_INNER_ERROR;

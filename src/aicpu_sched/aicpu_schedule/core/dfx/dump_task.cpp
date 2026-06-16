@@ -1177,7 +1177,7 @@ bool OpDumpTask::IsSupportKfcDump()
         return false;
     }
     if (taskType_ == aicpu::dump::Task::FFTSPLUS) {
-        aicpusd_info("Task is ffts plus, not support kfc statistical dump.");
+        aicpusd_info("Task is ffts plus and does not support kfc statistical dump.");
         return false;
     }
     bool isHasKfcDumpFun = CheckAndGetKfcDumpStatsAPI();

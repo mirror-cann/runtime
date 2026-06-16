@@ -137,6 +137,11 @@ TEST_F(AICPUSDWorkerTEST, CreateWorkTest_sem_init_fail) {
     EXPECT_NE(ret, 0);
 }
 
+TEST_F(AICPUSDWorkerTEST, IsValidTimeoutValZero)
+{
+    EXPECT_FALSE(AicpuUtil::IsValidTimeoutVal(0U));
+}
+
 TEST_F(AICPUSDWorkerTEST, CreateWorkTest_CreateOneWorker_fail) {
     AicpuDrvManager::GetInstance().aicpuNumPerDev_ = 1;
     ThreadPool tp;

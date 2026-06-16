@@ -480,7 +480,7 @@ namespace AicpuSchedule {
                                         static_cast<volatile uint32_t>(info.dump_task_id));
         DumpFileName dumpFileName(info.file_name_stream_id, info.file_name_task_id);
         if (info.is_debug && FeatureCtrl::IsNoNeedDumpOpDebugProduct()) {
-            aicpusd_warn("Not support to dump Op debug, stream id[%u],"
+            aicpusd_warn("Op debug dump is not supported, stream id[%u],"
                             " task id[%u], stream id1[%u], task id1[%u], is model[%u],",
                             info.dump_stream_id, info.dump_task_id, info.debug_dump_stream_id, info.debug_dump_task_id,
                             info.is_model);
@@ -625,7 +625,7 @@ namespace AicpuSchedule {
             aicpusd_err("The subevent id is invalid, id[%u].", drvEventInfo.comm.subevent_id);
             return AICPU_SCHEDULE_ERROR_UNKNOW_AICPU_EVENT;
         }
-        // Failed to execute the task , it need to handle error.
+        // Failed to execute the task , it needs to handle error.
         if (ret != AICPU_SCHEDULE_OK) {
             aicpusd_err("failed to process aicpu event, eventId[%d].", drvEventId);
             return ret;
@@ -679,7 +679,7 @@ namespace AicpuSchedule {
         const uint32_t drvSubeventId = drvEventInfo.comm.subevent_id;
         aicpusd_info("ProcessEnqueue by eventId[%u] subeventId[%u] begin", drvEventId, drvSubeventId);
         if (&aicpu::DoEventCallback == nullptr) {
-            aicpusd_info("Can not find DoEventCallback symbol, skip event process");
+            aicpusd_info("Cannot find DoEventCallback symbol, skip event process");
             return AICPU_SCHEDULE_ERROR_INNER_ERROR;
         }
         void * const param = PtrToPtr<event_info, void>(const_cast<event_info *>(&drvEventInfo));

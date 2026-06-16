@@ -231,7 +231,7 @@ void ProcessModeManager::SaveDeviceCheckCode(const HDCMessage &msg)
     } else if (msgType == HDCMessage::TSD_GET_DEVICE_CANN_HS_CHECKCODE_RSP) {
         HandleCannHsCheckCodeRsp(msg);
     } else {
-        TSD_RUN_INFO("not support msgType[%u]", static_cast<uint32_t>(msgType));
+        TSD_RUN_INFO("msgType[%u] is not supported", static_cast<uint32_t>(msgType));
     }
 }
 

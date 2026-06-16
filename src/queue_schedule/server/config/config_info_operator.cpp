@@ -253,7 +253,7 @@ BqsStatus ConfigInfoOperator::QureySelfMemGroup(std::vector<std::string> &groupN
         BQS_LOG_ERROR("halGrpQuery of qs[%d] failed, ret[%d]", curPid, drvRet);
         return BQS_STATUS_DRIVER_ERROR;
     }
-    // not in any group, can not do attach process
+    // not in any group, cannot do attach process
     if (groupInfoLen == 0U) {
         BQS_LOG_WARN("QS has not been added to any memory group!");
         return BQS_STATUS_OK;

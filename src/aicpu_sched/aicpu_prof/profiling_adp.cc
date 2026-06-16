@@ -137,7 +137,7 @@ void GetMicrosAndSysTick(uint64_t &micros, uint64_t &tick)
     clock_gettime(CLOCK_REALTIME, &ts);
     micros = (static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL + // Seconds to nanos
         static_cast<uint64_t>(ts.tv_nsec)) / 1000ULL; // Nanos to micros
-    // not support tick when not run on aicpu
+    // tick is not supported when not running on aicpu
     tick = 0;
 #endif
 }
@@ -363,7 +363,7 @@ bool ProfilingAdp::GetReportValid(void)
 
 /*****************************************************************************
 Description   : it is used to send data to profiling
-Input         : ReporterData& data : it need to send to profiling
+Input         : ReporterData& data : it needs to send to profiling
 Output        : NA
 Return Value  : PROFILINE_SUCCESS - send data success
                 others - send data failed

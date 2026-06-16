@@ -164,6 +164,19 @@ namespace bqs {
         EXPECT_EQ(BQS_STATUS_OK, relation_.CheckMultiLayerBind(src2, dst2, 0));
     }
 
+    TEST_F(BindRelationUTest, CheckBind_AbnormalRelationExist)
+    {
+        EntityInfo src(1U, 0U);
+        EntityInfo dst(2U, 0U);
+        relation_.abnormalDstToSrc_[dst].insert(src);
+
+        uint32_t index = 0U;
+        EXPECT_EQ(BQS_STATUS_OK, relation_.CheckBind(src, dst, 0U, index));
+        EXPECT_EQ(0U, index);
+        EXPECT_TRUE(relation_.srcToDstRelation_.empty());
+        EXPECT_TRUE(relation_.dstToSrcRelation_.empty());
+    }
+
     TEST_F(BindRelationUTest, BindRelation_halQueueUnsubscribe_FAILED)
     {
         MOCKER(halQueueUnsubEvent).stubs().will(invoke(halQueueUnSubscribeFail));

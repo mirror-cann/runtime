@@ -44,7 +44,7 @@ std::shared_ptr<BasePackageWorker> PackageWorkerFactory::CreatePackageWorker(con
 {
     const auto iter = creatorMap_.find(type);
     if (iter == creatorMap_.end()) {
-        TSD_ERROR("Can not find package worker create func, type=%u", static_cast<uint32_t>(type));
+        TSD_ERROR("Cannot find package worker create func, type=%u", static_cast<uint32_t>(type));
         return nullptr;
     }
 

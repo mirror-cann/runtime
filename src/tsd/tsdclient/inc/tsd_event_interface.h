@@ -18,7 +18,7 @@
 #include "tsd_log.h"
 
 namespace tsd {
-// can not use 0 here, conflict with aicpu group
+// cannot use 0 here, conflict with aicpu group
 constexpr uint32_t DEFAULT_GROUP_ID = 30U;
 constexpr uint32_t MAX_GROUP_NAME_LENGTH = 96U;
 constexpr int32_t TIMEOUT_INTERVAL = 3000;

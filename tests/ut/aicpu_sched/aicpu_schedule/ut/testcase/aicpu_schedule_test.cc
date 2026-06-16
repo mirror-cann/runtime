@@ -5577,8 +5577,12 @@ TEST_F(AICPUScheduleTEST, SetMc2MantenanceThreadAffinityUt) {
     int32_t ret = 0;
     ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    std::vector<uint32_t> deviceVec;
-    deviceVec.push_back(1);
+    AicpuDrvManager::GetInstance().ccpuIdVec_.clear();
+    AicpuDrvManager::GetInstance().ccpuIdVec_.push_back(0U);
+    setenv("PROCMGR_AICPU_CPUSET", "1", 1);
+    ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
+    setenv("PROCMGR_AICPU_CPUSET", "0", 1);
     ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
     MOCKER(pthread_setaffinity_np)
         .stubs()
@@ -5588,6 +5592,7 @@ TEST_F(AICPUScheduleTEST, SetMc2MantenanceThreadAffinityUt) {
     AicpuDrvManager::GetInstance().ccpuIdVec_.clear();
     ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    AicpuDrvManager::GetInstance().ccpuIdVec_.clear();
 }
 
 TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_Ut) {

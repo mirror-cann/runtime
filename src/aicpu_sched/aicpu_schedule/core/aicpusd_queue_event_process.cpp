@@ -1113,7 +1113,7 @@ namespace AicpuSchedule {
         }
 
         if (grpName_.empty()) {
-            aicpusd_err("Can not alloc cache for group has not been created!");
+            aicpusd_err("Cannot alloc cache for group has not been created!");
             return AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;
         }
         const ProxyMsgAllocCache * const allocCacheMsg = PtrToPtr<const char_t, const ProxyMsgAllocCache>(msg);
@@ -1133,7 +1133,7 @@ namespace AicpuSchedule {
     int32_t AicpuQueueEventProcess::DoAllocCache(const char_t* const groupName, GrpCacheAllocPara* const allocPar) const
     {
         if (&halGrpCacheAlloc == nullptr) {
-            aicpusd_err("halGrpCacheAlloc not support");
+            aicpusd_err("halGrpCacheAlloc is not supported");
             return AICPU_SCHEDULE_ERROR_DRV_ERR;
         }
         const auto allocRet = halGrpCacheAlloc(groupName, AicpuDrvManager::GetInstance().GetDeviceId(), allocPar);

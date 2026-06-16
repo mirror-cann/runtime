@@ -31,7 +31,7 @@ int32_t OperatorKernelRegister::RunOperatorKernel(const AicpuTaskInfo &kernelTas
 
     std::shared_ptr<OperatorKernel> kernel = GetOperatorKernel(kernelName);
     if (kernel == nullptr) {
-        aicpusd_err("Can not find aicpu operator kernel, kernelName=%s", kernelName);
+        aicpusd_err("Cannot find aicpu operator kernel, kernelName=%s", kernelName);
         return AICPU_SCHEDULE_ERROR_NOT_FOUND_LOGICAL_TASK;
     }
 

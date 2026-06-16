@@ -431,7 +431,7 @@ public:
     static inline bool IsValidTimeoutVal(const uint32_t timeout)
     {
         if (timeout == 0U) {
-            aicpusd_err("Invalid timeout value send by ts which can not be zero.");
+            aicpusd_err("Invalid timeout value send by ts which cannot be zero.");
             return false;
         }
 

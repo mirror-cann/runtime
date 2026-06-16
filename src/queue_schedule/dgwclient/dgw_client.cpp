@@ -1421,7 +1421,7 @@ int32_t DgwClient::WaitConfigEffect(const int32_t rsv, const int32_t timeout)
             BQS_LOG_INFO("[DgwClient] WaitConfigEffect Success");
             return static_cast<int32_t>(BQS_STATUS_OK);
         } else if (cmdRet == static_cast<int32_t>(BQS_STATUS_PARAM_INVALID)) {
-            BQS_LOG_INFO("[DgwClient] WaitConfigEffect not support");
+            BQS_LOG_INFO("[DgwClient] WaitConfigEffect is not supported");
             return static_cast<int32_t>(BQS_STATUS_NOT_SUPPORT);
         } else {
             (void)usleep(QUERY_LINK_STATUS_INTERVAL);

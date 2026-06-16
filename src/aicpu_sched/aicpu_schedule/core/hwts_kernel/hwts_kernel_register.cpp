@@ -24,7 +24,7 @@ int32_t HwTsKernelRegister::RunTsKernelTaskProcess(const aicpu::HwtsTsKernel &ts
 {
     std::shared_ptr<HwTsKernelHandler> kernel = GetTsKernelTaskProcess(kernelName);
     if (kernel == nullptr) {
-        aicpusd_err("Can not find aicpu hwts kernel, kernelName=%s", kernelName.c_str());
+        aicpusd_err("Cannot find aicpu hwts kernel, kernelName=%s", kernelName.c_str());
         return AICPU_SCHEDULE_ERROR_NOT_FOUND_LOGICAL_TASK;
     }
 

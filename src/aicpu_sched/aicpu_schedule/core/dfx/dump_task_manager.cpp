@@ -782,7 +782,7 @@ bool OpDumpTaskManager::IsCustDumpTask(const uint32_t streamId, const uint32_t t
     TaskInfo taskInfo(streamId, taskId);
     const auto iter = custDumpTaskMap_.find(taskInfo);
     if (iter == custDumpTaskMap_.end()) {
-        aicpusd_info("Can not find dump task [streamId:%u, taskId:%u] in cust dump task map.", streamId, taskId);
+        aicpusd_info("Cannot find dump task [streamId:%u, taskId:%u] in cust dump task map.", streamId, taskId);
         return false;
     }
     aicpusd_info("Get dump task [streamId:%u, taskId:%u] flag is [%d].", streamId, taskId, iter->second);
@@ -807,7 +807,7 @@ void OpDumpTaskManager::MakeDumpOpInfoforKfc(const KfcDumpTask &taskinfo, std::s
 {
     const std::lock_guard<std::mutex> mapLock(kfcDumpTaskMapMtx_);
     if (!(dumpTask->IsSupportKfcDump())) {
-        aicpusd_info("task not support kfc statistical dump, streamId[%u], taskId[%u].", taskinfo.streamId_, taskinfo.taskId_);
+        aicpusd_info("task does not support kfc statistical dump, streamId[%u], taskId[%u].", taskinfo.streamId_, taskinfo.taskId_);
         return;
     }
     kfcDumpTaskMap_.insert(std::make_pair(taskinfo, dumpTask));
@@ -831,7 +831,7 @@ int32_t OpDumpTaskManager::GetDumpOpTaskDataforKfc(const KfcDumpTask &taskKey, K
     // dumpInfo 是否为空在上层调用处保证
     const auto iter = kfcDumpTaskMap_.find(taskKey);
     if (iter == kfcDumpTaskMap_.end()) {
-        aicpusd_err("Can not find dump task info key for kfc. streamId[%u], taskId[%u], index[%u].",
+        aicpusd_err("Cannot find dump task info key for kfc. streamId[%u], taskId[%u], index[%u].",
                      taskKey.streamId_, taskKey.taskId_, taskKey.index_);
         return AICPU_SCHEDULE_ERROR_DUMP_FAILED;
     }

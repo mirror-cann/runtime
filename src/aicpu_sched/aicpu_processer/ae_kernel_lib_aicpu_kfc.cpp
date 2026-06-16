@@ -62,7 +62,7 @@ namespace cce {
         }
         uint32_t len = strnlen(kernelName, AE_MAX_KERNEL_NAME + 1);
         if (static_cast<bool>(unlikely(len > AE_MAX_KERNEL_NAME))) {
-            AE_ERR_LOG(AE_MODULE_ID, "KernelName length is not support, len=%d.", len);
+            AE_ERR_LOG(AE_MODULE_ID, "KernelName length is not supported, len=%d.", len);
             kernelName = nullptr;
             return AE_STATUS_INNER_ERROR;
         }
@@ -84,7 +84,7 @@ namespace cce {
         const char_t *kernelSoName, const char_t *kernelName, void* &funcAddr)
     {
         if (static_cast<bool>(unlikely(soNameLen > AE_MAX_SO_NAME))) {
-            AE_RUN_WARN_LOG(AE_MODULE_ID, "kernelSoName length is not support, len=%d.", soNameLen);
+            AE_RUN_WARN_LOG(AE_MODULE_ID, "kernelSoName length is not supported, len=%d.", soNameLen);
             return static_cast<int32_t>(AE_STATUS_INNER_ERROR);
         }
 

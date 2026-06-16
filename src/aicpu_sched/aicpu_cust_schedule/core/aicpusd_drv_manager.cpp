@@ -300,7 +300,7 @@ namespace AicpuSchedule {
         int64_t verifyFlag = 0;
         const auto drvRet = halGetDeviceInfo(deviceId, MODULE_TYPE_SYSTEM, INFO_TYPE_CUST_OP_ENHANCE, &verifyFlag);
         if (drvRet == DRV_ERROR_NOT_SUPPORT) {
-            aicpusd_info("safe flag not support");
+            aicpusd_info("safe flag is not supported");
             return;
         }
         if (drvRet != DRV_ERROR_NONE) {

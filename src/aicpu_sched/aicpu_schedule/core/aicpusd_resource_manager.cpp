@@ -454,7 +454,7 @@ namespace AicpuSchedule {
         std::lock_guard<std::mutex> lk(streamInfoMtx_);
         const auto &iter = streamInfos_.find(streamId);
         if (iter == streamInfos_.end()) {
-            aicpusd_err("Can not find stream, streamId=%u", streamId);
+            aicpusd_err("Cannot find stream, streamId=%u", streamId);
             return AICPU_SCHEDULE_ERROR_STREAM_NOT_FOUND;
         }
 
@@ -468,7 +468,7 @@ namespace AicpuSchedule {
         std::lock_guard<std::mutex> lk(streamInfoMtx_);
         const auto &iter = streamInfos_.find(streamId);
         if (iter == streamInfos_.end()) {
-            aicpusd_err("Can not find stream, streamId=%u", streamId);
+            aicpusd_err("Cannot find stream, streamId=%u", streamId);
             return AICPU_SCHEDULE_ERROR_STREAM_NOT_FOUND;
         }
 
@@ -523,7 +523,7 @@ namespace AicpuSchedule {
     {
         const std::unique_lock<std::mutex> lockForCount(mu_);
         if (writeCount_ > 0U) {
-            aicpusd_info("This lock has been locked by write, can not rdLock now.");
+            aicpusd_info("This lock has been locked by write, cannot rdLock now.");
             return false;
         }
         ++readCount_;
@@ -535,7 +535,7 @@ namespace AicpuSchedule {
     {
         const std::unique_lock<std::mutex> lockForCount(mu_);
         if ((writeCount_ > 0U) || (readCount_ > 0U)) {
-            aicpusd_info("Current writeCount[%u], readCount[%u], can not WrLock now.", writeCount_, readCount_);
+            aicpusd_info("Current writeCount[%u], readCount[%u], cannot WrLock now.", writeCount_, readCount_);
             return false;
         }
         ++writeCount_;

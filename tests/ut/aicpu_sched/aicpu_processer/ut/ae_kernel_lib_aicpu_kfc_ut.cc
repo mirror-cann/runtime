@@ -160,6 +160,20 @@ namespace aicpu {
             EXPECT_NE(AE_STATUS_SUCCESS, ret);
         }
 
+        TEST_F(AIKernelsLibAiCpuKFCUTest, GetKernelName_UT_LengthExceedsMax)
+        {
+            std::string kernelName(cce::AE_MAX_KERNEL_NAME + 1U, 'a');
+            kernel_.kernelName = (uintptr_t) kernelName.data();
+
+            char_t *name = nullptr;
+            const auto *aiCpuKfc = dynamic_cast<cce::AIKernelsLibAiCpuKFC *>(AIKernelsLibAiCpuKFC_);
+            ASSERT_NE(aiCpuKfc, nullptr);
+
+            const auto ret = aiCpuKfc->GetKernelName(name, &kernel_);
+            EXPECT_EQ(AE_STATUS_INNER_ERROR, ret);
+            EXPECT_EQ(name, nullptr);
+        }
+
         using AicpuKFCOpFuncPtr = uint32_t(*)(void *);
         TEST_F(AIKernelsLibAiCpuKFCUTest, CallKFCKernelApi_UT_RunAicpuFunc)
         {

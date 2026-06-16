@@ -61,7 +61,7 @@ TSD_StatusT PackageVerify::IsPackageValid() const
 
     const int32_t ret = access(pkgPath_.c_str(), F_OK);
     if (ret != EOK) {
-        TSD_ERROR("File can not access, ret=%d, path=%s, reason=%s",
+        TSD_ERROR("File cannot access, ret=%d, path=%s, reason=%s",
                   ret, pkgPath_.c_str(), SafeStrerror().c_str());
         return TSD_INTERNAL_ERROR;
     }

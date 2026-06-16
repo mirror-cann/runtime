@@ -177,7 +177,7 @@ BqsStatus BindRelation::CheckBind(const EntityInfo& srcEntity, const EntityInfo&
 
     const auto &abnormalDstToSrcIter = abnormalDstToSrc_.find(dstEntity);
     if ((abnormalDstToSrcIter != abnormalDstToSrc_.end()) && (abnormalDstToSrcIter->second.count(srcEntity) != 0U)) {
-        BQS_LOG_WARN("Bind relation[%s->%s] already exists in abnormal bind relations, can not bind.",
+        BQS_LOG_WARN("Bind relation[%s->%s] already exists in abnormal bind relations, cannot bind.",
                      srcEntity.ToString().c_str(), dstEntity.ToString().c_str());
         return BQS_STATUS_OK;
     }

@@ -93,6 +93,17 @@ namespace {
         return DRV_ERROR_NONE;
     }
 
+    drvError_t halGetDeviceInfoFakeNotSupportVerify(uint32_t devId, int32_t moduleType, int32_t infoType,
+                                                    int64_t *value)
+    {
+        (void)devId;
+        (void)value;
+        if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_CUST_OP_ENHANCE)) {
+            return DRV_ERROR_NOT_SUPPORT;
+        }
+        return DRV_ERROR_NONE;
+    }
+
     hdcError_t drvHdcGetCapacityPCIE(struct drvHdcCapacity *capacity)
     {
         capacity->chanType = HDC_CHAN_TYPE_PCIE;
@@ -528,6 +539,17 @@ TEST_F(AICPUCustScheduleTEST, AICPUEventBindSdPid_SVM_MEM_BIND_SVM_GRP) {
     privEventInfo.msg_len = sizeof(AICPUBindSdPidEventMsg);
     int ret = AicpuEventProcess::GetInstance().AICPUEventBindSdPid(privEventInfo);
     EXPECT_EQ(ret, static_cast<int32_t>(DRV_ERROR_NONE));
+}
+
+TEST_F(AICPUCustScheduleTEST, SetSafeVerifyFlagNotSupport)
+{
+    auto &drvMgr = AicpuSchedule::AicpuDrvManager::GetInstance();
+    drvMgr.needSafeVerify_ = true;
+    MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoFakeNotSupportVerify));
+
+    drvMgr.SetSafeVerifyFlag(0U);
+
+    EXPECT_TRUE(drvMgr.needSafeVerify_);
 }
 
 TEST_F(AICPUCustScheduleTEST, AicpuScheduleInterface_InitAICPUScheduler_Fail) {
@@ -2589,8 +2611,12 @@ TEST_F(AICPUCustScheduleTEST, ST_SetMc2MaintenanceThreadAffinity) {
     int32_t ret = 0;
     ret = AicpuCustMc2MaintenanceThread::GetInstance(0).SetCustMc2MaintenanceThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    std::vector<uint32_t> deviceVec;
-    deviceVec.push_back(1);
+    AicpuDrvManager::GetInstance().ccpuIdVec_.clear();
+    AicpuDrvManager::GetInstance().ccpuIdVec_.push_back(0U);
+    setenv("PROCMGR_AICPU_CPUSET", "1", 1);
+    ret = AicpuCustMc2MaintenanceThread::GetInstance(0).SetCustMc2MaintenanceThreadAffinity();
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
+    setenv("PROCMGR_AICPU_CPUSET", "0", 1);
     ret = AicpuCustMc2MaintenanceThread::GetInstance(0).SetCustMc2MaintenanceThreadAffinity();
     MOCKER(pthread_setaffinity_np)
         .stubs()
