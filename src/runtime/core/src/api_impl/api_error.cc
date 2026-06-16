@@ -1868,7 +1868,6 @@ rtError_t ApiErrorDecorator::RtsMemcpyAsync(void * const dst, const uint64_t des
     rtError_t error = CheckMemcpyAttribute(kind, dst, src);
     ERROR_RETURN(error, "Check attributes failed.");
 
-    
     if(cnt == 0UL) {
         RT_LOG(RT_LOG_WARNING, "Memcpy count is 0, no need to copy, return.");
         return RT_ERROR_NONE;
@@ -5009,7 +5008,7 @@ rtError_t ApiErrorDecorator::GetStreamOverflowSwitch(Stream * const stm, uint32_
 rtError_t ApiErrorDecorator::SetStreamPriorityValue(Stream * const stm, const uint32_t streamPriority)
 {
     NULL_PTR_RETURN_MSG_OUTER(stm, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_AND_MSG_OUTER(((stm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) || (stm->Flags() & RT_STREAM_AICPU)) != 0U, 
+    COND_RETURN_AND_MSG_OUTER((((stm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) != 0U) || ((stm->Flags() & RT_STREAM_AICPU) != 0U)),
         RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, "flags=" + std::to_string(stm->Flags()));
     int32_t validPriority = static_cast<int32_t>(streamPriority);
     uint32_t priority = streamPriority;
@@ -5031,7 +5030,7 @@ rtError_t ApiErrorDecorator::GetStreamPriorityValue(Stream * const stm, uint32_t
 {
     NULL_PTR_RETURN_MSG_OUTER(streamPriority, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(stm, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_AND_MSG_OUTER(((stm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) || (stm->Flags() & RT_STREAM_AICPU)) != 0U, 
+    COND_RETURN_AND_MSG_OUTER((((stm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) != 0U) || ((stm->Flags() & RT_STREAM_AICPU) != 0U)),
         RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, "flags=" + std::to_string(stm->Flags()));
     return impl_->GetStreamPriorityValue(stm, streamPriority);
 }
