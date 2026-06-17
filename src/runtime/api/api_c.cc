@@ -4132,7 +4132,7 @@ rtError_t rtsProfTrace(void *userdata, int32_t length, rtStream_t stream)
         length, "(0, " + std::to_string(dataSize) + "]");
 
     rtProfTraceUserData data = {0, 0, 0};
-    errno_t ret = memcpy_s(&data, sizeof(data), userdata, length);
+    errno_t ret = memcpy_s(&data, sizeof(data), userdata, static_cast<size_t>(length));
     if (ret != EOK) {
         std::stringstream ss;
         ss << std::hex << "dest=0x" << RtPtrToValue(&data) << ", userdata=0x" << RtPtrToValue(userdata)

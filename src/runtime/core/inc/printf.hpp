@@ -46,9 +46,9 @@ enum class DumpType : uint32_t  {
     DUMP_BUFI,
     DUMP_BUFO,
     DUMP_SKIP,
-    DUMP_SIMT_ASSERT = 0xF0E00F0E,
-    DUMP_SIMT_PRINTF = 0xF0F00F0F,
-    DUMP_WAIT = 0xF0A55A0F
+    DUMP_SIMT_ASSERT = 0xF0E00F0EU,
+    DUMP_SIMT_PRINTF = 0xF0F00F0FU,
+    DUMP_WAIT = 0xF0A55A0FU
 };
 
 #pragma pack(push, 1)

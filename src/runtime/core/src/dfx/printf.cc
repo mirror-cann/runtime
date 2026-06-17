@@ -794,7 +794,8 @@ void PrintDumpTensor(const DumpInfoHead *dumpHead, const uint32_t coreType, std:
     const std::string addrToHex = ToHex(tensorHead->addr);
     const auto &positionIter = POSITION_MAP.find(tensorHead->position);
     const std::string position =
-        (positionIter != POSITION_MAP.end()) ? positionIter->second : std::to_string(tensorHead->position);
+        (positionIter != POSITION_MAP.end()) ? positionIter->second :
+        std::to_string(static_cast<uint32_t>(tensorHead->position));
     const uint32_t dumpDataSize = tensorHead->dumpSize;
     const size_t actualDataNum = (dumpDataSize == 0U)
                                      ? (static_cast<size_t>(dumpHead->infoLen) - sizeof(DumpTensorInfo)) / dataTypeSize

@@ -173,7 +173,7 @@ public:
     rtError_t StreamAddCondTask(rtCondTaskParams params, Stream * const stm, uint32_t flags) override;
 
 protected:
-    rtError_t GetDevRunningStreamSnapshotMsg(const rtGetMsgCallback callback) override;
+    rtError_t GetDevRunningStreamSnapshotMsg(rtGetMsgCallback const callback) override;
 
 private:
     rtError_t CaptureRecordEvent(Context * const ctx, Event * const evt, Stream * const stm);

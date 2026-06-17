@@ -20,7 +20,7 @@ namespace {
 inline float uint32ToFloat(uint32_t val)
 {
     float result = 0.0F;
-    auto ret = memcpy_s(&result, sizeof(result), &val, sizeof(val));
+    const auto ret = memcpy_s(&result, sizeof(result), &val, sizeof(val));
     COND_RETURN_AND_MSG_INNER(ret != EOK, 0.0F,
         "Failed to call memcpy_s to copy val, src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%d.",
         &val, &result, sizeof(result), sizeof(val), ret);
@@ -106,7 +106,7 @@ static float fp16ToFloat(const uint16_t &fpVal)
     if (hfExp == FP16_MAX_EXP) {
         if (hfMan == FP16_MAN_HIDE_BIT) {
             // Infinity
-            uint32_t fVal = (static_cast<uint32_t>(hfSign) << FP32_SIGN_INDEX) | FP32_EXP_MASK;
+            const uint32_t fVal = (static_cast<uint32_t>(hfSign) << FP32_SIGN_INDEX) | FP32_EXP_MASK;
             return uint32ToFloat(fVal);
         } else {
             // NaN

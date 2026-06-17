@@ -72,7 +72,7 @@ public:
         condType_ = type;
     }
 
-    rtCondTaskType_t GetCondType()
+    rtCondTaskType_t GetCondType() const
     {
         return condType_;
     }
