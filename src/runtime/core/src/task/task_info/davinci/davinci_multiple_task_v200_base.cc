@@ -248,9 +248,11 @@ static void ConstructDavidAICpuSqeByHandleForDavinciMultipleTask(TaskInfo * cons
     CommonConstructDavidAICpuSqe(taskInfo, command, sqBaseAddr, &params);
 }
 
-void ConstructDavidSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForDavinciMultipleTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     DavinciMultiTaskInfo * const davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
     rtMultipleTaskInfo_t * const multipleTaskInfo =
         RtPtrToPtr<rtMultipleTaskInfo_t *>(RtPtrToUnConstPtr<void *>(davinciMultiTaskInfo->multipleTaskInfo));

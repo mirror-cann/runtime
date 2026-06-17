@@ -21,33 +21,33 @@ namespace runtime {
 
 #if F_DESC("ModelExecuteTask")
 
-void ConstructDavidSqeForModelExecuteTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForModelExecuteTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ModelExecuteTaskInfo * const modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
     Stream * const stream = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
-    sqe.header.type = RT_DAVID_SQE_TYPE_COND;
-    sqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe.header.postP = RT_STARS_SQE_INT_DIR_TO_TSCPU;
-    sqe.sqeLength = 0U;
-    sqe.csc = 1U;
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
+    fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
+    fnCallSqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    fnCallSqe.header.postP = RT_STARS_SQE_INT_DIR_TO_TSCPU;
+    fnCallSqe.sqeLength = 0U;
+    fnCallSqe.csc = 1U;
 
-    sqe.condsSubType = CONDS_SUB_TYPE_MODEL_EXEC;
-    sqe.reserved0 = static_cast<uint16_t>(modelExecuteTaskInfo->modelId);
+    fnCallSqe.condsSubType = CONDS_SUB_TYPE_MODEL_EXEC;
+    fnCallSqe.reserved0 = static_cast<uint16_t>(modelExecuteTaskInfo->modelId);
 
     const uint64_t funcAddr = modelExecuteTaskInfo->model->GetFuncCallSvmMem();
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsModelExeFuncCall));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "ModelExecuteTask");
     RT_LOG(RT_LOG_INFO, "ModelExecuteTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, model_id=%hu.",
-        taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, sqe.reserved0);
+        taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, fnCallSqe.reserved0);
 }
 
 #endif

@@ -17,6 +17,17 @@
 namespace cce {
 namespace runtime {
 
+// For all chips, sqe size must be an integer multiple of 64B, with the minimum beging 64B.
+// This means 64B == sizeof(rtStarsSqe_t) == sizeof(rtDavidSqe_t) == ...
+constexpr uint32_t SQE_SIZE_UNIT = 64U;
+constexpr uint32_t SQE_NUM_PER_TASK_MAX = SQE_NUM_PER_DAVID_TASK_MAX;
+constexpr uint32_t SQE_SIZE_MAX = SQE_SIZE_UNIT * SQE_NUM_PER_TASK_MAX;
+
+struct TaskSqeInfo {
+    uint64_t sqBaseAddr;
+    uint64_t rsv;
+};
+
 // record task error info for other thread sync
 #define STREAM_REPORT_ERR_MSG(STREAM, ERR_MODULE, format, ...) \
     do { \

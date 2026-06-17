@@ -305,11 +305,11 @@ rtError_t StreamJettyHandler::UpdateUbdmaSqeWithJettyInfo(
         memcpyAsyncTaskInfo->ubDma.dieId = jettyInfo.dieId;
         memcpyAsyncTaskInfo->ubDma.functionId = jettyInfo.functionId;
         memcpyAsyncTaskInfo->ubDma.pi = wqeCount;
-        rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX] = {};
-        rtDavidSqe_t *sqe = davidSqe;
-        ToConstructDavidSqe(taskInfo, sqe, stream->GetSqBaseAddr());
-        errno_t rc = memcpy_s(RtPtrToPtr<void *>(RtPtrToValue(stream->GetSqeBuffer()) + sizeof(rtStarsSqe_t) * taskInfo->pos),
-            sizeof(rtStarsSqe_t), sqe, sizeof(rtStarsSqe_t));
+        uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
+        TaskSqeInfo sqeInfo = {stream->GetSqBaseAddr(), 0ULL};
+        ToConstructDavidSqe(taskInfo, static_cast<void *>(sqeBuffer), sqeInfo);
+        errno_t rc = memcpy_s(RtPtrToPtr<void *>(RtPtrToValue(sqeInfo.sqBaseAddr) + SQE_SIZE_UNIT * taskInfo->pos),
+            SQE_SIZE_UNIT, RtPtrToPtr<void*>(sqeBuffer), SQE_SIZE_UNIT);
         if (rc != EOK) {
             RT_LOG(RT_LOG_ERROR, "memcpy_s failed for SQE update, stream_id=%d, task_id=%u, rc=%d.",
                 stream->Id_(), taskId, static_cast<int32_t>(rc));

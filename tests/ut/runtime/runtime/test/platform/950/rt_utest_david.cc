@@ -621,27 +621,27 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_maintaince)
     task->id = 0;
     InitByStream(&maintainceTask, stream);
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_STREAM_ADD, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(stream->GetBindFlag(), true);
     EXPECT_EQ(sqe.phSqe.header.preP, 1U);
 
     model->SetModelExecutorType(EXECUTOR_AICPU);
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_MODEL_PRE_PROC, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_STREAM_LOAD_COMPLETE, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_MODEL_LOAD_COMPLETE, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
 
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_MODEL_ABORT, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     model->modelType_ = RT_MODEL_CAPTURE_MODEL;
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_MODEL_PRE_PROC, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     model->modelType_ = RT_MODEL_NORMAL;
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_STREAM_DEL, model, stream, RT_MODEL_HEAD_STREAM, 0U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(stream->GetBindFlag(), false);
     EXPECT_EQ(sqe.phSqe.header.preP, 1U);
     uint64_t addr;
@@ -665,9 +665,9 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_profiling_enable_Task)
     task.type = TS_TASK_TYPE_PROFILING_ENABLE;
     task.id = 0;
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     RtDavidPlaceHolderSqe &placeHolderSqe = sqe.phSqe;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     // head taskType
     EXPECT_EQ(placeHolderSqe.taskType, 27);
 }
@@ -682,10 +682,10 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_profiling_disable_task)
     task.type = TS_TASK_TYPE_PROFILING_DISABLE;
     task.id = 0;
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     RtDavidPlaceHolderSqe &placeHolderSqe = sqe.phSqe;
 
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     // head taskType
     EXPECT_EQ(placeHolderSqe.taskType, 28);
 }
@@ -724,9 +724,9 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stream_switch_ex)
             rtError_t ret = StreamSwitchTaskInitV2(&task, &varData, conds[i], trueStreams, &value, dataType);
             EXPECT_EQ(ret, RT_ERROR_NONE);
             rtDavidSqe_t sqe = {};
-            uint64_t sqBaseAddr = 0U;
+            TaskSqeInfo sqeInfo = {0ULL, 0ULL};
             auto &streamSwitchExSqe = sqe.fuctionCallSqe;
-            ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+            ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
             EXPECT_EQ(streamSwitchExSqe.header.type, RT_DAVID_SQE_TYPE_COND);
             TaskUnInitProc(&task);
         }
@@ -753,7 +753,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_execute)
     TaskInfo *task = &mdlExecTask;
     rtDavidSqe_t command = {};
     RtDavidStarsFunctionCallSqe &sqe = command.fuctionCallSqe;
-    ToConstructDavidSqe(task, &command, true);
+    TaskSqeInfo sqeInfo = {1ULL, 0ULL};
+    ToConstructDavidSqe(task, static_cast<void*>(&command), sqeInfo);
     EXPECT_EQ(sqe.header.type, RT_DAVID_SQE_TYPE_COND);
     TaskUnInitProc(task);
     rtModelDestroy(model);
@@ -766,10 +767,10 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_maintaince_task_force_recycle)
     TaskInfo *task = &maintainceTask;
     rtDavidSqe_t sqe = {};
     task->id = 0;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&maintainceTask, stream_);
     (void)MaintenanceTaskInit(&maintainceTask, MT_STREAM_RECYCLE_TASK, 100U, 1U);
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
     EXPECT_EQ(sqe.phSqe.header.preP, 1U);
 }
@@ -781,16 +782,16 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_ringbuffer_maintain)
     RingBufferMaintainTaskInfo *const ringBufMtTsk = &(task->u.ringBufMtTask);
     rtDavidSqe_t sqe = {};
     task->id = 0;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&maintainceTask, stream_);
     rtError_t ret = RingBufferMaintainTaskInit(task, (void *)0x100, 0, 10);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.header.preP, 1U);
 
     ringBufMtTsk->deleteFlag = true;
-    ToConstructDavidSqe(task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.u.ringBufferControlInfo.ringbufferDelFlag, RINGBUFFER_NEED_DEL);
     EXPECT_EQ(sqe.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
 }
@@ -806,8 +807,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_overflow_switch_set_task)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     tsk.id = 0;
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&tsk, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&tsk, static_cast<void*>(&command), sqeInfo);
     EXPECT_EQ(command.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
 }
 
@@ -819,18 +820,18 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_write_value_task)
     InitByStream(&tsk, stream_);
     uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {};
     rtDavidSqe_t cmd;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     uint64_t addr = 100U;
     ret = WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_NEVER);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ToConstructDavidSqe(writeValueTask, &cmd, sqBaseAddr);
+    ToConstructDavidSqe(writeValueTask, static_cast<void*>(&cmd), sqeInfo);
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ToConstructDavidSqe(writeValueTask, &cmd, sqBaseAddr);
+    ToConstructDavidSqe(writeValueTask, static_cast<void*>(&cmd), sqeInfo);
 
     ret = WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_ALWAYS);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ToConstructDavidSqe(writeValueTask, &cmd, sqBaseAddr);
+    ToConstructDavidSqe(writeValueTask, static_cast<void*>(&cmd), sqeInfo);
     EXPECT_EQ(cmd.writeValueSqe.header.type, RT_DAVID_SQE_TYPE_WRITE_VALUE);
     ;
 }
@@ -843,9 +844,9 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_label_switch_by_index)
     uint64_t labelInfoPtr = 100U;
     rtDavidSqe_t sqe;
     InitByStream(&task, stream_);
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)StreamLabelSwitchByIndexTaskInit(&task, (void *)&ptr, max, (void *)labelInfoPtr);
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     TaskUnInitProc(&task);
     EXPECT_EQ(sqe.fuctionCallSqe.header.type, RT_DAVID_SQE_TYPE_COND);
 }
@@ -856,8 +857,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_add_end_graph_task)
     InitByStream(&task, stream_);
     AddEndGraphTaskInit(&task, 0, 0, 0, 0, 0);
     rtDavidSqe_t sqe;
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicpuSqe.header.type, RT_DAVID_SQE_TYPE_AICPU_D);
 }
 
@@ -865,10 +866,10 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_timeout_sqe)
 {
     TaskInfo task = {};
     rtDavidSqe_t sqe;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     TimeoutSetTaskInit(&task, RT_TIMEOUT_TYPE_OP_EXECUTE, 10);
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicpuControlSqe.header.type, RT_DAVID_SQE_TYPE_AICPU_D);
 }
 
@@ -884,13 +885,13 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_memcpy_async_sqe_d2d)
     (void)ReduceOpcodeHigh(&task);
 
     rtDavidSqe_t sqe;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncTaskInitV3(&task, kind, src, dst, count, 0, NULL);
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.memcpyAsyncSqe.header.type, RT_DAVID_SQE_TYPE_SDMA);
     task.id = 0;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     TaskUnInitProc(&task);
 }
 
@@ -938,13 +939,13 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_memcpy_async_sqe_pciedma)
     MOCKER(IsPcieDma).stubs().will(returnValue(true));
 
     rtDavidSqe_t sqe;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     rtError_t ret = MemcpyAsyncTaskInitV3(&task, kind, src, dst, count, 0, NULL);
     EXPECT_EQ(ret, RT_ERROR_DRV_ERR);
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     task.id = 0;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     TaskUnInitProc(&task);
 }
 
@@ -953,10 +954,10 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_data_dump_load_info)
     TaskInfo task = {};
 
     rtDavidSqe_t sqe;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     DataDumpLoadInfoTaskInit(&task, 0, 0, RT_KERNEL_DEFAULT);
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
     TaskUnInitProc(&task);
 }
@@ -968,8 +969,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_david_sqe_base)
     RdmaDbSendTaskInit(&task, 0, 1, 0);
 
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
 }
 
@@ -984,8 +985,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_debug_register_for_stream)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_DEBUG_REGISTER_FOR_STREAM);
     rtLogicCqReport_t cqe = {};
     cqe.errorType = 1U;
@@ -1007,8 +1008,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_debug_register)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_DEBUG_REGISTER);
 }
 
@@ -1020,9 +1021,9 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_debug_unregister)
     error = DebugUnRegisterTaskInit(&task, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     sqe.phSqe = {};
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_DEBUG_UNREGISTER);
 }
 
@@ -1035,8 +1036,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_debug_unregister_for_stream)
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtDavidSqe_t sqe = {};
     sqe.phSqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_DEBUG_UNREGISTER_FOR_STREAM);
 }
 
@@ -1049,8 +1050,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_get_device_msg)
     GetDevMsgTaskInit(&task, devMemAddr, devMemSize, RT_GET_DEV_ERROR_MSG);
     rtDavidSqe_t sqe = {};
     sqe.phSqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_GET_DEVICE_MSG);
 }
 
@@ -1061,8 +1062,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_profiler_trace_ex)
     ProfilerTraceExTaskInit(&task, 1, 1, 1);
 
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_PROFILER_TRACE_EX);
 }
 
@@ -1081,8 +1082,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_label_set)
     stream_->SetModel(realModel);
     stream_->SetLatestModlId(realModel->Id_());
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.taskType, TS_TASK_TYPE_LABEL_SET);
     stream_->models_.clear();
     rtModelDestroy(model);
@@ -1094,7 +1095,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_cmotask)
     rtDavidSqe_t sqe1 = {};
     rtDavidSqe_t sqe2 = {};
     rtDavidSqe_t sqe3 = {};
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
     rtCmoTaskInfo_t cmoTask = {};
@@ -1105,19 +1106,19 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_cmotask)
     stream_->models_.clear();
     cmoTask.opCode = RT_CMO_PREFETCH;
     CmoTaskInit(&task, &cmoTask, stream_, 0);
-    ToConstructDavidSqe(&task, &sqe1, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe1), sqeInfo);
     EXPECT_EQ(sqe1.cmoSqe.header.type, RT_DAVID_SQE_TYPE_CMO);
     cmoTask.opCode = RT_CMO_WRITEBACK;
     CmoTaskInit(&task, &cmoTask, stream_, 0);
-    ToConstructDavidSqe(&task, &sqe1, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe1), sqeInfo);
     EXPECT_EQ(sqe1.cmoSqe.header.type, RT_DAVID_SQE_TYPE_CMO);
     cmoTask.opCode = RT_CMO_INVALID;
     CmoTaskInit(&task, &cmoTask, stream_, 0);
-    ToConstructDavidSqe(&task, &sqe2, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe2), sqeInfo);
     EXPECT_EQ(sqe2.cmoSqe.header.type, RT_STARS_SQE_TYPE_SDMA);
     cmoTask.opCode = RT_CMO_FLUSH;
     CmoTaskInit(&task, &cmoTask, stream_, 0);
-    ToConstructDavidSqe(&task, &sqe2, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe2), sqeInfo);
     EXPECT_EQ(sqe2.cmoSqe.header.type, RT_STARS_SQE_TYPE_SDMA);
     stream_->SetModel(tmpModel);
 
@@ -1129,7 +1130,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_cmotask)
     stream_->SetLatestModlId(realModel->Id_());
     MOCKER(memcpy_s).stubs().will(returnValue(1));
     CmoTaskInit(&task, &cmoTask, stream_, 0);
-    ToConstructDavidSqe(&task, &sqe3, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe3), sqeInfo);
     EXPECT_EQ(sqe3.memcpyAsyncPtrSqe.header.type, RT_STARS_SQE_TYPE_SDMA);
     rtModelDestroy(model);
     stream_->models_.clear();
@@ -1142,8 +1143,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stream_tag_set)
     StreamTagSetTaskInit(&tagTask, stream_, 0);
     rtDavidSqe_t sqe;
     sqe.phSqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&tagTask, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&tagTask, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
 }
 
@@ -1155,8 +1156,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_npuclrfloatsta)
     NpuClrFloatStaTaskInit(&task, checkmode);
 
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.phSqe.header.type, RT_DAVID_SQE_TYPE_PLACE_HOLDER);
 }
 
@@ -1168,8 +1169,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_npugetfloatsta)
     NpuGetFloatStaTaskInit(&task, nullptr, 32, checkmode);
 
     rtDavidSqe_t sqe = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.getFloatStatusSqe.header.type, RT_DAVID_SQE_TYPE_COND);
 }
 
@@ -1184,8 +1185,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_common_task)
     StarsCommonTaskInit(&dvppTask, vpcSqe, 0);
 
     rtDavidSqe_t sqe1 = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&dvppTask, &sqe1, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&dvppTask, static_cast<void*>(&sqe1), sqeInfo);
     EXPECT_EQ(sqe1.commonSqe.sqeHeader.type, RT_DAVID_SQE_TYPE_VPC);
 }
 
@@ -1268,10 +1269,10 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_to_aicpu)
 {
     TaskInfo task = {};
     rtDavidSqe_t sqe;
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     ModelToAicpuTaskInit(&task, 0, 1, RT_KERNEL_DEFAULT, 1);
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicpuControlSqe.header.type, RT_DAVID_SQE_TYPE_AICPU_D);
 }
 
@@ -1290,13 +1291,14 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_davinci)
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
     ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     rtDavidSqe_t *sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
 
     Kernel *aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel1, aicKernel1->GetKernelAttrType(), 1, nullptr);
@@ -1304,13 +1306,13 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_davinci)
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     task.id = 0;
     task.u.aicTaskInfo.kernel = kernel;
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->aicpuControlSqe.header.type, RT_DAVID_SQE_TYPE_AIC);
     Kernel *vecKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task, vecKernel1, vecKernel1->GetKernelAttrType(), 1, nullptr);
     delete vecKernel1;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->aicpuControlSqe.header.type, RT_DAVID_SQE_TYPE_AIV);
     Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
@@ -1326,6 +1328,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
 {
     TaskInfo task = {};
     rtDavidSqe_t sqe;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
     const void *stubFunc = (void *)0x02;
@@ -1349,7 +1352,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
     task.u.aicTaskInfo.kernel = kernel;
     kernel->SetMixType(MIX_AIC);
     stubProg.SetIsDcacheLockOp(true);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIC);
     EXPECT_EQ(sqe.aicAivSqe.aicIcachePrefetchCnt, 0x2);
 
@@ -1358,7 +1361,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
     delete vecKernel2;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
     kernel->SetMixType(MIX_AIV);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIV);
     EXPECT_EQ(sqe.aicAivSqe.aivIcachePrefetchCnt, 0x2);
 
@@ -1367,7 +1370,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
     delete aicKernel4;
     kernel->SetMixType(MIX_AIC_AIV_MAIN_AIC);
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.aicIcachePrefetchCnt, 0x2);
     EXPECT_EQ(sqe.aicAivSqe.aivIcachePrefetchCnt, 0x4);
     TaskUnInitProc(&task);
@@ -1378,6 +1381,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aicaiv_nomix_
 {
     TaskInfo task = {};
     rtDavidSqe_t sqe;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
     const void *stubFunc = (void *)0x02;
@@ -1399,7 +1403,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aicaiv_nomix_
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
     task.id = 0;
     task.u.aicTaskInfo.kernel = kernel;
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIC);
     EXPECT_EQ(sqe.aicAivSqe.aicIcachePrefetchCnt, 0x2);
 
@@ -1407,7 +1411,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aicaiv_nomix_
     AicTaskInit(&task, vecKernel3, vecKernel3->GetKernelAttrType(), 1, nullptr);
     delete vecKernel3;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIV);
     EXPECT_EQ(sqe.aicAivSqe.aivIcachePrefetchCnt, 0x2);
     ((Runtime *)Runtime::Instance())->SetBiuperfProfFlag(true);
@@ -1416,7 +1420,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aicaiv_nomix_
     AicTaskInit(&task, vecKernel4, vecKernel4->GetKernelAttrType(), 1, nullptr);
     delete vecKernel4;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     TaskUnInitProc(&task);
     delete kernel;
 }
@@ -1426,6 +1430,7 @@ TEST_F(DavidTaskTest, config_schem_mode_on_construct_davidsqe_for_aic_mix_task)
     TaskInfo task = {};
     TaskCfg taskcfg = {};
     rtDavidSqe_t sqe;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
     const void *stubFunc = (void *)0x02;
@@ -1452,26 +1457,26 @@ TEST_F(DavidTaskTest, config_schem_mode_on_construct_davidsqe_for_aic_mix_task)
     taskcfg.isBaseValid = 1;
     taskcfg.base.schemMode = RT_SCHEM_MODE_NORMAL;
     AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 10, &taskcfg, false); 
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.schem, RT_SCHEM_MODE_NORMAL);
     // 优先级配置校验2
     kernel->SetSchedMode(RT_SCHEM_MODE_BATCH);
     AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 10, nullptr, false); 
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.schem, RT_SCHEM_MODE_BATCH);
     // AIV场景优先级配置
     kernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
     kernel->SetMixType(MIX_AIV);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.schem, RT_SCHEM_MODE_BATCH);
     // MIX_MAIN_AIC场景优先级配置
     kernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     kernel->SetMixType(MIX_AIC_AIV_MAIN_AIC);
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
-    ToConstructDavidSqe(&task, &sqe, 0U);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.schem, RT_SCHEM_MODE_BATCH);
     TaskUnInitProc(&task);
     delete kernel;
@@ -1484,24 +1489,25 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async)
     TaskInfo task = {};
     task.id = 0;
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     rtDavidSqe_t *sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncD2HTaskInit(&task, src, count, 2U, 3U);
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->memcpyAsyncSqe.header.type, RT_DAVID_SQE_TYPE_ASYNCDMA);
 
     MemcpyAsyncTaskInfo *const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = RT_MEMCPY_ADDR_D2D_SDMA;
     memcpyAsyncTaskInfo->d2dOffsetFlag = true;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
     EXPECT_EQ(sqe->memcpyAsyncSqe.header.type, RT_DAVID_SQE_TYPE_SDMA);
     stream_->SetSqBaseAddr(oldSqAddr);
@@ -1545,11 +1551,11 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_build_multiple_task)
     Runtime *rt = (Runtime *)Runtime::Instance();
 
     rtDavidSqe_t sqe[2];
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(task, stream_);
     DavinciMultipleTaskInit(task, &multipleTaskInfo, 0U);
 
-    ToConstructDavidSqe(task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(task, static_cast<void*>(sqe), sqeInfo);
     auto taskNum = GetSendDavidSqeNum(task);
     EXPECT_EQ(taskNum, 2);
     TaskUnInitProc(task);
@@ -1571,15 +1577,15 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_pciedma)
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncD2HTaskInit(&task, src, count, 2U, 3U);
     MemcpyAsyncTaskInfo *const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = RT_MEMCPY_DIR_H2D;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
 
     memcpyAsyncTaskInfo->dmaKernelConvertFlag = true;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->pcieDmaSqe.header.type, RT_DAVID_SQE_TYPE_ASYNCDMA);
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
@@ -1588,7 +1594,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_pciedma)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
@@ -1632,9 +1639,9 @@ TEST_F(DavidTaskTest, construct_ccu_launch_0)
     rtCcuTaskInfo_t info = {0};
     info.argSize = RT_CCU_SQE_ARGS_LEN;
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)CcuLaunchTaskInit(&task, &info);
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->ccuSqe.header.type, RT_DAVID_SQE_TYPE_CCU);
     uint32_t errorcode = 10;
     SetResult(&task, (const uint32_t *)&errorcode, 1);
@@ -1657,7 +1664,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_notify)
     uint32_t value = 0U;
     void *addr = &value;
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     CountNotifyWaitInfo cntNtfyInfo = {};
     NotifyWaitTaskInit(&task, 0, 1, &cntNtfyInfo, nullptr, false);
     task.id = 0;
@@ -1667,7 +1674,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_notify)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_WAIT);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
@@ -1681,9 +1689,9 @@ TEST_F(DavidTaskTest, construct_ccu_launch)
     rtCcuTaskInfo_t info = {0};
     info.argSize = RT_CCU_SQE_ARGS_LEN;
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)CcuLaunchTaskInit(&task, &info);
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->ccuSqe.header.type, RT_DAVID_SQE_TYPE_CCU);
     uint32_t errorcode = 10;
     SetResult(&task, (const uint32_t *)&errorcode, 1);
@@ -1697,14 +1705,14 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_ptr)
     TaskInfo task = {};
 
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncD2HTaskInit(&task, src, count, 2U, 3U);
     MemcpyAsyncTaskInfo *const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = RT_MEMCPY_ADDR_D2D_SDMA;
     memcpyAsyncTaskInfo->copyKind = RT_MEMCPY_RESERVED;
 
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->memcpyAsyncPtrSqe.header.type, RT_DAVID_SQE_TYPE_SDMA);
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
@@ -1713,7 +1721,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_ptr)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
@@ -1727,13 +1736,13 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_write_value_ptr)
     uint32_t value = 0U;
     void *addr = &value;
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)WriteValuePtrTaskInit(&task, addr, TASK_WR_CQE_DEFAULT);
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     (void)WriteValuePtrTaskInit(&task, addr, TASK_WR_CQE_NEVER);
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     (void)WriteValuePtrTaskInit(&task, addr, TASK_WR_CQE_ALWAYS);
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
 
     EXPECT_EQ(sqe->writeValueSqe.header.type, RT_DAVID_SQE_TYPE_WRITE_VALUE);
     task.id = 0;
@@ -1743,7 +1752,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_write_value_ptr)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
@@ -1757,7 +1767,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_notify_1)
     uint32_t value = 0U;
     void *addr = &value;
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     CountNotifyWaitInfo cntNtfyInfo = {};
     NotifyWaitTaskInit(&task, 0, 1, &cntNtfyInfo, nullptr, false);
     task.id = 0;
@@ -1767,7 +1777,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_notify_1)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_WAIT);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
@@ -1783,7 +1794,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_event)
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
     DavidEvent *evt = new (std::nothrow) DavidEvent(dev_, 0x1, nullptr, false);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
     uint16_t pos = task.id;
@@ -1792,13 +1803,14 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_event)
     stream_->SetSqBaseAddr(newSqAddr);
 
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_RECORD);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_RECORD);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_RECORD);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
@@ -1959,15 +1971,16 @@ TEST_F(DavidTaskTest, base_task_ubdma_doorbell)
     task.id = 0;
     UbDbSendTaskInit(&task, &dbInfo, 0);
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     rtDavidSqe_t *sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = streamObj->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
-    ToConstructDavidSqe(&task, sqeAddr, newSqAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
+    TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     Complete(&task, 0);
     streamObj->SetSqBaseAddr(oldSqAddr);
     rtStreamDestroy(stream);
@@ -3234,8 +3247,8 @@ TEST_F(DavidTaskTest, base_task_ubdma_direct)
     directSend->wqePtrLen = 128;
 
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     Complete(&task, 0);
     free(directSend->wqe);
     directSend->wqe = nullptr;
@@ -3271,8 +3284,8 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForModelUpdateTask)
     para.hdl = nullptr;
     rtError_t ret = ModelTaskUpdateInit(&task, desStreamId, destaskId, exeStreamId, devCopyMem, tilingTabLen, &para);
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
     uint16_t pos = task.id;
@@ -3280,7 +3293,8 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForModelUpdateTask)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, newSqAddr);
+    TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->phSqe.taskType, TS_TASK_TYPE_MODEL_TASK_UPDATE);
     Complete(&task, 0);
     streamObj->SetSqBaseAddr(oldSqAddr);
@@ -3310,8 +3324,8 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForAicpuInfoLoadTask)
     uint32_t length = 0;
     rtError_t ret = AicpuInfoLoadTaskInit(&task, aicpuInfo, length);
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->phSqe.taskType, TS_TASK_TYPE_AICPU_INFO_LOAD);
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
@@ -3320,7 +3334,8 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForAicpuInfoLoadTask)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, newSqAddr);
+    TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     Complete(&task, 0);
     streamObj->SetSqBaseAddr(oldSqAddr);
     rtStreamDestroy(stream);
@@ -3347,8 +3362,8 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForNopTask)
     InitByStream(&task, streamObj);
     rtError_t ret = NopTaskInit(&task);
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->phSqe.taskType, TS_TASK_TYPE_NOP);
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
@@ -3358,7 +3373,8 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForNopTask)
     streamObj->SetSqBaseAddr(newSqAddr);
 
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, newSqAddr);
+    TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     Complete(&task, 0);
     streamObj->SetSqBaseAddr(oldSqAddr);
     rtStreamDestroy(stream);
@@ -3394,7 +3410,7 @@ TEST_F(DavidTaskTest, mutiple_task_construct_sqe_test_error)
     task.type = TS_TASK_TYPE_MULTIPLE_TASK;
     InitByStream(&task, stream_);
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
 
     MOCKER_CPP_VIRTUAL(stream_->Device_()->ArgLoader_(), &ArgLoader::GetKernelInfoDevAddr).stubs().will(returnValue(1));
 
@@ -3409,10 +3425,10 @@ TEST_F(DavidTaskTest, mutiple_task_construct_sqe_test_error)
     multipleTaskInfo->taskDesc[0].type = RT_MULTIPLE_TASK_TYPE_AICPU;
     multipleTaskInfo->taskDesc[0].u.aicpuTaskDesc.kernelLaunchNames.soName = nullptr;
     multipleTaskInfo->taskDesc[0].u.aicpuTaskDesc.kernelLaunchNames.kernelName = "test";
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->commonSqe.sqeHeader.type, RT_STARS_SQE_TYPE_INVALID);
     multipleTaskInfo->taskDesc[0].u.aicpuTaskDesc.kernelLaunchNames.soName = "test";
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->commonSqe.sqeHeader.type, RT_STARS_SQE_TYPE_INVALID);
     free(sqe);
 }
@@ -3519,8 +3535,8 @@ TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncDmaSqe)
     MOCKER(halAsyncDmaCreate).stubs().will(invoke(halAsyncDmaCreateStub));
     MOCKER(halAsyncDmaDestory).stubs().will(invoke(halAsyncDmaDestoryStub));
     rtDavidSqe_t sqe[2];
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&memcpyTask, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&memcpyTask, static_cast<void*>(sqe), sqeInfo);
     TaskUnInitProc(&memcpyTask);
     rtStreamDestroy(streamHandle);
     error = rtDeviceReset(0);
@@ -3553,8 +3569,8 @@ TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncUbDbSqe)
     MOCKER(halAsyncDmaCreate).stubs().will(invoke(halAsyncDmaCreateStub));
     MOCKER(halAsyncDmaDestory).stubs().will(invoke(halAsyncDmaDestoryStub));
     rtDavidSqe_t sqe[2];
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&memcpyTask, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&memcpyTask, static_cast<void*>(sqe), sqeInfo);
     TaskUnInitProc(&memcpyTask);
     rtStreamDestroy(streamHandle);
     error = rtDeviceReset(0);
@@ -3681,12 +3697,12 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_aicpu_kernel_mc2_type)
     TaskInfo task = {};
 
     rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     AicpuTaskInit(&task, 1, (uint32_t)0);
     stream_->SetDebugRegister(true);
     task.u.aicpuTaskInfo.aicpuKernelType = KERNEL_TYPE_AICPU_KFC;
-    ToConstructDavidSqe(&task, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     task.id = 0;
     rtDavidSqe_t *sqeAddr = sqe;
     uint16_t pos = task.id;
@@ -3695,7 +3711,8 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_aicpu_kernel_mc2_type)
     stream_->SetSqBaseAddr(newSqAddr);
 
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(&task, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->aicpuSqe.resv.fusionSubTypeDesc.subType, 0U);
     EXPECT_EQ(sqe->aicpuSqe.header.type, RT_DAVID_SQE_TYPE_AICPU_D);
     TaskUnInitProc(&task);
@@ -3768,24 +3785,24 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_1)
     error = rtSetExceptionExtInfo(&argsSizeInfo);
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
     kernTask.u.fusionKernelTask.aicAivType = 0;  //aic no mix
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&kernTask, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].aicpuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
 
     kernTask.u.fusionKernelTask.aicAivType = 1;  //aiv no mix
     fusionInfo.subTask[0].task.aicpuInfo.flags = RT_KERNEL_HOST_FIRST;
-    ToConstructDavidSqe(&kernTask, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].aicpuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
 
     kernTask.u.fusionKernelTask.aicPart.kernel = kernel;
     kernTask.u.fusionKernelTask.aicPart.kernel->mixType_ = MIX_AIC_AIV_MAIN_AIC;
     fusionInfo.subTask[0].task.aicpuInfo.flags = RT_KERNEL_HOST_ONLY;
-    ToConstructDavidSqe(&kernTask, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].aicpuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
 
     kernTask.u.fusionKernelTask.aicPart.kernel->mixType_ = MIX_AIV;
     fusionInfo.subTask[0].task.aicpuInfo.flags = RT_KERNEL_DEVICE_FIRST;
-    ToConstructDavidSqe(&kernTask, sqe, sqBaseAddr);
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].aicpuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
 
     MOCKER(TaskFailCallBack).stubs().will(invoke(TaskFailCallBackStubfunc));
@@ -3866,8 +3883,8 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_2)
     FusionKernelTaskInit(&kernTask);
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
     kernTask.u.fusionKernelTask.aicAivType = 0;  //aic no mix
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&kernTask, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].ccuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
 
     TaskUnInitProc(&kernTask);
@@ -3919,8 +3936,8 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_3)
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
     kernTask.u.fusionKernelTask.aicAivType = 0;  //aic no mix
 
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&kernTask, sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].ccuSqe.usrData[0], UINT32_MAX);
     EXPECT_EQ(sqe[1].ccuSqe.header.type, 0x3F);
 
@@ -3951,7 +3968,8 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_error_type)
     kernTask.u.fusionKernelTask.sqeLen = 1U;
 
     sqe[0].ccuSqe.header.type = 0x3F;
-    ToConstructDavidSqe(&kernTask, sqe, true);
+    TaskSqeInfo sqeInfo = {1ULL, 0ULL};
+    ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].ccuSqe.header.type, 0x3F);
 
     TaskUnInitProc(&kernTask);
@@ -4414,9 +4432,9 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_stream_active)
 
     TaskInfo *tsk = &streamActiveTask;
     rtDavidSqe_t *command = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    uint64_t sqBaseAddr = 0U;
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     RtDavidStarsFunctionCallSqe sqe = command->fuctionCallSqe;
-    ToConstructDavidSqe(tsk, command, sqBaseAddr);
+    ToConstructDavidSqe(tsk, static_cast<void*>(command), sqeInfo);
     streamActiveTask.id = 0;
     rtDavidSqe_t *sqeAddr = (rtDavidSqe_t *)(&sqe);
     uint16_t pos = streamActiveTask.id;
@@ -4424,7 +4442,8 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_stream_active)
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(&sqe);
     stream_->SetSqBaseAddr(newSqAddr);
     sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
-    ToConstructDavidSqe(tsk, sqeAddr, stream_->GetSqBaseAddr());
+    TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
+    ToConstructDavidSqe(tsk, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe.header.type, RT_DAVID_SQE_TYPE_COND);
     EXPECT_EQ(sqe.csc, 1U);
     stream_->SetSqBaseAddr(oldSqAddr);

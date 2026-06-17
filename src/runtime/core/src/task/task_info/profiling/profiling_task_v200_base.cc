@@ -16,71 +16,71 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("ProfilingEnableTask")
-void ConstructDavidSqeForProfilingEnableTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForProfilingEnableTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ProfilingEnableTaskInfo * const profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
     Stream * const stream = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.dynamicProfilingInfo.pid = profilingEnableTaskInfo->pid;
-    sqe->u.dynamicProfilingInfo.isTaskBasedProfEn = profilingEnableTaskInfo->isTaskBasedProfEn;
-    sqe->u.dynamicProfilingInfo.isSocLogEn = profilingEnableTaskInfo->isHwtsLogEn;
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.dynamicProfilingInfo.pid = profilingEnableTaskInfo->pid;
+    phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn = profilingEnableTaskInfo->isTaskBasedProfEn;
+    phSqe->u.dynamicProfilingInfo.isSocLogEn = profilingEnableTaskInfo->isHwtsLogEn;
     PrintDavidSqe(davidSqe, "DynamicProfilingEnableTask");
     RT_LOG(RT_LOG_INFO, "ProfilingEnableTask, device_id=%u, stream_id=%d, task_id=%hu, pid=%llu."
         "isSocLogEn=%hhu, isTaskBasedProfEn=%hhu.",
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, profilingEnableTaskInfo->pid,
-        sqe->u.dynamicProfilingInfo.isSocLogEn, sqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
+        phSqe->u.dynamicProfilingInfo.isSocLogEn, phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
 }
 #endif
 
 #if F_DESC("ProfilingDisableTask")
-void ConstructDavidSqeForProfilingDisableTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForProfilingDisableTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ProfilingDisableTaskInfo * const profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
     Stream * const stream = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.dynamicProfilingInfo.pid = profilingDisableTaskInfo->pid;
-    sqe->u.dynamicProfilingInfo.isTaskBasedProfEn = profilingDisableTaskInfo->isTaskBasedProfEn;
-    sqe->u.dynamicProfilingInfo.isSocLogEn = profilingDisableTaskInfo->isHwtsLogEn;
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.dynamicProfilingInfo.pid = profilingDisableTaskInfo->pid;
+    phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn = profilingDisableTaskInfo->isTaskBasedProfEn;
+    phSqe->u.dynamicProfilingInfo.isSocLogEn = profilingDisableTaskInfo->isHwtsLogEn;
     PrintDavidSqe(davidSqe, "DynamicProfilingDisableTask");
     RT_LOG(RT_LOG_INFO, "ProfilingDisableTask, device_id=%u, stream_id=%d, task_id=%hu, pid=%u, "
         "isSocLogEn=%hhu, isTaskBasedProfEn=%hhu.",
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id,
-        sqe->u.dynamicProfilingInfo.pid, sqe->u.dynamicProfilingInfo.isSocLogEn,
-        sqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
+        phSqe->u.dynamicProfilingInfo.pid, phSqe->u.dynamicProfilingInfo.isSocLogEn,
+        phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
 }
 #endif
 
 #if F_DESC("ProfilerTraceExTask")
-void ConstructDavidSqeForProfilerTraceExTask(TaskInfo *taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForProfilerTraceExTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_PROFILER_TRACE_EX;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.profileTraceInfo.profilerTraceId = taskInfo->u.profilerTraceExTask.profilerTraceId;
-    sqe->u.profileTraceInfo.modelId = taskInfo->u.profilerTraceExTask.modelId;
-    sqe->u.profileTraceInfo.tagId = taskInfo->u.profilerTraceExTask.tagId;
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_PROFILER_TRACE_EX;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.profileTraceInfo.profilerTraceId = taskInfo->u.profilerTraceExTask.profilerTraceId;
+    phSqe->u.profileTraceInfo.modelId = taskInfo->u.profilerTraceExTask.modelId;
+    phSqe->u.profileTraceInfo.tagId = taskInfo->u.profilerTraceExTask.tagId;
 
     PrintDavidSqe(davidSqe, "ProfilerTraceExTask");
     RT_LOG(RT_LOG_INFO, "ProfilerTraceExTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",

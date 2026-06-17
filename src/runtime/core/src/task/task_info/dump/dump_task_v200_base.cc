@@ -16,58 +16,59 @@
 
 namespace cce {
 namespace runtime {
-static void ConstructDavidSqeForDebugUnRegisterForStreamTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForDebugUnRegisterForStreamTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const sqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
     Stream * const stm = taskInfo->stream;
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_DEBUG_UNREGISTER_FOR_STREAM;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.streamDebugRegisterInfo.streamId = taskInfo->u.debugUnRegisterForStreamTask.streamId;
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_DEBUG_UNREGISTER_FOR_STREAM;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.streamDebugRegisterInfo.streamId = taskInfo->u.debugUnRegisterForStreamTask.streamId;
 
     PrintDavidSqe(davidSqe, "DebugUnRegisterForStream");
     RT_LOG(RT_LOG_INFO, "DebugUnRegisterForStreamTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
         taskInfo->stream->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 
-static void ConstructDavidSqeForDebugRegisterTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForDebugRegisterTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_DEBUG_REGISTER;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_DEBUG_REGISTER;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
 
-    sqe->u.modelDebugRegisterInfo.addr = taskInfo->u.debugRegisterTask.addr;
-    sqe->u.modelDebugRegisterInfo.modelId = taskInfo->u.debugRegisterTask.modelId;
-    sqe->u.modelDebugRegisterInfo.flag = taskInfo->u.debugRegisterTask.flag;
+    phSqe->u.modelDebugRegisterInfo.addr = taskInfo->u.debugRegisterTask.addr;
+    phSqe->u.modelDebugRegisterInfo.modelId = taskInfo->u.debugRegisterTask.modelId;
+    phSqe->u.modelDebugRegisterInfo.flag = taskInfo->u.debugRegisterTask.flag;
 
     PrintDavidSqe(davidSqe, "DebugRegister");
     RT_LOG(RT_LOG_INFO, "DebugRegisterTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 
-static void ConstructDavidSqeForDebugUnRegisterTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForDebugUnRegisterTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_DEBUG_UNREGISTER;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_DEBUG_UNREGISTER;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
 
-    sqe->u.modelDebugRegisterInfo.modelId = taskInfo->u.debugUnRegisterTask.modelId;
+    phSqe->u.modelDebugRegisterInfo.modelId = taskInfo->u.debugUnRegisterTask.modelId;
 
     PrintDavidSqe(davidSqe, "DebugUnRegister");
     RT_LOG(RT_LOG_INFO, "DebugUnRegisterTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
@@ -75,43 +76,43 @@ static void ConstructDavidSqeForDebugUnRegisterTask(TaskInfo *taskInfo, rtDavidS
         taskInfo->u.debugUnRegisterTask.modelId);
 }
 
-static void ConstructDavidSqeForDebugRegisterForStreamTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForDebugRegisterForStreamTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_DEBUG_REGISTER_FOR_STREAM;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.streamDebugRegisterInfo.addr = taskInfo->u.debugRegisterForStreamTask.addr;
-    sqe->u.streamDebugRegisterInfo.streamId = taskInfo->u.debugRegisterForStreamTask.streamId;
-    sqe->u.streamDebugRegisterInfo.flag = taskInfo->u.debugRegisterForStreamTask.flag;
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_DEBUG_REGISTER_FOR_STREAM;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.streamDebugRegisterInfo.addr = taskInfo->u.debugRegisterForStreamTask.addr;
+    phSqe->u.streamDebugRegisterInfo.streamId = taskInfo->u.debugRegisterForStreamTask.streamId;
+    phSqe->u.streamDebugRegisterInfo.flag = taskInfo->u.debugRegisterForStreamTask.flag;
 
     PrintDavidSqe(davidSqe, "DebugRegisterForStream");
     RT_LOG(RT_LOG_INFO, "DebugRegisterForStreamTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 
-static void ConstructDavidSqeForDataDumpLoadInfoTask(TaskInfo *taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForDataDumpLoadInfoTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_DATADUMP_LOADINFO;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.dataDumpLoadInfo.dumpinfoPtr = taskInfo->u.dataDumpLoadInfoTask.dumpInfo;
-    sqe->u.dataDumpLoadInfo.length = taskInfo->u.dataDumpLoadInfoTask.length;
-    sqe->u.dataDumpLoadInfo.streamId = static_cast<uint16_t>(stm->Id_());
-    sqe->u.dataDumpLoadInfo.taskId = taskInfo->id;
-    sqe->u.dataDumpLoadInfo.kernelType = taskInfo->u.dataDumpLoadInfoTask.kernelType;
-    sqe->u.dataDumpLoadInfo.reserved = 0U;
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_DATADUMP_LOADINFO;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.dataDumpLoadInfo.dumpinfoPtr = taskInfo->u.dataDumpLoadInfoTask.dumpInfo;
+    phSqe->u.dataDumpLoadInfo.length = taskInfo->u.dataDumpLoadInfoTask.length;
+    phSqe->u.dataDumpLoadInfo.streamId = static_cast<uint16_t>(stm->Id_());
+    phSqe->u.dataDumpLoadInfo.taskId = taskInfo->id;
+    phSqe->u.dataDumpLoadInfo.kernelType = taskInfo->u.dataDumpLoadInfoTask.kernelType;
+    phSqe->u.dataDumpLoadInfo.reserved = 0U;
 
     PrintDavidSqe(davidSqe, "DataDumpLoadInfoTask");
     RT_LOG(RT_LOG_INFO, "DataDumpLoadInfoTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
@@ -119,37 +120,39 @@ static void ConstructDavidSqeForDataDumpLoadInfoTask(TaskInfo *taskInfo, rtDavid
 }
 
 static void ConstructDavidSqeForAicpuInfoLoadTask(
-    TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+    TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
 
-    sqe->taskType = TS_TASK_TYPE_AICPU_INFO_LOAD;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.aiCpuLoadInfo.aicpufoPtr = taskInfo->u.aicpuInfoLoadTask.aicpuInfo;
-    sqe->u.aiCpuLoadInfo.length = taskInfo->u.aicpuInfoLoadTask.length;
-    sqe->u.aiCpuLoadInfo.streamId = static_cast<uint16_t>(stm->Id_());
-    sqe->u.aiCpuLoadInfo.taskId = taskInfo->id;
-    sqe->u.aiCpuLoadInfo.reserved[0] = 0U;
-    sqe->u.aiCpuLoadInfo.reserved[1] = 0U;
+    phSqe->taskType = TS_TASK_TYPE_AICPU_INFO_LOAD;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.aiCpuLoadInfo.aicpufoPtr = taskInfo->u.aicpuInfoLoadTask.aicpuInfo;
+    phSqe->u.aiCpuLoadInfo.length = taskInfo->u.aicpuInfoLoadTask.length;
+    phSqe->u.aiCpuLoadInfo.streamId = static_cast<uint16_t>(stm->Id_());
+    phSqe->u.aiCpuLoadInfo.taskId = taskInfo->id;
+    phSqe->u.aiCpuLoadInfo.reserved[0] = 0U;
+    phSqe->u.aiCpuLoadInfo.reserved[1] = 0U;
 
     PrintDavidSqe(davidSqe, "AicpuInfoLoadTask");
     RT_LOG(RT_LOG_INFO, "AicpuInfoLoadTask stream_id:%d task_id:%hu", stm->Id_(), taskInfo->id);
 }
 
-static void ConstructDavidSqeForNopTask(TaskInfo * const taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+static void ConstructDavidSqeForNopTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidPlaceHolderSqe *const sqe = &(command->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->taskType = TS_TASK_TYPE_NOP;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    PrintDavidSqe(command, "NoOperationTask");
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->taskType = TS_TASK_TYPE_NOP;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    PrintDavidSqe(davidSqe, "NoOperationTask");
 }
 
 static bool DumpTaskRegister()

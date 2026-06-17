@@ -480,8 +480,10 @@ void PrintAsyncPtrProc(Driver * const driver, char_t * const errStr, void *memcp
 #endif
 
 #if F_DESC("MemWaitValueTask")
-void ConstructDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     constexpr uint8_t MEM_WAIT_SQE_INDEX_1 = 1U;
     constexpr uint8_t MEM_WAIT_SQE_INDEX_2 = 2U;
 
@@ -626,36 +628,37 @@ void ConstructSecondDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, rtDavidSqe_t
 #endif
 
 #if F_DESC("MemWriteValueTask")
-void ConstructDavidSqeForMemWriteValueTask(TaskInfo *const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForMemWriteValueTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     MemWriteValueTaskInfo *const writeValTsk = &(taskInfo->u.memWriteValueTask);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
 
-    RtDavidStarsWriteValueSqe * const sqe = &(davidSqe->writeValueSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
-    sqe->va = 1U;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->awsize = writeValTsk->awSize;
-    sqe->snoop = 0U;
-    sqe->awcache = 2U;
-    sqe->awprot = 0U;
+    RtDavidStarsWriteValueSqe * const writeValueSqe = &(davidSqe->writeValueSqe);
+    writeValueSqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
+    writeValueSqe->va = 1U;
+    writeValueSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    writeValueSqe->awsize = writeValTsk->awSize;
+    writeValueSqe->snoop = 0U;
+    writeValueSqe->awcache = 2U;
+    writeValueSqe->awprot = 0U;
 
     const uint64_t value = taskInfo->u.memWriteValueTask.value;
     const uint64_t devAddr = taskInfo->u.memWriteValueTask.devAddr;
     if (devAddr == 0ULL) {
-        sqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
+        writeValueSqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
         return;
     }
     
-    sqe->writeAddrLow = static_cast<uint32_t>(devAddr & MASK_32_BIT);
-    sqe->writeAddrHigh = static_cast<uint32_t>((devAddr >> UINT32_BIT_NUM) & MASK_17_BIT);
-    sqe->writeValuePart[0] = static_cast<uint32_t>(value & MASK_32_BIT);
-    sqe->writeValuePart[1] = static_cast<uint32_t>((value >> UINT32_BIT_NUM) & MASK_32_BIT);
+    writeValueSqe->writeAddrLow = static_cast<uint32_t>(devAddr & MASK_32_BIT);
+    writeValueSqe->writeAddrHigh = static_cast<uint32_t>((devAddr >> UINT32_BIT_NUM) & MASK_17_BIT);
+    writeValueSqe->writeValuePart[0] = static_cast<uint32_t>(value & MASK_32_BIT);
+    writeValueSqe->writeValuePart[1] = static_cast<uint32_t>((value >> UINT32_BIT_NUM) & MASK_32_BIT);
 
     PrintDavidSqe(davidSqe, "MemWriteValueTask");
     RT_LOG(RT_LOG_INFO, "MemWriteValueTask stream_id=%d, awsize=%d ,task_id=%hu, devAddr=%#" PRIx64
-        ", value:%#" PRIx64, taskInfo->stream->Id_(), sqe->awsize, taskInfo->id, devAddr, value);
+        ", value:%#" PRIx64, taskInfo->stream->Id_(), writeValueSqe->awsize, taskInfo->id, devAddr, value);
 }
 #endif
 

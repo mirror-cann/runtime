@@ -371,19 +371,21 @@ static void ConstructDavidMixSqeForDavinciTask(TaskInfo *taskInfo, rtDavidSqe_t 
     return;
 }
 
-void ConstructDavidAicAivSqeForDavinciTask(TaskInfo * const taskInfo, rtDavidSqe_t * const command,
-    uint64_t sqBaseAddr)
+void ConstructDavidAicAivSqeForDavinciTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     const uint8_t mixType = (aicTaskInfo->kernel != nullptr) ? aicTaskInfo->kernel->GetMixType() :
         static_cast<uint8_t>(NO_MIX);
     if (mixType != NO_MIX) {
-        ConstructDavidMixSqeForDavinciTask(taskInfo, command, sqBaseAddr);
+        ConstructDavidMixSqeForDavinciTask(taskInfo, davidSqe, sqBaseAddr);
     } else {
         if (taskInfo->type == TS_TASK_TYPE_KERNEL_AICORE) {
-            ConstructDavidAICoreSqeForDavinciTask(taskInfo, command, sqBaseAddr);
+            ConstructDavidAICoreSqeForDavinciTask(taskInfo, davidSqe, sqBaseAddr);
         } else {
-            ConstructDavidAivSqeForDavinciTask(taskInfo, command, sqBaseAddr);
+            ConstructDavidAivSqeForDavinciTask(taskInfo, davidSqe, sqBaseAddr);
         }
     }
 

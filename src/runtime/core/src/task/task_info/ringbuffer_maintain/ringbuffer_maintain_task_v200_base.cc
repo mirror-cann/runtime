@@ -19,24 +19,25 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("RingBufferMaintainTask")
-void ConstructDavidSqeForRingBufferMaintainTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForRingBufferMaintainTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const sqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
     RingBufferMaintainTaskInfo * const ringBufMtTsk = &(taskInfo->u.ringBufMtTask);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->res1 = taskInfo->stream->Device_()->GetTsLogToHostFlag();
-    sqe->taskType = TS_TASK_TYPE_DEVICE_RINGBUFFER_CONTROL;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->res1 = taskInfo->stream->Device_()->GetTsLogToHostFlag();
+    phSqe->taskType = TS_TASK_TYPE_DEVICE_RINGBUFFER_CONTROL;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
 
-    sqe->u.ringBufferControlInfo.ringbufferPhyAddr = 0UL;
+    phSqe->u.ringBufferControlInfo.ringbufferPhyAddr = 0UL;
     if (ringBufMtTsk->deleteFlag) {
-        sqe->u.ringBufferControlInfo.ringbufferOffset = 0UL;
-        sqe->u.ringBufferControlInfo.totalLen = 0U;
-        sqe->u.ringBufferControlInfo.ringbufferDelFlag = RINGBUFFER_NEED_DEL;
+        phSqe->u.ringBufferControlInfo.ringbufferOffset = 0UL;
+        phSqe->u.ringBufferControlInfo.totalLen = 0U;
+        phSqe->u.ringBufferControlInfo.ringbufferDelFlag = RINGBUFFER_NEED_DEL;
         PrintDavidSqe(davidSqe, "RingBufferMaintain");
         RT_LOG(RT_LOG_INFO, "RingBufferMaintainTask, device_id=%u, stream_id=%d, task_id=%hu",
             taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id);
@@ -44,16 +45,16 @@ void ConstructDavidSqeForRingBufferMaintainTask(TaskInfo * const taskInfo, rtDav
     }
 
     uint64_t offset = RtPtrToValue(ringBufMtTsk->deviceRingBufferAddr);
-    sqe->u.ringBufferControlInfo.ringbufferOffset = offset;
-    sqe->u.ringBufferControlInfo.totalLen = ringBufMtTsk->bufferLen;
-    sqe->u.ringBufferControlInfo.ringbufferDelFlag = 0U;
-    sqe->u.ringBufferControlInfo.elementSize = RINGBUFFER_EXT_ONE_ELEMENT_LENGTH_ON_DAVID;
+    phSqe->u.ringBufferControlInfo.ringbufferOffset = offset;
+    phSqe->u.ringBufferControlInfo.totalLen = ringBufMtTsk->bufferLen;
+    phSqe->u.ringBufferControlInfo.ringbufferDelFlag = 0U;
+    phSqe->u.ringBufferControlInfo.elementSize = RINGBUFFER_EXT_ONE_ELEMENT_LENGTH_ON_DAVID;
 
     PrintDavidSqe(davidSqe, "RingBufferCreate");
     RT_LOG(RT_LOG_INFO, "RingBufferCreate, device_id=%u, stream_id=%d, task_id=%hu,"
         " offset=%#" PRIx64 ", elementSize=%u.",
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id, offset,
-        sqe->u.ringBufferControlInfo.elementSize);
+        phSqe->u.ringBufferControlInfo.elementSize);
 }
 
 #endif

@@ -378,8 +378,8 @@ TEST_F(EventTestDavid, TestToConstructDavidEventRecordTask)
     evt->isCntNotify_ = true;
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RECORD);
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void *>(&sqe), sqeInfo);
     delete evt;
 }
 
@@ -394,8 +394,8 @@ TEST_F(EventTestDavid, TestToConstructDavidEventWaitTask)
     evt->isCntNotify_ = true;
     DavidEventWaitTaskInit(&task, evt, evt->EventId_(), 0U);
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_WAIT);
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&task, &sqe, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&task, static_cast<void *>(&sqe), sqeInfo);
     delete evt;
 }
 

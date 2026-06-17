@@ -37,41 +37,42 @@ const char_t* GetNotifySubType(const uint16_t subType)
     return g_notifySubTypeStr[static_cast<size_t>(subType)];
 }
 
-void ConstructDavidSqeForNotifyWaitTask(TaskInfo *taskInfo, rtDavidSqe_t *const command, uint64_t sqBaseAddr)
+void ConstructDavidSqeForNotifyWaitTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     NotifyWaitTaskInfo* notifyWaitTask = &(taskInfo->u.notifywaitTask);
     Stream* const stream = taskInfo->stream;
 
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidStarsNotifySqe *const sqe = &(command->notifySqe);
-    sqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
-    sqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_WAIT;
-    sqe->notifyId = notifyWaitTask->notifyId;
-    sqe->timeout = notifyWaitTask->timeout;
-    sqe->cntFlag = false;
-    sqe->clrFlag = true;
-    sqe->waitModeBit = 0U;
-    sqe->recordModeBit = 0U;
-    sqe->cntValue = 0U;
-    sqe->subType = NOTIFY_SUB_TYPE_SINGLE_NOTIFY_WAIT;
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsNotifySqe *const notifySqe = &(davidSqe->notifySqe);
+    notifySqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
+    notifySqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_WAIT;
+    notifySqe->notifyId = notifyWaitTask->notifyId;
+    notifySqe->timeout = notifyWaitTask->timeout;
+    notifySqe->cntFlag = false;
+    notifySqe->clrFlag = true;
+    notifySqe->waitModeBit = 0U;
+    notifySqe->recordModeBit = 0U;
+    notifySqe->cntValue = 0U;
+    notifySqe->subType = NOTIFY_SUB_TYPE_SINGLE_NOTIFY_WAIT;
     if (notifyWaitTask->isCountNotify) {
-        sqe->cntFlag = true;
-        sqe->cntValue = notifyWaitTask->cntNtfyInfo.value;
-        sqe->clrFlag = notifyWaitTask->cntNtfyInfo.isClear;
-        sqe->waitModeBit = notifyWaitTask->cntNtfyInfo.mode;
-        sqe->subType = NOTIFY_SUB_TYPE_COUNT_NOTIFY_WAIT;
+        notifySqe->cntFlag = true;
+        notifySqe->cntValue = notifyWaitTask->cntNtfyInfo.value;
+        notifySqe->clrFlag = notifyWaitTask->cntNtfyInfo.isClear;
+        notifySqe->waitModeBit = notifyWaitTask->cntNtfyInfo.mode;
+        notifySqe->subType = NOTIFY_SUB_TYPE_COUNT_NOTIFY_WAIT;
         if (notifyWaitTask->cntNtfyInfo.mode == WAIT_BITMAP_MODE) {
-            sqe->waitModeBit = 0U;
-            sqe->bitmap = 1U;
+            notifySqe->waitModeBit = 0U;
+            notifySqe->bitmap = 1U;
         }
     }
-    PrintDavidSqe(command, "NotifyWaitTask");
+    PrintDavidSqe(davidSqe, "NotifyWaitTask");
     RT_LOG(RT_LOG_INFO, "notify_wait: device_id=%u, stream_id=%u, task_id=%u, task_sn=%u, sq_id=%u, notify_id=%u, "
         "cntFlag=%u, clrFlag=%u, waitModeBit=%u, recordModeBit=%u, bitmap=%u, cntValue=%u, subType=%s, timeout=%us.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, stream->GetSqId(),
-        sqe->notifyId, sqe->cntFlag, sqe->clrFlag, sqe->waitModeBit, sqe->recordModeBit, sqe->bitmap, sqe->cntValue,
-        GetNotifySubType(sqe->subType), sqe->timeout);
+        notifySqe->notifyId, notifySqe->cntFlag, notifySqe->clrFlag, notifySqe->waitModeBit, notifySqe->recordModeBit, notifySqe->bitmap, notifySqe->cntValue,
+        GetNotifySubType(notifySqe->subType), notifySqe->timeout);
 }
 
 static void ConstructDavidSqeForNotifyResetTask(TaskInfo* const taskInfo, rtDavidSqe_t* const command)
@@ -92,49 +93,51 @@ static void ConstructDavidSqeForNotifyResetTask(TaskInfo* const taskInfo, rtDavi
         stream->GetSqId(), sqe->notifyId, sqe->clrFlag, GetNotifySubType(sqe->subType));
 }
 
-void ConstructDavidSqeForNotifyRecordTask(TaskInfo *taskInfo, rtDavidSqe_t *const command, uint64_t sqBaseAddr)
+void ConstructDavidSqeForNotifyRecordTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     NotifyRecordTaskInfo* notifyRecord = &taskInfo->u.notifyrecordTask;
     if ((notifyRecord->isCountNotify == false) && (notifyRecord->uInfo.singleBitNtfyInfo.isNotifyReset == true)) {
-        ConstructDavidSqeForNotifyResetTask(taskInfo, command);
+        ConstructDavidSqeForNotifyResetTask(taskInfo, davidSqe);
         return;
     }
     if ((notifyRecord->isCountNotify == false) && (notifyRecord->uInfo.singleBitNtfyInfo.isIpc == true)) {
-        ConstructSqeForIpcNotifyRecordTask(taskInfo, command);
+        ConstructSqeForIpcNotifyRecordTask(taskInfo, davidSqe);
         return;
     }
     Stream* const stream = taskInfo->stream;
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidStarsNotifySqe *const sqe = &(command->notifySqe);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsNotifySqe *const notifySqe = &(davidSqe->notifySqe);
 
-    sqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_RECORD;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->notifyId = notifyRecord->notifyId;
-    sqe->cntFlag = false;
-    sqe->clrFlag = false;
-    sqe->waitModeBit  = 0U;
-    sqe->recordModeBit  = 0U;
-    sqe->cntValue = 0U;
-    sqe->subType = NOTIFY_SUB_TYPE_SINGLE_NOTIFY_RECORD;
+    notifySqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_RECORD;
+    notifySqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    notifySqe->notifyId = notifyRecord->notifyId;
+    notifySqe->cntFlag = false;
+    notifySqe->clrFlag = false;
+    notifySqe->waitModeBit  = 0U;
+    notifySqe->recordModeBit  = 0U;
+    notifySqe->cntValue = 0U;
+    notifySqe->subType = NOTIFY_SUB_TYPE_SINGLE_NOTIFY_RECORD;
     if (notifyRecord->isCountNotify) {
-        sqe->cntFlag = true;
-        sqe->cntValue = notifyRecord->uInfo.countNtfyInfo.value;
-        sqe->recordModeBit = notifyRecord->uInfo.countNtfyInfo.mode;
-        sqe->subType = NOTIFY_SUB_TYPE_COUNT_NOTIFY_RECORD;
+        notifySqe->cntFlag = true;
+        notifySqe->cntValue = notifyRecord->uInfo.countNtfyInfo.value;
+        notifySqe->recordModeBit = notifyRecord->uInfo.countNtfyInfo.mode;
+        notifySqe->subType = NOTIFY_SUB_TYPE_COUNT_NOTIFY_RECORD;
     }
 
-    PrintDavidSqe(command, "NotifyRecordTask");
+    PrintDavidSqe(davidSqe, "NotifyRecordTask");
     RT_LOG(RT_LOG_INFO, "notify_record: device_id=%u, stream_id=%d, task_id=%u, task_sn=%u, sq_id=%u, notify_id=%u, "
         "cntFlag=%u, clrFlag=%u, waitModeBit=%u, recordModeBit=%u, bitmap=%u, cntValue=%u, subType=%s, timeout=%us.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, stream->GetSqId(),
-        sqe->notifyId, sqe->cntFlag, sqe->clrFlag, sqe->waitModeBit, sqe->recordModeBit, sqe->bitmap, sqe->cntValue,
-        GetNotifySubType(sqe->subType), sqe->timeout);
+        notifySqe->notifyId, notifySqe->cntFlag, notifySqe->clrFlag, notifySqe->waitModeBit, notifySqe->recordModeBit, notifySqe->bitmap, notifySqe->cntValue,
+        GetNotifySubType(notifySqe->subType), notifySqe->timeout);
 }
 
 void ConstructStarsSqeForNotifyRecordTask(TaskInfo *taskInfo, uint8_t *const command)
 {
-    ConstructDavidSqeForNotifyRecordTask(taskInfo, RtPtrToPtr<rtDavidSqe_t *>(command), 0U);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ConstructDavidSqeForNotifyRecordTask(taskInfo, static_cast<void *const>(command), sqeInfo);
 }
 
 void ConstructStarsSqeForConditionNotifyWait(TaskInfo *taskInfo, uint8_t *const command)

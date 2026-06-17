@@ -136,9 +136,11 @@ static void ConstructDavidMemcpySqeForOpCode(TaskInfo * const taskInfo, rtDavidS
     return;
 }
 
-void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo &sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     MemcpyAsyncTaskInfo * const memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
     Stream * const stream = taskInfo->stream;
     Driver * const driver = taskInfo->stream->Device_()->Driver_();

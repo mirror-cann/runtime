@@ -17,30 +17,31 @@ namespace cce {
 namespace runtime {
 constexpr uint8_t TASK_SQE_NUM_TWO = 2U;
 
-void ConstructDavidSqeForCcuLaunchTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+void ConstructDavidSqeForCcuLaunchTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidStarsCcuSqe * const sqe = &(command->ccuSqe);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsCcuSqe * const ccuSqe = &(davidSqe->ccuSqe);
     Stream * const stream = taskInfo->stream;
-    sqe->header.type = RT_DAVID_SQE_TYPE_CCU;
+    ccuSqe->header.type = RT_DAVID_SQE_TYPE_CCU;
 
     CcuLaunchTaskInfo *tskinfo = &(taskInfo->u.ccuLaunchTask);
-    sqe->resv.ccuResvDesc2.missionId = tskinfo->missionId;
-    sqe->resv.ccuResvDesc2.dieId = tskinfo->dieId;
-    sqe->resv.ccuResvDesc2.ccuSize = tskinfo->ccu_size;
-    sqe->kernelCredit = static_cast<uint8_t>(GetCCUCredit(tskinfo->timeout));
-    sqe->timeout = tskinfo->timeout;
-    sqe->sqeLength = 1U;
-    sqe->instStartId = tskinfo->instStartId;
-    sqe->instCnt = tskinfo->instCnt;
-    sqe->instAddrKeyValue = tskinfo->key;
+    ccuSqe->resv.ccuResvDesc2.missionId = tskinfo->missionId;
+    ccuSqe->resv.ccuResvDesc2.dieId = tskinfo->dieId;
+    ccuSqe->resv.ccuResvDesc2.ccuSize = tskinfo->ccu_size;
+    ccuSqe->kernelCredit = static_cast<uint8_t>(GetCCUCredit(tskinfo->timeout));
+    ccuSqe->timeout = tskinfo->timeout;
+    ccuSqe->sqeLength = 1U;
+    ccuSqe->instStartId = tskinfo->instStartId;
+    ccuSqe->instCnt = tskinfo->instCnt;
+    ccuSqe->instAddrKeyValue = tskinfo->key;
 
     uint32_t *args = tskinfo->args;
     for (uint32_t i = 0U; i < CCU_1ST_SQE_ARGS_LEN; i++) {
-        sqe->usrData[i] = args[i];
+        ccuSqe->usrData[i] = args[i];
     }
-    rtDavidSqe_t *sqeAddr = command + 1U;
+    rtDavidSqe_t *sqeAddr = davidSqe + 1U;
     if (sqBaseAddr != 0ULL) {
         const uint32_t pos = taskInfo->id + 1U;
         sqeAddr = GetSqPosAddr(sqBaseAddr, pos);
@@ -48,12 +49,12 @@ void ConstructDavidSqeForCcuLaunchTask(TaskInfo *taskInfo, rtDavidSqe_t * const 
     const errno_t ret = memcpy_s(sqeAddr, sizeof(rtDavidStarsCommonSqe_t),
         (args + CCU_1ST_SQE_ARGS_LEN), (sizeof(uint32_t) * CCU_2ND_SQE_LEFT_LEN));
     if (ret != EOK) {
-        sqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
+        ccuSqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
         RT_LOG(RT_LOG_ERROR, "copy to starsSqe failed, ret=%d, src size=%zu, dst size=%zu",
             ret, sizeof(rtDavidStarsCommonSqe_t), (sizeof(uint32_t) * CCU_2ND_SQE_LEFT_LEN));
         return;
     }
-    PrintDavidSqe(command, "CcuLaunchTask Part0");
+    PrintDavidSqe(davidSqe, "CcuLaunchTask Part0");
     PrintDavidSqe(sqeAddr, "CcuLaunchTask Part1");
     RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%hu, task_id=%hu, missionId=%hu, dieId=%hu, instStartId=%hu, "
         "instCnt=%hu", stream->Device_()->Id_(), stream->Id_(), taskInfo->id, tskinfo->missionId, tskinfo->dieId,

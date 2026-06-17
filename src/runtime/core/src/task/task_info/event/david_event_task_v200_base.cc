@@ -100,42 +100,42 @@ void DoCompleteSuccessForDavidEventRecordTask(TaskInfo * const taskInfo, const u
         stream->GetSqId(), eventRecordTaskInfo->eventId, eventRecordTaskInfo->timestamp);
 }
 
-static void ConstructDavidSqeForEventRecordTask(
-    TaskInfo * const taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+static void ConstructDavidSqeForEventRecordTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     DavidEventRecordTaskInfo *eventRecordTaskInfo = &(taskInfo->u.davidEventRecordTaskInfo);
     Stream * const stream = taskInfo->stream;
     DavidEvent *evt = dynamic_cast<DavidEvent *>(eventRecordTaskInfo->event);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidStarsNotifySqe *sqe = &(command->notifySqe);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsNotifySqe *notifySqe = &(davidSqe->notifySqe);
     const rtDavidStarsSqeType evtSqeType = evt->IsEventWithoutWaitTask() ?
         RT_DAVID_SQE_TYPE_PLACE_HOLDER : RT_DAVID_SQE_TYPE_NOTIFY_RECORD;
-    sqe->header.wrCqe = (taskInfo->isCqeNeedConcern == 1U) ? 1U : 0U; // 1: set wr_cqe
-    sqe->header.type = static_cast<uint8_t>(evtSqeType);
+    notifySqe->header.wrCqe = (taskInfo->isCqeNeedConcern == 1U) ? 1U : 0U;  // 1: set wr_cqe
+    notifySqe->header.type = static_cast<uint8_t>(evtSqeType);
 
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->notifyId = static_cast<uint32_t>(eventRecordTaskInfo->eventId);
-    sqe->cntFlag = eventRecordTaskInfo->isCountNotify;
-    sqe->clrFlag = 0U;
-    sqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_SINGLE_NOTIFY_RECORD;
+    notifySqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    notifySqe->notifyId = static_cast<uint32_t>(eventRecordTaskInfo->eventId);
+    notifySqe->cntFlag = eventRecordTaskInfo->isCountNotify;
+    notifySqe->clrFlag = 0U;
+    notifySqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_SINGLE_NOTIFY_RECORD;
     if ((eventRecordTaskInfo->isCountNotify == 1U) && (evtSqeType == RT_DAVID_SQE_TYPE_NOTIFY_RECORD)) {
-        (void)stream->ApplyCntValue(sqe->cntValue);
-        evt->SetCntValue(sqe->cntValue);
-        eventRecordTaskInfo->countValue = sqe->cntValue;
-        sqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_COUNT_NOTIFY_RECORD;
+        (void)stream->ApplyCntValue(notifySqe->cntValue);
+        evt->SetCntValue(notifySqe->cntValue);
+        eventRecordTaskInfo->countValue = notifySqe->cntValue;
+        notifySqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_COUNT_NOTIFY_RECORD;
     }
 
     evt->InsertRecordResetToMap(taskInfo);
     DavidRecordTaskInfo latestRecord = {stream->Id_(), static_cast<uint32_t>(taskInfo->id)};
     evt->UpdateLatestRecord(latestRecord, DavidEventState_t::EVT_NOT_RECORDED, UINT64_MAX);
 
-    PrintDavidSqe(command, "EventRecordTask");
+    PrintDavidSqe(davidSqe, "EventRecordTask");
     RT_LOG(RT_LOG_INFO, "event_record: device_id=%u, stream_id=%hu, task_id=%hu, task_sn=%u, sq_id=%u, event_id=%u, "
         "cntFlag=%u, clrFlag=%u, waitModeBit=%u, recordModeBit=%u, bitmap=%u, cntValue=%u, subType=%s, timeout=%us.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, stream->GetSqId(),
-        sqe->notifyId, sqe->cntFlag, sqe->clrFlag, sqe->waitModeBit, sqe->recordModeBit, sqe->bitmap, sqe->cntValue,
-        GetNotifySubType(sqe->subType), sqe->timeout);
+        notifySqe->notifyId, notifySqe->cntFlag, notifySqe->clrFlag, notifySqe->waitModeBit, notifySqe->recordModeBit, notifySqe->bitmap, notifySqe->cntValue,
+        GetNotifySubType(notifySqe->subType), notifySqe->timeout);
 }
 #endif
 
@@ -207,41 +207,42 @@ void DoCompleteSuccessForDavidEventWaitTask(TaskInfo * const taskInfo, const uin
     }
 }
 
-static void ConstructDavidSqeForEventWaitTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+static void ConstructDavidSqeForEventWaitTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stream = taskInfo->stream;
     DavidEventWaitTaskInfo *eventWaitTaskInfo = &(taskInfo->u.davidEventWaitTaskInfo);
     DavidEvent *evt = dynamic_cast<DavidEvent *>(eventWaitTaskInfo->event);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidStarsNotifySqe * const evSqe = &(command->notifySqe);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsNotifySqe * const notifySqe = &(davidSqe->notifySqe);
 
-    evSqe->header.wrCqe = stream->GetStarsWrCqeFlag();
+    notifySqe->header.wrCqe = stream->GetStarsWrCqeFlag();
 
-    evSqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_WAIT;
-    evSqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
-    evSqe->notifyId = static_cast<uint16_t>(eventWaitTaskInfo->eventId);
-    evSqe->clrFlag = 0U;
-    evSqe->cntFlag = 0U;
-    evSqe->cntValue =  0U;
-    evSqe->waitModeBit = 0U;
-    evSqe->recordModeBit = 0U;
-    evSqe->timeout = eventWaitTaskInfo->timeout;
-    evSqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_SINGLE_NOTIFY_WAIT;
+    notifySqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_WAIT;
+    notifySqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
+    notifySqe->notifyId = static_cast<uint16_t>(eventWaitTaskInfo->eventId);
+    notifySqe->clrFlag = 0U;
+    notifySqe->cntFlag = 0U;
+    notifySqe->cntValue =  0U;
+    notifySqe->waitModeBit = 0U;
+    notifySqe->recordModeBit = 0U;
+    notifySqe->timeout = eventWaitTaskInfo->timeout;
+    notifySqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_SINGLE_NOTIFY_WAIT;
 
     if (eventWaitTaskInfo->isCountNotify == 1U) {
-        evSqe->cntFlag = 1U;
-        evSqe->cntValue = eventWaitTaskInfo->countValue;
-        evSqe->waitModeBit = WAIT_BIGGER_OR_EQUAL_MODE ; // greater && equal
-        evSqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_COUNT_NOTIFY_WAIT;
+        notifySqe->cntFlag = 1U;
+        notifySqe->cntValue = eventWaitTaskInfo->countValue;
+        notifySqe->waitModeBit = WAIT_BIGGER_OR_EQUAL_MODE ; // greater && equal
+        notifySqe->subType = NOTIFY_SUB_TYPE_EVENT_USE_COUNT_NOTIFY_WAIT;
     }
     evt->InsertWaitToMap(taskInfo);
-    PrintDavidSqe(command, "EventWaitTask");
+    PrintDavidSqe(davidSqe, "EventWaitTask");
     RT_LOG(RT_LOG_INFO, "event_wait: device_id=%u, stream_id=%d, task_id=%u, task_sn=%u, sq_id=%u, event_id=%u, "
         "cntFlag=%u, clrFlag=%u, waitModeBit=%u, recordModeBit=%u, bitmap=%u, cntValue=%u, subType=%s, timeout=%us.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, stream->GetSqId(),
-        evSqe->notifyId, evSqe->cntFlag, evSqe->clrFlag, evSqe->waitModeBit, evSqe->recordModeBit, evSqe->bitmap,
-        evSqe->cntValue, GetNotifySubType(evSqe->subType), evSqe->timeout);
+        notifySqe->notifyId, notifySqe->cntFlag, notifySqe->clrFlag, notifySqe->waitModeBit, notifySqe->recordModeBit, notifySqe->bitmap,
+        notifySqe->cntValue, GetNotifySubType(notifySqe->subType), notifySqe->timeout);
 }
 #endif
 
@@ -285,35 +286,36 @@ void DoCompleteSuccessForDavidEventResetTask(TaskInfo * const taskInfo, const ui
     DoCompleteSuccess(taskInfo, devId);
 }
 
-static void ConstructDavidSqeForEventResetTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+static void ConstructDavidSqeForEventResetTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stream = taskInfo->stream;
     DavidEventResetTaskInfo *eventResetTaskInfo = &(taskInfo->u.davidEventResetTaskInfo);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
     DavidEvent *evt = dynamic_cast<DavidEvent *>(eventResetTaskInfo->event);
-    RtDavidStarsNotifySqe * const evSqe = &(command->notifySqe);
-    evSqe->header.wrCqe = stream->GetStarsWrCqeFlag();
+    RtDavidStarsNotifySqe * const notifySqe = &(davidSqe->notifySqe);
+    notifySqe->header.wrCqe = stream->GetStarsWrCqeFlag();
 
-    evSqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_RECORD;
-    evSqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
-    evSqe->notifyId = static_cast<uint16_t>(eventResetTaskInfo->eventId);
-    evSqe->clrFlag = 1U;  // reset will clear bits
-    evSqe->cntValue =  0U;
-    evSqe->waitModeBit = 0U;
-    evSqe->recordModeBit = 0U;
-    evSqe->cntFlag = eventResetTaskInfo->isCountNotify;
+    notifySqe->header.type = RT_DAVID_SQE_TYPE_NOTIFY_RECORD;
+    notifySqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
+    notifySqe->notifyId = static_cast<uint16_t>(eventResetTaskInfo->eventId);
+    notifySqe->clrFlag = 1U;  // reset will clear bits
+    notifySqe->cntValue =  0U;
+    notifySqe->waitModeBit = 0U;
+    notifySqe->recordModeBit = 0U;
+    notifySqe->cntFlag = eventResetTaskInfo->isCountNotify;
     const rtDavidNotifySubType subType = (eventResetTaskInfo->isCountNotify == 1U) ?
         NOTIFY_SUB_TYPE_EVENT_RESET_USE_COUNT_NOTIFY : NOTIFY_SUB_TYPE_EVENT_RESET_USE_SINGLE_NOTIFY;
-    evSqe->subType = static_cast<uint16_t>(subType);
+    notifySqe->subType = static_cast<uint16_t>(subType);
 
     evt->InsertRecordResetToMap(taskInfo);
-    PrintDavidSqe(command, "EventResetTask");
+    PrintDavidSqe(davidSqe, "EventResetTask");
     RT_LOG(RT_LOG_INFO, "event_reset: device_id=%u, stream_id=%d, task_id=%u, task_sn=%u, sq_id=%u, event_id=%u, "
         "cntFlag=%u, clrFlag=%u, waitModeBit=%u, recordModeBit=%u, bitmap=%u, cntValue=%u, subType=%s, timeout=%us.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, stream->GetSqId(),
-        evSqe->notifyId, evSqe->cntFlag, evSqe->clrFlag, evSqe->waitModeBit, evSqe->recordModeBit, evSqe->bitmap,
-        evSqe->cntValue, GetNotifySubType(evSqe->subType), evSqe->timeout);
+        notifySqe->notifyId, notifySqe->cntFlag, notifySqe->clrFlag, notifySqe->waitModeBit, notifySqe->recordModeBit, notifySqe->bitmap,
+        notifySqe->cntValue, GetNotifySubType(notifySqe->subType), notifySqe->timeout);
 }
 
 void DavidUpdateAndTryToDestroyEvent(TaskInfo *taskInfo, Event **eventPtr, DavidTaskMapType taskMapType)

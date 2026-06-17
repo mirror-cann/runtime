@@ -18,10 +18,11 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("StarsCommonTask")
-void ConstructDavidSqeForStarsCommonTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForStarsCommonTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     StarsCommonTaskInfo * const starsCommTask = &(taskInfo->u.starsCommTask);
     Stream * const stm = taskInfo->stream;
     starsCommTask->commonStarsSqe.commonDavidSqe.sqeHeader.reserved = 0U;
@@ -129,9 +130,10 @@ static void ConstructWriteValueSqePtr(TaskInfo * const taskInfo, rtDavidSqe_t *c
         writeValTsk->sqeAddr);
 }
 
-void ConstructDavidSqeForWriteValueTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForWriteValueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     WriteValueTaskInfo *const writeValTsk = &(taskInfo->u.writeValTask);
     if (writeValTsk->ptrFlag == 1U) {
         ConstructWriteValueSqePtr(taskInfo, davidSqe, sqBaseAddr);

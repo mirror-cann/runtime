@@ -91,8 +91,8 @@ static rtError_t UpdateDavidKernelPrepare(TaskInfo * const updateTask, void ** c
     Stream * const dstStream = updateTask->stream;
     const uint32_t devId = static_cast<uint32_t>(dstStream->Device_()->Id_());
     Driver * const driver = dstStream->Device_()->Driver_();
-    rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX] = {};
-    rtDavidSqe_t *sqe = davidSqe;
+    uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     /* alloc host memory */
     rtError_t error = driver->HostMemAlloc(hostAddr, allocSize, devId);
     ERROR_RETURN_MSG_INNER(error, "Failed to allocate host memory, retCode=%#x.", static_cast<uint32_t>(error));
@@ -102,9 +102,9 @@ static rtError_t UpdateDavidKernelPrepare(TaskInfo * const updateTask, void ** c
         devId, dstStream->Id_(), updateTask->id);
 
     /* 同时适用于AIC、AIV、MIX(AIC + AIV) kernel */
-    const uint64_t sqBaseAddr = dstStream->GetSqBaseAddr();
-    ToConstructDavidSqe(updateTask, sqe, sqBaseAddr);
-    error = driver->MemCopySync(*hostAddr, allocSize, static_cast<const void *>(sqe),
+    sqeInfo.sqBaseAddr = dstStream->GetSqBaseAddr();
+    ToConstructDavidSqe(updateTask, static_cast<void *>(sqeBuffer), sqeInfo);
+    error = driver->MemCopySync(*hostAddr, allocSize, static_cast<const void *>(sqeBuffer),
                                 allocSize, RT_MEMCPY_HOST_TO_HOST);
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
         (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;,
@@ -113,7 +113,7 @@ static rtError_t UpdateDavidKernelPrepare(TaskInfo * const updateTask, void ** c
     if (dstStream->IsSoftwareSqEnable()) {
         CaptureModel *captureModel = dynamic_cast<CaptureModel *>(dstStream->Model_());
         if ((captureModel != nullptr) && (!captureModel->IsSendSqe())) {
-            error = memcpy_s(RtPtrToPtr<void *>(RtPtrToValue(dstStream->GetSqeBuffer()) + sizeof(rtDavidSqe_t) * updateTask->pos),
+            error = memcpy_s(RtPtrToPtr<void *>(RtPtrToValue(dstStream->GetSqeBuffer()) + SQE_SIZE_UNIT * updateTask->pos),
                        allocSize, *hostAddr, allocSize);
             COND_PROC_RETURN_ERROR_MSG_INNER(error != EOK, RT_ERROR_SEC_HANDLE,
                 (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;,
@@ -136,7 +136,7 @@ void FreeTempHostAddr(const Stream * const stm, void * const hostAddr)
 rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * const stm, uint32_t sqeLen)
 {
     void *srcHostAddr = nullptr;
-    uint64_t allocSize = sizeof(rtDavidSqe_t) * sqeLen;
+    uint64_t allocSize = SQE_SIZE_UNIT * sqeLen;
 
     // 将updateTask转成sqe，并拷贝放到host svm内存中
     rtError_t error = UpdateDavidKernelPrepare(updateTask, &srcHostAddr, allocSize);

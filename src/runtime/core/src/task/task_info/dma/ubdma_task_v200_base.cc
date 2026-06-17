@@ -228,70 +228,71 @@ uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo * const taskInfo)
 }
 #endif
 
-void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     Stream * const stream = taskInfo->stream;
-    rtDavidSqe_t *sqeAddr = command;
-    ConstructDavidSqeForHeadCommon(taskInfo, sqeAddr);
-    RtDavidStarsUbdmaDirectWqemodeSqe * const sqe = &(command->davidUbdmaDirectSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_UBDMA;
-    sqe->mode = RT_DAVID_SQE_DIRECTWQE_MODE;
-    sqe->dieId = taskInfo->u.directSendTask.dieId;
-    sqe->wqeSize =taskInfo->u.directSendTask.wqeSize;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->sqeLength = (taskInfo->u.directSendTask.wqeSize == 1) ? 2U : 1U;
-    sqe->jettyId = taskInfo->u.directSendTask.jettyId;
-    sqe->funcId = taskInfo->u.directSendTask.funcId;
-    PrintDavidSqe(sqeAddr, "UbDirectSend Part0");
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsUbdmaDirectWqemodeSqe * const ubdmaDirectSqe = &(davidSqe->davidUbdmaDirectSqe);
+    ubdmaDirectSqe->header.type = RT_DAVID_SQE_TYPE_UBDMA;
+    ubdmaDirectSqe->mode = RT_DAVID_SQE_DIRECTWQE_MODE;
+    ubdmaDirectSqe->dieId = taskInfo->u.directSendTask.dieId;
+    ubdmaDirectSqe->wqeSize =taskInfo->u.directSendTask.wqeSize;
+    ubdmaDirectSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    ubdmaDirectSqe->sqeLength = (taskInfo->u.directSendTask.wqeSize == 1) ? 2U : 1U;
+    ubdmaDirectSqe->jettyId = taskInfo->u.directSendTask.jettyId;
+    ubdmaDirectSqe->funcId = taskInfo->u.directSendTask.funcId;
+    PrintDavidSqe(davidSqe, "UbDirectSend Part0");
     constexpr size_t ubWqesize = 64UL;
     uint8_t *wqe = taskInfo->u.directSendTask.wqe;
     for (uint32_t i = 0U; i <= taskInfo->u.directSendTask.wqeSize; i++) {
-        sqeAddr = command + i + 1U;
+        rtDavidSqe_t *curSqe = davidSqe + i + 1U;
         if (sqBaseAddr != 0ULL) {
             const uint32_t pos = taskInfo->id + i + 1U;
-            sqeAddr = GetSqPosAddr(sqBaseAddr, pos);
+            curSqe = GetSqPosAddr(sqBaseAddr, pos);
         }
-        const errno_t ret = memcpy_s(sqeAddr, sizeof(rtDavidSqe_t), wqe + (i * ubWqesize), ubWqesize);
+        const errno_t ret = memcpy_s(curSqe, sizeof(rtDavidSqe_t), wqe + (i * ubWqesize), ubWqesize);
         if (ret != EOK) {
             RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to call memcpy_s to copy wqe,"
-                " src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.", wqe + (i * ubWqesize), sqeAddr,
+                " src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.", wqe + (i * ubWqesize), curSqe,
                 sizeof(rtDavidSqe_t), ubWqesize, ret);
-            sqe->header.type = RT_DAVID_SQE_TYPE_END;
+            ubdmaDirectSqe->header.type = RT_DAVID_SQE_TYPE_END;
             break;
         }
         std::stringstream descInfo;
         descInfo << "UbDirectSend Part " << (i + 1U);
-        PrintDavidSqe(sqeAddr, descInfo.str().c_str());
+        PrintDavidSqe(curSqe, descInfo.str().c_str());
     }
     RT_LOG(RT_LOG_INFO, "UbDirectSendTask stream_id=%d, task_id=%hu, wqeSize=%u.",
-        stream->Id_(), taskInfo->id, sqe->wqeSize);
+        stream->Id_(), taskInfo->id, ubdmaDirectSqe->wqeSize);
 }
 
-void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr)
+void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidStarsUbdmaDBmodeSqe * const sqe = &(command->davidUbdmaDbSqe);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidStarsUbdmaDBmodeSqe * const ubdmaDbSqe = &(davidSqe->davidUbdmaDbSqe);
     Stream * const stream = taskInfo->stream;
-    sqe->header.type = RT_DAVID_SQE_TYPE_UBDMA;
-    sqe->header.wrCqe = 0U;
-    sqe->mode = RT_DAVID_SQE_DOORBELL_MODE;
-    sqe->doorbellNum = taskInfo->u.ubSendTask.dbNum;
-    sqe->source = taskInfo->u.ubSendTask.source;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->sqeLength = 0U;
-    sqe->jettyId1 = taskInfo->u.ubSendTask.info[0].jettyId;
-    sqe->funcId1 = taskInfo->u.ubSendTask.info[0].funcId;
-    sqe->piValue1 = taskInfo->u.ubSendTask.info[0].piVal;
-    sqe->dieId1 = taskInfo->u.ubSendTask.info[0].dieId;
+    ubdmaDbSqe->header.type = RT_DAVID_SQE_TYPE_UBDMA;
+    ubdmaDbSqe->header.wrCqe = 0U;
+    ubdmaDbSqe->mode = RT_DAVID_SQE_DOORBELL_MODE;
+    ubdmaDbSqe->doorbellNum = taskInfo->u.ubSendTask.dbNum;
+    ubdmaDbSqe->source = taskInfo->u.ubSendTask.source;
+    ubdmaDbSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    ubdmaDbSqe->sqeLength = 0U;
+    ubdmaDbSqe->jettyId1 = taskInfo->u.ubSendTask.info[0].jettyId;
+    ubdmaDbSqe->funcId1 = taskInfo->u.ubSendTask.info[0].funcId;
+    ubdmaDbSqe->piValue1 = taskInfo->u.ubSendTask.info[0].piVal;
+    ubdmaDbSqe->dieId1 = taskInfo->u.ubSendTask.info[0].dieId;
     if (taskInfo->u.ubSendTask.dbNum == UB_DOORBELL_NUM_MAX) {
-        sqe->jettyId2 = taskInfo->u.ubSendTask.info[1].jettyId;
-        sqe->funcId2 = taskInfo->u.ubSendTask.info[1].funcId;
-        sqe->piValue2 = taskInfo->u.ubSendTask.info[1].piVal;
-        sqe->dieId2 = taskInfo->u.ubSendTask.info[1].dieId;
+        ubdmaDbSqe->jettyId2 = taskInfo->u.ubSendTask.info[1].jettyId;
+        ubdmaDbSqe->funcId2 = taskInfo->u.ubSendTask.info[1].funcId;
+        ubdmaDbSqe->piValue2 = taskInfo->u.ubSendTask.info[1].piVal;
+        ubdmaDbSqe->dieId2 = taskInfo->u.ubSendTask.info[1].dieId;
     }
-    PrintDavidSqe(command, "UbDbSend");
+    PrintDavidSqe(davidSqe, "UbDbSend");
     RT_LOG(RT_LOG_INFO, "UbDbSendTask stream_id=%d, task_id=%hu, dbNum=%u.",
         stream->Id_(), taskInfo->id, taskInfo->u.ubSendTask.dbNum);
 }

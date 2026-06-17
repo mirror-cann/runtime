@@ -123,8 +123,8 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask1)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -164,8 +164,8 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask2)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -205,8 +205,8 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask3)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -246,8 +246,8 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask4)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -304,8 +304,8 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask5)
     taskInfo.u.aicTaskInfo.kernel = &kernelPtr;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -345,8 +345,8 @@ TEST_F(CustomerStackSize, ConstructDavidAICoreSqeForDavinciTask1)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -386,8 +386,8 @@ TEST_F(CustomerStackSize, ConstructDavidAICoreSqeForDavinciTask2)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -427,8 +427,8 @@ TEST_F(CustomerStackSize, ConstructDavidAivSqeForDavinciTask1)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -468,8 +468,8 @@ TEST_F(CustomerStackSize, ConstructDavidAivSqeForDavinciTask2)
     taskInfo.u.aicTaskInfo.kernel = &kernel;
 
     rtDavidSqe_t command = {};
-    uint64_t sqBaseAddr = 0U;
-    ToConstructDavidSqe(&taskInfo, &command, sqBaseAddr);
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);

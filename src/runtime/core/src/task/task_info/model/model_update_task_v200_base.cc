@@ -18,34 +18,35 @@ namespace runtime {
 
 #if F_DESC("ModelTaskUpdate")
 
-void ConstructDavidSqeForModelUpdateTask(TaskInfo * const taskInfo, rtDavidSqe_t *const command, uint64_t sqBaseAddr)
+void ConstructDavidSqeForModelUpdateTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     MdlUpdateTaskInfo *mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
-    ConstructDavidSqeForHeadCommon(taskInfo, command);
-    RtDavidPlaceHolderSqe * const sqe = &(command->phSqe);
+    ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
     Stream * const stm = taskInfo->stream;
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_MODEL_TASK_UPDATE;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.mdlTaskUpdateInfo.tilingKeyOffset = mdlUpdateTaskInfo->tilingKeyOffset;
-    sqe->u.mdlTaskUpdateInfo.blockDimOffset = mdlUpdateTaskInfo->blockDimOffset;
-    sqe->u.mdlTaskUpdateInfo.tilingTabOffset = mdlUpdateTaskInfo->tilingTabOffset;
-    sqe->u.mdlTaskUpdateInfo.tilingTabLen = mdlUpdateTaskInfo->tilingTabLen;
-    sqe->u.mdlTaskUpdateInfo.desStreamId = mdlUpdateTaskInfo->desStreamId;
-    sqe->u.mdlTaskUpdateInfo.destaskId = mdlUpdateTaskInfo->destaskId;
-    sqe->u.mdlTaskUpdateInfo.exeStreamId = mdlUpdateTaskInfo->exeStreamId;
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_MODEL_TASK_UPDATE;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.mdlTaskUpdateInfo.tilingKeyOffset = mdlUpdateTaskInfo->tilingKeyOffset;
+    phSqe->u.mdlTaskUpdateInfo.blockDimOffset = mdlUpdateTaskInfo->blockDimOffset;
+    phSqe->u.mdlTaskUpdateInfo.tilingTabOffset = mdlUpdateTaskInfo->tilingTabOffset;
+    phSqe->u.mdlTaskUpdateInfo.tilingTabLen = mdlUpdateTaskInfo->tilingTabLen;
+    phSqe->u.mdlTaskUpdateInfo.desStreamId = mdlUpdateTaskInfo->desStreamId;
+    phSqe->u.mdlTaskUpdateInfo.destaskId = mdlUpdateTaskInfo->destaskId;
+    phSqe->u.mdlTaskUpdateInfo.exeStreamId = mdlUpdateTaskInfo->exeStreamId;
 
     RT_LOG(RT_LOG_INFO, "[tilingKey=%llu,blockDim=%llu,tilingTab=%llu,tilingTabLen=%u.",
         mdlUpdateTaskInfo->tilingKeyOffset,
         mdlUpdateTaskInfo->blockDimOffset,
         mdlUpdateTaskInfo->tilingTabOffset, mdlUpdateTaskInfo->tilingTabLen);
 
-    PrintDavidSqe(command, "ModelUpdateTask");
+    PrintDavidSqe(davidSqe, "ModelUpdateTask");
     RT_LOG(RT_LOG_INFO, "Send TS_TASK_TYPE_MODEL_TASK_UPDATE succ,"
         "sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, task_sn=%u, task_type=%u",
-        sqe->header.type, sqe->header.preP, stm->Id_(), taskInfo->id, taskInfo->taskSn, sqe->taskType);
+        phSqe->header.type, phSqe->header.preP, stm->Id_(), taskInfo->id, taskInfo->taskSn, phSqe->taskType);
 }
 
 #endif

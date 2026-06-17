@@ -16,45 +16,47 @@
 namespace cce {
 namespace runtime {
 
-static void ConstructDavidSqeForNpuGetFloatStaTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForNpuGetFloatStaTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsGetFloatStatusSqe &sqe = davidSqe->getFloatStatusSqe;
+    RtDavidStarsGetFloatStatusSqe &getFloatStatusSqe = davidSqe->getFloatStatusSqe;
     NpuGetFloatStatusTaskInfo * const npuGetFltSta = &(taskInfo->u.npuGetFloatStatusTask);
     Stream * const stm = taskInfo->stream;
-    sqe.debugFlag = npuGetFltSta->debugFlag ? 1U : 0U;
+    getFloatStatusSqe.debugFlag = npuGetFltSta->debugFlag ? 1U : 0U;
     ConstructGetFloatStatusInstr(
         RtPtrToValue(npuGetFltSta->outputAddrPtr),
-        npuGetFltSta->outputSize, sqe);
+        npuGetFltSta->outputSize, getFloatStatusSqe);
 
-    sqe.header.type = RT_DAVID_SQE_TYPE_COND;
-    sqe.header.preP = 1U;
-    sqe.condsSubType = CONDS_SUB_TYPE_GET_FLOAT_STATUS;
-    sqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe.sqeLength = 0U;
-    sqe.csc = 1U;
+    getFloatStatusSqe.header.type = RT_DAVID_SQE_TYPE_COND;
+    getFloatStatusSqe.header.preP = 1U;
+    getFloatStatusSqe.condsSubType = CONDS_SUB_TYPE_GET_FLOAT_STATUS;
+    getFloatStatusSqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    getFloatStatusSqe.sqeLength = 0U;
+    getFloatStatusSqe.csc = 1U;
 
     PrintDavidSqe(davidSqe, "NpuGetFloatStatusTask");
     RT_LOG(RT_LOG_INFO, "NpuGetFloatStatusTask finish, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
         "debugFlag=%hhu.", taskInfo->stream->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
-        sqe.debugFlag);
+        getFloatStatusSqe.debugFlag);
 }
 
-static void ConstructDavidSqeForNpuClrFloatStaTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForNpuClrFloatStaTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
     NpuClearFloatStatusTaskInfo * const npuClrFltSta = &(taskInfo->u.npuClrFloatStatusTask);
 
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_NPU_CLEAR_FLOAT_STATUS;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.debugStatusInfo.debugFlag = npuClrFltSta->debugFlag ? 1U : 0U;
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_NPU_CLEAR_FLOAT_STATUS;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.debugStatusInfo.debugFlag = npuClrFltSta->debugFlag ? 1U : 0U;
 
     PrintDavidSqe(davidSqe, "NpuClearFloatStatusTask");
     RT_LOG(RT_LOG_INFO, "NpuClearFloatStatusTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, debugFlag=%d.",

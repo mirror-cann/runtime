@@ -38,7 +38,6 @@ void ConstructSqeForModelMaintainceTask(TaskInfo * const taskInfo, rtStarsSqe_t 
     sqe->u.model_maintaince_info.operation = type;
     sqe->u.model_maintaince_info.stream_type = static_cast<uint16_t>(modelMaintainceTaskInfo->streamType);
     sqe->u.model_maintaince_info.first_task_id = static_cast<uint16_t>(modelMaintainceTaskInfo->firstTaskId);
-    
 
     switch (type) {
         case MMT_STREAM_ADD:

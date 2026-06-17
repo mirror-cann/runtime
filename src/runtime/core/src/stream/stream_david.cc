@@ -9,6 +9,7 @@
  */
 
 #include "stream_david.hpp"
+#include "task_manager.h"
 #include "stream_sqcq_manage.hpp"
 #include "runtime.hpp"
 #include "context.hpp"
@@ -1542,22 +1543,22 @@ rtError_t DavidStream::HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
         workTask->type, workTask->typeName);
     // 被更新的task的argsHandle已在stream中备份，此处不需要再备份
     model->SetKernelTaskId(static_cast<uint32_t>(workTask->id), streamId_);
-    rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX];
-    rtDavidSqe_t *sqeAddr = davidSqe;
-    ToConstructDavidSqe(workTask, sqeAddr, 0UL);
+    uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
+    ToConstructDavidSqe(workTask, static_cast<void *>(sqeBuffer), sqeInfo);
 
     // Update the host-side head and tail
     // 这里的pending num再发生错误的时候不需要减1
     rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
+    uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
     auto ret = memcpy_s(
-        RtPtrToPtr<void*>(sqeBufferBackup + sizeof(rtStarsSqe_t) * workTask->pos), sendSqeNum * sizeof(rtStarsSqe_t),
-        RtPtrToPtr<void *, rtDavidSqe_t *>(sqeAddr), sendSqeNum * sizeof(rtStarsSqe_t));
+        RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, static_cast<void*>(sqeBuffer), sqeSize);
     COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
-        "Failed to call memcpy_s, dest=%p, dest_max=%zu, src=%p, count=%zu, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
-        sqeBufferBackup + sizeof(rtStarsSqe_t) * workTask->pos, sendSqeNum * sizeof(rtStarsSqe_t),
-        sqeAddr, sendSqeNum * sizeof(rtStarsSqe_t), ret, device_->Id_(), streamId_, workTask->id, workTask->type, workTask->typeName);    
+        "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
+        sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos, sqeSize, sqeBuffer, sendSqeNum,
+        ret, device_->Id_(), streamId_, workTask->id, workTask->type, workTask->typeName);
 
     RT_LOG(
         RT_LOG_INFO, "update task finish, stream_id=%d, task_id=%hu, task_type=%d(%s).",
@@ -1583,23 +1584,23 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
     model->SetKernelTaskId(static_cast<uint32_t>(workTask->id), streamId_);
     // 获取老的sqe
     uint8_t* oldhostSqeAddr = GetSqeBuffer() + sizeof(rtStarsSqe_t) * workTask->pos;
-    rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX];
+    uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     if (NeedReBuildSqe(workTask)) {
-        rtDavidSqe_t *sqeAddr = davidSqe;
-        ToConstructDavidSqe(workTask, sqeAddr, 0UL);
-        oldhostSqeAddr = RtPtrToPtr<uint8_t*, rtDavidSqe_t*>(sqeAddr);
+        ToConstructDavidSqe(workTask, static_cast<void *>(sqeBuffer), sqeInfo);
+        oldhostSqeAddr = sqeBuffer;
     }
     // Update the host-side head and tail
     rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
+    uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
     auto ret = memcpy_s(
-        RtPtrToPtr<void*>(sqeBufferBackup + sizeof(rtStarsSqe_t) * workTask->pos), sendSqeNum * sizeof(rtStarsSqe_t),
-        RtPtrToPtr<void*>(oldhostSqeAddr), sendSqeNum * sizeof(rtStarsSqe_t));
+        RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, RtPtrToPtr<void*>(oldhostSqeAddr), sqeSize);
     COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
-        "Failed to call memcpy_s, dest=%p, dest_max=%zu, src=%p, count=%zu, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
-        sqeBufferBackup + sizeof(rtStarsSqe_t) * workTask->pos, sendSqeNum * sizeof(rtStarsSqe_t),
-        oldhostSqeAddr, sendSqeNum * sizeof(rtStarsSqe_t), ret, device_->Id_(), streamId_, workTask->id, workTask->type, workTask->typeName);
+        "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
+        sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos, sqeSize, oldhostSqeAddr, sendSqeNum,
+        ret, device_->Id_(), streamId_, workTask->id, workTask->type, workTask->typeName);
     RT_LOG(
         RT_LOG_INFO, "handle default task finish, stream_id=%d, task_id=%hu, task_type=%d(%s).", streamId_,
         workTask->id, workTask->type, workTask->typeName);

@@ -8749,8 +8749,9 @@ TEST_F(ApiDavidTest, StreamLaunchKernel_aclgraph_update)
     wwargsInfo.isNoNeedH2DCopy = 1;
     MOCKER(AllocTaskInfoForCapture).stubs().with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
 
-    rtDavidSqe_t sqe = {};
-    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(&sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    rtDavidSqe_t davidSqe = {};
+    void *sqe = static_cast<void *>(&davidSqe);
+    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidAllocAndSendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
@@ -8856,8 +8857,9 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update)
     wwargsInfo.args = &arg;
     wwargsInfo.argsSize = sizeof(arg);
 
-    rtDavidSqe_t sqe = {};
-    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(&sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    rtDavidSqe_t davidSqe = {};
+    void *sqe = static_cast<void *>(&davidSqe);
+    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidAllocAndSendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
@@ -8984,8 +8986,9 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update_taskMismatch)
     wwargsInfo.args = &arg;
     wwargsInfo.argsSize = sizeof(arg);
 
-    rtDavidSqe_t sqe = {};
-    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(&sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    rtDavidSqe_t davidSqe = {};
+    void *sqe = static_cast<void *>(&davidSqe);
+    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidAllocAndSendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
@@ -9084,8 +9087,9 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update_TaskSubmitFail
     wwargsInfo.args = &arg;
     wwargsInfo.argsSize = sizeof(arg);
 
-    rtDavidSqe_t sqe = {};
-    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(&sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    rtDavidSqe_t davidSqe = {};
+    void *sqe = static_cast<void *>(&davidSqe);
+    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidAllocAndSendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));\
@@ -9185,8 +9189,9 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update_allocTaskFail)
     wwargsInfo.args = &arg;
     wwargsInfo.argsSize = sizeof(arg);
 
-    rtDavidSqe_t sqe = {};
-    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(&sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    rtDavidSqe_t davidSqe = {};
+    void *sqe = static_cast<void *>(&davidSqe);
+    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidAllocAndSendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
@@ -9310,8 +9315,9 @@ TEST_F(ApiDavidTest, StreamLaunchKernelWithHandle_aclgraph_update_CaptureStreamE
     wwargsInfo.args = &arg;
     wwargsInfo.argsSize = sizeof(arg);
 
-    rtDavidSqe_t sqe = {};
-    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(&sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    rtDavidSqe_t davidSqe = {};
+    void *sqe = static_cast<void *>(&davidSqe);
+    MOCKER(ToConstructDavidSqe).stubs().with(mockcpp::any(), outBoundP(sqe), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidAllocAndSendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
@@ -10562,11 +10568,12 @@ TEST_F(ApiDavidTest, ConstructDavidDvppSqe_MemcpyFail)
     g_apiMockTaskInfo.u.davinciMultiTaskInfo.argHandleVec = &argHandleVec;
 
     rtDavidSqe_t davidSqe = {};
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
 
     // Mock memcpy_s to fail -> triggers line 136
     MOCKER(memcpy_s).stubs().will(returnValue(1));
 
-    ToConstructDavidSqe(&g_apiMockTaskInfo, &davidSqe, 0ULL);
+    ToConstructDavidSqe(&g_apiMockTaskInfo, static_cast<void*>(&davidSqe), sqeInfo);
 
     EXPECT_EQ(davidSqe.dvppSqe.header.type, RT_DAVID_SQE_TYPE_INVALID);
 }
@@ -10592,11 +10599,12 @@ TEST_F(ApiDavidTest, ConstructDavidAICpuSqe_LoadArgsInfoFail)
     g_apiMockTaskInfo.u.davinciMultiTaskInfo.argHandleVec = &argHandleVec;
 
     rtDavidSqe_t davidSqe = {};
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
 
     // Mock LoadArgsInfo to return error -> triggers line 188
     MOCKER_CPP(&DavidStream::LoadArgsInfo<rtArgsEx_t>).stubs().will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
 
-    ToConstructDavidSqe(&g_apiMockTaskInfo, &davidSqe, 0ULL);
+    ToConstructDavidSqe(&g_apiMockTaskInfo, static_cast<void*>(&davidSqe), sqeInfo);
 
     EXPECT_EQ(davidSqe.aicpuSqe.header.type, RT_DAVID_SQE_TYPE_INVALID);
 }
@@ -10609,11 +10617,12 @@ TEST_F(ApiDavidTest, ConstructDavidStarsCommonSqe_MemcpyFail)
     g_apiMockTaskInfo.sqeNum = 1U;
 
     rtDavidSqe_t davidSqe = {};
+    TaskSqeInfo sqeInfo = {0ULL, 0ULL};
 
     // Mock memcpy_s to fail -> triggers line 399
     MOCKER(memcpy_s).stubs().will(returnValue(1));
 
-    ToConstructDavidSqe(&g_apiMockTaskInfo, &davidSqe, 0ULL);
+    ToConstructDavidSqe(&g_apiMockTaskInfo, static_cast<void*>(&davidSqe), sqeInfo);
 
     EXPECT_EQ(davidSqe.commonSqe.sqeHeader.type, RT_STARS_SQE_TYPE_INVALID);
 }

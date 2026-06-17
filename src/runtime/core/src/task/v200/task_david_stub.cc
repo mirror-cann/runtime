@@ -21,11 +21,11 @@ void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const c
     UNUSED(command);
 }
 
-void ToConstructDavidSqe(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ToConstructDavidSqe(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
     UNUSED(taskInfo);
-    UNUSED(davidSqe);
-    UNUSED(sqBaseAddr);
+    UNUSED(sqe);
+    UNUSED(sqeInfo);
 }
 
 } // namespace runtime

@@ -16,48 +16,48 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForModelToAicpuTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForModelToAicpuTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuControlSqe *const sqe = &(davidSqe->aicpuControlSqe);
+    RtDavidStarsAicpuControlSqe *const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
     Stream * const stm = taskInfo->stream;
-    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
-    sqe->header.blockDim = 1U;
+    aicpuCtrlSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
+    aicpuCtrlSqe->header.blockDim = 1U;
 
-    sqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
-    sqe->batchMode = 0U;
-    sqe->topicType = 0U;
-    UpdateDavidAICpuControlSqeForDavinciTask(sqe);
+    aicpuCtrlSqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
+    aicpuCtrlSqe->batchMode = 0U;
+    aicpuCtrlSqe->topicType = 0U;
+    UpdateDavidAICpuControlSqeForDavinciTask(aicpuCtrlSqe);
 
-    sqe->qos = stm->Device_()->GetTsdQos();
-    sqe->res2 = 0U;
-    sqe->sqeIndex = 0U; // useless
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->sqeLength = 0U;
+    aicpuCtrlSqe->qos = stm->Device_()->GetTsdQos();
+    aicpuCtrlSqe->res2 = 0U;
+    aicpuCtrlSqe->sqeIndex = 0U; // useless
+    aicpuCtrlSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    aicpuCtrlSqe->sqeLength = 0U;
 
-    sqe->usrData.pid = 0U;
-    sqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_MODEL_OPERATE);
-    sqe->usrData.vfId = 0U;
-    sqe->usrData.tid = 0U;
-    sqe->usrData.tsId = 0U;
-    sqe->usrData.u.modelOperate.streamId = static_cast<uint16_t>(stm->Id_());
-    sqe->usrData.u.modelOperate.cmdType = static_cast<uint8_t>(taskInfo->u.modelToAicpuTask.cmdType);
-    sqe->usrData.u.modelOperate.modelId = static_cast<uint16_t>(taskInfo->u.modelToAicpuTask.modelId);
-    sqe->usrData.u.modelOperate.modelInfoAddrLow = static_cast<uint32_t>(taskInfo->u.modelToAicpuTask.modelArgPtr);
-    sqe->usrData.u.modelOperate.modelInfoAddrHigh =
+    aicpuCtrlSqe->usrData.pid = 0U;
+    aicpuCtrlSqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_MODEL_OPERATE);
+    aicpuCtrlSqe->usrData.vfId = 0U;
+    aicpuCtrlSqe->usrData.tid = 0U;
+    aicpuCtrlSqe->usrData.tsId = 0U;
+    aicpuCtrlSqe->usrData.u.modelOperate.streamId = static_cast<uint16_t>(stm->Id_());
+    aicpuCtrlSqe->usrData.u.modelOperate.cmdType = static_cast<uint8_t>(taskInfo->u.modelToAicpuTask.cmdType);
+    aicpuCtrlSqe->usrData.u.modelOperate.modelId = static_cast<uint16_t>(taskInfo->u.modelToAicpuTask.modelId);
+    aicpuCtrlSqe->usrData.u.modelOperate.modelInfoAddrLow = static_cast<uint32_t>(taskInfo->u.modelToAicpuTask.modelArgPtr);
+    aicpuCtrlSqe->usrData.u.modelOperate.modelInfoAddrHigh =
         static_cast<uint16_t>(taskInfo->u.modelToAicpuTask.modelArgPtr >> UINT32_BIT_NUM);
 
-    sqe->subTopicId = 0U;
-    sqe->topicId = 5U; // EVENT_TS_CTRL_MSG
-    sqe->groupId = 0U;
-    sqe->usrDataLen = 24U;
+    aicpuCtrlSqe->subTopicId = 0U;
+    aicpuCtrlSqe->topicId = 5U; // EVENT_TS_CTRL_MSG
+    aicpuCtrlSqe->groupId = 0U;
+    aicpuCtrlSqe->usrDataLen = 24U;
 
-    sqe->destPid = 0U;
+    aicpuCtrlSqe->destPid = 0U;
     PrintDavidSqe(davidSqe, "ModelToAicpuTask");
     RT_LOG(RT_LOG_INFO, "ModelToAicpuTask, topic_type=%u, cmd_type=%u, device_id=%u,"
-        "stream_id=%d, task_id=%hu, task_sn=%u.", static_cast<uint32_t>(sqe->topicType), taskInfo->u.modelToAicpuTask.cmdType,
+        "stream_id=%d, task_id=%hu, task_sn=%u.", static_cast<uint32_t>(aicpuCtrlSqe->topicType), taskInfo->u.modelToAicpuTask.cmdType,
         taskInfo->stream->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 

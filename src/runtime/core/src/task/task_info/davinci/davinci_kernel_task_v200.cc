@@ -16,14 +16,16 @@ namespace cce {
 namespace runtime {
 #if F_DESC("DavinciKernelTask")
 
-void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     ConstructDavidAICpuSqeForDavinciTaskBase(taskInfo, davidSqe, sqBaseAddr);
 
-    RtDavidStarsAicpuKernelSqe *const sqe = &(davidSqe->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe *const aicpuKernelSqe = &(davidSqe->aicpuSqe);
     PrintDavidSqe(davidSqe, "AICpuTask");
     RT_LOG(RT_LOG_INFO, "topic_type=%hu, kernel_type=%u, dump_en=%u",
-        sqe->topicType, sqe->kernelType,  sqe->debugDumpEn);
+        aicpuKernelSqe->topicType, aicpuKernelSqe->kernelType, aicpuKernelSqe->debugDumpEn);
     return;
 }
 

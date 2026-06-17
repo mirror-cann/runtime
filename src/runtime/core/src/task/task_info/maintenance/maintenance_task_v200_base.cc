@@ -19,27 +19,28 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("MaintenanceTask")
-static void ConstructDavidSqeForMaintenanceTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForMaintenanceTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     MaintenanceTaskInfo * const maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
     Stream * const stream = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
 
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     if (maintenanceTaskInfo->flag && (maintenanceTaskInfo->mtType == MT_STREAM_RECYCLE_TASK)) {
-        sqe->u.maintainceInfo.subType = FORCE_RECYCLE_TASK_FLAG;
-        sqe->u.maintainceInfo.targetId = static_cast<uint16_t>(maintenanceTaskInfo->mtId);
-        sqe->header.preP = 1U; // for force recycle
+        phSqe->u.maintainceInfo.subType = FORCE_RECYCLE_TASK_FLAG;
+        phSqe->u.maintainceInfo.targetId = static_cast<uint16_t>(maintenanceTaskInfo->mtId);
+        phSqe->header.preP = 1U; // for force recycle
     } else {
-        sqe->header.preP = 0U;
+        phSqe->header.preP = 0U;
     }
-    sqe->header.wrCqe = 1U;       // need write cqe for recycle task
-    sqe->taskType = TS_TASK_TYPE_MAINTENANCE;
+    phSqe->header.wrCqe = 1U;  // need write cqe for recycle task
+    phSqe->taskType = TS_TASK_TYPE_MAINTENANCE;
 
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
 
     PrintDavidSqe(davidSqe, "MaintenanceTask");
     RT_LOG(RT_LOG_INFO, "MaintenanceTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
@@ -49,24 +50,25 @@ static void ConstructDavidSqeForMaintenanceTask(TaskInfo * const taskInfo, rtDav
 
 #if F_DESC("GetDevMsgTask")
 static void ConstructDavidSqeForGetDevMsgTask(
-    TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+    TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     GetDevMsgTaskInfo * const getDevMsgTask = &(taskInfo->u.getDevMsgTask);
     Stream * const stm = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
 
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->header.preP = 1U;
-    sqe->taskType = TS_TASK_TYPE_GET_DEVICE_MSG;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->u.getDevMsgInfo.len = getDevMsgTask->msgBufferLen;
-    sqe->u.getDevMsgInfo.devAddr =
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->header.preP = 1U;
+    phSqe->taskType = TS_TASK_TYPE_GET_DEVICE_MSG;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    phSqe->u.getDevMsgInfo.len = getDevMsgTask->msgBufferLen;
+    phSqe->u.getDevMsgInfo.devAddr =
         RtPtrToValue(getDevMsgTask->devMem);
-    sqe->u.getDevMsgInfo.offset = getDevMsgTask->offset;
-    sqe->u.getDevMsgInfo.type = static_cast<uint16_t>(getDevMsgTask->msgType);
+    phSqe->u.getDevMsgInfo.offset = getDevMsgTask->offset;
+    phSqe->u.getDevMsgInfo.type = static_cast<uint16_t>(getDevMsgTask->msgType);
 
     PrintDavidSqe(davidSqe, "GetDevMsgTask");
     RT_LOG(RT_LOG_INFO, "GetDevMsgTask, device_id=%u, stream_id=%d, task_id=%hu.", stm->Device_()->Id_(),
@@ -87,46 +89,47 @@ void AicpuMsgVersionTaskInit(TaskInfo *taskInfo)
     return;
 }
 
-static void ConstructDavidSqeForAicpuMsgVersionTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+static void ConstructDavidSqeForAicpuMsgVersionTask(TaskInfo * const taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     AicpuMsgVersionTaskInfo * const task = &(taskInfo->u.aicpuMsgVersionTask);
     Stream * const stm = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuControlSqe *const sqe = &(davidSqe->aicpuControlSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
-    sqe->header.blockDim = 1U;
+    RtDavidStarsAicpuControlSqe *const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
+    aicpuCtrlSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
+    aicpuCtrlSqe->header.blockDim = 1U;
 
-    sqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
-    sqe->batchMode = 0U;
-    sqe->topicType = 0U;
-    UpdateDavidAICpuControlSqeForDavinciTask(sqe);
+    aicpuCtrlSqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
+    aicpuCtrlSqe->batchMode = 0U;
+    aicpuCtrlSqe->topicType = 0U;
+    UpdateDavidAICpuControlSqeForDavinciTask(aicpuCtrlSqe);
 
-    sqe->qos = stm->Device_()->GetTsdQos();
-    sqe->res2 = 0U;
-    sqe->sqeIndex = 0U; // useless
-    sqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
+    aicpuCtrlSqe->qos = stm->Device_()->GetTsdQos();
+    aicpuCtrlSqe->res2 = 0U;
+    aicpuCtrlSqe->sqeIndex = 0U; // useless
+    aicpuCtrlSqe->kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
 
-    sqe->usrData.pid = 0U;
-    sqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_MSG_VERSION);
-    sqe->usrData.vfId = 0U;
-    sqe->usrData.tid = 0U;
-    sqe->usrData.tsId = 0U;
-    sqe->usrData.u.msgVersion.magicNum = task->magicNum;
-    sqe->usrData.u.msgVersion.version = task->version;
+    aicpuCtrlSqe->usrData.pid = 0U;
+    aicpuCtrlSqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_MSG_VERSION);
+    aicpuCtrlSqe->usrData.vfId = 0U;
+    aicpuCtrlSqe->usrData.tid = 0U;
+    aicpuCtrlSqe->usrData.tsId = 0U;
+    aicpuCtrlSqe->usrData.u.msgVersion.magicNum = task->magicNum;
+    aicpuCtrlSqe->usrData.u.msgVersion.version = task->version;
 
-    sqe->subTopicId = 0U;
-    sqe->topicId = 5U; // EVENT_TS_CTRL_MSG
-    sqe->groupId = 0U;
-    sqe->usrDataLen = 12U;         /* 8 + 4 */
+    aicpuCtrlSqe->subTopicId = 0U;
+    aicpuCtrlSqe->topicId = 5U; // EVENT_TS_CTRL_MSG
+    aicpuCtrlSqe->groupId = 0U;
+    aicpuCtrlSqe->usrDataLen = 12U;         /* 8 + 4 */
 
-    sqe->destPid = 0U;
+    aicpuCtrlSqe->destPid = 0U;
     PrintDavidSqe(davidSqe, "AicpuMsgVersionTask");
     RT_LOG(RT_LOG_INFO, "AicpuMsgVersionTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
         "topic_type=%u, cmd_type=%u", stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
-        static_cast<uint32_t>(sqe->topicType), sqe->usrData.cmdType);
+        static_cast<uint32_t>(aicpuCtrlSqe->topicType), aicpuCtrlSqe->usrData.cmdType);
 }
 #endif
 

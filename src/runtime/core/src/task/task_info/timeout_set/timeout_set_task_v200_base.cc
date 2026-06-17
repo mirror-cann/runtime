@@ -16,52 +16,53 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("TaskTimeoutSetTask")
-void ConstructDavidSqeForTimeoutSetTask(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForTimeoutSetTask(TaskInfo *taskInfo, void *const sqe,
+    const TaskSqeInfo& sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     TimeoutSetTaskInfo * const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
     Stream * const stm = taskInfo->stream;
-    UNUSED(sqBaseAddr);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuControlSqe *const sqe = &(davidSqe->aicpuControlSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
-    sqe->header.blockDim = 1U;
+    RtDavidStarsAicpuControlSqe *const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
+    aicpuCtrlSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
+    aicpuCtrlSqe->header.blockDim = 1U;
 
-    sqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
-    sqe->batchMode = 0U;
-    sqe->topicType = 0U;
-    UpdateDavidAICpuControlSqeForDavinciTask(sqe);
+    aicpuCtrlSqe->kernelType = static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU);
+    aicpuCtrlSqe->batchMode = 0U;
+    aicpuCtrlSqe->topicType = 0U;
+    UpdateDavidAICpuControlSqeForDavinciTask(aicpuCtrlSqe);
 
-    sqe->qos = stm->Device_()->GetTsdQos();
-    sqe->res2 = 0U;
-    sqe->sqeIndex = 0U; // useless
-    sqe->kernelCredit = RT_STARS_DEFAULT_AICPU_KERNEL_CREDIT;
+    aicpuCtrlSqe->qos = stm->Device_()->GetTsdQos();
+    aicpuCtrlSqe->res2 = 0U;
+    aicpuCtrlSqe->sqeIndex = 0U; // useless
+    aicpuCtrlSqe->kernelCredit = RT_STARS_DEFAULT_AICPU_KERNEL_CREDIT;
 
-    sqe->usrData.pid = 0U;
-    sqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_TIMEOUT_CONFIG);
-    sqe->usrData.vfId = 0U;
-    sqe->usrData.tid = 0U;
-    sqe->usrData.tsId = 0U;
-    sqe->usrData.u.timeoutCfg.opWaitTimeoutEn = timeoutSetTask->opWaitTimeoutEn;
-    sqe->usrData.u.timeoutCfg.opWaitTimeout = timeoutSetTask->opWaitTimeout;
+    aicpuCtrlSqe->usrData.pid = 0U;
+    aicpuCtrlSqe->usrData.cmdType = static_cast<uint8_t>(TS_AICPU_TIMEOUT_CONFIG);
+    aicpuCtrlSqe->usrData.vfId = 0U;
+    aicpuCtrlSqe->usrData.tid = 0U;
+    aicpuCtrlSqe->usrData.tsId = 0U;
+    aicpuCtrlSqe->usrData.u.timeoutCfg.opWaitTimeoutEn = timeoutSetTask->opWaitTimeoutEn;
+    aicpuCtrlSqe->usrData.u.timeoutCfg.opWaitTimeout = timeoutSetTask->opWaitTimeout;
 
-    sqe->usrData.u.timeoutCfg.opExecuteTimeoutEn = timeoutSetTask->opExecuteTimeoutEn;
+    aicpuCtrlSqe->usrData.u.timeoutCfg.opExecuteTimeoutEn = timeoutSetTask->opExecuteTimeoutEn;
     if ((timeoutSetTask->opExecuteTimeoutEn) && (timeoutSetTask->opExecuteTimeout == 0U)) {
-        sqe->usrData.u.timeoutCfg.opExecuteTimeout = RT_STARS_AICPU_DEFAULT_TIMEOUT;
+        aicpuCtrlSqe->usrData.u.timeoutCfg.opExecuteTimeout = RT_STARS_AICPU_DEFAULT_TIMEOUT;
     } else {
-        sqe->usrData.u.timeoutCfg.opExecuteTimeout = timeoutSetTask->opExecuteTimeout;
+        aicpuCtrlSqe->usrData.u.timeoutCfg.opExecuteTimeout = timeoutSetTask->opExecuteTimeout;
     }
 
-    sqe->subTopicId = 0U;
-    sqe->topicId = 5U; // EVENT_TS_CTRL_MSG
-    sqe->groupId = 0U;
-    sqe->usrDataLen = 20U;
+    aicpuCtrlSqe->subTopicId = 0U;
+    aicpuCtrlSqe->topicId = 5U; // EVENT_TS_CTRL_MSG
+    aicpuCtrlSqe->groupId = 0U;
+    aicpuCtrlSqe->usrDataLen = 20U;
 
-    sqe->destPid = 0U;
+    aicpuCtrlSqe->destPid = 0U;
     PrintDavidSqe(davidSqe, "TaskTimeoutSetTask");
     RT_LOG(RT_LOG_INFO, "TaskTimeoutSetTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
         "topicType=%u, cmdType=%u.", stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
-        static_cast<uint32_t>(sqe->topicType), sqe->usrData.cmdType);
+        static_cast<uint32_t>(aicpuCtrlSqe->topicType), aicpuCtrlSqe->usrData.cmdType);
 }
 #endif
 }  // namespace runtime

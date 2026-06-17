@@ -19,52 +19,54 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForStreamLabelSwitchByIndexTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForStreamLabelSwitchByIndexTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     StmLabelSwitchByIdxTaskInfo * const stmLblSwiByIdx = &(taskInfo->u.stmLabelSwitchIdxTask);
-    sqe.header.type = RT_DAVID_SQE_TYPE_COND;
-    sqe.condsSubType = CONDS_SUB_TYPE_LABEL_SWITCH_BY_INDEX;
-    sqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe.sqeLength = 0U;
-    sqe.csc = 1U;
+    fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
+    fnCallSqe.condsSubType = CONDS_SUB_TYPE_LABEL_SWITCH_BY_INDEX;
+    fnCallSqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    fnCallSqe.sqeLength = 0U;
+    fnCallSqe.csc = 1U;
 
     const uint64_t funcAddr = RtPtrToValue(stmLblSwiByIdx->funcCallSvmMem);
     const uint64_t funcCallSize = static_cast<uint64_t>(sizeof(rtStarsLabelSwitchByIndexFc_t));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "StreamLabelSwitchByIndexTask");
     RT_LOG(RT_LOG_INFO, "StreamLabelSwitchByIndex, deviceId=%u, streamId=%d, taskId=%hu",
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id);
 }
 
-void ConstructDavidSqeForStreamSwitchTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForStreamSwitchTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     Stream * const stm = taskInfo->stream;
     StreamSwitchTaskInfo * const streamSwitchTask = &(taskInfo->u.streamswitchTask);
-    UNUSED(sqBaseAddr);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
 
-    sqe.header.type = RT_DAVID_SQE_TYPE_COND;
+    fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
     if (streamSwitchTask->isCondEx) {
-        sqe.condsSubType = CONDS_SUB_TYPE_STREAM_SWITCH_EX;
+        fnCallSqe.condsSubType = CONDS_SUB_TYPE_STREAM_SWITCH_EX;
     } else {
-        sqe.condsSubType = CONDS_SUB_TYPE_STREAM_SWITCH;
+        fnCallSqe.condsSubType = CONDS_SUB_TYPE_STREAM_SWITCH;
     }
 
-    sqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe.sqeLength = 0U;
-    sqe.csc = 1U;
+    fnCallSqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    fnCallSqe.sqeLength = 0U;
+    fnCallSqe.csc = 1U;
 
     const uint64_t funcAddr = RtPtrToValue(streamSwitchTask->funcCallSvmMem);
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (streamSwitchTask->funCallMemSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (streamSwitchTask->funCallMemSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "StreamSwitchTask");
     RT_LOG(RT_LOG_INFO, "StreamSwitchTask, deviceId=%u, streamId=%d, taskId=%hu, trueStreamId=%u.",
@@ -203,9 +205,9 @@ void Construct3rdDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDa
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id);
 }
 
-void ConstructDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
     constexpr uint8_t CONDITION_SQE_INDEX_1 = 1U;
     constexpr uint8_t CONDITION_SQE_INDEX_2 = 2U;
 
@@ -214,7 +216,7 @@ void ConstructDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDavid
 
     CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
     if (condTaskInfo->condHandle->GetCondType() == RT_COND_TASK_TYPE_WHILE) {
-        Construct3rdDavidSqeForCaptureConditionTask(taskInfo, &davidSqe[CONDITION_SQE_INDEX_2], sqBaseAddr);
+        Construct3rdDavidSqeForCaptureConditionTask(taskInfo, &davidSqe[CONDITION_SQE_INDEX_2], sqeInfo.sqBaseAddr);
     }
 }
 

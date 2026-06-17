@@ -92,11 +92,11 @@ rtDavidSqe_t *GetSqPosAddr(uint64_t sqBaseAddr, uint32_t pos)
     return RtValueToPtr<rtDavidSqe_t *>(sqBaseAddr + (temp << SHIFT_SIX_SIZE));
 }
 
-void ToConstructDavidSqe(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ToConstructDavidSqe(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
     taskInfo->bindFlag = taskInfo->stream->GetBindFlag();
     if (g_toDavidSqeFunc[taskInfo->type] != nullptr) {
-        g_toDavidSqeFunc[taskInfo->type](taskInfo, davidSqe, sqBaseAddr);
+        g_toDavidSqeFunc[taskInfo->type](taskInfo, sqe, sqeInfo);
     }
 
     if (Runtime::Instance()->GetConnectUbFlag()) {
@@ -104,7 +104,7 @@ void ToConstructDavidSqe(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint
         if (taskInfo->stream->taskResMang_ != nullptr) {
             allocTimes = (RtPtrToPtr<TaskResManageDavid *>(taskInfo->stream->taskResMang_))->GetAllocNum();
         }
-        davidSqe->phSqe.header.headUpdate = GetHeadUpdateFlag(allocTimes);
+        static_cast<rtDavidSqe_t *>(sqe)->phSqe.header.headUpdate = GetHeadUpdateFlag(allocTimes);
     }
 
     // set expect cqeNum after sqe construction which will be checked before task recycle
@@ -151,13 +151,14 @@ void SetStarsResultCommonForDavid(TaskInfo *taskInfo, const rtLogicCqReport_t &l
     }
 }
 
-void ConstructDavidSqeBase(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeBase(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const sqe = &(davidSqe->phSqe);
-    sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
+    phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
+    phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
 
     RT_LOG(RT_LOG_WARNING, "No need to construct sqe. task_type=%u, device_id=%u, stream_id=%d, task_id=%hu,"
         " task_sn=%u.", taskInfo->type, taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(),

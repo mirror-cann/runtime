@@ -15,9 +15,10 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForCmoTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForCmoTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     Stream * const stm = taskInfo->stream;
     Model *cmoModel = stm->Model_();
     CmoTaskInfo * const cmoTsk = &(taskInfo->u.cmoTask);

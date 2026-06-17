@@ -18,53 +18,54 @@ namespace runtime {
 
 #if F_DESC("AddEndGraphTask")
 
-void ConstructDavidSqeForAddEndGraphTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForAddEndGraphTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuKernelSqe * const sqe = &(davidSqe->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe * const aicpuKernelSqe = &(davidSqe->aicpuSqe);
     Stream * const stm = taskInfo->stream;
 
-    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
-    sqe->header.blockDim = 1U;
-    sqe->kernelType = (static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU));
-    sqe->batchMode = 0U;
-    sqe->topicType = 0U;
-    UpdateDavidAICpuKernelSqeForDavinciTask(sqe);
+    aicpuKernelSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
+    aicpuKernelSqe->header.blockDim = 1U;
+    aicpuKernelSqe->kernelType = (static_cast<uint16_t>(TS_AICPU_KERNEL_AICPU));
+    aicpuKernelSqe->batchMode = 0U;
+    aicpuKernelSqe->topicType = 0U;
+    UpdateDavidAICpuKernelSqeForDavinciTask(aicpuKernelSqe);
 
-    sqe->qos = stm->Device_()->GetTsdQos();
-    sqe->res2 = 0U;
-    sqe->sqeIndex = 0U; // useless
-    sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    sqe->sqeLength = 0U;
+    aicpuKernelSqe->qos = stm->Device_()->GetTsdQos();
+    aicpuKernelSqe->res2 = 0U;
+    aicpuKernelSqe->sqeIndex = 0U; // useless
+    aicpuKernelSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
+    aicpuKernelSqe->sqeLength = 0U;
 
     // soname aicpu no need
     uint64_t addr = 0ULL;
-    sqe->taskSoAddrLow = static_cast<uint32_t>(addr);
-    sqe->taskSoAddrHigh = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
+    aicpuKernelSqe->taskSoAddrLow = static_cast<uint32_t>(addr);
+    aicpuKernelSqe->taskSoAddrHigh = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
 
-    sqe->paramAddrLow = static_cast<uint32_t>(taskInfo->u.addEndGraphTask.argptr);
-    sqe->paramAddrHigh = static_cast<uint16_t>(taskInfo->u.addEndGraphTask.argptr >> UINT32_BIT_NUM);
+    aicpuKernelSqe->paramAddrLow = static_cast<uint32_t>(taskInfo->u.addEndGraphTask.argptr);
+    aicpuKernelSqe->paramAddrHigh = static_cast<uint16_t>(taskInfo->u.addEndGraphTask.argptr >> UINT32_BIT_NUM);
 
-    sqe->taskNameStrPtrLow = static_cast<uint32_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr);
-    sqe->taskNameStrPtrHigh = static_cast<uint16_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr >> UINT32_BIT_NUM);
-    sqe->pL2ctrlLow = 0U;
-    sqe->pL2ctrlHigh = 0U;
-    sqe->overflowEn = 0U;
-    sqe->extraFieldLow = taskInfo->taskSn; // send task id info to aicpu
-    sqe->extraFieldHigh = 0U;
+    aicpuKernelSqe->taskNameStrPtrLow = static_cast<uint32_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr);
+    aicpuKernelSqe->taskNameStrPtrHigh = static_cast<uint16_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr >> UINT32_BIT_NUM);
+    aicpuKernelSqe->pL2ctrlLow = 0U;
+    aicpuKernelSqe->pL2ctrlHigh = 0U;
+    aicpuKernelSqe->overflowEn = 0U;
+    aicpuKernelSqe->extraFieldLow = taskInfo->taskSn; // send task id info to aicpu
+    aicpuKernelSqe->extraFieldHigh = 0U;
 
-    sqe->subTopicId = 0U;
-    sqe->topicId = 3U; // EVENT_TS_HWTS_KERNEL
-    sqe->groupId = 0U;
-    sqe->usrDataLen = 40U; // size: word4-13
-    sqe->destPid = 0U;
+    aicpuKernelSqe->subTopicId = 0U;
+    aicpuKernelSqe->topicId = 3U; // EVENT_TS_HWTS_KERNEL
+    aicpuKernelSqe->groupId = 0U;
+    aicpuKernelSqe->usrDataLen = 40U; // size: word4-13
+    aicpuKernelSqe->destPid = 0U;
 
-    sqe->res5 = 0xFFFFU;
+    aicpuKernelSqe->res5 = 0xFFFFU;
 
     PrintDavidSqe(davidSqe, "AddEndGraphTask");
     RT_LOG(RT_LOG_INFO, "AddEndGraphTask, topicType=%u, device_id=%u, stream_id=%d,"
-        "task_id=%hu, task_sn=%u.", static_cast<uint32_t>(sqe->topicType), taskInfo->stream->Device_()->Id_(),
+        "task_id=%hu, task_sn=%u.", static_cast<uint32_t>(aicpuKernelSqe->topicType), taskInfo->stream->Device_()->Id_(),
         stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 

@@ -15,7 +15,7 @@
 
 namespace cce {
 namespace runtime {
-void ConstructDavidSqeForCcuLaunchTask(TaskInfo *taskInfo, rtDavidSqe_t * const command, uint64_t sqBaseAddr);
+void ConstructDavidSqeForCcuLaunchTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
 rtError_t ConstructCcuSubSqe(const TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
     const uint32_t taskIdx, const uint64_t sqBaseAddr);
 }  // namespace runtime

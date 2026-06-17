@@ -29,7 +29,7 @@ void ConstructAicpuSubSqeBase(TaskInfo * const taskInfo, rtDavidSqe_t * const da
     uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr);
 void ConstructAicpuSubSqe(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
     uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr);
-void ConstructDavidSqeForFusionKernelTask(TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint64_t sqBaseAddr);
+void ConstructDavidSqeForFusionKernelTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo &sqeInfo);
 
 }  // namespace runtime
 }  // namespace cce

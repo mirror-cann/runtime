@@ -63,68 +63,68 @@ static void ConstructSqeForModelMaintainceTaskCommon(TaskInfo * const taskInfo, 
     sqe->u.modelMaintainceInfo.sqId = taskInfo->stream->GetSqId();
 }
 
-void ConstructDavidSqeForModelMaintainceTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe,
-    uint64_t sqBaseAddr)
+void ConstructDavidSqeForModelMaintainceTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     ModelMaintainceTaskInfo * const modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const sqe = &(davidSqe->phSqe);
-    ConstructSqeForModelMaintainceTaskCommon(taskInfo, sqe);
+    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    ConstructSqeForModelMaintainceTaskCommon(taskInfo, phSqe);
 
     const int32_t type = static_cast<int32_t>(modelMaintainceTaskInfo->type);
     switch (type) {
         case MMT_STREAM_ADD:
-            sqe->header.preP = 1U;
-            sqe->u.modelMaintainceInfo.streamExecTimesAddr = modelMaintainceTaskInfo->execTimesSvmOffset;
+            phSqe->header.preP = 1U;
+            phSqe->u.modelMaintainceInfo.streamExecTimesAddr = modelMaintainceTaskInfo->execTimesSvmOffset;
             modelMaintainceTaskInfo->opStream->SetBindFlag(true);
             PrintDavidSqe(davidSqe, "ModelBindTask");
             RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, bind stream_id=%hu to modelId=%hu, task_id=%hu",
-                type, taskInfo->stream->Device_()->Id_(), sqe->u.modelMaintainceInfo.streamId,
-                sqe->u.modelMaintainceInfo.modelId, taskInfo->id);
+                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+                phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         case MMT_STREAM_DEL:
-            sqe->header.preP = 1U;
+            phSqe->header.preP = 1U;
             modelMaintainceTaskInfo->opStream->SetBindFlag(false);
             PrintDavidSqe(davidSqe, "ModelUnbindTask");
             RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, unbind stream_id=%hu from modelId=%hu,"
-                "task_id=%hu", type, taskInfo->stream->Device_()->Id_(), sqe->u.modelMaintainceInfo.streamId,
-                sqe->u.modelMaintainceInfo.modelId, taskInfo->id);
+                "task_id=%hu", type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+                phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         case MMT_MODEL_PRE_PROC:
-            sqe->header.preP = 1U;
-            sqe->u.modelMaintainceInfo.executorFlag = MODEL_EXECUTOR_RESERVED;
+            phSqe->header.preP = 1U;
+            phSqe->u.modelMaintainceInfo.executorFlag = MODEL_EXECUTOR_RESERVED;
             if (modelMaintainceTaskInfo->model->ModelExecuteType() == EXECUTOR_AICPU) {
-                sqe->u.modelMaintainceInfo.executorFlag = MODEL_EXECUTOR_AICPU;
+                phSqe->u.modelMaintainceInfo.executorFlag = MODEL_EXECUTOR_AICPU;
             } else {
-                sqe->u.modelMaintainceInfo.executorFlag = GetCaptureModelExecutorType(modelMaintainceTaskInfo);
-                sqe->u.modelMaintainceInfo.endgraphNotifyId =
+                phSqe->u.modelMaintainceInfo.executorFlag = GetCaptureModelExecutorType(modelMaintainceTaskInfo);
+                phSqe->u.modelMaintainceInfo.endgraphNotifyId =
                     static_cast<uint16_t>(GetEndGraphNotifyId(modelMaintainceTaskInfo->model));
             }
             PrintDavidSqe(davidSqe, "ModelPreProcTask");
             RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, pre proc stream_id=%hu of modelId=%hu,"
                 "endgraphNotifyId=%hu, taskId=%hu, executorFlag=%u.", type, taskInfo->stream->Device_()->Id_(),
-                sqe->u.modelMaintainceInfo.streamId, sqe->u.modelMaintainceInfo.modelId,
-                sqe->u.modelMaintainceInfo.endgraphNotifyId, taskInfo->id, sqe->u.modelMaintainceInfo.executorFlag);
+                phSqe->u.modelMaintainceInfo.streamId, phSqe->u.modelMaintainceInfo.modelId,
+                phSqe->u.modelMaintainceInfo.endgraphNotifyId, taskInfo->id, phSqe->u.modelMaintainceInfo.executorFlag);
             break;
         case MMT_MODEL_LOAD_COMPLETE:
             PrintDavidSqe(davidSqe, "ModelLoadCompleteTask");
             RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, load complete stream_id=%hu of modelId=%hu,"
-                "task_id=%hu", type, taskInfo->stream->Device_()->Id_(), sqe->u.modelMaintainceInfo.streamId,
-                sqe->u.modelMaintainceInfo.modelId, taskInfo->id);
+                "task_id=%hu", type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+                phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         case MMT_MODEL_ABORT:
-            sqe->header.preP = 1U;
+            phSqe->header.preP = 1U;
             PrintDavidSqe(davidSqe, "ModelAbortTask");
             RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, abort stream_id=%hu of modelId=%hu, task_id=%hu",
-                type, taskInfo->stream->Device_()->Id_(), sqe->u.modelMaintainceInfo.streamId,
-                sqe->u.modelMaintainceInfo.modelId, taskInfo->id);
+                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+                phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         default:
             PrintDavidSqe(davidSqe, "ModelMaintainceTask");
             RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, stream_id=%hu, modelId=%hu, task_id=%hu",
-                type, taskInfo->stream->Device_()->Id_(), sqe->u.modelMaintainceInfo.streamId,
-                sqe->u.modelMaintainceInfo.modelId, taskInfo->id);
+                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+                phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
     }
     return;

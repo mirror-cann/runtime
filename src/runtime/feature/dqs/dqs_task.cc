@@ -1141,141 +1141,148 @@ rtError_t DqsInterChipNopTaskInit(TaskInfo *taskInfo, const uint32_t groupIdx, c
     return RT_ERROR_NONE;
 }
 
-void ConstructSqeForDqsMbufFreeTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsMbufFreeTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsCommonTaskInfo *dqsTask = &(taskInfo->u.dqsMbufFreeTask);
 
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_MBUF_FREE);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_MBUF_FREE);
 
     const uint64_t funcAddr = RtPtrToValue(dqsTask->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsMbufFreeFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsMbufFree");
     RT_LOG(RT_LOG_INFO, "DqsMbufFree, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsEnqueueTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsEnqueueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsCommonTaskInfo *dqsEnqueueTask = &(taskInfo->u.dqsEnqueueTask);
 
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_ENQUEUE);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_ENQUEUE);
 
     const uint64_t funcAddr = RtPtrToValue(dqsEnqueueTask->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsEnqueueFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsEnqueue");
     RT_LOG(RT_LOG_INFO, "DqsEnqueue, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsDequeueTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsDequeueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsCommonTaskInfo *dqsDequeueTask = &(taskInfo->u.dqsDequeueTask);
 
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_DEQUEUE);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_DEQUEUE);
 
     const uint64_t funcAddr = RtPtrToValue(dqsDequeueTask->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsDequeueFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsDequeue");
     RT_LOG(RT_LOG_INFO, "DqsDequeue, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsBatchDequeueTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsBatchDequeueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsCommonTaskInfo *dqsBatchDequeueTask = &(taskInfo->u.dqsBatchDequeueTask);
 
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_BATCH_DEQUEUE);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_BATCH_DEQUEUE);
 
     const uint64_t funcAddr = RtPtrToValue(dqsBatchDequeueTask->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsBatchDequeueFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
     PrintDavidSqe(davidSqe, "DqsBatchDequeue");
     RT_LOG(RT_LOG_INFO, "DqsBatchDequeue, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsFrameAlignTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsFrameAlignTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsCommonTaskInfo *dqsFrameAlignTask = &(taskInfo->u.dqsFrameAlignTask);
 
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_FRAME_ALIGN);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_FRAME_ALIGN);
 
     const uint64_t funcAddr = RtPtrToValue(dqsFrameAlignTask->funcCallSvmMem);
     const uint64_t funcCallSize = dqsFrameAlignTask->funCallMemSize;
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsFrameAlign");
     RT_LOG(RT_LOG_INFO, "DqsFrameAlignTask, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsZeroCopyTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsZeroCopyTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsZeroCopyTaskInfo *dqsZeroCopyTask = &(taskInfo->u.dqsZeroCopyTask);
     const Stream *const stm = taskInfo->stream;
     const RtCondsSubType zeroCopyType = (taskInfo->u.dqsZeroCopyTask.copyType == RT_DQS_ZERO_COPY_INPUT) ?
         CONDS_SUB_TYPE_DQS_ZERO_COPY_IN : CONDS_SUB_TYPE_DQS_ZERO_COPY_OUT;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, zeroCopyType);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, zeroCopyType);
 
     DqsCommonTaskInfo *const commonTaskInfo = &(dqsZeroCopyTask->commonTaskInfo);
     const uint64_t funcAddr = RtPtrToValue(commonTaskInfo->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsZeroCopyFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsZeroCopy");
     RT_LOG(RT_LOG_INFO, "DqsZeroCopy, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsConditionCopyTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsConditionCopyTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
     uint64_t funcCallSize = 0ULL;
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsCommonTaskInfo *commonTaskInfo = &(taskInfo->u.dqsCondCopyTask);
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_CONDITION_COPY);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_CONDITION_COPY);
 
     const uint64_t funcAddr = RtPtrToValue(commonTaskInfo->funcCallSvmMem);
     funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsConditionCopyFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsConditionCopy");
     RT_LOG(RT_LOG_INFO, "DqsConditionCopy, device_id=%u, stream_id=%d, task_id=%hu",
@@ -1312,10 +1319,11 @@ static void ConstructDqsSchedEndInstr(const uint16_t sqId, const uint64_t mbufLi
     }
 }
 
-void ConstructSqeForDqsSchedEndTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsSchedEndTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsDqsSchedEndSqe &sqe = davidSqe->dqsSchedEndSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsDqsSchedEndSqe &dqsSchedEndSqe = davidSqe->dqsSchedEndSqe;
     DqsSchedEndTaskInfo *const dqsSchedEndTask = &(taskInfo->u.dqsSchedEndTask);
     Stream *stream = dqsSchedEndTask->stream;
     const uint16_t sqId = stream->GetSqId();
@@ -1328,64 +1336,67 @@ void ConstructSqeForDqsSchedEndTask(TaskInfo * const taskInfo, rtDavidSqe_t * co
     const uint64_t ctrlSpacePtrVal = RtPtrToValue(ctrlSpacePtr);
     const uint64_t offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
     const uint64_t mbufListOpSnapshotAddr = ctrlSpacePtrVal + offset;
-    ConstructDqsSchedEndInstr(sqId, mbufListOpSnapshotAddr, sqe);
+    ConstructDqsSchedEndInstr(sqId, mbufListOpSnapshotAddr, dqsSchedEndSqe);
 
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_SCHED_END);
+    InitDqsFunctionCallSqe(dqsSchedEndSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_SCHED_END);
     PrintDavidSqe(davidSqe, "DqsSchedEnd");
     RT_LOG(RT_LOG_INFO, "DqsSchedEnd, deviceId=%u, streamId=%d, taskId=%hu, sqId=%u", 
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id, sqId);
 }
 
-void ConstructSqeForDqsInterChipPreProcTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsInterChipPreProcTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsInterChipProcTaskInfo *dqsInterChipPreProcTask = &(taskInfo->u.dqsInterChipPreProcTask);
     const Stream *const stm = taskInfo->stream;
     InitDqsFunctionCallSqe(
-        sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_INTER_CHIP_PREPROC);
+        fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_INTER_CHIP_PREPROC);
     DqsCommonTaskInfo *const commonTaskInfo = &(dqsInterChipPreProcTask->commonTaskInfo);
     const uint64_t funcAddr = RtPtrToValue(commonTaskInfo->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsInterChipPreProcFc));
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsInterChipPreProc");
     RT_LOG(RT_LOG_INFO, "DqsInterChipPreProc, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsInterChipPostProcTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsInterChipPostProcTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsInterChipProcTaskInfo *dqsInterChipPostProcTask = &(taskInfo->u.dqsInterChipPostProcTask);
     const Stream *const stm = taskInfo->stream;
     InitDqsFunctionCallSqe(
-        sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_INTER_CHIP_POSTPROC);
+        fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_INTER_CHIP_POSTPROC);
     DqsCommonTaskInfo *const commonTaskInfo = &(dqsInterChipPostProcTask->commonTaskInfo);
     const uint64_t funcAddr = RtPtrToValue(commonTaskInfo->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsInterChipPostProcFc));
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsInterChipPostProc");
     RT_LOG(RT_LOG_INFO, "DqsInterChipPostProc, deviceId=%u, streamId=%d, taskId=%hu",
         stm->Device_()->Id_(), stm->Id_(), taskInfo->id);
 }
 
-void ConstructSqeForDqsAdspcTask(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
+void ConstructSqeForDqsAdspcTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     DqsAdspcTaskInfo *dqsAdspcTask = &(taskInfo->u.dqsAdspcTaskInfo);
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_ADSPC);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_ADSPC);
     DqsCommonTaskInfo *const commonTaskInfo = &(dqsAdspcTask->commonTaskInfo);
     const uint64_t funcAddr = RtPtrToValue(commonTaskInfo->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsAdspcFc));
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsAdspcTask");
     RT_LOG(RT_LOG_INFO, "DqsAdspcTask, deviceId=%u, streamId=%d, taskId=%hu",
@@ -1651,19 +1662,19 @@ void DqsPrepareTaskUnInit(TaskInfo * const taskInfo)
     (void)FreeDqsCommonTaskFuncCall(&(taskInfo->u.dqsPrepareTask), taskInfo);
 }
 
-void ConstructSqeForDqsPrepareTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
-{
-    UNUSED(sqBaseAddr);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+void ConstructSqeForDqsPrepareTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo) {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    UNUSED(sqeInfo);
+    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
     const Stream *const stm = taskInfo->stream;
-    InitDqsFunctionCallSqe(sqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_PREPARE);
+    InitDqsFunctionCallSqe(fnCallSqe, stm->GetStarsWrCqeFlag(), taskInfo->taskSn, CONDS_SUB_TYPE_DQS_PREPARE);
 
     DqsCommonTaskInfo *dqsTask = &(taskInfo->u.dqsPrepareTask);
     const uint64_t funcAddr = RtPtrToValue(dqsTask->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsDqsPrepareOutFc));
 
     // func call size is rs2[19:0]*4Byte
-    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
+    ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "DqsPrepare");
     RT_LOG(RT_LOG_INFO, "DqsPrepare, deviceId=%u, streamId=%d, taskId=%hu",

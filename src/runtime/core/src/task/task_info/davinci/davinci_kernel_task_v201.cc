@@ -18,18 +18,20 @@ namespace cce {
 namespace runtime {
 #if F_DESC("DavinciKernelTask")
 
-void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
+    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     ConstructDavidAICpuSqeForDavinciTaskBase(taskInfo, davidSqe, sqBaseAddr);
-    RtDavidStarsAicpuKernelSqe *const sqe = &(davidSqe->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe *const aicpuKernelSqe = &(davidSqe->aicpuSqe);
 
     // swap buffer use host pid
-    sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
-    UpdateDavidAICpuKernelSqeForDavinciTask(sqe);
+    aicpuKernelSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
+    UpdateDavidAICpuKernelSqeForDavinciTask(aicpuKernelSqe);
 
     PrintDavidSqe(davidSqe, "AICpuTask");
     RT_LOG(RT_LOG_INFO, "type=%hu, topic_type=%hu, kernel_type=%u, dump_en=%u",
-        sqe->header.type, sqe->topicType, sqe->kernelType,  sqe->debugDumpEn);
+        aicpuKernelSqe->header.type, aicpuKernelSqe->topicType, aicpuKernelSqe->kernelType, aicpuKernelSqe->debugDumpEn);
     return;
 }
 

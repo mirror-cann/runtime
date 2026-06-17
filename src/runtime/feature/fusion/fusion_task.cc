@@ -268,8 +268,10 @@ static void ConstructAicAivSubSqe(
     sqeIndex++;
 }
 
-void ConstructDavidSqeForFusionKernelTask(TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint64_t sqBaseAddr)
+void ConstructDavidSqeForFusionKernelTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
+    rtDavidSqe_t* const davidSqe = static_cast<rtDavidSqe_t*>(sqe);
+    uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     rtError_t error = RT_ERROR_NONE;
     FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
     rtFunsionTaskInfo_t* const fusionKernelInfo = static_cast<rtFunsionTaskInfo_t*>(fusionKernelTask->fusionKernelInfo);

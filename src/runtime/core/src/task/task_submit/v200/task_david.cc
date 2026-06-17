@@ -9,6 +9,7 @@
  */
 
 #include "task_david.hpp"
+#include "task_manager.h"
 #include "task_res_da.hpp"
 #include "task_submit.hpp"
 #include "task_recycle.hpp"
@@ -469,7 +470,7 @@ static void SetFlipTaskNum(Stream *const stream, uint32_t prePos, uint32_t sqeNu
     return;
 }
 
-static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * const stm, rtDavidSqe_t *sqeAddr)
+static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * const stm, void *sqeAddr)
 {
     AutoSplitSqContext *ctx = stm->GetAutoSplitCtx();
     uint8_t *sqeBuffer = stm->GetSqeBuffer();
@@ -480,19 +481,19 @@ static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * cons
     }
     const uint32_t hostPos = ctx->curStreamSqeCount - taskInfo->sqeNum;
     // 边界检查：确保写入位置在有效范围内
-    uint32_t hostSqeCapacity = stm->GetSqeBufferSize() / sizeof(rtDavidSqe_t);
+    uint32_t hostSqeCapacity = stm->GetSqeBufferSize() / SQE_SIZE_UNIT;
     if ((hostPos + taskInfo->sqeNum) > hostSqeCapacity) {
         RT_LOG(RT_LOG_ERROR, "hostSqeBuffer boundary check failed, stream_id=%d, task_id=%u, "
             "hostPos=%u, sqeNum=%u, capacity=%u",
             stm->Id_(), taskInfo->id, hostPos, taskInfo->sqeNum, hostSqeCapacity);
         return RT_ERROR_INVALID_VALUE;
     }
-    uint8_t *hostSqPos = sqeBuffer + hostPos * sizeof(rtDavidSqe_t);
-    const errno_t ret = memcpy_s(hostSqPos, taskInfo->sqeNum * sizeof(rtDavidSqe_t),
-        sqeAddr, taskInfo->sqeNum * sizeof(rtDavidSqe_t));
+    uint8_t *hostSqPos = sqeBuffer + hostPos * SQE_SIZE_UNIT;
+    uint64_t sqeSize = static_cast<uint64_t>(taskInfo->sqeNum) * SQE_SIZE_UNIT;
+    const errno_t ret = memcpy_s(hostSqPos, sqeSize, sqeAddr, sqeSize);
     COND_RETURN_AND_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
-        "Failed to call memcpy_s to copy sqeAddr, src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.",
-        sqeAddr, hostSqPos, taskInfo->sqeNum * sizeof(rtDavidSqe_t), taskInfo->sqeNum * sizeof(rtDavidSqe_t), ret);
+        "Failed to call memcpy_s to copy sqeAddr, src=%p, dest=%p, dest_max=%lu, sqe_num=%u, retCode=%#x.",
+        sqeAddr, hostSqPos, sqeSize, taskInfo->sqeNum, ret);
     RT_LOG(RT_LOG_DEBUG, "Auto-split SQE written to host buffer, stream_id=%d, task_id=%u, sqeNum=%u, hostPos=%u",
         stm->Id_(), taskInfo->id, taskInfo->sqeNum, hostPos);
     return RT_ERROR_NONE;
@@ -500,8 +501,8 @@ static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * cons
 
 rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
 {
-    rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX];
-    rtDavidSqe_t *sqeAddr = davidSqe;
+    uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
+    void *sqeAddr = static_cast<void*>(sqeBuffer);
     const uint16_t pos = taskInfo->id; // aclgraph扩流场景用不上这个字段
     const Device *dev = stm->Device_();
     const uint32_t devId = dev->Id_();
@@ -511,15 +512,15 @@ rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
     uint64_t beginCnt = 0ULL;
     uint64_t endCnt = 0ULL;
     uint16_t checkCount = 0U;
-    uint64_t sqBaseAddr = stm->GetSqBaseAddr();
+    TaskSqeInfo sqeInfo = {stm->GetSqBaseAddr(), 0ULL};
     Profiler *profilerPtr = Runtime::Instance()->Profiler_();
 
     if (stm->IsSoftwareSqEnable() || stm->IsAutoSplitSq()) {
         dev->GetTaskFactory()->SetSerialId(stm, taskInfo);
-        sqBaseAddr = 0ULL;
+        sqeInfo.sqBaseAddr = 0ULL;
     } else {
-        if (sqBaseAddr != 0ULL) { // 非扩流场景
-            sqeAddr = RtValueToPtr<rtDavidSqe_t *>(sqBaseAddr + (pos << SHIFT_SIX_SIZE));
+        if (sqeInfo.sqBaseAddr != 0ULL) { // 非扩流场景
+            sqeAddr = RtPtrToPtr<void *>(sqeInfo.sqBaseAddr + pos * SQE_SIZE_UNIT);
         }
     }
 
@@ -527,7 +528,7 @@ rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
         profilerPtr->ReportTaskTrack(taskInfo, devId);
     }
 
-    ToConstructDavidSqe(taskInfo, sqeAddr, sqBaseAddr);
+    ToConstructDavidSqe(taskInfo, sqeAddr, sqeInfo);
     // update the host-side head and tail
     rtError_t error = AddTaskToPublicQueue(taskInfo, taskInfo->sqeNum);
     if (error != RT_ERROR_NONE) {
@@ -541,15 +542,15 @@ rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
     }
 
     if (stm->IsSoftwareSqEnable()) {
-        const auto ret = memcpy_s(RtPtrToPtr<void *>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * taskInfo->pos),
-            taskInfo->sqeNum * sizeof(rtStarsSqe_t), RtPtrToPtr<void *, rtDavidSqe_t *>(sqeAddr), 
-            taskInfo->sqeNum * sizeof(rtStarsSqe_t));
+        uint64_t sqeSize = static_cast<uint64_t>(taskInfo->sqeNum) * SQE_SIZE_UNIT;
+        const auto ret = memcpy_s(RtPtrToPtr<void *>(stm->GetSqeBuffer() + SQE_SIZE_UNIT * taskInfo->pos),
+            sqeSize, sqeAddr, sqeSize);
         if (ret != EOK) {
             RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to call memcpy_s to copy sqeAddr, src=%p, dest=%p,"
-                " dest_max=%zu, count=%zu, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d,"
+                " dest_max=%lu, sqe_num=%u, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d,"
                 " task_id=%hu, task_type=%u(%s), retCode=%#x.", sqeAddr,
-                RtPtrToPtr<void *>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * taskInfo->pos), taskInfo->sqeNum * sizeof(rtStarsSqe_t),
-                taskInfo->sqeNum * sizeof(rtStarsSqe_t), devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id,
+                RtPtrToPtr<void *>(stm->GetSqeBuffer() + SQE_SIZE_UNIT * taskInfo->pos), sqeSize,
+                taskInfo->sqeNum, devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id,
                 static_cast<uint32_t>(taskInfo->type), taskInfo->typeName, ret);
             error = RT_ERROR_INVALID_VALUE;
         }
@@ -567,7 +568,7 @@ rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
     sendInfo.sqe_num = taskInfo->sqeNum;
     sendInfo.tsId = tsId;
     sendInfo.sqId = sqId;
-    sendInfo.sqe_addr = RtPtrToPtr<uint8_t *, rtDavidSqe_t *>(sqeAddr);
+    sendInfo.sqe_addr = sqeBuffer;
     drvError_t drvRet = halSqTaskSend(devId, &sendInfo);
     COND_RETURN_ERROR_MSG_INNER((drvRet != DRV_ERROR_NO_RESOURCES) && (drvRet != DRV_ERROR_NONE),
         RT_ERROR_DRV_ERR, "[drv api] Call driver api halSqTaskSend failed, device_id=%u, stream_id=%d, drvRetCode=%d.", devId, stm->Id_(), drvRet);
