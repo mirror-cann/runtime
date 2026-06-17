@@ -63,6 +63,213 @@ using namespace Collector::Dvvp::Mstx;
 
 namespace Msprofiler {
 namespace Api {
+namespace {
+const char *GetAclProfConfigTypeName(aclprofConfigType type)
+{
+    static const char *const configTypeNames[] = {
+        nullptr,
+        "ACL_PROF_STORAGE_LIMIT",
+        nullptr,
+        "ACL_PROF_SYS_HARDWARE_MEM_FREQ",
+        "ACL_PROF_LLC_MODE",
+        "ACL_PROF_SYS_IO_FREQ",
+        "ACL_PROF_SYS_INTERCONNECTION_FREQ",
+        "ACL_PROF_DVPP_FREQ",
+        "ACL_PROF_HOST_SYS",
+        "ACL_PROF_HOST_SYS_USAGE",
+        "ACL_PROF_HOST_SYS_USAGE_FREQ",
+        "ACL_PROF_LOW_POWER_FREQ",
+        "ACL_PROF_SYS_MEM_SERVICEFLOW",
+        "ACL_PROF_SYS_CPU_FREQ",
+        "ACL_PROF_OPTYPE",
+        "ACL_PROF_NTS_METRICS",
+        "ACL_PROF_PATH"
+    };
+    const size_t configTypeNamesSize = sizeof(configTypeNames) / sizeof(configTypeNames[0]);
+
+    const int32_t index = static_cast<int32_t>(type);
+    if (index < 0 || static_cast<size_t>(index) >= configTypeNamesSize || configTypeNames[index] == nullptr) {
+        return nullptr;
+    }
+    return configTypeNames[index];
+}
+
+std::string GetFreqConfigReason(const std::string &config)
+{
+    if (config == "sys_interconnection_freq" || config == "sys_cpu_freq" ||
+        config == "host_sys_usage_freq") {
+        return "Please input an integer value in range [1, 50].";
+    }
+    if (config == "sys_hardware_mem_freq" &&
+        Platform::instance()->CheckIfSupport(PLATFORM_SYS_DEVICE_US)) {
+        return "Please input an integer value in range [1, 10000].";
+    }
+    return "Please input an integer value in range [1, 100].";
+}
+
+std::string GetJsonConfigInvalidReason(const std::string &config)
+{
+    if (config == "aic_metrics") {
+        return "Please input a supported aic_metrics value.";
+    }
+    if (config == "ge_api") {
+        return "Please input 'l0', 'l1' or 'off'.";
+    }
+    if (config == "task_trace" || config == "task_time") {
+        return Platform::instance()->CheckIfSupport(PLATFORM_TASK_TRACE_L3) ?
+            "Please input 'on', 'off', 'l0', 'l1', 'l2' or 'l3'." :
+            "Please input 'on', 'off', 'l0', 'l1' or 'l2'.";
+    }
+    if (config == "sys_hardware_mem_freq" || config == "sys_io_sampling_freq" ||
+        config == "sys_interconnection_freq" || config == "sys_cpu_freq" ||
+        config == "dvpp_freq" || config == "host_sys_usage_freq" || config == "sys_lp_freq") {
+        return GetFreqConfigReason(config);
+    }
+    if (config == "llc_profiling") {
+        return "Please input 'read' or 'write'.";
+    }
+    if (config == "host_sys") {
+        return "Please input one or more of 'cpu', 'mem', 'disk', 'network', 'osrt' or 'numa'.";
+    }
+    if (config == "host_sys_usage") {
+        return "Please input 'cpu' or 'mem'.";
+    }
+    if (config == "sys_mem_serviceflow") {
+        return "Please input a non-empty value.";
+    }
+    if (config == "task_block") {
+        return "Please input 'all', 'on' or 'off'.";
+    }
+    return "Please input 'on' or 'off'.";
+}
+
+std::string GetAclProfSetFreqReason(aclprofConfigType cfgType)
+{
+    switch (cfgType) {
+        case ACL_PROF_SYS_HARDWARE_MEM_FREQ:
+            return GetFreqConfigReason("sys_hardware_mem_freq");
+        case ACL_PROF_SYS_INTERCONNECTION_FREQ:
+            return GetFreqConfigReason("sys_interconnection_freq");
+        case ACL_PROF_HOST_SYS_USAGE_FREQ:
+            return GetFreqConfigReason("host_sys_usage_freq");
+        case ACL_PROF_SYS_CPU_FREQ:
+            return GetFreqConfigReason("sys_cpu_freq");
+        case ACL_PROF_SYS_IO_FREQ:
+            return GetFreqConfigReason("sys_io_sampling_freq");
+        case ACL_PROF_DVPP_FREQ:
+            return GetFreqConfigReason("dvpp_freq");
+        case ACL_PROF_LOW_POWER_FREQ:
+            return GetFreqConfigReason("sys_lp_freq");
+        default:
+            return "The config value is invalid or out of range.";
+    }
+}
+
+std::string GetAclProfSetConfigReason(aclprofConfigType cfgType)
+{
+    switch (cfgType) {
+        case ACL_PROF_STORAGE_LIMIT:
+            return "Please input a value in range [200, 4294967295] and end with MB, for example 200MB.";
+        case ACL_PROF_LLC_MODE:
+            return GetJsonConfigInvalidReason("llc_profiling");
+        case ACL_PROF_HOST_SYS:
+            return GetJsonConfigInvalidReason("host_sys");
+        case ACL_PROF_HOST_SYS_USAGE:
+            return GetJsonConfigInvalidReason("host_sys_usage");
+        case ACL_PROF_SYS_MEM_SERVICEFLOW:
+            return GetJsonConfigInvalidReason("sys_mem_serviceflow");
+        case ACL_PROF_OPTYPE:
+            return "Please input non-empty comma-separated op types, and total length should not exceed 256.";
+        case ACL_PROF_NTS_METRICS:
+            return "Please input 'PipeUtilization' or 'Custom:<event>[,<event>...]', with 1 to 10 events in "
+                "range [0, 65535].";
+        case ACL_PROF_PATH:
+            return "Please input a valid profiling result path.";
+        default:
+            return GetAclProfSetFreqReason(cfgType);
+    }
+}
+
+const uint32_t ACL_CFG_LEN_MAX = 1024 * 1024;  // max input cfg len is 1024 * 1024
+
+int32_t CheckAclJsonInitData(VOID_PTR data, uint32_t len)
+{
+    if (data == nullptr) {
+        MSPROF_LOGE("Acl json config is nullptr.");
+        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"value", "config", "reason"}),
+            std::vector<std::string>({"nullptr", "acl json config", "Acl json config can not be nullptr"}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    if (len > ACL_CFG_LEN_MAX) {
+        MSPROF_LOGE("Length of acl json config is too large: %u", len);
+        std::string reason = "Length of acl json config should be less than or equal to " +
+            std::to_string(ACL_CFG_LEN_MAX);
+        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"value", "config", "reason"}),
+            std::vector<std::string>({std::to_string(len), "length of acl json config", reason}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    return MSPROF_ERROR_NONE;
+}
+
+int32_t ParseAclJsonConfig(const std::string &aclCfg, NanoJson::Json &acljsonCfg)
+{
+    if (aclCfg.empty()) {
+        MSPROF_LOGE("Empty config of acljson.");
+        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"value", "config", "reason"}),
+            std::vector<std::string>({aclCfg, "acl json config", "Acl json config can not be empty"}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    try {
+        acljsonCfg.Parse(aclCfg);
+    } catch (std::runtime_error& e) {
+        MSPROF_LOGE("Failed to parse acljson configs. Error reason: %s", e.what());
+        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"value", "config", "reason"}),
+            std::vector<std::string>({aclCfg, "acl json config",
+                "Acl json config should be a valid json string"}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    return MSPROF_ERROR_NONE;
+}
+
+int32_t CheckGeOptionsInitData(VOID_PTR data, uint32_t len, uint32_t structLen)
+{
+    if (data == nullptr) {
+        MSPROF_LOGE("MsprofInitGeOptions input data is nullptr, len:%u bytes, structLen:%u bytes", len, structLen);
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({"nullptr", "data", "Ge options data can not be nullptr"}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    if (len != structLen) {
+        MSPROF_LOGE("MsprofInitGeOptions input arguments is invalid, len:%u bytes, structLen:%u bytes",
+            len, structLen);
+        std::string reason = "Ge options length should be equal to " + std::to_string(structLen);
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({std::to_string(len), "len", reason}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    return MSPROF_ERROR_NONE;
+}
+
+int32_t ParseGeOptionsConfig(const std::string &options, NanoJson::Json &geoptionCfg)
+{
+    if (options.empty()) {
+        MSPROF_LOGE("Empty config of geoption.");
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({options, "options", "Ge option config can not be empty"}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    try {
+        geoptionCfg.Parse(options);
+    } catch (std::runtime_error& e) {
+        MSPROF_LOGE("Failed to parse geoption configs. Error reason: %s", e.what());
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({options, "options", "Ge option config should be a valid json string"}));
+        return MSPROF_ERROR_CONFIG_INVALID;
+    }
+    return MSPROF_ERROR_NONE;
+}
+} // namespace
+
 // callback of Device
 void DeviceResponse(int32_t devId)
 {
@@ -1662,6 +1869,9 @@ int32_t ProfAclMgr::CheckAclJsonConfigInvalid(const NanoJson::Json &acljsonCfg) 
             continue;
         } else {
             if (!ProfParamsAdapter::instance()->CheckJsonConfig(iter->first, iter->second)) {
+                std::string reason = GetJsonConfigInvalidReason(iter->first);
+                MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"value", "config", "reason"}),
+                    std::vector<std::string>({iter->second(), iter->first, reason}));
                 return MSPROF_ERROR_CONFIG_INVALID;
             }
         }
@@ -1677,32 +1887,21 @@ int32_t ProfAclMgr::CheckAclJsonConfigInvalid(const NanoJson::Json &acljsonCfg) 
 int32_t ProfAclMgr::MsprofInitAclJson(VOID_PTR data, uint32_t len)
 {
     MSPROF_EVENT("Init profiling for AclJson");
-    static uint32_t ACL_CFG_LEN_MAX = 1024 * 1024;  // max input cfg len is 1024 * 1024
-    if (data == nullptr || len > ACL_CFG_LEN_MAX) {
-        MSPROF_LOGE("Length of acl json config is too large: %u", len);
-        std::string value = std::to_string(len);
-        std::string reason = "Length of acl json config should be less than " + std::to_string(ACL_CFG_LEN_MAX);
-        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config", "value", "reason"}),
-            std::vector<std::string>({"length of acl json config", value, reason}));
-        return MSPROF_ERROR_CONFIG_INVALID;
+    int32_t ret = CheckAclJsonInitData(data, len);
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
     }
     std::lock_guard<std::mutex> lk(mtx_);
-    int32_t ret = CallbackInitPrecheck();
+    ret = CallbackInitPrecheck();
     if (ret != PROFILING_SUCCESS) {
         return MSPROF_ERROR_NONE;
     }
     std::string aclCfg(reinterpret_cast<CHAR_PTR>(data), len);
     MSPROF_LOGI("Input aclJsonConfig: %s", aclCfg.c_str());
-    if (aclCfg.empty()) {
-        MSPROF_LOGE("Empty config of acljson.");
-        return MSPROF_ERROR_CONFIG_INVALID;
-    }
     NanoJson::Json acljsonCfg;
-    try {
-        acljsonCfg.Parse(aclCfg);
-    } catch (std::runtime_error& e) {
-        MSPROF_LOGE("Failed to parse acljson configs. Error reason: %s", e.what());
-        return MSPROF_ERROR_CONFIG_INVALID;
+    ret = ParseAclJsonConfig(aclCfg, acljsonCfg);
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
     }
     ret = CheckAclJsonConfigInvalid(acljsonCfg);
     if (ret != MSPROF_ERROR_NONE) {
@@ -1900,6 +2099,8 @@ int32_t ProfAclMgr::CheckGeOptionConfigInvalid(const NanoJson::Json &geoptionCfg
         auto exist = std::find(GEOPTION_CONFIG_VECTOR.begin(), GEOPTION_CONFIG_VECTOR.end(), iter->first);
         if (exist == GEOPTION_CONFIG_VECTOR.end()) {
             MSPROF_LOGE("Invalid geoption config: %s", iter->first.c_str());
+            MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+                std::vector<std::string>({iter->second(), iter->first, "Ge option is not supported"}));
             return MSPROF_ERROR_CONFIG_INVALID;
         }
         if (iter->first == "hccl") {
@@ -1914,6 +2115,9 @@ int32_t ProfAclMgr::CheckGeOptionConfigInvalid(const NanoJson::Json &geoptionCfg
             continue;
         } else {
             if (!ProfParamsAdapter::instance()->CheckJsonConfig(iter->first, iter->second)) {
+                MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+                    std::vector<std::string>({iter->second(), iter->first,
+                        GetJsonConfigInvalidReason(iter->first)}));
                 return MSPROF_ERROR_CONFIG_INVALID;
             }
         }
@@ -1926,14 +2130,12 @@ int32_t ProfAclMgr::MsprofInitGeOptions(VOID_PTR data, uint32_t len)
 {
     MSPROF_EVENT("Init profiling for GeOptions");
     uint32_t structLen = sizeof(struct MsprofGeOptions);
-    if (data == nullptr || len != structLen) {
-        MSPROF_LOGE("MsprofInitGeOptions input arguments is invalid, len:%u bytes, structLen:%u bytes", len, structLen);
-        MSPROF_INNER_ERROR("EK9999", "Params created by ge can not be analyzed by "
-            "prof shared library in runtime.");
-        return MSPROF_ERROR_CONFIG_INVALID;
+    int32_t ret = CheckGeOptionsInitData(data, len, structLen);
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
     }
     std::lock_guard<std::mutex> lk(mtx_);
-    int32_t ret = CallbackInitPrecheck();
+    ret = CallbackInitPrecheck();
     if (ret != PROFILING_SUCCESS) {
         return MSPROF_ERROR_NONE;
     }
@@ -1941,16 +2143,10 @@ int32_t ProfAclMgr::MsprofInitGeOptions(VOID_PTR data, uint32_t len)
     std::string jobInfo = MsprofCheckAndGetChar(optionCfg->jobId, MSPROF_OPTIONS_DEF_LEN_MAX);
     std::string options = MsprofCheckAndGetChar(optionCfg->options, MSPROF_OPTIONS_DEF_LEN_MAX);
     MSPROF_LOGI("MsprofInitGeOptions, jobInfo:%s, options:%s", jobInfo.c_str(), options.c_str());
-    if (options.empty()) {
-        MSPROF_LOGE("Empty config of geoption.");
-        return MSPROF_ERROR_CONFIG_INVALID;
-    }
     NanoJson::Json geoptionCfg;
-    try {
-        geoptionCfg.Parse(options);
-    } catch (std::runtime_error& e) {
-        MSPROF_LOGE("Failed to parse geoption configs. Error reason: %s", e.what());
-        return MSPROF_ERROR_CONFIG_INVALID;
+    ret = ParseGeOptionsConfig(options, geoptionCfg);
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
     }
     ret = CheckGeOptionConfigInvalid(geoptionCfg);
     if (ret != MSPROF_ERROR_NONE) {
@@ -2434,6 +2630,12 @@ int32_t ProfAclMgr::MsprofSetConfig(aclprofConfigType cfgType, const std::string
     ret = ProfParamsAdapter::instance()->CheckApiConfigIsValid(params_, cfgType, config);
     if (ret != PROFILING_SUCCESS) {
         MSPROF_LOGE("Failed to check the API config settings, config is invalid.");
+        std::string reason = GetAclProfSetConfigReason(cfgType);
+        const char *configTypeName = GetAclProfConfigTypeName(cfgType);
+        std::string configType = configTypeName == nullptr ? std::to_string(static_cast<int32_t>(cfgType)) :
+            configTypeName;
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({config, configType, reason}));
         return PROFILING_FAILED;
     }
 

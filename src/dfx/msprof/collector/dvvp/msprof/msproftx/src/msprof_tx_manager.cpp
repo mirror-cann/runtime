@@ -94,6 +94,8 @@ ACL_PROF_STAMP_PTR MsprofTxManager::CreateStamp() const
 {
     if (!isInit_) {
         MSPROF_LOGE("[CreateStamp]MsprofTxManager is not inited yet");
+        MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
+            std::vector<std::string>({"aclprofStart", "aclprofCreateStamp"}));
         return nullptr;
     }
 
@@ -289,6 +291,8 @@ int32_t MsprofTxManager::Pop() const
     auto stamp = stampPool_->MsprofStampPop();
     if (stamp == nullptr) {
         MSPROF_LOGE("[Pop]stampPool pop failed ,stamp is null!");
+        MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
+            std::vector<std::string>({"aclprofPush", "aclprofPop"}));
         return PROFILING_FAILED;
     }
     stamp->txInfo.value.stampInfo.endTime = Platform::instance()->PlatformSysCycleTime();
@@ -309,6 +313,12 @@ int MsprofTxManager::RangeStart(ACL_PROF_STAMP_PTR stamp, uint32_t *rangeId) con
             std::vector<std::string>({ "aclprofRangeStart", "stamp"}));
         return PROFILING_FAILED;
     }
+    if (rangeId == nullptr) {
+        MSPROF_LOGE("[RangeStart] rangeId pointer is nullptr!");
+        MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({ "api", "param"}),
+            std::vector<std::string>({ "aclprofRangeStart", "rangeId"}));
+        return PROFILING_FAILED;
+    }
     auto &stampInfo = stamp->txInfo.value.stampInfo;
     stampInfo.startTime = Platform::instance()->PlatformSysCycleTime();
     stamp->isEnable = 1;
@@ -326,9 +336,8 @@ int32_t MsprofTxManager::RangeStop(uint32_t rangeId) const
     auto stamp = stampPool_->GetStampById(rangeId);
     if (stamp == nullptr) {
         MSPROF_LOGE("[RangeStop] Get stamp by rangeId failed, rangeId is %u!", rangeId);
-        std::string errorReason = "Get stamp by rangeId failed, this rangeId was not set in profAclRangeStart";
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({ "value", "param", "reason" }),
-                           std::vector<std::string>({ std::to_string(rangeId), "rangeId", errorReason }));
+        MSPROF_INPUT_ERROR("EK0002", std::vector<std::string>({"intf1", "intf2"}),
+            std::vector<std::string>({"aclprofRangeStart", "aclprofRangeStop"}));
         return PROFILING_FAILED;
     }
     stamp->txInfo.value.stampInfo.endTime = Platform::instance()->PlatformSysCycleTime();

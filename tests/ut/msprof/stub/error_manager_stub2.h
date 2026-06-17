@@ -11,10 +11,38 @@
 #define TESTS_UT_MSPROF_STUB_ERROR_MANAGER_STUB2_H
 
 #include <string>
+#include <vector>
+#include "msprof_error_manager.h"
 
 namespace MsprofUtestStub {
 void ResetMsprofLastInputErrorCode();
+void RecordMsprofInputErrorCode(const std::string &errorCode);
+void RecordMsprofInputErrorCode(const std::string &errorCode, const std::vector<std::string> &values);
 const std::string &GetMsprofLastInputErrorCode();
+const std::vector<std::string> &GetMsprofLastInputErrorValues();
 } // namespace MsprofUtestStub
+
+#ifdef MSPROF_INPUT_ERROR
+#undef MSPROF_INPUT_ERROR
+#endif
+#ifdef MSPROF_ENV_ERROR
+#undef MSPROF_ENV_ERROR
+#endif
+#ifdef MSPROF_INNER_ERROR
+#undef MSPROF_INNER_ERROR
+#endif
+#ifdef MSPROF_CALL_ERROR
+#undef MSPROF_CALL_ERROR
+#endif
+
+#ifdef MSPROF_ENABLE_INPUT_ERROR_STUB
+#define MSPROF_INPUT_ERROR(error_code, key, value) MsprofUtestStub::RecordMsprofInputErrorCode(error_code, value)
+#define MSPROF_ENV_ERROR(error_code, key, value) MsprofUtestStub::RecordMsprofInputErrorCode(error_code, value)
+#else
+#define MSPROF_INPUT_ERROR(error_code, key, value)
+#define MSPROF_ENV_ERROR(error_code, key, value)
+#endif
+#define MSPROF_INNER_ERROR(error_code, fmt, ...)
+#define MSPROF_CALL_ERROR MSPROF_INNER_ERROR
 
 #endif // TESTS_UT_MSPROF_STUB_ERROR_MANAGER_STUB2_H

@@ -74,6 +74,7 @@
 #include "prof_l2cache_job.h"
 #include "json_parser.h"
 #include "stats_analyzer.h"
+#include "error_manager_stub2.h"
 
 using namespace analysis::dvvp::common::error;
 using namespace Analysis::Dvvp::Analyze;
@@ -131,6 +132,21 @@ SHARED_PTR_ALIA<analysis::dvvp::ProfileFileChunk> MakeStatsChunk(const std::stri
     chunk->chunk = data;
     chunk->fileName = fileName;
     return chunk;
+}
+
+void ExpectLastInputErrorReasonContains(const std::string &reason)
+{
+    const std::vector<std::string> &values = MsprofUtestStub::GetMsprofLastInputErrorValues();
+    ASSERT_GE(values.size(), 3U);
+    EXPECT_NE(std::string::npos, values[2].find(reason));
+}
+
+void ExpectLastInputErrorParamAndReasonContains(const std::string &param, const std::string &reason)
+{
+    const std::vector<std::string> &values = MsprofUtestStub::GetMsprofLastInputErrorValues();
+    ASSERT_GE(values.size(), 3U);
+    EXPECT_EQ(param, values[1]);
+    EXPECT_NE(std::string::npos, values[2].find(reason));
 }
 }
 struct aclprofConfig {
@@ -1111,9 +1127,13 @@ TEST_F(MSPROF_ACL_CORE_UTEST, DISABLED_ge_api_subscribe) {
 TEST_F(MSPROF_ACL_CORE_UTEST, AclProfGETSetpInfoApiTest) {
     struct aclprofStepInfo *pStepInfo = aclprofCreateStepInfo();
     aclprofStepTag stepTag = ACL_STEP_START;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofGetStepTimestamp(nullptr, stepTag, nullptr));
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
     EXPECT_EQ(ACL_SUCCESS, aclprofGetStepTimestamp(pStepInfo, stepTag, nullptr));
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     aclprofDestroyStepInfo(nullptr);
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
     aclprofDestroyStepInfo(pStepInfo);
 }
 
@@ -1912,6 +1932,100 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsWithErrJsonStr) {
     strcpy(options.jobId, "0");
     strcpy(options.options, "123");
     EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitAclJsonInvalidInputsReportInputError)
+{
+    using namespace Msprofiler::Api;
+    MOCKER_CPP(&ProfAclMgr::CallbackInitPrecheck)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitAclJson(nullptr, 1));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("can not be nullptr");
+
+    std::string emptyConfig;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitAclJson((void *)emptyConfig.c_str(), emptyConfig.size()));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("can not be empty");
+
+    std::string invalidJson = "{bad";
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitAclJson((void *)invalidJson.c_str(), invalidJson.size()));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("valid json string");
+
+    std::string invalidValue = "{\"switch\":\"on\",\"l2\":\"xx\"}";
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitAclJson((void *)invalidValue.c_str(), invalidValue.size()));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("'on' or 'off'");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitAclJsonTooLongReportsInputError)
+{
+    using namespace Msprofiler::Api;
+    std::string aclJson = "{}";
+    const uint32_t aclCfgLenMax = 1024 * 1024;
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitAclJson((void *)aclJson.c_str(), aclCfgLenMax + 1));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("less than or equal to");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsInvalidInputsReportInputError)
+{
+    using namespace Msprofiler::Api;
+    MOCKER_CPP(&ProfAclMgr::CallbackInitPrecheck)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+
+    struct MsprofGeOptions options = {};
+    (void)strcpy_s(options.jobId, sizeof(options.jobId), "0");
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions(nullptr, 1));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("can not be nullptr");
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions(&options, 1));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("should be equal to");
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("can not be empty");
+
+    (void)strcpy_s(options.options, sizeof(options.options), "{bad");
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("valid json string");
+
+    (void)strcpy_s(options.options, sizeof(options.options), "{\"unsupported\":\"on\"}");
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    (void)strcpy_s(options.options, sizeof(options.options), "{\"l2\":\"xx\"}");
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("'on' or 'off'");
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, MsprofAclJsonParamConstruct) {
@@ -3502,9 +3616,8 @@ TEST_F(MSPROF_ACL_CORE_UTEST, api_stats_mode_init_uploader)
     ProfAclMgr::instance()->dataTypeConfig_ = 0;
 }
 
-TEST_F(MSPROF_ACL_CORE_UTEST, api_stats_mode_skip_device_task)
+void ExpectApiStatsModeSkipDeviceTask()
 {
-    GlobalMockObject::verify();
     using namespace Msprofiler::Api;
 
     uint32_t devIdList[1] = {0};
@@ -3529,10 +3642,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, api_stats_mode_skip_device_task)
         .will(returnValue(true));
     MOCKER_CPP(&ProfAclMgr::MsprofDeviceHandle)
         .expects(never());
-    MOCKER_CPP(&Analysis::Dvvp::ProfilerCommon::CommandHandleProfInit)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(ACL_SUCCESS)));
-    MOCKER_CPP(&Analysis::Dvvp::ProfilerCommon::CommandHandleProfStart)
+    MOCKER_CPP(&ProfAclMgr::ProfStartCallback)
         .stubs()
         .will(returnValue(static_cast<int32_t>(ACL_SUCCESS)));
 
@@ -3541,6 +3651,12 @@ TEST_F(MSPROF_ACL_CORE_UTEST, api_stats_mode_skip_device_task)
     EXPECT_EQ(1U, ProfAclMgr::instance()->statsDevSet_.count(0));
     ProfAclMgr::instance()->statsDevSet_.clear();
     ProfAclMgr::instance()->dataTypeConfig_ = 0;
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, api_stats_mode_skip_device_task)
+{
+    GlobalMockObject::verify();
+    ExpectApiStatsModeSkipDeviceTask();
 }
 
 std::vector<std::vector<uint32_t>> g_apiStatsStopDevLists;
@@ -3846,17 +3962,86 @@ TEST_F(MSPROF_ACL_CORE_UTEST, FinalizeHandle_CheckTrueMode) {
 TEST_F(MSPROF_ACL_CORE_UTEST, aclprofSetConfig_not_support) {
     aclprofConfigType configType = ACL_PROF_ARGS_MIN;
     std::string config("50");
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, config.c_str(), config.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    configType = static_cast<aclprofConfigType>(-1);
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, config.c_str(), config.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
 
     configType = ACL_PROF_ARGS_MAX;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, config.c_str(), config.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    configType = static_cast<aclprofConfigType>(static_cast<int32_t>(ACL_PROF_ARGS_MAX) + 1);
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, config.c_str(), config.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
 
     configType = ACL_PROF_STORAGE_LIMIT;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, config.c_str(), config.size() + 1));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
 
     configType = ACL_PROF_STORAGE_LIMIT;
     std::string config2(257, 't');
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, config2.c_str(), config2.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(configType, nullptr, 0));
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, aclprofSetConfigInvalidInputsReportInputError)
+{
+    std::string config("50");
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(ACL_PROF_ARGS_MAX, config.c_str(), config.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("configType", "greater than ACL_PROF_ARGS_MIN");
+
+    std::string longConfig(257, '1');
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(ACL_PROF_STORAGE_LIMIT,
+        longConfig.c_str(), longConfig.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("configLength", "less than or equal to");
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(ACL_PROF_STORAGE_LIMIT, nullptr, 0));
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, aclprofSetConfig(ACL_PROF_STORAGE_LIMIT,
+        config.c_str(), config.size() + 1));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("configLength", "does not equal to strlen(config)");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, aclprofModelUnSubscribeInvalidModelReturnsError)
+{
+    MOCKER(ProfAclUnSubscribe)
+        .stubs()
+        .will(returnValue(static_cast<int32_t>(ACL_ERROR_INVALID_MODEL_ID)));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_MODEL_ID, aclprofModelUnSubscribe(0));
+    EXPECT_TRUE(MsprofUtestStub::GetMsprofLastInputErrorCode().empty());
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, aclprofModelUnSubscribeSuccess)
+{
+    MOCKER(ProfAclUnSubscribe)
+        .stubs()
+        .will(returnValue(static_cast<int32_t>(ACL_SUCCESS)));
+
+    EXPECT_EQ(ACL_SUCCESS, aclprofModelUnSubscribe(0));
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, aclprofSetConfigAllowsEmptyStorageLimit)
@@ -3897,7 +4082,16 @@ TEST_F(MSPROF_ACL_CORE_UTEST, IsValidProfConfig) {
 
     deviceNums = 0;
     dataTypeConfig = 0;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(nullptr, aclprofCreateConfig(deviceIdListNull, deviceNums, aicoreMetrics, aicoreEvents, dataTypeConfig));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, CreateConfigAllowsZeroDeviceForMsprofTx)
+{
+    aclprofConfig *aclConfig = aclprofCreateConfig(nullptr, 0, ACL_AICORE_NONE, nullptr, PROF_MSPROFTX_MASK);
+    ASSERT_NE(nullptr, aclConfig);
+    EXPECT_EQ(ACL_SUCCESS, aclprofDestroyConfig(aclConfig));
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, IsValidProfConfig1) {
@@ -4124,7 +4318,9 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfSetConfigWillCheckConfigWhenPlatformSupported)
 #endif
     configType = ACL_PROF_LLC_MODE;
     config = "read";
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(expectRet, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
     config = "capacity";
     EXPECT_EQ(expectRet, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
     config = "bandwidth";
@@ -4279,6 +4475,91 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfSetConfigWillReturnInvalidConfigWhenPlatformNo
     EXPECT_EQ(expectRet, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
 }
 
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForRangeConfigTypes)
+{
+    using namespace Msprofiler::Api;
+    struct InvalidConfigCase {
+        aclprofConfigType type;
+        std::string param;
+        std::string reason;
+    };
+    std::vector<InvalidConfigCase> configCases = {
+        {ACL_PROF_STORAGE_LIMIT, "ACL_PROF_STORAGE_LIMIT", "200MB"},
+        {ACL_PROF_SYS_HARDWARE_MEM_FREQ, "ACL_PROF_SYS_HARDWARE_MEM_FREQ", "range [1,"},
+        {ACL_PROF_SYS_IO_FREQ, "ACL_PROF_SYS_IO_FREQ", "range [1, 100]"},
+        {ACL_PROF_SYS_INTERCONNECTION_FREQ, "ACL_PROF_SYS_INTERCONNECTION_FREQ", "range [1, 50]"},
+        {ACL_PROF_DVPP_FREQ, "ACL_PROF_DVPP_FREQ", "range [1, 100]"},
+        {ACL_PROF_HOST_SYS_USAGE_FREQ, "ACL_PROF_HOST_SYS_USAGE_FREQ", "range [1, 50]"},
+        {ACL_PROF_LOW_POWER_FREQ, "ACL_PROF_LOW_POWER_FREQ", "range [1, 100]"},
+        {ACL_PROF_SYS_CPU_FREQ, "ACL_PROF_SYS_CPU_FREQ", "range [1, 50]"}
+    };
+
+    MOCKER_CPP(&Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::CheckApiConfigSupport)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+    MOCKER_CPP(&Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::CheckApiConfigIsValid)
+        .stubs()
+        .will(returnValue(PROFILING_FAILED));
+
+    for (const auto &configCase : configCases) {
+        MsprofUtestStub::ResetMsprofLastInputErrorCode();
+        EXPECT_EQ(PROFILING_FAILED, ProfAclMgr::instance()->MsprofSetConfig(configCase.type, "bad"));
+        EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+        ExpectLastInputErrorParamAndReasonContains(configCase.param, configCase.reason);
+    }
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForOptionConfigTypes)
+{
+    using namespace Msprofiler::Api;
+    struct InvalidConfigCase {
+        aclprofConfigType type;
+        std::string param;
+        std::string reason;
+    };
+    std::vector<InvalidConfigCase> configCases = {
+        {ACL_PROF_LLC_MODE, "ACL_PROF_LLC_MODE", "'read' or 'write'"},
+        {ACL_PROF_HOST_SYS, "ACL_PROF_HOST_SYS", "'cpu', 'mem', 'disk'"},
+        {ACL_PROF_HOST_SYS_USAGE, "ACL_PROF_HOST_SYS_USAGE", "'cpu' or 'mem'"},
+        {ACL_PROF_SYS_MEM_SERVICEFLOW, "ACL_PROF_SYS_MEM_SERVICEFLOW", "non-empty"},
+        {ACL_PROF_OPTYPE, "ACL_PROF_OPTYPE", "total length should not exceed 256"},
+        {ACL_PROF_NTS_METRICS, "ACL_PROF_NTS_METRICS", "PipeUtilization"},
+        {ACL_PROF_PATH, "ACL_PROF_PATH", "valid profiling result path"},
+        {ACL_PROF_ARGS_MAX, "17", "invalid or out of range"}
+    };
+
+    MOCKER_CPP(&Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::CheckApiConfigSupport)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+    MOCKER_CPP(&Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::CheckApiConfigIsValid)
+        .stubs()
+        .will(returnValue(PROFILING_FAILED));
+
+    for (const auto &configCase : configCases) {
+        MsprofUtestStub::ResetMsprofLastInputErrorCode();
+        EXPECT_EQ(PROFILING_FAILED, ProfAclMgr::instance()->MsprofSetConfig(configCase.type, "bad"));
+        EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+        ExpectLastInputErrorParamAndReasonContains(configCase.param, configCase.reason);
+    }
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForMissingTypeName)
+{
+    using namespace Msprofiler::Api;
+    MOCKER_CPP(&Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::CheckApiConfigSupport)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+    MOCKER_CPP(&Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::CheckApiConfigIsValid)
+        .stubs()
+        .will(returnValue(PROFILING_FAILED));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(PROFILING_FAILED,
+        ProfAclMgr::instance()->MsprofSetConfig(static_cast<aclprofConfigType>(2), "bad"));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("2", "invalid or out of range");
+}
+
 TEST_F(MSPROF_ACL_CORE_UTEST, CreateParserTransport)
 {
     GlobalMockObject::verify();
@@ -4405,16 +4686,41 @@ TEST_F(MSPROF_API_MSPROFTX_UTEST, LaunchDeviceTxTask) {
 
 TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofCreateStamp) {
     GlobalMockObject::verify();
-    Msprof::MsprofTx::MsprofTxManager::instance()->Init();
 
-    void * ret = nullptr;
-    ret = aclprofCreateStamp();
-    EXPECT_EQ((void *)nullptr, ret);
+    void *stamp = reinterpret_cast<void *>(0x12345678);
+    MOCKER(ProfAclCreateStamp)
+        .expects(once())
+        .will(returnValue(stamp));
+    EXPECT_EQ(stamp, aclprofCreateStamp());
+    GlobalMockObject::verify();
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    MOCKER(ProfAclCreateStamp)
+        .expects(once())
+        .will(returnValue((void *)nullptr));
+    EXPECT_EQ((void *)nullptr, aclprofCreateStamp());
+    EXPECT_TRUE(MsprofUtestStub::GetMsprofLastInputErrorCode().empty());
+    GlobalMockObject::verify();
+}
+
+TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofCreateStampHelperHostReportInputError) {
+    GlobalMockObject::verify();
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
 
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
-        .stubs()
+        .expects(once())
         .will(returnValue(true));
     EXPECT_EQ((void *)nullptr, aclprofCreateStamp());
+    EXPECT_EQ("EK0004", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    GlobalMockObject::verify();
+}
+
+TEST_F(MSPROF_API_MSPROFTX_UTEST, CreateStampWithoutInitReportInputError) {
+    Msprof::MsprofTx::MsprofTxManager::instance()->UnInit();
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(nullptr, Msprof::MsprofTx::MsprofTxManager::instance()->CreateStamp());
+    EXPECT_EQ("EK0002", MsprofUtestStub::GetMsprofLastInputErrorCode());
 }
 
 TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofDestroyStamp) {
@@ -4424,7 +4730,9 @@ TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofDestroyStamp) {
         .will(ignoreReturnValue());
 
     void * ret = nullptr;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     aclprofDestroyStamp(nullptr);
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
     aclprofDestroyStamp((void *)0x12345678);
     EXPECT_EQ((void *)nullptr, ret);
 
@@ -4515,23 +4823,33 @@ TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofPush) {
         .stubs()
         .will(returnValue(ACL_SUCCESS));
 
-    aclError ret = aclprofPush(nullptr);
+    aclError ret = aclprofPush((void *)0x12345678);
     EXPECT_EQ(ACL_SUCCESS, ret);
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    ret = aclprofPush(nullptr);
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, ret);
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
 
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
         .stubs()
         .will(returnValue(true));
-    EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofPush(nullptr));
+    EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofPush((void *)0x12345678));
 }
 
 TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofPop) {
     GlobalMockObject::verify();
     MOCKER_CPP(&Msprof::MsprofTx::MsprofTxManager::Pop)
         .stubs()
-        .will(returnValue(ACL_SUCCESS));
+        .will(returnValue(ACL_SUCCESS))
+        .then(returnValue(PROFILING_FAILED));
 
     aclError ret = aclprofPop();
     EXPECT_EQ(ACL_SUCCESS, ret);
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(PROFILING_FAILED, aclprofPop());
+    EXPECT_TRUE(MsprofUtestStub::GetMsprofLastInputErrorCode().empty());
 
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
         .stubs()
@@ -4545,23 +4863,39 @@ TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofRangeStart) {
         .stubs()
         .will(returnValue(ACL_SUCCESS));
 
-    aclError ret = aclprofRangeStart(nullptr, nullptr);
+    uint32_t rangeId = 0;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    aclError ret = aclprofRangeStart(nullptr, &rangeId);
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, ret);
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    ret = aclprofRangeStart((void *)0x12345678, nullptr);
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, ret);
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    ret = aclprofRangeStart((void *)0x12345678, &rangeId);
     EXPECT_EQ(ACL_SUCCESS, ret);
 
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
         .stubs()
         .will(returnValue(true));
-    EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofRangeStart(nullptr, nullptr));
+    EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofRangeStart((void *)0x12345678, &rangeId));
 }
 
 TEST_F(MSPROF_API_MSPROFTX_UTEST, aclprofRangeStop) {
     GlobalMockObject::verify();
     MOCKER_CPP(&Msprof::MsprofTx::MsprofTxManager::RangeStop)
         .stubs()
-        .will(returnValue(ACL_SUCCESS));
+        .will(returnValue(ACL_SUCCESS))
+        .then(returnValue(PROFILING_FAILED));
 
     aclError ret = aclprofRangeStop(0);
     EXPECT_EQ(ACL_SUCCESS, ret);
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(PROFILING_FAILED, aclprofRangeStop(0));
+    EXPECT_TRUE(MsprofUtestStub::GetMsprofLastInputErrorCode().empty());
 
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
         .stubs()
@@ -4608,7 +4942,30 @@ TEST_F(MSPROF_API_MSPROFTX_UTEST, RangeStop) {
     Msprof::MsprofTx::MsprofTxManager::instance()->stampPool_ = std::make_shared<ProfStampPool>();
     MsprofStampInstance *ptr = nullptr;
     MOCKER_CPP(&ProfStampPool::GetStampById).stubs().will(returnValue(ptr));
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(PROFILING_FAILED, Msprof::MsprofTx::MsprofTxManager::instance()->RangeStop(1));
+    EXPECT_EQ("EK0002", MsprofUtestStub::GetMsprofLastInputErrorCode());
+}
+
+TEST_F(MSPROF_API_MSPROFTX_UTEST, TxManagerPopAndRangeStartInvalidInputsReportInputError)
+{
+    auto manager = Msprof::MsprofTx::MsprofTxManager::instance();
+    manager->isInit_ = true;
+    manager->stampPool_ = std::make_shared<ProfStampPool>();
+
+    MsprofStampInstance *stamp = nullptr;
+    MOCKER_CPP(&ProfStampPool::MsprofStampPop)
+        .stubs()
+        .will(returnValue(stamp));
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(PROFILING_FAILED, manager->Pop());
+    EXPECT_EQ("EK0002", MsprofUtestStub::GetMsprofLastInputErrorCode());
+
+    GlobalMockObject::verify();
+    MsprofStampInstance validStamp = {};
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(PROFILING_FAILED, manager->RangeStart(&validStamp, nullptr));
+    EXPECT_EQ("EK0006", MsprofUtestStub::GetMsprofLastInputErrorCode());
 }
 
 int32_t MsprofAdditionalBufPushCallbackStub(uint32_t aging, const VOID_PTR data, uint32_t len)
@@ -5706,6 +6063,13 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofilerAclApi_ProfInit_LengthMismatch)
     EXPECT_EQ(ACL_ERROR_INVALID_PARAM, Msprofiler::AclApi::ProfInit(ACL_API_TYPE, "/tmp", 100));
 }
 
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofilerAclApi_ProfInit_ZeroLength)
+{
+    MOCKER(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
+        .stubs().will(returnValue(false));
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, Msprofiler::AclApi::ProfInit(ACL_API_TYPE, "/tmp", 0));
+}
+
 TEST_F(MSPROF_ACL_CORE_UTEST, MsprofilerAclApi_ProfInit_PrecheckFail)
 {
     MOCKER(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
@@ -6425,14 +6789,9 @@ TEST_F(MSPROF_ACL_CORE_UTEST, Analyzer_UploadAppOpModeStaticShape_Branches)
         .stubs();
     std::shared_ptr<Analyzer> analyzer(new Analyzer(nullptr));
 
-    // Branch 1: GetIsAllStaticShape=true with completed/incomplete entries
-    MOCKER_CPP(&Analysis::Dvvp::Analyze::AnalyzerGe::GetIsAllStaticShape)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&Analysis::Dvvp::Analyze::AnalyzerGe::IsOpInfoCompleted)
-        .stubs()
-        .will(returnValue(true))
-        .then(returnValue(false));
+    // Branch 1: all static shape with completed/incomplete entries
+    analyzer->analyzerGe_->isAllStaticShape_ = true;
+    analyzer->analyzerGe_->opInfos_ = {{"a-0", AnalyzerGe::GeOpInfo()}};
     std::multimap<std::string, OpTime> opTimes;
     OpTime ot1{};
     OpTime ot2{};
@@ -6440,20 +6799,16 @@ TEST_F(MSPROF_ACL_CORE_UTEST, Analyzer_UploadAppOpModeStaticShape_Branches)
     opTimes.insert({"b", ot2});
     analyzer->profileMode_ = PROFILE_MODE_STATIC_SHAPE;
     analyzer->UploadAppOpModeStaticShape(opTimes);
+    EXPECT_EQ(1U, opTimes.size());
     GlobalMockObject::verify();
 
-    // Branch 2: !GetIsAllStaticShape with no stream type / unknown shape / completed
-    MOCKER_CPP(&Analysis::Dvvp::Analyze::AnalyzerGe::GetIsAllStaticShape)
-        .stubs()
-        .will(returnValue(false));
-    MOCKER_CPP(&Analysis::Dvvp::Analyze::AnalyzerGe::GetStreamType)
-        .stubs()
-        .will(returnValue(false))
-        .then(returnValue(true))
-        .then(returnValue(true));
-    MOCKER_CPP(&Analysis::Dvvp::Analyze::AnalyzerGe::IsOpInfoCompleted)
-        .stubs()
-        .will(returnValue(true));
+    // Branch 2: non-static shape with no stream type / unknown shape / completed op
+    analyzer->analyzerGe_->isAllStaticShape_ = false;
+    analyzer->analyzerGe_->opInfos_ = {{"x3-0", AnalyzerGe::GeOpInfo()}};
+    analyzer->analyzerGe_->steamState_ = {
+        {2, StreamInfo{0, 0, UNKNOWN_SHAPE_STREAM}},
+        {3, StreamInfo{0, 0, KNOWN_SHAPE_STREAM}},
+    };
     MOCKER_CPP(&Analysis::Dvvp::Analyze::Analyzer::ConstructAndUploadData)
         .stubs();
     std::multimap<std::string, OpTime> opTimes2;
@@ -6467,6 +6822,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, Analyzer_UploadAppOpModeStaticShape_Branches)
     opTimes2.insert({"x2", ox2});
     opTimes2.insert({"x3", ox3});
     analyzer->UploadAppOpModeStaticShape(opTimes2);
+    EXPECT_EQ(1U, opTimes2.size());
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, Analyzer_OnOptimizeData_NotInitedAndNullCases)

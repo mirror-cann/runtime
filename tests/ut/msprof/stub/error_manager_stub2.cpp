@@ -18,17 +18,36 @@ const char *const kErrMessage = "ErrMessage";
 const char *const kArgList = "Arglist";
 const uint64_t kLength = 2;
 std::string g_msprofLastInputErrorCode;
+std::vector<std::string> g_msprofLastInputErrorValues;
 }  // namespace
 
 namespace MsprofUtestStub {
 void ResetMsprofLastInputErrorCode()
 {
   g_msprofLastInputErrorCode.clear();
+  g_msprofLastInputErrorValues.clear();
+}
+
+void RecordMsprofInputErrorCode(const std::string &errorCode)
+{
+  g_msprofLastInputErrorCode = errorCode;
+  g_msprofLastInputErrorValues.clear();
+}
+
+void RecordMsprofInputErrorCode(const std::string &errorCode, const std::vector<std::string> &values)
+{
+  g_msprofLastInputErrorCode = errorCode;
+  g_msprofLastInputErrorValues = values;
 }
 
 const std::string &GetMsprofLastInputErrorCode()
 {
   return g_msprofLastInputErrorCode;
+}
+
+const std::vector<std::string> &GetMsprofLastInputErrorValues()
+{
+  return g_msprofLastInputErrorValues;
 }
 } // namespace MsprofUtestStub
 
@@ -55,7 +74,8 @@ int ErrorManager::Init() {
 /// @param [in] args_map: parameter map
 /// @return int 0(success) -1(fail)
 ///
-int ErrorManager::ReportErrMessage(std::string /* error_code */, const std::map<std::string, std::string> &/* args_map */) {
+int ErrorManager::ReportErrMessage(std::string /* error_code */,
+                                   const std::map<std::string, std::string> &/* args_map */) {
   return 0;
 }
 
@@ -103,8 +123,8 @@ int ErrorManager::ReadJsonFile(const std::string &/* file_path */, void */* hand
 /// @return int 0(success) -1(fail)
 ///
 void ErrorManager::ATCReportErrMessage(std::string error_code, const std::vector<std::string> &/* ky */,
-                                       const std::vector<std::string> &/* value */) {
-  g_msprofLastInputErrorCode = error_code;
+                                       const std::vector<std::string> &value) {
+  MsprofUtestStub::RecordMsprofInputErrorCode(error_code, value);
 }
 
 ///
@@ -122,6 +142,7 @@ int32_t ErrorManager::ReportInterErrMessage(const std::string /* error_code */, 
   return 0;
 }
 
-int32_t error_message::FormatErrorMessage(char_t */* str_dst */, size_t /* dst_max */, const char_t */* format */, ...) {
+int32_t error_message::FormatErrorMessage(char_t */* str_dst */, size_t /* dst_max */,
+                                          const char_t */* format */, ...) {
   return 0;
 }
