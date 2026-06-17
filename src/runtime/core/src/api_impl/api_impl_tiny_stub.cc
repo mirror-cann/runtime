@@ -386,7 +386,8 @@ rtError_t ApiImpl::MemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemsetD32(void* dst, uint64_t destMax, uint32_t value, uint64_t count)
+rtError_t ApiImpl::MemsetD32(void* const dst, const uint64_t destMax, 
+        const uint32_t value, const uint64_t count)
 {
     (void)dst;
     (void)destMax;
@@ -395,7 +396,8 @@ rtError_t ApiImpl::MemsetD32(void* dst, uint64_t destMax, uint32_t value, uint64
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemsetD32Async(void* dst, uint64_t destMax, uint32_t value, uint64_t count, Stream* stm)
+rtError_t ApiImpl::MemsetD32Async(void* const dst, const uint64_t destMax,
+        const uint32_t value, const uint64_t count, Stream* const stm)
 {
     (void)dst;
     (void)destMax;

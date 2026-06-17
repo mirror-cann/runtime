@@ -194,6 +194,10 @@ TEST_F(TinyStubTest, api_c_stub)
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ret = rtCacheLastTaskExtendInfo(nullptr, 0U);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    ret = rtMemsetD32(nullptr, 0, 0, 0);
+    EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    ret = rtMemsetD32Async(nullptr, 0, 0, 0, nullptr);
+    EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(TinyStubTest, api_error_stub)
@@ -360,6 +364,10 @@ TEST_F(TinyStubTest, api_impl_stub)
     ret = impl.MemManagedGetAttr(rtMemRangeAttributeReadMostly, nullptr, 0, nullptr, 0);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
     ret = impl.MemManagedGetAttrs(nullptr, 0, nullptr, 0, nullptr, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+    ret = impl.MemsetD32(nullptr, 0, 0, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+    ret = impl.MemsetD32Async(nullptr, 0, 0, 0, nullptr);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
