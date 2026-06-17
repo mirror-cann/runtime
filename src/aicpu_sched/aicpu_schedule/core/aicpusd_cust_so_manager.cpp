@@ -301,6 +301,12 @@ namespace AicpuSchedule {
                             soName.c_str(), fileInfo.size, soFile.eof(), soFile.bad(), soFile.fail(), strerror(errno));
                 return AICPU_SCHEDULE_ERROR_INNER_ERROR;
             }
+            soFile.flush();
+            if (!soFile.good()) {
+                aicpusd_err("Fail to flush file:%s, length:%u, eof=%d, bad=%d, fail=%d, reason=%s. please check host so size",
+                            soName.c_str(), fileInfo.size, soFile.eof(), soFile.bad(), soFile.fail(), strerror(errno));
+                return AICPU_SCHEDULE_ERROR_INNER_ERROR;
+            }
         } catch (const std::ofstream::failure &err) {
             aicpusd_err("Fail to write file:%s, err=%s, reason=%s.", soName.c_str(), err.what(), strerror(errno));
             return AICPU_SCHEDULE_ERROR_INNER_ERROR;
@@ -310,7 +316,8 @@ namespace AicpuSchedule {
             aicpusd_err("Change file:%s mode failed.", soName.c_str());
             return AICPU_SCHEDULE_ERROR_INNER_ERROR;
         }
-        aicpusd_run_info("Write buffer to so success, path=%s", soName.c_str());
+        const uint64_t hashValue = HashCalculator::GetQuickHash(fileInfo.data, fileInfo.size);
+        aicpusd_run_info("Write buffer to so success, path=%s, hash=%llu, fileSize=%zu", soName.c_str(), hashValue, fileInfo.size);
         return AICPU_SCHEDULE_OK;
     }
 
@@ -707,7 +714,7 @@ namespace AicpuSchedule {
         return false;
     }
 
-    uint64_t HashCalculator::GetQuickHash(const void *data, const size_t size) const
+    uint64_t HashCalculator::GetQuickHash(const void *data, const size_t size)
     {
         /*
         * Using the FNV-1a algorithm for hash computation offers faster speed.

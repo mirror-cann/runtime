@@ -9,7 +9,9 @@
  */
 
 #include <dirent.h>
+#include <fstream>
 #include <securec.h>
+#include <stdlib.h>
 #include <sys/file.h>
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
@@ -347,6 +349,40 @@ TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileCheckPathFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
+TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileFlushFail) {
+    AicpuCustSoManager soManager;
+    char buf[] = "abc";
+    const std::string soPath = "/tmp/aicpu_flush_fail.so";
+    FileInfo fileInfo = {.data=buf, .size=sizeof(buf) - 1U, .name=soPath};
+
+    MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
+    MOCKER(access).stubs().will(returnValue(-1));
+    MOCKER_CPP(&std::ofstream::good).stubs().will(returnValue(true)).then(returnValue(false));
+
+    const int32_t ret = soManager.WriteBufToSoFile(fileInfo, "/tmp");
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
+    (void)remove(soPath.c_str());
+}
+
+TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileSuccess) {
+    AicpuCustSoManager soManager;
+    char tmpDirTemplate[] = "/tmp/aicpu_cust_so_ut_XXXXXX";
+    char *tmpDir = mkdtemp(tmpDirTemplate);
+    ASSERT_NE(tmpDir, nullptr);
+
+    const char buf[] = "abc";
+    const std::string soPath = std::string(tmpDir) + "/libtest.so";
+    FileInfo fileInfo = {.data=const_cast<char *>(buf), .size=sizeof(buf) - 1U, .name=soPath};
+
+    const int32_t ret = soManager.WriteBufToSoFile(fileInfo, std::string(tmpDir));
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    EXPECT_EQ(access(soPath.c_str(), F_OK), 0);
+
+    (void)remove(soPath.c_str());
+    (void)remove(tmpDir);
+}
+
 TEST_F(AicpuCustSoManagerTEST, CreateSoFileWriteFail) {
     AicpuCustSoManager soManager;
     FileInfo fileInfo = {.data=nullptr, .size=0, .name="libtest.so"};
@@ -389,7 +425,7 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFile) {
     const size_t bufLen = 1;
     FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
 
-    const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
+    const uint64_t hashVal = HashCalculator::GetQuickHash(&buf, bufLen);
     FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
@@ -410,7 +446,7 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileSoNotExist) {
     const size_t bufLen = 1;
     FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
 
-    const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
+    const uint64_t hashVal = HashCalculator::GetQuickHash(&buf, bufLen);
     FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
@@ -431,7 +467,7 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileLinkExist) {
     const size_t bufLen = 1;
     FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
 
-    const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
+    const uint64_t hashVal = HashCalculator::GetQuickHash(&buf, bufLen);
     FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
@@ -452,7 +488,7 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileCheckDirFailed)
     const size_t bufLen = 1;
     FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
 
-    const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
+    const uint64_t hashVal = HashCalculator::GetQuickHash(&buf, bufLen);
     FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
@@ -465,9 +501,8 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileCheckDirFailed)
 }
 
 TEST_F(AicpuCustSoManagerTEST, TestQuickHash) {
-    HashCalculator calculator;
     std::string data = "aaaaaaaaaaaaaaaaa";
-    uint64_t hash = calculator.GetQuickHash(data.c_str(), data.size());
+    uint64_t hash = HashCalculator::GetQuickHash(data.c_str(), data.size());
     EXPECT_EQ(hash, 12846934374798548220);
 }
 

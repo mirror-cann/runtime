@@ -125,7 +125,7 @@ namespace AicpuSchedule {
         return true;
     }
 
-    uint64_t HashCalculator::GetQuickHash(const void *data, const size_t size) const
+    uint64_t HashCalculator::GetQuickHash(const void *data, const size_t size)
     {
         return 0UL;
     }

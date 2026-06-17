@@ -35,6 +35,7 @@ namespace AicpuSchedule {
         HashCalculator() = default;
         ~HashCalculator() = default;
         bool GetSameFileInfo(const FileInfo &fileInfo, FileHashInfo &existedFileHashInfo);
+        static uint64_t GetQuickHash(const void *data, const size_t size);
         void SetSoRootPath(const std::string &soRootPath)
         {
             soRootPath_ = soRootPath;
@@ -45,7 +46,6 @@ namespace AicpuSchedule {
         int32_t GenerateFileHashInfo(const std::string &filePath, FileHashInfo &hashInfo) const;
         void AddHashInfoToCache(const FileHashInfo &hashInfo);
         bool IsFileInCache(const std::string &filePath) const;
-        uint64_t GetQuickHash(const void *data, const size_t size) const;
         int32_t GetFileNameInDir(std::vector<std::string> &file_names) const;
         bool IsFileExist(const std::string &filePath) const;
         bool IsRegularFile(const std::string &filePath) const;
