@@ -17,16 +17,9 @@ namespace cce {
 namespace runtime {
 rtError_t ApiErrorDecorator::SetXpuDevice(const rtXpuDevType devType, const uint32_t devId)
 {
-    COND_RETURN_OUT_ERROR_MSG_CALL(devType != RT_DEV_TYPE_DPU,
-        RT_ERROR_INVALID_VALUE,
-        "Xpu devType=%d is invalid, retCode=%#x.",
-        devType,
-        static_cast<uint32_t>(RT_ERROR_INVALID_VALUE));
-    COND_RETURN_OUT_ERROR_MSG_CALL((devId != 0U),
-        RT_ERROR_DEVICE_ID,
-        "Xpu device_id=%d is invalid, retCode=%#x.",
-        devId,
-        static_cast<uint32_t>(RT_ERROR_DEVICE_ID));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(devType != RT_DEV_TYPE_DPU, static_cast<uint32_t>(RT_ERROR_INVALID_VALUE),
+        devType, "RT_DEV_TYPE_DPU(0)");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(devId != 0U, static_cast<uint32_t>(RT_ERROR_DEVICE_ID), devId, "0");
     bool isHaveDevice = Runtime::Instance()->HaveDevice();
     uint32_t runMode = RT_RUN_MODE_RESERVED;
     (void)drvGetPlatformInfo(&runMode);
@@ -46,16 +39,8 @@ rtError_t ApiErrorDecorator::SetXpuDevice(const rtXpuDevType devType, const uint
 
 rtError_t ApiErrorDecorator::ResetXpuDevice(const rtXpuDevType devType, const uint32_t devId)
 {
-    COND_RETURN_ERROR_MSG_INNER(devType != RT_DEV_TYPE_DPU,
-        RT_ERROR_INVALID_VALUE,
-        "devType=%d is invalid, retCode=%#x",
-        devType,
-        static_cast<uint32_t>(RT_ERROR_INVALID_VALUE));
-    COND_RETURN_ERROR_MSG_INNER(((devId != 0U)),
-        RT_ERROR_DEVICE_ID,
-        "reset xpu device failed, xpu devId=%d is invalid, retCode=%#x",
-        devId,
-        static_cast<uint32_t>(RT_ERROR_DEVICE_ID));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(devType != RT_DEV_TYPE_DPU, static_cast<uint32_t>(RT_ERROR_INVALID_VALUE), devType, "RT_DEV_TYPE_DPU(0)");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(devId != 0U, static_cast<uint32_t>(RT_ERROR_DEVICE_ID), devId, "0");
     return impl_->ResetXpuDevice(devType, devId);
 }
 

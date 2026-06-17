@@ -473,8 +473,8 @@
       "errClass": "RTS Errors",
       "errTitle": "Not_Supported",
       "ErrCode": "EE1006",
-      "ErrMessage": "%s execution failed because %s is not supported.",
-      "Arglist": "func, type",
+      "ErrMessage": "%s failed. %s is not supported. Reason: %s.",
+      "Arglist": "func, type, reason",
       "suggestion": {
         "Possible Cause": "N/A",
         "Solution": "N/A"
@@ -632,6 +632,17 @@
       "suggestion": {
         "Possible Cause": "Failed to create resources such as semaphores, locks, or threads due to insufficient system resources.",
         "Solution": "Stop unnecessary threads and ensure that the required resource is available."
+      }
+    },
+    {
+      "errClass": "RTS Errors",
+      "errTitle": "Invalid_Argument",
+      "ErrCode": "EE1022",
+      "ErrMessage": "%s failed. Values %s for parameters %s are invalid. Reason: %s.",
+      "Arglist": "func, values, params, reason",
+      "suggestion": {
+        "Possible Cause": "N/A",
+        "Solution": "1. Check the input parameter value ranges of the function. 2. Check the function invocation relationship."
       }
     },
     {

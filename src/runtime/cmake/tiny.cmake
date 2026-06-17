@@ -99,7 +99,7 @@ set(common_src_files
     ${RUNTIME_CORE_DIR}/src/common/errcode_manage.cc
     ${RUNTIME_CORE_DIR}/src/common/error_message_manage.cc
     ${RUNTIME_CORE_DIR}/src/common/task_fail_callback_data_manager.cc
-    ${RUNTIME_FEATURE_DIR}/xpu/xpu_task_fail_callback_data_manager.cc
+    ${RUNTIME_FEATURE_DIR}/xpu/xpu_task_fail_callback_data_manager_tiny_stub.cc
     ${RUNTIME_CORE_DIR}/src/common/performance_record.cc
     ${RUNTIME_CORE_DIR}/src/common/prof_ctrl_callback_manager.cc
     ${RUNTIME_CORE_DIR}/src/common/rt_log.cc

@@ -122,8 +122,10 @@ static rtError_t ConstructCcuSubSqeFor128B(const rtCcuTaskInfo_t * const subInfo
     constexpr size_t firstCpySize = sizeof(uint32_t) * 10ULL;
     errno_t ret = memcpy_s(RtPtrToPtr<uint8_t *>(sqe) + sizeof(rtDavidSqe_t)-firstCpySize, firstCpySize,
         RtPtrToPtr<const uint8_t *>(subInfo->args), firstCpySize);
-    COND_RETURN_OUT_ERROR_MSG_CALL(ret != EOK, RT_ERROR_SEC_HANDLE, "Memcpy_s part1 failed,retCode=%d,"
-        " size=%zu.", ret, firstCpySize);
+    COND_RETURN_ERROR_MSG_INNER((ret != EOK), RT_ERROR_SEC_HANDLE,
+        "Failed to call memcpy_s to copy subInfo->args, dest=%p, dest_max=%zu, src=%p, count=%zu, retCode=%d.",
+        RtPtrToPtr<uint8_t *>(sqe) + sizeof(rtDavidSqe_t)-firstCpySize, firstCpySize, RtPtrToPtr<const uint8_t *>(subInfo->args),
+        firstCpySize, ret);
 
     /* second ccu sqe part: 16*4=64 Byte */
     constexpr size_t secondCpySize = sizeof(rtDavidSqe_t);
@@ -135,8 +137,10 @@ static rtError_t ConstructCcuSubSqeFor128B(const rtCcuTaskInfo_t * const subInfo
 
     ret = memcpy_s(sqeAddr1, sizeof(rtDavidSqe_t),
         (RtPtrToPtr<const uint8_t *>(&(subInfo->args[firstCpySize/8U]))), secondCpySize);
-    COND_RETURN_OUT_ERROR_MSG_CALL(ret != EOK, RT_ERROR_SEC_HANDLE, "Memcpy_s part2 failed, retCode=%d,"
-        " size=%zu.", ret, secondCpySize);
+    COND_RETURN_ERROR_MSG_INNER((ret != EOK), RT_ERROR_SEC_HANDLE,
+        "Failed to call memcpy_s to copy subInfo->args[%zu], dest=%p, dest_max=%zu, src=%p, count=%zu, retCode=%d.",
+        firstCpySize/8U, sqeAddr1, sizeof(rtDavidSqe_t), (RtPtrToPtr<const uint8_t *>(&(subInfo->args[firstCpySize/8U]))),
+        secondCpySize, ret);
 
     RT_LOG(RT_LOG_INFO, "taskIdx=%d, sqeIndex=%u, missionId=%hhu, dieId=%hhu, instStartId=%hd, instCnt=%hu,"
         "instAddrKeyValue=%u.", taskInfo->id, sqeIndex, subInfo->missionId, subInfo->dieId, subInfo->instStartId,
@@ -165,8 +169,9 @@ static rtError_t ConstructCcuSubSqeFor32B(const rtCcuTaskInfo_t * const subInfo,
     FusionCcuSubSqeCommonInit(subInfo, taskInfo, taskCnt, sqe);
 
     const errno_t ret = memcpy_s(RtPtrToPtr<uint8_t *>(sqe) + moveSize, cpySize, subInfo->args, cpySize);
-    COND_RETURN_OUT_ERROR_MSG_CALL(ret != EOK, RT_ERROR_SEC_HANDLE, "Memcpy_s failed,retCode=%d, Size=%d(bytes).",
-        ret, cpySize);
+    COND_RETURN_ERROR_MSG_INNER((ret != EOK), RT_ERROR_SEC_HANDLE,
+        "Failed to call memcpy_s to copy subInfo->args, dest=%p, dest_max=%u, src=%p, count=%u, retCode=%d.",
+        RtPtrToPtr<uint8_t *>(sqe) + moveSize, cpySize, subInfo->args, cpySize, ret);
 
     RT_LOG(RT_LOG_INFO, "taskIdx=%u, sqeIndex=%u, missionId=%hhu, dieId=%hhu, instStartId=%hu, instCnt=%hu,"
         "instAddrKeyValue=%u.", taskInfo->id, sqeIndex, subInfo->missionId, subInfo->dieId, subInfo->instStartId,

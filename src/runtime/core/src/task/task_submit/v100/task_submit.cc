@@ -130,10 +130,9 @@ rtError_t LoadArgsInfo(TaskInfo *submitTask, Stream *stm, uint16_t taskResId)
 
 rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId)
 {
-    COND_RETURN_ERROR_MSG_INNER(((stm->Flags() & RT_STREAM_CP_PROCESS_USE) != 0U),
-        RT_ERROR_STREAM_INVALID,
-        "Kernel launch with args failed, the stm cannot be the stream whose flag is %u, stream_id=%u.",
-        stm->Flags(), stm->Id_());
+    COND_RETURN_AND_MSG_OUTER(((stm->Flags() & RT_STREAM_CP_PROCESS_USE) != 0U),
+        RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, __func__, "Stream flags value " + std::to_string(stm->Flags()),
+        RtFmtMsg("Stream %d with the flag RT_STREAM_CP_PROCESS_USE(0x800U) cannot be used for kernel launch", stm->Id_()));
     // 主动回收
     uint8_t failCount = 0U;
     Engine* engine = ((RawDevice*)(stm->Device_()))->Engine_();

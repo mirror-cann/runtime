@@ -40,7 +40,8 @@ rtError_t ReduceAsyncV2(void * const dst, const void * const src, const uint64_t
         const uint32_t offset = static_cast<uint32_t>(type);
         RT_LOG(RT_LOG_INFO, "ReduceAsyncV2 sdma_reduce_support=0x%x.", sdmaReduceSupport);
         if (((sdmaReduceSupport >> offset) & 0x1U) == 0U) {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "type=" + DataTypeToString(type));
+            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + DataTypeToString(type),
+                "The current SoC does not support the reduce operation on this data type");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }

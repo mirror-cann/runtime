@@ -178,11 +178,12 @@ rtError_t ApiErrorDecorator::UbDbSend(rtUbDbInfo_t *const dbInfo, Stream *const 
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM((dbInfo->dbNum != UB_DOORBELL_NUM_MIN) && (dbInfo->dbNum != UB_DOORBELL_NUM_MAX), 
         RT_ERROR_INVALID_VALUE, dbInfo->dbNum, "1 or 2");
     if (dbInfo->dbNum == UB_DOORBELL_NUM_MAX) {
-        COND_RETURN_OUT_ERROR_MSG_CALL((dbInfo->info[0].dieId == dbInfo->info[1].dieId) &&
-                                       (dbInfo->info[0].jettyId == dbInfo->info[1].jettyId) &&
-                                       (dbInfo->info[0].functionId == dbInfo->info[1].functionId),
-            RT_ERROR_INVALID_VALUE, "An entry with the same functionId (%u), dieId (%u), and jettyId (%u) already exists in the SQE.",
-            dbInfo->info[0].functionId, dbInfo->info[0].dieId, dbInfo->info[0].jettyId);
+        COND_RETURN_AND_MSG_OUTER((dbInfo->info[0].dieId == dbInfo->info[1].dieId) &&
+                                (dbInfo->info[0].jettyId == dbInfo->info[1].jettyId) &&
+                                (dbInfo->info[0].functionId == dbInfo->info[1].functionId),
+            RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, __func__, "dbInfo->info[1]",
+            RtFmtMsg("An entry with the same functionId %u, dieId %u, and jettyId %u already exists in the SQE",
+                dbInfo->info[1].functionId, dbInfo->info[1].dieId, dbInfo->info[1].jettyId));
     }
     return impl_->UbDbSend(dbInfo, stm);
 }
@@ -191,9 +192,11 @@ rtError_t ApiErrorDecorator::UbDirectSend(rtUbWqeInfo_t * const wqeInfo, Stream 
 {
     NULL_PTR_RETURN_MSG_OUTER(wqeInfo, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(wqeInfo->wqe, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_OUT_ERROR_MSG_CALL((wqeInfo->wqeSize == 0 && wqeInfo->wqePtrLen != UB_DIRECT_WQE_MIN_LEN) ||
+    COND_RETURN_AND_MSG_OUTER((wqeInfo->wqeSize == 0 && wqeInfo->wqePtrLen != UB_DIRECT_WQE_MIN_LEN) ||
         (wqeInfo->wqeSize == 1 && wqeInfo->wqePtrLen != UB_DIRECT_WQE_MAX_LEN), RT_ERROR_INVALID_VALUE,
-        "Invalid parameter. wqeSize:%u and wqePtrLen:%u do not match.", wqeInfo->wqeSize, wqeInfo->wqePtrLen);
+        ErrorCode::EE1017, __func__, "wqeInfo->wqePtrLen or wqeInfo->wqeSize", 
+        RtFmtMsg("Parameter wqeInfo->wqePtrLen %u and parameter wqeInfo->wqeSize %u do not match",
+            wqeInfo->wqePtrLen, wqeInfo->wqeSize));
     return impl_->UbDirectSend(wqeInfo, stm);
 }
 
@@ -209,32 +212,31 @@ static rtError_t CheckArgsForFusionKernel(const rtFusionArgsEx_t * const argsInf
         if (argsInfo->aicpuNum > 0) {
             NULL_PTR_RETURN_MSG_OUTER(argsInfo->aicpuArgs, RT_ERROR_INVALID_VALUE);
             for (uint8_t i = 0U; i < argsInfo->aicpuNum; i++) {
-                COND_RETURN_OUT_ERROR_MSG_CALL(
-                    argsInfo->aicpuArgs[i].soNameAddrOffset >= argsInfo->argsSize, RT_ERROR_INVALID_VALUE,
-                    "Parameter argsInfo->aicpuArgs[%hu].soNameAddrOffset should be less than parameter argsInfo->argsSize. "
-                    "Parameter argsInfo->aicpuArgs[%hu].soNameAddrOffset = %u, parameter argsInfo->argsSize = %u.", 
-                    i, i, argsInfo->aicpuArgs[i].soNameAddrOffset, argsInfo->argsSize);
-                COND_RETURN_OUT_ERROR_MSG_CALL(
-                    argsInfo->aicpuArgs[i].kernelNameAddrOffset >= argsInfo->argsSize, RT_ERROR_INVALID_VALUE,
-                    "Parameter argsInfo->aicpuArgs[%hu].kernelNameAddrOffset should be less than parameter argsInfo->argsSize. "
-                    "Parameter argsInfo->aicpuArgs[%hu].kernelNameAddrOffset = %u, parameter argsInfo->argsSize = %u.",                    
-                    i, i, argsInfo->aicpuArgs[i].kernelNameAddrOffset, argsInfo->argsSize);
+                COND_RETURN_AND_MSG_OUTER(argsInfo->aicpuArgs[i].soNameAddrOffset >= argsInfo->argsSize,
+                    RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, __func__,
+                    RtFmtMsg("argsInfo->aicpuArgs[%hu].soNameAddrOffset or argsInfo->argsSize", i),
+                    RtFmtMsg("Parameter argsInfo->aicpuArgs[%hu].soNameAddrOffset %u should be less than parameter argsInfo->argsSize %u",
+                        i, argsInfo->aicpuArgs[i].soNameAddrOffset, argsInfo->argsSize));
+                COND_RETURN_AND_MSG_OUTER(argsInfo->aicpuArgs[i].kernelNameAddrOffset >= argsInfo->argsSize,
+                    RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, __func__,
+                    RtFmtMsg("argsInfo->aicpuArgs[%hu].kernelNameAddrOffset or argsInfo->argsSize", i),
+                    RtFmtMsg("Parameter argsInfo->aicpuArgs[%hu].kernelNameAddrOffset %u should be less than parameter argsInfo->argsSize %u",
+                        i, argsInfo->aicpuArgs[i].kernelNameAddrOffset, argsInfo->argsSize));
             }
         }
         if (argsInfo->hostInputInfoNum != 0U) {
-            COND_RETURN_OUT_ERROR_MSG_CALL(argsInfo->hostInputInfoPtr == nullptr,
-                RT_ERROR_INVALID_VALUE, "host input info ptr is nullptr, invalid param.");
+            NULL_PTR_RETURN_MSG_OUTER(argsInfo->hostInputInfoPtr, RT_ERROR_INVALID_VALUE);
             for (int16_t i = 0U; i < argsInfo->hostInputInfoNum; i++) {
-                COND_RETURN_OUT_ERROR_MSG_CALL(
-                    argsInfo->hostInputInfoPtr[i].addrOffset >= argsInfo->argsSize, RT_ERROR_INVALID_VALUE,
-                    "Parameter argsInfo->hostInputInfoPtr[%hu].addrOffset should be less than parameter argsInfo->argsSize. "
-                    "Parameter argsInfo->hostInputInfoPtr[%hu].addrOffset = %u, parameter argsInfo->argsSize = %u.", 
-                    i, i, argsInfo->hostInputInfoPtr[i].addrOffset, argsInfo->argsSize);
-                COND_RETURN_OUT_ERROR_MSG_CALL(
-                    argsInfo->hostInputInfoPtr[i].dataOffset >= argsInfo->argsSize, RT_ERROR_INVALID_VALUE,
-                    "Parameter argsInfo->hostInputInfoPtr[%hu].dataOffset should be less than parameter argsInfo->argsSize. "
-                    "Parameter argsInfo->hostInputInfoPtr[%hu].dataOffset = %u, parameter argsInfo->argsSize = %u.", 
-                    i, i, argsInfo->hostInputInfoPtr[i].dataOffset, argsInfo->argsSize);                  
+                COND_RETURN_AND_MSG_OUTER(argsInfo->hostInputInfoPtr[i].addrOffset >= argsInfo->argsSize,
+                    RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, __func__,
+                    RtFmtMsg("argsInfo->hostInputInfoPtr[%hu].addrOffset or argsInfo->argsSize", i),
+                    RtFmtMsg("Parameter argsInfo->hostInputInfoPtr[%hu].addrOffset %u should be less than parameter argsInfo->argsSize %u",
+                        i, argsInfo->hostInputInfoPtr[i].addrOffset, argsInfo->argsSize));
+                COND_RETURN_AND_MSG_OUTER(argsInfo->hostInputInfoPtr[i].dataOffset >= argsInfo->argsSize,
+                    RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, __func__,
+                    RtFmtMsg("argsInfo->hostInputInfoPtr[%hu].dataOffset or argsInfo->argsSize", i),
+                    RtFmtMsg("Parameter argsInfo->hostInputInfoPtr[%hu].dataOffset %u should be less than parameter argsInfo->argsSize %u",
+                        i, argsInfo->hostInputInfoPtr[i].dataOffset, argsInfo->argsSize));
             }
         }
     }
@@ -255,27 +257,30 @@ rtError_t ApiErrorDecorator::FusionLaunch(void * const fusionInfo, Stream * cons
 
     rtFunsionTaskInfo_t *fusionTask = static_cast<rtFunsionTaskInfo_t *>(fusionInfo);
     const uint32_t subTaskNum = fusionTask->subTaskNum;
-    COND_RETURN_OUT_ERROR_MSG_CALL((subTaskNum == 0U || subTaskNum > FUSION_SUB_TASK_MAX_NUM), RT_ERROR_INVALID_VALUE,
-        "Fusion subtask num %u is invalid, its range should be in [1, %u].", subTaskNum, FUSION_SUB_TASK_MAX_NUM);
+    COND_RETURN_AND_MSG_OUTER((subTaskNum == 0U || subTaskNum > FUSION_SUB_TASK_MAX_NUM), RT_ERROR_INVALID_VALUE,
+        ErrorCode::EE1012, __func__, subTaskNum, "fusion subtask number",
+        RtFmtMsg("The valid value range is [1, %u]", FUSION_SUB_TASK_MAX_NUM));
 
     string fusionList = "";
     for (uint32_t idx = 0U; idx < subTaskNum; idx++) {
         const rtFusionType_t subKernelType = fusionTask->subTask[idx].type;
-        COND_RETURN_OUT_ERROR_MSG_CALL((subKernelType >= RT_FUSION_END), RT_ERROR_INVALID_VALUE,
-            "The value range of attribute type %u of parameter subtask whose index is %u should be (0, %d).",
-            static_cast<uint32_t>(subKernelType), idx, RT_FUSION_END);
+        COND_RETURN_AND_MSG_OUTER((subKernelType >= RT_FUSION_END), RT_ERROR_INVALID_VALUE, ErrorCode::EE1012, __func__,
+            subKernelType, "fusion subtask type",
+            RtFmtMsg("The value range of attribute type of parameter subtask whose index is %u should be (0, %u)", idx, RT_FUSION_END));
         fusionList += g_fusionSubTypeStr[subKernelType];
     }
 
     // check fusion task list is valid or not
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(),
         RtOptionalFeatureType::RT_FEATURE_TASK_FUSION_DOT_ONLY_AICPUAIC)) {
-        COND_RETURN_AND_MSG_OUTER(g_fusionAllowedList.find(fusionList) == g_fusionAllowedList.end(), RT_ERROR_INVALID_VALUE, 
-            ErrorCode::EE1006, __func__, "fusionList=" + fusionList);
+        COND_RETURN_AND_MSG_OUTER(g_fusionAllowedList.find(fusionList) == g_fusionAllowedList.end(), RT_ERROR_INVALID_VALUE,
+            ErrorCode::EE1006, __func__, "FusionList value " + fusionList, "Fusion task only supports HCOMM with AI Core,"
+            " AI CPU with AI Core, CCU with AI Core task type combinations, or a single CCU task");
     } else {
         //  1952 only supports A3(aicpu + aic) task
-        COND_RETURN_OUT_ERROR_MSG_CALL(fusionList != "AICPUAIC",
-            RT_ERROR_INVALID_VALUE, "Fusion task list %s is invalid or is not supported.", fusionList.c_str());
+        COND_RETURN_AND_MSG_OUTER(fusionList != "AICPUAIC", RT_ERROR_INVALID_VALUE,
+            ErrorCode::EE1006, __func__, "FusionList value " + fusionList,
+            "Fusion task only supports the combination of AI CPU and AI Core");
     }
 
     RT_LOG(RT_LOG_INFO, "fusion launch: subTaskNum=%u, fusion list=%s.", subTaskNum, fusionList.c_str());
@@ -353,11 +358,12 @@ rtError_t ApiErrorDecorator::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * con
     NULL_PTR_RETURN_MSG_OUTER(fftsPlusTaskInfo->descBuf, RT_ERROR_INVALID_VALUE);
     const rtFftsPlusSqe_t * const sqe = fftsPlusTaskInfo->fftsPlusSqe;
 
-    COND_RETURN_OUT_ERROR_MSG_CALL(
-        ((CONTEXT_LEN) * (static_cast<uint32_t>(sqe->totalContextNum)) !=
-        (static_cast<uint32_t>(fftsPlusTaskInfo->descBufLen))),
-        RT_ERROR_INVALID_VALUE, "Invalid task information. descBufLen=%u(bytes), totalContextNum=%u.",
-        static_cast<uint32_t>(fftsPlusTaskInfo->descBufLen), static_cast<uint32_t>(sqe->totalContextNum));
+    COND_RETURN_AND_MSG_OUTER(CONTEXT_LEN * static_cast<uint32_t>(sqe->totalContextNum) !=
+        static_cast<uint32_t>(fftsPlusTaskInfo->descBufLen), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+        __func__, "fftsPlusTaskInfo->descBufLen or fftsPlusTaskInfo->fftsPlusSqe->totalContextNum",
+        RtFmtMsg("Parameter fftsPlusTaskInfo->descBufLen %u should equal to the product of parameter"
+            " fftsPlusTaskInfo->fftsPlusSqe->totalContextNum %u and %u", static_cast<uint32_t>(fftsPlusTaskInfo->descBufLen),
+            static_cast<uint32_t>(sqe->totalContextNum), CONTEXT_LEN));
 
     const rtError_t error = impl_->FftsPlusTaskLaunch(fftsPlusTaskInfo, stm, flag);
     ERROR_RETURN(error, "FFTS plus launch failed");
@@ -455,8 +461,9 @@ rtError_t ApiErrorDecorator::IpcGetEventHandle(IpcEvent * const evt, rtIpcEventH
 {
     NULL_PTR_RETURN_MSG_OUTER(handle, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(evt, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_OUT_ERROR_MSG_CALL(evt->GetEventFlag() != RT_EVENT_IPC, RT_ERROR_INVALID_VALUE,
-        "only support RT_EVENT_IPC call rtIpcGetEventHandle, current flag %" PRIu64 ".", evt->GetEventFlag());
+    COND_RETURN_AND_MSG_OUTER(evt->GetEventFlag() != RT_EVENT_IPC, RT_ERROR_INVALID_VALUE, ErrorCode::EE1006,
+        __func__, RtFmtMsg("Parameter evt.eventFlag_ value %" PRIu64, evt->GetEventFlag()),
+        "Only IPC events are supported");
     return impl_->IpcGetEventHandle(evt, handle);
 }
 
