@@ -126,7 +126,7 @@ TEST_F(PlatformManagerAclUTest, acl_platform_GetDeviceInfo_VEC_FREQ)
   // Ascend910B1 has no independent VectorCoreSpec section → vec_freq not found
   char buf[64] = {0};
   aclError ret = aclplatformGetDeviceInfo(ACL_PLATFORM_VEC_FREQ, buf, sizeof(buf));
-  EXPECT_EQ(ret, ACL_ERROR_OP_NOT_FOUND);
+  EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 
 TEST_F(PlatformManagerAclUTest, acl_platform_GetDeviceInfo_BT_SIZE)
@@ -206,7 +206,7 @@ TEST_F(PlatformManagerAclUTest, acl_platform_GetDeviceInfo_MEMORY_TYPE)
   // Ascend910B1.ini has empty memory_type → returns not found
   char buf[64] = {0};
   aclError ret = aclplatformGetDeviceInfo(ACL_PLATFORM_MEMORY_TYPE, buf, sizeof(buf));
-  EXPECT_EQ(ret, ACL_ERROR_OP_NOT_FOUND);
+  EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 
 // ============================================================================
@@ -330,7 +330,7 @@ TEST_F(PlatformManagerAclUTest, acl_platform_GetInstructionInfo_not_found)
   char buf[256] = {0};
   aclError ret = aclplatformGetInstructionInfo(ACL_PLATFORM_CORE_TYPE_AI_CORE,
                                                "Intrinsic_NotExist", buf, sizeof(buf));
-  EXPECT_EQ(ret, ACL_ERROR_OP_NOT_FOUND);
+  EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 
 TEST_F(PlatformManagerAclUTest, acl_platform_GetInstructionInfo_buffer_too_small)
@@ -423,7 +423,7 @@ TEST_F(PlatformManagerAclUTest, GetPlatFormInfos_Step4_GeInstance_OptionalInfos)
   PlatformInfoManager::GeInstance().Finalize();
 }
 
-// ---- All 4 steps fail: returns ACL_ERROR_OP_NOT_FOUND ----
+// ---- All 4 steps fail: returns ACL_ERROR_INTERNAL_ERROR ----
 TEST_F(PlatformManagerAclUTest, GetPlatFormInfos_AllFail)
 {
   // Wipe Instance completely
@@ -439,7 +439,7 @@ TEST_F(PlatformManagerAclUTest, GetPlatFormInfos_AllFail)
   // GeInstance is uninitialized → all 4 steps fail
   char buf[64] = {0};
   aclError ret = aclplatformGetDeviceInfo(ACL_PLATFORM_AICORE_CNT, buf, sizeof(buf));
-  EXPECT_EQ(ret, ACL_ERROR_OP_NOT_FOUND);
+  EXPECT_EQ(ret, ACL_ERROR_INTERNAL_ERROR);
 }
 
 // ---- Instance OptionalInfos cleared, only GeInstance OptionalInfos set ----
@@ -458,7 +458,7 @@ TEST_F(PlatformManagerAclUTest, GetPlatFormInfos_FallbackToGeInstance_OnlyOption
   // GeInstance not set up → steps 1-4 all fail
   char buf[64] = {0};
   aclError ret = aclplatformGetDeviceInfo(ACL_PLATFORM_AICORE_CNT, buf, sizeof(buf));
-  EXPECT_EQ(ret, ACL_ERROR_OP_NOT_FOUND);
+  EXPECT_EQ(ret, ACL_ERROR_INTERNAL_ERROR);
 }
 
 }  // namespace fe

@@ -127,7 +127,7 @@ aclError aclplatformGetDeviceInfo(aclplatformDevInfo infoType, char *value, uint
   // --- obtain platform info ---
   fe::PlatFormInfos platform_infos;
   if (!GetPlatFormInfos(platform_infos)) {
-    return ACL_ERROR_OP_NOT_FOUND;
+    return ACL_ERROR_INTERNAL_ERROR;
   }
 
   // --- query the value ---
@@ -137,11 +137,11 @@ aclError aclplatformGetDeviceInfo(aclplatformDevInfo infoType, char *value, uint
 
   if (!platform_infos.GetPlatformResWithLock(section, key, result)) {
     PF_LOGE("aclplatformGetDeviceInfo: key [%s/%s] not found.", section.c_str(), key.c_str());
-    return ACL_ERROR_OP_NOT_FOUND;
+    return ACL_ERROR_INVALID_PARAM;
   }
   if (result.empty()) {
     PF_LOGE("aclplatformGetDeviceInfo: empty result for key [%s/%s].", section.c_str(), key.c_str());
-    return ACL_ERROR_OP_NOT_FOUND;
+    return ACL_ERROR_INVALID_PARAM;
   }
 
   PF_LOGI("aclplatformGetDeviceInfo: [%s, %s] = %s.", section.c_str(), key.c_str(), result.c_str());
@@ -174,7 +174,7 @@ aclError aclplatformGetInstructionInfo(aclplatformCoreType type,
   // --- obtain platform info ---
   fe::PlatFormInfos platform_infos;
   if (!GetPlatFormInfos(platform_infos)) {
-    return ACL_ERROR_OP_NOT_FOUND;
+    return ACL_ERROR_INTERNAL_ERROR;
   }
 
   // --- query intrinsic dtype map ---
@@ -191,7 +191,7 @@ aclError aclplatformGetInstructionInfo(aclplatformCoreType type,
   if (it == intrinsic_map.end() || it->second.empty()) {
     PF_LOGE("aclplatformGetInstructionInfo: instruction [%s] not found for core type %d.",
             instruction, static_cast<int>(type));
-    return ACL_ERROR_OP_NOT_FOUND;
+    return ACL_ERROR_INVALID_PARAM;
   }
 
   // --- join dtypes with "," ---
