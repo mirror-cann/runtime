@@ -46,7 +46,7 @@ rtError_t ApiErrorDecorator::MemManagedGetAttr(rtMemManagedRangeAttribute attrib
         "[" + std::to_string(rtMemRangeAttributeReadMostly) + ", " +
         std::to_string(rtMemRangeAttributeLastPrefetchLocationId) + "]");
 
-    rtError_t error = impl_->MemManagedGetAttr(attribute, ptr, size, data, dataSize);
+    const rtError_t error = impl_->MemManagedGetAttr(attribute, ptr, size, data, dataSize);
     COND_RETURN_ERROR((error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_NOT_SUPPORT), error, "Get mem attribute failed");
     return error;
 }

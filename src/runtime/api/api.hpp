@@ -291,7 +291,7 @@ public:
         const uint16_t moduleId = MODULEID_RUNTIME) = 0;
     virtual rtError_t ManagedMemFree(const void * const ptr) = 0;
     virtual rtError_t MemAdvise(void *devPtr, uint64_t count, uint32_t advise) = 0;
-    virtual rtError_t MemManagedAdvise(const void *const Ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location) = 0;
+    virtual rtError_t MemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location) = 0;
     virtual rtError_t DevMallocCached(void ** const devPtr, const uint64_t size, const rtMemType_t type,
         const uint16_t moduleId = MODULEID_RUNTIME) = 0;
     virtual rtError_t FlushCache(const uint64_t base, const size_t len) = 0;

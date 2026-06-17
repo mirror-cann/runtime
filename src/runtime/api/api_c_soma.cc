@@ -95,7 +95,7 @@ rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
 }
  
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolMallocAsync(void **devPtr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
+rtError_t rtMemPoolMallocAsync(void **ptr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     ApiSoma * const apiInstance = ApiSoma::Instance();
@@ -104,7 +104,7 @@ rtError_t rtMemPoolMallocAsync(void **devPtr, const uint64_t size, const rtMemPo
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(exeStream);
     TIMESTAMP_BEGIN(rtMemPoolMallocAsync);
-    const rtError_t error = apiInstance->MemPoolMallocAsync(devPtr, size, memPoolId, exeStream);
+    const rtError_t error = apiInstance->MemPoolMallocAsync(ptr, size, memPoolId, exeStream);
     TIMESTAMP_END(rtMemPoolMallocAsync);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
