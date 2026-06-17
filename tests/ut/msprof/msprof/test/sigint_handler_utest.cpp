@@ -27,6 +27,12 @@ static int32_t OsalSleepNoopStub(uint32_t /*ms*/)
     return 0;
 }
 
+static int32_t OsalSleepFastStub(uint32_t /*ms*/)
+{
+    usleep(1000);
+    return 0;
+}
+
 class SigintHandlerUtest : public testing::Test {
 protected:
     void SetUp() override
@@ -289,7 +295,7 @@ TEST_F(SigintHandlerUtest, MsprofFinalizeHandleRunsDrainBranchUnderSigintShutdow
     // 防止 drain 分支真睡 1s，同时也让 watcher 线程不真睡
     MOCKER(OsalSleep)
         .stubs()
-        .will(invoke(OsalSleepNoopStub));
+        .will(invoke(OsalSleepFastStub));
     // FlushAllModule 在 DoFinalizeHandle 末尾调 1 次（line 2178），
     // drain body 再调 1 次（line 2196），加上 watcher 触发的 fallback finalize
     // 也会再走一遍 finalize（再 +2），所以这里用 atLeast(2)

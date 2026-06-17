@@ -382,7 +382,7 @@ target_link_libraries(api_dc_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -436,7 +436,7 @@ target_link_libraries(api_david_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -494,7 +494,7 @@ target_link_libraries(api_mini_v3_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -548,7 +548,7 @@ target_link_libraries(api_mdc_mini_v3_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -606,7 +606,7 @@ target_link_libraries(api_cloud_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -660,7 +660,7 @@ target_link_libraries(api_mdc_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -724,7 +724,7 @@ target_link_libraries(acl_api_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -778,7 +778,7 @@ target_link_libraries(api_david_v121_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -832,7 +832,7 @@ target_link_libraries(api_tiny_stest PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adump_headers>
     profapi_share_st
-    ascend_protobuf
+    ascend_protobuf_static
     c_sec
     json
 )
@@ -871,6 +871,8 @@ add_library(profapi_share_st SHARED
     stub/aoe_stub.cpp
     ../../stub/error_manager_stub2.cpp
 )
+
+add_dependencies(profapi_share_st csec_src)
 
 target_compile_definitions(profapi_share_st PRIVATE
     $<$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>:WIN32>
@@ -938,6 +940,7 @@ target_link_libraries(profapi_share_st
         intf_pub
         mmpa_headers
         slog_headers
+        c_sec
     PUBLIC
         msprof_headers
     json

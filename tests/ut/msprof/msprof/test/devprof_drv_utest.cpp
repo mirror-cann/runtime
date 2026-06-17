@@ -302,11 +302,11 @@ TEST_F(DEVPROF_DRV_UTEST, DevprofDrvAdprof)
     AdprofCallBack adprofCallBack = {ProfStartFailed, ProfStartFailed, AdprofExit};
     MOCKER(halProfSampleRegister)
         .stubs()
-        .will(returnValue(1))
-        .then(returnValue((int)DRV_ERROR_NONE));
-    MOCKER(halProfSampleRegisterEx)
-        .stubs()
         .will(returnValue((int)DRV_ERROR_NONE));
+    MOCKER(ProfSendEvent)
+        .stubs()
+        .will(returnValue(PROFILING_FAILED))
+        .then(returnValue(PROFILING_SUCCESS));
     EXPECT_EQ(PROFILING_FAILED, AdprofStartRegister(adprofCallBack, 0, 123));
     EXPECT_EQ(PROFILING_SUCCESS, AdprofStartRegister(adprofCallBack, 0, 123));
 
@@ -746,13 +746,13 @@ TEST_F(DEVPROF_DRV_UTEST, UninitHostMoveBuffer)
     GlobalMockObject::verify();
 }
 
-TEST_F(DEVPROF_DRV_UTEST, RegisterDrvChannel_NotSupport)
+TEST_F(DEVPROF_DRV_UTEST, RegisterDrvChannel_Success)
 {
     DevprofDrvAicpu::instance()->Reset();
     AicpuStartPara aicpuStartPara = {0, 111, 143, 2};
 
     MOCKER(halProfSampleRegister).stubs().will(returnValue((int)DRV_ERROR_NONE));
-    MOCKER(halProfSampleRegisterEx).stubs().will(returnValue((int)DRV_ERROR_NOT_SUPPORT));
+    MOCKER(halProfSampleRegisterEx).stubs().will(returnValue((int)DRV_ERROR_NONE));
     MOCKER(ProfSendEvent).stubs().will(returnValue(PROFILING_SUCCESS));
     EXPECT_EQ(PROFILING_CONTINUE, DevprofDrvAicpu::instance()->AdprofInit(&aicpuStartPara));
     EXPECT_TRUE(DevprofDrvAicpu::instance()->IsRegister());

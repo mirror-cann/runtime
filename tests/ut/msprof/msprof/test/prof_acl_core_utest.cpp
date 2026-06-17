@@ -3644,7 +3644,7 @@ void ExpectApiStatsModeSkipDeviceTask()
         .expects(never());
     MOCKER_CPP(&ProfAclMgr::ProfStartCallback)
         .stubs()
-        .will(returnValue(static_cast<int32_t>(ACL_SUCCESS)));
+        .will(returnValue(PROFILING_SUCCESS));
 
     EXPECT_EQ(MSPROF_ERROR_NONE, ProfAclMgr::instance()->ProfStartCommon(devIdList, 1));
     EXPECT_EQ(1U, ProfAclMgr::instance()->statsDevSet_.size());
@@ -6789,9 +6789,10 @@ TEST_F(MSPROF_ACL_CORE_UTEST, Analyzer_UploadAppOpModeStaticShape_Branches)
         .stubs();
     std::shared_ptr<Analyzer> analyzer(new Analyzer(nullptr));
 
-    // Branch 1: all static shape with completed/incomplete entries
+    // Branch 1: static shape with completed/incomplete entries
     analyzer->analyzerGe_->isAllStaticShape_ = true;
-    analyzer->analyzerGe_->opInfos_ = {{"a-0", AnalyzerGe::GeOpInfo()}};
+    struct Analysis::Dvvp::Analyze::AnalyzerGe::GeOpInfo opInfo = {"a-0", "", "", 0};
+    analyzer->analyzerGe_->opInfos_["a-0"] = opInfo;
     std::multimap<std::string, OpTime> opTimes;
     OpTime ot1{};
     OpTime ot2{};

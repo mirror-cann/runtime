@@ -42,7 +42,6 @@ protected:
         optind = 1;
         system(MDC_LITE_V2_MKDIR);
         system("touch ./cli");
-        MOCKER(mmCreateProcess).stubs().will(invoke(mmCreateProcessStub));
         EXPECT_EQ(2, SimulatorMgr().CreateDeviceSimulator(2, StPlatformType::CHIP_MDC_LITE_V2));
         SimulatorMgr().SetSocSide(SocType::HOST);
     }

@@ -90,7 +90,7 @@ add_subdirectory(st/api)
 
 ###################################################################################################
 
-set(MSPROF_TARGET
+set(MSPROF_TARGET_PART1
     acp_utest
     application_utest
     osal_linux_utest
@@ -108,6 +108,9 @@ set(MSPROF_TARGET
     streamio_common_utest
     stub_file_utest
     transport
+)
+
+set(MSPROF_TARGET_PART2
     cli_stest
     acl_api_stest
     geoption_stest
@@ -123,4 +126,12 @@ set(MSPROF_TARGET
     api_mdc_stest
     api_tiny_stest
 )
+
+set(MSPROF_TARGET
+    ${MSPROF_TARGET_PART1}
+    ${MSPROF_TARGET_PART2}
+)
+
+add_custom_target(msprof_ut_part1 DEPENDS ${MSPROF_TARGET_PART1})
+add_custom_target(msprof_ut_part2 DEPENDS ${MSPROF_TARGET_PART2})
 add_custom_target(msprof_ut DEPENDS ${MSPROF_TARGET})

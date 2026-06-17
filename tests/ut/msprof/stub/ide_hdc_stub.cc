@@ -12,6 +12,9 @@
 
 hdcError_t drvHdcAllocMsg(HDC_SESSION session, struct drvHdcMsg **ppMsg, int count)
 {
+    if (ppMsg != nullptr) {
+        *ppMsg = reinterpret_cast<struct drvHdcMsg *>(0x12345678);
+    }
     return DRV_ERROR_NONE;
 }
 

@@ -42,7 +42,6 @@ protected:
         optind = 1;
         system(DAVID_MKDIR);
         system("touch ./cli");
-        MOCKER(mmCreateProcess).stubs().will(invoke(mmCreateProcessStub));
         EXPECT_EQ(2, SimulatorMgr().CreateDeviceSimulator(2, StPlatformType::CHIP_CLOUD_V3));
         SimulatorMgr().SetSocSide(SocType::HOST);
     }

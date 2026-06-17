@@ -40,7 +40,6 @@ protected:
         optind = 1;
         system(DC_MKDIR);
         system("touch ./cli");
-        MOCKER(mmCreateProcess).stubs().will(invoke(mmCreateProcessStub));
         MOCKER_CPP(&AicpuReportHdc::Init).stubs().will(returnValue(-1));
         EXPECT_EQ(2, SimulatorMgr().CreateDeviceSimulator(2, StPlatformType::DC_TYPE));
         SimulatorMgr().SetSocSide(SocType::HOST);

@@ -1117,6 +1117,7 @@ static mmEnvInfo s_envList[] = {
     {MM_ENV_ASCEND_WORK_PATH, "ASCEND_WORK_PATH"},
     {MM_ENV_ASCEND_HOSTPID, "ASCEND_HOSTPID"},
     {MM_ENV_RANK_ID, "RANK_ID"},
+    {MM_ENV_ASCEND_TOOLKIT_HOME, "ASCEND_TOOLKIT_HOME"},
     {MM_ENV_ASCEND_RT_VISIBLE_DEVICES, "ASCEND_RT_VISIBLE_DEVICES"},
     {MM_ENV_ASCEND_COREDUMP_SIGNAL, "ASCEND_COREDUMP_SIGNAL"},
     {MM_ENV_ASCEND_CACHE_PATH, "ASCEND_CACHE_PATH"},
@@ -1151,21 +1152,83 @@ static mmEnvInfo *GetEnvInfoById(mmEnvId id)
     return nullptr;
 }
 
+static const CHAR *GetEnvNameById(mmEnvId id)
+{
+    switch (id) {
+        case MM_ENV_DUMP_GRAPH_PATH:
+            return "DUMP_GRAPH_PATH";
+        case MM_ENV_ACLNN_CACHE_LIMIT:
+            return "ACLNN_CACHE_LIMIT";
+        case MM_ENV_ASCEND_WORK_PATH:
+            return "ASCEND_WORK_PATH";
+        case MM_ENV_ASCEND_HOSTPID:
+            return "ASCEND_HOSTPID";
+        case MM_ENV_RANK_ID:
+            return "RANK_ID";
+        case MM_ENV_ASCEND_TOOLKIT_HOME:
+            return "ASCEND_TOOLKIT_HOME";
+        case MM_ENV_ASCEND_RT_VISIBLE_DEVICES:
+            return "ASCEND_RT_VISIBLE_DEVICES";
+        case MM_ENV_ASCEND_COREDUMP_SIGNAL:
+            return "ASCEND_COREDUMP_SIGNAL";
+        case MM_ENV_ASCEND_CACHE_PATH:
+            return "ASCEND_CACHE_PATH";
+        case MM_ENV_ASCEND_OPP_PATH:
+            return "ASCEND_OPP_PATH";
+        case MM_ENV_ASCEND_CUSTOM_OPP_PATH:
+            return "ASCEND_CUSTOM_OPP_PATH";
+        case MM_ENV_ASCEND_LOG_DEVICE_FLUSH_TIMEOUT:
+            return "ASCEND_LOG_DEVICE_FLUSH_TIMEOUT";
+        case MM_ENV_ASCEND_LOG_SAVE_MODE:
+            return "ASCEND_LOG_SAVE_MODE";
+        case MM_ENV_ASCEND_SLOG_PRINT_TO_STDOUT:
+            return "ASCEND_SLOG_PRINT_TO_STDOUT";
+        case MM_ENV_ASCEND_GLOBAL_EVENT_ENABLE:
+            return "ASCEND_GLOBAL_EVENT_ENABLE";
+        case MM_ENV_ASCEND_GLOBAL_LOG_LEVEL:
+            return "ASCEND_GLOBAL_LOG_LEVEL";
+        case MM_ENV_ASCEND_MODULE_LOG_LEVEL:
+            return "ASCEND_MODULE_LOG_LEVEL";
+        case MM_ENV_ASCEND_HOST_LOG_FILE_NUM:
+            return "ASCEND_HOST_LOG_FILE_NUM";
+        case MM_ENV_ASCEND_PROCESS_LOG_PATH:
+            return "ASCEND_PROCESS_LOG_PATH";
+        case MM_ENV_ASCEND_LOG_SYNC_SAVE:
+            return "ASCEND_LOG_SYNC_SAVE";
+        case MM_ENV_PROFILER_SAMPLECONFIG:
+            return "PROFILER_SAMPLECONFIG";
+        case MM_ENV_ACP_PIPE_FD:
+            return "ACP_PIPE_FD";
+        case MM_ENV_PROFILING_MODE:
+            return "PROFILING_MODE";
+        case MM_ENV_DYNAMIC_PROFILING_KEY_PID:
+            return "DYNAMIC_PROFILING_KEY_PID";
+        case MM_ENV_HOME:
+            return "HOME";
+        case MM_ENV_AOS_TYPE:
+            return "AOS_TYPE";
+        case MM_ENV_LD_LIBRARY_PATH:
+            return "LD_LIBRARY_PATH";
+        default:
+            return nullptr;
+    }
+}
+
 CHAR *mmSysGetEnv(mmEnvId id)
 {
-    mmEnvInfo *envInfo = GetEnvInfoById(id);
-    if (envInfo != nullptr) {
-        printf("==mmSysGetEnv==[id=%d,str=%s]", id, envInfo->name);
-        return getenv(envInfo->name);
+    const CHAR *envName = GetEnvNameById(id);
+    if (envName != nullptr) {
+        printf("==mmSysGetEnv==[id=%d,str=%s]", id, envName);
+        return getenv(envName);
     }
     return nullptr;
 }
 
 INT32 mmSysSetEnv(mmEnvId id, const CHAR *value, INT32 overwrite)
 {
-    mmEnvInfo *envInfo = GetEnvInfoById(id);
-    if (envInfo == nullptr) {
+    const CHAR *envName = GetEnvNameById(id);
+    if (envName == nullptr) {
         return EN_INVALID_PARAM;
     }
-    return setenv(envInfo->name, value, overwrite);
+    return setenv(envName, value, overwrite);
 }

@@ -21,13 +21,34 @@ using namespace analysis::dvvp::common::error;
 using namespace Analysis::Dvvp::Adx;
 
 extern int g_sprintf_s_flag;
+static char *g_hdcReadBuf = nullptr;
+static int g_hdcReadBufLen = 0;
+static int g_hdcReadRecvBufCount = 1;
+
+static char *PrepareHdcReadPacket(IdeDaemonPackageType type, int8_t isLast, int &bufLen, int &recvBufCount)
+{
+    recvBufCount = 1;
+    bufLen = 100;
+    char *bufTmp = static_cast<char *>(malloc(bufLen));
+    memset(bufTmp, 0, bufLen);
+    struct IdeHdcPacket *packet = reinterpret_cast<struct IdeHdcPacket *>(bufTmp);
+    packet->type = type;
+    packet->isLast = isLast;
+    packet->len = bufLen - sizeof(struct IdeHdcPacket);
+    g_hdcReadBuf = bufTmp;
+    g_hdcReadBufLen = bufLen;
+    g_hdcReadRecvBufCount = recvBufCount;
+    return bufTmp;
+}
+
 class HDC_API_UTEST: public testing::Test {
 protected:
     virtual void SetUp() {
-
+        GlobalMockObject::reset();
     }
     virtual void TearDown() {
         GlobalMockObject::verify();
+        GlobalMockObject::reset();
     }
 };
 
@@ -94,87 +115,194 @@ TEST_F(HDC_API_UTEST, HdcRead_invalid_parameters)
     EXPECT_EQ(IDE_DAEMON_ERROR, HdcReadNb(NULL, NULL, NULL));
 }
 
-TEST_F(HDC_API_UTEST, HdcRead)
+TEST_F(HDC_API_UTEST, HdcReadAllocMsgFailed)
 {
     HDC_SESSION session = (HDC_SESSION)(0x12345678);
-    void *buf = (void *)0x87654321;
+    void *buf = nullptr;
     int recv_len = 100;
-    int recvBufCount= 1;
-    int buf_len = 100;
-    struct drvHdcMsg *hdcMsg = (struct drvHdcMsg *)0x12345678;
-    char *buf_tmp = (char *)malloc(buf_len);
-    struct IdeHdcPacket *packet = (struct IdeHdcPacket*)buf_tmp;
-    memset(buf_tmp,0,100);
-    packet->type = IDE_DAEMON_LITTLE_PACKAGE;
-    packet->isLast = 1;
-    packet->len=100-sizeof(struct IdeHdcPacket);
+
     MOCKER(drvHdcAllocMsg)
         .stubs()
-        .with(any(), outBoundP(&hdcMsg, sizeof(struct drvHdcMsg *)), any())
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+        .will(returnValue(DRV_ERROR_NO_DEVICE));
+
+    EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len, 0));
+}
+
+TEST_F(HDC_API_UTEST, HdcReadRecvFailed)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
 
     MOCKER(halHdcRecv)
         .stubs()
-        .with(any(), any(), any(), any(), outBoundP(&recvBufCount, sizeof(recvBufCount)))
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NON_BLOCK))
-        .then(returnValue(DRV_ERROR_SOCKET_CLOSE))
-        .then(returnValue(DRV_ERROR_NONE));
-
-    MOCKER(drvHdcGetMsgBuffer)
-        .stubs()
-        .with(any(), any(), outBoundP(&buf_tmp, sizeof(buf_tmp)), outBoundP(&buf_len, sizeof(buf_len)))
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
-
-    MOCKER(drvHdcReuseMsg)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
-
+        .will(returnValue(DRV_ERROR_NO_DEVICE));
     MOCKER(drvHdcFreeMsg)
         .stubs()
-        .will(returnValue(DRV_ERROR_NONE))    //drvHdcRecv
-        .then(returnValue(DRV_ERROR_NONE))    //drvHdcRecv
-        .then(returnValue(DRV_ERROR_NONE))  //drvHdcRecv
-        .then(returnValue(DRV_ERROR_NONE))    //drvHdcGetMsgBuffer
-        .then(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+        .will(returnValue(DRV_ERROR_NONE));
 
-    /*drvHdcAllocMsg error*/
-    EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len, 0));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    /*drvHdcRecv error*/
     EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    /*drvHdcRecv no block*/
+}
+
+TEST_F(HDC_API_UTEST, HdcReadRecvNoData)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+    MOCKER(halHdcRecv)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NON_BLOCK));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+
     EXPECT_EQ(IDE_DAEMON_RECV_NODATA, HdcRead(session, &buf, &recv_len));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    /*drvHdcFreeMsg error*/
+}
+
+TEST_F(HDC_API_UTEST, HdcReadSocketClose)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+
+    MOCKER(halHdcRecv)
+        .stubs()
+        .will(returnValue(DRV_ERROR_SOCKET_CLOSE));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+
     EXPECT_EQ(IDE_DAEMON_SOCK_CLOSE, HdcRead(session, &buf, &recv_len));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    /*drvHdcGetMsgBuffer error*/
-    EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len)); //test drvHdcGetMsgBuffer²¿·
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    /*drvHdcFreeMsg error*/
+}
+
+TEST_F(HDC_API_UTEST, HdcReadGetMsgBufferFailed)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+    int recvBufCount = 1;
+    g_hdcReadRecvBufCount = recvBufCount;
+
+    MOCKER(halHdcRecv)
+        .stubs()
+        .with(any(), any(), any(), any(), outBoundP(&g_hdcReadRecvBufCount, sizeof(g_hdcReadRecvBufCount)), any())
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcGetMsgBuffer)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+
     EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    /*drvHdcReuseMsg error*/
-    packet->isLast = 0;
+}
+
+TEST_F(HDC_API_UTEST, HdcReadFreeMsgFailed)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+    int bufLen = 0;
+    int recvBufCount = 0;
+    char *bufTmp = PrepareHdcReadPacket(IDE_DAEMON_LITTLE_PACKAGE, 1, bufLen, recvBufCount);
+
+    MOCKER(halHdcRecv)
+        .stubs()
+        .with(any(), any(), any(), any(), outBoundP(&g_hdcReadRecvBufCount, sizeof(g_hdcReadRecvBufCount)), any())
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcGetMsgBuffer)
+        .stubs()
+        .with(any(), any(), outBoundP(&g_hdcReadBuf, sizeof(g_hdcReadBuf)),
+            outBoundP(&g_hdcReadBufLen, sizeof(g_hdcReadBufLen)))
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NO_DEVICE));
+
     EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    packet->type = IDE_DAEMON_BIG_PACKAGE;
+    free(bufTmp);
+}
+
+TEST_F(HDC_API_UTEST, HdcReadReuseMsgFailed)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+    int bufLen = 0;
+    int recvBufCount = 0;
+    char *bufTmp = PrepareHdcReadPacket(IDE_DAEMON_LITTLE_PACKAGE, 0, bufLen, recvBufCount);
+
+    MOCKER(halHdcRecv)
+        .stubs()
+        .with(any(), any(), any(), any(), outBoundP(&g_hdcReadRecvBufCount, sizeof(g_hdcReadRecvBufCount)), any())
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcGetMsgBuffer)
+        .stubs()
+        .with(any(), any(), outBoundP(&g_hdcReadBuf, sizeof(g_hdcReadBuf)),
+            outBoundP(&g_hdcReadBufLen, sizeof(g_hdcReadBufLen)))
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcReuseMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+
     EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len));
-    hdcMsg = (struct drvHdcMsg *)0x12345678;
-    packet->type = IDE_DAEMON_LITTLE_PACKAGE;
-    /*true*/
-    packet->isLast = 1;
+    free(bufTmp);
+}
+
+TEST_F(HDC_API_UTEST, HdcReadStorePackageFailed)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+    int bufLen = 0;
+    int recvBufCount = 0;
+    char *bufTmp = PrepareHdcReadPacket(IDE_DAEMON_BIG_PACKAGE, 1, bufLen, recvBufCount);
+
+    MOCKER(halHdcRecv)
+        .stubs()
+        .with(any(), any(), any(), any(), outBoundP(&g_hdcReadRecvBufCount, sizeof(g_hdcReadRecvBufCount)), any())
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcGetMsgBuffer)
+        .stubs()
+        .with(any(), any(), outBoundP(&g_hdcReadBuf, sizeof(g_hdcReadBuf)),
+            outBoundP(&g_hdcReadBufLen, sizeof(g_hdcReadBufLen)))
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+
+    EXPECT_EQ(IDE_DAEMON_ERROR, HdcRead(session, &buf, &recv_len));
+    free(bufTmp);
+}
+
+TEST_F(HDC_API_UTEST, HdcRead)
+{
+    HDC_SESSION session = (HDC_SESSION)(0x12345678);
+    void *buf = nullptr;
+    int recv_len = 100;
+    int bufLen = 0;
+    int recvBufCount = 0;
+    char *bufTmp = PrepareHdcReadPacket(IDE_DAEMON_LITTLE_PACKAGE, 1, bufLen, recvBufCount);
+
+    MOCKER(halHdcRecv)
+        .stubs()
+        .with(any(), any(), any(), any(), outBoundP(&g_hdcReadRecvBufCount, sizeof(g_hdcReadRecvBufCount)), any())
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcGetMsgBuffer)
+        .stubs()
+        .with(any(), any(), outBoundP(&g_hdcReadBuf, sizeof(g_hdcReadBuf)),
+            outBoundP(&g_hdcReadBufLen, sizeof(g_hdcReadBufLen)))
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvHdcFreeMsg)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+
     EXPECT_EQ(DRV_ERROR_NONE, HdcRead(session, &buf, &recv_len));
     free(buf);
-    buf = NULL;
-    free(buf_tmp);
-    buf_tmp = NULL;
+    free(bufTmp);
 }
 
 TEST_F(HDC_API_UTEST, HdcReadNb)
