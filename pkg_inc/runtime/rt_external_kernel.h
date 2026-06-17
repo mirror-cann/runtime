@@ -578,6 +578,18 @@ RTS_API rtError_t rtNopTask(rtStream_t stm);
 RTS_API void rtRegisterVariable(void *binHandle, const void *hostVar, const char *deviceVarName,
                                 size_t size, uint32_t flags, void *reserve);
 
+/**
+ * @ingroup rt_kernel
+ * @brief register kernel function symbol mapping relationship.
+ * @param [in] binHandle   binary handle
+ * @param [in] symbol   kernel function reference
+ * @param [in] kernelName   kernel function name
+ * @param [in] reserve   reserved parameter
+ * @return ACL_RT_SUCCESS for ok
+ * @return ACL_ERROR_RT_PARAM_INVALID for error input
+ */
+RTS_API rtError_t rtRegisterFuncSymbol(void *binHandle, const void *symbol, const char *kernelName,
+                                       void *reserve);
 #if defined(__cplusplus)
 }
 #endif

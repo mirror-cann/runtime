@@ -115,19 +115,6 @@ RTS_API rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char *nam
 
 /**
  * @ingroup rt_kernel
- * @brief register kernel function symbol mapping relationship.
- * @param [in] binHandle   binary handle
- * @param [in] symbol   kernel function reference
- * @param [in] kernelName   kernel function name
- * @param [in] reserve   reserved parameter
- * @return ACL_RT_SUCCESS for ok
- * @return ACL_ERROR_RT_PARAM_INVALID for error input
- */
-RTS_API rtError_t rtRegisterFuncSymbol(void *binHandle, const void *symbol, const char *kernelName,
-                                       void *reserve);
-
-/**
- * @ingroup rt_kernel
  * @brief Get function handle by function symbol.
  * @param [in] symbol kernel function name
  * @param [out] funcHandle if find, this will be the function handle
