@@ -20,7 +20,6 @@
 #include <map>
 #include "base.hpp"
 #include "elf.hpp"
-#include "runtime/elf_base.h"
 #include "osal.hpp"
 #include "stream_factory.hpp"
 
