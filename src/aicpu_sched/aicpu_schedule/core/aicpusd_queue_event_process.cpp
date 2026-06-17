@@ -80,6 +80,9 @@ namespace AicpuSchedule {
                 ret = resRet;
             }
         }
+        if (FeatureCtrl::GetAicpuSchedMode() == SCHED_MODE_MSGQ) {
+            MessageQueue::SendResponse(0U, 0U);
+        }
         aicpusd_debug("End to process drv event. eventId=%u, subEventId=%u, hostPid=%d, grpId=%u",
                       event.comm.event_id, event.comm.subevent_id, event.comm.host_pid, event.comm.grp_id);
         return ret;
@@ -487,9 +490,6 @@ namespace AicpuSchedule {
         response.msg_len = static_cast<uint32_t>(len);
         response.msg = const_cast<char_t *>(msg);
         const int32_t drvRet = halEschedSubmitEvent(AicpuDrvManager::GetInstance().GetDeviceId(), &response);
-        if (FeatureCtrl::GetAicpuSchedMode() == SCHED_MODE_MSGQ) {
-            MessageQueue::SendResponse(0U, 0U);
-        }
         if (drvRet != DRV_ERROR_NONE) {
             aicpusd_err("Failed to response event to acl event_id[%u], subevent_id[%u].", event.comm.event_id,
                 event.comm.subevent_id);

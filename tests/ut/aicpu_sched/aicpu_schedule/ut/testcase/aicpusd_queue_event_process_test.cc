@@ -17,6 +17,8 @@
 #define private public
 #include "aicpusd_queue_event_process.h"
 #include "aicpusd_event_manager.h"
+#include "aicpusd_feature_ctrl.h"
+#include "aicpusd_message_queue.h"
 #undef private
 
 using namespace AicpuSchedule;
@@ -237,6 +239,47 @@ TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_05)
     event.comm.subevent_id = 10000;
     auto ret = AicpuQueueEventProcess::GetInstance().ProcessDrvMsg(event);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+}
+
+TEST_F(AicpusdQueueEventProcessTest, ProcessDrvMsgMsgqModeSendResponseAfterDrvProcess)
+{
+    event_info event = {{EVENT_DRV_MSG}, {0}};
+    event.comm.event_id = EVENT_DRV_MSG;
+    event.comm.subevent_id = DRV_SUBEVENT_ENQUEUE_MSG;
+
+    MOCKER(halEventProc)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER_CPP(&FeatureCtrl::GetAicpuSchedMode)
+        .stubs()
+        .will(returnValue(SCHED_MODE_MSGQ));
+    MOCKER_CPP(&MessageQueue::SendResponse)
+        .expects(once());
+
+    const auto ret = AicpuQueueEventProcess::GetInstance().ProcessDrvMsg(event);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+}
+
+TEST_F(AicpusdQueueEventProcessTest, ProcessDrvMsgMsgqModeSendResponseAfterResponseEvent)
+{
+    event_info event = {{EVENT_DRV_MSG}, {0}};
+    event.comm.event_id = EVENT_DRV_MSG;
+    event.comm.subevent_id = DRV_SUBEVENT_QUEUE_INIT_MSG;
+
+    MOCKER_CPP(&AicpuQueueEventProcess::GetOrCreateGroup)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_DRV_ERR));
+    MOCKER_CPP(&AicpuQueueEventProcess::ResponseEvent)
+        .expects(once())
+        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&FeatureCtrl::GetAicpuSchedMode)
+        .stubs()
+        .will(returnValue(SCHED_MODE_MSGQ));
+    MOCKER_CPP(&MessageQueue::SendResponse)
+        .expects(once());
+
+    const auto ret = AicpuQueueEventProcess::GetInstance().ProcessDrvMsg(event);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessQsMsg_Failed)
