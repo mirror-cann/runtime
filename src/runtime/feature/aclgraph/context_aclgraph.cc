@@ -454,7 +454,7 @@ static inline void ClearCaptureModel(Context * const ctx, Stream * const stm, Mo
     }
 }
 
-bool Context::CheckSubModelsIsEndCapture(Stream * const captureStream)
+bool Context::CheckSubModelsIsEndCapture(Stream * const captureStream) const
 {
     CaptureModel *captureModel = dynamic_cast<CaptureModel * const>(captureStream->Model_());
     COND_RETURN_ERROR(captureModel == nullptr, false,
@@ -898,7 +898,7 @@ rtError_t Context::SubmitCaptureConditionTask(CondHandle *condHandle, Stream * c
     return RT_ERROR_NONE;
 }
 
-rtError_t Context::PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm)
+rtError_t Context::PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm) const
 {
     Notify *notify = condHandle->GetSubModelNotify();
     for (Model *mdl : condHandle->GetSubCaptureModels()) {
