@@ -503,7 +503,8 @@ rtError_t Context::Setup()
     ERROR_RETURN(error, "Failed to init context, retCode=%#x.", error);
 
     error = SetOverflowAddr();
-    ERROR_RETURN(error, "Failed to set overflow address, retCode=%#x.", error);
+    COND_RETURN_ERROR(error != RT_ERROR_NONE && error != RT_ERROR_DRV_OUT_MEMORY, error,
+        "Failed to set overflow address, retCode=%#x.", error);
 
     if (isPrimary_) {
         defaultStream_ = device_->PrimaryStream_();
