@@ -362,16 +362,11 @@ install_libtool() {
             run_command sudo $PKG_MANAGER install -y libtool
             run_command sudo $PKG_MANAGER install -y libtool-bin
             ;;
-        rhel)
+        rhel|euler)
             run_command sudo $PKG_MANAGER install -y libtool
-            run_command sudo $PKG_MANAGER install -y libtool-bin
             ;;
         macos)
             run_command brew install libtool
-            run_command brew install libtool-bin
-            ;;
-        euler)
-            run_command sudo $PKG_MANAGER install -y libtool
             ;;
     esac
 
