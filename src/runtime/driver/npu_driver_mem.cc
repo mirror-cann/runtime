@@ -1209,7 +1209,8 @@ rtError_t NpuDriver::MemAllocPolicyOffline(void ** const dptr, const uint64_t si
     const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId) const
 {
     drvError_t drvRet;
-    if ((memPolicy == RT_MEMORY_POLICY_NONE) || (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_FIRST)) {
+    if ((memPolicy == RT_MEMORY_POLICY_NONE) || (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_FIRST) ||
+        (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_FIRST_P2P)) {
         const rtError_t temptRet = MemAllocHugePolicyPageOffline(dptr, size, type, deviceId, moduleId);
         return temptRet;
     }
@@ -1219,7 +1220,7 @@ rtError_t NpuDriver::MemAllocPolicyOffline(void ** const dptr, const uint64_t si
     }
 
     uint64_t drvFlag = 0U;
-    if (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_ONLY) {
+    if ((memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_ONLY) || (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_ONLY_P2P)) {
         drvFlag = static_cast<uint64_t>(MEM_SET_ALIGN_SIZE(9ULL)) |
             static_cast<uint64_t>(MEM_SVM_HUGE) | static_cast<uint64_t>(NODE_TO_DEVICE(deviceId));
     } else {
