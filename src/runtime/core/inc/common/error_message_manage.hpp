@@ -202,11 +202,11 @@
 
 //EE1017 预留参数校验使用
 #define RT_LOG_OUTER_MSG_RESERVED_PARAM(param, reason) \
-    RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, param, reason)
+    RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, (param), (reason))
 
 #define COND_RETURN_AND_MSG_RESERVED_PARAM(COND, RTERRCODE, param, reason) \
     if (unlikely(COND)) { \
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, param, reason); \
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, (param), (reason)); \
         return RTERRCODE; \
     }
 

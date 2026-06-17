@@ -341,7 +341,7 @@ void ParsePrintToLog(const char *format, const uint8_t *paramBegin, const uint32
 
 void PrintDumpBase(const DumpInfoHead *dumpHead, uint32_t flag)
 {
-    uint32_t resvOffset = (flag == PRINT_SIMT) ? RESV_LEN_SIMT : RESV_LEN;
+    const uint32_t resvOffset = (flag == PRINT_SIMT) ? RESV_LEN_SIMT : RESV_LEN;
     RT_LOG(RT_LOG_DEBUG, "Get dump print dataLen[%u bytes].", dumpHead->infoLen);
     // 预留8字节, strOffset占位8字节
     COND_RETURN_VOID(dumpHead->infoLen < (PRINT_ARG_LEN + resvOffset),
@@ -896,7 +896,6 @@ rtError_t GetReadLenAndAddr(const uint8_t *blockAddr, const size_t blockSize, ui
     const uint8_t *dumpStartAddr = blockAddr + sizeof(BlockInfo) + sizeof(BlockReadInfo);
 
     const uint64_t readIdx = readInfo->readIdx % blockInfo->remainLen;
-    const uint64_t writeIdx = writeInfo->writeIdx % blockInfo->remainLen;
 
     if (writeInfo->writeIdx - readInfo->readIdx > blockInfo->remainLen) {
         totalReadBufLen = blockInfo->remainLen;
@@ -905,6 +904,7 @@ rtError_t GetReadLenAndAddr(const uint8_t *blockAddr, const size_t blockSize, ui
         (void)memcpy_s(dumpInfoVec.data() + blockInfo->remainLen - readIdx, readIdx, dumpStartAddr, readIdx);
         dumpReadStartAddr = dumpInfoVec.data();
     } else {
+        const uint64_t writeIdx = writeInfo->writeIdx % blockInfo->remainLen;
         if (readIdx > writeIdx) {
             totalReadBufLen = blockInfo->remainLen - readIdx + writeIdx;
             dumpInfoVec.resize(totalReadBufLen, 0);

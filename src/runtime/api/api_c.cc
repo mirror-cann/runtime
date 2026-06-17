@@ -4026,8 +4026,8 @@ rtError_t rtCtxGetCurrentDefaultStream(rtStream_t *stm)
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->CtxGetCurrentDefaultStream(RtPtrToPtr<Stream **>(stm));
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    StoreOptionalEmbeddedHandle<rtStream_t>(
-        ((stm == nullptr) || (*stm == nullptr)) ? nullptr : RtPtrToPtr<Stream *>(*stm), stm);
+    Stream *streamPtr = ((stm == nullptr) || (*stm == nullptr)) ? nullptr : RtPtrToPtr<Stream *>(*stm);
+    StoreOptionalEmbeddedHandle<rtStream_t>(streamPtr, stm);
     return ACL_RT_SUCCESS;
 }
 
