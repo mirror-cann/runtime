@@ -116,7 +116,7 @@ namespace {
 
     std::string ConvertVersion(const std::string& version)
     {
-        size_t dashPos = version.find('-');
+        const size_t dashPos = version.find('-');
         if (dashPos == std::string::npos) {
             return version;
         }
@@ -137,7 +137,7 @@ namespace {
         size_t stackSize = 0;
         bool stackSizeExist = false;
 
-        auto ret = acl::JsonParser::GetStackSizeByType(configPath, typeName, stackSize, stackSizeExist);
+        const aclError ret = acl::JsonParser::GetStackSizeByType(configPath, typeName, stackSize, stackSizeExist);
         if (ret != ACL_SUCCESS) {
             return ACL_ERROR_FAILURE;
         }
@@ -163,7 +163,7 @@ namespace {
             rtLimitType_t limitType = entry.first;
             const std::string& typeName = entry.second;
 
-            aclError ret = SetStackSizeByType(configPath, limitType, typeName.c_str());
+            const aclError ret = SetStackSizeByType(configPath, limitType, typeName.c_str());
             if (ret == ACL_ERROR_FAILURE) {
                 return ret; // 如果返回 ACL_ERROR_FAILURE，直接返回错误
             }
@@ -180,7 +180,7 @@ namespace {
         size_t fifoSize = 0;
         bool found = false;
 
-        auto ret = acl::JsonParser::GetPrintFifoSizeByType(configPath, typeName, fifoSize, found);
+        const aclError ret = acl::JsonParser::GetPrintFifoSizeByType(configPath, typeName, fifoSize, found);
         if (ret != ACL_SUCCESS) {
             return ACL_ERROR_FAILURE;
         }
@@ -189,7 +189,7 @@ namespace {
             return ACL_SUCCESS;
         }
 
-        rtError_t rtErr = rtDeviceSetLimit(0, limitType, static_cast<uint32_t>(fifoSize));
+        const rtError_t rtErr = rtDeviceSetLimit(0, limitType, static_cast<uint32_t>(fifoSize));
         if (rtErr != RT_ERROR_NONE) {
             ACL_LOG_CALL_ERROR("set limit (%s %zu) failed, runtime result = %d.", typeName.c_str(), fifoSize,
                 static_cast<int32_t>(rtErr));
@@ -298,7 +298,6 @@ aclError HandleErrorManagerConfig(const char_t *const configPath, error_message:
 
 aclError HandleEventModeConfig(const char_t *const configPath) {
     ACL_LOG_INFO("Start to execute HandleEventModeConfig, configPath:[%s].", configPath);
-    std::string strConfig;
     uint8_t event_mode = 0;
     bool found = false;
 
@@ -350,7 +349,7 @@ bool IsEnableAutoUCMemeory()
     const char_t *autoUcMemory = nullptr;
     MM_SYS_GET_ENV(MM_ENV_AUTO_USE_UC_MEMORY, autoUcMemory);
     // enable: env does not exist or set to 1
-    bool enable = ((autoUcMemory == nullptr) || (strlen(autoUcMemory) == 0UL) || (autoUcMemory[0] == '1'));
+    const bool enable = ((autoUcMemory == nullptr) || (strlen(autoUcMemory) == 0UL) || (autoUcMemory[0] == '1'));
     ACL_LOG_INFO("auto-uc-memory is %s.", enable ? "enabled" : "disabled");
     return enable;
 }
@@ -359,7 +358,7 @@ void GetAllPackageVersion()
 {
     for (const auto &pkgName : kMapToPkgName) {
         aclCANNPackageVersion pkgVersion = {};
-        auto ret = aclsysGetCANNVersionImpl(pkgName.first, &pkgVersion);
+        const aclError ret = aclsysGetCANNVersionImpl(pkgName.first, &pkgVersion);
         if (ret == ACL_SUCCESS) {
             ACL_LOG_EVENT("Version of %s package is %s", pkgName.second.c_str(), pkgVersion.version);
         } else {
@@ -415,7 +414,7 @@ aclError aclInitImpl(const char *configPath)
         return ret;
     }
 
-    int32_t initRet = static_cast<uint32_t>(error_message::ErrMgrInit(error_mode));
+    const int32_t initRet = static_cast<uint32_t>(error_message::ErrMgrInit(error_mode));
     if (initRet != 0) {
         ACL_LOG_WARN("Cannot init ge errorManager, ge errorCode = %d", initRet);
     }
@@ -426,7 +425,7 @@ aclError aclInitImpl(const char *configPath)
 
     // init acl_model
     auto cfgStr = configStr.c_str();
-    auto cfgLen = configStr.size();
+    const size_t cfgLen = configStr.size();
     ret = acl::InitCallbackManager::GetInstance().NotifyInitCallback(ACL_REG_TYPE_ACL_MODEL,
                                                                      cfgStr, cfgLen);
     if (ret != ACL_SUCCESS) {
@@ -678,7 +677,7 @@ bool IsFileExist(const std::string &path)
     return mmRealPath(path.c_str(), realPath, MMPA_MAX_PATH) == EN_OK;
 }
 
-bool ParseVersionInfo(const std::string &path, std::string &versionInfo)
+static bool ParseVersionInfo(const std::string &path, std::string &versionInfo)
 {
     std::ifstream ifs(path, std::ifstream::in);
     ACL_CHECK_FILE_OPEN_FAILED(ifs.is_open(), path.c_str(), "Failed to open file", false);
@@ -913,7 +912,7 @@ aclError GetVersionStringInternal(const std::string &fullPath, const char_t *pkg
     return ACL_SUCCESS;
 }
 
-aclError GetVersionByPkgName(const std::string &targetPkgName, std::string &versionContent, bool isSilent) {
+static aclError GetVersionByPkgName(const std::string &targetPkgName, std::string &versionContent, bool isSilent) {
     std::string fullPath;
 
     // Driver/Firmware
@@ -952,9 +951,11 @@ aclError GetPkgVersionContent(const char *pkgName, std::string &versionContent) 
     if (originPkgName.find('-') != std::string::npos) {
         std::replace(altPkgName.begin(), altPkgName.end(), '-', '_');
         hasAlternative = true;
-    } else if (originPkgName.find('_') != std::string::npos) {
-        std::replace(altPkgName.begin(), altPkgName.end(), '_', '-');
-        hasAlternative = true;
+    } else {
+        if (originPkgName.find('_') != std::string::npos) {
+            std::replace(altPkgName.begin(), altPkgName.end(), '_', '-');
+            hasAlternative = true;
+        }
     }
 
     bool isSilent = hasAlternative;
@@ -990,7 +991,7 @@ aclError aclsysGetVersionStrImpl(char *pkgName, char *versionStr)
 
     std::string verInfo;
 
-    aclError ret = GetPkgVersionContent(pkgName, verInfo);
+    const aclError ret = GetPkgVersionContent(pkgName, verInfo);
     if (ret != ACL_SUCCESS) {
         return ret;
     }
@@ -1021,7 +1022,7 @@ aclError aclsysGetVersionStrImpl(char *pkgName, char *versionStr)
 
 // Allowed format: "001", ".1", "-1"
 // Not allowed format: "..1", ".", "-a", "a"
-bool ParsePreNumStrict(const std::string &suffix, int32_t &outNum) {
+static bool ParsePreNumStrict(const std::string &suffix, int32_t &outNum) {
     if (suffix.empty()) {
         outNum = 0;
         return true;
@@ -1069,28 +1070,28 @@ bool ParsePreNumStrict(const std::string &suffix, int32_t &outNum) {
     return true;
 }
 
-aclError ParseBaseVersion(const std::string &verStr, int32_t &baseVal, size_t &endPos) {
+static aclError ParseBaseVersion(const std::string &verStr, int32_t &baseVal, size_t &endPos) {
     int major = 0;
     int minor = 0;
     int patch = 0;
 
     try {
         // Find first point
-        size_t dot1 = verStr.find('.');
+        const size_t dot1 = verStr.find('.');
         if (dot1 == std::string::npos || dot1 == 0) {
             ACL_LOG_ERROR("Invalid format [%s]. Missing major version.", verStr.c_str());
             return ACL_ERROR_INTERNAL_ERROR;
         }
 
         // Find second point
-        size_t dot2 = verStr.find('.', dot1 + 1);
+        const size_t dot2 = verStr.find('.', dot1 + 1);
         if (dot2 == std::string::npos || dot2 == dot1 + 1) {
             ACL_LOG_ERROR("Invalid format [%s]. Missing minor version.", verStr.c_str());
             return ACL_ERROR_INTERNAL_ERROR;
         }
 
         // Find patch number
-        size_t numStart = dot2 + 1;
+        const size_t numStart = dot2 + 1;
         size_t numEnd = numStart;
         while (numEnd < verStr.length() && std::isdigit(static_cast<unsigned char>(verStr[numEnd]))) {
             numEnd++;
@@ -1115,7 +1116,7 @@ aclError ParseBaseVersion(const std::string &verStr, int32_t &baseVal, size_t &e
     return ACL_SUCCESS;
 }
 
-aclError ParsePrereleasePart(const std::string &rawSuffix, int32_t &adjustment) {
+static aclError ParsePrereleasePart(const std::string &rawSuffix, int32_t &adjustment) {
     std::string suffix = rawSuffix;
     std::transform(suffix.begin(), suffix.end(), suffix.begin(),
                    [](unsigned char c){ return std::tolower(c); });
@@ -1230,9 +1231,9 @@ static std::string GetFaultEventInfo()
 
     rtDmsEventFilter filter = {};
     const uint32_t maxFaultNum = 128UL; // max is 128
-    rtDmsFaultEvent faultEventInfo[maxFaultNum] = {};
+    std::vector<rtDmsFaultEvent> faultEventInfo(maxFaultNum, rtDmsFaultEvent{});
     uint32_t eventCount = 0UL;
-    ret = rtGetFaultEvent(deviceId, &filter, faultEventInfo, maxFaultNum, &eventCount);
+    ret = rtGetFaultEvent(deviceId, &filter, &faultEventInfo[0U], maxFaultNum, &eventCount);
     if (ret != RT_ERROR_NONE || eventCount == 0UL) {
         ACL_LOG_INFO("Cannot get fault event of device %d, runtime errorCode is %d",
             deviceId, static_cast<int32_t>(ret));

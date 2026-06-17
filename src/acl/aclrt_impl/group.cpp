@@ -21,7 +21,7 @@
 namespace {
 
 static aclError FillAttrValue(const void *const src, const size_t srcLen, void *const dst, const size_t dstLen,
-    size_t *const paramRetSize, const char *funcName)
+    size_t *const paramRetSize, const char *functionName)
 {
     ACL_REQUIRES_NOT_NULL(src);
     ACL_REQUIRES_NOT_NULL(dst);
@@ -33,7 +33,7 @@ static aclError FillAttrValue(const void *const src, const size_t srcLen, void *
             "required size is " + std::to_string(srcLen) + ", cannot save the computing power information";
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
             std::vector<const char *>({"func", "value", "param", "reason"}),
-            std::vector<const char *>({funcName, dstLenVal.c_str(), "valueLen", reason.c_str()}));
+            std::vector<const char *>({functionName, dstLenVal.c_str(), "valueLen", reason.c_str()}));
         return ACL_ERROR_INVALID_PARAM;
     }
     const auto ret = memcpy_s(dst, dstLen, src, srcLen);
@@ -47,7 +47,7 @@ static aclError FillAttrValue(const void *const src, const size_t srcLen, void *
         const std::string extendInfo = ss.str();
         acl::AclErrorLogManager::ReportInputError(acl::STANDARD_FUNC_FAILED_MSG,
             std::vector<const char *>({"func1", "func2", "ret_code", "reason", "extend_info"}),
-            std::vector<const char *>({funcName, "memcpy_s", retVal.c_str(),
+            std::vector<const char *>({functionName, "memcpy_s", retVal.c_str(),
                 strerror(ret), extendInfo.c_str()}));
         return ACL_ERROR_FAILURE;
     }

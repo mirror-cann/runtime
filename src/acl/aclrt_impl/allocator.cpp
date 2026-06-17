@@ -33,7 +33,7 @@ public:
         this->allocAdviseFunc = allocAdviseFunc;
         this->getAddrFromBlockFunc = getAddrFromBlockFunc;
     }
-    aclrtAllocator obj;
+    aclrtAllocator obj = nullptr;
     aclrtAllocatorAllocFunc allocFunc;
     aclrtAllocatorFreeFunc freeFunc;
     aclrtAllocatorAllocAdviseFunc allocAdviseFunc;
