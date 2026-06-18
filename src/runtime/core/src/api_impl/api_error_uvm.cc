@@ -68,7 +68,7 @@ rtError_t ApiErrorDecorator::MemManagedGetAttrs(rtMemManagedRangeAttribute *attr
                                             std::to_string(rtMemRangeAttributeLastPrefetchLocationId) + "]");
     }
 
-    rtError_t error = impl_->MemManagedGetAttrs(attributes, numAttributes, ptr, size, data, dataSizes);
+    const rtError_t error = impl_->MemManagedGetAttrs(attributes, numAttributes, ptr, size, data, dataSizes);
     COND_RETURN_ERROR((error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_NOT_SUPPORT), error, "Get mem attributes failed");
     return error;
 }
@@ -130,7 +130,7 @@ rtError_t ApiErrorDecorator::MemManagedPrefetchBatchAsync(const void** ptrs, siz
     for (size_t idx = 0; idx < numPrefetchLocs; idx++) {
         if (prefetchLocs[idx].type == rtMemLocationTypeDevice) {
             int32_t numDev = 0;
-            rtError_t ret = impl_->GetDeviceCount(&numDev);
+            const rtError_t ret = impl_->GetDeviceCount(&numDev);
             ERROR_RETURN_MSG_CALL(ERR_MODULE_DRV, ret, "Get device cnt failed, retCode=%#x", static_cast<uint32_t>(ret));
             COND_RETURN_AND_MSG_OUTER_WITH_PARAM((prefetchLocs[idx].id > (numDev - 1)) || (prefetchLocs[idx].id < 0),
                 RT_ERROR_INVALID_VALUE, prefetchLocs[idx].id, "[0, " + std::to_string(numDev - 1) + "]");

@@ -226,8 +226,8 @@ rtError_t DavidDeviceTaskAbort(const int32_t devId, const uint32_t time)
         "DeviceStop timeout, device_id=%d.", devId);
 
     /* 2. Callback HCCL to stop MC2 expand */
-    error = rtInstance->TaskAbortCallBack(devId, RT_DEVICE_ABORT_PRE,
-        ((timeout != 0U) ? (timeout - timeCost[index]) : timeout) / RT_US_TO_MS);
+    const uint32_t abortTimeout = ((timeout != 0U) ? (timeout - timeCost[index]) : timeout) / RT_US_TO_MS;
+    error = rtInstance->TaskAbortCallBack(devId, RT_DEVICE_ABORT_PRE, abortTimeout);
     ERROR_RETURN_MSG_INNER(error,
         "Failed to call the HCCL callback function to complete the preparation before termination, retCode=%#x.",
         static_cast<uint32_t>(error));
@@ -244,7 +244,8 @@ rtError_t DavidDeviceTaskAbort(const int32_t devId, const uint32_t time)
         "Abort app timeout, device_id=%d.", devId);
 
     /* 4. Query all single and model stream terminate/stop succ */
-    error = DavidDeviceQuery(devId, OP_QUERY_ABORT_STATUS, (timeout != 0U) ? (timeout - timeCost[index]) : timeout);
+    const uint64_t queryAbortTimeRemain = (timeout != 0U) ? (timeout - timeCost[index]) : timeout;
+    error = DavidDeviceQuery(devId, OP_QUERY_ABORT_STATUS, queryAbortTimeRemain);
     ERROR_RETURN_MSG_INNER(error,
         "Failed to confirm that tasks in all SQs have been terminated in polling mode, retCode=%#x.",
         static_cast<uint32_t>(error));
@@ -291,7 +292,7 @@ rtError_t GetMemUceInfoProc(const uint32_t deviceId, rtErrorInfo * const errorIn
     rtMemUceInfo memUceInfo = {};
     GlobalContainer::UceMutexLock();
     if (GlobalContainer::FindMemUceInfo(deviceId)) {
-        errno_t ret = memcpy_s(&memUceInfo, sizeof(rtMemUceInfo), GlobalContainer::GetMemUceInfo(deviceId),
+        const errno_t ret = memcpy_s(&memUceInfo, sizeof(rtMemUceInfo), GlobalContainer::GetMemUceInfo(deviceId),
             sizeof(rtMemUceInfo));
         if (ret != EOK) {
             error = RT_ERROR_SEC_HANDLE;

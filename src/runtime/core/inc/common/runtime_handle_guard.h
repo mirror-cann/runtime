@@ -20,14 +20,14 @@ namespace cce {
 namespace runtime {
 
 // Magic Constants
-constexpr uint64_t RT_COND_HANDLE_MAGIC = 0x434F4E44ull; // COND
-constexpr uint64_t RT_MODEL_MAGIC     = 0x4D4F444Cull; // MODL
-constexpr uint64_t RT_LABEL_MAGIC     = 0x4C41424Cull; // LABL
-constexpr uint64_t RT_STREAM_MAGIC    = 0x5354524Dull; // STRM
-constexpr uint64_t RT_EVENT_MAGIC     = 0x45564E54ull; // EVNT
-constexpr uint64_t RT_NOTIFY_MAGIC    = 0x4E544659ull; // NTFY
-constexpr uint64_t RT_CNTNOTIFY_MAGIC = 0x434E5446ull; // CNTF
-constexpr uint64_t RT_KERNEL_MAGIC    = 0x4B524E4Cull; // KRNL
+constexpr uint64_t RT_COND_HANDLE_MAGIC = 0x434F4E44ULL; // COND
+constexpr uint64_t RT_MODEL_MAGIC     = 0x4D4F444CULL; // MODL
+constexpr uint64_t RT_LABEL_MAGIC     = 0x4C41424CULL; // LABL
+constexpr uint64_t RT_STREAM_MAGIC    = 0x5354524DULL; // STRM
+constexpr uint64_t RT_EVENT_MAGIC     = 0x45564E54ULL; // EVNT
+constexpr uint64_t RT_NOTIFY_MAGIC    = 0x4E544659ULL; // NTFY
+constexpr uint64_t RT_CNTNOTIFY_MAGIC = 0x434E5446ULL; // CNTF
+constexpr uint64_t RT_KERNEL_MAGIC    = 0x4B524E4CULL; // KRNL
 
 template <typename T>
 struct RtMagicTraits;

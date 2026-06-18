@@ -504,9 +504,10 @@ bool Engine::ProcessTaskDavinciList(Stream * const stm,  const uint16_t endTaskI
 
         recycleTsk = GetRecycleWorkTask(stm, delTaskId);
         if (recycleTsk == nullptr) {
+            const uint32_t hasTaskResMang = (stm->taskResMang_ == nullptr) ? 0U : 1U;
             RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to find davinci task from task factory, device_id=%u, stream_id=%d, "
                 "isHasPcieBar_=%d, hasTaskResMang_=%u, task_id=%u, endTaskId=%hu, pendingNum=%u, lastTaskId=%u.",
-                deviceId, streamId, stm->isHasPcieBar_, (stm->taskResMang_ == nullptr) ? 0 : 1,
+                deviceId, streamId, stm->isHasPcieBar_, hasTaskResMang,
                 static_cast<uint32_t>(delTaskId), endTaskId, stm->pendingNum_.Value(), stm->GetLastTaskId());
             break;
         }
