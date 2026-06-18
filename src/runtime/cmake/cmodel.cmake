@@ -724,6 +724,7 @@ target_link_libraries(runtime_model PRIVATE
 )
 
 set(libruntime_cmodel_v200_dev_info_src_files
+    ${RUNTIME_DIR}/src/runtime/config/950/dev_info_proc_func.cc
 )
 
 add_library(runtime_model_v200 OBJECT EXCLUDE_FROM_ALL

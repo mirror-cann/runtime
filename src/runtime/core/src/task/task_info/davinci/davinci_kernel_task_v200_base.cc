@@ -188,7 +188,7 @@ static void MapAicpuErrorCodeForFastRecovery(TaskInfo *taskInfo, const rtLogicCq
     Stream * const stream = taskInfo->stream;
     const bool hasMteErr = HasMteErr(stream->Device_());
     if (logicCq.errorCode == AICPU_HCCL_OP_UB_DDRC_FAILED) {
-        if(hasMteErr && IsEventIdAndRasCodeMatch(stream->Device_()->Id_(), g_ubNonMemPoisonRasList) && !HasMemUceErr(stream->Device_()->Id_(), g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
+        if(HasMteErr(stream->Device_()) && !HasMemUceErr(stream->Device_()->Id_(), g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
                 taskInfo->errorCode = TS_ERROR_LOCAL_MEM_ERROR;
                 (RtPtrToUnConstPtr<Device *>(stream->Device_()))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
                 RT_LOG(RT_LOG_ERROR,

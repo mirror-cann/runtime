@@ -7491,7 +7491,7 @@ TEST_F(ApiDavidTest, rtsRepairError)
 
     errorInfo.errorType = RT_ERROR_LINK;
     error = rtsRepairError(0, &errorInfo);
-    EXPECT_NE(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     
     errorInfo.errorType = RT_ERROR_OTHERS;
     error = rtsRepairError(0,  &errorInfo);

@@ -72,8 +72,6 @@ extern const std::map<uint32_t, std::string> g_mulBitEccEventIdBlkList;
 
 extern const std::map<uint32_t, std::string> g_l2MulBitEccEventIdBlkList;
 
-extern const std::map<uint32_t, std::string> g_ubMemTimeoutEventIdBlkList;
-
 extern const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList;
 
 enum rtSdmaErrorType : std::uint32_t {
