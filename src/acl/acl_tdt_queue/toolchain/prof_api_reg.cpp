@@ -39,7 +39,7 @@ namespace {
 
     static aclError RegisterProfType() {
         for (auto &iter : TDT_QUEUE_PROF_TYPE_TO_NAMES) {
-            uint32_t typeId = static_cast<uint32_t>(iter.first);
+            const uint32_t typeId = static_cast<uint32_t>(iter.first);
             const auto ret = MsprofRegTypeInfo(MSPROF_REPORT_ACL_LEVEL, typeId, iter.second.c_str());
             if (ret != MSPROF_ERROR_NONE) {
                 ACL_LOG_CALL_ERROR("Registered api type [%u] failed = %d", typeId, ret);

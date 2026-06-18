@@ -372,11 +372,11 @@ public:
     do { \
         if (!(condition)) { \
             ACL_LOG_ERROR("[Check][PARAM]%s is invalid, must be %s. value=%s", \
-                paramName, expect, paramVal); \
+                (paramName), (expect), (paramVal)); \
             acl::AclErrorLogManager::ReportInputError(acl::INVALID_VALUE_MSG, \
                 std::vector<const char *>({"func", "value", "param", "expect"}), \
-                std::vector<const char *>({__func__, paramVal, paramName, expect})); \
-            return ret; \
+                std::vector<const char *>({__func__, (paramVal), (paramName), (expect)})); \
+            return (ret); \
         } \
     } while (false)
 
@@ -452,7 +452,7 @@ public:
 do { \
     if (!(condition)) { \
         const char_t *argList[] = {"func", "param", "reason"}; \
-        const char_t *argVal[] = {__func__, paramName, reason}; \
+        const char_t *argVal[] = {__func__, (paramName), (reason)}; \
         acl::AclErrorLogManager::ReportInputErrorWithChar(acl::INVALID_PARAM_NO_VALUE_MSG, argList, argVal, 3U); \
         return ACL_ERROR_INVALID_PARAM; \
     } \
