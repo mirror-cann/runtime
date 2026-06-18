@@ -446,14 +446,11 @@ rtError_t AsyncHwtsEngine::PushFlipTask(const uint16_t preTaskId, Stream *stm)
     if (unlikely(error != RT_ERROR_NONE)) {
         RT_LOG(RT_LOG_ERROR, "Failed to push flip task, dev_id=%u, stream_id=%d, task_id=%hu, flipNumReport=%hu, retCode=%#x.",
             device_->Id_(), stm->Id_(), fliptask->id, fliptask->u.flipTask.flipNumReport, error);
-        goto ERROR_RECYCLE;
+        (void)device_->GetTaskFactory()->Recycle(fliptask);
+        return error;
     }
 
     return RT_ERROR_NONE;
-
-ERROR_RECYCLE:
-    (void)device_->GetTaskFactory()->Recycle(fliptask);
-    return error;
 }
 
 void AsyncHwtsEngine::GetReportCommonInfo(const rtTsReport_t &tsReport, uint16_t &streamId,
