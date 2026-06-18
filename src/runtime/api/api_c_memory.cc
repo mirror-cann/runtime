@@ -11,7 +11,6 @@
 #include "api_c.h"
 #include "api.hpp"
 #include "api_handle_guard.h"
-#include "driver/ascend_hal_define.h"
 #include "osal.hpp"
 #include "thread_local_container.hpp"
 #include "global_state_manager.hpp"
@@ -48,12 +47,6 @@ TIMESTAMP_EXTERN(rtsMemMallocPhysical);
 }  // namespace cce
 
 namespace {
-bool IsValidRtsMemcpy2dKind(const rtMemcpyKind kind)
-{
-    return (kind == RT_MEMCPY_KIND_DEFAULT) || (kind == RT_MEMCPY_KIND_HOST_TO_DEVICE) ||
-        (kind == RT_MEMCPY_KIND_DEVICE_TO_HOST) || (kind == RT_MEMCPY_KIND_DEVICE_TO_DEVICE);
-}
-
 bool IsZeroSizeMemcpy2d(const uint64_t width, const uint64_t height)
 {
     return (width == 0U) || (height == 0U);
@@ -91,20 +84,16 @@ rtError_t rtMalloc(void **devPtr, uint64_t size, rtMemType_t type, const uint16_
 VISIBILITY_DEFAULT
 rtError_t rtsMemcpy2D(rtMemcpy2DParams_t *params, rtMemcpyConfig_t *config)
 {
+    GLOBAL_STATE_WAIT_IF_LOCKED();
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(params, RT_ERROR_INVALID_VALUE);
-    if (config != nullptr) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(config, "nullptr");
-        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
-    }
-    if (!IsValidRtsMemcpy2dKind(params->kind)) {
-        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
-    }
     if (IsZeroSizeMemcpy2d(params->width, params->height)) {
         RT_LOG(RT_LOG_INFO, "width or height is 0, no need to copy memory 2d async, just return success.");
         return ACL_RT_SUCCESS;
     }
-
-    GLOBAL_STATE_WAIT_IF_LOCKED();
+    if (config != nullptr) {
+        RT_LOG_OUTER_MSG_INVALID_PARAM(config, "nullptr");
+        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
+    }
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->MemCopy2DSync(params->dst, params->dstPitch,
@@ -144,20 +133,17 @@ rtError_t rtMallocHost(void **hostPtr, uint64_t size, const uint16_t moduleId)
 VISIBILITY_DEFAULT
 rtError_t rtsMemcpy2DAsync(rtMemcpy2DParams_t *params, rtMemcpyConfig_t *config, rtStream_t stm)
 {
+    GLOBAL_STATE_WAIT_IF_LOCKED();
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(params, RT_ERROR_INVALID_VALUE);
-    if (config != nullptr) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(config, "nullptr");
-        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
-    }
-    if (!IsValidRtsMemcpy2dKind(params->kind)) {
-        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
-    }
     if (IsZeroSizeMemcpy2d(params->width, params->height)) {
         RT_LOG(RT_LOG_INFO, "width or height is 0, no need to copy memory 2d async, just return success.");
         return ACL_RT_SUCCESS;
     }
-
-    GLOBAL_STATE_WAIT_IF_LOCKED();
+    if (config != nullptr) {
+        RT_LOG_OUTER_MSG_INVALID_PARAM(config, "nullptr");
+        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
+    }
+    
     Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
