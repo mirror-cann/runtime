@@ -616,6 +616,69 @@ int32_t CheckLogLevel(int32_t moduleId, int32_t logLevel)
     }
 }
 
+static const uint32_t ACLLOG_USER_MODULE_ID_MIN = 0xff00U;
+static const uint32_t ACLLOG_USER_MODULE_ID_MAX = 0xffffU;
+
+static bool IsAcllogUserModuleId(int32_t moduleId)
+{
+    return (moduleId >= static_cast<int32_t>(ACLLOG_USER_MODULE_ID_MIN)) &&
+        (moduleId <= static_cast<int32_t>(ACLLOG_USER_MODULE_ID_MAX));
+}
+
+static uint32_t GetAcllogModuleId(int32_t moduleId)
+{
+    return static_cast<uint32_t>(moduleId) & MODULE_ID_MASK;
+}
+
+extern "C" __attribute((weak)) int32_t acllogCheckDebugLevel(int32_t moduleId, int32_t logLevel)
+{
+    if (moduleId < 0) {
+        return FALSE;
+    }
+    if (IsAcllogUserModuleId(moduleId)) {
+        if (logLevel == DLOG_EVENT) {
+            return GetGlobalEnableEventVar() ? TRUE : FALSE;
+        }
+        const int32_t moduleLevel = GetGlobalLogTypeLevelVar(static_cast<uint32_t>(moduleId) & LOG_TYPE_MASK);
+        if ((logLevel < moduleLevel) || (logLevel >= LOG_MAX_LEVEL)) {
+            return FALSE;
+        }
+        return DlogCheckLogLevel(logLevel);
+    }
+    return CheckLogLevel(moduleId, logLevel);
+}
+
+extern "C" __attribute((weak)) void acllogVaList(int32_t moduleId, int32_t level, const char *fmt, va_list list)
+{
+    if (g_slogFuncInfo[DLOG_VA_LIST].handle != nullptr) {
+        reinterpret_cast<DlogVaListFunc>(g_slogFuncInfo[DLOG_VA_LIST].handle)(moduleId, level, fmt, list);
+        return;
+    }
+    if ((moduleId < 0) || (fmt == nullptr)) {
+        return;
+    }
+
+    LogMsgArg msgArg = {
+        GetAcllogModuleId(moduleId),
+        static_cast<uint32_t>(moduleId) & LOG_TYPE_MASK,
+        level,
+        0,
+        {APPLICATION, 0, 0, 0, {'\0'}},
+        {'\0'},
+        {nullptr, 0}
+    };
+
+    (void)DlogWriteInner(&msgArg, fmt, list);
+}
+
+extern "C" __attribute((weak)) void acllogRecord(int32_t moduleId, int32_t level, const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+    acllogVaList(moduleId, level, fmt, list);
+    va_end(list);
+}
+
 void DlogFlush(void)
 {
     if (g_slogFuncInfo[DLOG_FLUSH].handle != nullptr) {
