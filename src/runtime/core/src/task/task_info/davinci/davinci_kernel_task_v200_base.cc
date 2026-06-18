@@ -209,6 +209,8 @@ static void MapAicpuErrorCodeForFastRecovery(TaskInfo *taskInfo, const rtLogicCq
                     "hccl aicpu task error is link error, device_id=%u, stream_id=%d, task_id=%hu, logicCq.errorCode=%u, logicCq.errorType=%hhu, taskInfo->errorCode=%u",
                     stream->Device_()->Id_(), stream->Id_(), taskInfo->id, logicCq.errorCode, logicCq.errorType, taskInfo->errorCode);
         }
+    } else {
+        // no operation
     }
 }
 

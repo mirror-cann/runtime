@@ -239,7 +239,7 @@ struct DevProperties final {
     EventWaitTimeoutType eventWaitTimeout;
     uint32_t tsCount;
     uint32_t defaultTaskRatio;
-    uint64_t sqTailOffset;
+    uint16_t sqTailOffset;
     int32_t maxGroupId;
     ReduceOverflowType reduceOverflow;
     uint8_t supportOverflowMode;
@@ -260,7 +260,7 @@ struct DevProperties final {
     uint32_t hugeManagedFlag;
     uint32_t memAllocPctraceFlag;
     uint32_t memInfoType;
-    uint32_t taskPrefetchCount;
+    uint8_t taskPrefetchCount;
     uint32_t maxAllocHugeStreamNum;
     bool reduceAicNum;
     TimeoutUpdateMethod timeoutUpdateMethod;
