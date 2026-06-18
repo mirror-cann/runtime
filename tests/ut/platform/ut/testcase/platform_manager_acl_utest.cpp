@@ -198,7 +198,7 @@ TEST_F(PlatformManagerAclUTest, acl_platform_GetDeviceInfo_NPU_ARCH)
   char buf[64] = {0};
   aclError ret = aclplatformGetDeviceInfo(ACL_PLATFORM_NPU_ARCH, buf, sizeof(buf));
   EXPECT_EQ(ret, ACL_SUCCESS);
-  EXPECT_STREQ(buf, "4");
+  EXPECT_STREQ(buf, "2201");
 }
 
 TEST_F(PlatformManagerAclUTest, acl_platform_GetDeviceInfo_MEMORY_TYPE)

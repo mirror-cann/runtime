@@ -102,7 +102,7 @@ const std::vector<std::pair<std::string, std::string>> kDevInfoTable = {
   /* 13: ACL_PLATFORM_SHORT_SOC_VERSION */ {"version",       "Short_SoC_version"},
   /* 14: ACL_PLATFORM_SOC_VERSION      */ {"version",       "SoC_version"},
   /* 15: ACL_PLATFORM_AIC_VERSION      */ {"version",       "AIC_version"},
-  /* 16: ACL_PLATFORM_NPU_ARCH         */ {"version",        "Arch_type"},
+  /* 16: ACL_PLATFORM_NPU_ARCH         */ {"version",        "NpuArch"},
   /* 17: ACL_PLATFORM_MEMORY_TYPE      */ {"SoCInfo",        "memory_type"},
 };
 }  // namespace
@@ -110,17 +110,17 @@ const std::vector<std::pair<std::string, std::string>> kDevInfoTable = {
 aclError aclplatformGetDeviceInfo(aclplatformDevInfo infoType, char *value, uint32_t maxLen)
 {
   // --- parameter validation ---
+  const uint32_t info_idx = static_cast<uint32_t>(infoType);
+  if (info_idx >= static_cast<uint32_t>(kDevInfoTable.size())) {
+    PF_LOGE("Invalid info type %u.", info_idx);
+    return ACL_ERROR_INVALID_PARAM;
+  }
   if (value == nullptr) {
-    PF_LOGE("aclplatformGetDeviceInfo: value is NULL.");
+    PF_LOGE("Device info: output buffer pointer is NULL.");
     return ACL_ERROR_INVALID_PARAM;
   }
   if (maxLen == 0U) {
-    PF_LOGE("aclplatformGetDeviceInfo: maxLen is 0.");
-    return ACL_ERROR_INVALID_PARAM;
-  }
-  const uint32_t info_idx = static_cast<uint32_t>(infoType);
-  if (info_idx >= static_cast<uint32_t>(kDevInfoTable.size())) {
-    PF_LOGE("aclplatformGetDeviceInfo: invalid info_type %u.", info_idx);
+    PF_LOGE("Device info: output buffer length is 0.");
     return ACL_ERROR_INVALID_PARAM;
   }
 
@@ -136,15 +136,15 @@ aclError aclplatformGetDeviceInfo(aclplatformDevInfo infoType, char *value, uint
   std::string result;
 
   if (!platform_infos.GetPlatformResWithLock(section, key, result)) {
-    PF_LOGE("aclplatformGetDeviceInfo: key [%s/%s] not found.", section.c_str(), key.c_str());
+    PF_LOGE("Key [%s/%s] not found in platform info.", section.c_str(), key.c_str());
     return ACL_ERROR_INVALID_PARAM;
   }
   if (result.empty()) {
-    PF_LOGE("aclplatformGetDeviceInfo: empty result for key [%s/%s].", section.c_str(), key.c_str());
+    PF_LOGE("Empty result for key [%s/%s].", section.c_str(), key.c_str());
     return ACL_ERROR_INVALID_PARAM;
   }
 
-  PF_LOGI("aclplatformGetDeviceInfo: [%s, %s] = %s.", section.c_str(), key.c_str(), result.c_str());
+  PF_LOGI("Device info queried: [%s, %s] = %s.", section.c_str(), key.c_str(), result.c_str());
   return CopyToBuffer(result, value, maxLen);
 }
 
@@ -154,20 +154,20 @@ aclError aclplatformGetInstructionInfo(aclplatformCoreType type,
                                        uint32_t maxLen)
 {
   // --- parameter validation ---
+  if (type != ACL_PLATFORM_CORE_TYPE_AI_CORE && type != ACL_PLATFORM_CORE_TYPE_VECTOR_CORE) {
+    PF_LOGE("Invalid core type %d.", static_cast<int>(type));
+    return ACL_ERROR_INVALID_PARAM;
+  }
   if (instruction == nullptr) {
-    PF_LOGE("aclplatformGetInstructionInfo: instruction is NULL.");
+    PF_LOGE("Instruction info: instruction pointer is NULL.");
     return ACL_ERROR_INVALID_PARAM;
   }
   if (value == nullptr) {
-    PF_LOGE("aclplatformGetInstructionInfo: value is NULL.");
+    PF_LOGE("Instruction info: output buffer pointer is NULL.");
     return ACL_ERROR_INVALID_PARAM;
   }
   if (maxLen == 0U) {
-    PF_LOGE("aclplatformGetInstructionInfo: maxLen is 0.");
-    return ACL_ERROR_INVALID_PARAM;
-  }
-  if (type != ACL_PLATFORM_CORE_TYPE_AI_CORE && type != ACL_PLATFORM_CORE_TYPE_VECTOR_CORE) {
-    PF_LOGE("aclplatformGetInstructionInfo: invalid core type %d.", static_cast<int>(type));
+    PF_LOGE("Instruction info: output buffer length is 0.");
     return ACL_ERROR_INVALID_PARAM;
   }
 
@@ -189,7 +189,7 @@ aclError aclplatformGetInstructionInfo(aclplatformCoreType type,
 
   const auto it = intrinsic_map.find(instr_name);
   if (it == intrinsic_map.end() || it->second.empty()) {
-    PF_LOGE("aclplatformGetInstructionInfo: instruction [%s] not found for core type %d.",
+    PF_LOGE("Instruction [%s] not found for core type %d.",
             instruction, static_cast<int>(type));
     return ACL_ERROR_INVALID_PARAM;
   }
@@ -204,7 +204,7 @@ aclError aclplatformGetInstructionInfo(aclplatformCoreType type,
     result += dtypes[i];
   }
 
-  PF_LOGI("aclplatformGetInstructionInfo: [%s], core[%d], result = %s.",
+  PF_LOGI("Instruction info queried: [%s], core[%d], result = %s.",
          instruction, static_cast<int>(type), result.c_str());
   return CopyToBuffer(result, value, maxLen);
 }
