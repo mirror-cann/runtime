@@ -113,7 +113,7 @@ std::string AclErrorLogManager::FormatStr(const char_t *const fmt, ...)
 void AclErrorLogManager::ReportInputError(const char *errorCode, const std::vector<const char *> &key,
     const std::vector<const char *> &val)
 {
-    REPORT_PREDEFINED_ERR_MSG(errorCode, key, val);
+    (void)REPORT_PREDEFINED_ERR_MSG(errorCode, key, val);
 }
 
 void AclErrorLogManager::ReportInnerError(const char_t *const fmt, ...)

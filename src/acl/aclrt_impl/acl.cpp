@@ -55,12 +55,12 @@ namespace {
     constexpr const char_t *const kPreAlpha = "alpha";
     constexpr const char_t *const kPreBeta = "beta";
     constexpr const char_t *const kPreRC = "rc";
-    const int32_t kWeightMajor = 10000000;
-    const int32_t kWeightMinor = 100000;
-    const int32_t kWeightPatch = 1000;
-    const int32_t kWeightAlpha = 300;
-    const int32_t kWeightBeta = 200;
-    const int32_t kWeightRC = 100;
+    constexpr int32_t kWeightMajor = 10000000;
+    constexpr int32_t kWeightMinor = 100000;
+    constexpr int32_t kWeightPatch = 1000;
+    constexpr int32_t kWeightAlpha = 300;
+    constexpr int32_t kWeightBeta = 200;
+    constexpr int32_t kWeightRC = 100;
     const std::string kAscendInstallPath = "/etc/ascend_install.info";
     const std::map<aclCANNPackageName, std::string> kMapToPkgName = {
         { ACL_PKG_NAME_CANN, "runtime" },
@@ -159,7 +159,7 @@ namespace {
     aclError SetAllStackSizes(const char_t* const configPath)
     {
         for (const auto& entry : limitToKeyMap) {
-            rtLimitType_t limitType = entry.first;
+            const rtLimitType_t limitType = entry.first;
             const std::string& typeName = entry.second;
 
             aclError ret = SetStackSizeByType(configPath, limitType, typeName.c_str());
@@ -201,7 +201,7 @@ namespace {
     aclError SetPrintFifoSizes(const char_t* const configPath)
     {
         for (const auto& entry : fifoSizeToKeyMap) {
-            rtLimitType_t limitType = entry.first;
+            const rtLimitType_t limitType = entry.first;
             const std::string& typeName = entry.second;
 
             aclError ret = SetPrintFifoSizeByType(configPath, limitType, typeName);
@@ -301,7 +301,7 @@ aclError HandleEventModeConfig(const char_t *const configPath) {
     uint8_t event_mode = 0;
     bool found = false;
 
-    auto ret = acl::JsonParser::GetEventModeFromFile(configPath, event_mode, found);
+    const auto ret = acl::JsonParser::GetEventModeFromFile(configPath, event_mode, found);
     if (ret != ACL_SUCCESS) {
         ACL_LOG_ERROR("Cannot parse event mode config from file[%s], errorCode = %d", configPath, ret);
         return ret;
@@ -580,7 +580,7 @@ aclError aclFinalizeInternal()
     if (acl::IsEnableAutoUCMemeory()) {
         // unregister kernel launch fill function
         ACL_LOG_INFO("unregister kernel launch fill function in aclFinalize");
-        auto rtRegErr = rtUnRegKernelLaunchFillFunc("g_opSystemRunCfg");
+        const auto rtRegErr = rtUnRegKernelLaunchFillFunc("g_opSystemRunCfg");
         if (rtRegErr != RT_ERROR_NONE) {
             if (rtRegErr == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
                 ACL_LOG_WARN("Cannot unregister kernel launch fill function, feature is not supported.");
@@ -803,7 +803,7 @@ aclError aclsysGetCANNVersionImpl(aclCANNPackageName name, aclCANNPackageVersion
     ACL_LOG_INFO("start to execute aclsysGetCANNVersion.");
     ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(version);
     ACL_LOG_INFO("enum name id is [%d], enum name is [%s].", (int32_t)name,
-        kMapToPkgName.count(name) ? kMapToPkgName.at(name).c_str() : "unknown" );
+        (kMapToPkgName.count(name) > 0) ? kMapToPkgName.at(name).c_str() : "unknown");
 
     char *pathEnv = nullptr;
     std::string driverPath;
@@ -1028,7 +1028,7 @@ bool ParsePreNumStrict(const std::string &suffix, int32_t &outNum) {
 
     // scan characters
     for (size_t i = 0; i < suffix.length(); ++i) {
-        char c = suffix[i];
+        const char c = suffix[i];
         if (std::isdigit(static_cast<unsigned char>(c))) {
             digitPos = i;
             break;
