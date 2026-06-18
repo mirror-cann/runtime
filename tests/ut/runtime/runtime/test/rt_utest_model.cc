@@ -646,9 +646,36 @@ struct ModelDestroyCallbackReentrantArgs {
     bool registerCalled{false};
 };
 
+struct RuntimeExitingGuard {
+    explicit RuntimeExitingGuard(Runtime *runtime) : rt(runtime), oldIsExiting(runtime->isExiting_)
+    {
+        rt->isExiting_ = true;
+    }
+
+    ~RuntimeExitingGuard()
+    {
+        rt->isExiting_ = oldIsExiting;
+    }
+
+    Runtime *rt{nullptr};
+    bool oldIsExiting{false};
+};
+
+struct ModelDestroyCallbackExitArgs {
+    bool called{false};
+};
+
 void SecondaryModelDestroyCallback(void *ptr)
 {
     (void)ptr;
+}
+
+void MarkModelDestroyCallback(void *ptr)
+{
+    ModelDestroyCallbackExitArgs * const args = static_cast<ModelDestroyCallbackExitArgs *>(ptr);
+    if (args != nullptr) {
+        args->called = true;
+    }
 }
 
 void ReentrantModelDestroyCallback(void *ptr)
@@ -679,6 +706,22 @@ TEST_F(ModelTest, ModelDestroyCallbackAllowsReentrantRegisterOps)
 
     error = model.ModelDestroyUnregisterCallback(SecondaryModelDestroyCallback);
     EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
+TEST_F(ModelTest, ModelDestroyCallbackSkippedWhenRuntimeExiting)
+{
+    Runtime * const rtInstance = static_cast<Runtime *>(Runtime::Instance());
+    ASSERT_NE(rtInstance, nullptr);
+    RuntimeExitingGuard guard(rtInstance);
+
+    Model model;
+    ModelDestroyCallbackExitArgs args;
+    rtError_t error = model.ModelDestroyRegisterCallback(MarkModelDestroyCallback, &args);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    error = model.ModelDestroyCallback();
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_FALSE(args.called);
 }
 
 
