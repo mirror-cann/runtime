@@ -3208,7 +3208,7 @@ RTS_API rtError_t rtSetDeviceSatMode(rtFloatOverflowMode_t floatOverflowMode)
     const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     DevProperties prop;
-    rtError_t error = GET_DEV_PROPERTIES(rtInstance->GetChipType(), prop);
+    const rtError_t error = GET_DEV_PROPERTIES(rtInstance->GetChipType(), prop);
     COND_RETURN_EXT_ERRCODE_AND_MSG_INNER(error != RT_ERROR_NONE, error,
         "GetDevProperties failed, chipType=%u.", rtInstance->GetChipType());
 
@@ -3586,7 +3586,7 @@ RTS_API rtError_t rtGetDeviceSatStatus(void * const outputAddrPtr, const uint64_
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
     const rtChipType_t chipType = rtInstance->GetChipType();
     DevProperties props;
-    GET_DEV_PROPERTIES(chipType, props);
+    (void)GET_DEV_PROPERTIES(chipType, props);
     if (props.deviceSatStatusImpl > DeviceSatStatusImpl::NOT_SUPPORT) {
         ret = apiInstance->GetDeviceSatStatus(outputAddrPtr, outputSize, streamPtr);
     } else {
@@ -3611,7 +3611,7 @@ RTS_API rtError_t rtCleanDeviceSatStatus(rtStream_t stm)
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
     const rtChipType_t chipType = rtInstance->GetChipType();
     DevProperties props;
-    GET_DEV_PROPERTIES(chipType, props);
+    (void)GET_DEV_PROPERTIES(chipType, props);
     if (props.deviceSatStatusImpl == DeviceSatStatusImpl::DEVICE_SAT_STATUS_CONTEXT_LEVEL) {
         ret = apiInstance->CleanDeviceSatStatus(streamPtr);
     } else if (props.deviceSatStatusImpl == DeviceSatStatusImpl::DEVICE_SAT_STATUS_STREAM_LEVEL) {

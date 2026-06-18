@@ -127,7 +127,7 @@ public:
     virtual rtError_t ManagedMemFree(const void * const dptr) = 0;
 
     virtual rtError_t MemAdvise(void *devPtr, uint64_t cnt, uint32_t advise, uint32_t devid) = 0;
-    virtual rtError_t MemManagedAdvise(const void *const Ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location) = 0;
+    virtual rtError_t MemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location) = 0;
     virtual rtError_t MemSetSync(const void * const devPtr, const uint64_t destMax,
                                  const uint32_t val, const uint64_t cnt) = 0;
 
