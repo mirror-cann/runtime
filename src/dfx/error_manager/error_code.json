@@ -118,7 +118,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "An ECC memory error occurs on the device.",
-        "Solution": "Obtain the device log, check whether ECC errors are reported, and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, check whether ECC errors are reported, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -162,7 +162,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "Failed to obtain device information from the device driver.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -173,7 +173,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "The Cgroup configuration is incorrect.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -184,7 +184,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "The internal processing of the AI CPU scheduler process is abnormal.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -195,7 +195,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "1. Heartbeats are missing on the device. 2. The underlying channel is disconnected.",
-        "Solution": "1. Obtain the device log and contact technical support at https://www.hiascend.com/support. 2. Restart the device."
+        "Solution": "1. Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support. 2. Restart the device."
       }
     },
     {
@@ -206,7 +206,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "The internal processing of the TSDaemon process is abnormal.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -217,7 +217,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "1.The HDC link is faulty. 2. The device status is abnormal.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -228,7 +228,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "1.Failed to start the subprocess. 2. The HDC link is faulty.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -239,7 +239,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "1. The AI CPU OPP on the host is tampered with. 2. An ECC memory error occurs on the device.",
-        "Solution": "1. Install the correct OPP. 2.Obtain the device log, check whether ECC errors are reported, and contact technical support at https://www.hiascend.com/support."
+        "Solution": "1. Install the correct OPP. 2.Obtain the host and device logs, check whether ECC errors are reported, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -250,7 +250,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "An ECC memory error occurs on the device.",
-        "Solution": "Obtain the device log, check whether ECC errors are reported, and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, check whether ECC errors are reported, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -261,7 +261,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "1. Heartbeats are missing on the device. 2. The underlying channel is disconnected.",
-        "Solution": "1. Obtain the device log and contact technical support at https://www.hiascend.com/support. 2. Restart the device."
+        "Solution": "1. Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support. 2. Restart the device."
       }
     },
     {
@@ -272,7 +272,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "The Cgroup configuration is incorrect.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -283,7 +283,7 @@
       "Arglist": "package_name",
       "suggestion": {
         "Possible Cause": "1. Failed to verify the software package signature on the device. 2. Failed to decompress the software package on the device. 3. Failed to install the software package on the device.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -1617,7 +1617,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "The queue_schedule process is not added to the shared memory group.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
@@ -1628,7 +1628,7 @@
       "Arglist": "",
       "suggestion": {
         "Possible Cause": "The internal processing of the queue_schedule process is abnormal.",
-        "Solution": "Obtain the device log and contact technical support at https://www.hiascend.com/support."
+        "Solution": "Obtain the host and device logs, and contact technical support at https://www.hiascend.com/support."
       }
     },
     {
