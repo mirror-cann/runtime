@@ -666,7 +666,7 @@ rtError_t Context::TearDownOwnedStreamsForPrimaryRelease()
     return firstError;
 }
 
-rtError_t Context::TearDownContextStream(Stream *&stream, const char * const streamName)
+rtError_t Context::TearDownContextStream(Stream *&stream, const char * const streamName) const
 {
     if (stream == nullptr) {
         return RT_ERROR_NONE;
@@ -688,7 +688,7 @@ rtError_t Context::TearDownContextStream(Stream *&stream, const char * const str
     return RT_ERROR_NONE;
 }
 
-rtError_t Context::TearDownContextStreamForPrimaryRelease(Stream *&stream, const char * const streamName)
+rtError_t Context::TearDownContextStreamForPrimaryRelease(Stream *&stream, const char * const streamName) const
 {
     if (stream == nullptr) {
         return RT_ERROR_NONE;
@@ -706,7 +706,7 @@ rtError_t Context::TearDownContextStreamForPrimaryRelease(Stream *&stream, const
     return error;
 }
 
-rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag)
+rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag) const
 {
     NULL_PTR_RETURN_MSG(stream, RT_ERROR_STREAM_NULL);
 

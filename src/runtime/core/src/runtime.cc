@@ -1846,7 +1846,7 @@ rtError_t Runtime::startAicpuExecutor(const uint32_t devId, const uint32_t tsId)
     return StartAicpuExecutorTracked(devId, tsId, nullptr);
 }
 
-rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted)
+rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted) const
 {
     rtError_t error = RT_ERROR_NONE;
     if (aicpuExecutorStarted != nullptr) {
@@ -2477,7 +2477,7 @@ void Runtime::PrimaryContextCallBackAfterTeardown(const uint32_t devId) const
     }
 }
 
-void Runtime::DetachContextOwnedStreams(Context *ctx) const
+void Runtime::DetachContextOwnedStreams(const Context *ctx) const
 {
     if (ctx == nullptr) {
         return;
@@ -2514,7 +2514,7 @@ void Runtime::TearDownAndDeleteContextNoThrow(Context *&ctx) const
     ctx = nullptr;
 }
 
-void Runtime::RollbackFailedPrimaryContextRetain(Context *&ctx, RefObject<Context *> &refObj)
+void Runtime::RollbackFailedPrimaryContextRetain(Context *&ctx, RefObject<Context *> &refObj) const
 {
     if (ctx != nullptr) {
         (void)ContextManage::EraseContextFromSetForRetainRollback(ctx);
@@ -2547,7 +2547,7 @@ void Runtime::RollbackTsvPrimaryContextRetainFailure(const uint32_t devId)
 
 rtError_t Runtime::AcquirePrimaryContextForRelease(
     RefObject<Context *> &refObj, const uint32_t tsId, const bool isForceReset, bool &ret, bool &shouldRelease,
-    Context *&ctx, uint64_t &restoreRefCount)
+    Context *&ctx, uint64_t &restoreRefCount) const
 {
     bool reset = false; // must be false.
     shouldRelease = false;

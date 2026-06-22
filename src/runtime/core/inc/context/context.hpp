@@ -566,9 +566,9 @@ private:
     void TearDownModelsOnContextTearDown();
     rtError_t TearDownOwnedStreamsOnContextTearDown();
     rtError_t TearDownOwnedStreamsForPrimaryRelease();
-    rtError_t TearDownContextStream(Stream *&stream, const char *streamName);
-    rtError_t TearDownContextStreamForPrimaryRelease(Stream *&stream, const char *streamName);
-    rtError_t TearDownStreamForPrimaryRelease(Stream *&stream, bool flag = true);
+    rtError_t TearDownContextStream(Stream *&stream, const char * const streamName) const;
+    rtError_t TearDownContextStreamForPrimaryRelease(Stream *&stream, const char * const streamName) const;
+    rtError_t TearDownStreamForPrimaryRelease(Stream *&stream, bool flag = true) const;
     rtError_t HandlePrimaryReleaseStreamTearDownFailure(Stream *&stream, Stream *tdStream, rtError_t error,
         bool destroyTaskRecycledStream) const;
     rtError_t DeleteStreamNoThrowForPrimaryRelease(Stream *&stream) const;
