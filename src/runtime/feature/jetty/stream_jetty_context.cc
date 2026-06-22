@@ -43,7 +43,7 @@ rtError_t StreamJettyContext::AllocWqeBuffer(Driver *driver)
     }
 
     auto buffer = std::unique_ptr<uint8_t[]>(RtPtrToPtr<uint8_t *>(hostPtr));
-    errno_t rc = memset_s(buffer.get(), allocSize, 0, allocSize);
+    const errno_t rc = memset_s(buffer.get(), allocSize, 0, allocSize);
     if (rc != EOK) {
         (void)driver->HostMemFree(buffer.release());
         return RT_ERROR_SEC_HANDLE;

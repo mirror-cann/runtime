@@ -2144,8 +2144,8 @@ void MemWaitInstrWaitSuccessForNonSoftwareSqAndDynamicProf(RtStarsMemWaitValueLa
     ConstructLoadImm(r5, fcPara.swapBufferProfCfgAddr, RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LW, fc.loadProfCfg1);
 
     // load value 0x4000 to r1, bit14 is sq_log_en
-    ConstructLHWI(r1, 0x4000, fc.lhwi42);
-    ConstructLLWI(r1, 0x4000, fc.llwi42);
+    ConstructLHWI(r1, 0x4000U, fc.lhwi42);
+    ConstructLLWI(r1, 0x4000U, fc.llwi42);
 
     // r5 = r5 | r1, bit14 set to 1
     ConstructOpOp(r5, r1, r5, RT_STARS_COND_ISA_OP_FUNC3_OR, RT_STARS_COND_ISA_OP_FUNC7_OR, fc.op43);

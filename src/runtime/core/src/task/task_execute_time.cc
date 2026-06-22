@@ -23,7 +23,7 @@ uint16_t TransKernelCreditCreditByChip(const uint16_t kernelCredit)
 
     if (!isGet) {
         DevProperties devProperty {};
-        rtError_t error = GET_DEV_PROPERTIES(chipType, devProperty);
+        const rtError_t error = GET_DEV_PROPERTIES(chipType, devProperty);
         COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, kernelCredit,
             "GetDevProperties failed, chip type=%d, error=%u.", chipType, error);
 

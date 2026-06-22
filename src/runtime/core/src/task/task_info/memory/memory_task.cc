@@ -729,7 +729,7 @@ rtError_t ConvertAsyncDmaForTaskUpdate(TaskInfo * const taskInfo, TaskInfo * con
     if (updateTaskInfo->stream->IsSoftwareSqEnable()) {
         Stream *updateStm = updateTaskInfo->stream;
         if (updateStm->GetSqBaseAddr() == 0ULL) {
-            rtError_t err = updateStm->AllocSoftwareSqAddr(
+            const rtError_t err = updateStm->AllocSoftwareSqAddr(
                 CAPTURE_TASK_RESERVED_NUM + updateStm->Device_()->GetDevProperties().expandStreamRsvTaskNum);
             COND_RETURN_ERROR(err != RT_ERROR_NONE, err, "Failed to allocate software SQ address, device_id=%d, stream_id=%d, retCode=%#x.",
                 updateStm->Device_()->Id_(), updateStm->Id_(), static_cast<uint32_t>(err));

@@ -1365,7 +1365,7 @@ bool DavidStream::SynchronizeDelayTime(const uint16_t finishedId, const uint16_t
 
     COND_RETURN_DEBUG(taskResMang_ == nullptr, false, "taskResMang_ is null");
     uint16_t taskPoolNum = this->taskResMang_->GetTaskPoolNum();
-    uint16_t distance = (taskPoolNum + taskId - exeTaskId) % taskPoolNum;
+    uint16_t distance = static_cast<uint16_t>((static_cast<uint32_t>(taskPoolNum) + taskId - exeTaskId) % taskPoolNum);
 
     if (distance >= LARGER_THRESHOLD) { // if more than 10 tasks are not yet executed complete, sleep 50us.
         std::this_thread::sleep_for(std::chrono::microseconds(LARGER_THRESHOLD * SLEEP_UNIT));
@@ -1549,7 +1549,7 @@ rtError_t DavidStream::HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
 
     // Update the host-side head and tail
     // 这里的pending num再发生错误的时候不需要减1
-    rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
+    const rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
     uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
@@ -1595,7 +1595,7 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
     uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
-    auto ret = memcpy_s(
+    const auto ret = memcpy_s(
         RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, RtPtrToPtr<void*>(oldhostSqeAddr), sqeSize);
     COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
         "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",

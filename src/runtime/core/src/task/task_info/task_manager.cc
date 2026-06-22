@@ -955,9 +955,8 @@ static void RegSetStarsResultFunc(const std::vector<rtChipType_t> &chipTypes)
 
 void RegTaskToCommandFunc(const std::vector<rtChipType_t> &chipTypes)
 {
-    PfnTaskToCmd *toCommandFunc = nullptr;
     for (auto chipType : chipTypes) {
-        toCommandFunc = g_taskFuncArrays[chipType].toCommandFunc;
+        auto &toCommandFunc = g_taskFuncArrays[chipType].toCommandFunc;
 
         toCommandFunc[TS_TASK_TYPE_FUSION_ISSUE] = &ToCommandBodyForKernelFusionTask;
         toCommandFunc[TS_TASK_TYPE_MODEL_MAINTAINCE] = &ToCommandBodyForModelMaintainceTask;
@@ -976,9 +975,8 @@ void RegTaskToCommandFunc(const std::vector<rtChipType_t> &chipTypes)
 
 static void RegDoCompleteSuccFunc(const std::vector<rtChipType_t> &chipTypes)
 {
-    PfnDoCompleteSucc *doCompleteSuccFunc = nullptr;
     for (auto chipType : chipTypes) {
-        doCompleteSuccFunc = g_taskFuncArrays[chipType].doCompleteSuccFunc;
+        auto &doCompleteSuccFunc = g_taskFuncArrays[chipType].doCompleteSuccFunc;
 
         doCompleteSuccFunc[TS_TASK_TYPE_FUSION_ISSUE] = &DoCompleteSuccess;
         doCompleteSuccFunc[TS_TASK_TYPE_MODEL_MAINTAINCE] = &DoCompleteSuccessForModelMaintainceTask;
@@ -997,9 +995,8 @@ static void RegDoCompleteSuccFunc(const std::vector<rtChipType_t> &chipTypes)
 
 static void RegTaskToSqefunc(const std::vector<rtChipType_t> &chipTypes)
 {
-    PfnTaskToSqe *toSqeFunc = nullptr;
     for (auto chipType : chipTypes) {
-        toSqeFunc = g_taskFuncArrays[chipType].toSqeFunc;
+        auto &toSqeFunc = g_taskFuncArrays[chipType].toSqeFunc;
         toSqeFunc[TS_TASK_TYPE_FUSION_ISSUE] = &ConstructSqeBase;
         toSqeFunc[TS_TASK_TYPE_MODEL_MAINTAINCE] = &ConstructSqeForModelMaintainceTask;
         toSqeFunc[TS_TASK_TYPE_MODEL_EXECUTE] = &ConstructSqeForModelExecuteTask;
