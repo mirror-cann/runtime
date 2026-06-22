@@ -80,7 +80,7 @@ static void ConstructDavidAsyncDmaSqe(TaskInfo * const taskInfo, rtDavidSqe_t *c
     return;
 }
 
-static void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const command)
+void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const command)
 {
     MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
     Stream * const stream = taskInfo->stream;

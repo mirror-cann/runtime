@@ -33,6 +33,9 @@
 
 namespace cce {
 namespace runtime {
+
+class JettyPool;
+class JettyManager;
 constexpr uint32_t DMA_CPY_NUM_DEVICE_MAX = 5 * 1024U;
 #define STREAM_MESSAGE_QUEUE_SIZE (static_cast<uint16_t>(RT_MAX_STREAM_ID * 3U))
 constexpr uint32_t RT_DEFAULT_STACK_SIZE_32K = 32U * 1024U;
@@ -311,6 +314,7 @@ public:
     virtual StreamSqCqManage *GetStreamSqCqManage() const = 0;
     virtual TaskFactory *GetTaskFactory() const = 0;
     virtual MemoryPoolManager *GetKernelMemoryPool() const = 0;
+    virtual JettyManager *GetJettyManager() const = 0;
     virtual uint32_t GetTschVersion() const = 0;
     virtual uint32_t IsSupportHcomcpu() const = 0;
     virtual uint64_t GetStarsRegBaseAddr() const = 0;
@@ -456,7 +460,8 @@ public:
     virtual rtError_t GetPrintSimdAddress(uint64_t *const addr) = 0;
     virtual rtError_t GetPrintFifoAddrAndCreateThread(uint64_t * const addr, const uint32_t model) = 0;
     virtual rtError_t StoreEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos) = 0;
-    virtual rtError_t DeleteEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos) = 0;
+    virtual rtError_t DeleteEndGraphNotifyInfo(
+        const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos, const uint32_t errCode) = 0;
     virtual rtError_t ClearEndGraphNotifyInfoByModel(Model* captureModel) = 0;
     virtual uint64_t AllocSqIdMemAddr() = 0;
     virtual void FreeSqIdMemAddr(const uint64_t sqIdAddr) = 0;

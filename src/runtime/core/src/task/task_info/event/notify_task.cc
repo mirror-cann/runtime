@@ -362,7 +362,7 @@ void DoCompleteSuccessForNotifyWaitTask(TaskInfo *taskInfo, const uint32_t devId
     if ((taskInfo->u.notifywaitTask.isEndGraphNotify) &&
         (taskInfo->u.notifywaitTask.captureModel != nullptr)) {
         taskInfo->stream->Device_()->DeleteEndGraphNotifyInfo(taskInfo->stream->Id_(),
-            taskInfo->u.notifywaitTask.captureModel, taskInfo->pos);
+            taskInfo->u.notifywaitTask.captureModel, taskInfo->pos, taskInfo->errorCode);
     }
 }
 

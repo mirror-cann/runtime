@@ -28,6 +28,7 @@
 #include "stars.hpp"
 #include "device_properties.h"
 #include "rt_inner_mem.h"
+#include "driver_types.hpp"
 
 namespace cce {
 namespace runtime {
@@ -43,125 +44,6 @@ using rtLogicReport_t = struct tagTsLogicCqReportMsg;
 using rtShmQuery_t = struct tagTsShmTaskMsg;
 
 class Cdq;
-
-struct ipcMemInfo_t {
-    std::string name;
-    bool locked;
-    int32_t ref;
-};
-
-struct LogicCqWaitInfo {
-    uint32_t devId;
-    uint32_t tsId;
-    uint32_t cqId;
-    bool isFastCq;
-    int32_t timeout;    // ms, -1: wait forever; 0: no wait return
-    uint32_t streamId;  // for v2
-    uint32_t taskId;    // for v2
-};
-
-struct AsyncSqeUpdateInfo {
-    uint32_t sqId;
-    uint32_t sqe_pos;
-};
-
-struct AsyncDmaWqeInputInfo {
-    void *src;
-    uint64_t size;
-    uint32_t sqId;
-    uint32_t tsId;
-    uint32_t cpyType;
-    union {
-        void *destPtr;
-        struct AsyncSqeUpdateInfo info;   // sqe update场景使用
-    };
-};
-
-struct AsyncDmaWqeOutputInfo {
-    union {
-        struct {
-            uint16_t dieId;
-            uint16_t functionId;
-            uint16_t jettyId;
-            uint8_t *wqe;
-            int32_t wqeLen;
-            uint32_t pi;
-            union {
-                unsigned long long fixedSize;  // used for 2d async copy in ub doorbell mode
-                unsigned long long fixedCnt;   // used for batch async copy in ub doorbell mode
-            };   
-        };
-        struct DMA_ADDR dmaAddr;
-    };
-};
-
-struct AsyncDmaWqeDestroyInfo {
-    uint32_t tsId;
-    uint32_t sqId;
-    union {
-        struct {
-            uint8_t *wqe;
-            int32_t size;
-        };
-        struct DMA_ADDR *dmaAddr;
-    };
-};
-
-#define ASYNC_CPY_2D_IN_RSV_LEN 8
-struct AsyncDmaWqeInputInfo2D {
-    drvSqCqType_t type;
-    uint32_t tsId;              /* default is 0 */
-    uint32_t sqId;
-    uint32_t dir;               /* reserved copy direction, the real dir is convert by src/dst addr */
-    void *dst;        /* destination memory address */
-    uint64_t dpitch;      /* pitch of destination memory */
-    void *src;        /* source memory address */
-    uint64_t destAddr;
-    uint64_t spitch;      /* pitch of source memory */
-    uint64_t width;       /* width of matrix transfer */
-    uint64_t height;      /* height of matrix transfer */
-    uint64_t fixedSize;   /* Input: already converted size, current not support none zero */
-    uint32_t rsv[ASYNC_CPY_2D_IN_RSV_LEN];
-};
-
-#define ASYNC_CPY_2D_DESTROY_RSV_LEN 8
-struct AsyncDmaWqeDestroyInfo2D {
-    drvSqCqType_t type;
-    uint32_t tsId;
-    uint32_t sqId;
-    uint32_t ci;                /* current jetty ci */
-    uint32_t rsv[ASYNC_CPY_2D_DESTROY_RSV_LEN];
-};
-
-#define ASYNC_CPY_BATCH_IN_RSV_LEN 8
-struct AsyncDmaWqeInputInfoBatch {
-    drvSqCqType_t type;
-    uint32_t tsId;              /* default is 0 */
-    uint32_t sqId;
-    uint32_t dir;               /* reserved copy direction, the real dir is convert by src/dst addr */
-    void **dsts;        /* destination memory address array */
-    void **srcs;        /* source memory address array */
-    uint64_t *lens;        /* cpy size array */
-    uint64_t count;       /* cpy array elements count */
-    uint64_t fixedCnt;   /* Input: already converted array cnt */
-    uint32_t rsv[ASYNC_CPY_BATCH_IN_RSV_LEN];
-};
-
-#define ASYNC_CPY_BATCH_DESTROY_RSV_LEN 8
-struct AsyncDmaWqeDestroyInfoBatch {
-    drvSqCqType_t type;
-    uint32_t tsId;
-    uint32_t sqId;
-    uint32_t ci;                /* current jetty ci */
-    uint32_t rsv[ASYNC_CPY_BATCH_DESTROY_RSV_LEN];
-};
-
-struct IpcNotifyOpenPara {
-    const char_t *name;
-    uint32_t flag;
-    uint32_t localDevId;
-    uint32_t localTsId;
-};
 
 constexpr int32_t PRE_ALLOC_SQ_CQ_RETRY_MAX_COUNT = 10;
 
@@ -674,6 +556,13 @@ public:
     virtual rtError_t StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId, const uint64_t va, const uint64_t size, bool isGraphPool) = 0;
     virtual rtError_t StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId) = 0;
     virtual rtError_t StreamMemPoolTrim(const uint32_t deviceId, const uint64_t poolId, uint64_t *size, uint64_t poolUsedSize, uint64_t poolFreeSize) = 0;
+    virtual rtError_t AsyncDmaJettyCreate(const uint32_t devId, const uint32_t piType,
+        const uint32_t depth, const uint32_t dir, uint64_t *const handle) = 0;
+    virtual rtError_t AsyncDmaJettyDestroy(const uint32_t devId, const uint64_t handle) = 0;
+    virtual rtError_t AsyncDmaJettyQuery(const uint32_t devId, const uint64_t handle,
+        uint32_t &dieId, uint32_t &functionId, uint32_t &jettyId) = 0;
+    virtual rtError_t AsyncDmaWqeConvert(const uint32_t devId, AsyncWqeInputPara *in, AsyncWqeOutputPara *out) = 0;
+    virtual rtError_t AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo *fillInfo) = 0;
 
     virtual rtError_t SetStreamPriorityValue(Stream * const stm, const uint32_t streamPriority) = 0;
     virtual rtError_t GetStreamPriorityValue(Stream * const stm, uint32_t * const streamPriority) = 0;

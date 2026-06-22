@@ -29,5 +29,22 @@ rtError_t CaptureModel::BindSqCqAndSendSqe(void)
     ERROR_RETURN_MSG_INNER(error, "config sq tail failed, model_id=%u, retCode=%#x.", Id_(), static_cast<uint32_t>(error));
     return error;
 }
+
+rtError_t CaptureModel::BindJettyForUbdma()
+{
+    return RT_ERROR_NONE;
+}
+
+rtError_t CaptureModel::RecycleAllJetty(uint32_t &h2dCount, uint32_t &d2dCount)
+{
+    h2dCount = 0;
+    d2dCount = 0;
+    return RT_ERROR_NONE;
+}
+
+rtError_t CaptureModel::ReleaseAllJetty()
+{
+    return RT_ERROR_NONE;
+}
 } // namespace runtime
 } // namespace cce

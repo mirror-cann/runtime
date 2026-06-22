@@ -143,7 +143,9 @@ rtError_t StreamSqCqManage::AllocDavidStreamSqCq(const Stream * const newStm, co
     if ((newStm->Flags() & RT_STREAM_PERSISTENT) != 0U) {
         drvFlag |= (static_cast<uint32_t>(TSDRV_FLAG_TASK_SINK_SQ));
     }
-
+    if (Runtime::Instance()->GetConnectUbFlag() && (newStm->Flags() & RT_STREAM_CP_PROCESS_USE) == 0U) {
+        drvFlag |= (static_cast<uint32_t>(TSDRV_FLAG_PRE_ASYNC_SQ));
+    }
     rtError_t error = Alloc(streamId, drvFlag, sqId, cqId, info, sizeof(info),
                                   RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     COND_RETURN_WARN((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, retCode=%#x.", error);

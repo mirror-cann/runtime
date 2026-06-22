@@ -68,6 +68,7 @@ Model::Model(ModelType type)
       labelCount_(0ULL),
       labelCountPtr_(nullptr),
       firstExecuteFlag_(true),
+      needUpdateUbPi_(false),
       funcCallHostMem_(nullptr),
       funCallMemSize_(0ULL),
       funcCallSvmMem_(0ULL),
@@ -909,7 +910,6 @@ rtError_t Model::LoadCompleteByStreamPostp(Stream *const stream)
     ERROR_RETURN_MSG_INNER(error, "Failed to synchronize default stream, retCode=%#x.", static_cast<uint32_t>(error));
     isModelComplete_ = true;
     SetFirstExecute(true);
-
     for (Stream * const sinkStream : streams_) {
         if (!CheckSqQuery(sinkStream)) {
             break;

@@ -698,6 +698,16 @@ public:
     rtError_t GetChipIdDieId(const uint32_t devId, const uint32_t remoteDevId, const uint32_t remotePhyId,
                              int64_t &chipId, int64_t &dieId) override;
     rtError_t GetTopologyType(const uint32_t devId, const uint32_t remoteDevId, const uint32_t remotePhyId, int64_t * const val) override;
+    
+    // jetty
+    rtError_t AsyncDmaJettyCreate(const uint32_t devId, const uint32_t piType, const uint32_t depth,
+        const uint32_t dir, uint64_t *const handle) override;
+    rtError_t AsyncDmaJettyDestroy(const uint32_t devId, const uint64_t handle) override;
+    rtError_t AsyncDmaJettyQuery(const uint32_t devId, const uint64_t handle, uint32_t &dieId,
+        uint32_t &functionId, uint32_t &jettyId) override;
+    rtError_t AsyncDmaWqeConvert(const uint32_t devId, AsyncWqeInputPara *in, AsyncWqeOutputPara *out) override;
+    rtError_t AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo *fillInfo) override;
+
     rtError_t SetStreamPriorityValue(Stream * const stm, const uint32_t streamPriority) override;
     rtError_t GetStreamPriorityValue(Stream * const stm, uint32_t * const streamPriority) override;
 private:

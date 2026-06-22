@@ -22,6 +22,7 @@
 #include "device_sq_cq_pool.hpp"
 #include "sq_addr_memory_pool.hpp"
 #include "inner_thread_local.hpp"
+#include "drv/driver.hpp"
 
 namespace cce {
 namespace runtime {
@@ -42,8 +43,8 @@ CaptureModel::~CaptureModel() noexcept
         TryToFreeEventIdAndDestroyEvent(&evt, evt->EventId_(), true, true);
     }
     captureEvents_.clear();
-
     refCount_ = 0U;
+    ReleaseAllJetty();
     DeconstructSqCq();
     ClearStreamActiveTask();
     DELETE_A(switchInfo_);
@@ -190,12 +191,11 @@ rtError_t CaptureModel::ExecuteCommon(Stream * const stm, int32_t timeout, const
     }
 
     rtError_t error;
-    // begin execute
     error = SetNotifyBeforeExecute(stm, this);
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-        "before model execute set notify failed, stream_id=%d, model_id=%u", stm->Id_(), Id_());
-
-    error = BuildSqCq(stm);
+        "Set notify before model execute failed, stream_id=%d, model_id=%u, retCode=%#x.",
+        stm->Id_(), Id_(), static_cast<uint32_t>(error));
+    error = BuildResource(stm);
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
         "build sq cq failed, stream_id=%d, model_id=%u", stm->Id_(), Id_());  
 
@@ -209,7 +209,6 @@ rtError_t CaptureModel::ExecuteCommon(Stream * const stm, int32_t timeout, const
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
         "model execute failed, stream_id=%d, model_id=%u", stm->Id_(), Id_());
 
-    // after execute
     error = SetNotifyAfterExecute(stm, this);
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
         "after model execute set notify failed, stream_id=%d, model_id=%u", stm->Id_(), Id_());
@@ -468,12 +467,15 @@ rtError_t CaptureModel::UpdateNotifyId(Stream * const exeStream)
     Context *context = origCaptureStream->Context_();
     return context->UpdateEndGraphTask(origCaptureStream, exeStream, ntf);
 }
-rtError_t CaptureModel::BuildSqCq(Stream * const exeStream)
+rtError_t CaptureModel::BuildResource(Stream * const exeStream)
 {
     COND_PROC(!IsSoftwareSqEnable(), return RT_ERROR_NONE);
     uint32_t loopCnt = 0U;
 
     const std::unique_lock<std::mutex> lk(sqBindMutex_);
+    rtError_t error = BindJettyForUbdma();
+    ERROR_RETURN_MSG_INNER(error, "bind jettys for streams failed, stream_id=%d, model_id=%u", exeStream->Id_(), Id_());
+
     /* model execute repeat */
     COND_PROC_RETURN_WARN((sqCqArray_ != nullptr) && (sqCqNum_ != 0U),
         RT_ERROR_NONE,
@@ -511,7 +513,7 @@ rtError_t CaptureModel::BuildSqCq(Stream * const exeStream)
     COND_RETURN_AND_MSG_OUTER(sqCqArray_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, 
         std::to_string(sizeof(rtDeviceSqCqInfo_t) * streamNum));
 
-    rtError_t error = AllocSqCqProc(streamNum);
+    error = AllocSqCqProc(streamNum);
     ERROR_PROC_RETURN_MSG_INNER(error, DELETE_A(sqCqArray_);,
         "alloc sq resource failed, model_id=%u, required number=%u, current available number=%u, "
         "maximum number=%u, retCode=%#x.",
@@ -536,7 +538,6 @@ rtError_t CaptureModel::BuildSqCq(Stream * const exeStream)
 
     /* reconstruct the model execute instr */
     SetFirstExecute(true);
-
     if (isNeedUpdateEndGraph_) {
         error = UpdateNotifyId(exeStream);
         ERROR_PROC_RETURN_MSG_INNER(error,
@@ -743,14 +744,18 @@ void CaptureModel::ClearStreamActiveTask(void)
     const std::unique_lock<std::mutex> lk(streamActiveTaskListMutex_);
     streamActiveTaskList_.clear();
 }
-void CaptureModel::CaptureModelExecuteFinish(void)
+
+void CaptureModel::CaptureModelExecuteFinish(const uint32_t errCode)
 {
     const std::unique_lock<std::mutex> lk(sqBindMutex_);
     COND_PROC(refCount_ < 1U, return);
     refCount_--;
-
+    if (refCount_ == 0 && errCode != RT_ERROR_NONE) {
+        ReleaseAllJetty();
+    }
     return;
 }
+
 rtError_t CaptureModel::AllocSqAddr(void) const
 {
     const uint32_t deviceId = Context_()->Device_()->Id_();

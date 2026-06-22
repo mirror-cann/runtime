@@ -734,6 +734,13 @@ rtError_t RawDevice::Init()
     CreateMessageQueue();
     CreateFreeEventQueue();
     isSupportStopOnStreamError_ = IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DFX_STOP_ON_STREAM_ERROR);
+    
+    if (Runtime::Instance()->GetConnectUbFlag()) {
+        jettyManager_ = std::make_unique<JettyManager>(deviceId_);
+        NULL_PTR_GOTO_MSG_INNER(jettyManager_, SQ_ADDR_MEMORY_FREE, error, RT_ERROR_MEMORY_ALLOCATION);
+        RT_LOG(RT_LOG_INFO, "Jetty resources initialized for device_id=%u", deviceId_);
+    }
+    
     return RT_ERROR_NONE;
 
 SQ_ADDR_MEMORY_FREE:
@@ -2367,7 +2374,8 @@ rtError_t RawDevice::StoreEndGraphNotifyInfo(const uint32_t streamId, Model* cap
     return RT_ERROR_NONE;    
 }
 
-rtError_t RawDevice::DeleteEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos)
+rtError_t RawDevice::DeleteEndGraphNotifyInfo(
+    const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos, const uint32_t errCode)
 {
     auto key = std::make_tuple(streamId, captureModel);
     uint32_t numOfPos = 0;
@@ -2392,7 +2400,7 @@ rtError_t RawDevice::DeleteEndGraphNotifyInfo(const uint32_t streamId, Model* ca
 
         CaptureModel *captureModelTmp = static_cast<CaptureModel*>(captureModel);
         if (captureModelTmp != nullptr) {
-            (void)captureModelTmp->CaptureModelExecuteFinish();
+            (void)captureModelTmp->CaptureModelExecuteFinish(errCode);
         }
     }
 
@@ -2469,7 +2477,7 @@ bool RawDevice::JudgeIsEndGraphNotifyWaitExecuted(const Stream* const exeStream,
             it = sqePosList.erase(it);
             CaptureModel *captureModelTmp = static_cast<CaptureModel*>(captureModel);
             if (captureModelTmp != nullptr) {
-                (void)captureModelTmp->CaptureModelExecuteFinish();
+                (void)captureModelTmp->CaptureModelExecuteFinish(RT_ERROR_NONE);
             }
         } else {
             break;

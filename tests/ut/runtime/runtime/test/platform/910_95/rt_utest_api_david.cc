@@ -10117,7 +10117,7 @@ TEST_F(ApiDavidTest, test_memcpy_batch_async_batch_path)
     MOCKER(NpuDriver::CheckIsSupportFeature).stubs().will(returnValue(false));
     uint64_t realSize = 2;
     MOCKER(MemcopyBatchAsync).stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&realSize, sizeof(realSize)), mockcpp::any(), mockcpp::any())
+        .with(mockcpp::any(), outBoundP(&realSize, sizeof(realSize)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream_, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
 

@@ -26,6 +26,7 @@
 #include "model_graph_task.h"
 #include "model_update_task.h"
 #include "stars_david.hpp"
+#include "capture_model_utils.hpp"
 
 namespace cce {
 namespace runtime {
@@ -287,10 +288,13 @@ rtError_t AicpuMdlDestroy(Model * const mdl)
 
 static rtError_t AsyncJettyToHead(const Model * const mdl, Stream * const stm)
 {
-    if (mdl->GetFirstExecute()) {
+    if (IsSoftwareSqCaptureModel(mdl)) {
+        if (!mdl->GetNeedUpdateUBPi()) {
+            return RT_ERROR_NONE;
+        }
+    } else if (mdl->GetFirstExecute()) {
         return RT_ERROR_NONE;
     }
-
     if ((mdl->GetH2dJettyInfo().empty()) && ( mdl->GetD2dJettyInfo().empty())) {
         return RT_ERROR_NONE;
     }
@@ -446,7 +450,8 @@ static rtError_t GetAndSaveH2dJettyInfo(Model * const mdl, uint32_t sqId, uint32
 
 static void GetAndSaveJettyInfo(Model * const mdl)
 {
-    if (mdl->GetProcJettyInfoFlag()) {
+    // aclgraph 在bind jetty时刷新jetty info
+    if (mdl->GetProcJettyInfoFlag() || IsSoftwareSqCaptureModel(mdl)) {
         return;
     }
 

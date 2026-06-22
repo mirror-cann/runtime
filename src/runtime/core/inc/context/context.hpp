@@ -535,6 +535,8 @@ public:
     void ProcessReportFastRingBuffer() const;
     rtError_t TryRecycleCaptureModelResource(const uint32_t allocSqNum, const uint32_t ntfCnt,
         const CaptureModel * const excludeMdl);
+    rtError_t TryRecycleCaptureModelJettyResource(const CaptureModel * const excludeMdl, JettyType type);
+
     void PushContextErrMsg();
     void PopContextErrMsg();
     virtual rtError_t TearDownStream(Stream *stm, bool flag = true) const;

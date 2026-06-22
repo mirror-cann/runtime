@@ -81,6 +81,12 @@ rtError_t UbArgManage::ParseArgsCpyWqe(const StarsArgLoaderResult* const result,
 {
     Device * const dev = stream_->Device_();
     const uint32_t devId = dev->Id_();
+    // aclgraph走驱动halMemcpy做同步拷贝
+    if (stream_->IsSoftwareSqEnable()) {
+        return dev->Driver_()->MemCopySync(
+            result->kerArgs, size, result->hostAddr, size,
+            RT_MEMCPY_HOST_TO_DEVICE);
+    }
     struct halSqTaskArgsInfo sqArgsInfo = {};
     sqArgsInfo.type = DRV_NORMAL_TYPE;
     sqArgsInfo.tsId = dev->DevGetTsId();

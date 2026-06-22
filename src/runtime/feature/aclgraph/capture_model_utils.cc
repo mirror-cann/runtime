@@ -122,12 +122,12 @@ bool IsCapturedTask(const Stream * const launchStm, const TaskInfo *submitTask)
 {
     return (launchStm != submitTask->stream);
 }
-bool IsSoftwareSqCaptureModel(Model * const mdl)
+bool IsSoftwareSqCaptureModel(const Model * const mdl)
 {
     if (mdl->GetModelType() != ModelType::RT_MODEL_CAPTURE_MODEL) {
         return false;
     }
-    CaptureModel *capMdl = dynamic_cast<CaptureModel *>(mdl);
+    const CaptureModel *capMdl = dynamic_cast<const CaptureModel *>(mdl);
     return capMdl != nullptr && capMdl->IsSoftwareSqEnable();
 }
 rtError_t CheckCaptureModelSupportSoftwareSq(Device* const dev)

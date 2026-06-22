@@ -283,6 +283,10 @@ set(runtimeut_src_aclgraph_list
     ${TOP_DIR}/src/runtime/feature/aclgraph/capture_model_utils.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/event_capture.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/stream_capture.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/jetty_manager.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/jetty_pool.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_jetty_context.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_jetty_handler.cc
 )
 
 set(runtimeut_common_src_stream_list
@@ -373,6 +377,27 @@ set(runtimeut_src_tiny_exclude_list
     ${TOP_DIR}/src/runtime/core/src/api_impl/api_error_uvm.cc
     ${TOP_DIR}/src/runtime/core/src/api_impl/api_impl_uvm.cc
     ${TOP_DIR}/src/runtime/core/src/context/context_standard_soc.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/api_decorator_aclgraph.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/api_error_aclgraph.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/v100/api_impl_aclgraph.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/v100/api_impl_capture_event.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/context_aclgraph.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/model_aclgraph.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/capture_model.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/capture_model_utils.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/event_capture.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/stream_capture.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/jetty_manager.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/jetty_pool.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_jetty_context.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_jetty_handler.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/v100/capture_adapt_v100.cc
+    ${TOP_DIR}/src/runtime/feature/aclgraph/v100/capture_model_adapt_v100.cc
+    ${TOP_DIR}/src/runtime/feature/model/v100/capture_adapt.cc
+    ${TOP_DIR}/src/runtime/feature/snapshot/device_snapshot.cc
+    ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_process_helper.cc
+    ${TOP_DIR}/src/runtime/feature/snapshot/snapshot_callback_manager.cc
+    ${TOP_DIR}/src/runtime/feature/snapshot/v100/device_snapshot_adapter.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/context_standard_soc_aclgraph.cc
     ${TOP_DIR}/src/runtime/feature/ffts/context_ffts_standard_soc.cc
     ${TOP_DIR}/src/runtime/driver/npu_driver_standard_soc.cc
@@ -435,6 +460,7 @@ set(runtimeut_src_tiny_include_list
     ${TOP_DIR}/src/runtime/core/src/pool/event_pool_tiny_stub.cc
     ${TOP_DIR}/src/runtime/core/src/event/ipc_event_tiny_stub.cc
     ${TOP_DIR}/src/runtime/core/src/pool/event_expanding_tiny_stub.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/jetty_stub.cc
 )
 
 set(runtime_raw_device_adpt_common_list
@@ -752,7 +778,10 @@ target_compile_definitions(runtime_ut_david_static_lib PUBLIC
 )
 target_link_libraries(runtime_ut_david_static_lib PRIVATE $<BUILD_INTERFACE:runtime_utest_intf_pub>)
 ###################################################################################################
-add_library(runtimeut_src_static_lib STATIC ${runtimeut_src_list})
+add_library(runtimeut_src_static_lib STATIC 
+    ${runtimeut_src_list}
+    ${TOP_DIR}/src/runtime/core/src/task/v200/task_david_stub.cc
+)
 
 target_include_directories(
     runtimeut_src_static_lib PUBLIC 
@@ -906,6 +935,7 @@ add_executable(runtime_utest_camodel
     ${TOP_DIR}/src/runtime/core/src/kernel/v100/kernel.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/stub_task.cc
     ${TOP_DIR}/src/runtime/core/src/launch/xpu_aicpu_c_stub.cc
+    ${TOP_DIR}/src/runtime/core/src/task/v200/task_david_stub.cc
     stub/hal_stub.cc
     test/main.cc
     test/rt_utest_device.cc
@@ -937,6 +967,7 @@ add_executable(runtime_camodel_utest_v200
     ${TOP_DIR}/src/runtime/core/src/kernel/v100/kernel.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/stub_task.cc
     ${TOP_DIR}/src/runtime/core/src/launch/xpu_aicpu_c_stub.cc
+    ${TOP_DIR}/src/runtime/core/src/task/v200/task_david_stub.cc
     stub/hal_stub.cc
     test/main.cc
     test/rt_utest_camodel_v200.cc
@@ -1196,6 +1227,7 @@ set(runtimeut_src_tiny_list_all
     ${TOP_DIR}/src/runtime/core/src/task/v100/stub_task.cc
     ${TOP_DIR}/src/runtime/core/src/kernel/v100/program_plat.cc
     ${TOP_DIR}/src/runtime/core/src/launch/xpu_aicpu_c_stub.cc
+    ${TOP_DIR}/src/runtime/core/src/task/v200/task_david_stub.cc
 )
 
 list(REMOVE_ITEM runtimeut_src_tiny_list_all
@@ -1269,6 +1301,7 @@ set(RUNTIME_TEST_INC_DIR_COMMON
     ${TOP_DIR}/src/runtime/core/inc/stream
     ${TOP_DIR}/src/runtime/core/inc/launch
     ${TOP_DIR}/src/runtime/core/inc/model
+    ${TOP_DIR}/src/runtime/feature/jetty
     ${TOP_DIR}/src/runtime/core/inc/event
     ${TOP_DIR}/src/runtime/core/inc/arg_loader
     ${TOP_DIR}/src/runtime/core/inc/notify

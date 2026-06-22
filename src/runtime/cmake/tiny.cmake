@@ -179,6 +179,7 @@ set(libruntime_src_files_include_for_tiny
     ${RUNTIME_CORE_DIR}/src/profiler/api_profile_decorator_tiny_stub.cc
     ${RUNTIME_CORE_DIR}/src/profiler/api_profile_log_decoratoc_tiny_stub.cc
     ${RUNTIME_CORE_DIR}/src/launch/xpu_aicpu_c_stub.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/jetty_stub.cc
 )
 
 set(libruntime_api_src_files_exclude_for_tiny
@@ -425,6 +426,7 @@ set(libruntime_v100_src_files
     ${RUNTIME_CORE_DIR}/src/stream/stream_state_callback_manager.cc
      ${RUNTIME_CORE_DIR}/src/event/event_state_callback_manager.cc
     ${RUNTIME_CORE_DIR}/src/plugin_manage/v100/plugin_old_arch.cc
+    ${RUNTIME_CORE_DIR}/src/task/v200/task_david_stub.cc
     ${libruntime_dev_info_src_files}
     ${libruntime_src_files_include_for_tiny}
 )
@@ -444,6 +446,7 @@ set(RUNTIME_INC_DIR_TINY
     ${RUNTIME_DIR}/src/runtime/core/inc/kernel
     ${RUNTIME_DIR}/src/runtime/core/inc/launch
     ${RUNTIME_DIR}/src/runtime/core/inc/model
+    ${RUNTIME_DIR}/src/runtime/feature/jetty
     ${RUNTIME_DIR}/src/runtime/core/inc/notify
     ${RUNTIME_DIR}/src/runtime/core/inc/profiler
     ${RUNTIME_DIR}/src/runtime/core/inc/soc

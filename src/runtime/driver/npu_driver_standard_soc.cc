@@ -686,5 +686,149 @@ rtError_t NpuDriver::StreamMemPoolTrim(const uint32_t deviceId, const uint64_t p
         static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;
 }
+
+rtError_t NpuDriver::AsyncDmaJettyCreate(
+    const uint32_t devId, const uint32_t piType, const uint32_t depth, const uint32_t dir, uint64_t* const handle)
+{
+    COND_RETURN_WARN(
+        &halAsyncDmaJettyCreate == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "[drv api] halAsyncDmaJettyCreate does not exist");
+    struct halAsyncDmaJettyCreateIn input = {};
+    input.jettyType = DRV_ASYNC_DMA_JETTY_TYPE_NORMAL;
+    input.piMode = static_cast<drvAsyncDmaJettyPiMode_t>(piType);
+    input.dir = static_cast<drvAsyncDmaJettyDir_t>(dir);
+    input.depth = depth;
+    struct halAsyncDmaJettyCreateOut output = {};
+    const drvError_t drvRet = halAsyncDmaJettyCreate(devId, &input, &output);
+    if (drvRet != DRV_ERROR_NONE) {
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halAsyncDmaJettyCreate failed: devId=%u, drvRetCode=%d", devId,
+            static_cast<int32_t>(drvRet));
+    }
+    if (drvRet == DRV_ERROR_NONE) {
+        *handle = RtPtrToValue(output.jettyHandle);
+    }
+    return RT_GET_DRV_ERRCODE(drvRet);
+}
+
+rtError_t NpuDriver::AsyncDmaJettyDestroy(const uint32_t devId, const uint64_t handle)
+{
+    COND_RETURN_WARN(
+        &halAsyncDmaJettyDestroy == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "[drv api] halAsyncDmaJettyDestroy does not exist");
+    struct halAsyncJettyDestroyPara param = {};
+    param.jettyHandle = RtValueToPtr<halAsyncJettyHandle*>(handle);
+    const drvError_t drvRet = halAsyncDmaJettyDestroy(devId, &param);
+    if (drvRet != DRV_ERROR_NONE) {
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halAsyncDmaJettyDestroy failed: handle=%lu, drvRetCode=%d", handle,
+            static_cast<int32_t>(drvRet));
+    }
+    return RT_GET_DRV_ERRCODE(drvRet);
+}
+
+rtError_t NpuDriver::AsyncDmaJettyQuery(
+    const uint32_t devId, const uint64_t handle, uint32_t& dieId, uint32_t& functionId, uint32_t& jettyId)
+{
+    COND_RETURN_WARN(
+        &halAsyncDmaJettyQuery == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "[drv api] halAsyncDmaJettyQuery does not exist");
+    struct halAsyncDmaJettyQueryIn in = {};
+    in.jettyHandle = RtValueToPtr<halAsyncJettyHandle*>(handle);
+    struct halAsyncDmaJettyQueryOut out = {};
+    const drvError_t drvRet = halAsyncDmaJettyQuery(devId, &in, &out);
+    if (drvRet != DRV_ERROR_NONE) {
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halAsyncDmaJettyQuery failed: handle=%lu, drvRetCode=%d",
+            handle, static_cast<int32_t>(drvRet));
+    }
+    if (drvRet == DRV_ERROR_NONE) {
+        dieId = out.dieId;
+        functionId = out.funcId;
+        jettyId = out.jettyId;
+    }
+    return RT_GET_DRV_ERRCODE(drvRet);
+}
+
+// AsyncDmaWqeConvert
+rtError_t NpuDriver::AsyncDmaWqeConvert(const uint32_t devId, AsyncWqeInputPara* inParam, AsyncWqeOutputPara* outParam)
+{
+    COND_RETURN_WARN(&halAsyncDmaWqeConvert == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "[drv api] halAsyncDmaWqeConvert does not exist");
+    COND_RETURN_ERROR(inParam == nullptr || outParam == nullptr, RT_ERROR_INVALID_VALUE,
+        "AsyncDmaWqeConvert: inParam or outParam is null.");
+
+    struct halAsyncDmaWqeInputPara halIn = {};
+    halIn.wqeType = static_cast<drvAsyncDmaType_t>(inParam->wqeType);
+    halIn.wqeBuffer = inParam->wqeBuffer;
+    halIn.wqeBufferLen = inParam->size;
+    
+    switch (inParam->wqeType) {
+        case DRV_ASYNC_DMA_TYPE_NORMAL:
+            halIn.normal.asyncDmaType = DRV_ASYNC_DMA_TYPE_NORMAL;
+            halIn.normal.src = inParam->normal.src;
+            halIn.normal.dst = inParam->normal.dst;
+            halIn.normal.len = inParam->normal.len;
+            break;
+        case DRV_ASYNC_DMA_TYPE_BATCH:
+            halIn.batch.src = RtPtrToPtr<UINT64 *>(inParam->batch.src);
+            halIn.batch.dst = RtPtrToPtr<UINT64 *>(inParam->batch.dst);
+            halIn.batch.len = RtPtrToPtr<UINT64 *>(inParam->batch.len);
+            halIn.batch.count = inParam->batch.count;
+            break;
+        case DRV_ASYNC_DMA_TYPE_2D:
+            halIn.matrix2d.src = RtPtrToPtr<UINT64 *>(inParam->matrix2d.src);
+            halIn.matrix2d.dst = RtPtrToPtr<UINT64 *>(inParam->matrix2d.dst);
+            halIn.matrix2d.spitch = inParam->matrix2d.spitch;
+            halIn.matrix2d.dpitch = inParam->matrix2d.dpitch;
+            halIn.matrix2d.width = inParam->matrix2d.width;
+            halIn.matrix2d.height = inParam->matrix2d.height;
+            halIn.matrix2d.fixedSize = inParam->matrix2d.fixedSize;
+            break;
+        case DRV_ASYNC_DMA_TYPE_NOP:
+            halIn.nop.nopCnt = inParam->nop.nopCnt;
+            break;
+        default:
+            RT_LOG(RT_LOG_ERROR, "Unsupported wqeType=%d, devId=%u.", static_cast<int32_t>(inParam->wqeType), devId);
+            return RT_ERROR_INVALID_VALUE;
+    }
+    
+    struct halAsyncDmaWqeOutputPara halOut = {};
+    const drvError_t drvRet = halAsyncDmaWqeConvert(devId, &halIn, &halOut);
+    if (drvRet != DRV_ERROR_NONE) {
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halAsyncDmaWqeConvert failed, drvRetCode=%d", static_cast<int32_t>(drvRet));
+    }
+
+    if (drvRet == DRV_ERROR_NONE) {
+        RT_LOG(RT_LOG_DEBUG, "halAsyncDmaWqeConvert done, devId=%u, halIn: wqeType=%d, wqeBufferLen=%llu, halOut: wqeCnt=%u, fixedCnt=%llu, fixedSize=%llu.",
+            devId, static_cast<int32_t>(halIn.wqeType), halIn.wqeBufferLen, halOut.wqeCnt, halOut.fixedCnt, halOut.fixedSize);
+        outParam->wqeCnt = halOut.wqeCnt;
+        outParam->fixedSize = halOut.fixedSize;
+        outParam->fixedCnt = halOut.fixedCnt;
+    }
+    return RT_GET_DRV_ERRCODE(drvRet);
+}
+
+rtError_t NpuDriver::AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo* fillInfo)
+{
+    COND_RETURN_WARN(
+        &halAsyncDmaJettyWqeFill == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "[drv api] halAsyncDmaJettyWqeFill does not exist");
+    COND_RETURN_ERROR(fillInfo == nullptr, RT_ERROR_INVALID_VALUE,
+        "AsyncDmaWqeFill: fillInfo is null.");
+    struct halAsyncDmaJettyFillInfo info = {};
+
+    info.jettyHandle = RtValueToPtr<halAsyncJettyHandle*>(fillInfo->jettyHandle.handle);
+    info.offset = fillInfo->offset;
+    info.srcWqe = static_cast<unsigned char*>(fillInfo->srcWqe);
+    info.size = fillInfo->size;
+    const drvError_t drvRet = halAsyncDmaJettyWqeFill(devId, &info);
+    if (drvRet != DRV_ERROR_NONE) {
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halAsyncDmaJettyWqeFill failed, drvRetCode=%d", static_cast<int32_t>(drvRet));
+    }
+    return RT_GET_DRV_ERRCODE(drvRet);
+}
 }
 }

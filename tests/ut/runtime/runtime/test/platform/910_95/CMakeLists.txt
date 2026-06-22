@@ -47,19 +47,20 @@ add_executable(runtime_utest_task_david
     ${TOP_DIR}/src/runtime/driver/npu_driver_standard_soc.cc
     stub/hal_stub.cc
     main.cc
-    rt_utest_david_task_recycle.cc
-    rt_utest_david_task_send.cc
-    rt_utest_david_task.cc
-    rt_utest_david_model_c.cc
-    rt_utest_david_event.cc
-    rt_utest_david_stream.cc
-    rt_utest_david_elf.cc
-    rt_utest_david_device.cc
-    rt_utest_david_context.cc
-    rt_utest_stream_ub.cc
-    rt_utest_dcache_lock_david.cc
-    rt_utest_david_customer_stack_size.cc
+    rt_utest_david_task_recycle.cc	 
+    rt_utest_david_task_send.cc 
+    rt_utest_david_task.cc 
+    rt_utest_david_model_c.cc 
+    rt_utest_david_event.cc 
+    rt_utest_david_stream.cc 
+    rt_utest_david_elf.cc 
+    rt_utest_david_device.cc 
+    rt_utest_david_context.cc 
+    rt_utest_stream_ub.cc 
+    rt_utest_dcache_lock_david.cc 
+    rt_utest_david_customer_stack_size.cc 
     rt_utest_memory_corruption.cc
+    rt_utest_aclgraph_ub.cc
 )
 
 target_compile_definitions(runtime_utest_task_david PUBLIC

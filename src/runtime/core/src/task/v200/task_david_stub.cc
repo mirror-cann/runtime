@@ -7,24 +7,25 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#include "context.hpp"
+
+#include "task_to_sqe.hpp"
+#include "task_info.hpp"
+#include "stream.hpp"
+
 namespace cce {
 namespace runtime {
 
-rtError_t Context::TryRecycleCaptureModelResource(
-    const uint32_t allocSqNum, const uint32_t ntfCnt, const CaptureModel* const excludeMdl)
+void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const command)
 {
-    UNUSED(allocSqNum);
-    UNUSED(ntfCnt);
-    UNUSED(excludeMdl);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
+    UNUSED(taskInfo);
+    UNUSED(command);
 }
 
-rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel * const excludeMdl, JettyType type)
+void ToConstructDavidSqe(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint64_t sqBaseAddr)
 {
-    UNUSED(excludeMdl);
-    UNUSED(type);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
+    UNUSED(taskInfo);
+    UNUSED(davidSqe);
+    UNUSED(sqBaseAddr);
 }
 
 } // namespace runtime

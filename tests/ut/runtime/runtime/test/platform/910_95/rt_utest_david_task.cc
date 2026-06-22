@@ -421,12 +421,14 @@ TEST_F(TaskTestDavid, TestMemcopyBatchAsync)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     uint64_t realSize = 0ULL;
+    uint64_t realCnt = 0ULL;
     uint64_t count = 1ULL;
     uint64_t fixedSize = 0ULL;
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(MemcpyAsyncBatchTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
-    ret = MemcopyBatchAsync(nullptr, nullptr, nullptr, nullptr, count, &realSize, stm, fixedSize);
+    AsyncDmaBatchInfo batchInfo = {nullptr, nullptr, nullptr, count, 0U, fixedSize};
+    ret = MemcopyBatchAsync(batchInfo, &realCnt, &realSize, stm);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(stm->taskResMang_));
@@ -442,10 +444,12 @@ TEST_F(TaskTestDavid, TestMemcopyBatchAsyncFail)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     uint64_t realSize = 0ULL;
+    uint64_t realCnt = 0ULL;
     uint64_t count = 1ULL;
     uint64_t fixedSize = 0ULL;
     MOCKER(MemcpyAsyncBatchTaskInit).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
-    ret = MemcopyBatchAsync(nullptr, nullptr, nullptr, nullptr, count, &realSize, stm, fixedSize);
+    AsyncDmaBatchInfo batchInfo = {nullptr, nullptr, nullptr, count, 0U, fixedSize};
+    ret = MemcopyBatchAsync(batchInfo, &realCnt, &realSize, stm);
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
 
     ret = rtStreamDestroy(stream);
@@ -1701,10 +1705,10 @@ TEST_F(TaskTestDavid, CaptureModeExecute)
     MOCKER_CPP(&CaptureModel::ConfigSqTail).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     CaptureModel *captureMdl1 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1));
-    captureMdl1->CaptureModelExecuteFinish();
+    captureMdl1->CaptureModelExecuteFinish(RT_ERROR_NONE);
     uint32_t releaseNum;
     captureMdl1->ReleaseSqCq(releaseNum);
-    captureMdl1->BuildSqCq(rt_ut::UnwrapOrNull<Stream>(streamExe));
+    captureMdl1->BuildResource(rt_ut::UnwrapOrNull<Stream>(streamExe));
 
     error = rtModelDestroy(model1);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1965,6 +1969,67 @@ TEST_F(TaskTestDavid, memcpy2d_async_ub_dma_h2d_test)
     GlobalMockObject::verify();
 }
 
+TEST_F(TaskTestDavid, memcpy_async_ub_dma_h2d_aclgraph_test)
+{
+    TaskInfo memcpyTask = {};
+    Device *device = new RawDevice(0);
+    device->Init();
+    Stream *stream = new Stream(device, 0);
+    stream->SetSoftWareSqEnable();
+    stream->streamId_ = 1;
+    NpuDriver drv;
+
+    void *src = malloc(100);
+    void *dst = malloc(100);
+    uint64_t size = sizeof(void *);
+
+    uint32_t backupcopyType_ = memcpyTask.u.memcpyAsyncTaskInfo.copyType;
+    memcpyTask.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DEVICE_TO_HOST_EX;
+
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)1));
+    InitByStream(&memcpyTask, stream);
+    rtError_t ret = MemcpyAsyncTaskInitV3(&memcpyTask, RT_MEMCPY_DEVICE_TO_HOST_EX, src, dst, size, 0, NULL);
+    EXPECT_EQ(ret, RT_ERROR_DRV_ERR);
+    memcpyTask.u.memcpyAsyncTaskInfo.copyType = backupcopyType_;
+    TaskUnInitProc(&memcpyTask);
+    free(src);
+    free(dst);
+    delete stream;
+    delete device;
+}
+
+TEST_F(TaskTestDavid, memcpy2d_async_ub_dma_h2d_aclgraph_test)
+{
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
+    rtInstance->SetConnectUbFlag(true);
+
+    void* dst = nullptr;
+    void* src = nullptr;
+    rtMemcpyKind_t kind = RT_MEMCPY_HOST_TO_DEVICE;
+    uint64_t size = 1000;
+
+    TaskInfo task = {};
+    rtError_t error;
+    rtStream_t stream = NULL;
+    error = rtStreamCreate(&stream, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    stm->SetSoftWareSqEnable();
+    MOCKER(halAsyncDmaCreate2D).stubs().will(invoke(stubHalAsyncDmaCreate2D));
+
+    rtStarsSqe_t sqe;
+    InitByStream(&task, stm);
+    MemcpyAsyncTaskInitV2(&task, dst, size, src, size, size, 1, kind, size);
+    EXPECT_EQ(task.u.memcpyAsyncTaskInfo.dmaKernelConvertFlag, false);
+    ToConstructSqe(&task, &sqe);
+
+    Complete(&task, 0);
+    TaskUnInitProc(&task);
+    rtStreamDestroy(stream);
+    rtInstance->SetConnectUbFlag(false);
+    GlobalMockObject::verify();
+}
+
 static rtError_t stubCreateAsyncDmaWqeBatchSuccess(
     Driver* drv, uint32_t devId, const AsyncDmaWqeInputInfoBatch& input, AsyncDmaWqeOutputInfo* output)
 {
@@ -2003,13 +2068,15 @@ TEST_F(TaskTestDavid, memcpy_async_batch_ub_dma_test)
     // not ub: copyType=D2D_SDMA, not UB DMA type
     InitByStream(&task, stm);
     task.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2D_SDMA;
-    error = MemcpyAsyncBatchTaskInit(&task, dsts, srcs, sizes, count, fixedSize);
+    AsyncDmaBatchInfo batchInfo1 = {dsts, srcs, sizes, count, 0, 0};
+    error = MemcpyAsyncBatchTaskInit(&task, batchInfo1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // drv not support: mock CreateAsyncDmaWqeBatch to return error
     task.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2H;
     MOCKER_CPP_VIRTUAL(driver, &Driver::CreateAsyncDmaWqeBatch).stubs().will(returnValue(RT_ERROR_DRV_ERR));
-    error = MemcpyAsyncBatchTaskInit(&task, dsts, srcs, sizes, count, fixedSize);
+    AsyncDmaBatchInfo batchInfo2 = {dsts, srcs, sizes, count, 0, 0};
+    error = MemcpyAsyncBatchTaskInit(&task, batchInfo2);
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
     GlobalMockObject::verify();
 
@@ -2017,10 +2084,25 @@ TEST_F(TaskTestDavid, memcpy_async_batch_ub_dma_test)
     MOCKER(MemcpyAsyncTaskCommonInit).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::IsSupportFeature).stubs().will(returnValue(true));
     MOCKER_CPP_VIRTUAL(driver, &Driver::CreateAsyncDmaWqeBatch).stubs().will(invoke(stubCreateAsyncDmaWqeBatchSuccess));
-    error = MemcpyAsyncBatchTaskInit(&task, dsts, srcs, sizes, count, fixedSize);
+    AsyncDmaBatchInfo batchInfo3 = {dsts, srcs, sizes, count, 0, 0};
+    error = MemcpyAsyncBatchTaskInit(&task, batchInfo3);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(task.u.memcpyAsyncTaskInfo.ubDma.jettyId, 12u);
     EXPECT_EQ(task.u.memcpyAsyncTaskInfo.ubDma.functionId, 10u);
+
+    // succ: software sq
+    MOCKER(MemcpyAsyncTaskCommonInit).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::IsSupportFeature).stubs().will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::AsyncDmaWqeConvert).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::AsyncDmaJettyCreate)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::HostMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
+
+    stm->SetSoftWareSqEnable();
+    AsyncDmaBatchInfo batchInfo4 = {dsts, srcs, sizes, count, 0, 0};
+    error = MemcpyAsyncBatchTaskInit(&task, batchInfo4);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     TaskUnInitProc(&task);
     rtStreamDestroy(stream);

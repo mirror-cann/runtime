@@ -231,10 +231,8 @@ struct UbDma {
     bool isUbAsyncMode;
     int32_t wqeLen;
     uint32_t pi;
-    union {
-        uint64_t fixedSize;
-        uint64_t fixedCnt;
-    };   
+    uint64_t fixedSize;
+    uint64_t fixedCnt;
 };
 
 struct MemcpyAsyncTaskInfo {

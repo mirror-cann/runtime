@@ -19,6 +19,7 @@
 #include "stars_cond_isa_helper.hpp"
 #include "error_message_manage.hpp"
 #include "task_execute_time.h"
+#include "stream_jetty_handler.h"
 
 namespace cce {
 namespace runtime {
@@ -191,18 +192,96 @@ void StarsV2DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const
     }
 }
 
-rtError_t ConvertAsyncDmaBatch(TaskInfo * const taskInfo, void** const dsts, 
-    void** const srcs, const uint64_t* const sizes, const uint64_t count, const uint64_t fixedCnt)
+static rtError_t ShiftBatchArrays(AsyncDmaBatchInfo &batchInfo, bool handleFixedSize = false)
+{
+    if (batchInfo.fixedCnt == 0) {
+        return RT_ERROR_NONE;
+    }
+    uint64_t realCnt = batchInfo.count;
+    size_t offset = static_cast<size_t>(batchInfo.fixedCnt);
+    errno_t memRet = memmove_s(batchInfo.srcs, realCnt * sizeof(void*),
+                    batchInfo.srcs + offset, realCnt * sizeof(void*));
+    COND_RETURN_ERROR(memRet != EOK, RT_ERROR_SEC_HANDLE,
+        "memmove_s srcs failed, retCode=%#x.", memRet);
+    memRet = memmove_s(batchInfo.dsts, realCnt * sizeof(void*),
+                    batchInfo.dsts + offset, realCnt * sizeof(void*));
+    COND_RETURN_ERROR(memRet != EOK, RT_ERROR_SEC_HANDLE,
+        "memmove_s dsts failed, retCode=%#x.", memRet);
+    memRet = memmove_s(batchInfo.sizes, realCnt * sizeof(uint64_t),
+                    batchInfo.sizes + offset, realCnt * sizeof(uint64_t));
+    COND_RETURN_ERROR(memRet != EOK, RT_ERROR_SEC_HANDLE,
+        "memmove_s sizes failed, retCode=%#x.", memRet);
+    batchInfo.count = realCnt;
+
+    if (handleFixedSize && batchInfo.fixedSize != 0) {
+        if (batchInfo.sizes[0] < batchInfo.fixedSize) {
+            RT_LOG(RT_LOG_ERROR, "Invalid fixedSize=%lu exceeds element size=%lu.",
+                batchInfo.fixedSize, batchInfo.sizes[0]);
+            return RT_ERROR_INVALID_VALUE;
+        }
+        batchInfo.srcs[0] = RtValueToPtr<void*>(RtPtrToValue(batchInfo.srcs[0]) + batchInfo.fixedSize);
+ 	    batchInfo.dsts[0] = RtValueToPtr<void*>(RtPtrToValue(batchInfo.dsts[0]) + batchInfo.fixedSize);
+        batchInfo.sizes[0] -= batchInfo.fixedSize;
+    }
+    return RT_ERROR_NONE;
+}
+
+static rtError_t ConvertAsyncDmaBatchForSoftWareSq(TaskInfo * const taskInfo, AsyncDmaBatchInfo &batchInfo)
+{
+    Stream * const stream = taskInfo->stream;
+    const uint32_t devId = stream->Device_()->Id_();
+    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+
+    rtError_t error = RT_ERROR_NONE;
+    JettyType jettyType = StreamJettyHandler::GetJettyTypeFromTask(taskInfo);
+    AsyncWqeInputPara input = {};
+    AsyncWqeOutputPara output = {};
+    input.wqeType = static_cast<uint32_t>(DRV_ASYNC_DMA_TYPE_BATCH);
+    input.batch.count = batchInfo.count;
+    input.batch.len = batchInfo.sizes;
+
+    error = ShiftBatchArrays(batchInfo, true);
+    if (error != RT_ERROR_NONE) {
+        return error;
+    }
+    input.batch.len = batchInfo.sizes;
+    input.batch.count = batchInfo.count;
+    input.batch.src = RtPtrToPtr<uint64_t *>(batchInfo.srcs);
+    input.batch.dst = RtPtrToPtr<uint64_t *>(batchInfo.dsts);
+
+    error = StreamJettyHandler::HandleUbDmaTask(
+        stream, taskInfo, jettyType, &input, &output);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, jetty_type=%u, ret=%d.",
+            devId, stream->Id_(), jettyType, error);
+        return error;
+    }
+    memcpyAsyncTaskInfo->ubDma.fixedSize = output.fixedSize;
+    memcpyAsyncTaskInfo->ubDma.fixedCnt = output.fixedCnt;
+    memcpyAsyncTaskInfo->size = output.fixedCnt;
+    return RT_ERROR_NONE;
+}
+
+rtError_t ConvertAsyncDmaBatch(TaskInfo * const taskInfo, AsyncDmaBatchInfo &batchInfo)
 {
     bool isUbMode = Runtime::Instance()->GetConnectUbFlag() ? true : false;
     if (!isUbMode) {
         RT_LOG(RT_LOG_ERROR, "pcie does not support");
         return RT_ERROR_INVALID_VALUE;
-    }   
+    }
 
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
     Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+
+    if (stream->IsSoftwareSqEnable()) {
+        return ConvertAsyncDmaBatchForSoftWareSq(taskInfo, batchInfo);
+    }
+
+    rtError_t shiftErr = ShiftBatchArrays(batchInfo);
+    COND_RETURN_ERROR(shiftErr != RT_ERROR_NONE, shiftErr,
+        "ShiftBatchArrays failed, retCode=%#x.", static_cast<uint32_t>(shiftErr));
+
+    Driver * const driver = stream->Device_()->Driver_();
     const uint32_t devId = stream->Device_()->Id_();
     AsyncDmaWqeInputInfoBatch input;
     (void)memset_s(&input, sizeof(AsyncDmaWqeInputInfoBatch), 0, sizeof(AsyncDmaWqeInputInfoBatch));
@@ -210,11 +289,11 @@ rtError_t ConvertAsyncDmaBatch(TaskInfo * const taskInfo, void** const dsts,
 
     input.tsId = stream->Device_()->DevGetTsId();
     input.sqId = stream->GetSqId();
-    input.dsts = dsts;
-    input.srcs = srcs;
-    input.lens = const_cast<uint64_t *>(sizes);    
-    input.count = count;
-    input.fixedCnt = fixedCnt;
+
+    input.srcs = batchInfo.srcs;
+    input.dsts  = batchInfo.dsts;
+    input.lens = batchInfo.sizes;
+    input.count = batchInfo.count;
     AsyncDmaWqeOutputInfo output;
     (void)memset_s(&output, sizeof(AsyncDmaWqeOutputInfo), 0, sizeof(AsyncDmaWqeOutputInfo));
     const rtError_t error = driver->CreateAsyncDmaWqeBatch(devId, input, &output);
@@ -229,8 +308,7 @@ rtError_t ConvertAsyncDmaBatch(TaskInfo * const taskInfo, void** const dsts,
     return RT_ERROR_NONE;
 }
 
-rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, void** const dsts, 
-    void** const srcs, const uint64_t* const sizes, const uint64_t count, const uint64_t fixedSize)
+rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, AsyncDmaBatchInfo &batchInfo)
 {
     rtError_t error = MemcpyAsyncTaskCommonInit(taskInfo);
     ERROR_RETURN_MSG_INNER(error, "MemcpyAsyncTaskCommonInit V3 failed, retCode=%#x.", error);
@@ -238,7 +316,7 @@ rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, void** const dsts,
     MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
 
     if (IsDavidUbDma(memcpyAsyncTaskInfo->copyType)) { 
-        error = ConvertAsyncDmaBatch(taskInfo, dsts, srcs, sizes, count, fixedSize);
+        error = ConvertAsyncDmaBatch(taskInfo, batchInfo);
         ERROR_RETURN_MSG_INNER(error, "ConvertAsyncDmaBatch failed, retCode=%#x.", error);
         memcpyAsyncTaskInfo->dmaKernelConvertFlag = true;
     } else {
@@ -320,6 +398,9 @@ static void AsyncDmaWqeBasicProc(MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo, const
 
 static void AsyncDmaWqeProc(MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo, const Stream * const stream)
 {
+    if (stream->IsSoftwareSqEnable()) {
+        return;
+    }
     if (memcpyAsyncTaskInfo->copyMethod == RT_ASYNC_CPY_2D) {
         AsyncDmaWqe2DProc(memcpyAsyncTaskInfo, stream);
     } else if (memcpyAsyncTaskInfo->copyMethod == RT_ASYNC_CPY_BATCH) {

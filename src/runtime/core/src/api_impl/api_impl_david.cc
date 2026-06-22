@@ -738,11 +738,10 @@ rtError_t ApiImplDavid::MemCopy2DAsync(void * const dst, const uint64_t dstPitch
             error = Memcpy2DAsync(dst, dstPitch, src, srcPitch, width, height, kind, &realSize, curStm, fixedSize);
         }
         COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
-        // ub 单算子，h2d/d2h都走这里, d2d目前不支持，不会走到下面
-        if (Runtime::Instance()->GetConnectUbFlag() && !curStm->GetBindFlag() && (kind != RT_MEMCPY_DEVICE_TO_DEVICE)) {
-            fixedSize = realSize;   // 这里的realSize返回的就是累计的
+        if (Runtime::Instance()->GetConnectUbFlag() && (kind != RT_MEMCPY_DEVICE_TO_DEVICE)) {
+            fixedSize = realSize;
             remainSize = totalSize - fixedSize;
-            if (remainSize > 0) {
+            if (remainSize > 0UL && !(curStm->GetBindFlag())) {
                 error = curStm->Synchronize();
                 ERROR_RETURN_MSG_INNER(error, "Failed to synchronize stream, retCode=%#x.", static_cast<uint32_t>(error));
             }
@@ -773,8 +772,10 @@ rtError_t ApiImplDavid::BatchMemcpyAsync(void** const dsts, const size_t* const 
     size_t attrIdx = 0U;
     rtPtrAttributes_t dstAttr = {};
     rtPtrAttributes_t srcAttr = {};
+    uint64_t realCnt = 0UL;
     uint64_t realSize = 0UL;
-    uint64_t remainSize = count;
+    uint64_t remainCnt = count;
+    uint64_t fixedCnt = 0UL;
     uint64_t fixedSize = 0UL;
     bool isD2HorH2DInvolvePageableMemory = false;
 
@@ -799,13 +800,15 @@ rtError_t ApiImplDavid::BatchMemcpyAsync(void** const dsts, const size_t* const 
             const_cast<size_t*>(attrsIdxs), numAttrs, failIdx);
     }
 
-    while (remainSize > 0UL) {
-        error = MemcopyBatchAsync(dsts, destMaxs, srcs, sizes, count, &realSize, curStm, fixedSize);
+    while (remainCnt > 0UL) {
+        AsyncDmaBatchInfo batchInfo = {dsts, srcs, const_cast<uint64_t*>(sizes), remainCnt, fixedCnt, fixedSize};
+        error = MemcopyBatchAsync(batchInfo, &realCnt, &realSize, curStm);
         COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
-        // 这里的realSize返回的就是累计处理的量
+        // realCnt 本次处理的
+        fixedCnt = realCnt;
         fixedSize = realSize;
-        remainSize = count - fixedSize;
-        if (remainSize > 0UL) {
+        remainCnt -= fixedCnt;
+        if (remainCnt > 0UL && !(curStm->GetBindFlag())) {
             error = curStm->Synchronize();
             ERROR_RETURN_MSG_INNER(error, "Failed to synchronize stream, retCode=%#x.", static_cast<uint32_t>(error));
         }
@@ -830,7 +833,7 @@ rtError_t ApiImplDavid::MemcpyBatchAsync(void** const dsts, const size_t* const 
 
     if (!NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_MEMCPY_BATCH_ASYNC)) {
         // ub 单算子
-        if (Runtime::Instance()->GetConnectUbFlag() && !curStm->GetBindFlag()) {
+        if (Runtime::Instance()->GetConnectUbFlag()) {
             return BatchMemcpyAsync(dsts, destMaxs, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx, curStm);  
         } else {
             return LoopMemcpyAsync(dsts, destMaxs, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx, stm);

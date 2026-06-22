@@ -309,6 +309,10 @@ set(libruntime_cmodel_src_files_optional
     ${RUNTIME_CORE_DIR}/src/event/ipc_event.cc
     ${RUNTIME_CORE_DIR}/src/pool/event_expanding.cc
     ${RUNTIME_CORE_DIR}/src/pool/event_pool.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/jetty_pool.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/jetty_manager.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/stream_jetty_context.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/stream_jetty_handler.cc
 )
 
 set(libruntime_cmodel_api_src_files
@@ -425,6 +429,7 @@ set(libruntime_cmodel_src_files
     ${RUNTIME_CORE_DIR}/src/task/host_task.cc
     ${RUNTIME_CORE_DIR}/src/task/stars_cond_isa_helper.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/stub_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/v200/task_david_stub.cc
     ${RUNTIME_CORE_DIR}/src/launch/cond_stars.cc
     ${RUNTIME_CORE_DIR}/src/launch/label_stars.cc
     ${RUNTIME_CORE_DIR}/src/launch/cmo_barrier_stars.cc
@@ -604,6 +609,7 @@ set(RUNTIME_CMODEL_INC_DIR_COMMON
     ${RUNTIME_DIR}/src/runtime/core/inc/kernel
     ${RUNTIME_DIR}/src/runtime/core/inc/launch
     ${RUNTIME_DIR}/src/runtime/core/inc/model
+    ${RUNTIME_DIR}/src/runtime/feature/jetty
     ${RUNTIME_DIR}/src/runtime/core/inc/notify
     ${RUNTIME_DIR}/src/runtime/core/inc/profiler
     ${RUNTIME_DIR}/src/runtime/core/inc/soc

@@ -134,6 +134,15 @@ drvError_t __attribute__((weak)) halAsyncDmaCreateBatch(uint32_t devId, struct h
     struct halAsyncDmaOutputPara *out);
 drvError_t __attribute__((weak)) halAsyncDmaDestroyBatch(uint32_t devId, struct halAsyncDmaDestroyBatchPara *para);
 
+drvError_t __attribute__((weak)) halAsyncDmaJettyCreate(
+    uint32_t devId, struct halAsyncDmaJettyCreateIn* in, struct halAsyncDmaJettyCreateOut* out);
+drvError_t __attribute__((weak)) halAsyncDmaJettyDestroy(uint32_t devId, struct halAsyncJettyDestroyPara* para);
+drvError_t __attribute__((weak)) halAsyncDmaJettyQuery(
+    uint32_t devId, struct halAsyncDmaJettyQueryIn* in, struct halAsyncDmaJettyQueryOut* out);
+drvError_t __attribute__((weak)) halAsyncDmaWqeConvert(
+    uint32_t devId, struct halAsyncDmaWqeInputPara* in, struct halAsyncDmaWqeOutputPara* out);
+drvError_t __attribute__((weak)) halAsyncDmaJettyWqeFill(uint32_t devId, struct halAsyncDmaJettyFillInfo* para);
+
 drvError_t __attribute__((weak)) halSqTaskArgsAsyncCopy(uint32_t devId, struct halSqTaskArgsInfo *info);
 drvError_t __attribute__((weak)) halResAddrMap(unsigned int devId, struct res_addr_info *res_info,
     unsigned long *va, unsigned int *len);

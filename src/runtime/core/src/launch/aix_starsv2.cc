@@ -133,28 +133,6 @@ void FreeTempHostAddr(const Stream * const stm, void * const hostAddr)
     stm->Device_()->Driver_()->HostMemFree(hostAddr);
 }
 
-static rtError_t ConvertAsyncDmaForSoftWareSq(MemcpyAsyncTaskInfo * const cpyAsyncTask, TaskInfo * const updateTask)
-{
-    rtError_t error = RT_ERROR_NONE;
-    Stream *updateStm = updateTask->stream;
-    Driver * const curDrv = updateStm->Device_()->Driver_();
-    if (updateStm->GetSqBaseAddr() == 0ULL) {
-        error = updateStm->AllocSoftwareSqAddr(
-            CAPTURE_TASK_RESERVED_NUM + updateStm->Device_()->GetDevProperties().expandStreamRsvTaskNum);
-        COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to allocate software SQ address, device_id=%d, stream_id=%d, retCode=%#x.",
-            updateStm->Device_()->Id_(), updateStm->Id_(), static_cast<uint32_t>(error));
-    }
-    cpyAsyncTask->dmaAddr.offsetAddr.devid = static_cast<uint32_t>(updateStm->Device_()->Id_());
-    void *sqeDeviceAddr = RtValueToPtr<void *>(updateStm->GetSqBaseAddr() + (updateTask->pos) * sizeof(rtDavidSqe_t));
-    error = curDrv->MemConvertAddr(RtPtrToValue(cpyAsyncTask->src), RtPtrToValue(sqeDeviceAddr),
-        cpyAsyncTask->size, &(cpyAsyncTask->dmaAddr));
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to convert memory address, device_id=%d, stream_id=%d, retCode=%#x.",
-            updateStm->Device_()->Id_(), updateStm->Id_(), static_cast<uint32_t>(error));
-    cpyAsyncTask->destPtr = sqeDeviceAddr;
-    cpyAsyncTask->size = cpyAsyncTask->dmaAddr.fixed_size;
-    return RT_ERROR_NONE;
-}
-
 rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * const stm, uint32_t sqeLen)
 {
     void *srcHostAddr = nullptr;
@@ -192,15 +170,9 @@ rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * cons
     memcpyAsyncTaskInfo->src = srcHostAddr;
     memcpyAsyncTaskInfo->isSqeUpdateH2D = true;
     memcpyAsyncTaskInfo->dmaKernelConvertFlag = true;
-    if ((updateTask->stream->IsSoftwareSqEnable()) && (!Runtime::Instance()->GetConnectUbFlag())) {
-        // 扩流场景下，拿不到sqid，需要通过目的地址转换描述符。
-        error = ConvertAsyncDmaForSoftWareSq(memcpyAsyncTaskInfo, updateTask);
-        ERROR_RETURN_MSG_INNER(error, "Failed to convert async DMA for software SQ, retCode=%#x.", static_cast<uint32_t>(error));
-    } else {
-        // PCIE场景下通过驱动将目标更新的sqe addr转成dmaAddr，UB场景下通过驱动获取DWQE
-        error = ConvertAsyncDma(rtMemcpyAsyncTask, updateTask, true);
-        ERROR_RETURN_MSG_INNER(error, "Failed to convert async DMA, retCode=%#x.", static_cast<uint32_t>(error));
-    }
+    error = ConvertAsyncDmaForTaskUpdate(rtMemcpyAsyncTask, updateTask);
+    ERROR_RETURN_MSG_INNER(error, "Failed to convert async DMA, retCode=%#x.", static_cast<uint32_t>(error));
+
     rtMemcpyAsyncTask->needPostProc = true;
     if (updateTask->type == TS_TASK_TYPE_FUSION_KERNEL) {
         memcpyAsyncTaskInfo->releaseArgHandle = updateTask->u.fusionKernelTask.oldArgHandle;

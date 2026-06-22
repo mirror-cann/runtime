@@ -172,6 +172,10 @@ set(libruntime_v200_stream_common_src_files
     ${RUNTIME_CORE_DIR}/src/stream/engine_stream_observer.cc
     ${RUNTIME_CORE_DIR}/src/stream/stream.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/stream_capture.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/jetty_manager.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/jetty_pool.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/stream_jetty_context.cc
+    ${RUNTIME_FEATURE_DIR}/jetty/stream_jetty_handler.cc
     ${RUNTIME_CORE_DIR}/src/stream/ctrl_stream.cc
     ${RUNTIME_CORE_DIR}/src/stream/coprocessor_stream.cc
     ${RUNTIME_CORE_DIR}/src/stream/tsch_stream.cc
@@ -452,6 +456,7 @@ set(RUNTIME_INC_DIR_COMMON_V200
     ${RUNTIME_DIR}/src/runtime/core/inc/kernel
     ${RUNTIME_DIR}/src/runtime/core/inc/launch
     ${RUNTIME_DIR}/src/runtime/core/inc/model
+    ${RUNTIME_DIR}/src/runtime/feature/jetty
     ${RUNTIME_DIR}/src/runtime/core/inc/notify
     ${RUNTIME_DIR}/src/runtime/core/inc/profiler
     ${RUNTIME_DIR}/src/runtime/core/inc/soc

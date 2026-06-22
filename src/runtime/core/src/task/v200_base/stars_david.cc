@@ -87,8 +87,10 @@ void ToConstructDavidSqe(TaskInfo *taskInfo, rtDavidSqe_t * const davidSqe, uint
     }
 
     if (Runtime::Instance()->GetConnectUbFlag()) {
-        uint64_t allocTimes =
-            (RtPtrToPtr<TaskResManageDavid *>(taskInfo->stream->taskResMang_))->GetAllocNum();
+        uint64_t allocTimes = taskInfo->id;
+        if (taskInfo->stream->taskResMang_ != nullptr) {
+            allocTimes = (RtPtrToPtr<TaskResManageDavid *>(taskInfo->stream->taskResMang_))->GetAllocNum();
+        }
         davidSqe->phSqe.header.headUpdate = GetHeadUpdateFlag(allocTimes);
     }
 

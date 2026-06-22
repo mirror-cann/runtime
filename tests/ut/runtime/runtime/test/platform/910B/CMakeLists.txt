@@ -126,6 +126,7 @@ set(runtimeut_src_aclgraph_list
     ${TOP_DIR}/src/runtime/feature/aclgraph/capture_model_utils.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/event_capture.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/stream_capture.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/jetty_stub.cc
 )
 
 set(runtimeut_common_src_stream_list
@@ -382,7 +383,10 @@ set(runtimeut_910b_src_list
     ${TOP_DIR}/src/tprt/feature/src/tprt_profiling.cc
 )
 ###################################################################################################
-add_library(runtime_ut_910b_static_lib STATIC ${runtimeut_910b_src_list})
+add_library(runtime_ut_910b_static_lib STATIC 
+    ${runtimeut_910b_src_list}
+    ${TOP_DIR}/src/runtime/core/src/task/v200/task_david_stub.cc
+)
 
 target_compile_definitions(runtime_ut_910b_static_lib PUBLIC
     TEMP_PERFORMANCE
@@ -454,6 +458,7 @@ set(RUNTIME_TEST_INC_DIR_COMMON
     ${TOP_DIR}/src/runtime/core/inc/launch
     ${TOP_DIR}/src/runtime/core/inc_c
     ${TOP_DIR}/src/runtime/core/inc/model
+    ${TOP_DIR}/src/runtime/feature/jetty
     ${TOP_DIR}/src/runtime/core/inc/event
     ${TOP_DIR}/src/runtime/core/inc/arg_loader
     ${TOP_DIR}/src/runtime/core/inc/notify
