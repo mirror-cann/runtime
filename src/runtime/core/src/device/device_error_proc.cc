@@ -1731,7 +1731,7 @@ rtError_t DeviceErrorProc::ProcessStarv2OneElementInRingBuffer(
                                  StarsDeviceErrorInfo& mergedOut) {
         const DavidCoreErrorInfoExt* aicExtData = nullptr;
         const DavidCoreErrorInfoExt* aivExtData = nullptr;
-        uint32_t extConsumed = CollectStarv2ExtInfos(
+        const uint32_t extConsumed = CollectStarv2ExtInfos(
             ctlInfo, elementSize, head, tail, errorType, &aicExtData, &aivExtData);
         if (extConsumed > 0U) {
             head = (head + extConsumed) % (ctlInfo->ringBufferLen);

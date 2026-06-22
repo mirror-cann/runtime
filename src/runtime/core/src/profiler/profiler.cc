@@ -178,7 +178,8 @@ void FillKernelLaunchExtInfo(struct MsprofRuntimeTrack &runtimeTrack, const Task
     ChangeTrackDataTaskType(runtimeTrack, taskInfo);
     const auto &aicTaskInfo = taskInfo->u.aicTaskInfo;
     const uint32_t argsSize = aicTaskInfo.comm.argsSize - aicTaskInfo.simtParamOffset;
-    const uint16_t argsSizeU16 = (argsSize > UINT16_MAX) ? UINT16_MAX : static_cast<uint16_t>(argsSize);
+    const uint16_t argsSizeU16 =
+        static_cast<uint16_t>((argsSize > UINT16_MAX) ? UINT16_MAX : argsSize);
     if (IsPureSimtTask(aicTaskInfo)) {
         const rtDim3 &gridDim = aicTaskInfo.gridDim;
         const rtDim3 &blockDim = aicTaskInfo.blockDim;

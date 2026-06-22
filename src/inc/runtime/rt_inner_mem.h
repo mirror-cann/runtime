@@ -110,7 +110,7 @@ RTS_API rtError_t rtMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *po
 * @return RT_ERROR_NONE for ok
 * @return RT_ERROR_INVALID_VALUE for error input
 */
-RTS_API rtError_t rtMemPoolDestroy(const rtMemPool_t memPool);
+RTS_API rtError_t rtMemPoolDestroy(rtMemPool_t const memPool);
 
 /**
 * @ingroup rt_mem
