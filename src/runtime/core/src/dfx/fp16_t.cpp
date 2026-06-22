@@ -116,7 +116,7 @@ static float fp16ToFloat(const uint16_t &fpVal)
         }
     }
 
-    while (hfMan && ((hfMan & FP16_MAN_HIDE_BIT) == 0U)) {
+    while ((hfMan != 0U) && ((hfMan & FP16_MAN_HIDE_BIT) == 0U)) {
         hfMan <<= 1;
         hfExp--;
     }
