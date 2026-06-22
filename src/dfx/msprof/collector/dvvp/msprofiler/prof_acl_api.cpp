@@ -51,7 +51,6 @@ aclError aclprofFinalize()
 }
 
 namespace {
-constexpr size_t CONFIG_MAX_LENGTH = 256;
 bool IsValidProfConfigPreCheck(
     const uint32_t *deviceIdList, uint32_t deviceNums, const aclprofAicoreEvents *aicoreEvents)
 {
@@ -162,6 +161,7 @@ static bool AlterLogicDeviceId(const uint32_t *deviceIdList, uint32_t deviceNums
     }
     return true;
 }
+
 }  // namespace
 
 ACL_PROF_CONFIG_PTR aclprofCreateConfig(uint32_t *deviceIdList, uint32_t deviceNums,
@@ -171,6 +171,9 @@ ACL_PROF_CONFIG_PTR aclprofCreateConfig(uint32_t *deviceIdList, uint32_t deviceN
         return nullptr;
     }
     if ((deviceNums == 0) && (dataTypeConfig & PROF_MSPROFTX_MASK) == 0) {
+        MSPROF_LOGE("The device nums is invalid.");
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({"0", "deviceNums", "deviceNums can not be 0"}));
         return nullptr;
     }
 
@@ -263,19 +266,6 @@ aclError aclprofStop(ACL_PROF_CONFIG_CONST_PTR profilerConfig)
  */
 aclError aclprofSetConfig(aclprofConfigType configType, const char *config, size_t configLength)
 {
-    if (configType <= ACL_PROF_ARGS_MIN || configType >= ACL_PROF_ARGS_MAX) {
-        MSPROF_LOGE("[aclprofSetConfig]ConfigType %d is not support.", static_cast<int32_t>(configType));
-        return ACL_ERROR_INVALID_PARAM;
-    }
-    if (configLength > CONFIG_MAX_LENGTH) {
-        MSPROF_LOGE("length of config is illegal, the value is %zu, it should be in (0, %zu)",
-                    configLength, CONFIG_MAX_LENGTH);
-        return ACL_ERROR_INVALID_PARAM;
-    }
-    if (config == nullptr || std::strlen(config) != configLength) {
-        MSPROF_LOGE("[aclprofSetConfig]Input value is nullptr or its length does not equal to given length.");
-        return ACL_ERROR_INVALID_PARAM;
-    }
     return ProfAclSetConfig(configType, config, configLength);
 }
 

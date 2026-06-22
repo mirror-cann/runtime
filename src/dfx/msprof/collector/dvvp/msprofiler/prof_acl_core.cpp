@@ -52,8 +52,8 @@ aclError aclprofGetStepTimestamp(ACLPROF_STEPINFO_PTR stepInfo, aclprofStepTag t
 {
     if (stepInfo == nullptr) {
         MSPROF_LOGE("stepInfo is nullptr.");
-        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config"}),
-            std::vector<std::string>({"stepInfo"}));
+        MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({"api", "param"}),
+            std::vector<std::string>({"aclprofGetStepTimestamp", "stepInfo"}));
         return ACL_ERROR_INVALID_PARAM;
     }
     if (stepInfo->startFlag && tag == ACL_STEP_START) {
@@ -98,8 +98,8 @@ void aclprofDestroyStepInfo(ACLPROF_STEPINFO_PTR stepInfo)
 {
     if (stepInfo == nullptr) {
         MSPROF_LOGE("destroy stepInfo failed, stepInfo must not be nullptr");
-        MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config"}),
-            std::vector<std::string>({"stepInfo"}));
+        MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({"api", "param"}),
+            std::vector<std::string>({"aclprofDestroyStepInfo", "stepInfo"}));
     } else {
         delete stepInfo;
         MSPROF_LOGI("Successfully destroy stepInfo");
@@ -113,9 +113,6 @@ void *aclprofCreateStamp()
 
 void aclprofDestroyStamp(VOID_PTR stamp)
 {
-    if (stamp == nullptr) {
-        return;
-    }
     ProfAclDestroyStamp(stamp);
 }
 

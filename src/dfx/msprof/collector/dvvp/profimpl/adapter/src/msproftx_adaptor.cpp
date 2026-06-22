@@ -8,8 +8,11 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "msproftx_adaptor.h"
+#include <string>
+#include <vector>
 #include "msprof_tx_manager.h"
 #include "platform/platform.h"
+#include "errno/error_code.h"
 #include "msprof_dlog.h"
 #include "mstx_inject.h"
 
@@ -17,10 +20,22 @@ using namespace Analysis::Dvvp::Common::Platform;
 using namespace analysis::dvvp::common::utils;
 using namespace analysis::dvvp::common::error;
 
+namespace {
+int32_t ReportNullParam(const char *api, const char *param)
+{
+    MSPROF_LOGE("[%s]%s is nullptr", api, param);
+    MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({"api", "param"}),
+        std::vector<std::string>({api, param}));
+    return ACL_ERROR_INVALID_PARAM;
+}
+}
+
 extern "C" void* ProfAclCreateStamp()
 {
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
+        MSPROF_INPUT_ERROR("EK0004", std::vector<std::string>({"intf"}),
+            std::vector<std::string>({"aclprofCreateStamp"}));
         return nullptr;
     }
     return Msprof::MsprofTx::MsprofTxManager::instance()->CreateStamp();
@@ -33,6 +48,7 @@ extern "C" void ProfAclDestroyStamp(VOID_PTR stamp)
         return;
     }
     if (stamp == nullptr) {
+        (void)ReportNullParam("aclprofDestroyStamp", "stamp");
         return;
     }
     auto stampInstancePtr = static_cast<Msprof::MsprofTx::ACL_PROF_STAMP_PTR>(stamp);
@@ -104,6 +120,9 @@ extern "C" int32_t ProfAclPush(VOID_PTR stamp)
         MSPROF_LOGE("acl api not support in helper");
         return ACL_ERROR_FEATURE_UNSUPPORTED;
     }
+    if (stamp == nullptr) {
+        return ReportNullParam("aclprofPush", "stamp");
+    }
     auto stampInstancePtr = static_cast<Msprof::MsprofTx::ACL_PROF_STAMP_PTR>(stamp);
     return Msprof::MsprofTx::MsprofTxManager::instance()->Push(stampInstancePtr);
 }
@@ -122,6 +141,12 @@ extern "C" int32_t ProfAclRangeStart(VOID_PTR stamp, uint32_t *rangeId)
     if (Platform::instance()->PlatformIsHelperHostSide()) {
         MSPROF_LOGE("acl api not support in helper");
         return ACL_ERROR_FEATURE_UNSUPPORTED;
+    }
+    if (stamp == nullptr) {
+        return ReportNullParam("aclprofRangeStart", "stamp");
+    }
+    if (rangeId == nullptr) {
+        return ReportNullParam("aclprofRangeStart", "rangeId");
     }
     auto stampInstancePtr = static_cast<Msprof::MsprofTx::ACL_PROF_STAMP_PTR>(stamp);
     return Msprof::MsprofTx::MsprofTxManager::instance()->RangeStart(stampInstancePtr, rangeId);

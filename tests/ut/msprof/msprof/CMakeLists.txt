@@ -215,12 +215,13 @@ set(libmsprofHeaderDir
 )
 
 target_include_directories(msprofiler_utest PRIVATE
+    stub/
+    ../stub/
+    ${TOP_DIR}/tests/ut/msprof
     ${libmsprofHeaderDir}
     ${MSPROF_SOURCE_DIR}/dvvp/msprof/engine/include
     ${MSPROF_SOURCE_DIR}/dvvp/common/utils
     ${TOP_DIR}/abl/msprof/inc/toolchain
-    stub/
-    ../stub/
     ${TOP_DIR}/llt/abl/msprof/st/stub
     ${TOP_DIR}/abl/libc_sec/include
     ${MSPROF_SOURCE_DIR}/dvvp/analyze/inc
@@ -278,7 +279,6 @@ target_include_directories(msprofiler_utest PRIVATE
     ${MSPROF_SOURCE_DIR}/dvvp/common/socket
     ${MSPROF_SOURCE_DIR}/dvvp/common/thread
     ${MSPROF_SOURCE_DIR}/dvvp/common/config
-    ${TOP_DIR}/tests/ut/msprof
 )
 
 
@@ -290,6 +290,15 @@ target_compile_options(msprofiler_utest PRIVATE
     -Wfloat-equal
     -Wextra
 )
+
+set(MSPROF_ERROR_MANAGER_STUB2_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/../stub/error_manager_stub2.h)
+if(MSVC)
+    target_compile_options(msprofiler_utest PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:/FI${MSPROF_ERROR_MANAGER_STUB2_HEADER}>)
+else()
+    target_compile_options(msprofiler_utest PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:SHELL:-include ${MSPROF_ERROR_MANAGER_STUB2_HEADER}>)
+endif()
 
 target_compile_definitions(msprofiler_utest PRIVATE
     MSPROF_DEBUG

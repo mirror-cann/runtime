@@ -53,6 +53,40 @@ static std::atomic<bool> g_isRepeatInvoking{false};
 
 namespace {
 constexpr size_t aclProfPathMaxLen = 4096;   // path max length: 4096
+constexpr size_t configMaxLength = 256;
+
+aclError CheckAclProfSetConfigInput(aclprofConfigType configType, const char *config, size_t configLength)
+{
+    if (configType <= ACL_PROF_ARGS_MIN || configType >= ACL_PROF_ARGS_MAX) {
+        MSPROF_LOGE("[aclprofSetConfig]ConfigType %d is not support.", static_cast<int32_t>(configType));
+        std::string reason = "configType should be greater than ACL_PROF_ARGS_MIN and less than ACL_PROF_ARGS_MAX";
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({std::to_string(static_cast<int32_t>(configType)), "configType", reason}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+    if (configLength > configMaxLength) {
+        MSPROF_LOGE("length of config is illegal, the value is %zu, it should be in (0, %zu)",
+            configLength, configMaxLength);
+        std::string reason = "configLength should be less than or equal to " + std::to_string(configMaxLength);
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({std::to_string(configLength), "configLength", reason}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+    if (config == nullptr) {
+        MSPROF_LOGE("[aclprofSetConfig]Input value is nullptr.");
+        MSPROF_INPUT_ERROR("EK0006", std::vector<std::string>({"api", "param"}),
+            std::vector<std::string>({"aclprofSetConfig", "config"}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+    if (strlen(config) != configLength) {
+        MSPROF_LOGE("[aclprofSetConfig]Input config length does not equal to given length.");
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({std::to_string(configLength), "configLength",
+                "configLength does not equal to strlen(config)"}));
+        return ACL_ERROR_INVALID_PARAM;
+    }
+    return ACL_SUCCESS;
+}
 
 aclError CheckProfInitPath(CONST_CHAR_PTR profilerResultPath, size_t length)
 {
@@ -65,7 +99,7 @@ aclError CheckProfInitPath(CONST_CHAR_PTR profilerResultPath, size_t length)
 
     if (length >= aclProfPathMaxLen || length == 0) {
         MSPROF_LOGE("Length of profilerResultPath is illegal, which should be in (0, %zu)",
-                    length, aclProfPathMaxLen);
+            aclProfPathMaxLen);
         std::string errorReason = "Length of profilerResultPath should be in [1, " +
             std::to_string(aclProfPathMaxLen) + ")";
         MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
@@ -412,7 +446,8 @@ aclError ProfStop(ProfType type, PROF_CONFIG_CONST_PTR profilerConfig)
         return ACL_ERROR_PROFILING_FAILURE, "Failed to stop reporters.");
 
     g_isRepeatInvoking = false;
-    MSPROF_LOGI("Acl has been allocated stop config, successfully execute %s%s", g_subscribeTypeMap[type].c_str(), __func__);
+    MSPROF_LOGI("Acl has been allocated stop config, successfully execute %s%s",
+        g_subscribeTypeMap[type].c_str(), __func__);
     return ACL_SUCCESS;
 }
 
@@ -462,6 +497,11 @@ PROF_CONFIG_CONST_PTR ProfGetCurrentConfig()
 
 aclError ProfSetConfig(aclprofConfigType configType, const char *config, size_t configLength)
 {
+    aclError aclRet = CheckAclProfSetConfigInput(configType, config, configLength);
+    if (aclRet != ACL_SUCCESS) {
+        return aclRet;
+    }
+
     std::lock_guard<std::mutex> lock(g_profMutex);
     if (ProfAclMgr::instance()->ProfSetConfigPrecheck() != ACL_SUCCESS) {
         // If precheck failed, it means aclprofInit is not called,

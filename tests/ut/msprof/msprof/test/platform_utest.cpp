@@ -22,6 +22,7 @@
 #include "david_platform.h"
 #include "david_v121_platform.h"
 #include "mdc_lite_v2_platform.h"
+#include "error_manager_stub2.h"
 
 using namespace Analysis::Dvvp::Common::Platform;
 using namespace Analysis::Dvvp::Common::Config;
@@ -249,6 +250,39 @@ TEST_F(PLATFORM_UTEST, ProfParamsAdapterValidatesNtsMetricsJsonConfig) {
     jsonCfg["nts_metrics"] = "TaskTime";
     EXPECT_FALSE(Analysis::Dvvp::Host::Adapter::ProfParamsAdapter::instance()->CheckJsonConfig(
         "nts_metrics", jsonCfg["nts_metrics"]));
+}
+
+TEST_F(PLATFORM_UTEST, CheckAclJsonConfigInvalidReportsConfigErrorForInvalidAicpu)
+{
+    NanoJson::Json jsonCfg;
+    jsonCfg["switch"] = "on";
+    jsonCfg["output"] = "prof_path";
+    jsonCfg["aicpu"] = "test";
+    MOCKER_CPP(&Platform::CheckIfSupport, bool (Platform::*)(const std::string) const)
+        .stubs()
+        .will(returnValue(true));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        Msprofiler::Api::ProfAclMgr::instance()->CheckAclJsonConfigInvalid(jsonCfg));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+}
+
+TEST_F(PLATFORM_UTEST, CheckGeOptionConfigInvalidReportsInvalidArgumentForInvalidAicpu)
+{
+    NanoJson::Json jsonCfg;
+    jsonCfg["output"] = "prof_path";
+    jsonCfg["training_trace"] = "on";
+    jsonCfg["task_trace"] = "on";
+    jsonCfg["aicpu"] = "test";
+    MOCKER_CPP(&Platform::CheckIfSupport, bool (Platform::*)(const std::string) const)
+        .stubs()
+        .will(returnValue(true));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        Msprofiler::Api::ProfAclMgr::instance()->CheckGeOptionConfigInvalid(jsonCfg));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
 }
 
 TEST_F(PLATFORM_UTEST, ProfSetConfigReturnsInvalidParamWhenNtsMetricsRejected) {

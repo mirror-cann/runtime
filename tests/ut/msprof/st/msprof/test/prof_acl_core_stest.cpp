@@ -2345,7 +2345,8 @@ TEST_F(MSPROF_ACL_CORE_STEST, MsprofTx_API_TEST) {
     EXPECT_EQ(PROFILING_SUCCESS, aclprofMark(&pstamp));
     EXPECT_EQ(PROFILING_SUCCESS, aclprofPush(&pstamp));
     EXPECT_EQ(PROFILING_SUCCESS, aclprofPop());
-    EXPECT_EQ(PROFILING_SUCCESS, aclprofRangeStart(nullptr, nullptr));
+    uint32_t rangeId = 0;
+    EXPECT_EQ(PROFILING_SUCCESS, aclprofRangeStart(&pstamp, &rangeId));
     EXPECT_EQ(PROFILING_SUCCESS, aclprofRangeStop(0));
 
     MOCKER_CPP(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsHelperHostSide)
@@ -2361,7 +2362,7 @@ TEST_F(MSPROF_ACL_CORE_STEST, MsprofTx_API_TEST) {
     EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofMark(&pstamp));
     EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofPush(&pstamp));
     EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofPop());
-    EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofRangeStart(nullptr, nullptr));
+    EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofRangeStart(&pstamp, &rangeId));
     EXPECT_EQ(ACL_ERROR_FEATURE_UNSUPPORTED, aclprofRangeStop(0));
 }
 
