@@ -187,8 +187,8 @@ rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStars
 
     std::list<Stream *> const headStmList = model->GetHeadStreamList_();
     for (Stream * const stm : headStmList) {
-        headSqArr.emplace_back(stm->GetSqId());
-        streamSvmAddrArr.emplace_back(RtPtrToValue(stm->GetExecutedTimesSvm()));
+        (void)headSqArr.emplace_back(stm->GetSqId());
+        (void)streamSvmAddrArr.emplace_back(RtPtrToValue(stm->GetExecutedTimesSvm()));
 
         RT_LOG(RT_LOG_INFO, "stream_id:%d, sq_id:%u.", stm->Id_(), stm->GetSqId());
     }

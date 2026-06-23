@@ -672,7 +672,7 @@ rtError_t MdlUnBindTaskSubmit(Model * const mdl, Stream * const streamIn,
         return error;
     }
     defaultStream->StreamUnLock();
-    defaultStream->Synchronize();
+    (void)defaultStream->Synchronize();
     streamIn->SetIsTsBind(false);
     return RT_ERROR_NONE;
 }

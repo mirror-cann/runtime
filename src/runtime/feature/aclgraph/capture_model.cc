@@ -469,7 +469,7 @@ rtError_t CaptureModel::ReleaseNotifyId(uint32_t &releaseNum)
             CaptureModel *subModel = dynamic_cast<CaptureModel *>(mdl);
             if ((subModel != nullptr) && (subModel->GetEndGraphNotify() != nullptr) &&
                 (subModel->GetEndGraphNotify()->GetNotifyId() != MAX_UINT32_NUM)) {
-                subModel->ReleaseNotifyId(releaseNum);
+                (void)subModel->ReleaseNotifyId(releaseNum);
             }
         }
     }
@@ -932,7 +932,7 @@ void CaptureModel::ClearShapeInfo(const int32_t streamId, const uint32_t taskId)
     if (it != shapeInfos_.end()) {
         const auto &it2 = it->second.find(taskId);
         if (it2 != it->second.end()) {
-            it->second.erase(it2);
+            (void)it->second.erase(it2);
         }
     }
 }
@@ -1096,7 +1096,7 @@ rtError_t CaptureModel::StoreCondHandleTaskInfo(const int32_t streamId, const ui
 
     auto it = condHandleTaskMap_.find(key);
     if (it == condHandleTaskMap_.end()) {
-        condHandleTaskMap_.emplace(key, condHandle);
+        (void)condHandleTaskMap_.emplace(key, condHandle);
     } else {
         RT_LOG(RT_LOG_ERROR, "Repeat store stream_id=%d task_Id=%u capture model_id=%u.", streamId, taskId, Id_());
         return RT_ERROR_INVALID_VALUE;

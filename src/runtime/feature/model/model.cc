@@ -1706,7 +1706,7 @@ rtError_t Model::ModelAbort()
             ERROR_RETURN_MSG_INNER(error, "Failed to create model abort stream, retCode=%#x.",
                                    static_cast<uint32_t>(error));
         } else if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
-            dev->GetCtrlSQ().SendModelAbortMsg(this);
+            (void)dev->GetCtrlSQ().SendModelAbortMsg(this);
             SyncExeStream();
             return RT_ERROR_NONE;
         } else {
@@ -2131,7 +2131,7 @@ rtError_t Model::CacheLastTaskExtendInfo(const Stream* const stm, const char* in
     const uint32_t taskId = InnerThreadLocalContainer::GetLastTaskId();
 
     const std::lock_guard<std::mutex> lock(extendInfosMutex_);
-    this->extendInfos_[stm->Id_()][taskId].assign(infoPtr, infoSize);
+    (void)this->extendInfos_[stm->Id_()][taskId].assign(infoPtr, infoSize);
 
     return RT_ERROR_NONE;
 }
