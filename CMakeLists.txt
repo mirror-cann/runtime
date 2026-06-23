@@ -113,5 +113,5 @@ if(ENABLE_DEVICE)
 endif()
 
 if (NOT ENABLE_COV AND NOT ENABLE_UT)
-    set_cann_cpack_config(npu-runtime ENABLE_DEVICE ${ENABLE_DEVICE} SHARE_INFO_NAME runtime)
+    set_cann_cpack_config(npu-runtime ENABLE_DEVICE ${ENABLE_DEVICE} PACKAGE_TYPE ${PACKAGE_TYPE} SHARE_INFO_NAME runtime)
 endif()

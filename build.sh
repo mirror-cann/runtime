@@ -19,13 +19,14 @@ usage() {
   echo "Usage:"
   echo "  sh build.sh --pkg [-h | --help] [-v | --verbose] [-j<N>]"
   echo "              [--ascend_install_path=<PATH>] [--cann_3rd_lib_path=<PATH>]"
-  echo "              [--asan] [--build_host_only] [--cov]"
+  echo "              [--asan] [--build_host_only] [--cov] [--pkg-type=<TYPE>]"
   echo "              [--sign-script <PATH>] [--enable-sign] [--version <VERSION>]"
   echo ""
   echo "Options:"
   echo "    -h, --help     Print usage"
   echo "    --asan         Enable AddressSanitizer"
   echo "    --cov          Enable Coverage"
+  echo "    --pkg-type     Specify package type (TYPE options: rpm/run)"
   echo "    --build_host_only
                            Only build host target"
   echo "    -build-type=<TYPE>"
@@ -54,6 +55,7 @@ checkopts() {
   ENABLE_GCOV="off"
   ASCEND_3RD_LIB_PATH="$BASEPATH/output/third_party"
   BUILD_TYPE="Release"
+  PACKAGE_TYPE="run"
   CUSTOM_SIGN_SCRIPT="${BASEPATH}/scripts/sign/community_sign_build.py"
   ENABLE_SIGN="OFF"
   ENABLE_BUILD_DEVICE="ON"
@@ -72,7 +74,7 @@ checkopts() {
   fi
 
   # Process the options
-  parsed_args=$(getopt -a -o j:hvf: -l help,pkg,verbose,cov,build_host_only,ascend_install_path:,build-type:,cann_3rd_lib_path:,ascend_3rd_lib_path:,asan,sign-script:,enable-sign,version: -- "$@") || {
+  parsed_args=$(getopt -a -o j:hvf: -l help,pkg,verbose,cov,build_host_only,pkg-type:,ascend_install_path:,build-type:,cann_3rd_lib_path:,ascend_3rd_lib_path:,asan,sign-script:,enable-sign,version: -- "$@") || {
     usage
     exit 1
   }
@@ -106,6 +108,13 @@ checkopts() {
       --build_host_only)
         ENABLE_BUILD_DEVICE="OFF"
         shift
+        ;;
+      --pkg-type)
+        if ["X$2" != "Xrun"] && ["X$2" != "Xrpm"] && ["X$2" != "Xdeb"]; then
+          usage && echo "Error: Invalid value '$2' for option '$1'" && exit 1
+        fi
+        PACKAGE_TYPE="$2"
+        shift 2
         ;;
       --build-type)
         BUILD_TYPE=$2
@@ -262,7 +271,8 @@ build_rts() {
               -DENABLE_SIGN=${ENABLE_SIGN} \
               -DENABLE_BUILD_DEVICE=${ENABLE_BUILD_DEVICE} \
               -DCUSTOM_SIGN_SCRIPT=${CUSTOM_SIGN_SCRIPT} \
-              -DVERSION_INFO=${VERSION_INFO}"
+              -DVERSION_INFO=${VERSION_INFO} \
+              -DPACKAGE_TYPE=${PACKAGE_TYPE}"
 
   echo "CMAKE_ARGS=${CMAKE_ARGS}"
   cmake -S ../ -B . ${CMAKE_ARGS}
