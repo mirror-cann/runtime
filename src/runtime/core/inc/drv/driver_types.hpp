@@ -150,7 +150,7 @@ struct IpcNotifyOpenPara {
 
 struct AsyncDmaJettyHandle {
     uint64_t handle;
-    std::array<uint32_t, 8> rsv;
+    std::array<uint32_t, 8> rsv; // 8 rsv cnt
 };
 
 struct AsyncWqeNormalInfo {
@@ -190,7 +190,7 @@ struct AsyncWqeInputPara {
         AsyncWqeMatrix2dInfo matrix2d;
         AsyncWqeNopInfo nop;
     };
-    std::array<uint32_t, 20> rsv;
+    std::array<uint32_t, 20> rsv; // 20 rsv cnt
 };
 
 struct AsyncWqeOutputPara {
@@ -205,7 +205,7 @@ struct AsyncWqeOutputPara {
      * others: fixedSize return the actual-converted size if fixedCnt is 0, otherwhise return 0
      */
     uint64_t fixedSize;
-    std::array<uint32_t, 8> rsv;
+    std::array<uint32_t, 8> rsv; // 8 rsv cnt
 };
 
 struct AsyncWqeFillInfo {
@@ -214,7 +214,7 @@ struct AsyncWqeFillInfo {
     void *srcWqe;
     uint64_t size;
     uint32_t flag;
-    std::array<uint32_t, 16> rsv;
+    std::array<uint32_t, 16> rsv; // 16 rsv cnt
 };
 
 } // namespace runtime
