@@ -34,9 +34,7 @@ public:
     static std::string GetExceptionTaskTypeName(const rtExceptionInfo &exception);
     static std::string GetKernelNameWithoutMixSuffix(const std::string &kernelName);
     static std::string GetExceptionKernelName(const rtExceptionInfo &exception);
-    static std::string GetExceptionFuncName(const rtExceptionInfo &exception);
-    static int32_t GetKernelFuncAddr(rtBinHandle binHandle, const std::string &kernelName,
-        void * &aicAddr, void * &aivAddr);
+    static int32_t GetKernelDeviceAddr(rtBinHandle binHandle, void * &devAddr);
     static KernelMixType GetKernelMixType(const std::string &kernelName);
 };
 }  // namespace Adx

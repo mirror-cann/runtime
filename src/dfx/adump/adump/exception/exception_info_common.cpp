@@ -103,42 +103,17 @@ std::string ExceptionInfoCommon::GetExceptionKernelName(const rtExceptionInfo &e
     return GetKernelNameWithoutMixSuffix(kernelName);
 }
 
-std::string ExceptionInfoCommon::GetExceptionFuncName(const rtExceptionInfo &exception)
+int32_t ExceptionInfoCommon::GetKernelDeviceAddr(rtBinHandle binHandle, void * &devAddr)
 {
-    rtFuncHandle funcHandle = nullptr;
-    rtError_t ret = rtGetFuncHandleFromExceptionInfo(&exception, &funcHandle);
-    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE && funcHandle != nullptr, return "",
-        "rtGetFuncHandleFromExceptionInfo failed. ret=%d.", static_cast<int32_t>(ret));
+    devAddr = nullptr;
+    uint32_t binSize = 0;
+    IDE_CTRL_VALUE_WARN(binHandle != nullptr, return ADUMP_FAILED, "bindHandle is nullptr.");
+    rtError_t ret = rtsBinaryGetDevAddress(binHandle, &devAddr, &binSize);
+    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE && devAddr != nullptr, return ADUMP_FAILED,
+        "rtsBinaryGetDevAddress failed, ret=%d, binHandle=%p, devAddr=%p.",
+        static_cast<int32_t>(ret), binHandle, devAddr);
 
-    char funcName[MAX_KERNELNAME_LEN] = {0};
-    ret = rtsFuncGetName(funcHandle, MAX_KERNELNAME_LEN, funcName);
-    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE, return "",
-        "rtsFuncGetName failed. ret=%d.", static_cast<int32_t>(ret));
-
-    IDE_LOGI("Exception funcName is %s.", funcName);
-    return std::string(funcName);
-}
-
-int32_t ExceptionInfoCommon::GetKernelFuncAddr(rtBinHandle binHandle, const std::string &kernelName,
-    void * &aicAddr, void * &aivAddr)
-{
-    aicAddr = nullptr;
-    aivAddr = nullptr;
-    IDE_CTRL_VALUE_WARN(binHandle != nullptr && !kernelName.empty(), return ADUMP_FAILED,
-        "Skip getting kernel func addr, binHandle=%p, kernelName=%s.", binHandle, kernelName.c_str());
-
-    const std::string lookupKernelName = GetKernelNameWithoutMixSuffix(kernelName);
-    rtFuncHandle funcHandle = nullptr;
-    rtError_t ret = rtBinaryGetFunctionByName(binHandle, lookupKernelName.c_str(), &funcHandle);
-    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE && funcHandle != nullptr, return ADUMP_FAILED,
-        "rtBinaryGetFunctionByName failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
-        static_cast<int32_t>(ret), binHandle, kernelName.c_str(), lookupKernelName.c_str());
-
-    ret = rtsFuncGetAddr(funcHandle, &aicAddr, &aivAddr);
-    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE, return ADUMP_FAILED,
-        "rtsFuncGetAddr failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
-        static_cast<int32_t>(ret), binHandle, kernelName.c_str(), lookupKernelName.c_str());
-
+    IDE_LOGI("The device address of binHandle(%p) is %p, binSize=%u.", binHandle, devAddr, binSize);
     return ADUMP_SUCCESS;
 }
 

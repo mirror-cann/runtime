@@ -7,6 +7,7 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
+#include <algorithm>
 #include <initializer_list>
 #include <mutex>
 #include "securec.h"
@@ -51,6 +52,7 @@ void AddPcFixGroup(
     group.entries.insert(group.entries.end(), entries.begin(), entries.end());
     groups.push_back(group);
 }
+
 } // namespace
 
 void PcFixerInterface::ReplacePcBits(uint64_t& pc, uint32_t regValue, uint64_t srcMask, uint64_t dstMask)
@@ -68,12 +70,38 @@ void PcFixerInterface::ReplacePcBits(uint64_t& pc, uint32_t regValue, uint64_t s
 uint64_t PcFixerInterface::FixPc(uint64_t pc, const uint32_t errReg[], size_t errRegLen)
 {
     if (errReg == nullptr || errRegLen == 0) {
-        IDE_LOGW("[Dump][Exception] Invalid error register info, PC fix skipped.");
+        IDE_LOGW("[Dump][Exception] Invalid error register info, skip fix PC.");
         return pc;
     }
 
-    // 一次异常只允许命中一个模块的 PC 修正规则，混合模块异常无法安全修正 PC。
-    const PcFixGroup* matchedGroup = nullptr;
+    std::vector<const PcFixGroup*> matchedGroups = GetMatchedGroups(errReg, errRegLen);
+    if (matchedGroups.empty()) {
+        IDE_LOGI("[Dump][Exception] No matched PC fix module, skip fix PC.");
+        return pc;
+    }
+
+    std::vector<uint64_t> fixedPcs;
+    fixedPcs.reserve(matchedGroups.size());
+    for (const auto* matchedGroup : matchedGroups) {
+        uint64_t moduleFixedPc = pc;
+        for (const auto& entry : matchedGroup->entries) {
+            if (entry.errInfoRegNum >= errRegLen) {
+                continue;
+            }
+            uint32_t regValue = errReg[entry.errInfoRegNum];
+            ReplacePcBits(moduleFixedPc, regValue, entry.srcMask, entry.dstMask);
+        }
+        fixedPcs.push_back(moduleFixedPc);
+        std::string moduleName = GetModuleName(matchedGroup->moduleId);
+        IDE_LOGE("[Dump][Exception] Fix PC with module=%s, originalPC=0x%lx, fixedPC=0x%lx.",
+            moduleName.c_str(), pc, fixedPcs.back());
+    }
+    return fixedPcs.front();
+}
+
+std::vector<const PcFixGroup*> PcFixerInterface::GetMatchedGroups(const uint32_t errReg[], size_t errRegLen) const
+{
+    std::vector<const PcFixGroup*> matchedGroups;
     for (uint32_t i = 0; i < errCount_; i++) {
         uint32_t errIdx = errStartIdx_ + i;
         if (errIdx >= errRegLen) {
@@ -87,28 +115,20 @@ uint64_t PcFixerInterface::FixPc(uint64_t pc, const uint32_t errReg[], size_t er
             continue;
         }
         for (const auto& group : table_[i]) {
-            if ((errVal & group.aicErrMask) != 0) {
-                if (matchedGroup != nullptr && matchedGroup->moduleId != group.moduleId) {
-                    IDE_LOGW("[Dump][Exception] mixed module error, PC fix skipped.");
-                    return pc;
-                }
-                if (matchedGroup == nullptr) {
-                    matchedGroup = &group;
-                }
+            if ((errVal & group.aicErrMask) == 0) {
+                continue;
             }
+            bool moduleExists = std::any_of(matchedGroups.begin(), matchedGroups.end(),
+                [&group](const auto* matchedGroup) {
+                    return matchedGroup->moduleId == group.moduleId;
+                });
+            if (moduleExists) {
+                continue;
+            }
+            matchedGroups.push_back(&group);
         }
     }
-    if (matchedGroup == nullptr) {
-        return pc;
-    }
-    for (const auto& entry : matchedGroup->entries) {
-        if (entry.errInfoRegNum >= errRegLen) {
-            continue;
-        }
-        uint32_t regValue = errReg[entry.errInfoRegNum];
-        ReplacePcBits(pc, regValue, entry.srcMask, entry.dstMask);
-    }
-    return pc;
+    return matchedGroups;
 }
 
 // ===== V100（CloudV2）错误位名称表 =====
@@ -336,13 +356,13 @@ void InitV200VecPcFixGroups(std::vector<std::vector<PcFixGroup>>& table)
 void InitV200CubeAndL1PcFixGroups(std::vector<std::vector<PcFixGroup>>& table)
 {
     AddPcFixGroup(table[V200_CUBE_ERROR_T0_IDX], V200_CUBE_ERROR_T0_IDX, GenPcMask32(0, 15),
-        {MakePcFixEntry(RT_V200_CUBE_ERR_INFO_T0_1, GenPcMask64(0, 9), GenPcMask64(2, 11))});
+        {MakePcFixEntry(RT_V200_CUBE_ERR_INFO_T0_1, GenPcMask64(0, 15), GenPcMask64(2, 17))});
     AddPcFixGroup(table[V200_CUBE_ERROR_T1_IDX], V200_CUBE_ERROR_T0_IDX, GenPcMask32(0, 9),
-        {MakePcFixEntry(RT_V200_CUBE_ERR_INFO_T0_1, GenPcMask64(0, 9), GenPcMask64(2, 11))});
+        {MakePcFixEntry(RT_V200_CUBE_ERR_INFO_T0_1, GenPcMask64(0, 15), GenPcMask64(2, 17))});
     AddPcFixGroup(table[V200_L1_ERROR_T0_IDX], V200_L1_ERROR_T0_IDX, GenPcMask32(0, 30),
-        {MakePcFixEntry(RT_V200_L1_ERR_INFO_T0_1, GenPcMask64(0, 30), GenPcMask64(2, 32))});
+        {MakePcFixEntry(RT_V200_L1_ERR_INFO_T0_1, GenPcMask64(0, 15), GenPcMask64(2, 17))});
     AddPcFixGroup(table[V200_L1_ERROR_T1_IDX], V200_L1_ERROR_T0_IDX, GenPcMask32(0, 21),
-        {MakePcFixEntry(RT_V200_L1_ERR_INFO_T0_1, GenPcMask64(0, 30), GenPcMask64(2, 32))});
+        {MakePcFixEntry(RT_V200_L1_ERR_INFO_T0_1, GenPcMask64(0, 15), GenPcMask64(2, 17))});
 }
 
 std::string BuildErrorRegistersStr(
@@ -386,38 +406,13 @@ std::string CloudV2PcFixer::GetErrorRegisters(const uint32_t errReg[], size_t er
     return BuildErrorRegistersStr(V100_REG_NAMES, regNameNum, errReg, errRegLen);
 }
 
-std::string CloudV2PcFixer::GetErrorDescription(const uint32_t errReg[], size_t errRegLen)
+std::string CloudV2PcFixer::GetModuleName(uint32_t moduleId) const
 {
-    if (errReg == nullptr || errRegLen == 0) {
-        IDE_LOGW("[Dump][Exception] Invalid error register info, get error description skipped.");
-        return "";
+    const char* const moduleNames[V100_MODULE_ID_NUM] = {"CUBE", "CCU", "IFU", "MTE", "VEC", "FIXP"};
+    if (moduleId >= V100_MODULE_ID_NUM) {
+        return "UNKNOWN";
     }
-
-    std::string result;
-    for (uint32_t i = 0; i < V100_AIC_ERR_NUM; i++) {
-        uint32_t errIdx = errStartIdx_ + i;
-        if (errIdx >= errRegLen) {
-            continue;
-        }
-        uint32_t errVal = errReg[errIdx];
-        if (errVal == 0) {
-            continue;
-        }
-        for (uint32_t b = 0; b < UINT32_BIT_NUM; b++) {
-            if ((errVal & (1U << b)) == 0) {
-                continue;
-            }
-            std::string bitName = GetV100BitName(i, b);
-            if (bitName.empty() || bitName == "reserved") {
-                continue;
-            }
-            if (!result.empty()) {
-                result += ",";
-            }
-            result += bitName;
-        }
-    }
-    return result;
+    return moduleNames[moduleId];
 }
 
 // ===== CloudV4 PC 修正 =====
@@ -444,34 +439,22 @@ std::string CloudV4PcFixer::GetErrorRegisters(const uint32_t errReg[], size_t er
     return BuildErrorRegistersStr(V200_REG_NAMES, regNameNum, errReg, errRegLen);
 }
 
-std::string CloudV4PcFixer::GetErrorDescription(const uint32_t errReg[], size_t errRegLen)
+std::string CloudV4PcFixer::GetModuleName(uint32_t moduleId) const
 {
-    if (errReg == nullptr || errRegLen == 0) {
-        IDE_LOGW("[Dump][Exception] Invalid error register info, get error description skipped.");
-        return "";
+    switch (moduleId) {
+        case V200_SU_ERROR_T0_IDX:
+            return "SU";
+        case V200_MTE_ERROR_T0_IDX:
+            return "MTE";
+        case V200_VEC_ERROR_T0_IDX:
+            return "VEC";
+        case V200_CUBE_ERROR_T0_IDX:
+            return "CUBE";
+        case V200_L1_ERROR_T0_IDX:
+            return "L1";
+        default:
+            return "UNKNOWN";
     }
-
-    const char* const V200_ERROR_NAMES[V200_ERROR_IDX_NUM] = {
-        "SC_ERROR_T0_0", "SU_ERROR_T0_0", "MTE_ERROR_T0_0", "MTE_ERROR_T1_0",
-        "VEC_ERROR_T0_0", "VEC_ERROR_T0_2", "CUBE_ERROR_T0_0", "CUBE_ERROR_T0_1",
-        "L1_ERROR_T0_0", "L1_ERROR_T0_1"
-    };
-    std::string result;
-    for (uint32_t i = 0; i < errCount_; i++) {
-        uint32_t errIdx = errStartIdx_ + i;
-        if (errIdx >= errRegLen) {
-            continue;
-        }
-        uint32_t errVal = errReg[errIdx];
-        if (errVal == 0) {
-            continue;
-        }
-        if (!result.empty()) {
-            result += ",";
-        }
-        result += V200_ERROR_NAMES[i];
-    }
-    return result;
 }
 
 std::unique_ptr<PcFixerInterface> PcFixerFactory::instance_;

@@ -35,7 +35,6 @@ public:
     virtual ~PcFixerInterface() = default;
 
     uint64_t FixPc(uint64_t pc, const uint32_t errReg[], size_t errRegLen);
-    virtual std::string GetErrorDescription(const uint32_t errReg[], size_t errRegLen) = 0;
     virtual std::string GetErrorRegisters(const uint32_t errReg[], size_t errRegLen) const = 0;
 
 protected:
@@ -44,20 +43,26 @@ protected:
     std::vector<std::vector<PcFixGroup>> table_;
 
     static void ReplacePcBits(uint64_t& pc, uint32_t regValue, uint64_t srcMask, uint64_t dstMask);
+    std::vector<const PcFixGroup*> GetMatchedGroups(const uint32_t errReg[], size_t errRegLen) const;
+    virtual std::string GetModuleName(uint32_t moduleId) const = 0;
 };
 
 class CloudV2PcFixer : public PcFixerInterface {
 public:
     CloudV2PcFixer();
-    std::string GetErrorDescription(const uint32_t errReg[], size_t errRegLen) override;
     std::string GetErrorRegisters(const uint32_t errReg[], size_t errRegLen) const override;
+
+private:
+    std::string GetModuleName(uint32_t moduleId) const override;
 };
 
 class CloudV4PcFixer : public PcFixerInterface {
 public:
     CloudV4PcFixer();
-    std::string GetErrorDescription(const uint32_t errReg[], size_t errRegLen) override;
     std::string GetErrorRegisters(const uint32_t errReg[], size_t errRegLen) const override;
+
+private:
+    std::string GetModuleName(uint32_t moduleId) const override;
 };
 
 class PcFixerFactory {

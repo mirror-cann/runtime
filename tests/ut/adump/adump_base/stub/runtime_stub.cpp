@@ -752,6 +752,17 @@ rtError_t rtBinaryGetFunctionByName(rtBinHandle binHandle, const char *kernelNam
     return RT_ERROR_NONE;
 }
 
+rtError_t rtsBinaryGetDevAddress(const rtBinHandle binHandle, void **bin, uint32_t *binSize)
+{
+    (void)binHandle;
+    if (bin == nullptr || binSize == nullptr) {
+        return RT_ERROR_INVALID_VALUE;
+    }
+    *bin = nullptr;
+    *binSize = 0;
+    return RT_ERROR_NONE;
+}
+
 rtError_t rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, rtFuncHandle *func)
 {
     (void)info;

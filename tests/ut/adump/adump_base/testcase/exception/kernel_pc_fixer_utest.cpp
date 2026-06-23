@@ -51,8 +51,6 @@ TEST_F(KernelPcFixerUTest, CloudV2InvalidInputAndNoMatchedGroupKeepPc)
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, nullptr, RT_ERR_REG_NUMS));
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), 0));
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), regs.size()));
-    EXPECT_EQ("", fixer.GetErrorDescription(nullptr, RT_ERR_REG_NUMS));
-    EXPECT_EQ("", fixer.GetErrorDescription(regs.data(), 0));
 }
 
 TEST_F(KernelPcFixerUTest, CloudV2FixesCubeCcuMteVecAndFixpPc)
@@ -63,7 +61,6 @@ TEST_F(KernelPcFixerUTest, CloudV2FixesCubeCcuMteVecAndFixpPc)
     regs[RT_V100_AIC_ERR_0] = 1U << 9U;
     regs[RT_V100_CUBE_ERR_0] = 0x12000034U;
     EXPECT_EQ(0x48D0ULL, fixer.FixPc(0, regs.data(), regs.size()));
-    EXPECT_EQ("cube_invld_input", fixer.GetErrorDescription(regs.data(), regs.size()));
 
     regs = EmptyRegs();
     regs[RT_V100_AIC_ERR_0] = 1U << 3U;
@@ -89,7 +86,7 @@ TEST_F(KernelPcFixerUTest, CloudV2FixesCubeCcuMteVecAndFixpPc)
     EXPECT_EQ((0x33ULL << 2U) | (0x44ULL << 10U), fixer.FixPc(0, regs.data(), regs.size()));
 }
 
-TEST_F(KernelPcFixerUTest, CloudV2MixedModuleAndShortRegisterArrayDoNotFixPc)
+TEST_F(KernelPcFixerUTest, CloudV2MixedModuleReturnsFirstModulePcAndShortRegisterArrayDoesNotChangePc)
 {
     CloudV2PcFixer fixer;
 
@@ -97,15 +94,12 @@ TEST_F(KernelPcFixerUTest, CloudV2MixedModuleAndShortRegisterArrayDoNotFixPc)
     regs[RT_V100_AIC_ERR_0] = (1U << 3U) | (1U << 9U);
     regs[RT_V100_CCU_ERR_0] = 0x12U;
     regs[RT_V100_CUBE_ERR_0] = 0x34U;
-    EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), regs.size()));
+    EXPECT_EQ((TEST_PC & ~0x3FFFCULL) | (0x34ULL << 2U), fixer.FixPc(TEST_PC, regs.data(), regs.size()));
 
     regs = EmptyRegs();
     regs[RT_V100_AIC_ERR_0] = 1U << 9U;
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), RT_V100_CUBE_ERR_0));
 
-    regs = EmptyRegs();
-    regs[RT_V100_AIC_ERR_4] = 1U << 17U;
-    EXPECT_EQ("", fixer.GetErrorDescription(regs.data(), regs.size()));
 }
 
 TEST_F(KernelPcFixerUTest, CloudV2SameModuleAcrossErrorRegistersFixesPc)
@@ -120,18 +114,16 @@ TEST_F(KernelPcFixerUTest, CloudV2SameModuleAcrossErrorRegistersFixesPc)
     EXPECT_EQ((0x9AULL << 2U) | (0xBCULL << 10U), fixer.FixPc(0, regs.data(), regs.size()));
 }
 
-TEST_F(KernelPcFixerUTest, CloudV4InvalidInputDescriptionAndScError)
+TEST_F(KernelPcFixerUTest, CloudV4InvalidInputAndScError)
 {
     CloudV4PcFixer fixer;
     auto regs = EmptyRegs();
 
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, nullptr, RT_ERR_REG_NUMS));
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), 0));
-    EXPECT_EQ("", fixer.GetErrorDescription(nullptr, RT_ERR_REG_NUMS));
 
     regs[RT_V200_SC_ERROR_T0_0] = 1U;
     EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), regs.size()));
-    EXPECT_EQ("SC_ERROR_T0_0", fixer.GetErrorDescription(regs.data(), regs.size()));
 }
 
 TEST_F(KernelPcFixerUTest, CloudV4FixesSuMteVecCubeAndL1Pc)
@@ -157,16 +149,16 @@ TEST_F(KernelPcFixerUTest, CloudV4FixesSuMteVecCubeAndL1Pc)
 
     regs = EmptyRegs();
     regs[RT_V200_CUBE_ERROR_T0_1] = 1U << 9U;
-    regs[RT_V200_CUBE_ERR_INFO_T0_1] = 0x155U;
-    EXPECT_EQ(0x554ULL, fixer.FixPc(0, regs.data(), regs.size()));
+    regs[RT_V200_CUBE_ERR_INFO_T0_1] = 0xF155U;
+    EXPECT_EQ(0x3C554ULL, fixer.FixPc(0, regs.data(), regs.size()));
 
     regs = EmptyRegs();
     regs[RT_V200_L1_ERROR_T0_1] = 1U << 21U;
     regs[RT_V200_L1_ERR_INFO_T0_1] = 0x12345678U;
-    EXPECT_EQ(0x48D159E0ULL, fixer.FixPc(0, regs.data(), regs.size()));
+    EXPECT_EQ(0x159E0ULL, fixer.FixPc(0, regs.data(), regs.size()));
 }
 
-TEST_F(KernelPcFixerUTest, CloudV4MixedModuleAndShortRegisterArrayDoNotFixPc)
+TEST_F(KernelPcFixerUTest, CloudV4MixedModuleReturnsFirstModulePcAndShortRegisterArrayDoesNotChangePc)
 {
     CloudV4PcFixer fixer;
 
@@ -175,8 +167,7 @@ TEST_F(KernelPcFixerUTest, CloudV4MixedModuleAndShortRegisterArrayDoNotFixPc)
     regs[RT_V200_MTE_ERROR_T0_0] = 1U;
     regs[RT_V200_SU_ERR_INFO_T0_0] = 0x1234U;
     regs[RT_V200_MTE_ERR_INFO_T0_0] = 0x5678U;
-    EXPECT_EQ(TEST_PC, fixer.FixPc(TEST_PC, regs.data(), regs.size()));
-    EXPECT_EQ("SU_ERROR_T0_0,MTE_ERROR_T0_0", fixer.GetErrorDescription(regs.data(), regs.size()));
+    EXPECT_EQ((TEST_PC & ~0x3FFFCULL) | 0x48D0ULL, fixer.FixPc(TEST_PC, regs.data(), regs.size()));
 
     regs = EmptyRegs();
     regs[RT_V200_L1_ERROR_T0_0] = 1U;
