@@ -9,6 +9,7 @@
  */
 #include "kernel.hpp"
 #include <list>
+#include <string_view>
 #include "error_message_manage.hpp"
 #include "runtime.hpp"
 #include "program.hpp"
@@ -402,17 +403,20 @@ rtError_t Kernel::GetParamInfo(uint32_t paramIndex, uint32_t *paramOffset, uint3
 
 void Kernel::SetStlKernelByKernelName(const char_t *kernelName)
 {
-    const char_t *stlNames[] = {"mc62_aic_mte_stl", "mc62_aic_su_cube_stl",
-                                "mc62_aic_vec_simd_stl", "mc62_aic_vec_simt_stl"};
+    constexpr std::array<std::string_view, 4> stlNames = {
+        "mc62_aic_mte_stl",
+        "mc62_aic_su_cube_stl",
+        "mc62_aic_vec_simd_stl",
+        "mc62_aic_vec_simt_stl"
+    };
     isStlKernel_ = false;
     if (kernelName == nullptr) {
         return;
     }
 
-    size_t nameLen = strlen(kernelName);
-    for (size_t i = 0; i < sizeof(stlNames) / sizeof(stlNames[0]); i++) {
-        size_t len = strlen(stlNames[i]);
-        if ((nameLen == len) && (strncmp(kernelName, stlNames[i], len) == 0)) {
+    std::string_view name(kernelName);
+    for (std::string_view stlName : stlNames) {
+        if (stlName == name) {
             isStlKernel_ = true;
             return;
         }
