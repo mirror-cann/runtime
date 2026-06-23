@@ -80,7 +80,7 @@ RTS_API rtError_t rtSetTaskTag(const char_t *taskTag);
 /**
  * @ingroup dvrt_event
  * @brief set event work mode
- * @param [in] mode // 0 default Software events; 1 HardWare events
+ * @param [in] mode 0: default Software events; 1: HardWare events
  * @return RT_ERROR_NONE for ok, others failed
  */
 RTS_API rtError_t rtEventWorkModeSet(uint8_t mode);
@@ -88,7 +88,7 @@ RTS_API rtError_t rtEventWorkModeSet(uint8_t mode);
 /**
  * @ingroup dvrt_event
  * @brief get event work mode
- * @param [out] mode // 0 default Software events; 1 HardWare events
+ * @param [out] mode 0: default Software events; 1: HardWare events
  * @return RT_ERROR_NONE for ok, others failed
  */
 RTS_API rtError_t rtEventWorkModeGet(uint8_t *mode);

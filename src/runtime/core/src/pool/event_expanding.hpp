@@ -29,7 +29,7 @@ public:
     void FreeEventId(int32_t eventId);
     rtError_t ResetBufferForEvent();
 
-    uint16_t GetPoolIndex()
+    uint16_t GetPoolIndex() const
     {
         return poolIndex_;
     }

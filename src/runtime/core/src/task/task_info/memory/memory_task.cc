@@ -489,7 +489,7 @@ rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const 
                                 const void *const src, const uint64_t srcPitch, const uint64_t width,
                                 const uint64_t height, const uint64_t fixedSize)
 {
-    bool isUbMode = Runtime::Instance()->GetConnectUbFlag() ? true : false;
+    const bool isUbMode = Runtime::Instance()->GetConnectUbFlag() ? true : false;
     if (!isUbMode) {
         RT_LOG(RT_LOG_ERROR, "pcie does not support");
         return RT_ERROR_INVALID_VALUE;

@@ -328,7 +328,7 @@ rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, AsyncDmaBatchInfo 
 
 static void AsyncDmaWqe2DProc(MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo, const Stream * const stream)
 {
-    bool ubFlag = IsDavidUbDma(memcpyAsyncTaskInfo->copyType);
+    const bool ubFlag = IsDavidUbDma(memcpyAsyncTaskInfo->copyType);
     if (!ubFlag) {
         return;     
     }

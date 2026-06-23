@@ -38,7 +38,7 @@ rtError_t ApiImplDavid::GetCaptureEvent(const Stream * const stm, Event * const 
 
     Event *newEvent = nullptr;
     rtError_t error;
-    bool isHardwareEvent = IsUseHardwareEvent(stm->Device_());
+    const bool isHardwareEvent = IsUseHardwareEvent(stm->Device_());
     if (isHardwareEvent) {
          // hardware mode, use single bit notify
         error = EventCreate(&newEvent, RT_EVENT_WITH_FLAG);

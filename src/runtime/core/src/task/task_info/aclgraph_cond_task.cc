@@ -63,8 +63,8 @@ static rtError_t CondTaskFuncCallDevMemAlloc(TaskInfo* taskInfo, CondHandle *con
         devMem = RtPtrToPtr<void *, const uintptr_t>(devMemAlign);
     }
     /* 从第一个模型到最后一个，依次存放每个模型sqlistAddr的首地址 */
-    uint64_t totalModelSize = modelCount * sizeof(uint64_t);
-    uint64_t totalSqSize = totalSqCount * sizeof(uint64_t);
+    const uint64_t totalModelSize = modelCount * sizeof(uint64_t);
+    const uint64_t totalSqSize = totalSqCount * sizeof(uint64_t);
     condTaskInfo->headSqArrPtrArrSvmMem =  RtValueToPtr<void *>(RtPtrToValue(devMem) + TS_STARS_COND_DFX_SIZE);
     /* 依次存放所有模型sqlist */
     condTaskInfo->headSqArrDataSvmMem = RtValueToPtr<void *>(RtPtrToValue(condTaskInfo->headSqArrPtrArrSvmMem) + totalModelSize);
@@ -501,8 +501,8 @@ rtError_t ReConstructCaptureConditionTaskFc(TaskInfo *taskInfo, CondHandle *cond
         totalSqCount += sqCount;
     }
 
-    uint64_t totalModelSize = modelCount * sizeof(uint64_t);
-    uint64_t totalSqSize = totalSqCount * sizeof(uint64_t);
+    const uint64_t totalModelSize = modelCount * sizeof(uint64_t);
+    const uint64_t totalSqSize = totalSqCount * sizeof(uint64_t);
 
     CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
     uint64_t sqDataAddr = RtPtrToValue(condTaskInfo->headSqArrDataSvmMem);

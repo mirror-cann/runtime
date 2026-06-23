@@ -168,7 +168,7 @@ struct ElfKernelMinStackSizeInfo {
     uint32_t minStackSize;
 };
 
-constexpr uint8_t KERNEL_FUNCTION_ENTRY_DISABLE = 0x80;
+constexpr uint8_t KERNEL_FUNCTION_ENTRY_DISABLE = 0x80U;
 
 struct ElfKernelFunctionEntryInfo {
     ElfTlvHead head;

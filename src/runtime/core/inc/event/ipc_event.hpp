@@ -135,7 +135,7 @@ public :
 
     size_t GetAlignedSize(size_t handleSize, size_t granularity) const
     {
-        // granularity 4k or 64k;
+        // The granularity is 4 KB or 64 KB.
         return (handleSize + granularity - 1U) & (~(granularity - 1U));
     }
 protected:

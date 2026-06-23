@@ -22,7 +22,7 @@ namespace runtime {
 class FuncSymbolTable : public NoCopy {
 public:
     FuncSymbolTable() = default;
-    ~FuncSymbolTable();
+    ~FuncSymbolTable() override;
 
     rtError_t Register(void *binHandle, const void *symbol, const char_t * const kernelName);
     Kernel *Lookup(const void *symbol);

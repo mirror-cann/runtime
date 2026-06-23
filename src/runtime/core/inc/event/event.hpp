@@ -278,7 +278,7 @@ public:
         isHardwareMode_ = false;
     }
 
-    bool IsHardwareMode(void)
+    bool IsHardwareMode(void) const
     {
         return isHardwareMode_;
     }
