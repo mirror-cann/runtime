@@ -894,7 +894,7 @@ private:
     void RollbackTsvPrimaryContextRetainFailure(const uint32_t devId);
     rtError_t StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted) const;
     rtError_t PrepareDeviceRetain(
-        const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted);
+        const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted) const;
     void RollbackFailedDeviceRetain(
         RefObject<Device *> &refObj, Device *&dev, const uint32_t devId, const uint32_t tsId,
         const bool aicpuExecutorStarted) const;

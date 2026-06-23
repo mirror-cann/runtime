@@ -2872,7 +2872,7 @@ DEV_DEC:
 }
 
 rtError_t Runtime::PrepareDeviceRetain(
-    const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted)
+    const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted) const
 {
     if (DlogReportStart != nullptr) {
         RT_LOG(RT_LOG_INFO, "[dlog api] DlogReportStart exist.");
