@@ -5482,7 +5482,7 @@ rtError_t Runtime::SetSimdPrintFifoSize(uint32_t val)
 {
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMD_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE, 
         val, "[" + std::to_string(SIMD_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
-    uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
+    uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1U) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
     printblockLen_ = assignVal;
     RT_LOG(RT_LOG_DEBUG, "Set simd printf fifo size succ, origin val=%u, assgin val=%u", val, printblockLen_);
     return RT_ERROR_NONE;
@@ -5492,7 +5492,7 @@ rtError_t Runtime::SetSimtPrintFifoSize(uint32_t val)
 {
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMT_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE, 
         val, "[" + std::to_string(SIMT_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
-    uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
+    uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1U) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
     simtPrintLen_ = assignVal;
     RT_LOG(RT_LOG_DEBUG, "Set simt printf fifo size succ, origin val=%u, assgin val=%u", val, simtPrintLen_);
     return RT_ERROR_NONE;

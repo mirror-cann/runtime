@@ -1090,7 +1090,7 @@ rtError_t Model::SynchronizeExecute(Stream * const stm, int32_t timeout)
     return RT_ERROR_NONE;
 }
 
-Stream *Model::GetExecuteStream()
+Stream *Model::GetExecuteStream() const
 {
     Stream *onlineStream = context_->OnlineStream_();
     if (onlineStream != nullptr) {

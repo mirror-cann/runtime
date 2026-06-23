@@ -294,6 +294,8 @@ static rtError_t AsyncJettyToHead(const Model * const mdl, Stream * const stm)
         }
     } else if (mdl->GetFirstExecute()) {
         return RT_ERROR_NONE;
+    } else {
+        // no operation
     }
     if ((mdl->GetH2dJettyInfo().empty()) && ( mdl->GetD2dJettyInfo().empty())) {
         return RT_ERROR_NONE;

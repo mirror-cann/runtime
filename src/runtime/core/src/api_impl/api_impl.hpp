@@ -766,7 +766,7 @@ protected:
     rtError_t ValidateMemCpyParamsAndAttributes(void* dst, size_t destMax, void* src, size_t size, const rtMemcpyBatchAttr& memAttr,
         rtPtrAttributes_t& dstAttr, rtPtrAttributes_t& srcAttr);
 private:
-    rtError_t GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val);
+    rtError_t GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val) const;
     rtError_t GetDeviceInfoByAttrMisc(uint32_t deviceId, rtDevAttr attr, int64_t *val);
     rtError_t GetDeviceNpuArch(uint32_t deviceId, int64_t *val);
     // support feature

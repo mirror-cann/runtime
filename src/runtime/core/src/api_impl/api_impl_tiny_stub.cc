@@ -199,7 +199,7 @@ rtError_t ApiImpl::LaunchDqsTask(Stream * const stm, const rtDqsTaskCfg_t * cons
     return RT_ERROR_FEATURE_NOT_SUPPORT;    
 }
 
-rtError_t ApiImpl::GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val)
+rtError_t ApiImpl::GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val) const
 {
     UNUSED(deviceId);
     UNUSED(val);

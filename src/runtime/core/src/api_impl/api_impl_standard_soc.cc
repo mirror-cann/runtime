@@ -272,7 +272,7 @@ rtError_t ApiImpl::MemGetInfoByDeviceId(uint32_t deviceId, bool isHugeOnly, size
     return npuDrv->MemGetInfo(deviceId, isHugeOnly, freeSize, totalSize);
 }
 
-rtError_t ApiImpl::GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val)
+rtError_t ApiImpl::GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val) const
 {
     unsigned int split_mode;
     drvError_t drvError;

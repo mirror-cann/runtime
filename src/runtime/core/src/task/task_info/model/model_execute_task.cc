@@ -310,7 +310,7 @@ rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo)
         if(model->GetFirstExecute()){
             RtStarsModelExeFuncCall funcCall = {};
             rtStarsModelExeFuncCallPara_t funcCallPara = {};
-            funcCallPara.deltaOffset = 0;
+            funcCallPara.deltaOffset = 0ULL;
             funcCallPara.isCondTaskModelExec = false;
             ret = ConstructFuncCallPara(taskInfo, funcCallPara);
             COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "construct func call para failed, retCode=%#x.", ret);

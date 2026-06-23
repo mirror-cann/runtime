@@ -123,7 +123,7 @@ static void ConstructMbufTrace(CondMbufTraceFc &fc, const CondMbufTraceParam &fu
 
     // 如果地址为0跳转到Trace Fc的Nop指令退出Mbuf Trace的录入逻辑，目的是初始化异常时不要影响正常的逻辑运行
     ConstructSetJumpPcFc(param.avail_reg3, traceFcNop, fc.jumpTraceNop);
-    ConstructBranch(param.avail_reg2, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, traceFcNop, fc.beqForBranch);
+    ConstructBranch(param.avail_reg2, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, static_cast<uint8_t>(traceFcNop), fc.beqForBranch);
 
     // 读取TraceBlockSize基地址到avail_reg3，在ctrl space为数组
     ConstructLLWI(param.avail_reg3, funcCallPara.traceBlockSizeAddr, fc.llwiTraceBlockSizeAddr);
@@ -224,7 +224,7 @@ static void ConstructMbufFreeDssDelayPart(RtStarsDqsMbufFreeFc &fc, const RtDqsM
     offset = offset / sizeof(uint32_t);
     ConstructSetJumpPcFc(r7, offset, fc.jumpPc1);
     // 如果不是DSS则直接跳到mbuf free
-    ConstructBranch(r9, r10, RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, offset, fc.bne);
+    ConstructBranch(r9, r10, RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, static_cast<uint8_t>(offset), fc.bne);
 
     // r5 = invalid mbuf handle
     ConstructLLWI(r5, RT_DQS_MBUF_INVALID, fc.llwiMaxMbuf);
@@ -234,7 +234,7 @@ static void ConstructMbufFreeDssDelayPart(RtStarsDqsMbufFreeFc &fc, const RtDqsM
     offset = offsetof(RtStarsDqsMbufFreeFc, addi2);
     offset = offset / sizeof(uint32_t);
     ConstructSetJumpPcFc(r7, offset, fc.jumpPc2);
-    ConstructBranch(r4, r5, RT_STARS_COND_ISA_BRANCH_FUNC3_BGEU, offset, fc.bgeu1);
+    ConstructBranch(r4, r5, RT_STARS_COND_ISA_BRANCH_FUNC3_BGEU, static_cast<uint8_t>(offset), fc.bgeu1);
 
     ConstructLLWI(r9, funcCallPara.lastMbufHandleAddr, fc.llwi6);
     ConstructLHWI(r9, funcCallPara.lastMbufHandleAddr, fc.lhwi6);
@@ -265,7 +265,7 @@ static void ConstructMbufFreeDssDelayPart(RtStarsDqsMbufFreeFc &fc, const RtDqsM
     offset = offset / sizeof(uint32_t);
     ConstructSetJumpPcFc(r7, offset, fc.jumpPc3);
     // 如果last_used_handle大于mbuf handle最大值，代表是第一次执行mbuf free，需要跳过
-    ConstructBranch(r9, r5, RT_STARS_COND_ISA_BRANCH_FUNC3_BGEU, offset, fc.bgeu2);
+    ConstructBranch(r9, r5, RT_STARS_COND_ISA_BRANCH_FUNC3_BGEU, static_cast<uint8_t>(offset), fc.bgeu2);
 }
 
 void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc &fc, const RtDqsMbufFreeFcPara &funcCallPara)
@@ -304,7 +304,8 @@ void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc &fc, const RtDqsMbufFreeFcPar
         .loop_index_reg = r6, .mbuf_handle_reg = r4, .avail_reg0 = r3, .avail_reg1 = r7, .avail_reg2 = r9, .avail_reg3 = r10
     };
 
-    const uint32_t mbufTraceNop = (RtPtrToValue(&(fc.freeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    const uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.freeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.freeMbufTracefc, funcCallPara.freeMbufTracePara, freeRegParam, mbufTraceNop);
 
     // cfg use PA
@@ -419,7 +420,8 @@ void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc &fc, const RtStarsDqsFcPara &func
     MbufTraceRegParam owFreeRegInfo = {
         .loop_index_reg = r10, .mbuf_handle_reg = r8, .avail_reg0 = r4, .avail_reg1 = r5, .avail_reg2 = r6, .avail_reg3 = r7
     };
-    uint32_t mbufTraceNop = (RtPtrToValue(&(fc.owFreeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.owFreeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.owFreeMbufTracefc, funcCallPara.owFreeMbufTracePara, owFreeRegInfo, mbufTraceNop);
 
     // read immd reg va cfg mask
@@ -449,7 +451,8 @@ void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc &fc, const RtStarsDqsFcPara &func
     MbufTraceRegParam enqueRegInfo = {
         .loop_index_reg = r10, .mbuf_handle_reg = r5, .avail_reg0 = r4, .avail_reg1 = r6, .avail_reg2 = r7, .avail_reg3 = r8
     };
-    mbufTraceNop = (RtPtrToValue(&(fc.enqueMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.enqueMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.enqueMbufTracefc, funcCallPara.enqueMbufTracePara, enqueRegInfo, mbufTraceNop);
 
     // increment realEnqueMbufCntAddr
@@ -562,7 +565,8 @@ void ConstructDqsDequeueFc(RtStarsDqsDequeueFc &fc, const RtStarsDqsFcPara &func
     MbufTraceRegParam param = {
         .loop_index_reg = r0, .mbuf_handle_reg = r7, .avail_reg0 = r3, .avail_reg1 = r5, .avail_reg2 = r9, .avail_reg3 = r10
     };
-    const uint32_t mbufTraceNop = (RtPtrToValue(&(fc.dequeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    const uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.dequeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.dequeMbufTracefc, funcCallPara.dequeMbufTracePara, param, mbufTraceNop);
 
     // write mbuffer into mbuf handle addr
@@ -698,7 +702,8 @@ void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc &fc, const RtStarsDqsBa
     MbufTraceRegParam mbufTraceRegInfo = {
         .loop_index_reg = r7, .mbuf_handle_reg = r6, .avail_reg0 = r1, .avail_reg1 = r5, .avail_reg2 = r8, .avail_reg3 = r9
     };
-    const uint32_t mbufTraceNop = (RtPtrToValue(&(fc.dequeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    const uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.dequeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.dequeMbufTracefc, funcCallPara.dequeMbufTracePara, mbufTraceRegInfo, mbufTraceNop);
 
     /* If the value of MAX_CACHE_SIZE is changed, the corresponding algorithm also needs to be changed. */
@@ -954,7 +959,8 @@ static void ConstructDqsFrameAlignCommitPhase(RtStarsDqsFrameAlignFc &fc, const 
         fc.beqStoreSelectedHandle);
 
     // cnt!=1时加载handle_array[1]，与cnt==1分支共用后续写input_mbuf_list逻辑。
-    ConstructLoad(r2, sizeof(uint32_t), r9, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrCacheHandle1);
+    ConstructLoad(r2, static_cast<uint16_t>(sizeof(uint32_t)), r9, RT_STARS_COND_ISA_LOAD_FUNC3_LDR,
+        fc.ldrCacheHandle1);
     ConstructStore(r1, r9, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.storeSelectedHandle);
 
     // 已提交一路handle到input_mbuf_list，对应cache cnt减1并按uint16_t写回。
@@ -962,7 +968,8 @@ static void ConstructDqsFrameAlignCommitPhase(RtStarsDqsFrameAlignFc &fc, const 
     ConstructStore(r5, r6, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SH, fc.storeCommitCnt);
 
     // 推进到下一路input_mbuf_list和input_mbuf_cache_list，直到所有输入queue完成提交。
-    ConstructOpImmAndi(r1, r1, sizeof(uint32_t), RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiCommitMbufListAddr);
+    ConstructOpImmAndi(r1, r1, static_cast<uint32_t>(sizeof(uint32_t)), RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI,
+        fc.addiCommitMbufListAddr);
     ConstructOpImmAndi(r2, r2, fcPara.sizeofHandleCache, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI,
         fc.addiCommitCacheListAddr);
     ConstructOpImmAndi(r4, r4, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiCommitIndex);
@@ -1067,7 +1074,8 @@ void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc &fc, const RtStarsDqsPrepareFc
     MbufTraceRegParam param = {
         .loop_index_reg = r2, .mbuf_handle_reg = r4, .avail_reg0 = r5, .avail_reg1 = r6, .avail_reg2 = r7, .avail_reg3 = r8
     };
-    const uint32_t mbufTraceNop = (RtPtrToValue(&(fc.allocMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    const uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.allocMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.allocMbufTracefc, fcPara.allocMbufTracePara, param, mbufTraceNop);
 
     /* 将output mbuf 存入ctrlSpace output_mbuf_list */
@@ -1382,7 +1390,8 @@ void ConstructDqsInterChipPreProcFc(RtStarsDqsInterChipPreProcFc &fc, const RtSt
     MbufTraceRegParam dstProdAllocRegInfo = {
         .loop_index_reg = r0, .mbuf_handle_reg = r1, .avail_reg0 = r2, .avail_reg1 = r8, .avail_reg2 = r9, .avail_reg3 = r10
     };
-    const uint32_t mbufTraceNop = (RtPtrToValue(&(fc.allocMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    const uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.allocMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.allocMbufTracefc, funcCallPara.allocMbufTracePara, dstProdAllocRegInfo, mbufTraceNop);
 
     // r1：mbuf_handle=[block_id:pool_id], bits[16:0]
@@ -1526,7 +1535,8 @@ void ConstructDqsInterChipPostProcFc(RtStarsDqsInterChipPostProcFc &fc, const Rt
     MbufTraceRegParam dstProdFreePara = {
         .loop_index_reg = r0, .mbuf_handle_reg = r3, .avail_reg0 = r1, .avail_reg1 = r10, .avail_reg2 = r7, .avail_reg3 = r9
     };
-    uint32_t mbufTraceNop = (RtPtrToValue(&(fc.dstProdFreeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    uint32_t mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.dstProdFreeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.dstProdFreeMbufTracefc, funcCallPara.dstProdFreeMbufTracePara, dstProdFreePara, mbufTraceNop);
 
     // cfg use PA
@@ -1552,7 +1562,8 @@ void ConstructDqsInterChipPostProcFc(RtStarsDqsInterChipPostProcFc &fc, const Rt
     MbufTraceRegParam dstProdEnqueRegInfo = {
         .loop_index_reg = r0, .mbuf_handle_reg = r1, .avail_reg0 = r3, .avail_reg1 = r8, .avail_reg2 = r9, .avail_reg3 = r10
     };
-    mbufTraceNop = (RtPtrToValue(&(fc.dstProdEnquembufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.dstProdEnquembufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.dstProdEnquembufTracefc, funcCallPara.dstProdEnqueMbufTracePara, dstProdEnqueRegInfo, mbufTraceNop);
 
     // cfg use PA
@@ -1577,7 +1588,8 @@ void ConstructDqsInterChipPostProcFc(RtStarsDqsInterChipPostProcFc &fc, const Rt
     MbufTraceRegParam srcConsFreePara = {
         .loop_index_reg = r0, .mbuf_handle_reg = r3, .avail_reg0 = r8, .avail_reg1 = r2, .avail_reg2 = r6, .avail_reg3 = r7
     };
-    mbufTraceNop = (RtPtrToValue(&(fc.srcConsFreembufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t);
+    mbufTraceNop = static_cast<uint32_t>(
+        (RtPtrToValue(&(fc.srcConsFreembufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.srcConsFreembufTracefc, funcCallPara.srcConsFreeMbufTracePara, srcConsFreePara, mbufTraceNop);
 
     // cfg use PA

@@ -156,9 +156,9 @@ static void InvokeDestroyDqsCtrlSpace(const bool isInterChip, const int32_t stre
     param.op_type = 1U;  // destroy
     stars_dqs_ctrl_space_result_t res = {};
     args.input_ptr = &param;
-    args.input_len = sizeof(stars_dqs_ctrl_space_param_t);
+    args.input_len = static_cast<uint32_t>(sizeof(stars_dqs_ctrl_space_param_t));
     args.output_ptr = &res;
-    args.output_len = sizeof(stars_dqs_ctrl_space_result_t);
+    args.output_len = static_cast<uint32_t>(sizeof(stars_dqs_ctrl_space_result_t));
 
     const stars_ioctl_cmd_t cmd = isInterChip ?
         STARS_IOCTL_CMD_DQS_INTER_CHIP_SPACE : STARS_IOCTL_CMD_DQS_CONTROL_SPACE;
@@ -338,7 +338,7 @@ rtError_t StreamWithDqs::SetCtrlSpaceOutputQueInfo(const rtDqsSchedCfg_t * const
         dqsCtrlSpace_->output_qmngr_enqueue_addrs[i] = queInfo.enqueOpAddr;
         dqsCtrlSpace_->output_qmngr_ow_addrs[i] = queInfo.prodqOwAddr;
 
-        const stars_queue_bind_mbuf_pool_item_t * const item = GetMbufPoolInfoByQid(qid, result);
+        const stars_queue_bind_mbuf_pool_item_t * const item = GetMbufPoolInfoByQid(static_cast<uint16_t>(qid), result);
         COND_RETURN_ERROR_MSG_INNER(item == nullptr, RT_ERROR_INVALID_VALUE,
             "The mbuf pool info corresponding to qid %u does not exist. Check the configuration process.", qid);
 
