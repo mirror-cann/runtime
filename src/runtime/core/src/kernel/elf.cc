@@ -115,8 +115,7 @@ uint64_t ByteGetBigEndian(const uint8_t field[], const int32_t size)
                 ((static_cast<uint64_t>(field[1U])) << 48U) | ((static_cast<uint64_t>(field[0U])) << 56U);
             break;
         default:
-            RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR,
-                "Unhandled data length: size = %d", size);
+            RT_LOG_INNER_MSG(RT_LOG_ERROR, "ByteGetBigEndian failed because value %d for size is invalid.", size);
             break;
     }
 
@@ -165,8 +164,7 @@ uint64_t ByteGetLittleEndian(const uint8_t field[], const int32_t size)
                 ((static_cast<uint64_t>(field[6U])) << 48U) | ((static_cast<uint64_t>(field[7U])) << 56U);
             break;
         default:
-            RT_LOG_OUTER_MSG(RT_INVALID_ARGUMENT_ERROR,
-                "Unhandled data length:, size = %d", size);
+            RT_LOG_INNER_MSG(RT_LOG_ERROR, "ByteGetLittleEndian failed because value %d for size is invalid.", size);
             break;
     }
 

@@ -76,7 +76,7 @@ TEST_F(RtErrorCodeTest, PrintErrMsgToLog)
     std::vector<std::string> values101 = {"set the saturation mode", "only the Inf/NaN mode can be set and the saturation mode"};
     PrintErrMsgToLog(ErrorCode::WE0001, "file", 1000, "func", values101);
  
-    std::vector<std::string> values4 = {"rtMemCpy", "d2d"};
+    std::vector<std::string> values4 = {"rtMemCpy", "d2d", "The current device does not support d2d memory copy"};
     PrintErrMsgToLog(ErrorCode::EE1006, "file", 1000, "func", values4);
  
     std::vector<std::string> values5 = {"10", "repeat bind"};
@@ -125,6 +125,10 @@ TEST_F(RtErrorCodeTest, PrintErrMsgToLog2)
     std::vector<std::string> values1021 = {"semaphore", "aclrtCreateStream"};
     PrintErrMsgToLog(ErrorCode::EE1021, "file", 1000, "func", values1021);
 
+    std::vector<std::string> values1022 = {"rtUbDbSend", "nullptr and nullptr", "pbase and psize",
+        "Parameters pbase and psize cannot both be nullptr"};
+    PrintErrMsgToLog(ErrorCode::EE1022, "file", 1000, "func", values1022);
+
     std::vector<std::string> values9 = {"1, 2, 2", "SetVisible", "not repeat"};
     PrintErrMsgToLog(ErrorCode::EE2002, "file", 1000, "func", values9);
 
@@ -140,7 +144,7 @@ TEST_F(RtErrorCodeTest, RePortErrCode)
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1003, "rtMemCpy", "0", "size", "[0, 255]");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1004, "rtMemCpy", "src");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1005, "rtMemCpy");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1006, "rtMemCpy", "d2d");
+    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1006, "rtMemCpy", "d2d", "The current device does not support d2d memory copy");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1007, "10", "repeat bind");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1009, "10", "model invalid");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1010, "rtModelExecute", "stream");
@@ -155,6 +159,7 @@ TEST_F(RtErrorCodeTest, RePortErrCode)
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1019, "Adding task to stream", "stream task public buffer is full");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, "rtGetSocVersion", "memcpy_s", "1", "count is greater than dest_max", "src=0x1, dest=0x2, dest_max=10, count=11.");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1021, "semaphore", "aclrtCreateStream");
+    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1022, "rtUbDbSend", "nullptr and nullptr", "pbase and psize", "Parameters pbase and psize cannot both be nullptr");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, "1, 2, 2", "SetVisible", "not repeat");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::WE0001, "set the saturation mode", "only the Inf/NaN mode can be set and the saturation mode");
 }
@@ -172,7 +177,7 @@ TEST_F(RtErrorCodeTest, CheckErrCodeParams)
     names = GetParamNames(ErrorCode::EE1005);
     EXPECT_EQ(names, (std::vector<std::string>{"func"}));
     names = GetParamNames(ErrorCode::EE1006);
-    EXPECT_EQ(names, (std::vector<std::string>{"func", "type"}));
+    EXPECT_EQ(names, (std::vector<std::string>{"func", "type", "reason"}));
     names = GetParamNames(ErrorCode::EE1007);
     EXPECT_EQ(names, (std::vector<std::string>{"id", "reason"}));
     names = GetParamNames(ErrorCode::EE1009);
@@ -205,6 +210,8 @@ TEST_F(RtErrorCodeTest, CheckErrCodeParams2)
     EXPECT_EQ(names, (std::vector<std::string>{"func1", "func2", "ret_code", "reason", "extend_info"}));
     names = GetParamNames(ErrorCode::EE1021);
     EXPECT_EQ(names, (std::vector<std::string>{"resource_type", "api"}));
+    names = GetParamNames(ErrorCode::EE1022);
+    EXPECT_EQ(names, (std::vector<std::string>{"func", "values", "params", "reason"}));
     names = GetParamNames(ErrorCode::EE2002);
     EXPECT_EQ(names, (std::vector<std::string>{"value", "env", "expect"}));
     names = GetParamNames(ErrorCode::EE_NO_ERROR);
@@ -223,13 +230,13 @@ TEST_F(RtErrorCodeTest, ErrorCodeTableParamCountMatchesMessageFormat)
     };
     std::vector<CodeInfo> allCodes = {
         {ErrorCode::EE1001, 1}, {ErrorCode::EE1002, 1}, {ErrorCode::EE1003, 4},
-        {ErrorCode::EE1004, 2}, {ErrorCode::EE1005, 1}, {ErrorCode::EE1006, 2},
+        {ErrorCode::EE1004, 2}, {ErrorCode::EE1005, 1}, {ErrorCode::EE1006, 3},
         {ErrorCode::EE1007, 2}, {ErrorCode::EE1009, 2},
         {ErrorCode::EE1010, 2}, {ErrorCode::EE1011, 4}, {ErrorCode::EE1012, 4},
         {ErrorCode::EE1013, 1}, {ErrorCode::EE1014, 1}, {ErrorCode::EE1015, 2},
         {ErrorCode::EE1016, 2}, {ErrorCode::EE1017, 3}, {ErrorCode::EE1018, 2},
         {ErrorCode::EE1019, 2}, {ErrorCode::EE1020, 5}, {ErrorCode::EE1021, 2},
-        {ErrorCode::EE2002, 3}, {ErrorCode::WE0001, 2},
+        {ErrorCode::EE1022, 4}, {ErrorCode::EE2002, 3}, {ErrorCode::WE0001, 2},
     };
     for (const auto& info : allCodes) {
         auto names = GetParamNames(info.code);
@@ -245,7 +252,7 @@ TEST_F(RtErrorCodeTest, DispatchErrMsgAllParamSizesErrorLevel)
     std::vector<std::string> v1 = {"x"};
     PrintErrMsgToLog(ErrorCode::EE1001, "f", 1, "g", v1);
     // 2 参数
-    std::vector<std::string> v2 = {"x", "y"};
+    std::vector<std::string> v2 = {"x", "y", "z"};
     PrintErrMsgToLog(ErrorCode::EE1006, "f", 1, "g", v2);
     // 3 参数
     std::vector<std::string> v3 = {"x", "y", "z"};

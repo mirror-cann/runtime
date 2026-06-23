@@ -777,8 +777,9 @@ rtError_t Context::StreamEndTaskGrp(Stream * const stm, TaskGroup ** const handl
 rtError_t Context::StreamBeginTaskUpdate(Stream * const stm, TaskGroup * handle) const
 {
     const std::lock_guard<std::mutex> tskGrpLock(stm->GetTaskGrpMutex());
-    COND_RETURN_OUT_ERROR_MSG_CALL(stm->GetTaskGroupStatus() != StreamTaskGroupStatus::NONE,
-        RT_ERROR_STREAM_TASKGRP_STATUS, "Unable to start update tasks because the stream is busy.");
+    COND_RETURN_AND_MSG_OUTER(stm->GetTaskGroupStatus() != StreamTaskGroupStatus::NONE,
+        RT_ERROR_STREAM_TASKGRP_STATUS, ErrorCode::EE1016, __func__, 
+        "The stream is already in task update or sample mode");
 
     COND_RETURN_ERROR_MSG_INNER(handle->isUpdate,
         RT_ERROR_STREAM_TASKGRP_STATUS, "The handle only can be updated by one stream.");
@@ -795,8 +796,9 @@ rtError_t Context::StreamBeginTaskUpdate(Stream * const stm, TaskGroup * handle)
 rtError_t Context::StreamEndTaskUpdate(Stream * const stm) const
 {
     const std::lock_guard<std::mutex> tskGrpLock(stm->GetTaskGrpMutex());
-    COND_RETURN_OUT_ERROR_MSG_CALL(stm->GetTaskGroupStatus() != StreamTaskGroupStatus::UPDATE,
-        RT_ERROR_STREAM_TASKGRP_STATUS, "Unable to end update tasks because the stream is busy.");
+    COND_RETURN_AND_MSG_OUTER(stm->GetTaskGroupStatus() != StreamTaskGroupStatus::UPDATE,
+        RT_ERROR_STREAM_TASKGRP_STATUS, ErrorCode::EE1016, __func__,
+        "The stream is not in task update mode");
 
     TaskGroup *updateTaskGroup = stm->GetUpdateTaskGroup();
     NULL_PTR_RETURN_MSG_OUTER(updateTaskGroup, RT_ERROR_INVALID_VALUE);

@@ -197,7 +197,8 @@ rtError_t NpuDriver::transMemAttribute(const uint32_t memPolicy, rtMemType_t * c
         case RT_MEMORY_POLICY_HUGE_PAGE_ONLY_P2P:
         case RT_MEMORY_POLICY_DEFAULT_PAGE_ONLY_P2P:
             if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_P2P)) {
-                RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "P2P memory on current chipType");
+                RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "P2P memory allocation",
+                    "The current SoC does not support P2P memory allocation");
                 error = RT_ERROR_FEATURE_NOT_SUPPORT;
                 break;
             }

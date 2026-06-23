@@ -1260,7 +1260,8 @@ rtError_t NpuDriver::DevMemAllocOffline(void **dptr, const uint64_t size,
            size, type, deviceId, chipType_);
 
     if (IsOfflineNotSupportMemType(type)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "memory type in offline mode");
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + std::to_string(type),
+            "The current SoC does not support P2P memory allocation");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     if (memPolicy == RT_MEMORY_POLICY_HUGE1G_PAGE_ONLY) {
@@ -1329,7 +1330,8 @@ rtError_t NpuDriver::DevMemAlloc(void ** const dptr, const uint64_t size, const 
         temptRet = DevMemAllocOnline(dptr, size, type, deviceId, moduleId, isLogError, readOnlyFlag, starsTillingFlag,
             isNewApi, cpOnlyFlag);
     } else if ((devRunMode == static_cast<uint32_t>(RT_RUN_MODE_OFFLINE)) && (IsOfflineNotSupportMemType(type))) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "P2P memory type at OFFLINE mode");
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + std::to_string(type),
+            "The current SoC does not support P2P memory allocation");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     } else if ((devRunMode == static_cast<uint32_t>(RT_RUN_MODE_OFFLINE)) ||
         (devRunMode == static_cast<uint32_t>(RT_RUN_MODE_AICPU_SCHED))) {
@@ -1491,7 +1493,8 @@ rtError_t NpuDriver::DevContinuousMemFree(void * const dptr, const uint32_t devi
 rtError_t NpuDriver::DevMemAllocForPctrace(void ** const dptr, const uint64_t size, const uint32_t deviceId)
 {
     if (GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "online mode");
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Memory allocation",
+            "The current SoC does not support memory allocation for ptrace");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -1526,7 +1529,8 @@ rtError_t NpuDriver::DevMemAllocCached(void ** const dptr, const uint64_t size,
 {
     const uint32_t memPolicy = type & static_cast<uint32_t>(~MEM_ALLOC_TYPE_BIT);
     if (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_ONLY) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "huge page only policy");
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "The huge page only memory policy",
+            "The huge page only memory policy conflicts with the cache memory allocation policy");
         return RT_ERROR_INVALID_VALUE;
     } else {
         if (size > HUGE_PAGE_MEM_CRITICAL_VALUE) {

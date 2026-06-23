@@ -614,8 +614,8 @@ rtError_t rtsStreamDestroy(rtStream_t stm, uint64_t flags)
 {
     constexpr uint64_t STREAM_DESTROY_VALID_FLAGS = (RT_STREAM_DESTORY_FLAG_DEFAULT | RT_STREAM_DESTORY_FLAG_FORCE);
 
-    COND_RETURN_AND_MSG_OUTER((flags & (~STREAM_DESTROY_VALID_FLAGS)) != 0U, ACL_ERROR_RT_PARAM_INVALID,
-            ErrorCode::EE1006, __func__, "flags=" + std::to_string(flags));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags & (~STREAM_DESTROY_VALID_FLAGS)) != 0U, ACL_ERROR_RT_PARAM_INVALID,
+        flags, "RT_STREAM_DESTORY_FLAG_DEFAULT(0x0ULL) or RT_STREAM_DESTORY_FLAG_FORCE(0x1ULL)");
     if ((flags & RT_STREAM_DESTORY_FLAG_FORCE) != 0U) {
         return rtStreamDestroyForce(stm);
     }  

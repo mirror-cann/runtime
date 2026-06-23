@@ -10,7 +10,6 @@
 
 #include "rt_log.h"
 #include "dlog_pub.h"
-#include "securec.h"
 #if (!defined(WIN32)) && (!defined(CFG_DEV_PLATFORM_PC))
 #include "error_manager.h"
 #endif

@@ -13,6 +13,8 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <cstdarg>
+#include "securec.h"
 namespace cce {
 namespace runtime {
 constexpr int32_t RT_MAX_LOG_BUF_SIZE = 896;  // Total length for slog is 1024 bytes, and head use 128 bytes.
@@ -43,6 +45,7 @@ enum class ErrorCode
     EE1019,
     EE1020,
     EE1021,
+    EE1022,
     EE2002,
     WE0001
 };
@@ -51,6 +54,14 @@ void PrintErrMsgToLog(ErrorCode errCode, const char *file, const int32_t line, c
     const std::vector<std::string> &values);
 void ProcessErrorCodeImpl(ErrorCode errCode, const char *file, const int32_t line, const char *func,
     const std::vector<std::string> &values);
+inline std::string RtFmtMsg(const char *fmt, ...) {
+    va_list msg;
+    va_start(msg, fmt);
+    char buf[RT_MAX_LOG_BUF_SIZE];
+    const int32_t ret = vsnprintf_truncated_s(buf, sizeof(buf), fmt, msg);
+    va_end(msg);
+    return (ret >= 0) ? buf : "";
+}
 }
 }
 #endif

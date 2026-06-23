@@ -2168,7 +2168,7 @@ rtError_t Context::StreamClear(const Stream * const stm, rtClearStep_t step) con
     const int32_t streamId = stm->Id_();
 
     COND_RETURN_AND_MSG_OUTER(
-        stm->GetBindFlag(), RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, __func__, "clear model stream");
+        stm->GetBindFlag(), RT_ERROR_STREAM_INVALID, ErrorCode::EE1016, __func__, "Clearing model stream is not supported");
     if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
         return device_->GetCtrlSQ().SendStreamClearMsg(stm, step, taskGenCallback_);
     }
@@ -2210,7 +2210,7 @@ rtError_t Context::StreamAbort(Stream * const stm)
         stm->Id_(), stm->GetSqId(), stm->GetCqId());
     rtError_t ret = RT_ERROR_NONE;
     COND_RETURN_AND_MSG_OUTER(
-        stm->GetBindFlag(), RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, __func__, "abort model stream");
+        stm->GetBindFlag(), RT_ERROR_STREAM_INVALID, ErrorCode::EE1016, __func__, "Aborting model stream is not supported");
     //runtime-ts compatibility check;
     const bool isSupported = IsStreamAbortSupported();
     COND_RETURN_WARN((isSupported == false), RT_ERROR_FEATURE_NOT_SUPPORT, "stream abort is not supported");

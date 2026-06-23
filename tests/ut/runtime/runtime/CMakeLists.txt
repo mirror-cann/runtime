@@ -430,6 +430,7 @@ set(runtimeut_src_tiny_exclude_list
     ${TOP_DIR}/src/runtime/core/src/memory/simd_memsetd32.cpp
     ${TOP_DIR}/src/runtime/core/src/kernel/symbol_table.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/aclgraph_cond_task.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_task_fail_callback_data_manager.cc
 )
 
 set(runtimeut_src_tiny_include_list
@@ -469,6 +470,7 @@ set(runtimeut_src_tiny_include_list
     ${TOP_DIR}/src/runtime/core/src/event/ipc_event_tiny_stub.cc
     ${TOP_DIR}/src/runtime/core/src/pool/event_expanding_tiny_stub.cc
     ${TOP_DIR}/src/runtime/feature/jetty/jetty_stub.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_task_fail_callback_data_manager_tiny_stub.cc
 )
 
 set(runtime_raw_device_adpt_common_list

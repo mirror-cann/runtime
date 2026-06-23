@@ -119,11 +119,16 @@ rtError_t ApiErrorDecorator::MemManagedPrefetchBatchAsync(const void** ptrs, siz
     }
 
     for (size_t idx = 0; idx < numPrefetchLocs; idx++) {
-        COND_RETURN_OUT_ERROR_MSG_CALL((prefetchLocIdxs[idx] >= count), RT_ERROR_INVALID_VALUE,
-            "elements in array prefetchLocIdxs should be less than count.");
+        COND_RETURN_AND_MSG_OUTER(prefetchLocIdxs[idx] >= count, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, __func__,
+            RtFmtMsg("prefetchLocIdxs[%zu] or count", idx), RtFmtMsg("Elements in array prefetchLocIdxs should be less than count."
+                " Parameter prefetchLocIdxs[%zu] is %zu, and count is %zu", idx, prefetchLocIdxs[idx], count));
+        
         if (idx >= 1) {
-            COND_RETURN_OUT_ERROR_MSG_CALL((prefetchLocIdxs[idx] <= prefetchLocIdxs[idx - 1]), RT_ERROR_INVALID_VALUE,
-                "array prefetchLocIdxs should be sorted in ascending status.");
+            COND_RETURN_AND_MSG_OUTER((prefetchLocIdxs[idx] <= prefetchLocIdxs[idx - 1]), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+                __func__, RtFmtMsg("prefetchLocIdxs[%zu] or prefetchLocIdxs[%zu]", idx, idx - 1),
+                RtFmtMsg("Each element in prefetchLocIdxs must be greater than the previous element."
+                    " Parameter prefetchLocIdxs[%zu] is %zu, and prefetchLocIdxs[%zu] is %zu",
+                    idx, prefetchLocIdxs[idx], idx - 1, prefetchLocIdxs[idx - 1]));
         }
     }
 

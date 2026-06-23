@@ -56,6 +56,7 @@
 #include "snapshot_callback_manager.hpp"
 #include "notify.hpp"
 #include "event.hpp"
+#include "xpu_task_fail_callback_data_manager.h"
 #undef protected
 #undef private
 
@@ -1316,4 +1317,20 @@ TEST_F(TinyStubTest, jetty_stub)
     EXPECT_EQ(StreamJettyHandler::GetJettyTypeFromTask(nullptr), JettyType::JETTY_TYPE_MAX);
     EXPECT_EQ(StreamJettyHandler::HandleUbDmaTask(nullptr, nullptr, JettyType::JETTY_TYPE_H2D, nullptr, nullptr),
         RT_ERROR_NONE);
+}
+
+TEST_F(TinyStubTest, xpu_task_fail_callback_manager_stub)
+{
+    auto &instance1 = XpuTaskFailCallBackManager::Instance();
+    EXPECT_NE(&instance1, nullptr);
+    auto &instance2 = XpuTaskFailCallBackManager::Instance();
+    EXPECT_EQ(&instance1, &instance2);
+
+    rtExceptionInfo_t exceptionInfo = {};
+    instance1.XpuNotify(&exceptionInfo);
+
+    rtError_t ret = instance1.RegXpuTaskFailCallback("regName", nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+    ret = instance1.RegXpuTaskFailCallback("regName", reinterpret_cast<void *>(0x1));
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 }

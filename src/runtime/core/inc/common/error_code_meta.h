@@ -51,8 +51,8 @@
       DLOG_ERROR)                                                             \
     /* EE1006 - Not_Supported */                                              \
     X(EE1006, "EE1006",                                                       \
-      ("func", "type"),                                                       \
-      "%s execution failed because %s is not supported. "                     \
+      ("func", "type", "reason"),                                             \
+      "%s execution failed. %s is not supported. Reason: %s."                 \
       "ErrorCode=EE1006.\n",                                                  \
       DLOG_ERROR)                                                             \
     /* EE1007 - Resource_Error_Bind_Stream */                                 \
@@ -134,6 +134,12 @@
       ("resource_type", "api"),                                                 \
       "The runtime module failed to create host %s through API %s. ErrorCode=EE1021.\n", \
       DLOG_ERROR)                                                               \
+    /* EE1022 - Invalid_Argument */                                           \
+    X(EE1022, "EE1022",                                                       \
+      ("func", "values", "params", "reason"),                                 \
+      "%s failed. Values %s for parameters %s are invalid. "                  \
+      "Reason: %s. ErrorCode=EE1022.\n",                                      \
+      DLOG_ERROR)                                                             \
     /* EE2002 - Config_Error_Invalid_Environment_Variable */                  \
     X(EE2002, "EE2002",                                                       \
       ("value", "env", "expect"),                                             \

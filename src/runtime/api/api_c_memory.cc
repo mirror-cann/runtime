@@ -770,8 +770,8 @@ rtError_t rtsLaunchBarrierTask(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, ui
     for (uint8_t i = 0; i < taskInfo->logicIdNum; i++) {
         auto cmoInfo = taskInfo->cmoInfo[i];
         // if cmoType!=invalid return error
-        COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(cmoInfo.cmoType != RT_CMO_INVALID, RT_ERROR_INVALID_VALUE,
-            ErrorCode::EE1006, __func__, "taskInfo->cmoInfo[" + std::to_string(i) + "].cmoType=RT_CMO_INVALID");
+        COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(cmoInfo.cmoType != RT_CMO_INVALID, RT_ERROR_INVALID_VALUE,
+            cmoInfo.cmoType, "RT_CMO_INVALID(8)");
         COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(cmoInfo.logicId == 0, RT_ERROR_INVALID_VALUE, cmoInfo.logicId, "not equal to 0");
     }
     
