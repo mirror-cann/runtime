@@ -33,17 +33,6 @@ struct KernelSymbol {
 
 struct KernelSymbolSet {
     std::vector<KernelSymbol> symbols;
-    uint64_t aicBase = 0;
-    bool hasAicBase = false;
-    uint64_t aivBase = 0;
-    bool hasAivBase = false;
-};
-
-struct KernelStartPC {
-    uint64_t aicStartPC = 0;
-    bool hasAicStartPC = false;
-    uint64_t aivStartPC = 0;
-    bool hasAivStartPC = false;
 };
 
 class KernelSymbolLocator {
@@ -53,13 +42,13 @@ public:
 
     int32_t InitFromBinHandle(rtBinHandle binHandle);
     int32_t InitFromBinBuffer(const std::string& binData);
-    void UpdateStartPCFromFuncAddr(rtBinHandle binHandle, const char* kernelName);
+    void UpdateStartPCFromDeviceAddr(rtBinHandle binHandle);
 
     int32_t LocateAndPrintErrorSymbols(const ExceptionRegInfo& regInfo);
     int32_t LocateAndPrintErrorSymbolsForCore(uint32_t coreId, uint32_t coreType, ExceptionRegInfo exceptionRegInfo);
 
     static uint64_t FixPcByErrorRegs(const rtExceptionErrRegInfo& coreInfo);
-    static std::string GetErrorDescription(const rtExceptionErrRegInfo& coreInfo);
+    static std::string GetErrorRegisters(const rtExceptionErrRegInfo& coreInfo);
     static void DumpErrorSymbols(const rtExceptionInfo& exception);
     static void DumpErrorSymbols(const rtExceptionInfo& exception, ExceptionRegInfo& exceptionRegInfo);
 
@@ -67,14 +56,14 @@ public:
 
 private:
     KernelSymbolSet kernelSymbols_;
-    KernelStartPC kernelStartPC_;
+    uint64_t kernelDeviceStartPC_ = 0;
+    bool hasKernelDeviceStartPC_ = false;
     bool initialized_ = false;
 
     int32_t ParseElfSymbols(const char* elf, size_t elfSize, KernelSymbolSet& symbols);
     void PrintErrorForCore(rtExceptionErrRegInfo_t coreInfo);
     void ResetState();
     bool GetCorrectedStartPC(const rtExceptionErrRegInfo& coreInfo, uint64_t& startPC) const;
-    bool GetLookupOffset(const rtExceptionErrRegInfo& coreInfo, uint64_t rawOffset, uint64_t& lookupOffset) const;
 
     static std::unordered_map<rtBinHandle, KernelSymbolSet> cache_;
 };

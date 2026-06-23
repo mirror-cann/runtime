@@ -11,6 +11,7 @@
 #include <cstring>
 #include "exception_info_common.h"
 #include "kernel_symbol_locator.h"
+#include "runtime/rts/rts_kernel.h"
 #include "adump_pub.h"
 #include "str_utils.h"
 #include "log/adx_log.h"
@@ -100,6 +101,20 @@ std::string ExceptionInfoCommon::GetExceptionKernelName(const rtExceptionInfo &e
 
     const std::string kernelName(kernelInfo.kernelName, kernelInfo.kernelNameSize);
     return GetKernelNameWithoutMixSuffix(kernelName);
+}
+
+int32_t ExceptionInfoCommon::GetKernelDeviceAddr(rtBinHandle binHandle, void * &devAddr)
+{
+    devAddr = nullptr;
+    uint32_t binSize = 0;
+    IDE_CTRL_VALUE_WARN(binHandle != nullptr, return ADUMP_FAILED, "binHandle is nullptr.");
+    rtError_t ret = rtsBinaryGetDevAddress(binHandle, &devAddr, &binSize);
+    IDE_CTRL_VALUE_FAILED(ret == RT_ERROR_NONE && devAddr != nullptr, return ADUMP_FAILED,
+        "rtsBinaryGetDevAddress failed, ret=%d, binHandle=%p, devAddr=%p.",
+        static_cast<int32_t>(ret), binHandle, devAddr);
+
+    IDE_LOGI("The device address of binHandle(%p) is %p, binSize=%u.", binHandle, devAddr, binSize);
+    return ADUMP_SUCCESS;
 }
 
 KernelMixType ExceptionInfoCommon::GetKernelMixType(const std::string &kernelName)

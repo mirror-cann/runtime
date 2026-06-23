@@ -13,6 +13,7 @@
 #include "dump_memory.h"
 #include "exception_info_common.h"
 #include "kernel_symbol_locator.h"
+#include "str_utils.h"
 #include "log/adx_log.h"
 #include "log/hdc_log.h"
 
@@ -54,21 +55,20 @@ int32_t DumpArgsCallback::DumpKernelBin()
 
 int32_t DumpArgsCallback::DumpKernelErrorSymbols()
 {
-    std::string kernelName(info_.kernelName);
-    if (info_.bin == nullptr || kernelName.empty()) {
+    if (info_.bin == nullptr) {
         return ADUMP_SUCCESS;
     }
     KernelSymbolLocator locator;
     int32_t ret = locator.InitFromBinHandle(info_.bin);
     IDE_CTRL_VALUE_FAILED(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
         "KernelSymbolLocator InitFromBinHandle failed for callback exception. ret=%d", ret);
+    locator.UpdateStartPCFromDeviceAddr(info_.bin);
 
     ExceptionRegInfo exceptionRegInfo{0, nullptr};
     ret = ExceptionInfoCommon::GetExceptionRegInfo(exception_, exceptionRegInfo);
     IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
         "Get exception register information failed for callback exception. ret=%d", ret);
 
-    locator.UpdateStartPCFromFuncAddr(info_.bin, kernelName.c_str());
     ret = locator.LocateAndPrintErrorSymbolsForCore(info_.coreId, info_.coreType, exceptionRegInfo);
     IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return ADUMP_FAILED,
         "LocateAndPrintErrorSymbolsForCore failed for callback exception. ret=%d, coreId=%u, coreType=%u.",

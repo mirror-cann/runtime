@@ -22,6 +22,7 @@
 #include "kernel_symbol_locator.h"
 #include "kernel_pc_fixer.h"
 #include "runtime/base.h"
+#include "runtime/rts/rts_kernel.h"
 #include "acc_error_info.h"
 
 using namespace Adx;
@@ -300,6 +301,30 @@ int32_t MockGetBinDataFromHandle(rtBinHandle binHandle, std::string &binData, ui
     return ADUMP_SUCCESS;
 }
 
+rtError_t RtsBinaryGetDevAddressSuccess(const rtBinHandle binHandle, void **bin, uint32_t *binSize)
+{
+    (void)binHandle;
+    if (bin != nullptr) {
+        *bin = reinterpret_cast<void *>(static_cast<uintptr_t>(0x1000U));
+    }
+    if (binSize != nullptr) {
+        *binSize = 0x800U;
+    }
+    return RT_ERROR_NONE;
+}
+
+rtError_t RtsBinaryGetDevAddressNullAddr(const rtBinHandle binHandle, void **bin, uint32_t *binSize)
+{
+    (void)binHandle;
+    if (bin != nullptr) {
+        *bin = nullptr;
+    }
+    if (binSize != nullptr) {
+        *binSize = 0U;
+    }
+    return RT_ERROR_NONE;
+}
+
 void InitAicoreException(rtExceptionInfo &exception, rtBinHandle binHandle, const std::string &kernelName)
 {
     exception = {};
@@ -356,10 +381,6 @@ TEST_F(KernelSymbolLocatorUTest, InitFromBinBufferParsesAndNormalizesLittleEndia
 
     ASSERT_EQ(ADUMP_SUCCESS, locator.InitFromBinBuffer(elf));
     EXPECT_TRUE(locator.initialized_);
-    EXPECT_TRUE(locator.kernelSymbols_.hasAicBase);
-    EXPECT_EQ(0x100ULL, locator.kernelSymbols_.aicBase);
-    EXPECT_TRUE(locator.kernelSymbols_.hasAivBase);
-    EXPECT_EQ(0x300ULL, locator.kernelSymbols_.aivBase);
     EXPECT_EQ(6U, locator.kernelSymbols_.symbols.size());
 
     const auto it = std::find_if(locator.kernelSymbols_.symbols.begin(), locator.kernelSymbols_.symbols.end(),
@@ -374,8 +395,6 @@ TEST_F(KernelSymbolLocatorUTest, InitFromBinBufferParsesBigEndianElf)
     std::string elf = MakeElf(ValidSymbols(), true);
 
     ASSERT_EQ(ADUMP_SUCCESS, locator.InitFromBinBuffer(elf));
-    EXPECT_TRUE(locator.kernelSymbols_.hasAicBase);
-    EXPECT_EQ(0x100ULL, locator.kernelSymbols_.aicBase);
     EXPECT_FALSE(locator.kernelSymbols_.symbols.empty());
 }
 
@@ -395,6 +414,38 @@ TEST_F(KernelSymbolLocatorUTest, InitFromBinHandleUsesCacheAndRejectsNullHandle)
     EXPECT_EQ(ADUMP_SUCCESS, cachedLocator.InitFromBinHandle(handle));
     EXPECT_TRUE(cachedLocator.initialized_);
     EXPECT_EQ(locator.kernelSymbols_.symbols.size(), cachedLocator.kernelSymbols_.symbols.size());
+}
+
+TEST_F(KernelSymbolLocatorUTest, GetKernelDeviceAddrUsesRtsDevAddress)
+{
+    rtBinHandle handle = reinterpret_cast<rtBinHandle>(0x1234);
+    void *devAddr = nullptr;
+    MOCKER(rtsBinaryGetDevAddress).expects(once()).will(invoke(RtsBinaryGetDevAddressSuccess));
+    EXPECT_EQ(ADUMP_SUCCESS, ExceptionInfoCommon::GetKernelDeviceAddr(handle, devAddr));
+    EXPECT_EQ(reinterpret_cast<void *>(static_cast<uintptr_t>(0x1000U)), devAddr);
+    GlobalMockObject::verify();
+
+    devAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(0x2000U));
+    MOCKER(rtsBinaryGetDevAddress).expects(once()).will(invoke(RtsBinaryGetDevAddressNullAddr));
+    EXPECT_EQ(ADUMP_FAILED, ExceptionInfoCommon::GetKernelDeviceAddr(handle, devAddr));
+    EXPECT_EQ(nullptr, devAddr);
+}
+
+TEST_F(KernelSymbolLocatorUTest, UpdateStartPCFromDeviceAddrIgnoresErrRegStartPC)
+{
+    KernelSymbolLocator locator;
+    ASSERT_EQ(ADUMP_SUCCESS, locator.InitFromBinBuffer(MakeElf(ValidSymbols())));
+
+    rtBinHandle handle = reinterpret_cast<rtBinHandle>(0x1234);
+    MOCKER(rtsBinaryGetDevAddress).expects(once()).will(invoke(RtsBinaryGetDevAddressSuccess));
+    locator.UpdateStartPCFromDeviceAddr(handle);
+    EXPECT_TRUE(locator.hasKernelDeviceStartPC_);
+    EXPECT_EQ(0x1000ULL, locator.kernelDeviceStartPC_);
+
+    uint64_t fixedStartPC = 0;
+    rtExceptionErrRegInfo_t core = MakeCore(0U, RT_CORE_TYPE_AIC, 0x5000ULL, 0x1120ULL);
+    EXPECT_TRUE(locator.GetCorrectedStartPC(core, fixedStartPC));
+    EXPECT_EQ(0x1000ULL, fixedStartPC);
 }
 
 TEST_F(KernelSymbolLocatorUTest, LocateAndPrintRejectsInvalidStateAndInputs)
@@ -460,48 +511,17 @@ TEST_F(KernelSymbolLocatorUTest, LocateAndPrintNormalCloudV4)
     EXPECT_EQ(ADUMP_SUCCESS, locator.LocateAndPrintErrorSymbols(regInfo));
 }
 
-TEST_F(KernelSymbolLocatorUTest, GetLookupOffsetHandlesCoreTypesMissingBaseAndOverflow)
-{
-    KernelSymbolLocator locator;
-    ASSERT_EQ(ADUMP_SUCCESS, locator.InitFromBinBuffer(MakeElf(ValidSymbols())));
-
-    uint64_t lookupOffset = 0;
-    rtExceptionErrRegInfo_t core = MakeCore(0U, RT_CORE_TYPE_AIC, 0, 0);
-    EXPECT_TRUE(locator.GetLookupOffset(core, 0x10ULL, lookupOffset));
-    EXPECT_EQ(0x110ULL, lookupOffset);
-
-    core.coreType = RT_CORE_TYPE_AIV;
-    EXPECT_TRUE(locator.GetLookupOffset(core, 0x10ULL, lookupOffset));
-    EXPECT_EQ(0x310ULL, lookupOffset);
-
-    core.coreType = static_cast<rtCoreType_t>(99U);
-    EXPECT_TRUE(locator.GetLookupOffset(core, 0x10ULL, lookupOffset));
-    EXPECT_EQ(0x10ULL, lookupOffset);
-
-    locator.kernelSymbols_.hasAivBase = false;
-    core.coreType = RT_CORE_TYPE_AIV;
-    EXPECT_TRUE(locator.GetLookupOffset(core, 0x20ULL, lookupOffset));
-    EXPECT_EQ(0x20ULL, lookupOffset);
-
-    locator.kernelSymbols_.hasAicBase = true;
-    locator.kernelSymbols_.aicBase = std::numeric_limits<uint64_t>::max();
-    core.coreType = RT_CORE_TYPE_AIC;
-    EXPECT_FALSE(locator.GetLookupOffset(core, 1ULL, lookupOffset));
-}
-
 TEST_F(KernelSymbolLocatorUTest, StaticPcHelpersUseFactoryResult)
 {
     rtExceptionErrRegInfo_t core = MakeCore(0U, RT_CORE_TYPE_AIC, 0, 0);
     core.currentPC = TEST_PC;
     EXPECT_EQ(TEST_PC, KernelSymbolLocator::FixPcByErrorRegs(core));
-    EXPECT_EQ("", KernelSymbolLocator::GetErrorDescription(core));
 
     uint32_t v4Type = static_cast<uint32_t>(PlatformType::CHIP_CLOUD_V4);
     MOCKER_CPP(&Adx::AdumpDsmi::DrvGetPlatformType).stubs().with(outBound(v4Type)).will(returnValue(true));
     core.errReg[RT_V200_SU_ERROR_T0_0] = 1U;
     core.errReg[RT_V200_SU_ERR_INFO_T0_0] = 0x1234U;
     EXPECT_EQ((TEST_PC & ~0x3FFFCULL) | 0x48D0ULL, KernelSymbolLocator::FixPcByErrorRegs(core));
-    EXPECT_EQ("SU_ERROR_T0_0", KernelSymbolLocator::GetErrorDescription(core));
 }
 
 TEST_F(KernelSymbolLocatorUTest, DumpErrorSymbolsCoversFailureAndSuccessPaths)

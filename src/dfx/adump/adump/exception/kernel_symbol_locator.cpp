@@ -19,9 +19,6 @@
 #include "log/adx_log.h"
 #include "log/hdc_log.h"
 
-extern "C" rtError_t rtsFuncGetAddr(const rtFuncHandle funcHandle, void** aicAddr, void** aivAddr)
-    __attribute__((weak));
-
 namespace Adx {
 namespace {
 std::mutex g_cacheMutex;
@@ -55,33 +52,6 @@ bool IsAddOverflow(size_t lhs, size_t rhs) { return lhs > std::numeric_limits<si
 bool IsAddOverflow64(uint64_t lhs, uint64_t rhs)
 {
     return lhs > std::numeric_limits<uint64_t>::max() - rhs;
-}
-
-void UpdateMixEntryBase(const KernelSymbol& symbol, KernelMixType kernelMixType, uint64_t& base, bool& hasBase)
-{
-    // mix 入口基址只从全局可见入口符号中选择，本地符号仍保留用于地址查找。
-    if (symbol.bind != STB_GLOBAL || symbol.visibility == STV_HIDDEN) {
-        return;
-    }
-    if (ExceptionInfoCommon::GetKernelMixType(symbol.name) != kernelMixType) {
-        return;
-    }
-    if (!hasBase || symbol.offset < base) {
-        base = symbol.offset;
-        hasBase = true;
-    }
-}
-
-void BuildMixEntryBaseIndex(const std::vector<KernelSymbol>& parsedSymbols, KernelSymbolSet& symbols)
-{
-    symbols.aicBase = 0;
-    symbols.hasAicBase = false;
-    symbols.aivBase = 0;
-    symbols.hasAivBase = false;
-    for (const auto& symbol : parsedSymbols) {
-        UpdateMixEntryBase(symbol, KernelMixType::AIC, symbols.aicBase, symbols.hasAicBase);
-        UpdateMixEntryBase(symbol, KernelMixType::AIV, symbols.aivBase, symbols.hasAivBase);
-    }
 }
 
 bool GetSymbolOffsetRange(const std::vector<KernelSymbol>& symbols, uint64_t& minOffset, uint64_t& maxEnd)
@@ -128,12 +98,10 @@ void LogKernelSymbolSummary(
     uint64_t maxEnd = 0;
     const bool hasRange = GetSymbolOffsetRange(symbols.symbols, minOffset, maxEnd);
     IDE_LOGI("Parse kernel symbols success. parsedSymbolCount=%zu, normalizedSymbolCount=%zu, "
-        "hasSymbolRange=%u, minSymbolOffset=0x%lx, maxSymbolEnd=0x%lx, hasAicBase=%u, aicBase=0x%lx, "
-        "hasAivBase=%u, aivBase=0x%lx, symbolTotal=%zu, accepted=%zu, nonFunc=%zu, invalidSection=%zu, "
-        "invalidName=%zu.",
+        "hasSymbolRange=%u, minSymbolOffset=0x%lx, maxSymbolEnd=0x%lx, symbolTotal=%zu, accepted=%zu, "
+        "nonFunc=%zu, invalidSection=%zu, invalidName=%zu.",
         parsedSymbolCount, symbols.symbols.size(), static_cast<uint32_t>(hasRange), minOffset, maxEnd,
-        static_cast<uint32_t>(symbols.hasAicBase), symbols.aicBase, static_cast<uint32_t>(symbols.hasAivBase),
-        symbols.aivBase, filterStats.total, filterStats.accepted, filterStats.nonFunc, filterStats.invalidSection,
+        filterStats.total, filterStats.accepted, filterStats.nonFunc, filterStats.invalidSection,
         filterStats.invalidName);
 }
 
@@ -502,44 +470,22 @@ void KernelSymbolLocator::ClearCache()
 void KernelSymbolLocator::ResetState()
 {
     kernelSymbols_ = KernelSymbolSet();
-    kernelStartPC_ = KernelStartPC();
+    kernelDeviceStartPC_ = 0;
+    hasKernelDeviceStartPC_ = false;
     initialized_ = false;
 }
 
-void KernelSymbolLocator::UpdateStartPCFromFuncAddr(rtBinHandle binHandle, const char* kernelName)
+void KernelSymbolLocator::UpdateStartPCFromDeviceAddr(rtBinHandle binHandle)
 {
-    IDE_CTRL_VALUE_WARN(binHandle != nullptr && kernelName != nullptr && kernelName[0] != '\0', return,
-        "Skip correcting startPC, binHandle=%p, kernelName=%p.", binHandle, kernelName);
+    void* devAddr = nullptr;
+    int32_t ret = ExceptionInfoCommon::GetKernelDeviceAddr(binHandle, devAddr);
+    IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS && devAddr != nullptr, return,
+        "Get kernel device address failed, skip updating startPC, binHandle=%p.", binHandle);
 
-    const std::string lookupKernelName = ExceptionInfoCommon::GetKernelNameWithoutMixSuffix(kernelName);
-    rtFuncHandle funcHandle = nullptr;
-    rtError_t ret = rtBinaryGetFunctionByName(binHandle, lookupKernelName.c_str(), &funcHandle);
-    IDE_CTRL_VALUE_WARN(ret == RT_ERROR_NONE && funcHandle != nullptr, return,
-        "rtBinaryGetFunctionByName failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
-        static_cast<int32_t>(ret), binHandle, kernelName, lookupKernelName.c_str());
-    IDE_CTRL_VALUE_WARN(rtsFuncGetAddr != nullptr, return,
-        "rtsFuncGetAddr is unavailable, skip correcting startPC, kernelName=%s, lookupKernelName=%s.",
-        kernelName, lookupKernelName.c_str());
-
-    void* aicAddr = nullptr;
-    void* aivAddr = nullptr;
-    ret = rtsFuncGetAddr(funcHandle, &aicAddr, &aivAddr);
-    IDE_CTRL_VALUE_WARN(ret == RT_ERROR_NONE, return,
-        "rtsFuncGetAddr failed, ret=%d, binHandle=%p, kernelName=%s, lookupKernelName=%s.",
-        static_cast<int32_t>(ret), binHandle, kernelName, lookupKernelName.c_str());
-
-    if (aicAddr != nullptr) {
-        kernelStartPC_.aicStartPC = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(aicAddr));
-        kernelStartPC_.hasAicStartPC = true;
-    }
-    if (aivAddr != nullptr) {
-        kernelStartPC_.aivStartPC = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(aivAddr));
-        kernelStartPC_.hasAivStartPC = true;
-    }
-    IDE_LOGI("Update kernel startPC from function address, kernelName=%s, lookupKernelName=%s, hasAicStartPC=%u, "
-        "aicStartPC=0x%lx, hasAivStartPC=%u, aivStartPC=0x%lx.",
-        kernelName, lookupKernelName.c_str(), static_cast<uint32_t>(kernelStartPC_.hasAicStartPC),
-        kernelStartPC_.aicStartPC, static_cast<uint32_t>(kernelStartPC_.hasAivStartPC), kernelStartPC_.aivStartPC);
+    kernelDeviceStartPC_ = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(devAddr));
+    hasKernelDeviceStartPC_ = true;
+    IDE_LOGI("Update kernel startPC from device address, binHandle=%p, startPC=0x%lx.", binHandle,
+        kernelDeviceStartPC_);
 }
 
 int32_t KernelSymbolLocator::InitFromBinHandle(rtBinHandle binHandle)
@@ -615,57 +561,17 @@ int32_t KernelSymbolLocator::ParseElfSymbols(const char* elf, size_t elfSize, Ke
         validSymbolTableCount, filterStats.total, filterStats.accepted, filterStats.nonFunc,
         filterStats.invalidSection, filterStats.invalidName);
 
-    BuildMixEntryBaseIndex(parsedSymbols, outSymbols);
     outSymbols.symbols.swap(normalizedSymbols);
     LogKernelSymbolSummary(outSymbols, parsedSymbols.size(), filterStats);
     return ADUMP_SUCCESS;
 }
 
-bool KernelSymbolLocator::GetLookupOffset(
-    const rtExceptionErrRegInfo_t& coreInfo, uint64_t rawOffset, uint64_t& lookupOffset) const
-{
-    lookupOffset = rawOffset;
-    uint64_t entryBase = 0;
-    bool hasEntryBase = false;
-    if (coreInfo.coreType == RT_CORE_TYPE_AIC) {
-        entryBase = kernelSymbols_.aicBase;
-        hasEntryBase = kernelSymbols_.hasAicBase;
-    } else if (coreInfo.coreType == RT_CORE_TYPE_AIV) {
-        entryBase = kernelSymbols_.aivBase;
-        hasEntryBase = kernelSymbols_.hasAivBase;
-    } else {
-        return true;
-    }
-
-    if (!hasEntryBase) {
-        if (kernelSymbols_.hasAicBase || kernelSymbols_.hasAivBase) {
-            IDE_LOGW("Mix entry base is unavailable. coreId=%u, coreType=%u, "
-                "hasAicBase=%u, aicBase=0x%lx, hasAivBase=%u, aivBase=0x%lx, use pcOffset=0x%lx.",
-                coreInfo.coreId, static_cast<uint32_t>(coreInfo.coreType),
-                static_cast<uint32_t>(kernelSymbols_.hasAicBase), kernelSymbols_.aicBase,
-                static_cast<uint32_t>(kernelSymbols_.hasAivBase), kernelSymbols_.aivBase, rawOffset);
-        }
-        return true;
-    }
-    if (rawOffset > std::numeric_limits<uint64_t>::max() - entryBase) {
-        IDE_LOGE("Offset is overflow. coreId=%u, coreType=%u, rawOffset=0x%lx, entryBase=0x%lx.",
-            coreInfo.coreId, static_cast<uint32_t>(coreInfo.coreType), rawOffset, entryBase);
-        return false;
-    }
-    lookupOffset = rawOffset + entryBase;
-    return true;
-}
-
 bool KernelSymbolLocator::GetCorrectedStartPC(const rtExceptionErrRegInfo_t& coreInfo, uint64_t& startPC) const
 {
     startPC = coreInfo.startPC;
-    if (coreInfo.coreType == RT_CORE_TYPE_AIC && kernelStartPC_.hasAicStartPC) {
-        startPC = kernelStartPC_.aicStartPC;
-        return startPC != coreInfo.startPC;
-    }
-    if (coreInfo.coreType == RT_CORE_TYPE_AIV && kernelStartPC_.hasAivStartPC) {
-        startPC = kernelStartPC_.aivStartPC;
-        return startPC != coreInfo.startPC;
+    if (hasKernelDeviceStartPC_) {
+        startPC = kernelDeviceStartPC_;
+        return true;
     }
     return false;
 }
@@ -673,33 +579,33 @@ bool KernelSymbolLocator::GetCorrectedStartPC(const rtExceptionErrRegInfo_t& cor
 void KernelSymbolLocator::PrintErrorForCore(rtExceptionErrRegInfo_t coreInfo)
 {
     uint32_t coreType = static_cast<uint32_t>(coreInfo.coreType);
+    IDE_LOGE("[Dump][Exception] Error register information. coreId=%u, coreType=%u, %s",
+        coreInfo.coreId, coreType, GetErrorRegisters(coreInfo).c_str());
     uint64_t fixedCurrentPC = FixPcByErrorRegs(coreInfo);
     uint64_t fixedStartPC = coreInfo.startPC;
     if (GetCorrectedStartPC(coreInfo, fixedStartPC)) {
-        IDE_LOGI("Correct startPC by function address. coreId=%u, coreType=%u, originalStartPC=0x%lx, "
+        IDE_LOGI("Correct startPC by kernel address. coreId=%u, coreType=%u, originalStartPC=0x%lx, "
             "fixedStartPC=0x%lx.", coreInfo.coreId, coreType, coreInfo.startPC, fixedStartPC);
     }
+
     if (fixedCurrentPC < fixedStartPC) {
         IDE_LOGE("coreId=%u, coreType=%u, fixedCurrentPC=0x%lx < fixedStartPC=0x%lx, "
-            "originalCurrentPC=0x%lx, originalStartPC=0x%lx, skip symbol lookup.",
+            "originalCurrentPC=0x%lx, originalStartPC=0x%lx, skip lookup symbol.",
             coreInfo.coreId, coreType, fixedCurrentPC, fixedStartPC, coreInfo.currentPC, coreInfo.startPC);
         return;
     }
-    std::string errorDescription = GetErrorDescription(coreInfo);
-    const uint64_t rawPCOffset = fixedCurrentPC - fixedStartPC;
-    uint64_t fixedPCOffset = rawPCOffset;
-    if (!GetLookupOffset(coreInfo, rawPCOffset, fixedPCOffset)) {
-        return;
-    }
+
+    const uint64_t fixedPCOffset = fixedCurrentPC - fixedStartPC;
     IDE_LOGE("[Dump][Exception] Error PC information. coreId=%u, coreType=%u, originalStartPC=0x%lx, "
-        "fixedStartPC=0x%lx, originalCurrentPC=0x%lx, fixedCurrentPC=0x%lx, rawPCOffset=0x%lx, fixedPCOffset=0x%lx, "
-        "errModule=%s.", coreInfo.coreId, coreType, coreInfo.startPC, fixedStartPC, coreInfo.currentPC, fixedCurrentPC,
-        rawPCOffset, fixedPCOffset, errorDescription.c_str());
+        "fixedStartPC=0x%lx, originalCurrentPC=0x%lx, fixedCurrentPC=0x%lx, fixedPCOffset=0x%lx.",
+        coreInfo.coreId, coreType, coreInfo.startPC, fixedStartPC, coreInfo.currentPC, fixedCurrentPC,
+        fixedPCOffset);
 
     const KernelSymbol* matchedSymbol = FindBestMatchedSymbol(kernelSymbols_.symbols, fixedPCOffset);
     if (matchedSymbol != nullptr) {
-        IDE_LOGE("[Dump][Exception] Error symbol information. coreId=%u, coreType=%u, symbol=%s+0x%lx.",
-            coreInfo.coreId, coreType, matchedSymbol->name.c_str(), fixedPCOffset - matchedSymbol->offset);
+        IDE_LOGE("[Dump][Exception] Error symbol information. coreId=%u, coreType=%u, "
+            "symbol=%s+0x%lx.", coreInfo.coreId, coreType, matchedSymbol->name.c_str(),
+            fixedPCOffset - matchedSymbol->offset);
         return;
     }
 
@@ -707,11 +613,9 @@ void KernelSymbolLocator::PrintErrorForCore(rtExceptionErrRegInfo_t coreInfo)
     uint64_t maxSymbolEnd = 0;
     const bool hasSymbolRange = GetSymbolOffsetRange(kernelSymbols_.symbols, minSymbolOffset, maxSymbolEnd);
     IDE_LOGE("[Dump][Exception] Not found error symbol information. coreId=%u, coreType=%u, "
-        "symbolCount=%zu, hasSymbolRange=%u, minSymbolOffset=0x%lx, maxSymbolEnd=0x%lx, hasAicBase=%u, "
-        "aicBase=0x%lx, hasAivBase=%u, aivBase=0x%lx.",
-        coreInfo.coreId, coreType, kernelSymbols_.symbols.size(), static_cast<uint32_t>(hasSymbolRange),
-        minSymbolOffset, maxSymbolEnd, static_cast<uint32_t>(kernelSymbols_.hasAicBase), kernelSymbols_.aicBase,
-        static_cast<uint32_t>(kernelSymbols_.hasAivBase), kernelSymbols_.aivBase);
+        "symbolCount=%zu, hasSymbolRange=%u, minSymbolOffset=0x%lx, maxSymbolEnd=0x%lx.",
+        coreInfo.coreId, coreType, kernelSymbols_.symbols.size(),
+        static_cast<uint32_t>(hasSymbolRange), minSymbolOffset, maxSymbolEnd);
 }
 
 int32_t KernelSymbolLocator::LocateAndPrintErrorSymbols(const ExceptionRegInfo& exceptionRegInfo)
@@ -761,13 +665,13 @@ uint64_t KernelSymbolLocator::FixPcByErrorRegs(const rtExceptionErrRegInfo_t& co
     return fixer->FixPc(coreInfo.currentPC, coreInfo.errReg, RT_ERR_REG_NUMS);
 }
 
-std::string KernelSymbolLocator::GetErrorDescription(const rtExceptionErrRegInfo_t& coreInfo)
+std::string KernelSymbolLocator::GetErrorRegisters(const rtExceptionErrRegInfo_t& coreInfo)
 {
     PcFixerInterface* fixer = PcFixerFactory::GetInstance();
     if (fixer == nullptr) {
         return "";
     }
-    return fixer->GetErrorDescription(coreInfo.errReg, RT_ERR_REG_NUMS);
+    return fixer->GetErrorRegisters(coreInfo.errReg, RT_ERR_REG_NUMS);
 }
 
 void KernelSymbolLocator::DumpErrorSymbols(const rtExceptionInfo& exception, ExceptionRegInfo& exceptionRegInfo)
@@ -785,7 +689,7 @@ void KernelSymbolLocator::DumpErrorSymbols(const rtExceptionInfo& exception, Exc
     KernelSymbolLocator locator;
     ret = locator.InitFromBinBuffer(binData);
     IDE_CTRL_VALUE_FAILED(ret == ADUMP_SUCCESS, return, "Parse kernel symbols failed, skip dump error symbols.");
-    locator.UpdateStartPCFromFuncAddr(kernelInfo.bin, kernelInfo.kernelName);
+    locator.UpdateStartPCFromDeviceAddr(kernelInfo.bin);
 
     ret = locator.LocateAndPrintErrorSymbols(exceptionRegInfo);
     IDE_CTRL_VALUE_WARN(ret == ADUMP_SUCCESS, return, "Locate kernel error symbols failed, ret=%d.", ret);
