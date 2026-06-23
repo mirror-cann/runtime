@@ -12,13 +12,7 @@
 #define CCE_RUNTIME_ENUM_TO_STRING_UTILS_HPP
 
 #include <string>
-#include "runtime/mem_base.h"
-#include "runtime/event.h"
-#include "runtime/rts/rts_event.h"
-#include "runtime/kernel.h"
 #include "runtime/config.h"
-#include "driver/ascend_hal_base.h"
-#include "runtime/rt_inner_model.h"
 #include "capture_model.hpp"
 #include "common/thread_local_container.hpp"
 #include "device.hpp"
