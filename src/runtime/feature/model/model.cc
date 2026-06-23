@@ -655,6 +655,9 @@ rtError_t Model::DelStream(Stream * const streamIn)
 
 rtError_t Model::BindSqPerStream(Stream * const streamIn, const uint32_t flag)
 {
+    if (context_->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
+        return context_->Device_()->GetCtrlSQ().SendModelBindMsgOnly(this, streamIn, flag);
+    }
     Stream *execStream = context_->GetCtrlSQStream();
     rtError_t error = ModelBindTaskSubmit(execStream, streamIn, flag);
     ERROR_RETURN_MSG_INNER(error, "Failed to submit model bind task, model_id=%d, stream_id=%d, sq_id=%u, retCode=%#x.",
@@ -683,6 +686,11 @@ rtError_t Model::UnBindSqPerStream(Stream * const streamIn)
     COND_RETURN_ERROR_MSG_INNER(syncRet != RT_ERROR_NONE, syncRet,
         "Stream Synchronize failed, model_id=%d, stream_id=%d, sq_id=%u, retCode=%#x.",
         id_, streamIn->Id_(), streamIn->GetSqId(), static_cast<uint32_t>(syncRet));
+
+    if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
+        return dev->GetCtrlSQ().SendModelUnbindMsgOnly(this, streamIn);
+    }
+
     Stream *execStream = context_->GetCtrlSQStream();
     TaskFactory * const devTaskFactory = context_->Device_()->GetTaskFactory();
     TaskInfo submitTask = {};

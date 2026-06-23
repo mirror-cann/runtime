@@ -485,6 +485,30 @@ static void GetAndSaveJettyInfo(Model * const mdl)
     return;
 }
 
+static rtError_t SubmitLoadCompleteDirectly(Model * const mdl, Stream * const stream)
+{
+    TaskInfo *maintainceTask = nullptr;
+    uint32_t pos = 0xFFFFU;
+    rtError_t error = CheckTaskCanSend(stream);
+    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
+        stream->Id_(), static_cast<uint32_t>(error));
+    stream->StreamLock();
+    error = AllocTaskInfo(&maintainceTask, stream, pos);
+    ERROR_PROC_RETURN_MSG_INNER(error, stream->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                stream->Id_(), static_cast<uint32_t>(error));
+    SaveTaskCommonInfo(maintainceTask, stream, pos);
+    (void)DavidModelMaintainceTaskInit(maintainceTask,
+        MMT_MODEL_PRE_PROC, mdl, stream, RT_MODEL_HEAD_STREAM, mdl->GetFirstTaskId());
+    error = DavidSendTask(maintainceTask, stream);
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(maintainceTask);
+                                TaskRollBack(stream, pos);
+                                stream->StreamUnLock();,
+                                "Failed to submit stream load complete task, sink stream_id=%d, retCode=%#x.",
+                                stream->Id_(), static_cast<uint32_t>(error));
+    stream->StreamUnLock();
+    return RT_ERROR_NONE;
+}
+
 rtError_t ModelLoadCompleteByStream(Model * const mdl)
 {
     Stream *stream = nullptr;
@@ -500,7 +524,6 @@ rtError_t ModelLoadCompleteByStream(Model * const mdl)
     /* Mini should notify TS model load success for benchmarks,
     and decoupling model load with NPU power for lite */
     TaskInfo *aicpuTask = nullptr;
-    TaskInfo *maintainceTask = nullptr;
     bool isNeedStreamReuse = false;
     const bool isContextContainAicpuModel = mdl->Context_()->GetAicpuExecuteModel();
     const bool isNeedLoadAicpuModel = mdl->NeedLoadAicpuModelTask();
@@ -526,24 +549,13 @@ rtError_t ModelLoadCompleteByStream(Model * const mdl)
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    maintainceTask = nullptr;
-    error = CheckTaskCanSend(stream);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stream->Id_(), static_cast<uint32_t>(error));
-    stream->StreamLock();
-    error = AllocTaskInfo(&maintainceTask, stream, pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, stream->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-                                stream->Id_(), static_cast<uint32_t>(error));
-    SaveTaskCommonInfo(maintainceTask, stream, pos);
-    (void)DavidModelMaintainceTaskInit(maintainceTask,
-        MMT_MODEL_PRE_PROC, mdl, stream, RT_MODEL_HEAD_STREAM, mdl->GetFirstTaskId());
-    error = DavidSendTask(maintainceTask, stream);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(maintainceTask);
-                                TaskRollBack(stream, pos);
-                                stream->StreamUnLock();,
-                                "Failed to submit stream load complete task, sink stream_id=%d, retCode=%#x.",
-                                stream->Id_(), static_cast<uint32_t>(error));
-    stream->StreamUnLock();
+    Device * const dev = mdl->Context_()->Device_();
+    if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
+        error = dev->GetCtrlSQ().SendModelLoadCompleteMsg(mdl, mdl->GetFirstTaskId());
+    } else {
+        error = SubmitLoadCompleteDirectly(mdl, stream);
+    }
+    ERROR_RETURN_MSG_INNER(error, "Failed to submit load complete task, retCode=%#x.", static_cast<uint32_t>(error));
     mdl->SetNeedSubmitTask(true);
 
     if (isNeedLoadAicpuModel) {

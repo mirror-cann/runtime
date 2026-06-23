@@ -181,6 +181,18 @@ rtError_t CtrlSQ::SendNotifyResetMsg(uint32_t notifyId)
     return RT_ERROR_NONE;
 }
 
+rtError_t CtrlSQ::SendModelUnbindMsgOnly(Model * const mdl, Stream * const streamIn)
+{
+    RtCtrlMsgParam param = {};
+    param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
+    param.modelMaintenanceParam = { MMT_STREAM_DEL, mdl, streamIn, RT_MODEL_HEAD_STREAM, 0U };
+    rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_UNBIND_STREAM, param);
+    ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
+    error = WaitComplete();
+    ERROR_RETURN_MSG_INNER(error, "Failed to wait for ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
+    return RT_ERROR_NONE;
+}
+
 rtError_t CtrlSQ::SendModelUnbindMsg(Model * const mdl, Stream * const streamIn, const bool force)
 {
     RtCtrlMsgParam param = {};
@@ -198,6 +210,21 @@ rtError_t CtrlSQ::SendModelUnbindMsg(Model * const mdl, Stream * const streamIn,
         ERROR_RETURN_MSG_INNER(error, "Failed to wait for ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
     }
     streamIn->SetIsTsBind(false);
+    return RT_ERROR_NONE;
+}
+
+rtError_t CtrlSQ::SendModelBindMsgOnly(Model * const mdl, Stream * const streamIn, const uint32_t flag)
+{
+    RtCtrlMsgParam param = {};
+    param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
+    const rtModelStreamType_t streamType =
+        (flag == static_cast<uint32_t>(RT_HEAD_STREAM)) ? RT_MODEL_HEAD_STREAM : RT_MODEL_WAIT_ACTIVE_STREAM;
+
+    param.modelMaintenanceParam = { MMT_STREAM_ADD, mdl, streamIn, streamType, 0U };
+    rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_BIND_STREAM, param);
+    ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
+    error = WaitComplete();
+    ERROR_RETURN_MSG_INNER(error, "Failed to wait for ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 

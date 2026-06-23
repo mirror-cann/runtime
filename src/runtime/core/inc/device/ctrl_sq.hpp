@@ -45,7 +45,11 @@ public:
 
     rtError_t SendModelUnbindMsg(Model * const mdl, Stream * const streamIn, const bool force);
 
+    rtError_t SendModelUnbindMsgOnly(Model * const mdl, Stream * const streamIn);
+
     rtError_t SendModelBindMsg(Model * const mdl, Stream * const streamIn, const uint32_t flag);
+
+    rtError_t SendModelBindMsgOnly(Model * const mdl, Stream * const streamIn, const uint32_t flag);
 
     rtError_t SendModelAbortMsg(Model * const mdl);
 

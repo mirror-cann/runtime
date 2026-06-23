@@ -414,3 +414,31 @@ TEST_F(TaskTestDavidModelC, TestMdlAddEndGraph_StreamNotBoundToModel)
 
     DestroyModel(model);
 }
+
+TEST_F(TaskTestDavidModelC, TestModelLoadCompleteByStream_SubmitLoadCompleteDirectly)
+{
+    rtModel_t model = CreateModel();
+    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    ASSERT_NE(mdl, nullptr);
+
+    mdl->streams_.push_front(stream_);
+    stream_->SetModel(mdl);
+
+    mdl->isModelComplete_ = true;
+    mdl->SetModelExecutorType(EXECUTOR_AICPU);
+
+    MockIsSupportFeatureFalse();
+    MOCKER_CPP_VIRTUAL(stream_, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
+
+    MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER(AllocTaskInfo).stubs().will(invoke(AllocTaskInfoSuccessMock));
+    MOCKER(DavidModelMaintainceTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
+
+    rtError_t ret = ModelLoadCompleteByStream(mdl);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+
+    mdl->streams_.remove(stream_);
+    stream_->SetModel(nullptr);
+    DestroyModel(model);
+}
