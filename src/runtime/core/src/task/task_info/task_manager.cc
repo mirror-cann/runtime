@@ -921,22 +921,6 @@ static void RegSetResultFunc(const std::vector<rtChipType_t> &chipTypes)
     }
 }
 
-static void RegPrintErrorInfoFunc(const std::vector<rtChipType_t> &chipTypes)
-{
-    for (const auto chipType : chipTypes) {
-        auto &printErrorInfoFunc = g_taskFuncArrays[chipType].printErrorInfoFunc;
-        for (auto &item : printErrorInfoFunc) {
-            if (item == nullptr) {
-                item = &PrintErrorInfoCommon;
-            }
-        }
-        printErrorInfoFunc[TS_TASK_TYPE_MODEL_MAINTAINCE] = &PrintErrorInfoForModelMaintainceTask;
-        printErrorInfoFunc[TS_TASK_TYPE_MODEL_EXECUTE] = &PrintErrorInfoForModelExecuteTask;
-        printErrorInfoFunc[TS_TASK_TYPE_MODEL_TO_AICPU] = &PrintErrorInfoForModelToAicpuTask;
-        printErrorInfoFunc[TS_TASK_TYPE_FFTS_PLUS] = &PrintErrorInfoForFftsPlusTask;
-    }
-}
-
 static void RegSetStarsResultFunc(const std::vector<rtChipType_t> &chipTypes)
 {
     for (const auto chipType : chipTypes) {
@@ -950,6 +934,22 @@ static void RegSetStarsResultFunc(const std::vector<rtChipType_t> &chipTypes)
         setStarsResultFunc[TS_TASK_TYPE_MODEL_EXECUTE] = &SetStarsResultForModelExecuteTask;
         setStarsResultFunc[TS_TASK_TYPE_MODEL_TO_AICPU] = &SetStarsResultForModelToAicpuTask;
         setStarsResultFunc[TS_TASK_TYPE_FFTS_PLUS] = &SetStarsResultForFftsPlusTask;
+    }
+}
+
+static void RegPrintErrorInfoFunc(const std::vector<rtChipType_t> &chipTypes)
+{
+    for (const auto chipType : chipTypes) {
+        auto &printErrorInfoFunc = g_taskFuncArrays[chipType].printErrorInfoFunc;
+        for (auto &item : printErrorInfoFunc) {
+            if (item == nullptr) {
+                item = &PrintErrorInfoCommon;
+            }
+        }
+        printErrorInfoFunc[TS_TASK_TYPE_MODEL_MAINTAINCE] = &PrintErrorInfoForModelMaintainceTask;
+        printErrorInfoFunc[TS_TASK_TYPE_MODEL_EXECUTE] = &PrintErrorInfoForModelExecuteTask;
+        printErrorInfoFunc[TS_TASK_TYPE_MODEL_TO_AICPU] = &PrintErrorInfoForModelToAicpuTask;
+        printErrorInfoFunc[TS_TASK_TYPE_FFTS_PLUS] = &PrintErrorInfoForFftsPlusTask;
     }
 }
 
@@ -970,7 +970,6 @@ void RegTaskToCommandFunc(const std::vector<rtChipType_t> &chipTypes)
         toCommandFunc[TS_TASK_TYPE_MODEL_TASK_UPDATE] = &ToCommandBodyForModelUpdateTask;
         toCommandFunc[TS_TASK_TYPE_CAPTURE_CONDITION] = nullptr;
     }
-
 }
 
 static void RegDoCompleteSuccFunc(const std::vector<rtChipType_t> &chipTypes)
