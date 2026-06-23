@@ -190,7 +190,7 @@ static void ConstructMixSubSqe(
     const FusionTaskInfoAicPart* aicPart = &(fusionKernelTask->aicPart);
     uint8_t taskRation = 0U;
     uint8_t mixType = static_cast<uint8_t>(NO_MIX);
-    uint8_t schemMode = aicPart->schemMode;
+    const uint8_t schemMode = aicPart->schemMode;
     const Kernel* kernel = aicPart->kernel;
     if (kernel != nullptr) {
         taskRation = static_cast<uint8_t>(kernel->GetTaskRation());

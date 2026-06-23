@@ -850,7 +850,7 @@ rtError_t Context::CreateSubCaptureModels(CondHandle *condHandle, rtCondTaskPara
 {
     for (uint32_t loop = 0; loop < params.size; loop++) {
         Model *subModel = nullptr;
-        rtError_t ret = ModelCreate(&subModel, RT_MODEL_CAPTURE_MODEL);
+        const rtError_t ret = ModelCreate(&subModel, RT_MODEL_CAPTURE_MODEL);
         if (ret != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "Capture model create failed, device_id=%u, original stream_id=%d, size=%u, retCode=%#x.",
                 stm->Device_()->Id_(), stm->Id_(), params.size, ret);

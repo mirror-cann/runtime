@@ -63,8 +63,8 @@ static rtError_t CondTaskFuncCallDevMemAlloc(TaskInfo* taskInfo, CondHandle *con
         devMem = RtPtrToPtr<void *, const uintptr_t>(devMemAlign);
     }
     /* 从第一个模型到最后一个，依次存放每个模型sqlistAddr的首地址 */
-    uint32_t totalModelSize = modelCount * sizeof(uint64_t);
-    uint32_t totalSqSize = totalSqCount * sizeof(uint64_t);
+    uint64_t totalModelSize = modelCount * sizeof(uint64_t);
+    uint64_t totalSqSize = totalSqCount * sizeof(uint64_t);
     condTaskInfo->headSqArrPtrArrSvmMem =  RtValueToPtr<void *>(RtPtrToValue(devMem) + TS_STARS_COND_DFX_SIZE);
     /* 依次存放所有模型sqlist */
     condTaskInfo->headSqArrDataSvmMem = RtValueToPtr<void *>(RtPtrToValue(condTaskInfo->headSqArrPtrArrSvmMem) + totalModelSize);
@@ -186,7 +186,7 @@ static rtError_t AllocJumpBackFuncCallMemForCaptureCondTask(TaskInfo *taskInfo)
     void *devMem = nullptr;
     condTaskInfo->jumpBackFunCallMemSize = sizeof(RtStarsCaptureWhileCondJumpBackFc);
     const Device *dev = taskInfo->stream->Device_();
-    uint64_t allocSize = condTaskInfo->jumpBackFunCallMemSize + FUNC_CALL_INSTR_ALIGN_SIZE;
+    const uint64_t allocSize = condTaskInfo->jumpBackFunCallMemSize + FUNC_CALL_INSTR_ALIGN_SIZE;
     rtError_t ret = dev->Driver_()->DevMemAlloc(&devMem, allocSize, RT_MEMORY_DDR, dev->Id_());
     COND_RETURN_ERROR((ret != RT_ERROR_NONE) || (devMem == nullptr), RT_ERROR_MEMORY_ALLOCATION,
         "alloc jumpBack func call mem failed, retCode=%#x.", ret);
@@ -501,8 +501,8 @@ rtError_t ReConstructCaptureConditionTaskFc(TaskInfo *taskInfo, CondHandle *cond
         totalSqCount += sqCount;
     }
 
-    uint32_t totalModelSize = modelCount * sizeof(uint64_t);
-    uint32_t totalSqSize = totalSqCount * sizeof(uint64_t);
+    uint64_t totalModelSize = modelCount * sizeof(uint64_t);
+    uint64_t totalSqSize = totalSqCount * sizeof(uint64_t);
 
     CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
     uint64_t sqDataAddr = RtPtrToValue(condTaskInfo->headSqArrDataSvmMem);

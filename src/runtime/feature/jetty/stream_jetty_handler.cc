@@ -174,8 +174,8 @@ rtError_t StreamJettyHandler::FillNopWqeForPartialBuffer(const Stream* stream, c
     if (context->filledWqeCount >= context->capacity) {
         return RT_ERROR_NONE;
     }
-    uint32_t fillCount = context->capacity - context->filledWqeCount;
-    uint32_t bufferSize = fillCount * StreamJettyContext::WQE_SIZE;
+    const uint32_t fillCount = context->capacity - context->filledWqeCount;
+    const uint32_t bufferSize = fillCount * StreamJettyContext::WQE_SIZE;
 
     AsyncWqeInputPara input = {};
     input.wqeBuffer = context->GetNextWqeBuffer();
@@ -287,7 +287,7 @@ rtError_t StreamJettyHandler::UpdateUbdmaSqeWithJettyInfo(
 
     Driver* driver = nullptr;
     uint32_t deviceId = 0;
-    rtError_t error = GetDriverAndDeviceId(stream, driver, deviceId);
+    const rtError_t error = GetDriverAndDeviceId(stream, driver, deviceId);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     if (stream->Device_()->GetTaskFactory() == nullptr) {
         RT_LOG(RT_LOG_ERROR, "GetTaskFactory returned null, stream_id=%d.", stream->Id_());

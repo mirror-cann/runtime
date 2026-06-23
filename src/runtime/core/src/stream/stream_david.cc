@@ -1610,10 +1610,11 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
 // 当前暂未支持图下沉备份和恢复, 代码预埋
 rtError_t DavidStream::UpdateTaskAndSqe(TaskInfo *task, Stream *stream)
 {
+    rtError_t error = RT_ERROR_NONE;
     if (task->type == TS_TASK_TYPE_MEMCPY) {
         // convert dma
         if (IsPcieDma(task->u.memcpyAsyncTaskInfo.copyType) && (device_->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE)) {
-            rtError_t error = device_->Driver_()->MemConvertAddr(RtPtrToValue(task->u.memcpyAsyncTaskInfo.src),
+            error = device_->Driver_()->MemConvertAddr(RtPtrToValue(task->u.memcpyAsyncTaskInfo.src),
                 RtPtrToValue(task->u.memcpyAsyncTaskInfo.desPtr), task->u.memcpyAsyncTaskInfo.size,
                 &(task->u.memcpyAsyncTaskInfo.dmaAddr));
             ERROR_RETURN_MSG_INNER(error,
@@ -1621,7 +1622,7 @@ rtError_t DavidStream::UpdateTaskAndSqe(TaskInfo *task, Stream *stream)
         }
     }
     
-    rtError_t error = UpdateDavidKernelTaskSubmit(task, stream);
+    error = UpdateDavidKernelTaskSubmit(task, stream);
     ERROR_RETURN_MSG_INNER(error, "UpdateDavidKernelTaskSubmit failed, ret=%#x.", error);
     return RT_ERROR_NONE;
 }

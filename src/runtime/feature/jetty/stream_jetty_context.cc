@@ -35,7 +35,7 @@ rtError_t StreamJettyContext::AllocWqeBuffer(Driver *driver)
 {
     const uint64_t allocSize = static_cast<uint64_t>(WQE_BUFFER_DEPTH) * WQE_SIZE;
     void *hostPtr = nullptr;
-    rtError_t error = driver->HostMemAlloc(&hostPtr, allocSize, 0);
+    const rtError_t error = driver->HostMemAlloc(&hostPtr, allocSize, 0);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
 
     if (hostPtr == nullptr) {
