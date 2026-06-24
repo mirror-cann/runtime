@@ -56,15 +56,15 @@ constexpr float NOP_TASK_DURATION = 0.5f;
 constexpr float RECORD_TASK_DURATION = 4.5f;
 constexpr float WAIT_TASK_DURATION = 14.5f;
 constexpr float DEFAULT_TASK_DURATION = 9.5f;
-constexpr uint32_t NOP_TASK_E2E_DURATION = 1U;
-constexpr uint32_t RECORD_TASK_E2E_DURATION = 5U;
-constexpr uint32_t WAIT_TASK_E2E_DURATION = 15U;
-constexpr uint32_t DEFAULT_TASK_E2E_DURATION = 10U;
 
 namespace cce {
 namespace runtime {
 constexpr uint64_t ABORT_STREAM_TIMEOUT = (60UL * 1000 * 1000);  // us
 constexpr uint32_t DEBUG_JSON_PRINT_VERBOSE = 0x1U;
+constexpr uint32_t NOP_TASK_E2E_DURATION = 1U;
+constexpr uint32_t RECORD_TASK_E2E_DURATION = 5U;
+constexpr uint32_t WAIT_TASK_E2E_DURATION = 15U;
+constexpr uint32_t DEFAULT_TASK_E2E_DURATION = 10U;
 
 class Event;
 class Context;
@@ -1560,7 +1560,6 @@ protected:
     Event *lastHalfRecord_{nullptr};
     std::mutex publicTaskMutex_;
     std::set<Model *> models_;
-    int32_t latestModelId_{MAX_INT32_NUM};
     std::vector<std::pair<uint32_t, std::string>> errorMsg_;
     Atomic<uint32_t> taskPersistentHead_;
     Atomic<uint32_t> taskPersistentTail_;
@@ -1681,6 +1680,8 @@ private:
     bool isCtrlSQStream_{false};
     bool isAutoSplitSq_{false};                // 是否为自动切分SQ模式
     bool *destroyTaskRecycledOnTearDownOutput_{nullptr};
+    int32_t latestModelId_{MAX_INT32_NUM};
+    bool isSlaveStream_{false};                // 是否为slave stream
 public:
     TaskResManage *taskResMang_{nullptr};
     bool isHasPcieBar_{false};
@@ -1705,7 +1706,6 @@ protected:
     std::mutex modeMutex;
     uint64_t failureMode_; //遇错即停状态
     std::shared_ptr<Stream> myself = nullptr;
-    bool isSlaveStream_{false};                // 是否为slave stream
     bool isTsBind_{false};
     AutoSplitSqContext *autoSplitCtx_{nullptr};  // 自动切分上下文
 public:

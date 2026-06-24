@@ -8,8 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#ifndef CCE_RUNTIME_STREAM_STATE_CALLBACK_HPP
-#define CCE_RUNTIME_STREAM_STATE_CALLBACK_HPP
+#ifndef CCE_RUNTIME_STREAM_STATE_CALLBACK_MANAGER_HPP
+#define CCE_RUNTIME_STREAM_STATE_CALLBACK_MANAGER_HPP
 
 #include <unordered_map>
 #include "base.hpp"
@@ -53,4 +53,4 @@ private:
 }
 }
 
-#endif  // CCE_RUNTIME_STREAM_STATE_CALLBACK_HPP
+#endif  // CCE_RUNTIME_STREAM_STATE_CALLBACK_MANAGER_HPP

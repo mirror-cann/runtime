@@ -128,7 +128,7 @@ DavidStream::~DavidStream()
     DestroyArgRecycleList(static_cast<uint32_t>(argRecycleListSize_));
     DELETE_O(lastHalfRecord_);
     DELETE_A(taskPublicBuff_);
-    latestModelId_ = MAX_INT32_NUM;
+    SetLatestModlId(MAX_INT32_NUM);
 }
 
 void DavidStream::FreeStreamIdAndSqCq()
@@ -470,7 +470,7 @@ rtError_t DavidStream::TearDown(const bool terminal, bool flag)
     uint16_t tail = 0U;
     uint32_t tryWaitCnt = 0U;
 
-    if (IsAutoSplitSq() && autoSplitCtx_ != nullptr && !isSlaveStream_) {
+    if (IsAutoSplitSq() && autoSplitCtx_ != nullptr && !IsSlaveStream()) {
         for (Stream *slave : autoSplitCtx_->slaveStreams) {
             if (slave != nullptr) {
                 (void)Context_()->TearDownStream(slave, true);

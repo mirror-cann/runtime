@@ -160,7 +160,7 @@ public:
 
     rtError_t StreamAddCondTask(CondHandle *condHandle, rtCondTaskParams params, Stream * const stm, uint32_t flags);
     rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm);
-    rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm) const;
+    rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, const Stream * const stm) const;
     
 
     rtError_t CheckCondTaskParamsSize(rtCondTaskParams params);
@@ -211,7 +211,7 @@ public:
 
     rtError_t ModelAddEndGraph(Model * const mdl, Stream * const stm, const uint32_t flags);
 
-    bool CheckSubModelsIsEndCapture(Stream * const captureStream) const;
+    bool CheckSubModelsIsEndCapture(const Stream * const captureStream) const;
 
     rtError_t ModelExecutorSet(Model * const mdl, const uint8_t flags) const;
 

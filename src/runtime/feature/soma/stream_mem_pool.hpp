@@ -32,13 +32,13 @@ namespace cce {
 
 namespace runtime {
 // SOMA virtual memory address range: 12TB-14TB
-constexpr uint64_t DEVICE_POOL_VADDR_START = (12ULL << 40);  // 12 TB
-constexpr uint64_t DEVICE_POOL_VADDR_SIZE = (2ULL << 40);  // 2 TB
-constexpr uint64_t DEVICE_POOL_MIN_BLOCK_SIZE = (2UL << 20); // 2 MB
-constexpr uint64_t DEVICE_POOL_ALIGN_SIZE = (2UL << 20); // 2 MB
-constexpr size_t HASH_GOLDEN_RATIO = 0x9e3779b9U;
-constexpr int INVALID_STREAM_ID = -1;
-constexpr int INVALID_SEQ_ID = -1;
+constexpr uint64_t DEVICE_POOL_VADDR_START = (12ULL << 40U);   // 12 TB
+constexpr uint64_t DEVICE_POOL_VADDR_SIZE = (2ULL << 40U);     // 2 TB
+constexpr uint64_t DEVICE_POOL_MIN_BLOCK_SIZE = (2ULL << 20U); // 2 MB
+constexpr uint64_t DEVICE_POOL_ALIGN_SIZE = (2ULL << 20U);     // 2 MB
+constexpr size_t HASH_GOLDEN_RATIO = 0x9E3779B9U;
+constexpr int32_t INVALID_STREAM_ID = -1;
+constexpr int32_t INVALID_SEQ_ID = -1;
 
 enum class SegmentState : uint8_t {
     FREE = 0,
@@ -75,9 +75,9 @@ struct SegmentComparator {
 
 struct PairHash {
     size_t operator()(const pair<int, int>& p) const {
-        size_t h1 = hash<int>()(p.first);
-        size_t h2 = hash<int>()(p.second);
-        return h1 ^ (h2 + HASH_GOLDEN_RATIO + (h1 << 6) + (h1 >> 2));
+        const size_t h1 = hash<int32_t>()(p.first);
+        const size_t h2 = hash<int32_t>()(p.second);
+        return h1 ^ (h2 + HASH_GOLDEN_RATIO + (h1 << 6U) + (h1 >> 2U));
     }
 };
 
