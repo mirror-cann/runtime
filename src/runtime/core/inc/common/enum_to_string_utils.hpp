@@ -12,6 +12,7 @@
 #define CCE_RUNTIME_ENUM_TO_STRING_UTILS_HPP
 
 #include <string>
+#include "runtime/rt_external_preload.h"
 #include "runtime/config.h"
 #include "capture_model.hpp"
 #include "common/thread_local_container.hpp"
