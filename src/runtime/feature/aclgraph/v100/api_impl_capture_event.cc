@@ -41,7 +41,7 @@ rtError_t ApiImpl::GetCaptureEvent(const Stream * const stm, Event * const evt, 
         stm->Id_(), captureStm->Id_(), evt->EventId_(), eventId);
 
     Event *newEvent = nullptr;
-    bool isHardwareEvent = IsUseHardwareEvent(stm->Device_());
+    const bool isHardwareEvent = IsUseHardwareEvent(stm->Device_());
     if (isHardwareEvent) {
         error = EventCreate(&newEvent, RT_EVENT_WITH_FLAG);
     } else {

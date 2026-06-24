@@ -63,7 +63,7 @@ rtError_t EventExpandingPool::AllocAndInsertEvent(void** const eventAddr, int32_
     COND_RETURN_ERROR_MSG_INNER(eventIdCount_ == INT32_MAX, RT_ERROR_DRV_NO_EVENT_RESOURCES,
         "Event count is reaching the maximum.");
     int32_t currentEventId = -1;
- 	uint16_t oriPoolIndex = poolIndex_;
+ 	const uint16_t oriPoolIndex = poolIndex_;
  	do {
  	    if (eventAllocator_[poolIndex_] == nullptr) {
  	        eventAllocator_[poolIndex_] = new (std::nothrow) BufferAllocator(sizeof(uint8_t), EVENT_INIT_CNT, PER_POOL_CNT,

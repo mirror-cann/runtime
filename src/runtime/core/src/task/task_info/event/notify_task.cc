@@ -220,7 +220,7 @@ static rtError_t GetIpcSqeWriteAddrByTsId(const TaskInfo * const taskInfo, uint6
     const Notify *const notify = notifyRecord->uPtr.notify;
     const uint32_t notifyId = taskInfo->u.notifyrecordTask.notifyId;
     const uint32_t serverId = notify->GetServiceId();
-    uint32_t dieId = notify->GetAdcDieId();
+    const uint32_t dieId = notify->GetAdcDieId();
     const uint32_t tsId = notify->GetTsId();
     const uint32_t notifyCntPerTable =
         (tsId == 0U) ? STARS_MC62CM12A_NOTIFY_NUM_OF_SINGLE_TABLE_P : STARS_MC62CM12A_NOTIFY_NUM_OF_SINGLE_TABLE_F;

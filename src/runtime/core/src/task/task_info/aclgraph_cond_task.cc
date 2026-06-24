@@ -254,7 +254,7 @@ void Construct1stSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sq
     sqe0.sqeHeader.rt_stream_id = static_cast<uint16_t>(stm->Id_());
     sqe0.sqeHeader.task_id = taskInfo->id;
     sqe0.conds_sub_type = CONDS_SUB_TYPE_CAPTURE_MODEL_COND;
-    uint64_t funcAddr = RtPtrToValue(condTaskInfo->funcCallSvmMem);
+    const uint64_t funcAddr = RtPtrToValue(condTaskInfo->funcCallSvmMem);
     ConstructFunctionCallInstr(funcAddr, (condTaskInfo->funCallMemSize / 4UL), sqe0);
     PrintSqe(sqe, "CaptureConditionTask[0]:CondFirst");
 }

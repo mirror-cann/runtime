@@ -114,7 +114,9 @@ Kernel* HwtsEngine::SearchErrorKernel(const uint16_t devId, const Program* const
         }
         RT_LOG(RT_LOG_INFO, "DevId=%u, diagnostic pc is 0x%llx.", devId, pc_arr[i]);
         Kernel* krnl = prog->SearchKernelByPcAddr(pc_arr[i]);
-        if (krnl != nullptr) return krnl;
+        if (krnl != nullptr) {
+            return krnl;
+        }
     }
     return nullptr;
 }

@@ -1096,7 +1096,7 @@ rtError_t UpdateKernelsInfo(std::map<std::string, ElfKernelInfo *>& kernelInfoMa
     }
 
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
-    bool isSupportKernelTaskRation =
+    const bool isSupportKernelTaskRation =
         IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_TASK_RATION);
     for (uint32_t index = 0U; index < kernelNum; index++) {
         const auto iter = kernelInfoMap.find(std::string(kernels[index].name));

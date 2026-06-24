@@ -248,7 +248,7 @@ Kernel* Program::SearchKernelByPcAddr(const uint64_t pcAddr) const
         return nullptr;
     }
 
-    uint64_t pcAddrWithoutOffset = (pcAddr & 0x7FFFFFFFFFFFFFFULL);
+    const uint64_t pcAddrWithoutOffset = (pcAddr & 0x7FFFFFFFFFFFFFFULL);
     for (uint32_t i = 0; i < kernelPos_; i++) {
         Kernel * const k = KernelTable_[i].kernel;
         uint32_t length1;
@@ -671,7 +671,7 @@ rtError_t Program::StoreKernelLiteralNameToDevice(Kernel *const kernel)
     if (iterSoName != soNameDevAddrMap_[devId].end()) {
         soNameDevAddr = iterSoName->second;
     } else {
-        rtError_t ret = CopyKernelLiteralNameToDevice(kernel->GetCpuKernelSo(), &soNameDevAddr, curCtx->Device_());
+        const rtError_t ret = CopyKernelLiteralNameToDevice(kernel->GetCpuKernelSo(), &soNameDevAddr, curCtx->Device_());
         ERROR_RETURN(ret, "Failed to copy soName to device, ret=%d.", ret);
         soNameDevAddrMap_[devId][kernel->GetCpuKernelSo()] = soNameDevAddr;
     }
@@ -681,7 +681,7 @@ rtError_t Program::StoreKernelLiteralNameToDevice(Kernel *const kernel)
     if (iterFuncName != funcNameDevAddrMap_[devId].end()) {
         funcNameDevAddr = iterFuncName->second;
     } else {
-        rtError_t ret = CopyKernelLiteralNameToDevice(kernel->GetCpuFuncName(), &funcNameDevAddr, curCtx->Device_());
+        const rtError_t ret = CopyKernelLiteralNameToDevice(kernel->GetCpuFuncName(), &funcNameDevAddr, curCtx->Device_());
         ERROR_RETURN(ret, "Failed to copy funcName to device, ret=%d.", ret);
         funcNameDevAddrMap_[devId][kernel->GetCpuFuncName()] = funcNameDevAddr;
     }
@@ -1724,7 +1724,7 @@ rtError_t ElfProgram::MergeKernel(const RtKernel * const elfkernelInfo, Kernel *
 
     const auto rtInstance = Runtime::Instance();
     DevProperties properties;
-    auto error1 = GET_DEV_PROPERTIES(rtInstance->GetChipType(), properties);
+    const auto error1 = GET_DEV_PROPERTIES(rtInstance->GetChipType(), properties);
     if ((error1 == RT_ERROR_NONE) && (properties.cvArchType != DeviceCvArchType::CV_ARCH_SEPARATION)) {
         // case 1: cv is not separated
         oldKernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_AICORE);

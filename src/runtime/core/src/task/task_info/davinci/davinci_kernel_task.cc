@@ -69,7 +69,7 @@ void AicTaskInitCommon(TaskInfo *taskInfo, const Kernel *kernel, const rtKernelA
     aicTaskInfo->kernelTaskMode = RT_DEFAULT_KERNEL_MODE;
     aicTaskInfo->qos = 0U;
     aicTaskInfo->partId = 0U;
-    uint32_t schedMode = (kernel == nullptr) ? static_cast<uint32_t>(RT_SCHEM_MODE_NORMAL) : kernel->GetSchedMode();
+    const uint32_t schedMode = (kernel == nullptr) ? static_cast<uint32_t>(RT_SCHEM_MODE_NORMAL) : kernel->GetSchedMode();
     aicTaskInfo->schemMode = static_cast<uint8_t>(schedMode);
     aicTaskInfo->infMode = 0U;
 
@@ -406,7 +406,7 @@ static void UpdateQosCfgInFftsCtx(rtFftsPlusMixAicAivCtx_t *fftsCtx, TaskInfo* c
     RT_LOG(RT_LOG_INFO, "Begin to update fftsCtx qos info, masterType is %u.", static_cast<uint32_t>(masterType));
     if (masterType >= QosMasterType::MASTER_AIC_DAT && masterType <= QosMasterType::MASTER_AIV_INS) {
         const std::array<QosMasterConfigType, MAX_ACC_QOS_CFG_NUM> &aicoreQosCfg = dev->GetQosCfg().aicoreQosCfg;
-        const auto index = static_cast<uint32_t>(masterType) - static_cast<uint32_t>(QosMasterType::MASTER_AIC_DAT);
+        const uint32_t index = static_cast<uint32_t>(masterType) - static_cast<uint32_t>(QosMasterType::MASTER_AIC_DAT);
         if (aicoreQosCfg[index].mode == 0) {     // mode=0 对应 tsch 中 replace_en=1，表示要替换sqe中的qos配置
             fftsCtx->pmg = aicoreQosCfg[index].pmg;
             fftsCtx->partId = aicoreQosCfg[index].mpamId;
