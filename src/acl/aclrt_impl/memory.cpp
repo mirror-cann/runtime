@@ -281,7 +281,7 @@ aclError aclrtMallocInnerWithCfg(void **devPtr, const size_t size, aclrtMemMallo
     // size must be greater than zero
     ACL_REQUIRES_POSITIVE_REPORT(size);
 
-    rtError_t rtErr = rtsMalloc(devPtr, size, static_cast<rtMallocPolicy>(policy), advise,
+    const rtError_t rtErr = rtsMalloc(devPtr, size, static_cast<rtMallocPolicy>(policy), advise,
         reinterpret_cast<rtMallocConfig_t*>(cfg));
     if (rtErr != RT_ERROR_NONE) {
         ACL_LOG_CALL_ERROR("alloc memory failed, runtime result = %d", rtErr);
@@ -1181,9 +1181,9 @@ aclError aclrtMallocPhysicalImpl(aclrtDrvMemHandle *handle,
     rtProp.module_id = acl::APP_MODE_ID_U16;
     rtProp.reserve = prop->reserve;
     // host alloc
-    bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
+    const bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
     // device alloc
-    bool isDeviceAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_DEVICE);
+    const bool isDeviceAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_DEVICE);
     if (isDeviceAlloc && ((prop->memAttr == ACL_DDR_MEM_HUGE) || (prop->memAttr == ACL_DDR_MEM_NORMAL) || (prop->memAttr == ACL_DDR_MEM_P2P_HUGE) 
         || (prop->memAttr == ACL_DDR_MEM_P2P_NORMAL))) {
         ACL_LOG_ERROR("memAttr [%d] only support ACL_MEM_LOCATION_TYPE_HOST or ACL_MEM_LOCATION_TYPE_HOST_NUMA.", static_cast<int32_t>(prop->memAttr));
@@ -1414,9 +1414,9 @@ aclError aclrtMemGetAllocationGranularityImpl(aclrtPhysicalMemProp *prop, aclrtM
     rtProp1.module_id = acl::APP_MODE_ID_U16;
     rtProp1.reserve = prop->reserve;
     // host alloc
-    bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
+    const bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
     // device alloc
-    bool isDeviceAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_DEVICE);
+    const bool isDeviceAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_DEVICE);
     if (isDeviceAlloc && ((prop->memAttr == ACL_DDR_MEM_HUGE) || (prop->memAttr == ACL_DDR_MEM_NORMAL) || (prop->memAttr == ACL_DDR_MEM_P2P_HUGE) 
         || (prop->memAttr == ACL_DDR_MEM_P2P_NORMAL))) {
         ACL_LOG_ERROR("memAttr [%d] only support ACL_MEM_LOCATION_TYPE_HOST or ACL_MEM_LOCATION_TYPE_HOST_NUMA.", static_cast<int32_t>(prop->memAttr));
@@ -2195,7 +2195,7 @@ aclError aclrtMemGetAllocationPropertiesFromHandleImpl(aclrtDrvMemHandle handle,
     prop->reserve = rtProp.reserve;
 
     //host alloc
-    bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
+    const bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
 
     const auto& it = std::find_if(std::begin(mapping), std::end(mapping),
         [rtProp, isHostAlloc](const MemAttrMapping& entry) {

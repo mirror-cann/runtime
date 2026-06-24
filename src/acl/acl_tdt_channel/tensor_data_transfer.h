@@ -81,7 +81,7 @@ struct acltdtChannelHandle {
     {
         devId = deviceId;
         isTdtProcess = true;
-        qid = 0;
+        qid = 0U;
         if (channelName != nullptr) {
             name = channelName;
             size_t prefixLen = sizeof("TF_RECEIVE_") - 1;

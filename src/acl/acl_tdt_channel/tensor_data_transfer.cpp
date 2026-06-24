@@ -125,10 +125,10 @@ namespace acl {
         }
 
         std::string str = dimsStr.substr(1, dimsStr.size() - 2);
-        std::string::size_type index = 0;
         if (!str.empty()) {
+            std::string::size_type index = 0;
             while ((index = str.find(' ', index)) != std::string::npos) {
-                str.erase(index, 1);
+                (void)str.erase(index, 1);
             }
         }
         std::string split = ",";
@@ -299,7 +299,7 @@ namespace acl {
         for (size_t i = 0; i < dataset->blobs.size(); ++i) {
             acl::aclTdtDataItemInfo item;
             int32_t tdtDataType;
-            auto ret = GetTdtDataTypeByAclDataTypeV2(dataset->blobs[i]->tdtType, tdtDataType);
+            const auto ret = GetTdtDataTypeByAclDataTypeV2(dataset->blobs[i]->tdtType, tdtDataType);
             if (ret != ACL_SUCCESS) {
                 ACL_LOG_INNER_ERROR("[Check][Dataset]TensorDatasetSerializes failed, "
                     "invalid tdt type %d", dataset->blobs[i]->tdtType);
@@ -357,7 +357,7 @@ namespace acl {
                     ret = ACL_ERROR_INTERNAL_ERROR;
                     break;
                 }
-                aclDataType dataType = iter->second;
+                const aclDataType dataType = iter->second;
                 acltdtDataItem *item = new(std::nothrow) acltdtDataItem(aclType,
                     &dims[0], dims.size(), itemVec[i].tensorShape_,
                     dataType, itemVec[i].tensorType_,
@@ -654,7 +654,7 @@ namespace acl {
             if (handle->ctx_ == nullptr) {
                 ACL_LOG_INFO("current thread need to create new context");
                 ACL_REQUIRES_CALL_RTS_OK(rtCtxCreateEx(&rtCtx, static_cast<uint32_t>(RT_CTX_NORMAL_MODE),
-                    handle->devId), rtCtxCreateEx);
+                    static_cast<int32_t>(handle->devId)), rtCtxCreateEx);
                 const_cast<acltdtChannelHandle *>(handle)->ctx_.reset(rtCtx,
                     [](void *p) {if (p != nullptr) {(void)rtCtxDestroyEx(p);}});
             }
@@ -1062,7 +1062,7 @@ acltdtChannelHandle *acltdtCreateChannelWithCapacity(uint32_t deviceId, const ch
         ACL_DELETE_AND_SET_NULL(handle);
         return nullptr;
     }
-    if (rtMemQueueCreate(deviceId, &attr, &handle->qid) != RT_ERROR_NONE) {
+    if (rtMemQueueCreate(static_cast<int32_t>(deviceId), &attr, &handle->qid) != RT_ERROR_NONE) {
         ACL_LOG_CALL_ERROR("queue create failed, deviceid is %u", deviceId);
         ACL_DELETE_AND_SET_NULL(handle);
         return nullptr;
@@ -1104,7 +1104,8 @@ aclError acltdtDestroyChannel(acltdtChannelHandle *handle)
     ACL_LOG_INFO("start to acltdtDestroyChannel, device is %u, name is %s",
         handle->devId, handle->name.c_str());
     if (!handle->isTdtProcess) {
-        ACL_REQUIRES_CALL_RTS_OK(rtMemQueueDestroy(handle->devId, handle->qid), rtMemQueueDestroy);
+        ACL_REQUIRES_CALL_RTS_OK(rtMemQueueDestroy(static_cast<int32_t>(handle->devId), handle->qid),
+            rtMemQueueDestroy);
         ACL_LOG_INFO("acltdtDestroyChannel success, device is %u, name is %s",
             handle->devId, handle->name.c_str());
         ACL_DELETE_AND_SET_NULL(handle);
@@ -1117,7 +1118,7 @@ aclError acltdtDestroyChannel(acltdtChannelHandle *handle)
         if (tdtHostDestroy == nullptr) {
             return ACL_ERROR_FAILURE;
         }
-        auto ret = tdtHostDestroy();
+        const auto ret = tdtHostDestroy();
         if (ret != 0) {
             ACL_LOG_INNER_ERROR("[Destroy][Tdt]TdtHostDestroy failed, tdt result = %d", ret);
         }
@@ -1234,7 +1235,7 @@ aclError acltdtQueryChannelSize(const acltdtChannelHandle *handle, size_t *size)
     }
     ACL_LOG_DEBUG("start to execute acltdtQueryChannelSize, device is %u, qid is %u", handle->devId, handle->qid);
     rtMemQueueInfo_t info;
-    rtError_t ret = rtMemQueueQueryInfo(handle->devId, handle->qid, &info);
+    rtError_t ret = rtMemQueueQueryInfo(static_cast<int32_t>(handle->devId), handle->qid, &info);
     if (ret != RT_ERROR_NONE) {
         ACL_LOG_CALL_ERROR("[Call][Rts]call rtMemQueueQueryInfo failed, device is %u, qid is %u",
                            handle->devId, handle->qid);
