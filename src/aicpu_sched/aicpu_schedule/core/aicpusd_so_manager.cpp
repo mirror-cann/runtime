@@ -62,6 +62,7 @@ bool AicpuSoManager::OpenSo(const std::string &soFile)
 
 void AicpuSoManager::CloseSo()
 {
+    std::lock_guard<std::mutex> lock(soMutex_);
     if (soHandle_ != nullptr) {
         (void)dlclose(soHandle_);
         soHandle_ = nullptr;
@@ -71,6 +72,7 @@ void AicpuSoManager::CloseSo()
 
 void AicpuSoManager::SetDeviceIdToDvpp(uint32_t deviceId)
 {
+    std::lock_guard<std::mutex> lock(soMutex_);
     if (soHandle_ != nullptr) {
         aicpusd_info("Already loaded libmpi_dvpp_adapter.so");
     } else {

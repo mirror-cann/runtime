@@ -12,6 +12,7 @@
 #define AICPU_SO_MANAGER_H
 
 #include <string>
+#include <mutex>
 
 namespace AicpuSchedule {
 
@@ -32,6 +33,7 @@ private:
     bool OpenSo(const std::string &soFile);
     void CloseSo();
     // so hande which opened by dlopen
+    std::mutex soMutex_;
     void *soHandle_ = nullptr;
 };
 }  // namespace AicpuSchedule

@@ -28,7 +28,7 @@ int32_t HwTsKernelCommon::ProcessEndGraph(const uint32_t modelId)
  
     auto ret = model->EndGraph();
     if (ret != AICPU_SCHEDULE_OK) {
-        aicpusd_err("model[%u] endGraph failed, ret[%d].", modelId, ret);
+        aicpusd_run_warn("model[%u] endGraph failed, ret[%d].", modelId, ret);
     }
  
     bool hasWait = false;

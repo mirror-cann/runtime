@@ -103,9 +103,9 @@ namespace tsd {
 
     constexpr int32_t TDT_RETURN_ERROR = -1;
 
-    constexpr uint64_t S_TO_NS = 1000000UL;
+    constexpr uint64_t S_TO_US = 1000000UL;
 
-    constexpr uint64_t MS_TO_NS = 1000UL;
+    constexpr uint64_t MS_TO_US = 1000UL;
 
     constexpr uint64_t S_TO_MS = 1000UL;
 
@@ -131,7 +131,7 @@ namespace tsd {
         uint64_t ret = 0U;
         struct timeval tv;
         if (gettimeofday(&tv, nullptr) == 0) {
-            ret = (static_cast<uint64_t>(tv.tv_sec) * S_TO_NS) + static_cast<uint64_t>(tv.tv_usec);
+            ret = (static_cast<uint64_t>(tv.tv_sec) * S_TO_US) + static_cast<uint64_t>(tv.tv_usec);
         }
 
         return ret;

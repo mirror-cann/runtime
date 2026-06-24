@@ -69,7 +69,7 @@ namespace AicpuSchedule {
         drvRet = halMbufAllocEx(static_cast<uint64_t>(allocSize), MBUF_ALLOC_ALIGN_SIZE,
                                 flag, MBUF_ALLOC_DEFAULT_GRP_ID, &mbuf);
         if (drvRet != DRV_ERROR_NONE) {
-            aicpusd_err("Failed to alloc mbuf, size[%u], ret[%d].", allocSize, drvRet);
+            aicpusd_err("Failed to alloc mbuf, size[%lu], ret[%d].", allocSize, drvRet);
             return nullptr;
         }
         drvRet = halMbufSetDataLen(mbuf, static_cast<uint64_t>(allocSize));
@@ -93,19 +93,19 @@ namespace AicpuSchedule {
     {
         Mbuf *mbuf = MallocBufU64(allocSize);
         if (mbuf == nullptr) {
-            aicpusd_err("Failed to alloc mbuf for model[%u], size[%u].", modelId, allocSize);
+            aicpusd_err("Failed to alloc mbuf for model[%u], size[%lu].", modelId, allocSize);
             return nullptr;
         }
         const int32_t guardRet = GuardBuf(mbuf, modelId);
         if (guardRet != AICPU_SCHEDULE_OK) {
-            aicpusd_err("Failed to guard mbuf for model[%u], size[%u], ret[%d].", modelId, allocSize, guardRet);
+            aicpusd_err("Failed to guard mbuf for model[%u], size[%lu], ret[%d].", modelId, allocSize, guardRet);
             const int32_t drvRet = halMbufFree(mbuf);
             if (drvRet != DRV_ERROR_NONE) {
                 aicpusd_err("free by driver failed, ret[%d].", drvRet);
             }
             mbuf = nullptr;
         } else {
-            aicpusd_info("Malloc and guard mbuf for model[%u], size[%u].", modelId, allocSize);
+            aicpusd_info("Malloc and guard mbuf for model[%u], size[%lu].", modelId, allocSize);
         }
         return mbuf;
     }
