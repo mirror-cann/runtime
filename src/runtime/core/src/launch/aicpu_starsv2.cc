@@ -311,7 +311,7 @@ rtError_t StreamLaunchCpuKernelExWithArgs(const uint32_t coreDim, const rtAicpuA
         "The current stream status does not meet the conditions for sending the task, stream_id=%d, retCode=%#x.",
         streamId, static_cast<uint32_t>(error));
     DavidStream *davidStm = static_cast<DavidStream *>(stm);
-    bool useArgPool = UseArgsPool(davidStm, argsInfo, false);
+    const bool useArgPool = UseArgsPool(davidStm, argsInfo, false);
 
     Stream *dstStm = stm;
     uint32_t pos = 0xFFFFU;

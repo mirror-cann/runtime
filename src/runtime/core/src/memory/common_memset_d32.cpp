@@ -34,7 +34,7 @@ static rtError_t MemsetD32OnDeviceSingleBlock(void* curDst, uint64_t remainingMa
     
     // Allocate temporary memory
     void* tempHostBuf = nullptr;
-    rtError_t allocError = device->Driver_()->HostMemAlloc(
+    const rtError_t allocError = device->Driver_()->HostMemAlloc(
         &tempHostBuf, curBytes, device->Id_(), 0, 0);
     if (allocError != RT_ERROR_NONE) {
         RT_LOG(
@@ -57,7 +57,7 @@ static rtError_t MemsetD32OnDeviceSingleBlock(void* curDst, uint64_t remainingMa
     } else {
         copyError = device->Driver_()->MemCopySync(curDst, remainingMax,
             tempHostBuf, curBytes, RT_MEMCPY_HOST_TO_DEVICE);
-        device->Driver_()->HostMemFree(tempHostBuf);
+        (void)device->Driver_()->HostMemFree(tempHostBuf);
     }
     
     if (copyError != RT_ERROR_NONE) {
@@ -71,7 +71,7 @@ rtError_t MemsetD32OnDevice(void* dst, uint64_t destMax, uint32_t value,
                             uint64_t count, Stream* stm, bool isAsync)
 {
     // Dynamically get block size (consistent with MemcpyAsync)
-    uint64_t blockBytes = CalculateMemcpyAsyncSingleMaxSize(RT_MEMCPY_HOST_TO_DEVICE);
+    const uint64_t blockBytes = CalculateMemcpyAsyncSingleMaxSize(RT_MEMCPY_HOST_TO_DEVICE);
     const uint64_t blockCount = blockBytes / sizeof(uint32_t);
 
     Context* curCtx = Runtime::Instance()->CurrentContext();
@@ -82,7 +82,7 @@ rtError_t MemsetD32OnDevice(void* dst, uint64_t destMax, uint32_t value,
 
     uint64_t remainingCount = count;
     uint64_t doneBytes = 0;
-    uint64_t totalBytes = count * sizeof(uint32_t);
+    const uint64_t totalBytes = count * sizeof(uint32_t);
     
     // Check if total size exceeds destMax
     if (totalBytes > destMax) {
@@ -100,7 +100,7 @@ rtError_t MemsetD32OnDevice(void* dst, uint64_t destMax, uint32_t value,
         void* curDst = static_cast<char*>(dst) + doneBytes;
         uint64_t remainingMax = destMax - doneBytes;
         
-        rtError_t err = MemsetD32OnDeviceSingleBlock(curDst, remainingMax, value, curCount,
+        const rtError_t err = MemsetD32OnDeviceSingleBlock(curDst, remainingMax, value, curCount,
                                                      stm, isAsync, device);
         if (err != RT_ERROR_NONE) {
             return err;

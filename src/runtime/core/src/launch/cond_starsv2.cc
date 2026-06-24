@@ -186,7 +186,7 @@ rtError_t CondMemWaitValue(const void * const devAddr, const uint64_t value,
 
 rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm)
 {
-    int32_t streamId = stm->Id_();
+    const int32_t streamId = stm->Id_();
     rtError_t error = CheckTaskCanSend(stm);
     ERROR_RETURN_MSG_INNER(error, "stream_id=%d check failed, retCode=%#x.", streamId, static_cast<uint32_t>(error));
 
@@ -224,7 +224,7 @@ rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm)
 rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm)
 {
     Notify *notify = condHandle->GetSubModelNotify();
-    rtError_t retFreeId = notify->FreeId();
+    const rtError_t retFreeId = notify->FreeId();
     COND_PROC(retFreeId != RT_ERROR_NONE, RT_LOG(RT_LOG_WARNING, "Free notify %u failed", notify->GetNotifyId()));
 
     for (Model *mdl : condHandle->GetSubCaptureModels()) {

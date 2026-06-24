@@ -294,7 +294,7 @@ static rtError_t DevMemSetAsync(Stream * const stm, void * const ptr, const uint
         const uint64_t memRemain = fillCount % MEM_BLOCK_SIZE;
         if (memRemain > 0ULL) {
             char_t * const dstAddr = (RtPtrToPtr<char_t *>(ptr)) + (memBlockNum * MEM_BLOCK_SIZE);
-            error = MemcopyAsync(dstAddr, destMax - (memBlockNum * MEM_BLOCK_SIZE), static_cast<char_t *>(ptr),
+            error = MemcopyAsync(dstAddr, destMax - (memBlockNum * MEM_BLOCK_SIZE), RtPtrToPtr<char_t *>(ptr),
                 memRemain, RT_MEMCPY_DEVICE_TO_DEVICE, stm, &realSize);
             ERROR_RETURN_MSG_INNER(error, "Memcpy async step3 failed,"
                 " max size=%" PRIu64 ", src size=%" PRIu64 ", type=%d.",

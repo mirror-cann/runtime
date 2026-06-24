@@ -172,7 +172,7 @@ static rtError_t UpdateDavidKernelPrepare(TaskInfo * const updateTask, void ** c
                        allocSize, *hostAddr, allocSize);
             COND_PROC_RETURN_ERROR_MSG_INNER(error != EOK, RT_ERROR_SEC_HANDLE,
                 (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;,
-                "Failed to call memcpy_s, size=%lu, retCode=%#x.", static_cast<unsigned long>(allocSize), static_cast<uint32_t>(error));
+                "Failed to call memcpy_s, size=%" PRIu64 ", retCode=%#x.", allocSize, static_cast<uint32_t>(error));
         }
     }
 
@@ -410,7 +410,7 @@ rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t t
         "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(),
         kernelAttrType, static_cast<uint32_t>(error));
     DavidStream *davidStm = static_cast<DavidStream *>(stm);
-    bool useArgPool = UseArgsPool(davidStm, argsInfo, stm->IsTaskGroupUpdate());
+    const bool useArgPool = UseArgsPool(davidStm, argsInfo, stm->IsTaskGroupUpdate());
     uint32_t pos = 0xFFFFU;
     Stream *dstStm = stm;
     std::function<void()> const errRecycle = [&result, &kernelTask, &prog, &stm, &pos, &dstStm]() {
