@@ -201,7 +201,7 @@ public:
         return taskGroupErrCode_;
     }
 
-    const std::map<std::tuple<int32_t, uint16_t>, CondHandle *> &GetCondHandleTaskMap()
+    const std::map<std::tuple<int32_t, uint16_t>, CondHandle *> &GetCondHandleTaskMap() const
     {
         return condHandleTaskMap_;
     }

@@ -129,7 +129,7 @@ private:
     cce::runtime::DevInfoManage::Instance().GetDevProperties((chipType), (properties))
 
 #define SET_DEV_PROPERTIES(chipType, properties) \
-    cce::runtime::DevInfoManage::Instance().SetDevProperties((chipType), (properties))
+    (void)cce::runtime::DevInfoManage::Instance().SetDevProperties((chipType), (properties))
 
 #define GET_ALL_DEV_PROPERTIES(properties) \
     cce::runtime::DevInfoManage::Instance().GetAllDevProperties(properties)
