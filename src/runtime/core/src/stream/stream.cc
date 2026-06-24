@@ -1399,7 +1399,7 @@ rtError_t Stream::SubmitStreamRecycle(Stream* exeStream, bool isForceRecycle, ui
     (void)MaintenanceTaskInit(maintenanceTsk, MT_STREAM_RECYCLE_TASK, static_cast<uint32_t>(streamId_), isForceRecycle);
     maintenanceTsk->u.maintenanceTaskInfo.waitCqId = logicCqId;
     task = maintenanceTsk;
-    rtError_t error = device_->SubmitTask(maintenanceTsk);
+    const rtError_t error = device_->SubmitTask(maintenanceTsk);
     if (error != RT_ERROR_NONE) {
         (void)device_->GetTaskFactory()->Recycle(maintenanceTsk);
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to submit task, stream_id=%d, task_id=%u, retCode=%#x.",
@@ -3451,10 +3451,10 @@ rtError_t Stream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model, uin
         oldhostSqeAddr = RtPtrToPtr<uint8_t*, rtStarsSqe_t*>(cmdLocal.cmdBuf.u.starsSqe);
     }
     // Update the host-side head and tail
-    rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
+    const rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
-    auto ret = memcpy_s(
+    const auto ret = memcpy_s(
         RtPtrToPtr<void*>(sqeBufferBackup + sizeof(rtStarsSqe_t) * workTask->pos), sendSqeNum * sizeof(rtStarsSqe_t),
         RtPtrToPtr<void*>(oldhostSqeAddr), sendSqeNum * sizeof(rtStarsSqe_t));
     COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
@@ -4824,7 +4824,7 @@ std::string Stream::TraceEventToJson(const TraceEvent &record) const
     if (record.args.taskType.rfind("KERNEL_MIX", 0) == 0) {
         oss << ",\"Task Ration\":" << record.args.taskRation;
     }
-    if (record.args.schemMode != static_cast<int>(RT_SCHEM_MODE_END)) {
+    if (record.args.schemMode != static_cast<int32_t>(RT_SCHEM_MODE_END)) {
         oss << ",\"Schem Mode\":" << record.args.schemMode;
     }
     if (record.args.argsSize != 0U) {
@@ -4904,7 +4904,7 @@ void Stream::ConstructTraceEventFromTask(TaskInfo *const task, const uint32_t fl
         record.args.numBlocks = static_cast<int32_t>(aicTaskInfo->comm.dim);
         const Kernel *kernel = aicTaskInfo->kernel;
         record.args.taskRation = kernel->GetTaskRation();
-        record.args.schemMode = aicTaskInfo->schemMode;
+        record.args.schemMode = static_cast<int32_t>(aicTaskInfo->schemMode);
         taskType = GetTaskTypeForMixKernel(kernel->GetMixType(), taskType);
         taskName = kernel->Name_();
         if ((flags & DEBUG_JSON_PRINT_VERBOSE) != 0U) {
@@ -5261,7 +5261,7 @@ rtError_t Stream::RestoreForSoftwareSq()
     Driver *drv = dev->Driver_();
     const int32_t deviceId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
-    const uint32_t drvFlag = TSDRV_FLAG_SPECIFIED_CQ_ID;
+    constexpr uint32_t drvFlag = TSDRV_FLAG_SPECIFIED_CQ_ID;
 
     // streamID 重申请
     rtError_t error = drv->ReAllocResourceId(static_cast<uint32_t>(deviceId), tsId, priority_,

@@ -30,6 +30,14 @@
 #include "runtime_handle_guard.h"
 #include "stars_arg_manager.hpp"
 
+namespace cce {
+namespace runtime {
+constexpr uint64_t ABORT_STREAM_TIMEOUT = (60UL * 1000 * 1000);  // us
+constexpr uint32_t DEBUG_JSON_PRINT_VERBOSE = 0x1U;
+constexpr uint32_t NOP_TASK_E2E_DURATION = 1U;
+constexpr uint32_t RECORD_TASK_E2E_DURATION = 5U;
+constexpr uint32_t WAIT_TASK_E2E_DURATION = 15U;
+constexpr uint32_t DEFAULT_TASK_E2E_DURATION = 10U;
 constexpr size_t PTE_LENGTH = 16U;
 
 constexpr uint16_t STREAM_TASK_BUFF_SIZE = 1025U;
@@ -52,19 +60,10 @@ constexpr uint32_t STREAM_SQ_MAX_DEPTH = 32768U;
 constexpr uint32_t STREAM_SQE_BUFFER_INIT_SIZE = 2U * 1024U * 64U;  // host sq buffer初始化大小 128K (128 * 1024)
 constexpr uint32_t HOST_SQ_MAX_COUNT = 32767U;          // 32K-1后创建slave stream
 
-constexpr float NOP_TASK_DURATION = 0.5f;
-constexpr float RECORD_TASK_DURATION = 4.5f;
-constexpr float WAIT_TASK_DURATION = 14.5f;
-constexpr float DEFAULT_TASK_DURATION = 9.5f;
-
-namespace cce {
-namespace runtime {
-constexpr uint64_t ABORT_STREAM_TIMEOUT = (60UL * 1000 * 1000);  // us
-constexpr uint32_t DEBUG_JSON_PRINT_VERBOSE = 0x1U;
-constexpr uint32_t NOP_TASK_E2E_DURATION = 1U;
-constexpr uint32_t RECORD_TASK_E2E_DURATION = 5U;
-constexpr uint32_t WAIT_TASK_E2E_DURATION = 15U;
-constexpr uint32_t DEFAULT_TASK_E2E_DURATION = 10U;
+constexpr float NOP_TASK_DURATION = 0.5F;
+constexpr float RECORD_TASK_DURATION = 4.5F;
+constexpr float WAIT_TASK_DURATION = 14.5F;
+constexpr float DEFAULT_TASK_DURATION = 9.5F;
 
 class Event;
 class Context;
@@ -81,9 +80,7 @@ class EngineStreamObserver;
 class TaskAllocator;
 class CaptureModel;
 
-typedef enum TagtsSqAllocType {
-    SQ_ALLOC_TYPE_RT_DEFAULT = 0,
-} RtSqAllocType;
+using RtSqAllocType  = enum TagtsSqAllocType { SQ_ALLOC_TYPE_RT_DEFAULT = 0 };
 
 typedef enum TagStreamFailureMode {
     CONTINUE_ON_FAILURE = 0,
@@ -117,7 +114,7 @@ struct TraceArgs {
     std::string taskType;
     int32_t numBlocks = -1;
     int32_t taskRation = 0;
-    int32_t schemMode = static_cast<int>(RT_SCHEM_MODE_END);
+    int32_t schemMode = static_cast<int32_t>(RT_SCHEM_MODE_END);
     int32_t activeStreamId = -1;
     std::string extendInfo;
     std::string kernelArgs;
@@ -128,7 +125,7 @@ struct TraceEvent {
     std::string name;
     std::string pid;
     std::string tid;
-    int ts;
+    uint32_t ts;
     float dur;
     std::string ph;
     TraceArgs args;

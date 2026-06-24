@@ -91,7 +91,7 @@ rtError_t ConvertCpuArgsByArgsHandle(rtCpuKernelArgs_t &oldArgs, const RtArgsHan
 
 rtError_t ConvertArgsArrayToArgsEx(rtArgsEx_t &argsEx, const Kernel *kernel, void **argsArray)
 {
-    uint64_t paramTotalSize = kernel->GetParamTotalSize();
+    const uint64_t paramTotalSize = kernel->GetParamTotalSize();
 
     void *argsBuffer = nullptr;
     if (paramTotalSize > 0ULL) {
