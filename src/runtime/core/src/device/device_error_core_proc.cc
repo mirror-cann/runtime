@@ -823,7 +823,7 @@ bool HasBlacklistEventOnDevice(const uint32_t deviceId, const std::map<uint32_t,
     constexpr uint32_t maxFaultNum = 128U;
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
     COND_RETURN_AND_MSG_OUTER(faultEventInfo == nullptr, false, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent));
+        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
     constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
     (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
 
@@ -994,7 +994,7 @@ bool IsEventIdAndRasCodeMatch( const uint32_t deviceId, const std::vector<EventR
     constexpr uint32_t maxFaultNum = 128U;
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
     COND_RETURN_AND_MSG_OUTER(faultEventInfo == nullptr, false, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent));
+        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
     constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
     (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
 

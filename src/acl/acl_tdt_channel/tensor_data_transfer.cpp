@@ -366,8 +366,8 @@ namespace acl {
                     ACL_LOG_ERROR("[Check][Item]TensorDatasetDeserializes alloc failed");
                     std::string sizeStr = std::to_string(sizeof(acltdtDataItem));
                     acl::AclErrorLogManager::ReportInputError(acl::ALLOC_MEMORY_FAILED_MSG,
-                        std::vector<const char *>({"buf_size"}),
-                        std::vector<const char *>({sizeStr.c_str()}));
+                        std::vector<const char *>({"buf_size", "alloc_interface"}),
+                        std::vector<const char *>({sizeStr.c_str(), "new"}));
                     ret = ACL_ERROR_BAD_ALLOC;
                     break;
                 }
@@ -505,58 +505,6 @@ namespace acl {
         return ACL_SUCCESS;
     }
 
-    aclError TensorDataitemSerialize(std::vector<acl::aclTdtDataItemInfo> &itemVec, const datasetMemType memType,
-        std::vector<rtMemQueueBuffInfo> &qBufVec, std::vector<std::shared_ptr<uint8_t>> &ctrlSharedPtrVec)
-    {
-        uint32_t currentCnt = 0;
-        size_t lastDataSize = 0U;
-        for (size_t i = 0; i < itemVec.size(); ++i) {
-            itemVec[i].ctrlInfo.curCnt = currentCnt;
-            itemVec[i].ctrlInfo.cnt = itemVec.size();
-            size_t ctrlSize = sizeof(ItemInfo) + itemVec[i].dims.size() * sizeof(int64_t);
-            // 64n + lastDataSize + 64n - lastDataSize
-            size_t alignedSize = Get64AlignedSize(ctrlSize + lastDataSize) - lastDataSize;
-            itemVec[i].ctrlInfo.dynamicBitSize = alignedSize - sizeof(ItemInfo);
-            std::shared_ptr<uint8_t> ctrlSharedPtr(
-                new (std::nothrow) uint8_t[alignedSize], std::default_delete<uint8_t[]>());
-            ACL_CHECK_MALLOC_RESULT_REPORT_RET(ctrlSharedPtr.get(), alignedSize, ACL_ERROR_BAD_ALLOC);
-            void *ctrlPtr = ctrlSharedPtr.get();
-            ACL_LOG_DEBUG("TensorDataitemSerialize alignedSize is %zu, ctrlSize is %zu, dynamicBitSize is %u, i is %zu,"
-                " lastDataSize is %zu, shape size is %zu", alignedSize, ctrlSize, itemVec[i].ctrlInfo.dynamicBitSize,
-                i, lastDataSize, itemVec[i].dims.size());
-            auto memcpyRet = memcpy_s(ctrlPtr, alignedSize, &itemVec[i].ctrlInfo, sizeof(ItemInfo));
-            if (memcpyRet != EN_OK) {
-                ACL_LOG_INNER_ERROR("[Call][MemCpy]call memcpy failed, result=%d, srcLen=%zu, dstLen=%zu",
-                    memcpyRet, sizeof(ItemInfo), alignedSize);
-            }
-            size_t offset = sizeof(ItemInfo);
-            for (size_t j = 0; j < itemVec[i].dims.size(); ++j) {
-                memcpyRet = memcpy_s(reinterpret_cast<uint8_t *>(ctrlPtr) + offset,
-                    alignedSize - offset, &itemVec[i].dims[j], sizeof(int64_t));
-                if (memcpyRet != EN_OK) {
-                    ACL_LOG_INNER_ERROR("[Call][MemCpy]call memcpy failed, result=%d, srcLen=%zu, dstLen=%zu",
-                                        memcpyRet, sizeof(int64_t), alignedSize - offset);
-                }
-                offset += sizeof(int64_t);
-            }
-            rtMemQueueBuffInfo qItem = {};
-            qItem.len = alignedSize;
-            ACL_REQUIRES_OK(SaveCtrlSharedPtrToVec(memType, qItem, ctrlSharedPtr, ctrlSharedPtrVec));
-            qBufVec.push_back(qItem);
-
-            if (itemVec[i].ctrlInfo.dataLen > 0U) {
-                rtMemQueueBuffInfo tmpQItem = {itemVec[i].dataPtr.get(), itemVec[i].ctrlInfo.dataLen};
-                qBufVec.push_back(tmpQItem);
-            } else {
-                ACL_LOG_DEBUG("no need to insert data buf");
-            }
-            // current total size is (64n + lastDataSize)
-            lastDataSize = itemVec[i].ctrlInfo.dataLen;
-            ++currentCnt;
-        }
-        return ACL_SUCCESS;
-    }
-
     aclError UnpackageRecvDataInfo(uint8_t *outputHostAddr, size_t size, std::vector<acl::aclTdtDataItemInfo> &itemVec)
     {
         ItemInfo *head = reinterpret_cast<ItemInfo *>(outputHostAddr);
@@ -600,6 +548,58 @@ namespace acl {
             }
             ACL_LOG_INFO("after %u tensor, offset is %zu", i + 1, offset);
             itemVec.push_back(item);
+        }
+        return ACL_SUCCESS;
+    }
+
+    aclError TensorDataitemSerialize(std::vector<acl::aclTdtDataItemInfo> &itemVec, const datasetMemType memType,
+        std::vector<rtMemQueueBuffInfo> &qBufVec, std::vector<std::shared_ptr<uint8_t>> &ctrlSharedPtrVec)
+    {
+        uint32_t currentCnt = 0;
+        size_t lastDataSize = 0U;
+        for (size_t i = 0; i < itemVec.size(); ++i) {
+            itemVec[i].ctrlInfo.curCnt = currentCnt;
+            itemVec[i].ctrlInfo.cnt = itemVec.size();
+            size_t ctrlSize = sizeof(ItemInfo) + itemVec[i].dims.size() * sizeof(int64_t);
+            // 64n + lastDataSize + 64n - lastDataSize
+            size_t alignedSize = Get64AlignedSize(ctrlSize + lastDataSize) - lastDataSize;
+            itemVec[i].ctrlInfo.dynamicBitSize = alignedSize - sizeof(ItemInfo);
+            std::shared_ptr<uint8_t> ctrlSharedPtr(
+                new (std::nothrow) uint8_t[alignedSize], std::default_delete<uint8_t[]>());
+            ACL_CHECK_MALLOC_RESULT_REPORT_RET(ctrlSharedPtr.get(), alignedSize, "new", ACL_ERROR_BAD_ALLOC);
+            void *ctrlPtr = ctrlSharedPtr.get();
+            ACL_LOG_DEBUG("TensorDataitemSerialize alignedSize is %zu, ctrlSize is %zu, dynamicBitSize is %u, i is %zu,"
+                " lastDataSize is %zu, shape size is %zu", alignedSize, ctrlSize, itemVec[i].ctrlInfo.dynamicBitSize,
+                i, lastDataSize, itemVec[i].dims.size());
+            auto memcpyRet = memcpy_s(ctrlPtr, alignedSize, &itemVec[i].ctrlInfo, sizeof(ItemInfo));
+            if (memcpyRet != EN_OK) {
+                ACL_LOG_INNER_ERROR("[Call][MemCpy]call memcpy failed, result=%d, srcLen=%zu, dstLen=%zu",
+                    memcpyRet, sizeof(ItemInfo), alignedSize);
+            }
+            size_t offset = sizeof(ItemInfo);
+            for (size_t j = 0; j < itemVec[i].dims.size(); ++j) {
+                memcpyRet = memcpy_s(reinterpret_cast<uint8_t *>(ctrlPtr) + offset,
+                    alignedSize - offset, &itemVec[i].dims[j], sizeof(int64_t));
+                if (memcpyRet != EN_OK) {
+                    ACL_LOG_INNER_ERROR("[Call][MemCpy]call memcpy failed, result=%d, srcLen=%zu, dstLen=%zu",
+                                        memcpyRet, sizeof(int64_t), alignedSize - offset);
+                }
+                offset += sizeof(int64_t);
+            }
+            rtMemQueueBuffInfo qItem = {};
+            qItem.len = alignedSize;
+            ACL_REQUIRES_OK(SaveCtrlSharedPtrToVec(memType, qItem, ctrlSharedPtr, ctrlSharedPtrVec));
+            qBufVec.push_back(qItem);
+
+            if (itemVec[i].ctrlInfo.dataLen > 0U) {
+                rtMemQueueBuffInfo tmpQItem = {itemVec[i].dataPtr.get(), itemVec[i].ctrlInfo.dataLen};
+                qBufVec.push_back(tmpQItem);
+            } else {
+                ACL_LOG_DEBUG("no need to insert data buf");
+            }
+            // current total size is (64n + lastDataSize)
+            lastDataSize = itemVec[i].ctrlInfo.dataLen;
+            ++currentCnt;
         }
         return ACL_SUCCESS;
     }
@@ -1024,7 +1024,7 @@ acltdtChannelHandle *acltdtCreateChannelWithCapacity(uint32_t deviceId, const ch
         return nullptr;
     }
     acltdtChannelHandle *handle = new(std::nothrow) acltdtChannelHandle(deviceId, name);
-    ACL_CHECK_MALLOC_RESULT_REPORT_RET(handle, sizeof(acltdtChannelHandle), nullptr);
+    ACL_CHECK_MALLOC_RESULT_REPORT_RET(handle, sizeof(acltdtChannelHandle), "new", nullptr);
     handle->isTdtProcess = false;
     acltdtQueueAttr attr{};
     const size_t count = strlen(name) + 1U;

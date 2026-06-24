@@ -97,7 +97,7 @@ rtError_t GroupDevice::GroupInfoSetup()
         capability_group_info * const capGroupInfos =
             new (std::nothrow) capability_group_info[capabilityInfo.ts_group_number];
         COND_RETURN_AND_MSG_OUTER(capGroupInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, 
-            capabilityInfo.ts_group_number * sizeof(capability_group_info));
+            capabilityInfo.ts_group_number * sizeof(capability_group_info), "new");
         (void)memset_s(capGroupInfos, sizeof(capability_group_info) * capabilityInfo.ts_group_number,
             0U, sizeof(capability_group_info) * capabilityInfo.ts_group_number);
         error = FillCache(capGroupInfos, capabilityInfo.ts_group_number);

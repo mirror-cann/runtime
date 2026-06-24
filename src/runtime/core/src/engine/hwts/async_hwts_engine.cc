@@ -63,7 +63,7 @@ rtError_t AsyncHwtsEngine::Init()
     if (scheduler_ == nullptr) {
         scheduler_ = new (std::nothrow) FifoScheduler();
         COND_RETURN_AND_MSG_OUTER(scheduler_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(FifoScheduler));
+            sizeof(FifoScheduler), "new");
         RT_LOG(RT_LOG_INFO, "new FifoScheduler ok,Runtime_alloc_size %zu.", sizeof(FifoScheduler));
     }
     return RT_ERROR_NONE;
@@ -80,17 +80,17 @@ rtError_t AsyncHwtsEngine::Start()
     void *recv = nullptr;
     notifier_ = OsalFactory::CreateNotifier();
     COND_GOTO_MSG_OUTER(notifier_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION, 
-        ErrorCode::EE1013, sizeof(Notifier));
+        ErrorCode::EE1013, sizeof(Notifier), "new");
 
     send = RtValueToPtr<void *>(THREAD_SENDING);
     sendThread_ = OsalFactory::CreateThread("RT_SEND", this, send);
     COND_GOTO_MSG_OUTER(sendThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()));
+        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
 
     recv = RtValueToPtr<void *>(THREAD_RECVING);
     receiveThread_ = OsalFactory::CreateThread("RT_RECV", this, recv);
     COND_GOTO_MSG_OUTER(receiveThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()));
+        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
 
     sendRunFlag_ = true;
     receiveRunFlag_ = true;

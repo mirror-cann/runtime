@@ -49,7 +49,7 @@ rtError_t MemoryPoolManager::Init()
     for (int32_t i = 0; i < numPools_; ++i) {
         mPool = new (std::nothrow) MemoryPool(device_, true);
         COND_GOTO_MSG_OUTER(mPool == nullptr, MEMORY_POOL_FREE, error,
-            RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(MemoryPool)).c_str());
+            RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(MemoryPool)).c_str(), "new");
         error = mPool->Init();
         COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(error != RT_ERROR_NONE, MEMORY_POOL_FREE, error,
             RT_ERROR_MEMORY_ALLOCATION, "Failed to allocate device memory.");
@@ -143,7 +143,7 @@ rtError_t MemoryPoolManager::AddMemoryPool(const bool readOnly)
     rtError_t error = RT_ERROR_NONE;
     MemoryPool *pool = new (std::nothrow) MemoryPool(device_, readOnly);
     COND_RETURN_AND_MSG_OUTER(pool == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        std::to_string(sizeof(MemoryPool)).c_str());
+        std::to_string(sizeof(MemoryPool)).c_str(), "new");
     error = pool->Init();
     COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(error != RT_ERROR_NONE, MEMORY_POOL_FREE, error,
         RT_ERROR_MEMORY_ALLOCATION, "Failed to allocate device memory.");

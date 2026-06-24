@@ -438,7 +438,7 @@ rtError_t Program::BuildTilingTbl(TilingTabl **tilingTab, uint32_t *kernelLen)
     const uint32_t size = kernelPos_;
     TilingTabl *tilingTabInfo = (TilingTabl *)malloc(sizeof(TilingTabl) * size);
     if (tilingTabInfo == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(TilingTabl) * size);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(TilingTabl) * size, "malloc");
         kernelMapLock_.Unlock();
         return RT_ERROR_PROGRAM_SIZE;
     }
@@ -486,7 +486,7 @@ rtError_t Program::DavidBuildTilingTblForNewFlow(TilingTablForDavid **tilingTab,
     const uint32_t size = kernelPos_;
     TilingTablForDavid* tilingTabInfo = (TilingTablForDavid*)malloc(sizeof(TilingTablForDavid) * size);
     COND_PROC_RETURN_AND_MSG_OUTER(tilingTabInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, kernelMapLock_.Unlock(),
-        sizeof(TilingTablForDavid) * size);
+        sizeof(TilingTablForDavid) * size, "malloc");
     uint64_t function1 = 0ULL;
     uint64_t function2 = 0ULL;
     rtError_t err = RT_ERROR_NONE;
@@ -532,7 +532,7 @@ rtError_t Program::BuildTilingTblForDavid(const Module *mdl, TilingTablForDavid 
     const uint32_t size = kernelPos_;
     TilingTablForDavid *tilingTabInfo = (TilingTablForDavid *)malloc(sizeof(TilingTablForDavid) * size);
     if (tilingTabInfo == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(TilingTablForDavid) * size);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(TilingTablForDavid) * size, "malloc");
         kernelMapLock_.Unlock();
         return RT_ERROR_PROGRAM_SIZE;
     }
@@ -861,7 +861,7 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
 
     Kernel *kernel = new (std::nothrow) Kernel(kernelName, 0U, this, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
     COND_PROC_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        kernelMapLock_.Unlock();, sizeof(Kernel));
+        kernelMapLock_.Unlock();, sizeof(Kernel), "new");
 
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     std::string tmpFuncName = funcName;
@@ -897,7 +897,7 @@ ElfProgram::ElfProgram(const rtKernelAttrType kernelAttrType) : Program(kernelAt
     SetType(Program::ELF_PROGRAM);
     elfData_ = new (std::nothrow) rtElfData();
     if (elfData_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(rtElfData));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(rtElfData), "new");
     }
 }
 
@@ -1127,7 +1127,7 @@ rtError_t ElfProgram::UnifiedKernelRegister()
         if (KernelTable_ == nullptr) {
             KernelTable_ = new (std::nothrow) rtKernelArray_t[GetKernelsCount()];
             COND_RETURN_AND_MSG_OUTER(KernelTable_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-                sizeof(rtKernelArray_t) * GetKernelsCount());
+                sizeof(rtKernelArray_t) * GetKernelsCount(), "new");
         }
 
         /* add kernel to KernelTable */
@@ -1229,7 +1229,7 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     std::vector<void *> allocMem;
     std::unique_ptr<Stream, void(*)(Stream*)> stm(StreamFactory::CreateStream(device, 0U, RT_STREAM_DEFAULT),
                                                   [](Stream* ptr) {ptr->Destructor();});
-    COND_RETURN_AND_MSG_OUTER(stm == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream));
+    COND_RETURN_AND_MSG_OUTER(stm == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
     ret = stm->Setup();
     ERROR_RETURN_MSG_INNER(ret, "Stream setup failed, retCode=%#x.", static_cast<uint32_t>(ret));
 
@@ -1661,7 +1661,7 @@ rtError_t ElfProgram::BuildNewKernel(const std::string tripKernelName, const RtK
 
     Kernel *kernelObj = new (std::nothrow) Kernel(tripKernelName.c_str(), tilingKey, this, kernelAttrType,
         static_cast<uint32_t>(elfkernelInfo->offset), 0U, mixType);
-    COND_RETURN_AND_MSG_OUTER((kernelObj == nullptr), RT_ERROR_KERNEL_NEW, ErrorCode::EE1013, sizeof(Kernel));
+    COND_RETURN_AND_MSG_OUTER((kernelObj == nullptr), RT_ERROR_KERNEL_NEW, ErrorCode::EE1013, sizeof(Kernel), "new");
 
     // set other attrs
     SetKernelAttribute(elfkernelInfo, kernelObj);

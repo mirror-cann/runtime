@@ -190,7 +190,7 @@ rtError_t ApiImpl::ModelCondHandleCreate(Model * const mdl, uint32_t defaultValu
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
 
     CondHandle *condHandle = new (std::nothrow) CondHandle(mdl, defaultValue, flag);
-    COND_RETURN_AND_MSG_OUTER((condHandle == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(CondHandle));
+    COND_RETURN_AND_MSG_OUTER((condHandle == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(CondHandle), "new");
 
     error = condHandle->Setup(curCtx);
     if (error != RT_ERROR_NONE) {

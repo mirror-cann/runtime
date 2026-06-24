@@ -318,7 +318,7 @@ rtError_t Event::CreateEventNotifier(Notifier* &notifier)
 {
     const std::lock_guard<std::mutex> initLock(initMutex_);
     notifier = OsalFactory::CreateNotifier();
-    COND_RETURN_AND_MSG_OUTER(notifier == nullptr, RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013, sizeof(Notifier));
+    COND_RETURN_AND_MSG_OUTER(notifier == nullptr, RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013, sizeof(Notifier), "new");
     return RT_ERROR_NONE;
 }
 

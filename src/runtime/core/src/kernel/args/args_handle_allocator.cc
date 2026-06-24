@@ -46,7 +46,7 @@ rtError_t ArgsHandleAllocator::CreateInnerArgsHandle()
     if (localArgsHandle_ == nullptr) {
         size_t size = sizeof(RtArgsHandle) + (sizeof(ParaDetail) * MAX_PARAM_CNT);
         uint8_t *argsHandleBuff = new (std::nothrow) uint8_t[size];
-        COND_RETURN_AND_MSG_OUTER(argsHandleBuff == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, size);
+        COND_RETURN_AND_MSG_OUTER(argsHandleBuff == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, size, "new");
         localArgsHandle_ = RtPtrToPtr<RtArgsHandle *, uint8_t *>(argsHandleBuff);
         new (localArgsHandle_) RtArgsHandle {};
         for (uint32_t i = 0U; i < MAX_PARAM_CNT; ++i) {
@@ -54,7 +54,7 @@ rtError_t ArgsHandleAllocator::CreateInnerArgsHandle()
         }
         uint8_t *buffer = new (std::nothrow) uint8_t[MAX_ARGS_BUFF_SIZE];
         if (buffer == nullptr) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, MAX_ARGS_BUFF_SIZE);
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, MAX_ARGS_BUFF_SIZE, "new");
             DELETE_A(argsHandleBuff);
             return RT_ERROR_MEMORY_ALLOCATION;
         }

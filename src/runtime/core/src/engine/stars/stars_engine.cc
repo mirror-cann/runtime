@@ -103,7 +103,7 @@ rtError_t StarsEngine::CreateMonitorThread()
     monitorThread_ = OsalFactory::CreateThread(threadName, this, monitor);
     if (monitorThread_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Failed to create monitor thread.");
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
     monitorThreadRunFlag_ = true;
@@ -167,7 +167,7 @@ rtError_t StarsEngine::CreateRecycleThread(void)
     recycleThread_ = OsalFactory::CreateThread(recycleThreadName_.c_str(), this, recycle);
     if (recycleThread_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Failed to create recycle thread for Runtime.");
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 

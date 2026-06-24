@@ -233,7 +233,7 @@ rtError_t FillFftsPlusSqe(TaskInfo* taskInfo, const void * const devMem)
     if (fftsPlusTask->errInfo == nullptr) {
         fftsPlusTask->errInfo = new (std::nothrow) std::vector<rtFftsPlusTaskErrInfo_t>();
         COND_RETURN_AND_MSG_OUTER(fftsPlusTask->errInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, std::to_string(sizeof(std::vector<rtFftsPlusTaskErrInfo_t>)));
+            ErrorCode::EE1013, std::to_string(sizeof(std::vector<rtFftsPlusTaskErrInfo_t>)), "new");
     }
 
     return RT_ERROR_NONE;
@@ -326,7 +326,7 @@ static rtError_t FftsPlusTaskFillArgsAddr(TaskInfo* taskInfo, const rtFftsPlusTa
     if ((argsHandleInfoNum != 0) && (fftsPlusTaskInfo->argsHandleInfoPtr != nullptr)) {
         taskInfo->u.fftsPlusTask.argsHandleInfoPtr = new (std::nothrow) std::vector<void *>();
         COND_RETURN_AND_MSG_OUTER(taskInfo->u.fftsPlusTask.argsHandleInfoPtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, std::to_string(sizeof(std::vector<void *>)));
+            ErrorCode::EE1013, std::to_string(sizeof(std::vector<void *>)), "new");
         for (uint32_t i = 0U; i < argsHandleInfoNum; i++) {
             const Handle * const argHdl = static_cast<Handle *>(fftsPlusTaskInfo->argsHandleInfoPtr[i]);
             if (argHdl == nullptr) {

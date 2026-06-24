@@ -178,7 +178,7 @@ rtError_t ApiImplDavid::LaunchKernelByHandle(Kernel * const kernel, uint32_t blo
         }
         rtHostInputInfo_t *hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
         COND_RETURN_AND_MSG_OUTER(hostArgsInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, std::to_string(sizeof(rtHostInputInfo_t) * phNum));
+            ErrorCode::EE1013, std::to_string(sizeof(rtHostInputInfo_t) * phNum), "new");
         error = ConvertCpuArgsByArgsHandle(cpuKernelArgs, argHandle, hostArgsInfos, phNum);
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_A(hostArgsInfos), "convert args failed.");
         error = CpuKernelLaunchExAll(kernel, blockDim, &cpuKernelArgs, curStm, &taskCfg);
@@ -202,7 +202,7 @@ rtError_t ApiImplDavid::LaunchKernelByHandle(Kernel * const kernel, uint32_t blo
 
     rtHostInputInfo_t *hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
     COND_RETURN_AND_MSG_OUTER(hostArgsInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(rtHostInputInfo_t) * phNum));
+        ErrorCode::EE1013, std::to_string(sizeof(rtHostInputInfo_t) * phNum), "new");
     error = ConvertArgsByArgsHandle(argsInfo, argHandle, hostArgsInfos, phNum);
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_A(hostArgsInfos), "convert args failed.");
     rtStreamLaunchKernelV2ExtendArgs_t launchKernelExtendArgs = {};
@@ -418,14 +418,14 @@ rtError_t ApiImplDavid::EventCreateEx(Event ** const evt, const uint64_t flag)
     if (flag == RT_EVENT_IPC) {
         *evt = new (std::nothrow) IpcEvent(dev, flag, curCtx);
         COND_RETURN_AND_MSG_OUTER(*evt == nullptr, RT_ERROR_EVENT_NEW,
-            ErrorCode::EE1013, std::to_string(sizeof(IpcEvent)));
+            ErrorCode::EE1013, std::to_string(sizeof(IpcEvent)), "new");
         const rtError_t error = (*evt)->Setup();
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*evt);,
                             "setup failed, retCode=%#x", error);
     } else {
         *evt = new (std::nothrow) DavidEvent(dev, flag, curCtx, true);
         COND_RETURN_AND_MSG_OUTER(*evt == nullptr, RT_ERROR_EVENT_NEW,
-            ErrorCode::EE1013, std::to_string(sizeof(DavidEvent)));
+            ErrorCode::EE1013, std::to_string(sizeof(DavidEvent)), "new");
     }
 
     InitEmbeddedInnerHandle<Event>(*evt);
@@ -918,7 +918,7 @@ rtError_t ApiImplDavid::CntNotifyCreate(const int32_t deviceId, CountNotify ** c
 
     *retCntNotify = new (std::nothrow) CountNotify(static_cast<uint32_t>(deviceId), dev->DevGetTsId());
     COND_RETURN_AND_MSG_OUTER(*retCntNotify == nullptr, RT_ERROR_NOTIFY_NEW,
-        ErrorCode::EE1013, std::to_string(sizeof(CountNotify)));
+        ErrorCode::EE1013, std::to_string(sizeof(CountNotify)), "new");
 
     (*retCntNotify)->SetNotifyFlag(flag);
     rtError_t error = (*retCntNotify)->Setup();

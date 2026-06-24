@@ -17,13 +17,13 @@ extern "C" {
 VISIBILITY_DEFAULT cce::runtime::Runtime* ConstructRuntimeImpl()
 {
     cce::runtime::Runtime* rt = new (std::nothrow) cce::runtime::Runtime();
-    COND_RETURN_AND_MSG_OUTER(rt == nullptr, nullptr, ErrorCode::EE1013, sizeof(cce::runtime::Runtime));
+    COND_RETURN_AND_MSG_OUTER(rt == nullptr, nullptr, ErrorCode::EE1013, sizeof(cce::runtime::Runtime), "new");
     RT_LOG(RT_LOG_INFO, "RuntimeImpl construct success, runtime = %p", rt);
     cce::runtime::Runtime::runtime_ = rt;
 #ifndef CFG_DEV_PLATFORM_PC
     cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
     COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(cce::tprt::TprtManage::tprt_ == nullptr, nullptr,
-        delete rt; cce::runtime::Runtime::runtime_ = nullptr, sizeof(cce::tprt::TprtManage));
+        delete rt; cce::runtime::Runtime::runtime_ = nullptr, sizeof(cce::tprt::TprtManage), "new");
 #endif
     return rt;
 }

@@ -695,7 +695,7 @@ rtError_t CaptureModel::BindSqCq(void)
 
     if (switchInfo_ == nullptr) {
         switchInfo_ = new (std::nothrow) struct sq_switch_stream_info[sqCqNum_]();
-        COND_RETURN_AND_MSG_OUTER(switchInfo_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(sq_switch_stream_info) * sqCqNum_);
+        COND_RETURN_AND_MSG_OUTER(switchInfo_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(sq_switch_stream_info) * sqCqNum_, "new");
     }
 
     /* bind sq to stream */
@@ -942,7 +942,7 @@ rtError_t CaptureModel::SetShapeInfo(const Stream* const stm, const uint32_t tas
     const size_t totalSize = MS_PROF_SHAPE_INFO_SIZE + MS_PROF_SHAPE_HEADER_SIZE + infoSize;
     auto rawMemPtr = std::make_unique<uint8_t []>(totalSize);
     if (unlikely(rawMemPtr == nullptr)) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, totalSize);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, totalSize, "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
     MsprofShapeInfo *shapeInfo = RtPtrToPtr<MsprofShapeInfo *, uint8_t *>(rawMemPtr.get());
@@ -1182,7 +1182,7 @@ rtError_t CaptureModel::AllocSqCqAndBindInternal()
 
     sqCqArray_ = new (std::nothrow) rtDeviceSqCqInfo_t[streamNum];
     COND_RETURN_AND_MSG_OUTER(sqCqArray_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, 
-        std::to_string(sizeof(rtDeviceSqCqInfo_t) * streamNum));
+        std::to_string(sizeof(rtDeviceSqCqInfo_t) * streamNum), "new");
 
     rtError_t error = AllocSqCqProc(streamNum);
     ERROR_PROC_RETURN_MSG_INNER(error, DELETE_A(sqCqArray_);,

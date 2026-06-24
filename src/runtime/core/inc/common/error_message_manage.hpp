@@ -222,11 +222,11 @@
         return RTERRCODE; \
     }
 
-//EE1013 内存分配失败使用，PROC 为清理操作，bufSize 为请求分配的内存大小
-#define COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(COND, RTERRCODE, PROC, bufSize) \
+//EE1013 内存分配失败使用，PROC 为清理操作，bufSize 为请求分配的内存大小，allocInterface 为申请接口名
+#define COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(COND, RTERRCODE, PROC, bufSize, allocInterface) \
     if (unlikely(COND)) { \
         PROC; \
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, bufSize); \
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, bufSize, allocInterface); \
         return RTERRCODE; \
     }
 

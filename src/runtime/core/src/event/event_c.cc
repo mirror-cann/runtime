@@ -128,7 +128,7 @@ rtError_t ProcStreamRecordTask(Stream * const stm, int32_t timeout)
         lastHalfRecord = new (std::nothrow) DavidEvent(stm->Device_(), RT_EVENT_STREAM_MARK, stm->Context_(), false);
         stm->SetLastHalfRecord(lastHalfRecord);
         COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(lastHalfRecord == nullptr, RT_ERROR_EVENT_NEW,
-            stm->StreamUnLock();, sizeof(DavidEvent));
+            stm->StreamUnLock();, sizeof(DavidEvent), "new");
     }
     error = AllocTaskInfo(&tsk, stm, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",

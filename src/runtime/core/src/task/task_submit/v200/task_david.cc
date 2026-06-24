@@ -108,7 +108,7 @@ static rtError_t ExpandHostSqeBufferLocked(Stream * const stm)
     const uint32_t newSize = stm->GetSqeBufferSize() + STREAM_SQE_BUFFER_INIT_SIZE;
     uint8_t *newBuffer = new (std::nothrow) uint8_t[newSize];
     COND_RETURN_AND_MSG_OUTER(newBuffer == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(uint8_t) * newSize);
+        ErrorCode::EE1013, sizeof(uint8_t) * newSize, "new");
 
     errno_t ret = memset_s(newBuffer, newSize, 0U, newSize);
     COND_PROC_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_MEMORY_ALLOCATION, delete[] newBuffer,

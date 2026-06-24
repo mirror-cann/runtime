@@ -105,7 +105,7 @@ static Runtime *CreateRuntimeImpl(void **soHandle)
     UNUSED(soHandle);
     cce::runtime::Runtime* rt = new (std::nothrow) cce::runtime::Runtime();
     if (rt == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(cce::runtime::Runtime));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(cce::runtime::Runtime), "new");
     }
 #ifdef XPU_UT
     cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();

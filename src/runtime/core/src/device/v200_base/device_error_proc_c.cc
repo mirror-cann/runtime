@@ -384,7 +384,7 @@ void CheckAndPrintRasInfo(const Device * const dev)
     constexpr uint32_t maxFaultNum = 128U;
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
     COND_RETURN_VOID_AND_MSG_OUTER(faultEventInfo == nullptr, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent));
+        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
     constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
     const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
     ScopeGuard faultEventInfoRelease(releaseFunc);
@@ -473,7 +473,7 @@ static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo 
     constexpr uint32_t maxFaultNum = 128U;
     rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
     COND_RETURN_VOID_AND_MSG_OUTER(faultEventInfo == nullptr, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent));
+        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
 
     const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
     ScopeGuard faultEventInfoRelease(releaseFunc);

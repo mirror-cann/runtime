@@ -383,7 +383,7 @@ rtError_t StreamGetSatStatus(const uint64_t outputSize, Stream * const curStm)
     // H2D copy
     hostPtr = AlignedMalloc(Context::MEM_ALIGN_SIZE, sizeof(uint64_t));
     if (hostPtr == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(uint64_t));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(uint64_t), "malloc");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
     hostPtrGuard.reset(hostPtr, &AlignedFree);
@@ -420,7 +420,7 @@ rtError_t SyncGetDeviceMsg(Device * const dev, const void * const devMemAddr, co
     std::unique_ptr<Stream, void(*)(Stream*)> stm(StreamFactory::CreateStream(dev, 0U),
         [](Stream *ptr) {ptr->Destructor();});
     if (stm == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Stream));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Stream), "new");
         return RT_ERROR_STREAM_NEW;
     }
     rtError_t error = stm->Setup();

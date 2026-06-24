@@ -539,11 +539,11 @@
       "errClass": "RTS Errors",
       "errTitle": "Resource_Error_Insufficient_Host_Memory",
       "ErrCode": "EE1013",
-      "ErrMessage": "Failed to allocate %s bytes host memory for Runtime.",
-      "Arglist": "buf_size",
+      "ErrMessage": "Failed to allocate %s bytes of host memory via %s to Runtime.",
+      "Arglist": "buf_size, alloc_interface",
       "suggestion": {
         "Possible Cause": "Allocation failed due to insufficient host memory.",
-        "Solution": "Stop unnecessary processes and ensure that the required memory is available."
+        "Solution": "Ensure that there is sufficient memory available. You can stop unnecessary processes to free up memory."
       }
     },
     {
@@ -891,11 +891,11 @@
       "errClass": "ACL Errors",
       "errTitle": "Resource_Error_Insufficient_Host_Memory",
       "ErrCode": "EH0010",
-      "ErrMessage": "Failed to allocate %s bytes host memory for ACL.",
-      "Arglist": "buf_size",
+      "ErrMessage": "Failed to allocate %s bytes of host memory via %s to ACL.",
+      "Arglist": "buf_size, alloc_interface",
       "suggestion": {
         "Possible Cause": "Allocation failed due to insufficient host memory.",
-        "Solution": "Stop unnecessary processes and ensure the required memory is available."
+        "Solution": "Ensure that there is sufficient memory available. You can stop unnecessary processes to free up memory."
       }
     },
     {

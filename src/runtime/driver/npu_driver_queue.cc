@@ -461,7 +461,7 @@ static rtError_t MemGrpQueryGroupsOfProcess(const rtMemGrpQueryInput_t * const i
 
     const std::unique_ptr<GroupQueryOutput> drvOutputUniquePtr(new (std::nothrow)(GroupQueryOutput));
     COND_RETURN_AND_MSG_OUTER(drvOutputUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(GroupQueryOutput)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(GroupQueryOutput)).c_str(), "new");
     GroupQueryOutput * const drvOutput = drvOutputUniquePtr.get();
 
     ret = memset_s(RtPtrToPtr<void *>(drvOutput), sizeof(GroupQueryOutput), 0, sizeof(GroupQueryOutput));
@@ -508,7 +508,7 @@ static rtError_t MemGrpQueryGroupId(const rtMemGrpQueryInput_t * const input, rt
 
     const std::unique_ptr<GroupQueryOutput> drvOutputUniquePtr(new (std::nothrow)(GroupQueryOutput));
     COND_RETURN_AND_MSG_OUTER(drvOutputUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(GroupQueryOutput)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(GroupQueryOutput)).c_str(), "new");
     GroupQueryOutput * const drvOutput = drvOutputUniquePtr.get();
 
     ret = memset_s(RtPtrToPtr<void *>(drvOutput), sizeof(GroupQueryOutput), 0, sizeof(GroupQueryOutput));
@@ -547,7 +547,7 @@ static rtError_t MemGrpGrpQueryGroupAddrInfo(const rtMemGrpQueryInput_t * const 
 
     const std::unique_ptr<GroupQueryOutput> drvOutputUniquePtr(new (std::nothrow)(GroupQueryOutput));
     COND_RETURN_AND_MSG_OUTER(drvOutputUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(GroupQueryOutput)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(GroupQueryOutput)).c_str(), "new");
     GroupQueryOutput * const drvOutput = drvOutputUniquePtr.get();
     ret = memset_s(RtPtrToPtr<void *>(drvOutput), sizeof(GroupQueryOutput), 0, sizeof(GroupQueryOutput));
     COND_RETURN_ERROR(ret != EOK, RT_ERROR_SEC_HANDLE,
@@ -722,7 +722,7 @@ rtError_t NpuDriver::MemQueueInit(const int32_t devId)
 
     const std::unique_ptr<QueueQueryOutput> outputUniquePtr(new (std::nothrow)(QueueQueryOutput));
     COND_RETURN_AND_MSG_OUTER(outputUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(QueueQueryOutput)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(QueueQueryOutput)).c_str(), "new");
     QueueQueryOutput * const output = outputUniquePtr.get();
 
     const errno_t rc = memset_s(RtPtrToPtr<void *>(output), sizeof(QueueQueryOutput), 0,
@@ -939,7 +939,7 @@ static rtError_t GetBuffIovec(struct buff_iovec * const vec, const rtMemQueueBuf
     COND_RETURN_ERROR(len == 0U, RT_ERROR_INVALID_VALUE, "malloc len can not be 0");
     char_t *tempBuff = new (std::nothrow)char_t[len];
     COND_RETURN_AND_MSG_OUTER(tempBuff == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(len).c_str());
+        ErrorCode::EE1013, std::to_string(len).c_str(), "new");
     size_t offset = 0U;
     for (uint32_t i = 0U; i < inBuf->buffCount; ++i) {
         const drvError_t drvRet = drvMemcpy(static_cast<DVdeviceptr>(RtPtrToPtr<uintptr_t>(tempBuff) + offset),
@@ -977,7 +977,7 @@ rtError_t NpuDriver::MemQueueEnQueueBuff(const int32_t devId, const uint32_t qid
     const size_t totalLen = sizeof(struct buff_iovec) + (buffCnt * sizeof(struct iovec_info));
     const std::unique_ptr<char_t[]> vecUniquePtr(new (std::nothrow)char_t[totalLen]);
     COND_RETURN_AND_MSG_OUTER(vecUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(totalLen).c_str());
+        ErrorCode::EE1013, std::to_string(totalLen).c_str(), "new");
     struct buff_iovec * const vec = RtPtrToPtr<buff_iovec *>(vecUniquePtr.get());
 
     vec->context_base = inBuf->contextAddr;
@@ -1013,7 +1013,7 @@ rtError_t NpuDriver::MemQueueDeQueueBuff(const int32_t devId, const uint32_t qid
     const size_t totalLen = sizeof(struct buff_iovec) + (outBuf->buffCount * sizeof(struct iovec_info));
     const std::unique_ptr<char_t[]> vecUniquePtr(new (std::nothrow)char_t[totalLen]);
     COND_RETURN_AND_MSG_OUTER(vecUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(totalLen).c_str());
+        ErrorCode::EE1013, std::to_string(totalLen).c_str(), "new");
     struct buff_iovec * const vec = RtPtrToPtr<buff_iovec *>(vecUniquePtr.get());
 
     vec->context_base = outBuf->contextAddr;
@@ -1082,7 +1082,7 @@ rtError_t NpuDriver::MemQueueQuery(const int32_t devId, const rtMemQueueQueryCmd
     // output, the length is too large, malloc is required.
     const std::unique_ptr<QueueQueryOutput> outputUniquePtr(new (std::nothrow)(QueueQueryOutput));
     COND_RETURN_AND_MSG_OUTER(outputUniquePtr == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(QueueQueryOutput)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(QueueQueryOutput)).c_str(), "new");
     QueueQueryOutput * const output = outputUniquePtr.get();
 
     ret = memset_s(RtPtrToPtr<void *>(output), sizeof(QueueQueryOutput), 0, sizeof(QueueQueryOutput));

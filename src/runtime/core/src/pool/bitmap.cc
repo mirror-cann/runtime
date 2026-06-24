@@ -38,7 +38,7 @@ rtError_t Bitmap::AllocBitmap()
     const uint32_t maxBitmapIdx = (maxIdCount_ - 1U) / 64U; // 64:bit of uint64_t
     tmpBitmap = new (std::nothrow) uint64_t[maxBitmapIdx + 1U];
     COND_PROC_RETURN_AND_MSG_OUTER((tmpBitmap == nullptr), RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, mutex_.unlock(), std::to_string(static_cast<size_t>(maxBitmapIdx + 1U) * sizeof(uint64_t)).c_str());
+        ErrorCode::EE1013, mutex_.unlock(), std::to_string(static_cast<size_t>(maxBitmapIdx + 1U) * sizeof(uint64_t)).c_str(), "new");
 
     for (uint32_t i = 0U; i <= maxBitmapIdx; i++) {
         tmpBitmap[i] = static_cast<uint64_t>(-1); // 1-Free; 0-Occupied

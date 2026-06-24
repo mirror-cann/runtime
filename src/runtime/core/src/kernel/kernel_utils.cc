@@ -419,7 +419,7 @@ void SetKernelLaunchParams(const Stream *const stm, const rtArgsEx_t *const args
 
     launchParam.placeHoderPtr = new (std::nothrow) rtHostInputInfo_t[placeHoderNum];
     if (launchParam.placeHoderPtr == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(rtHostInputInfo_t) * placeHoderNum);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(rtHostInputInfo_t) * placeHoderNum, "new");
         return;
     }
     launchParam.placeHoderNum = placeHoderNum;

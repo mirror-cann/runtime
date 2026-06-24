@@ -754,7 +754,7 @@ void Engine::ReportStatusOomProc(const rtError_t error, const uint32_t deviceId)
     RT_LOG(RT_LOG_ERROR, "Device oom, ret=%#x device_id=%u, start exception CallBack.", error, deviceId);
     const std::unique_ptr<rtExceptionInfo_t> exceptionInfo = std::make_unique<rtExceptionInfo_t>();
     COND_RETURN_VOID_AND_MSG_OUTER(exceptionInfo == nullptr, ErrorCode::EE1013,
-        sizeof(rtExceptionInfo_t));
+        sizeof(rtExceptionInfo_t), "new");
     exceptionInfo.get()->retcode = static_cast<uint32_t>(RT_TRANS_EXT_ERRCODE(error));
     exceptionInfo.get()->deviceid = deviceId;
     exceptionInfo.get()->tid = UINT32_MAX;

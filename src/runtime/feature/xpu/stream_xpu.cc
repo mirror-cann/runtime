@@ -73,7 +73,7 @@ rtError_t XpuStream::Setup(void)
     taskPublicBuffSize_ = xpuDevice->GetXpuStreamDepth();
     taskPublicBuff_ = new (std::nothrow) uint32_t[taskPublicBuffSize_];
     COND_RETURN_AND_MSG_OUTER(taskPublicBuff_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013,
-        std::to_string(sizeof(uint32_t) * taskPublicBuffSize_));
+        std::to_string(sizeof(uint32_t) * taskPublicBuffSize_), "new");
 
     rtError_t error = CreateStreamTaskRes();
     COND_RETURN_AND_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW,
@@ -243,7 +243,7 @@ rtError_t XpuStream::CreateStreamTaskRes()
 {
     taskResMang_ = new (std::nothrow) TaskResManageDavid();
     COND_RETURN_AND_MSG_OUTER(taskResMang_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(TaskResManageDavid));
+        sizeof(TaskResManageDavid), "new");
     uint32_t rtsqDepth = (RtPtrToPtr<XpuDevice *>(Device_()))->GetXpuStreamDepth();
     taskResMang_->taskPoolNum_ = static_cast<uint16_t>(rtsqDepth);
     SetSqDepth(rtsqDepth);
@@ -259,7 +259,7 @@ rtError_t XpuStream::CreateStreamTaskRes()
 rtError_t XpuStream::CreateStreamArgRes()
 {
     argManage_ = new (std::nothrow) XpuArgManage(this);
-    COND_RETURN_AND_MSG_OUTER(argManage_ == nullptr, RT_ERROR_CALLOC, ErrorCode::EE1013, sizeof(XpuArgManage));
+    COND_RETURN_AND_MSG_OUTER(argManage_ == nullptr, RT_ERROR_CALLOC, ErrorCode::EE1013, sizeof(XpuArgManage), "new");
 
     isHasArgPool_ = argManage_->CreateArgRes();
     if (isHasArgPool_ == false) {

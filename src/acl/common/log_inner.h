@@ -487,14 +487,14 @@ do { \
         } \
     while (false)
 
-#define ACL_CHECK_MALLOC_RESULT_REPORT_RET(val, size, ret) \
+#define ACL_CHECK_MALLOC_RESULT_REPORT_RET(val, size, allocInterface, ret) \
     do { \
         if ((val) == nullptr) { \
             const std::string sizeVal = std::to_string(size); \
             ACL_LOG_ERROR("[Check][Malloc]Allocate memory for [%s] failed, bufferSize=%zu.", #val, size); \
             acl::AclErrorLogManager::ReportInputError(acl::ALLOC_MEMORY_FAILED_MSG, \
-                std::vector<const char *>({"buf_size"}), \
-                std::vector<const char *>({sizeVal.c_str()})); \
+                std::vector<const char *>({"buf_size", "alloc_interface"}), \
+                std::vector<const char *>({sizeVal.c_str(), allocInterface})); \
             return ret; } \
         } \
     while (false)

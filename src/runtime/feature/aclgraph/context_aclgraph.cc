@@ -936,7 +936,7 @@ rtError_t Context::StreamAddCondTask(CondHandle *condHandle, rtCondTaskParams pa
     if (notify == nullptr) {
         notify = new (std::nothrow) Notify(device_->Id_(), device_->DevGetTsId());
         COND_RETURN_AND_MSG_OUTER(notify == nullptr, RT_ERROR_NOTIFY_NEW,
-            ErrorCode::EE1013, sizeof(Notify));
+            ErrorCode::EE1013, sizeof(Notify), "new");
         error = notify->SetupWithoutAllocNtyId();
         COND_PROC_RETURN_WARN(error != RT_ERROR_NONE, error, DELETE_O(notify), "Notify setup, retCode=%#x", error);
     }

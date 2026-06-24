@@ -117,7 +117,7 @@ rtError_t DeviceMsgHandler::HandleMsg()
     RT_LOG(RT_LOG_INFO, "Begin to process device errMessage.");
     const std::unique_ptr<char_t[]> hostBuf(new(std::nothrow) char_t[devMemSize_]);
     COND_RETURN_AND_MSG_OUTER(hostBuf == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        devMemSize_ * sizeof(char_t));
+        devMemSize_ * sizeof(char_t), "new");
     auto * const devDrv = dev_->Driver_();
     // 1. memcpy error message buffer to host
     const uint64_t destMax = devMemSize_;
