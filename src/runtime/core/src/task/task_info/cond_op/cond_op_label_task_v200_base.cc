@@ -73,14 +73,14 @@ static bool CondOpLabelTaskRegister()
 
     const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_LABEL_SET, labelSetFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_LABEL_SWITCH, labelSwitchFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_LABEL_GOTO, labelGotoFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_LABEL_SET, labelSetFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_LABEL_SWITCH, labelSwitchFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_LABEL_GOTO, labelGotoFuncs);
     }
 
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_LABEL_SET, &ConstructDavidSqeForLabelSetTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_LABEL_SWITCH, &ConstructDavidSqeBase);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_LABEL_GOTO, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_LABEL_SET, &ConstructDavidSqeForLabelSetTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_LABEL_SWITCH, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_LABEL_GOTO, &ConstructDavidSqeBase);
     return true;
 }
 

@@ -251,8 +251,8 @@ static bool RdmaTaskRegister()
 
     const auto &chips = GetV100Chips();
     for (auto chip : chips) {
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_RDMA_SEND, rdmaSendFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_RDMA_DB_SEND, rdmaDbSendFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_RDMA_SEND, rdmaSendFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_RDMA_DB_SEND, rdmaDbSendFuncs);
     }
 
     return true;

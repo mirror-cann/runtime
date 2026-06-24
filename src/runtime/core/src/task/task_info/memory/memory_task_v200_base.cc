@@ -199,7 +199,7 @@ static rtError_t ShiftBatchArrays(AsyncDmaBatchInfo &batchInfo, bool handleFixed
     }
 
     const uint64_t realCnt = batchInfo.count;
-    size_t offset = static_cast<size_t>(batchInfo.fixedCnt);
+    const size_t offset = static_cast<size_t>(batchInfo.fixedCnt);
     errno_t memRet = memmove_s(batchInfo.srcs, realCnt * sizeof(void*),
                     batchInfo.srcs + offset, realCnt * sizeof(void*));
     COND_RETURN_ERROR(memRet != EOK, RT_ERROR_SEC_HANDLE,

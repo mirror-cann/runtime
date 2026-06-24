@@ -1552,8 +1552,8 @@ rtError_t DavidStream::HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
     const rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
-    uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
-    auto ret = memcpy_s(
+    const uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
+    const auto ret = memcpy_s(
         RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, static_cast<void*>(sqeBuffer), sqeSize);
     COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
         "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
@@ -1594,7 +1594,7 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
     rtError_t error = StarsAddTaskToStreamForModelUpdate(workTask, sendSqeNum);
     ERROR_RETURN_MSG_INNER(error, "Add task to stream failed, stream_id=%d, task_id=%u.", streamId_, workTask->id);
 
-    uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
+    const uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
     const auto ret = memcpy_s(
         RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, RtPtrToPtr<void*>(oldhostSqeAddr), sqeSize);
     COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,

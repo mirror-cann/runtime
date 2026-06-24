@@ -155,26 +155,26 @@ static bool MemoryTaskRegister()
 
     const auto& chips = GetV201Chips();
     for (const auto chip : chips) {
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_MEMCPY, memcpyFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_MEM_WRITE_VALUE, memWriteValueFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_MEM_WAIT_VALUE, memWaitValueFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_CAPTURE_RECORD, captureRecordFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_CAPTURE_WAIT, captureWaitFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_IPC_RECORD, ipcRecordFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_IPC_WAIT, ipcWaitFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_CREATE_L2_ADDR, createL2AddrFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_UPDATE_ADDRESS, updateAddressFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_MEMCPY, memcpyFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_MEM_WRITE_VALUE, memWriteValueFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_MEM_WAIT_VALUE, memWaitValueFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_CAPTURE_RECORD, captureRecordFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_CAPTURE_WAIT, captureWaitFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_IPC_RECORD, ipcRecordFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_IPC_WAIT, ipcWaitFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_CREATE_L2_ADDR, createL2AddrFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_UPDATE_ADDRESS, updateAddressFuncs);
     }
 
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_MEMCPY, &ConstructDavidSqeForMemcpyAsyncTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_MEM_WRITE_VALUE, &ConstructDavidSqeForMemWriteValueTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_MEM_WAIT_VALUE, &ConstructDavidSqeForMemWaitValueTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_CAPTURE_RECORD, &ConstructDavidSqeForMemWriteValueTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_CAPTURE_WAIT, &ConstructDavidSqeForMemWaitValueTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_IPC_RECORD, &ConstructDavidSqeForMemWriteValueTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_IPC_WAIT, &ConstructDavidSqeForMemWaitValueTask);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_CREATE_L2_ADDR, &ConstructDavidSqeBase);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_UPDATE_ADDRESS, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_MEMCPY, &ConstructDavidSqeForMemcpyAsyncTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_MEM_WRITE_VALUE, &ConstructDavidSqeForMemWriteValueTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_MEM_WAIT_VALUE, &ConstructDavidSqeForMemWaitValueTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_CAPTURE_RECORD, &ConstructDavidSqeForMemWriteValueTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_CAPTURE_WAIT, &ConstructDavidSqeForMemWaitValueTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_IPC_RECORD, &ConstructDavidSqeForMemWriteValueTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_IPC_WAIT, &ConstructDavidSqeForMemWaitValueTask);
+    RegDavidSqeFunc(TS_TASK_TYPE_CREATE_L2_ADDR, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_UPDATE_ADDRESS, &ConstructDavidSqeBase);
     return true;
 }
 

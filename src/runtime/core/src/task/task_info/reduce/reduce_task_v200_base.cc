@@ -34,7 +34,7 @@ static bool ReduceTaskRegister()
         RegTaskFunc(chip, TS_TASK_TYPE_REDUCE_ASYNC_V2, funcs);
     }
 
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_REDUCE_ASYNC_V2, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_REDUCE_ASYNC_V2, &ConstructDavidSqeBase);
     return true;
 }
 

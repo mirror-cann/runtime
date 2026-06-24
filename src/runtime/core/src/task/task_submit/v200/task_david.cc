@@ -470,7 +470,7 @@ static void SetFlipTaskNum(Stream *const stream, uint32_t prePos, uint32_t sqeNu
     return;
 }
 
-static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * const stm, void *sqeAddr)
+static rtError_t WriteAutoSplitSqeToHostBuffer(const TaskInfo *taskInfo, Stream * const stm, void *sqeAddr)
 {
     AutoSplitSqContext *ctx = stm->GetAutoSplitCtx();
     uint8_t *sqeBuffer = stm->GetSqeBuffer();
@@ -481,7 +481,7 @@ static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * cons
     }
     const uint32_t hostPos = ctx->curStreamSqeCount - taskInfo->sqeNum;
     // 边界检查：确保写入位置在有效范围内
-    uint32_t hostSqeCapacity = stm->GetSqeBufferSize() / SQE_SIZE_UNIT;
+    const uint32_t hostSqeCapacity = stm->GetSqeBufferSize() / SQE_SIZE_UNIT;
     if ((hostPos + taskInfo->sqeNum) > hostSqeCapacity) {
         RT_LOG(RT_LOG_ERROR, "hostSqeBuffer boundary check failed, stream_id=%d, task_id=%u, "
             "hostPos=%u, sqeNum=%u, capacity=%u",
@@ -489,7 +489,7 @@ static rtError_t WriteAutoSplitSqeToHostBuffer(TaskInfo *taskInfo, Stream * cons
         return RT_ERROR_INVALID_VALUE;
     }
     uint8_t *hostSqPos = sqeBuffer + hostPos * SQE_SIZE_UNIT;
-    uint64_t sqeSize = static_cast<uint64_t>(taskInfo->sqeNum) * SQE_SIZE_UNIT;
+    const uint64_t sqeSize = static_cast<uint64_t>(taskInfo->sqeNum) * SQE_SIZE_UNIT;
     const errno_t ret = memcpy_s(hostSqPos, sqeSize, sqeAddr, sqeSize);
     COND_RETURN_AND_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
         "Failed to call memcpy_s to copy sqeAddr, src=%p, dest=%p, dest_max=%lu, sqe_num=%u, retCode=%#x.",
@@ -542,7 +542,7 @@ rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
     }
 
     if (stm->IsSoftwareSqEnable()) {
-        uint64_t sqeSize = static_cast<uint64_t>(taskInfo->sqeNum) * SQE_SIZE_UNIT;
+        const uint64_t sqeSize = static_cast<uint64_t>(taskInfo->sqeNum) * SQE_SIZE_UNIT;
         const auto ret = memcpy_s(RtPtrToPtr<void *>(stm->GetSqeBuffer() + SQE_SIZE_UNIT * taskInfo->pos),
             sqeSize, sqeAddr, sqeSize);
         if (ret != EOK) {

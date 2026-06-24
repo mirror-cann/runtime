@@ -1053,16 +1053,16 @@ void RefreshTaskFuncPointer(rtChipType_t chipType)
     RT_LOG(RT_LOG_INFO, "Task func pointer refreshed to chip type: %d", chipType);
 }
 
-rtError_t RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs)
+void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs)
 {
     if (chipType < CHIP_BEGIN || chipType >= CHIP_END) {
         RT_LOG(RT_LOG_ERROR, "chip type is invalid: %d", chipType);
-        return RT_ERROR_TASK_BASE;
+        return;
     }
     
     if (taskType >= TS_TASK_TYPE_RESERVED) {
         RT_LOG(RT_LOG_ERROR, "task type is invalid: %d", taskType);
-        return RT_ERROR_TASK_BASE;
+        return;
     }
     
     TaskFuncArrays& arrays = g_taskFuncArrays[chipType];
@@ -1075,7 +1075,7 @@ rtError_t RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFu
     arrays.setResultFunc[taskType] = funcs.setResultFunc;
     arrays.setStarsResultFunc[taskType] = funcs.setStarsResultFunc;
     
-    return RT_ERROR_NONE;
+    return;
 }
 
 #endif

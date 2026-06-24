@@ -191,7 +191,7 @@ void FreeTempHostAddr(const Stream * const stm, void * const hostAddr)
 rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * const stm, uint32_t sqeLen)
 {
     void *srcHostAddr = nullptr;
-    uint64_t allocSize = SQE_SIZE_UNIT * sqeLen;
+    const uint64_t allocSize = SQE_SIZE_UNIT * sqeLen;
 
     // 将updateTask转成sqe，并拷贝放到host svm内存中
     rtError_t error = UpdateDavidKernelPrepare(updateTask, &srcHostAddr, allocSize);

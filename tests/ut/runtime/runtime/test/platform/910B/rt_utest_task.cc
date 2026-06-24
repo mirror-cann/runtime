@@ -1574,8 +1574,7 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_valid_params)
         .setStarsResultFunc = nullptr,
     };
     
-    rtError_t ret = RegTaskFunc(chipType, taskType, funcs);
-    EXPECT_EQ(ret, RT_ERROR_NONE);
+    EXPECT_NO_THROW(RegTaskFunc(chipType, taskType, funcs));
 }
 
 TEST_F(CloudV2TaskTest, RegTaskFunc_invalid_chip_type)
@@ -1584,8 +1583,7 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_invalid_chip_type)
     tsTaskType_t taskType = TS_TASK_TYPE_KERNEL_AICPU;
     TaskFuncSingle funcs = {};
     
-    rtError_t ret = RegTaskFunc(invalidChipType, taskType, funcs);
-    EXPECT_EQ(ret, RT_ERROR_TASK_BASE);
+    EXPECT_NO_THROW(RegTaskFunc(invalidChipType, taskType, funcs));
 }
 
 TEST_F(CloudV2TaskTest, RegTaskFunc_invalid_task_type)
@@ -1594,51 +1592,40 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_invalid_task_type)
     tsTaskType_t invalidTaskType = TS_TASK_TYPE_RESERVED;
     TaskFuncSingle funcs = {};
     
-    rtError_t ret = RegTaskFunc(chipType, invalidTaskType, funcs);
-    EXPECT_EQ(ret, RT_ERROR_TASK_BASE);
+    EXPECT_NO_THROW(RegTaskFunc(chipType, invalidTaskType, funcs));
 }
 
 TEST_F(CloudV2TaskTest, RegTaskFunc_chip_type_boundary)
 {
     TaskFuncSingle funcs = {};
     
-    rtError_t ret1 = RegTaskFunc(CHIP_BEGIN, TS_TASK_TYPE_KERNEL_AICPU, funcs);
-    EXPECT_EQ(ret1, RT_ERROR_NONE);
-    
-    rtError_t ret2 = RegTaskFunc(static_cast<rtChipType_t>(CHIP_END - 1), TS_TASK_TYPE_KERNEL_AICPU, funcs);
-    EXPECT_EQ(ret2, RT_ERROR_NONE);
+    EXPECT_NO_THROW(RegTaskFunc(CHIP_BEGIN, TS_TASK_TYPE_KERNEL_AICPU, funcs));
+    EXPECT_NO_THROW(RegTaskFunc(static_cast<rtChipType_t>(CHIP_END - 1), TS_TASK_TYPE_KERNEL_AICPU, funcs));
 }
 
 TEST_F(CloudV2TaskTest, RegTaskFunc_different_chip_types)
 {
     TaskFuncSingle funcs = {};
     
-    rtError_t ret1 = RegTaskFunc(CHIP_CLOUD, TS_TASK_TYPE_KERNEL_AICPU, funcs);
-    EXPECT_EQ(ret1, RT_ERROR_NONE);
-    
-    rtError_t ret2 = RegTaskFunc(CHIP_DC, TS_TASK_TYPE_KERNEL_AICPU, funcs);
-    EXPECT_EQ(ret2, RT_ERROR_NONE);
-    
-    rtError_t ret3 = RegTaskFunc(CHIP_ADC, TS_TASK_TYPE_KERNEL_AICPU, funcs);
-    EXPECT_EQ(ret3, RT_ERROR_NONE);
+    EXPECT_NO_THROW(RegTaskFunc(CHIP_CLOUD, TS_TASK_TYPE_KERNEL_AICPU, funcs));
+    EXPECT_NO_THROW(RegTaskFunc(CHIP_DC, TS_TASK_TYPE_KERNEL_AICPU, funcs));
+    EXPECT_NO_THROW(RegTaskFunc(CHIP_ADC, TS_TASK_TYPE_KERNEL_AICPU, funcs));
 }
 
 TEST_F(CloudV2TaskTest, RegTaskFunc_concurrent_registration)
 {
     const int threadCount = 10;
     std::vector<std::thread> threads;
-    std::atomic<int> successCount(0);
+    std::atomic<int> completedCount(0);
     
     for (int i = 0; i < threadCount; i++) {
-        threads.emplace_back([i, &successCount]() {
+        threads.emplace_back([i, &completedCount]() {
             rtChipType_t chipType = static_cast<rtChipType_t>(i % 3);
             tsTaskType_t taskType = TS_TASK_TYPE_KERNEL_AICPU;
             TaskFuncSingle funcs = {};
             
-            rtError_t ret = RegTaskFunc(chipType, taskType, funcs);
-            if (ret == RT_ERROR_NONE) {
-                successCount++;
-            }
+            RegTaskFunc(chipType, taskType, funcs);
+            completedCount++;
         });
     }
     
@@ -1646,7 +1633,7 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_concurrent_registration)
         thread.join();
     }
 
-    EXPECT_EQ(successCount.load(), threadCount);
+    EXPECT_EQ(completedCount.load(), threadCount);
 }
 
 TEST_F(CloudV2TaskTest, GetV100Chips_valid)

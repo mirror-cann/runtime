@@ -39,14 +39,14 @@ PfnTaskToDavidSqe *GetDavidSqeFuncAddr()
     return g_toDavidSqeFunc;
 }
 
-rtError_t RegDavidSqeFunc(tsTaskType_t taskType, PfnTaskToDavidSqe func)
+void RegDavidSqeFunc(tsTaskType_t taskType, PfnTaskToDavidSqe func)
 {
     if (taskType >= TS_TASK_TYPE_RESERVED) {
         RT_LOG(RT_LOG_ERROR, "task type is invalid: %d", taskType);
-        return RT_ERROR_TASK_BASE;
+        return;
     }
     g_toDavidSqeFunc[taskType] = func;
-    return RT_ERROR_NONE;
+    return;
 }
 
 static uint32_t GetSendSqeNumForFusionKernelTask(const TaskInfo *const taskInfo)

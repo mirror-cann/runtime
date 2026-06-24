@@ -40,12 +40,12 @@ static bool RdmaTaskRegister()
 
     const auto &chips = GetDavidChips();
     for (auto chip : chips) {
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_RDMA_SEND, rdmaSendFuncs);
-        (void)RegTaskFunc(chip, TS_TASK_TYPE_RDMA_DB_SEND, rdmaDbSendFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_RDMA_SEND, rdmaSendFuncs);
+        RegTaskFunc(chip, TS_TASK_TYPE_RDMA_DB_SEND, rdmaDbSendFuncs);
     }
 
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_RDMA_SEND, &ConstructDavidSqeBase);
-    (void)RegDavidSqeFunc(TS_TASK_TYPE_RDMA_DB_SEND, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_RDMA_SEND, &ConstructDavidSqeBase);
+    RegDavidSqeFunc(TS_TASK_TYPE_RDMA_DB_SEND, &ConstructDavidSqeBase);
     return true;
 }
 

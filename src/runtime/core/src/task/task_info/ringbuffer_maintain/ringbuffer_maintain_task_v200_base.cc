@@ -44,7 +44,7 @@ void ConstructDavidSqeForRingBufferMaintainTask(TaskInfo * const taskInfo, void 
         return;
     }
 
-    uint64_t offset = RtPtrToValue(ringBufMtTsk->deviceRingBufferAddr);
+    const uint64_t offset = RtPtrToValue(ringBufMtTsk->deviceRingBufferAddr);
     phSqe->u.ringBufferControlInfo.ringbufferOffset = offset;
     phSqe->u.ringBufferControlInfo.totalLen = ringBufMtTsk->bufferLen;
     phSqe->u.ringBufferControlInfo.ringbufferDelFlag = 0U;

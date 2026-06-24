@@ -84,7 +84,7 @@ extern TaskFuncArrays g_taskFuncArrays[CHIP_END];
 extern PfnTaskUnInit *g_taskUnInitFunc;
 
 void RefreshTaskFuncPointer(rtChipType_t chipType);
-rtError_t RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs);
+void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs);
 
 const std::vector<rtChipType_t>& GetV100Chips();
 const std::vector<rtChipType_t>& GetDavidChips();
