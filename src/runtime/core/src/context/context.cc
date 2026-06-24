@@ -1619,7 +1619,7 @@ rtError_t Context::ModelAbort(Model * const mdl) const
     return error;
 }
 
-rtError_t Context::ModelAbortById(uint32_t modelId)
+rtError_t Context::ModelAbortById(uint32_t modelId) const
 {
     rtError_t error;
     const mmTimespec beginTime = mmGetTickCount();
