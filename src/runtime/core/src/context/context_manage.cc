@@ -207,7 +207,7 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
     uint64_t startTime;
     uint64_t currentTime;
     Runtime *const rtInstance = Runtime::Instance();
-    Device *dev = rtInstance->GetDevice(devId, 0U);
+    Device *dev = rtInstance->GetDevice(static_cast<uint32_t>(devId), 0U);
     mmGetTimeOfDay(&tv[index], nullptr);
     startTime = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS);
 

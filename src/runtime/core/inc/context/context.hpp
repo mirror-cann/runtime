@@ -221,7 +221,7 @@ public:
 
     rtError_t ModelAbort(Model * const mdl) const;
 
-    rtError_t ModelAbortById(uint32_t modelId);
+    rtError_t ModelAbortById(uint32_t modelId) const;
 
     rtError_t ModelExit(Model * const mdl, Stream * const stm);
 

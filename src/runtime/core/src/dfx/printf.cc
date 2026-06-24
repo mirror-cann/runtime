@@ -998,7 +998,7 @@ void PrintBlockInfo(const uint8_t *blockData, const uint32_t blockId, const uint
 }
 } // namespace
 
-uint64_t GetDebugAddrForCore(uint32_t deviceId, uint16_t coreId)
+static uint64_t GetDebugAddrForCore(uint32_t deviceId, uint16_t coreId)
 {
     if (&halGetMaxResMapType == nullptr) {
         RT_LOG(RT_LOG_WARNING, "[drv api] halGetMaxResMapType does not exist, device_id=%u.", deviceId);
