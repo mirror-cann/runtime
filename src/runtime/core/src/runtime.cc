@@ -2820,7 +2820,7 @@ Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
                 dev->SetTsLogToHostFlag(RUNTIME_BUILD_VERSION);
             }
 
-            RT_LOG(RT_LOG_INFO, "new dev ok id=%u, rawDevSize=%zu (bytes), ts_id=%u",
+            RT_LOG(RT_LOG_INFO, "Successfully allocated the device, devId=%u, rawDevSize=%zu (bytes), ts_id=%u",
                 devId, sizeof(RawDevice), tsId);
             error = dev->DevSetTsId(tsId);
             ERROR_GOTO(error, DEV_ROLLBACK, "Failed to set ts id.");

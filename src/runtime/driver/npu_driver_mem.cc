@@ -1962,12 +1962,12 @@ rtError_t NpuDriver::MemGetInfoEx(const uint32_t deviceId, const rtMemInfoType_t
     struct MemInfo info;
     const drvError_t drvRet = halMemGetInfo(static_cast<DVdevice>(deviceId), type, &info);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halMemGetInfo failed, drvRetCode=%d, drvDevId=%u, type=%u.",
+        DRV_ERROR_PROCESS(drvRet, "Call driver api halMemGetInfo failed, drvRetCode=%d, drvDevId=%u, drvMemType=%u.",
             static_cast<int32_t>(drvRet), deviceId, type);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
  
-    RT_LOG(RT_LOG_INFO, "memory info type=%u, type=%u, free=%" PRIu64 ", hug_free=%" PRIu64,
+    RT_LOG(RT_LOG_INFO, "curMemInfoType=%u, drvMemType=%u, free=%" PRIu64 ", hug_free=%" PRIu64,
         static_cast<uint32_t>(curMemInfoType), type,
         static_cast<uint64_t>(info.phy_info.free), static_cast<uint64_t>(info.phy_info.huge_free));
  

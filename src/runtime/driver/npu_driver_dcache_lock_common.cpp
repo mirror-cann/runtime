@@ -52,7 +52,7 @@ rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void *dc
 
     ts_query_dcache_lock_ack_info_t ackInfo = queryDcacheLockStatusAck.u.query_dcache_lock_ack_info;
     RT_LOG(RT_LOG_INFO,
-        "get ack info from ts, status=%u, stack_phy_base_h=%llx, stack_phy_base_l=%llx, drvRet=%u.",
+        "get ack info from ts, status=%u, stack_phy_base_h=0x%llx, stack_phy_base_l=0x%llx, drvRet=%u.",
         ackInfo.status,
         ackInfo.stack_phy_base_h,
         ackInfo.stack_phy_base_l,
@@ -70,7 +70,7 @@ rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void *dc
                                       static_cast<uint64_t>(ackInfo.stack_phy_base_l));
     if (ackStackPhyBase != stackPhyBase) {
         RT_LOG(RT_LOG_EVENT,
-            "Stack addr=%llx for ts buffer mode is not same with current stack addr=%llx.",
+            "Stack addr=0x%llx for ts buffer mode is not same with current stack addr=0x%llx.",
             ackStackPhyBase,
             stackPhyBase);
     }

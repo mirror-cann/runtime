@@ -146,7 +146,7 @@ void *SqAddrMemoryOrder::DrvAllocSqAddr(const size_t size, void * const para)
     const rtError_t error = device->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size),
         RT_MEMORY_P2P_HBM, device->Id_(), MODULEID_RUNTIME, false, false, false, false, false);
     COND_RETURN_WARN(error != RT_ERROR_NONE, nullptr, "device mem alloc sqAddr order failed, "
-             "size=%u(bytes), kind=%d, id=%u, retCode=0x%#x", size, RT_MEMORY_P2P_HBM, device->Id_(), static_cast<uint32_t>(error));
+             "size=%u(bytes), kind=%d, id=%u, retCode=%#x", size, RT_MEMORY_P2P_HBM, device->Id_(), static_cast<uint32_t>(error));
 
     return addr;
 }
@@ -157,7 +157,7 @@ void SqAddrMemoryOrder::DrvFreeSqAddr(void * const addr, void * const para)
     COND_RETURN_WARN(para == nullptr, , "para is null");
     Device * const device = RtPtrToPtr<Device *, void *>(para);
     const rtError_t error = device->Driver_()->DevMemFree(addr, device->Id_());
-    COND_LOG(error != RT_ERROR_NONE, "device mem free sqAddr failed, retCode=0x%#x", static_cast<uint32_t>(error));
+    COND_LOG(error != RT_ERROR_NONE, "device mem free sqAddr failed, retCode=%#x", static_cast<uint32_t>(error));
 }
 
 rtError_t SqAddrMemoryOrder::AllocSqAddr(const uint32_t memOrderType, uint64_t **sqAddr)

@@ -171,7 +171,7 @@ static rtError_t GetIpcNotifyBaseAddrForNotifyRecordTask(TaskInfo *taskInfo, uin
             RT_SERVER_ADDR_OFFSET_1T + static_cast<uint64_t>(chipId) * RT_CHIP_ADDR_OFFSET_128G +
             static_cast<uint64_t>(dieId) * RT_DIE_ADDR_OFFSET_64G +
             RT_NOTIFY_ADDR_OFFSET_PER_DIE_1100000;
-        RT_LOG(RT_LOG_INFO, "DevId=%u, remoteSrvId=%lld, rDevId=%u, chipId=%lld, dieId=%lld, baseAddr=%llx",
+        RT_LOG(RT_LOG_INFO, "DevId=%u, remoteSrvId=%lld, rDevId=%u, chipId=%lld, dieId=%lld, baseAddr=0x%llx",
             localDevId, remoteServerId, remoteDevId, chipId, dieId, baseAddr);
         return RT_ERROR_NONE;
     }
@@ -191,7 +191,7 @@ static rtError_t GetIpcNotifyBaseAddrForNotifyRecordTask(TaskInfo *taskInfo, uin
 
         baseAddr = RT_STARS_BASE_ADDR + (chipOffset * static_cast<uint64_t>(chipId)) +
             (dieOffset * static_cast<uint64_t>(dieId)) + STARS_NOTIFY_BASE_ADDR + chipAddr;
-        RT_LOG(RT_LOG_INFO, "localDevId=%u, remoteDevId=%u, remotePhyId=%u, chipId=%lld, dieId=%lld, hccs addr=%llx, topologyType=%lld",
+        RT_LOG(RT_LOG_INFO, "localDevId=%u, remoteDevId=%u, remotePhyId=%u, chipId=%lld, dieId=%lld, hccs addr=0x%llx, topologyType=%lld",
             localDevId, remoteDevId, remotePhyId, chipId, dieId, baseAddr, topologyType);
         return RT_ERROR_NONE;
     } else if ((topologyType == TOPOLOGY_PIX) || (topologyType == TOPOLOGY_PIB) ||

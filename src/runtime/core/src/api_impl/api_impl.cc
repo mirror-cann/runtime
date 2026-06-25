@@ -1497,7 +1497,7 @@ rtError_t ApiImpl::StreamCreate(Stream ** const stm, const int32_t priority, con
         }
     }
 
-    RT_LOG(RT_LOG_INFO, "Succ, flags=%u, stream_id=%d, context=%llx", flags, (*stm)->Id_(),
+    RT_LOG(RT_LOG_INFO, "Succ, flags=%u, stream_id=%d, context=0x%llx", flags, (*stm)->Id_(),
         reinterpret_cast<uint64_t *>((*stm)->Context_()));
     return error;
 }

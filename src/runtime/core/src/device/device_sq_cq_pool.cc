@@ -93,7 +93,7 @@ rtError_t DeviceSqCqPool::AllocSqCqFromDrv(rtDeviceSqCqInfo_t * const sqCqInfo, 
         retryCount);
     COND_RETURN_INFO(error == RT_ERROR_DRV_NO_RESOURCES, RT_ERROR_DRV_NO_RESOURCES, "no resource");
     if (unlikely(error != RT_ERROR_NONE)) {
-        ERROR_RETURN(error, "[DeviceSqCqPool]Failed to alloc sq cq, retCode=0x%#x.", static_cast<uint32_t>(error));
+        ERROR_RETURN(error, "[DeviceSqCqPool]Failed to alloc sq cq, retCode=%#x.", static_cast<uint32_t>(error));
         return error;
     }
 
@@ -148,14 +148,14 @@ rtError_t DeviceSqCqPool::BatchAllocSqCq(const uint32_t allcocNum, const int32_t
     for (uint32_t loop = 0U; loop < allcocNum; loop++) {
         (void)memset_s(&sqCqInfo, sizeof(sqCqInfo), 0x0, sizeof(sqCqInfo));
         rtError_t error = AllocSqCqFromDrv(&sqCqInfo, TSDRV_FLAG_NO_SQ_MEM, retryCount);
-        COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, loop=%u, retCode=0x%#x.",
+        COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, loop=%u, retCode=%#x.",
             loop, static_cast<uint32_t>(error));
 
         error = AllocSqRegVirtualAddr(sqCqInfo.sqId, sqCqInfo.sqRegVirtualAddr);
         /* Failure rollback: The SQ and CQ requested in the current loop need to be released;
            instead, those obtained in previous loops are retained in the freeList. */
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo.sqId, sqCqInfo.cqId),
-            "Failed to alloc sq reg addr, loop=%u, retCode=0x%#x.", loop, static_cast<uint32_t>(error));
+            "Failed to alloc sq reg addr, loop=%u, retCode=%#x.", loop, static_cast<uint32_t>(error));
 
         deviceSqCqFreeList_.push_back(sqCqInfo);
         RT_LOG(RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, virtualAddr=%u, error=%u",
@@ -171,7 +171,7 @@ void DeviceSqCqPool::PreAllocSqCq(void)
 
     const std::lock_guard<std::mutex> deviceSqCqLock(deviceSqCqLock_);
     const rtError_t error = BatchAllocSqCq(1U, 0); // alloc sq cq only once
-    COND_RETURN_VOID_WARN(error != RT_ERROR_NONE, "alloc sq cq from hal, retCode=0x%#x.",
+    COND_RETURN_VOID_WARN(error != RT_ERROR_NONE, "alloc sq cq from hal, retCode=%#x.",
         static_cast<uint32_t>(error));
 
     return;
@@ -186,7 +186,7 @@ rtError_t DeviceSqCqPool::AllocSqCq(const uint32_t allcocNum, rtDeviceSqCqInfo_t
     const std::lock_guard<std::mutex> deviceSqCqLock(deviceSqCqLock_);
     if (deviceSqCqFreeList_.size() < allcocNum) {
         const rtError_t error = BatchAllocSqCq(allcocNum - static_cast<uint32_t>(deviceSqCqFreeList_.size()));
-        COND_RETURN_INFO((error != RT_ERROR_NONE), error, "Unable to allocate SQ and CQ, allocNum=%u, retCode=0x%#x.",
+        COND_RETURN_INFO((error != RT_ERROR_NONE), error, "Unable to allocate SQ and CQ, allocNum=%u, retCode=%#x.",
             allcocNum, static_cast<uint32_t>(error));
     }
     RT_LOG(RT_LOG_DEBUG, "before deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u",
@@ -217,12 +217,12 @@ rtError_t DeviceSqCqPool::AllocSqCqForAutoSplit(rtDeviceSqCqInfo_t * const sqCqI
         drvFlag |= static_cast<uint32_t>(TSDRV_FLAG_TASK_SINK_SQ);
     }
     rtError_t error = AllocSqCqFromDrv(sqCqInfo, drvFlag, PRE_ALLOC_SQ_CQ_RETRY_MAX_COUNT);
-    COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, retCode=0x%#x.",
+    COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, retCode=%#x.",
         static_cast<uint32_t>(error));
     error = AllocSqRegVirtualAddr(sqCqInfo->sqId, sqCqInfo->sqRegVirtualAddr);
     /* Failure rollback: Free the SQ/CQ just allocated from driver */
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo->sqId, sqCqInfo->cqId),
-        "Failed to alloc sq reg addr, retCode=0x%#x.", static_cast<uint32_t>(error));
+        "Failed to alloc sq reg addr, retCode=%#x.", static_cast<uint32_t>(error));
 
     RT_LOG(RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, drvFlag=0x%x, error=%u",
         sqCqInfo->sqId, sqCqInfo->cqId, drvFlag, error);
@@ -237,7 +237,7 @@ rtError_t DeviceSqCqPool::FreeSqCqToDrv(const uint32_t sqId, const uint32_t cqId
         RT_LOG(RT_LOG_DEBUG, "free SqCq: sq_id=%u, cq_id=%u", sqId, cqId);
 
         const rtError_t error = device_->Driver_()->NormalSqCqFree(device_->Id_(), device_->DevGetTsId(), drvFlag, sqId, cqId);
-        ERROR_RETURN(error, "Failed to free sq cq, retCode=0x%#x.", static_cast<uint32_t>(error));
+        ERROR_RETURN(error, "Failed to free sq cq, retCode=%#x.", static_cast<uint32_t>(error));
     }
 
     return RT_ERROR_NONE;
@@ -356,7 +356,7 @@ rtError_t DeviceSqCqPool::ReAllocSqCqForFreeList(void)
             "Fail to realloc sqcq from driver, deviceId=%u, sqId=%u.", device_->Id_(), it->sqId);
         error = AllocSqRegVirtualAddr(it->sqId, it->sqRegVirtualAddr);
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreeReallocatedSqCqToDrv(deviceSqCqFreeList_.begin(), ++it),
-            "Failed to alloc sq reg addr from driver, retCode=0x%#x.", static_cast<uint32_t>(error));
+            "Failed to alloc sq reg addr from driver, retCode=%#x.", static_cast<uint32_t>(error));
     }
     return RT_ERROR_NONE;
 }

@@ -115,11 +115,11 @@ rtError_t LaunchMultipleTaskInfo(const rtMultipleTaskInfo_t * const multipleTask
 
     error = DavinciMultipleTaskInit(multipleTask, multipleTaskInfo, flag);
     ERROR_PROC_RETURN_MSG_INNER(error, (void)dev->GetTaskFactory()->Recycle(multipleTask);,
-        "Multiple task init failed, stream_id=%d, retCode=%x.", streamId, error);
+        "Multiple task init failed, stream_id=%d, retCode=0x%x.", streamId, error);
 
     error = dev->SubmitTask(multipleTask, nullptr, &taskId);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Failed to submit kernel task, stream_id=%d, retCode=%x", streamId, error);
+        RT_LOG(RT_LOG_ERROR, "Failed to submit kernel task, stream_id=%d, retCode=0x%x", streamId, error);
 
         // When an error occurs, the dvpp releases the cmdlist memory.
         ResetCmdList(multipleTask);
