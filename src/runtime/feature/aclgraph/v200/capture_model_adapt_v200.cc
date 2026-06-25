@@ -125,7 +125,7 @@ rtError_t CaptureModel::BindJettyForUbdma()
     return RT_ERROR_NONE;
 }
 
-rtError_t CaptureModel::RecycleJetty(int32_t streamId, JettyType type, uint32_t &count)
+rtError_t CaptureModel::RecycleJetty(int32_t streamId, JettyType type, uint32_t &count) const
 {
     JettyManager *jettyMgr = Context_()->Device_()->GetJettyManager();
     COND_RETURN_ERROR(jettyMgr == nullptr, RT_ERROR_INVALID_VALUE,
@@ -146,10 +146,10 @@ rtError_t CaptureModel::RecycleJetty(int32_t streamId, JettyType type, uint32_t 
             "GetJettyInfoForStream failed for recycle, stream_id=%d, error=%d.", streamId, error);
         rtUbDbInfo_t dbInfo;
         dbInfo.wrCqe = 0U;
-        dbInfo.dbNum = UB_DOORBELL_NUM_MIN;
-        dbInfo.info[0].dieId = jettyInfo.dieId;
+        dbInfo.dbNum = static_cast<uint8_t>(UB_DOORBELL_NUM_MIN);
+        dbInfo.info[0].dieId = static_cast<uint16_t>(jettyInfo.dieId);
         dbInfo.info[0].jettyId = jettyInfo.jettyId;
-        dbInfo.info[0].functionId = jettyInfo.functionId;
+        dbInfo.info[0].functionId = static_cast<uint16_t>(jettyInfo.functionId);
         dbInfo.info[0].piValue = ctx->capacity - ctx->filledWqeCount;
         Stream * const stm = Context_()->GetCtrlSQStream();
         COND_RETURN_ERROR(stm == nullptr, RT_ERROR_STREAM_NULL,
@@ -174,8 +174,8 @@ rtError_t CaptureModel::RecycleJetty(int32_t streamId, JettyType type, uint32_t 
 rtError_t CaptureModel::RecycleAllJetty(uint32_t &h2dCount, uint32_t &d2dCount)
 {
     const std::unique_lock<std::mutex> lk(jettyMutex_);
-    h2dCount = 0;
-    d2dCount = 0;
+    h2dCount = 0U;
+    d2dCount = 0U;
     for (Stream *stm : StreamList_()) {
         int32_t streamId = stm->Id_();
         rtError_t error = RecycleJetty(streamId, JettyType::JETTY_TYPE_H2D, h2dCount);

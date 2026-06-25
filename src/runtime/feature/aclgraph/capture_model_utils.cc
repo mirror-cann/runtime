@@ -19,7 +19,7 @@
 namespace cce {
 namespace runtime {
 
-constexpr uint32_t HARD_EVENT_RESVERD_MAX = 8 * 1024U;
+constexpr uint32_t HARD_EVENT_RESVERD_MAX = 8U * 1024U;
 
 bool NeedReBuildSqe(const TaskInfo *const task)
 {

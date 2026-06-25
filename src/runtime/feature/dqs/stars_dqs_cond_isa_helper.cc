@@ -871,7 +871,7 @@ void ConstructDqsFrameAlignForDssFc(RtStarsDqsFrameAlignForDssFc &fc, const RtSt
     ConstructStore(r5, r6, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SH, fc.storeCnt);
 
     // next: 推进到下一个queue的input_mbuf_list和input_mbuf_cache_list。
-    ConstructOpImmAndi(r1, r1, sizeof(uint32_t), RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiInputMbufListAddr);
+    ConstructOpImmAndi(r1, r1, static_cast<uint32_t>(sizeof(uint32_t)), RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiInputMbufListAddr);
     ConstructOpImmAndi(r2, r2, fcPara.sizeofHandleCache, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI,
         fc.addiInputMbufCacheListAddr);
     ConstructOpImmAndi(r4, r4, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiIndex);

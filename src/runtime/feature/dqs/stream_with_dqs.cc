@@ -89,9 +89,9 @@ static rtError_t InvokeCreateDqsCtrlSpace(const bool isInterChip, const int32_t 
     param.op_type = 0U;  // create
     stars_dqs_ctrl_space_result_t res = {};
     args.input_ptr = &param;
-    args.input_len = sizeof(stars_dqs_ctrl_space_param_t);
+    args.input_len = static_cast<uint32_t>(sizeof(stars_dqs_ctrl_space_param_t));
     args.output_ptr = &res;
-    args.output_len = sizeof(stars_dqs_ctrl_space_result_t);
+    args.output_len = static_cast<uint32_t>(sizeof(stars_dqs_ctrl_space_result_t));
 
     const auto cmd = isInterChip ? STARS_IOCTL_CMD_DQS_INTER_CHIP_SPACE : STARS_IOCTL_CMD_DQS_CONTROL_SPACE;
     const rtError_t error = IoctlUtil::GetInstance().IoctlByCmd(cmd, &args);
@@ -265,9 +265,9 @@ static rtError_t GetOutputQueMbufPoolInfo(const uint16_t *queueIds, uint8_t queu
         param.queue_list, sizeof(param.queue_list), queueIds, sizeof(param.queue_list), err);
 
     args.input_ptr = &param;
-    args.input_len = sizeof(stars_get_queue_mbuf_pool_info_param_t);
+    args.input_len = static_cast<uint32_t>(sizeof(stars_get_queue_mbuf_pool_info_param_t));
     args.output_ptr = res;
-    args.output_len = sizeof(stars_dqs_queue_mbuf_pool_result_t);
+    args.output_len = static_cast<uint32_t>(sizeof(stars_dqs_queue_mbuf_pool_result_t));
 
     const rtError_t error = IoctlUtil::GetInstance().IoctlByCmd(STARS_IOCTL_CMD_GET_QUEUE_MBUF_POOL, &args);
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "ioctl failed, retCode=%#x", static_cast<uint32_t>(error));

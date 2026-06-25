@@ -35,7 +35,7 @@ static void ConstructSqeForModelUpdateTask(TaskInfo * const taskInfo, rtStarsSqe
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe->u.mdTaskUpdateInfo.descBufOffset = mdlUpdateTaskInfo->descBufOffset;
     sqe->u.mdTaskUpdateInfo.blockDimOffset = mdlUpdateTaskInfo->blockDimOffset;
-    sqe->u.mdTaskUpdateInfo.tilingTabLen = mdlUpdateTaskInfo->tilingTabLen;
+    sqe->u.mdTaskUpdateInfo.tilingTabLen = static_cast<uint16_t>(mdlUpdateTaskInfo->tilingTabLen);
     sqe->u.mdTaskUpdateInfo.tilingKeyOffset = mdlUpdateTaskInfo->tilingKeyOffset;
     sqe->u.mdTaskUpdateInfo.tilingTabOffset = mdlUpdateTaskInfo->tilingTabOffset;
     sqe->u.mdTaskUpdateInfo.destaskId = mdlUpdateTaskInfo->destaskId;

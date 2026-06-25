@@ -376,7 +376,7 @@ private:
     void ReportCacheTrackData();
     rtError_t InitAllSubCaptureModelCondTaskByDefValue();
     rtError_t BindJetty(Stream * const stm, JettyType type);
-    rtError_t RecycleJetty(int32_t streamId, JettyType type, uint32_t &count);
+    rtError_t RecycleJetty(int32_t streamId, JettyType type, uint32_t &count) const;
     rtError_t ReleaseJetty(int32_t streamId, JettyType type);
     rtError_t RefreshJettyInfoList();
     RtCaptureModelStatus captureModelStatus_{RtCaptureModelStatus::NONE};

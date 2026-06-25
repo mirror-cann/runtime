@@ -1781,3 +1781,25 @@ TEST_F(TaskTestV201, TestGetCntNotifyAddr_SuccessWithAllRegTypes)
     error = rtCntNotifyDestroy(inNotify);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
+
+TEST_F(TaskTestV201, SetTimeoutConfigWithUsUnit)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    EXPECT_NE(rtInstance, nullptr);
+
+    std::string oldSocVersion = rtInstance->GetSocVersion();
+    rtInstance->SetSocVersion("MC62CM12AA");
+
+    rtError_t error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 1000, RT_TIME_UNIT_TYPE_US);
+    EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    bool oldIsCfgOpExcTaskTimeout = rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout;
+    uint64_t oldOpExcTaskTimeout = rtInstance->timeoutConfig_.opExcTaskTimeout;
+
+    error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 1000, RT_TIME_UNIT_TYPE_MS);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    rtInstance->SetSocVersion(oldSocVersion);
+    rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = oldIsCfgOpExcTaskTimeout;
+    rtInstance->timeoutConfig_.opExcTaskTimeout = oldOpExcTaskTimeout;
+}
