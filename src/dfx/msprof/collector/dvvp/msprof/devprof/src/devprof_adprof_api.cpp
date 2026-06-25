@@ -33,6 +33,11 @@ MSVP_PROF_API uint64_t AdprofGetHashId(const char *hashInfo, size_t length)
     return analysis::dvvp::transport::HashData::instance()->GenHashId(std::string(hashInfo, length));
 }
 
+MSVP_PROF_API uint64_t AdprofStr2Id(const char *hashInfo, size_t length)
+{
+    return AdprofGetHashId(hashInfo, length);
+}
+
 MSVP_PROF_API int32_t AdprofReportAdditionalInfo(uint32_t nonPersistantFlag, const void *data, uint32_t length)
 {
     return DevprofDrvAicpu::instance()->ReportAdditionalInfo(nonPersistantFlag, data, length);
