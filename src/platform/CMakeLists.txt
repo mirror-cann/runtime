@@ -38,11 +38,6 @@ endif()
 target_include_directories(platform_headers INTERFACE
     $<BUILD_INTERFACE:${RUNTIME_DIR}/pkg_inc>
     $<BUILD_INTERFACE:${RUNTIME_DIR}/pkg_inc/platform>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../runtime>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/proto/google>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/proto/google/protobuf/stubs>
-    $<BUILD_INTERFACE:${RUNTIME_DIR}/src/dfx/error_manager>
     $<BUILD_INTERFACE:${RUNTIME_DIR}/include/dfx/base>
     $<INSTALL_INTERFACE:include>
     $<INSTALL_INTERFACE:include/platform>
