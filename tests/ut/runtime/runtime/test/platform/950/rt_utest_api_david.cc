@@ -4989,7 +4989,7 @@ TEST_F(ApiDavidTest, test_model_kinds_task_on_david1)
         .with(mockcpp::any(), mockcpp::any(), outBoundP(&stream_), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     error = rtModelAbort(model);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_ ));
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail)
