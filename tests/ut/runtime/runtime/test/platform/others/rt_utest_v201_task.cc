@@ -68,6 +68,7 @@
 #include "rt_unwrap.h"
 #include "profiler.hpp"
 #include "../../task_test_helper.h"
+#include "aic_aiv_sqe_common.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -259,6 +260,17 @@ TEST_F(TaskTestV201, Test_GetTsId)
     const rtError_t error = rtGetTSDevice(&tsId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(tsId, RT_TSV_ID);
+}
+
+TEST_F(TaskTestV201, AicAivBiuPerfStreamSupportAllowsBindStream)
+{
+    stream_->SetBindFlag(false);
+    EXPECT_TRUE(IsAicAivBiuPerfStreamSupported(stream_));
+
+    stream_->SetBindFlag(true);
+    EXPECT_TRUE(IsAicAivBiuPerfStreamSupported(stream_));
+
+    stream_->SetBindFlag(false);
 }
 
 TEST_F(TaskTestV201, Test_DqsTask_Config_multi_channel)

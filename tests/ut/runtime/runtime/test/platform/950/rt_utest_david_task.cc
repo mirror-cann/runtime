@@ -75,6 +75,7 @@
 #include "cond_handle/cond_handle.hpp"
 #include "runtime/rt_inner_model.h"
 #include "capture_model_utils.hpp"
+#include "aic_aiv_sqe_common.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -218,6 +219,17 @@ TEST_F(TaskTestDavid, TestDavidModelMaintainceTaskInit)
     rtError_t error = DavidModelMaintainceTaskInit(&task, MMT_STREAM_ADD, nullptr, stream_, RT_MODEL_HEAD_STREAM, 0U);
     EXPECT_EQ(task.type, TS_TASK_TYPE_MODEL_MAINTAINCE);
     EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
+TEST_F(TaskTestDavid, AicAivBiuPerfStreamSupportKeepsBindLimit)
+{
+    stream_->SetBindFlag(false);
+    EXPECT_TRUE(IsAicAivBiuPerfStreamSupported(stream_));
+
+    stream_->SetBindFlag(true);
+    EXPECT_FALSE(IsAicAivBiuPerfStreamSupported(stream_));
+
+    stream_->SetBindFlag(false);
 }
 
 TEST_F(TaskTestDavid, TestNtyWaitNtyRecord)

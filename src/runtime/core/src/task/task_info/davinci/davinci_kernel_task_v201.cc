@@ -18,6 +18,12 @@ namespace cce {
 namespace runtime {
 #if F_DESC("DavinciKernelTask")
 
+bool IsAicAivBiuPerfStreamSupported(const Stream *const stm)
+{
+    UNUSED(stm);
+    return true;
+}
+
 void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
     rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);

@@ -17,6 +17,8 @@
 namespace cce {
 namespace runtime {
 
+bool IsAicAivBiuPerfStreamSupported(const Stream *const stm);
+
 inline void CheckBlockDim(const Stream *const stm, const uint16_t sqeType, const uint16_t blockDim)
 {
     rtDevResLimitType_t coreType = RT_DEV_RES_TYPE_MAX;
@@ -154,7 +156,7 @@ inline void ConstructCommonAicAivSqePart(const T * const kernelInfo, RtDavidStar
     sqe->loose = 1U;
     sqe->sqeLength = 0U;
 
-    if ((!stm->GetBindFlag()) && (Runtime::Instance()->GetBiuperfProfFlag())) {
+    if ((IsAicAivBiuPerfStreamSupported(stm)) && (Runtime::Instance()->GetBiuperfProfFlag())) {
         if (sqe->header.postP == RT_STARS_SQE_INT_DIR_TO_TSCPU) {
             RT_LOG(RT_LOG_WARNING, "post-p has already be set, service scenarios conflict.");
         } else {
