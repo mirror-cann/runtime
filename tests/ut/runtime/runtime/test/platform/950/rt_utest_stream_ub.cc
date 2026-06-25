@@ -14034,7 +14034,7 @@ TEST_F(UbStreamTest3, fusion_launch_api_test_ub_stream_error)
     launchConfig.numAttrs = 2;
     launchConfig.attrs = attrs;
     fusionInfo.subTask[1].type = RT_FUSION_AICORE;
-    fusionInfo.subTask[1].task.aicoreInfo.hdl = m_prog;
+    fusionInfo.subTask[1].task.aicoreInfo.hdl = m_handle;
     fusionInfo.subTask[1].task.aicoreInfo.tilingKey = tilingKey;
     fusionInfo.subTask[1].task.aicoreInfo.config = &launchConfig;
 

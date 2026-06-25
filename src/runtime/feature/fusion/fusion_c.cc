@@ -117,6 +117,7 @@ static rtError_t PreProcAicAivTaskForFusion(rtFusionSubTaskInfo_t *const fusionT
     rtAicoreFusionInfo_t * const aicInfo = &(fusionTask->task.aicoreInfo);
     void * const stubFunc = aicInfo->stubFunc;
     void * const progHandle = aicInfo->hdl;
+    Program *realProgram = nullptr;
     COND_RETURN_AND_MSG_OUTER((stubFunc == nullptr && progHandle == nullptr) ||
         (stubFunc != nullptr && progHandle != nullptr), RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1017, __func__, "stubFunc/progHandle",
@@ -131,6 +132,9 @@ static rtError_t PreProcAicAivTaskForFusion(rtFusionSubTaskInfo_t *const fusionT
 
     uint64_t tilingKey = 0ULL;
     if (progHandle != nullptr)  {
+        const rtError_t handleRet = GetValidatedObject<Program>(progHandle, realProgram);
+        ERROR_RETURN(handleRet, "Failed to validate fusion program handle, retCode=%#x.",
+            static_cast<uint32_t>(handleRet));
         tilingKey = aicInfo->tilingKey;
     }
 
@@ -143,7 +147,7 @@ static rtError_t PreProcAicAivTaskForFusion(rtFusionSubTaskInfo_t *const fusionT
     Kernel *registeredKernel = nullptr;
 
     error = StreamLaunchKernelPrepare(stm, registeredKernel, prog, kernelAttrType, launchMdl, stubFunc,
-                                addr1, addr2, progHandle, tilingKey);
+                                addr1, addr2, realProgram, tilingKey);
     ERROR_RETURN(error, "Failed to prepare kernel launch, stream_id=%d, retCode=%#x.",
         stm->Id_(), static_cast<uint32_t>(error));
 
@@ -154,7 +158,7 @@ static rtError_t PreProcAicAivTaskForFusion(rtFusionSubTaskInfo_t *const fusionT
     aicAivInfo->funcAddr = addr1;
     aicAivInfo->funcAddr1 = addr2;
     aicAivInfo->kernel = registeredKernel;
-    aicAivInfo->program = (prog != nullptr) ? prog : RtPtrToPtr<Program *>(progHandle);
+    aicAivInfo->program = (prog != nullptr) ? prog : realProgram;
     RT_LOG(RT_LOG_INFO, "kernel info: stream_id=%d, kernelAttrType=%d, kernel_name=%s,"
         "mixType=%u, taskRation=%u, tilingKey=%llu.", stm->Id_(), kernelAttrType,
         registeredKernel->Name_().c_str(), mixType, registeredKernel->GetTaskRation(),
