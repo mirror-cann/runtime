@@ -30,7 +30,7 @@ drvError_t __attribute__((weak)) halResAddrMap(unsigned int devId, struct res_ad
                                                unsigned int *len);
 drvError_t __attribute__((weak))halGetSocVersion(uint32_t devId, char *socVersion, uint32_t len);
 drvError_t __attribute__((weak))halMemPoolMalloc(soma_mem_pool_t pool, uint64_t va, uint64_t size, int32_t policy);
-drvError_t __attribute__((weak))halMemPoolFree(soma_mem_pool_t pool, uint64_t va, int32_t policy);
+drvError_t __attribute__((weak))halMemPoolFree(soma_mem_pool_t pool, uint64_t va, uint64_t size, int32_t policy);
 drvError_t __attribute__((weak))halMemPoolTrim(soma_mem_pool_t pool, uint64_t *size, uint64_t poolUsedSize, uint64_t poolFreeSize);
 drvError_t __attribute__((weak))halTsdrvCtl(uint32_t devId, int cmd, void *param, size_t paramSize, void *out, size_t *outSize);
 drvError_t __attribute__((weak))drvDeviceOpen(void **devInfo, uint32_t devId);

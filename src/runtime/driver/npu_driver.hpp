@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include "driver/ascend_hal.h"
 #include "npu_driver_base.hpp"
+#include "npu_driver_base_soma.hpp"
 #include "rt_inner_mem.h"
 
 namespace cce {
@@ -692,9 +693,13 @@ public:
     rtError_t PutTsegInfo(uint32_t devid, struct halTsegInfo *tsegInfo) override;
 
     // soma
-    rtError_t StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId, const uint64_t va, const uint64_t size, bool isGraphPool) override;
-    rtError_t StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId) override;
+    rtError_t StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId, const uint64_t size,
+        bool isGraphPool, uint64_t &outVa) override;
+    rtError_t StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId, const uint64_t va) override;
     rtError_t StreamMemPoolTrim(const uint32_t deviceId, const uint64_t poolId, uint64_t *size, uint64_t poolUsedSize, uint64_t poolFreeSize) override;
+    rtError_t StreamMemPoolSetAttr(const uint32_t deviceId, const uint64_t poolId, const rtMemPoolAttr attr, void *value) override;
+    rtError_t StreamMemPoolGetAttr(const uint32_t deviceId, const uint64_t poolId, const rtMemPoolAttr attr, void *value) override;
+    rtError_t StreamMemPoolAsyncConfig(const uint32_t deviceId, const uint64_t poolId, const uint64_t va, const uint64_t size, const bool flag) override;
 
     rtError_t GetChipIdDieId(const uint32_t devId, const uint32_t remoteDevId, const uint32_t remotePhyId,
                              int64_t &chipId, int64_t &dieId) override;

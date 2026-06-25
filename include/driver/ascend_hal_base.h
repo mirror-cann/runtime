@@ -5730,7 +5730,7 @@ typedef enum {
  * @brief create memory pool
  * @attention null
  * @param [in]  pool: pool info
- * @param [in]  prop: pool prop
+ * @param [in]  prop: pool properties, prop->va must be pre-reserved by caller via halMemAddressReserve
  * @return   0 for success, others for fail
  */
 DLLEXPORT drvError_t halMemPoolCreate(soma_mem_pool_t pool, soma_mem_pool_prop prop);
@@ -5743,7 +5743,29 @@ DLLEXPORT drvError_t halMemPoolCreate(soma_mem_pool_t pool, soma_mem_pool_prop p
  * @return   0 for success, others for fail
  */
 DLLEXPORT drvError_t halMemPoolDestroy(soma_mem_pool_t pool);
- 
+
+/**
+ * @ingroup driver
+ * @brief set memory pool attribute
+ * @attention null
+ * @param [in]  pool: pool info
+ * @param [in]  attr: attribute type
+ * @param [in]  value: attribute value
+ * @return   0 for success, others for fail
+ */
+DLLEXPORT drvError_t halMemPoolSetAttr(soma_mem_pool_t pool, soma_mem_pool_attr attr, void *value);
+
+/**
+ * @ingroup driver
+ * @brief get memory pool attribute
+ * @attention null
+ * @param [in]  pool: pool info
+ * @param [in]  attr: attribute type
+ * @param [out]  value: attribute value
+ * @return   0 for success, others for fail
+ */
+DLLEXPORT drvError_t halMemPoolGetAttr(soma_mem_pool_t pool, soma_mem_pool_attr attr, void *value);
+
 /**
  * @ingroup driver
  * @brief apply for memory from the device memory pool
@@ -5762,10 +5784,11 @@ DLLEXPORT DV_ONLINE drvError_t halMemPoolMalloc(soma_mem_pool_t pool, uint64_t v
  * @attention null
  * @param [in]  pool: pool info
  * @param [in]  va: virtual memory address
+ * @param [in]  size: memory size in bytes
  * @param [in]  policy: memory release policy
  * @return   0 for success, others for fail
  */
-DLLEXPORT DV_ONLINE drvError_t halMemPoolFree(soma_mem_pool_t pool, uint64_t va, int32_t policy);
+DLLEXPORT DV_ONLINE drvError_t halMemPoolFree(soma_mem_pool_t pool, uint64_t va, uint64_t size, int32_t policy);
 
 /**
  * @ingroup driver
@@ -5778,6 +5801,8 @@ DLLEXPORT DV_ONLINE drvError_t halMemPoolFree(soma_mem_pool_t pool, uint64_t va,
  * @return   0 for success, others for fail
  */
 DLLEXPORT DV_ONLINE drvError_t halMemPoolTrim(soma_mem_pool_t pool, uint64_t *size, uint64_t poolUsedSize, uint64_t poolFreeSize);
+
+DLLEXPORT DV_ONLINE drvError_t halMemPoolAsyncConfig(soma_mem_pool_t pool, uint64_t va, uint64_t size, bool flag);
 
 #ifdef __cplusplus
 }

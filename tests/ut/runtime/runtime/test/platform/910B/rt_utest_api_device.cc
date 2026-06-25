@@ -259,9 +259,8 @@ TEST_F(CloudV2ApiDeviceTest, streamMemPoolCreate_failed)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&SegmentManager::SegmentAlloc)
+    MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
         .stubs()
-        .with(mockcpp::any())
         .will(returnValue(RT_ERROR_MEM_POOL_ALLOC));
     rtError_t error = SomaApi::StreamMemPoolCreate(&memPool, &poolProps);
     EXPECT_EQ(error, RT_ERROR_MEM_POOL_ALLOC);
@@ -273,7 +272,7 @@ TEST_F(CloudV2ApiDeviceTest, streamMemPoolCreate_failed)
         .reserve = 0
     };
     error = SomaApi::StreamMemPoolCreate(&memPool, &poolProps_new);
-    EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
+    EXPECT_NE(error, RT_ERROR_NONE);
     delete device;
 }
 

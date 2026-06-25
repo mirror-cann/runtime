@@ -9,38 +9,101 @@
  */
 #include "soma.hpp"
 #include "stream_mem_pool.hpp"
+#include "npu_driver.hpp"
+#include "driver/ascend_hal_define.h"
 
 namespace cce {
 namespace runtime {
 
+static const char* MemPoolAttrToName(rtMemPoolAttr attr)
+{
+    switch (attr) {
+        case rtMemPoolAttrReservedMemCurrent:         return "rtMemPoolAttrReservedMemCurrent";
+        case rtMemPoolAttrUsedMemCurrent:             return "rtMemPoolAttrUsedMemCurrent";
+        default:                                      return "Unknown";
+    }
+}
+
+rtError_t SomaApi::GetDevicePoolAlignSize(rtMemPoolProps curPoolProps, size_t &alignSize)
+{
+    rtDrvMemProp_t prop = {};
+    prop.devid = curPoolProps.devId;
+    prop.side = curPoolProps.side;
+    prop.mem_type = MEM_HBM_TYPE;
+    prop.module_id = APP_MODE_ID;
+    prop.pg_type = MEM_HUGE_PAGE_TYPE;
+    prop.reserve = curPoolProps.reserve;
+
+    size_t granularity = 0;
+    rtError_t error = NpuDriver::GetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_RECOMMENDED, &granularity);
+    if (error == RT_ERROR_DRV_NOT_SUPPORT) {
+        RT_LOG(RT_LOG_WARNING, "Get device memory allocation granularity not supported (error=%#x), "
+            "fallback to default align size %zu.", static_cast<uint32_t>(error),
+            static_cast<size_t>(DEVICE_POOL_ALIGN_SIZE));
+        alignSize = DEVICE_POOL_ALIGN_SIZE;
+        return RT_ERROR_NONE;
+    }
+    ERROR_RETURN(error, "Get device memory allocation granularity failed, error=%#x.",
+        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(granularity == 0, RT_ERROR_INVALID_VALUE,
+        "Get device memory allocation granularity returned invalid value 0.");
+
+    RT_LOG(RT_LOG_DEBUG, "Use device memory allocation granularity %zu as memory pool align size.", granularity);
+    alignSize = granularity;
+    return RT_ERROR_NONE;
+}
+
 rtError_t SomaApi::StreamMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps)
 {
+    rtError_t error = PoolRegistry::Instance().Init();
+    ERROR_RETURN_MSG_INNER(error, "PoolRegistry init failed.");
+
     rtMemPoolProps curPoolProps = *poolProps;
+    size_t originSize = curPoolProps.maxSize / BYTES_PER_MB;
     size_t freeSize = 0;
     size_t totalSize = 0;
     uint32_t phyDevId;
-    rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(curPoolProps.devId, &phyDevId, false);
+    error = Runtime::Instance()->ChgUserDevIdToDeviceId(curPoolProps.devId, &phyDevId, false);
     ERROR_RETURN_MSG_INNER(error, "Convert user devId to physical devId failed! userDevId=%u, error Code=%u!",
         curPoolProps.devId, static_cast<uint32_t>(error));
 
-    error = Runtime::Instance()->CurrentContext()->Device_()->Driver_()->MemGetInfoEx(phyDevId, 
+    error = Runtime::Instance()->CurrentContext()->Device_()->Driver_()->MemGetInfoEx(phyDevId,
         RT_MEMORYINFO_HBM, &freeSize, &totalSize);
     ERROR_RETURN_MSG_INNER(error, "Get device totalSize failed, deviceId=%u, retCode=%#x!",
         phyDevId, static_cast<uint32_t>(error));
 
-    SegmentManager *retMemPool = nullptr;
-    error = SomaApi::CreateMemPool(curPoolProps, totalSize, retMemPool);
-    ERROR_RETURN(error, "Failed to create MemPool, size=%zu, error code=%u", curPoolProps.maxSize, error);
+    size_t alignSize = DEVICE_POOL_ALIGN_SIZE;
+    error = GetDevicePoolAlignSize(curPoolProps, alignSize);
+    ERROR_RETURN(error, "Get device memory pool align size failed, deviceId=%u.", phyDevId);
 
-    RT_LOG(RT_LOG_DEBUG, "Allocate segment with basePtr %p and size %zu.", retMemPool->PoolSegAddr(), retMemPool->PoolSize());
-    error = Runtime::Instance()->CurrentContext()->Device_()->Driver_()->StreamMemPoolCreate(retMemPool->DeviceId(),
-        retMemPool->MemPoolId(), retMemPool->PoolSegAddr(), retMemPool->PoolSize(), false);
+    error = SomaApi::AlignAndValidatePoolSize(curPoolProps, totalSize, alignSize);
+    COND_RETURN_AND_MSG_OUTER(curPoolProps.maxSize > totalSize, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Create memory pool",
+        std::to_string(originSize) + " MB", "rtMemPoolProps.maxSize",
+        RtFmtMsg("The memory pool size after %zu MB alignment is %zu MB, which exceeds the available device memory %zu MB on the Device(device_id=%d)",
+        alignSize / BYTES_PER_MB, curPoolProps.maxSize / BYTES_PER_MB, totalSize / BYTES_PER_MB, phyDevId));
+
+    SegmentManager *retMemPool = PoolRegistry::Instance().CreateManager(nullptr, curPoolProps.devId, true);
+    COND_RETURN_AND_MSG_OUTER(retMemPool == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(SegmentManager)).c_str(), "new");
+
+    uint64_t outVa = 0;
+    error = Runtime::Instance()->CurrentContext()->Device_()->Driver_()->StreamMemPoolCreate(
+        retMemPool->DeviceId(), retMemPool->MemPoolId(), curPoolProps.maxSize, false, outVa);
     if (error != RT_ERROR_NONE) {
-        (void)SomaApi::DestroyMemPool(retMemPool);
-        RT_LOG(RT_LOG_ERROR, "stream mem pool alloc failed in drv.");
+        PoolRegistry::Instance().DeleteManager(retMemPool);
+        RT_LOG(RT_LOG_ERROR, "Stream mem pool alloc failed in drv.");
         return error;
     }
 
+    error = PoolRegistry::Instance().InitializeMemPool(retMemPool, outVa, curPoolProps.maxSize);
+    if (error != RT_ERROR_NONE) {
+        (void)Runtime::Instance()->CurrentContext()->Device_()->Driver_()->StreamMemPoolDestroy(
+            retMemPool->DeviceId(), retMemPool->MemPoolId(), outVa);
+        PoolRegistry::Instance().DeleteManager(retMemPool);
+        RT_LOG(RT_LOG_ERROR, "Stream mem pool initialize failed.");
+        return error;
+    }
+
+    PoolRegistry::Instance().RegisterMemPool(retMemPool);
     *memPool = RtPtrToPtr<rtMemPool_t>(retMemPool);
     RT_LOG(RT_LOG_DEBUG, "stream mem pool create success, memPool=%p.", *memPool);
     return RT_ERROR_NONE;
@@ -53,7 +116,7 @@ rtError_t SomaApi::StreamMemPoolDestroy(const rtMemPool_t memPool)
     error = SomaApi::CheckMemPool(delMemPool);
     ERROR_RETURN(error, "Failed to destroy memPoolId=%p", delMemPool);
     error = Runtime::Instance()->CurrentContext()->Device_()->Driver_()->StreamMemPoolDestroy(
-        delMemPool->DeviceId(), delMemPool->MemPoolId());
+        delMemPool->DeviceId(), delMemPool->MemPoolId(), delMemPool->PoolSegAddr());
     ERROR_RETURN(error, "Failed to destroy memPoolId in device, deviceId=",
         delMemPool->DeviceId(), delMemPool->MemPoolId());
     (void)SomaApi::DestroyMemPool(delMemPool);
@@ -62,39 +125,63 @@ rtError_t SomaApi::StreamMemPoolDestroy(const rtMemPool_t memPool)
 
 rtError_t SomaApi::StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
 {
-    if (!PoolRegistry::Instance().QueryMemPool(RtPtrToPtr<SegmentManager *>(memPool))) {
-        RT_LOG(RT_LOG_ERROR, "Memory pool is not created.");
-        return RT_ERROR_INVALID_VALUE;
+    SegmentManager* segMgr = RtPtrToPtr<SegmentManager*>(memPool);
+    COND_RETURN_AND_MSG_OUTER(!PoolRegistry::Instance().QueryMemPool(segMgr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+        "Setting memory pool attribute", "memPool",
+        RtFmtMsg("The specified memory pool %p is not created, please create the memory pool before setting its attributes", segMgr));
+
+    COND_RETURN_AND_MSG_OUTER((attr == rtMemPoolAttrReservedMemCurrent) || (attr == rtMemPoolAttrUsedMemCurrent), RT_ERROR_INVALID_VALUE,
+        ErrorCode::EE1011, "Setting memory pool attribute", RtFmtMsg("%s(%u)", MemPoolAttrToName(attr), static_cast<uint32_t>(attr)),
+        "This attribute is read-only and does not support setting");
+
+    if ((attr == rtMemPoolReuseFollowEventDependencies) || (attr == rtMemPoolReuseAllowOpportunistic) ||
+        (attr == rtMemPoolReuseAllowInternalDependencies)) {
+        return segMgr->SetAttribute(attr, value);
     }
-    return RtPtrToPtr<SegmentManager *>(memPool)->SetAttribute(attr, value);
+
+    Driver* const driver = Runtime::Instance()->CurrentContext()->Device_()->Driver_();
+    rtError_t error = driver->StreamMemPoolSetAttr(segMgr->DeviceId(), segMgr->MemPoolId(), attr, value);
+    if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
+        return segMgr->SetAttribute(attr, value);
+    }
+    return error;
 }
 
 rtError_t SomaApi::StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
 {
-    if (!PoolRegistry::Instance().QueryMemPool(RtPtrToPtr<SegmentManager *>(memPool))) {
-        RT_LOG(RT_LOG_ERROR, "Memory pool is not created.");
-        return RT_ERROR_INVALID_VALUE;
+    SegmentManager* segMgr = RtPtrToPtr<SegmentManager*>(memPool);
+    COND_RETURN_AND_MSG_OUTER(!PoolRegistry::Instance().QueryMemPool(segMgr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+        "Getting memory pool attribute", "memPool",
+        RtFmtMsg("The specified memory pool %p is not created, please create the memory pool before getting its attributes", segMgr));
+
+    if ((attr == rtMemPoolReuseFollowEventDependencies) || (attr == rtMemPoolReuseAllowOpportunistic) ||
+        (attr == rtMemPoolReuseAllowInternalDependencies)) {
+        return segMgr->GetAttribute(attr, value);
     }
-    return RtPtrToPtr<SegmentManager *>(memPool)->GetAttribute(attr, value);
+
+    Driver* const driver = Runtime::Instance()->CurrentContext()->Device_()->Driver_();
+    rtError_t error = driver->StreamMemPoolGetAttr(segMgr->DeviceId(), segMgr->MemPoolId(), attr, value);
+    if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
+        return segMgr->GetAttribute(attr, value);
+    }
+    return error;
 }
 
-rtError_t SomaApi::CreateMemPool(rtMemPoolProps &poolProps, size_t totalSize, SegmentManager *&retMemPool)
+rtError_t SomaApi::AlignAndValidatePoolSize(rtMemPoolProps &poolProps, size_t totalSize, size_t alignSize)
 {
+    COND_RETURN_ERROR(alignSize == 0, RT_ERROR_INVALID_VALUE, "Invalid memory pool align size 0.");
     if (poolProps.maxSize == 0) {
         RT_LOG(RT_LOG_DEBUG, "Create stream memory pool by default maxSize.");
-        // Align the memory pool size to DEVICE_POOL_ALIGN_SIZE with down-rounding
-        poolProps.maxSize = totalSize & ~(DEVICE_POOL_ALIGN_SIZE - 1);
+        // Align the memory pool size to alignSize with down-rounding
+        poolProps.maxSize = (totalSize / alignSize) * alignSize;
     } else {
-        // Align the memory pool size to DEVICE_POOL_ALIGN_SIZE with up-rounding
-        poolProps.maxSize = (poolProps.maxSize + DEVICE_POOL_ALIGN_SIZE - 1) & ~(DEVICE_POOL_ALIGN_SIZE - 1);
+        // Align the memory pool size to alignSize with up-rounding
+        poolProps.maxSize = ((poolProps.maxSize + alignSize - 1) / alignSize) * alignSize;
     }
-    // Align the memory pool size to DEVICE_POOL_ALIGN_SIZE
-    poolProps.maxSize = (poolProps.maxSize + DEVICE_POOL_ALIGN_SIZE - 1) & ~(DEVICE_POOL_ALIGN_SIZE - 1);
 
     COND_RETURN_ERROR(poolProps.maxSize > totalSize, RT_ERROR_MEMORY_ALLOCATION,
         "Memory pool size (%zu bytes) exceeds device total memory (%zu bytes).", poolProps.maxSize, totalSize);
-
-    return PoolRegistry::Instance().CreateMemPool(poolProps.maxSize, poolProps.devId, true, retMemPool);
+    return RT_ERROR_NONE;
 }
 
 rtError_t SomaApi::CheckMemPool(SegmentManager *memPool)
@@ -143,7 +230,14 @@ rtError_t SomaApi::FreeToMemPool(void *ptr, bool forceFree)
  
     return RT_ERROR_NONE;
 }
- 
+
+void SomaApi::MemPoolAsyncConfig(rtMemPool_t memPool, uint64_t va, uint64_t size, bool flag)
+{
+    SegmentManager* mempool = RtPtrToPtr<SegmentManager*>(memPool);
+    (void)Runtime::Instance()->CurrentContext()->Device_()->Driver_()->StreamMemPoolAsyncConfig(
+        mempool->DeviceId(), mempool->MemPoolId(), va, size, flag);
+}
+
 rtError_t SomaApi::MemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep)
 {
     COND_RETURN_ERROR(memPool == nullptr, RT_ERROR_INVALID_VALUE, "MemPoolTrimTo invalid memPool: nullptr.");
@@ -177,56 +271,11 @@ rtError_t SomaApi::MemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep)
     return RT_ERROR_NONE;
 }
 
+//Temporary workaround, will be restored later.
 rtError_t SomaApi::MemPoolTrimImplicit(bool includeGraphPool)
 {
-    rtError_t overallError = RT_ERROR_NONE;
-    rtError_t error = RT_ERROR_NONE;
-    uint64_t releaseThreshold = 0;
-    auto memPools = PoolRegistry::Instance().EnumerateMemPools(includeGraphPool);
-    if (memPools.empty()) {
-        RT_LOG(RT_LOG_INFO, "No memory pools to trim.");
-        return RT_ERROR_NONE;
-    }
-
-    for (auto& memPool : memPools) {
-        if (memPool == nullptr) {
-            RT_LOG(RT_LOG_WARNING, "Skip null memory pool in implicit trim.");
-            overallError = RT_ERROR_INVALID_VALUE;
-            continue;
-        }
-
-        SegmentManager* curMemPool = RtPtrToPtr<SegmentManager*>(memPool);
-        uint32_t devId = curMemPool->DeviceId();
-        uint64_t poolId = curMemPool->MemPoolId();
-
-        if (!includeGraphPool) {
-            error = curMemPool->GetAttribute(rtMemPoolAttrReleaseThreshold, &releaseThreshold);
-            if (error != RT_ERROR_NONE) {
-                RT_LOG(RT_LOG_WARNING, "Pool[%u:%lu] get release threshold failed, ret=%d.",
-                       devId, poolId, error);
-                overallError = error;
-                continue;
-            }
-        }
-
-        error = MemPoolTrimTo(memPool, releaseThreshold);
-        if (error != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_WARNING, "Pool[%u:%lu] implicit trim failed, ret=%d.",
-                   devId, poolId, error);
-            if (overallError == RT_ERROR_NONE) {
-                overallError = error;
-            }
-            continue;
-        }
-    }
-
-    if (overallError == RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_INFO, "All memory pools implicit trim completed successfully.");
-    } else {
-        RT_LOG(RT_LOG_ERROR, "Implicit trim completed with errors.");
-    }
-
-    return overallError;
+    UNUSED(includeGraphPool);
+    return RT_ERROR_NONE;
 }
 
 bool SomaApi::InMemPoolRegion(void * const ptr)
@@ -239,6 +288,15 @@ SegmentManager* SomaApi::FindMemPoolByPtr(void * const ptr)
 {
     uint64_t p = RtPtrToValue(ptr);
     return PoolRegistry::Instance().FindMemPoolByPtr(p);
+}
+
+uint64_t SomaApi::GetAllocSize(void * const ptr)
+{
+    SegmentManager* segMgr = FindMemPoolByPtr(ptr);
+    if (segMgr == nullptr) {
+        return 0;
+    }
+    return segMgr->GetAllocSize(RtPtrToValue(ptr));
 }
 
 } // namespace runtime

@@ -39,8 +39,6 @@ rtError_t ApiImplSoma::StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr a
 {
     NULL_PTR_RETURN_MSG_OUTER(memPool, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(value, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_ERROR((attr == rtMemPoolAttrReservedMemCurrent) || (attr == rtMemPoolAttrUsedMemCurrent),
-        RT_ERROR_POOL_OP_INVALID, "Read only attribute does not allow setting.");
     RT_LOG(RT_LOG_DEBUG, "Stream memory pool set attribute, poolId=%#" PRIx64 ", attr=%u.", RtPtrToValue(memPool), static_cast<uint32_t>(attr));
     return SomaApi::StreamMemPoolSetAttr(memPool, attr, value);
 }
@@ -72,7 +70,7 @@ rtError_t ApiImplSoma::MemPoolMallocAsync(void ** const devPtr, const uint64_t s
     RT_LOG(RT_LOG_INFO, "Memory allocated success! Start ptr=0x%llx, end ptr=0x%llx",
         RtPtrToValue(*devPtr), (RtPtrToValue(*devPtr) + static_cast<uint64_t>(size)));
     uint64_t va = RtPtrToValue(*devPtr);
-    
+    SomaApi::MemPoolAsyncConfig(memPoolId, va, aligned_size, false);
     AicpuOpType opType = AicpuOpType::MALLOC;
     error = SomaAicpuKernelLaunch("SomaMemMng", aligned_size, va, memPoolId, stm, static_cast<int32_t>(opType), static_cast<int32_t>(flag));
     if (error != RT_ERROR_NONE) {
@@ -95,18 +93,22 @@ rtError_t ApiImplSoma::MemPoolFreeAsync(void * const ptr, Stream * const stm)
 
     if (SomaApi::InMemPoolRegion(ptr)) {
         rtMemPool_t memPool = RtPtrToPtr<rtMemPool_t>(SomaApi::FindMemPoolByPtr(ptr));
-        COND_RETURN_ERROR(memPool == nullptr, RT_ERROR_INVALID_VALUE, "Find mempool ptr == nullptr.");
+        COND_RETURN_AND_MSG_OUTER(memPool == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+            "Free memory from memory pool", RtFmtMsg("%p", ptr), "ptr",
+            "The memory pool to which the input memory address belongs is not found, please check whether the input memory address is correct");
         uint64_t va = RtPtrToValue(ptr);
+        uint64_t allocSize = SomaApi::GetAllocSize(ptr);
+        COND_RETURN_ERROR(allocSize == 0, RT_ERROR_INVALID_VALUE, "Get alloc size is 0, ptr=%#" PRIx64 ".", va);
+        SomaApi::MemPoolAsyncConfig(memPool, va, allocSize, true);
         rtError_t error = SomaApi::FreeToMemPool(ptr);
         ERROR_RETURN_MSG_INNER(error, "Failed to free memory to pool, ptr=%#" PRIx64 ", stream_id=%d, retCode=%#x.",
             va, stm->Id_(), static_cast<uint32_t>(error));
         RT_LOG(
             RT_LOG_INFO, "The va is successfully released to the memory pool, ptr=%#" PRIx64 ", stream_id=%d.",
             RtPtrToValue(ptr), stm->Id_());
-
         AicpuOpType opType = AicpuOpType::FREE;
         SomaAicpuSubCmd subCmd = SomaAicpuSubCmd::FREE;
-        error = SomaAicpuKernelLaunch("SomaMemMng", 0ULL, va, memPool, stm, static_cast<int32_t>(opType), static_cast<int32_t>(subCmd));
+        error = SomaAicpuKernelLaunch("SomaMemMng", allocSize, va, memPool, stm, static_cast<int32_t>(opType), static_cast<int32_t>(subCmd));
         COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT);
         ERROR_RETURN_MSG_INNER(error, "Failed to launch soma free aicpu kernel, va=%" PRIu64 ", memPoolId=%#" PRIx64 ", retCode=%#x.",
             va, RtPtrToValue<void*>(memPool), static_cast<uint32_t>(error));
@@ -167,10 +169,6 @@ rtError_t ApiImplSoma::SomaAicpuLaunchValidation(const rtKernelLaunchNames_t * c
            " flag=%u.", blockDim, argsInfo->argsSize, argsInfo->hostInputInfoNum, flags);
     ERROR_RETURN_MSG_INNER(Runtime::Instance()->StartAicpuSd(Runtime::Instance()->CurrentContext()->Device_()),
            "CPU kernel launch ex with args failed, check and start tsd open AICPU sd error.");
-    COND_RETURN_WARN(&halMemPoolMalloc == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-    "[drv api] halMemPoolMalloc does not exist");
-    COND_RETURN_WARN(&halMemPoolFree == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-    "[drv api] halMemFree does not exist");
     return RT_ERROR_NONE;
 }
  

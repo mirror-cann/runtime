@@ -1583,6 +1583,9 @@ drvError_t halMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], ui
 
 drvError_t halMemGetAllocationGranularity(const struct drv_mem_prop *prop, drv_mem_granularity_options option, size_t *granularity)
 {
+    if (granularity != nullptr) {
+        *granularity = (2UL << 20); // DEVICE_POOL_ALIGN_SIZE = 2MB
+    }
     return DRV_ERROR_NONE;
 }
 
@@ -1845,6 +1848,51 @@ drvError_t halAsyncDmaWqeConvert(uint32_t devId, struct halAsyncDmaWqeInputPara 
 }
 
 drvError_t halAsyncDmaJettyWqeFill(uint32_t devId, struct halAsyncDmaJettyFillInfo *para)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolCreate(soma_mem_pool_t pool, soma_mem_pool_prop prop)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolDestroy(soma_mem_pool_t pool)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolMalloc(soma_mem_pool_t pool, uint64_t va, uint64_t size, int32_t policy)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolFree(soma_mem_pool_t pool, uint64_t va, uint64_t size, int32_t policy)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolSetWatermark(uint32_t deviceId, uint64_t poolId, uint64_t size)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolTrim(soma_mem_pool_t pool, uint64_t *size, uint64_t poolUsedSize, uint64_t poolFreeSize)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolAsyncConfig(soma_mem_pool_t pool, uint64_t va, uint64_t size, bool flag)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolSetAttr(soma_mem_pool_t pool, soma_mem_pool_attr attr, void *value)
+{
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halMemPoolGetAttr(soma_mem_pool_t pool, soma_mem_pool_attr attr, void *value)
 {
     return DRV_ERROR_NONE;
 }

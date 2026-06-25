@@ -184,7 +184,7 @@ drvError_t halMemPoolMalloc(soma_mem_pool_t pool, uint64_t va, uint64_t size, in
     return DRV_ERROR_NONE;
 }
 
-drvError_t halMemPoolFree(soma_mem_pool_t pool, uint64_t va, int32_t policy)
+drvError_t halMemPoolFree(soma_mem_pool_t pool, uint64_t va, uint64_t size, int32_t policy)
 {
     return DRV_ERROR_NONE;
 }

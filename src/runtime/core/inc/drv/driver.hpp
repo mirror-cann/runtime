@@ -553,8 +553,9 @@ public:
                                      int64_t &chipId, int64_t &dieId) = 0;
     virtual rtError_t GetTopologyType(const uint32_t devId, const uint32_t remoteDevId, const uint32_t remotePhyId, int64_t * const val) = 0;
     // soma
-    virtual rtError_t StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId, const uint64_t va, const uint64_t size, bool isGraphPool) = 0;
-    virtual rtError_t StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId) = 0;
+    virtual rtError_t StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId, const uint64_t size,
+                                     bool isGraphPool, uint64_t &outVa) = 0;
+    virtual rtError_t StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId, const uint64_t va) = 0;
     virtual rtError_t StreamMemPoolTrim(const uint32_t deviceId, const uint64_t poolId, uint64_t *size, uint64_t poolUsedSize, uint64_t poolFreeSize) = 0;
     virtual rtError_t AsyncDmaJettyCreate(const uint32_t devId, const uint32_t piType,
         const uint32_t depth, const uint32_t dir, uint64_t *const handle) = 0;
@@ -563,6 +564,10 @@ public:
         uint32_t &dieId, uint32_t &functionId, uint32_t &jettyId) = 0;
     virtual rtError_t AsyncDmaWqeConvert(const uint32_t devId, AsyncWqeInputPara* inParam, AsyncWqeOutputPara* outParam) = 0;
     virtual rtError_t AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo *fillInfo) = 0;
+    virtual rtError_t StreamMemPoolSetAttr(const uint32_t deviceId, const uint64_t poolId, const rtMemPoolAttr attr, void *value) = 0;
+    virtual rtError_t StreamMemPoolGetAttr(const uint32_t deviceId, const uint64_t poolId, const rtMemPoolAttr attr, void *value) = 0;
+    virtual rtError_t StreamMemPoolAsyncConfig(const uint32_t deviceId, const uint64_t poolId,
+        const uint64_t va, const uint64_t size, const bool flag) = 0;
 
     virtual rtError_t SetStreamPriorityValue(Stream * const stm, const uint32_t streamPriority) = 0;
     virtual rtError_t GetStreamPriorityValue(Stream * const stm, uint32_t * const streamPriority) = 0;

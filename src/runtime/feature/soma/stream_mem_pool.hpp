@@ -31,15 +31,13 @@
 namespace cce {
 
 namespace runtime {
-// SOMA virtual memory address range: 12TB-14TB
-constexpr uint64_t DEVICE_POOL_VADDR_START = (12ULL << 40U);   // 12 TB
-constexpr uint64_t DEVICE_POOL_VADDR_SIZE = (2ULL << 40U);     // 2 TB
-constexpr uint64_t DEVICE_POOL_MIN_BLOCK_SIZE = (2ULL << 20U); // 2 MB
-constexpr uint64_t DEVICE_POOL_ALIGN_SIZE = (2ULL << 20U);     // 2 MB
+constexpr uint64_t DEVICE_POOL_MIN_BLOCK_SIZE = (2UL << 20); // 2 MB
+constexpr uint64_t DEVICE_POOL_ALIGN_SIZE = (2UL << 20);     // 2 MB
+constexpr uint32_t APP_MODE_ID = 33U;
 constexpr size_t HASH_GOLDEN_RATIO = 0x9E3779B9U;
+constexpr size_t BYTES_PER_MB = 1024U * 1024U;
 constexpr int32_t INVALID_STREAM_ID = -1;
 constexpr int32_t INVALID_SEQ_ID = -1;
-
 enum class SegmentState : uint8_t {
     FREE = 0,
     CACHED = 1,
@@ -129,6 +127,7 @@ public:
     uint64_t PoolSegAddr() const { return base_; }
     uint64_t PoolSize() const { return static_cast<uint64_t>(size_); }
     uint32_t DeviceId() const { return deviceId_; }
+    uint64_t GetAllocSize(uint64_t ptr);
     int32_t GraphId() const { return graphId_; }
     bool CanDelete() const { return canDelete_; }
     rtError_t GetAttribute(rtMemPoolAttr attr, void* value);
@@ -138,6 +137,7 @@ public:
     Segment* StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag);
     Segment* TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea state, ReuseFlag &flag);
     rtError_t TrimTo(const uint64_t minBytesToKeep);
+    void SetInitialSegment(Segment *seg);
 
 private:
     void MergeIntoCachedSegs(Segment* &seg);
@@ -189,11 +189,12 @@ public:
     }
     rtError_t Init();
     ~PoolRegistry();
-    rtError_t CreateMemPool(uint64_t size, uint64_t device, bool canDelete, SegmentManager* &memPool);
+    rtError_t InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size);
+    void RegisterMemPool(SegmentManager *mgr);
     rtError_t CheckRemoveMemPool(SegmentManager *memPool);
     rtError_t RemoveMemPool(SegmentManager* memPool);
-    static inline SegmentManager* CreateManager(Segment *seg, uint32_t deviceId, bool canDeleteOutsideDestruction);
-    static inline void DeleteManager(SegmentManager*& manager);
+    static SegmentManager* CreateManager(Segment *seg, uint32_t deviceId, bool canDeleteOutsideDestruction);
+    static void DeleteManager(SegmentManager*& manager);
     bool QueryMemPool(SegmentManager *p);
     std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> GetSequenceMap() const;
     std::unordered_map<int32_t, uint64_t> GetStreamSeqId() const;
@@ -215,8 +216,8 @@ private:
 
     mutable std::mutex mutex_;
     std::set<SegmentManager*, SegmentManagerComparator> entries_;
-    Segment *globalSegment_ = nullptr;
-    SegmentManager *poolAllocator_ = nullptr;
+    bool initialized_ = false;
+    std::unordered_set<SegmentManager*> validEntries_;
     std::unordered_map<int32_t, std::pair<int32_t, uint64_t>> eventsMap_;
     std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> sequenceMap_;
     std::unordered_map<int32_t, uint64_t> streamSeqId_;

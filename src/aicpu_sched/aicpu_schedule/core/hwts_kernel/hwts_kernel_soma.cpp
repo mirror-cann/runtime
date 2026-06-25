@@ -40,7 +40,7 @@ int32_t SomaMemMngTsKernel::Compute(const aicpu::HwtsTsKernel &tsKernelInfo)
             break;
         case SomaOpType::SOMA_OP_FREE:
             aicpusd_info("SOMA: free deviceId=%u,mempoolId=%llx,va=%llx,memAsyncSubCMD=%u.", Mng->deviceId, Mng->mempoolId, Mng->va, Mng->memAsyncSubCMD);
-            ret = halMemPoolFree(pool, Mng->va, Mng->memAsyncSubCMD);
+            ret = halMemPoolFree(pool, Mng->va, Mng->size, Mng->memAsyncSubCMD);
             break;
         default:
             aicpusd_err("Ts Kernel SomaMemMng OpType [%d] is invalid.", static_cast<int32_t>(op));

@@ -66,7 +66,7 @@ TEST_F(SomaMemMngTsKernelTest, TsKernelSomaMemMng_freesuccess)
 
     MOCKER(halMemPoolFree)
         .stubs()
-        .with( mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with( mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(DRV_ERROR_NONE));
 
     mng->deviceId = 0;
@@ -92,9 +92,9 @@ TEST_F(SomaMemMngTsKernelTest, TsKernelSomaMemMng_freefailed)
     
     MOCKER(halMemPoolFree)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(DRV_ERROR_NONE));
-    
+
     mng->deviceId = 0;
     mng->memAsyncOpType = 3;
     mng->memAsyncSubCMD = 0;

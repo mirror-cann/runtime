@@ -216,20 +216,22 @@ rtError_t NpuDriver::PutTsegInfo(uint32_t devid, struct halTsegInfo *tsegInfo)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t NpuDriver::StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId, const uint64_t va, const uint64_t size, bool isGraphPool)
+rtError_t NpuDriver::StreamMemPoolCreate(const uint32_t deviceId, const uint64_t poolId,
+    const uint64_t size, bool isGraphPool, uint64_t &outVa)
+{
+    UNUSED(deviceId);
+    UNUSED(poolId);
+    UNUSED(size);
+    UNUSED(isGraphPool);
+    UNUSED(outVa);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId, const uint64_t va)
 {
     UNUSED(deviceId);
     UNUSED(poolId);
     UNUSED(va);
-    UNUSED(size);
-    UNUSED(isGraphPool);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
-
-rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId)
-{
-    UNUSED(deviceId);
-    UNUSED(poolId);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
@@ -286,5 +288,33 @@ rtError_t NpuDriver::AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo* fil
     UNUSED(fillInfo);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
+rtError_t NpuDriver::StreamMemPoolSetAttr(const uint32_t deviceId, const uint64_t poolId, const rtMemPoolAttr attr, void *value)
+{
+    UNUSED(deviceId);
+    UNUSED(poolId);
+    UNUSED(attr);
+    UNUSED(value);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::StreamMemPoolGetAttr(const uint32_t deviceId, const uint64_t poolId, const rtMemPoolAttr attr, void *value)
+{
+    UNUSED(deviceId);
+    UNUSED(poolId);
+    UNUSED(attr);
+    UNUSED(value);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t NpuDriver::StreamMemPoolAsyncConfig(const uint32_t deviceId, const uint64_t poolId, const uint64_t va, const uint64_t size, const bool flag)
+{
+    UNUSED(deviceId);
+    UNUSED(poolId);
+    UNUSED(va);
+    UNUSED(size);
+    UNUSED(flag);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
 }
 }

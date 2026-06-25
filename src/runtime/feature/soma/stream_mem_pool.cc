@@ -116,24 +116,11 @@ SegmentManager::~SegmentManager()
 
 Segment* SegmentManager::TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea state, ReuseFlag &flag)
 {
-    Segment* reuseSeg = nullptr;
-    if (state.singleDependencies != 0) {
-        reuseSeg = SingleStreamReuse(size, streamId, flag);
-        if (reuseSeg != nullptr) return reuseSeg;
-    }
-    if (state.eventDependencies != 0) {
-        reuseSeg = StreamEventReuse(size, streamId, flag);
-        if (reuseSeg != nullptr) return reuseSeg;
-    }
-    if (state.opportunistic != 0) {
-        reuseSeg = StreamInternalReuse(size, streamId, true, flag);
-        if (reuseSeg != nullptr) return reuseSeg;
-    }
-    if (state.internalDependencies != 0) {
-        reuseSeg = StreamInternalReuse(size, streamId, false, flag);
-        if (reuseSeg != nullptr) return reuseSeg;
-    }
-    return reuseSeg;
+    UNUSED(size);
+    UNUSED(streamId);
+    UNUSED(state);
+    UNUSED(flag);
+    return nullptr;
 }
 
 rtError_t SegmentManager::SegmentAlloc(Segment* &ret, uint64_t size, int streamId, ReuseFlag &flag)
@@ -141,9 +128,9 @@ rtError_t SegmentManager::SegmentAlloc(Segment* &ret, uint64_t size, int streamI
     RT_LOG(RT_LOG_DEBUG, "Allocating segment, size=%#" PRIx64 " streamId=%d.", size, streamId);
     COND_RETURN_ERROR(tail_ == nullptr, RT_ERROR_MEM_POOL_ALLOC,
         "Segment not properly initialized, memPoolID=%#" PRIx64 ".", MemPoolId());
-
-    COND_RETURN_ERROR(isIPCPool_, RT_ERROR_POOL_UNSUPPORTED,
-        "Memory allocation from a IPC pool denied. The IPC pool is read-only.");
+    
+    COND_RETURN_AND_MSG_OUTER(isIPCPool_, RT_ERROR_POOL_UNSUPPORTED, ErrorCode::EE1016, "Allocate memory from memory pool",
+        "The IPC memory pool does not support this operation");
 
     std::lock_guard<std::mutex> lock(mutex_);
     Segment* reuseSegment = TryToReuse(size, streamId, state_, flag);
@@ -185,7 +172,6 @@ rtError_t SegmentManager::SegmentFree(uint64_t ptr, bool forceFree)
     auto it = allocedMap_.find(ptr);
     COND_RETURN_ERROR(it == allocedMap_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
         "Unable to free ptr=%#" PRIx64 " from memPoolId=%#" PRIx64, ptr, MemPoolId());
-    
     Segment *seg = it->second;
     RT_LOG(RT_LOG_DEBUG, "Free segment ptr=%#" PRIx64 " size=%#" PRIx64 ".", seg->basePtr, seg->size);
     (void)allocedMap_.erase(it);
@@ -199,6 +185,13 @@ rtError_t SegmentManager::SegmentFree(uint64_t ptr, bool forceFree)
         MergeIntoCachedSegs(seg);
     }
     return RT_ERROR_NONE;
+}
+
+uint64_t SegmentManager::GetAllocSize(uint64_t ptr)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = allocedMap_.find(ptr);
+    return (it != allocedMap_.end()) ? it->second->size : 0;
 }
 
 void SegmentManager::MergeIntoCachedSegs(Segment* &seg)
@@ -382,6 +375,17 @@ void SegmentManager::TrimCachedSegs(const uint64_t minBytesToKeep)
     }
 }
 
+void SegmentManager::SetInitialSegment(Segment *seg)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    COND_RETURN_VOID(seg == nullptr, "SetInitialSegment: seg is null.");
+    tail_  = seg;
+    base_  = seg->basePtr;
+    size_  = seg->size;
+    seg->state = SegmentState::FREE;
+    freeSegs_.insert(seg);
+}
+
 rtError_t SegmentManager::TrimTo(const uint64_t minBytesToKeep)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -401,6 +405,7 @@ rtError_t SegmentManager::TrimTo(const uint64_t minBytesToKeep)
 
 rtError_t SegmentManager::GetAttribute(rtMemPoolAttr attr, void* value)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     switch (attr) {
         case rtMemPoolReuseFollowEventDependencies:
             *static_cast<uint32_t*>(value) = state_.eventDependencies;
@@ -435,10 +440,11 @@ rtError_t SegmentManager::GetAttribute(rtMemPoolAttr attr, void* value)
 
 rtError_t SegmentManager::SetAttribute(rtMemPoolAttr attr, const void *value)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     uint64_t reset = 0U;
 
-    COND_RETURN_ERROR(isIPCPool_, RT_ERROR_POOL_UNSUPPORTED,
-        "Modification of IPC pool attributes denied. The IPC pool is read-only.");
+    COND_RETURN_AND_MSG_OUTER(isIPCPool_, RT_ERROR_POOL_UNSUPPORTED, ErrorCode::EE1016, "Allocate memory from memory pool",
+        "The IPC memory pool does not support this operation");
     
     switch (attr) {
         case rtMemPoolReuseFollowEventDependencies:
@@ -457,7 +463,7 @@ rtError_t SegmentManager::SetAttribute(rtMemPoolAttr attr, const void *value)
             reset = *static_cast<const uint64_t*>(value);
             COND_RETURN_ERROR(reset > size_, RT_ERROR_POOL_PROP_INVALID,
                 "Value is out of range, reset value=%#" PRIx64", should less than maxsize=%#" PRIx64 ".", reset, size_);
-                state_.waterMark = reset;
+            state_.waterMark = reset;
             RT_LOG(RT_LOG_DEBUG, "Set attribute releaseThreshold, value=%#" PRIx64 ".",
                 *static_cast<const uint64_t*>(value));
             break;
@@ -484,40 +490,25 @@ rtError_t SegmentManager::SetAttribute(rtMemPoolAttr attr, const void *value)
 
 rtError_t PoolRegistry::Init()
 {
-    if (poolAllocator_ != nullptr) {
+    if (initialized_) {
         return RT_ERROR_NONE;
     }
-
-    std::lock_guard<std::mutex> lock(mutex_);    
-    globalSegment_ = SegmentManager::CreateSegment(DEVICE_POOL_VADDR_START, DEVICE_POOL_VADDR_SIZE, nullptr, nullptr);
-    if (globalSegment_ == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "Failed to allocate New Segment: Host out of memory.");
-        return RT_ERROR_MEMORY_ALLOCATION;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (initialized_) {
+        return RT_ERROR_NONE;
     }
-
-    poolAllocator_ = CreateManager(globalSegment_, 0U, false);
-    if (poolAllocator_ == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "Failed to allocate New SegmentManager: Host out of memory.");
-        SegmentManager::DeleteSegment(globalSegment_);
-        return RT_ERROR_MEMORY_ALLOCATION;
-    }
-    RT_LOG(RT_LOG_DEBUG, "Init mem address success, devptr=%#" PRIx64 ".", globalSegment_->basePtr);
     rtError_t error = RegisterSomaCallBack();
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Soma Callback register failed, reCode=%#x.", error);
-        DeleteManager(poolAllocator_);
         return error;
     }
+    initialized_ = true;
     return RT_ERROR_NONE;
 }
 
 PoolRegistry::~PoolRegistry()
 {
     RT_LOG(RT_LOG_EVENT, "SOMA PoolRegistry destructor.");
-    std::lock_guard<std::mutex> lock(mutex_);
-    if (poolAllocator_ != nullptr && globalSegment_ != nullptr) {
-        DeleteManager(poolAllocator_);
-    }
 }
 
 SegmentManager* PoolRegistry::CreateManager(Segment *seg, uint32_t deviceId, bool canDeleteOutsideDestruction)
@@ -531,35 +522,29 @@ void PoolRegistry::DeleteManager(SegmentManager*& manager)
     manager = nullptr;
 }
 
-rtError_t PoolRegistry::CreateMemPool(uint64_t size, uint64_t device, bool canDelete, SegmentManager* &memPool)
+rtError_t PoolRegistry::InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size)
 {
-    (void)PoolRegistry::Instance().Init();
-    COND_RETURN_ERROR(poolAllocator_ == nullptr, RT_ERROR_MEM_POOL_NULL,
-        "PoolRegistry used before init, or poolAllocator init failed.");
-
-    Segment *seg = nullptr;
-    ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
-    rtError_t error = poolAllocator_->SegmentAlloc(seg, static_cast<uint64_t>(size), INVALID_STREAM_ID, flag);
-    ERROR_RETURN(error, "CreateMemPool failed, no more virtual address for new mempool, size=" PRIx64 ".", size);
-
-    Segment *memPoolSeg = SegmentManager::CreateSegment(seg->basePtr, seg->size, nullptr, nullptr);
-    memPool = CreateManager(memPoolSeg, device, canDelete);
-    COND_RETURN_ERROR(memPool == nullptr, RT_ERROR_MEM_POOL_ALLOC,
-        "Failed to allocate New SegmentManager: Host out of memory.");
-    std::lock_guard<std::mutex> lock(mutex_);
-    (void)entries_.insert(memPool);
+    Segment *seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
+    COND_RETURN_AND_MSG_OUTER(seg == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(Segment)).c_str(), "new");
+    mgr->SetInitialSegment(seg);
     return RT_ERROR_NONE;
+}
+
+void PoolRegistry::RegisterMemPool(SegmentManager *mgr)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    (void)entries_.insert(mgr);
+    (void)validEntries_.insert(mgr);
 }
 
 rtError_t PoolRegistry::CheckRemoveMemPool(SegmentManager *memPool)
 {
     COND_RETURN_ERROR(memPool == nullptr, RT_ERROR_MEM_POOL_NULL, "Memory pool is nullptr.");
-    COND_RETURN_ERROR(poolAllocator_ == nullptr, RT_ERROR_MEM_POOL_NULL,
-        "PoolRegistry used before init, or poolAllocator init failed.");
+    COND_RETURN_ERROR(!initialized_, RT_ERROR_MEM_POOL_NULL, "PoolRegistry not initialized.");
     std::lock_guard<std::mutex> lock(mutex_);
 
-    auto it = entries_.find(memPool);
-    COND_RETURN_ERROR(it == entries_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
+    auto it = validEntries_.find(memPool);
+    COND_RETURN_ERROR(it == validEntries_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
         "Failed to remove memPool, memPoolId=%#" PRIx64 ".", memPool->MemPoolId());
     COND_RETURN_ERROR(!(*it)->CanDelete(), RT_ERROR_POOL_OP_INVALID,
         "Failed to destroy not deletable memPool(Id=%#" PRIx64 ").", memPool->MemPoolId());
@@ -568,32 +553,34 @@ rtError_t PoolRegistry::CheckRemoveMemPool(SegmentManager *memPool)
 
 rtError_t PoolRegistry::RemoveMemPool(SegmentManager* memPool)
 {
-    COND_RETURN_ERROR(poolAllocator_ == nullptr, RT_ERROR_MEM_POOL_NULL,
-        "PoolRegistry used before init, or poolAllocator init failed.");
-    
     {
         std::lock_guard<std::mutex> lock(mutex_);
         (void)entries_.erase(memPool);
+        (void)validEntries_.erase(memPool);
     }
-    auto base = memPool->PoolSegAddr();
     delete memPool;
-    poolAllocator_->SegmentFree(base, true);
     return RT_ERROR_NONE;
 }
 
 bool PoolRegistry::QueryMemPool(SegmentManager *p)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    return entries_.find(p) != entries_.end();
+    return validEntries_.find(p) != validEntries_.end();
 }
 
 bool PoolRegistry::InMemPoolRegion(uint64_t ptr)
 {
-    if (poolAllocator_ == nullptr) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (entries_.empty()) {
         return false;
     }
-    std::lock_guard<std::mutex> lock(mutex_);
-    return ptr >= poolAllocator_->PoolSegAddr() && ptr < poolAllocator_->PoolSegAddr() + poolAllocator_->PoolSize();
+    auto it = std::upper_bound(entries_.begin(), entries_.end(), ptr,
+        [](uint64_t p, const SegmentManager *mgr) { return p < mgr->PoolSegAddr(); });
+    if (it == entries_.begin()) {
+        return false;
+    }
+    --it;
+    return ptr < (*it)->PoolSegAddr() + (*it)->PoolSize();
 }
 
 SegmentManager *PoolRegistry::FindMemPoolByPtr(uint64_t ptr)
@@ -702,6 +689,7 @@ void PoolRegistry::EventStateCallbackWrapper(Stream* stream, Event* event, Event
     COND_RETURN_VOID(event == nullptr, "PoolRegistry event callback event nullptr.");
     if (period == EventStatePeriod::EVENT_STATE_PERIOD_DESTROY) {
         PoolRegistry::Instance().RemoveFromEventMap(event->EventId_());
+        return;
     }
 
     COND_RETURN_VOID(stream == nullptr, "PoolRegistry event callback stream nullptr.");
