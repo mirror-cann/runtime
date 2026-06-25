@@ -696,7 +696,7 @@ rtError_t Program::FreeKernelLiteralNameDevMem(const Device *const device)
 
     for (auto iter = soNameDevAddrMap_[deviceId].begin(); iter != soNameDevAddrMap_[deviceId].end(); ) {
         if (iter->second != nullptr) {
-            rtError_t ret = curDrv->DevMemFree(iter->second, deviceId);
+            const rtError_t ret = curDrv->DevMemFree(iter->second, deviceId);
             ERROR_RETURN(ret, "Failed to free soNameDevMem %s, ret=%d, devId=%u.", iter->first.c_str(), ret, deviceId);
         }
         iter = soNameDevAddrMap_[deviceId].erase(iter);
@@ -704,7 +704,7 @@ rtError_t Program::FreeKernelLiteralNameDevMem(const Device *const device)
 
     for (auto iter = funcNameDevAddrMap_[deviceId].begin(); iter != funcNameDevAddrMap_[deviceId].end(); ) {
         if (iter->second != nullptr) {
-            rtError_t ret = curDrv->DevMemFree(iter->second, deviceId);
+            const rtError_t ret = curDrv->DevMemFree(iter->second, deviceId);
             ERROR_RETURN(ret, "Failed to free funcNameDevMem %s, ret=%d, devId=%u.", iter->first.c_str(), ret, deviceId);
         }    
         iter = funcNameDevAddrMap_[deviceId].erase(iter);

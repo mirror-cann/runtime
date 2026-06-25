@@ -50,7 +50,7 @@ static const std::vector<std::string> DavidCqeErrorDesc_ = {
 static void PrintTaskErrorMsg(const uint16_t streamId, const uint16_t pos, rtLogicCqReport_t &logicCq,
     const TaskInfo * const reportTask, std::string &errMsg)
 {
-    uint32_t reportTaskSn = (static_cast<uint32_t>(logicCq.taskId) << UINT16_BIT_NUM) | static_cast<uint32_t>(logicCq.streamId);
+    const uint32_t reportTaskSn = (static_cast<uint32_t>(logicCq.taskId) << UINT16_BIT_NUM) | static_cast<uint32_t>(logicCq.streamId);
     if ((IsDvppTask(static_cast<uint16_t>(logicCq.sqeType)) || (logicCq.sqeType == RT_DAVID_SQE_TYPE_PLACE_HOLDER) ||
         (logicCq.sqeType == RT_DAVID_SQE_TYPE_AICPU_D) || (logicCq.sqeType == RT_DAVID_SQE_TYPE_FUSION) ||
         (logicCq.sqeType == RT_DAVID_SQE_TYPE_CCU)) && (logicCq.errorCode == TS_ERROR_TASK_TIMEOUT) &&
