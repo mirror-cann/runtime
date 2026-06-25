@@ -29,7 +29,7 @@ public:
     rtError_t EventIdReAlloc();
     rtError_t FreeAllEvent() noexcept;
 private:
-    bool IsNeedAllocIdForPool();
+    bool IsNeedAllocIdForPool() const;
     uint32_t GetQueueAvilableNum() const;
     std::mutex lk_;
     uint32_t eventQueueHead_{0U};

@@ -34,7 +34,7 @@ uint32_t EventPool::GetQueueAvilableNum() const
      return (eventQueueTail_ + poolSize_ - eventQueueHead_) % poolSize_;
 }
 
-bool EventPool::IsNeedAllocIdForPool() {
+bool EventPool::IsNeedAllocIdForPool() const {
     if (isAging_) {
         RT_LOG(RT_LOG_INFO, "already aging, pool_size=%d.", GetQueueAvilableNum());
         return false;

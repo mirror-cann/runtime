@@ -47,7 +47,7 @@ Program::Program(const rtKernelAttrType kernelAttrType)
       kernelPos_(0U),
       binary_(nullptr),
       binarySize_(0UL),
-      machine_(0UL),
+      machine_(0U),
       kernelNames_(),
       progId_(UINT32_MAX),
       progType_(PLAIN_PROGRAM),
@@ -859,7 +859,7 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
         return RT_ERROR_NONE;
     }
 
-    Kernel *kernel = new (std::nothrow) Kernel(kernelName, 0U, this, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
+    std::unique_ptr<Kernel> kernel(new (std::nothrow) Kernel(kernelName, 0U, this, RT_KERNEL_ATTR_TYPE_AICPU, 0U));
     COND_PROC_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         kernelMapLock_.Unlock();, sizeof(Kernel), "new");
 
@@ -877,17 +877,17 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
     kernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_AICPU);
  
     // Aicpu算子注册时，把KernelName, soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName, soname
-    rtError_t ret = StoreKernelLiteralNameToDevice(kernel);
+    rtError_t ret = StoreKernelLiteralNameToDevice(kernel.get());
     if (ret != RT_ERROR_NONE) {
-        delete kernel;
         kernelMapLock_.Unlock();
         RT_LOG(RT_LOG_ERROR, "Failed to store kernel %s literal name to device, ret=%d", kernelName, ret);
         return ret;
     }
-    kernelNameMap_[kernelName] = kernel;
+    auto *rawKernel = kernel.release();
+    kernelNameMap_[kernelName] = rawKernel;
     kernelMapLock_.Unlock();
 
-    *kernelHandle = kernel;
+    *kernelHandle = rawKernel;
     return RT_ERROR_NONE;
 }
 
@@ -1494,7 +1494,7 @@ rtError_t Program::BinaryPoolMemCopySync(void * const devMem, const uint32_t siz
 }
 
 /* 剥离掉kernelName的_mix_aic/_mix_aiv的后缀 */
-std::string ElfProgram::AdjustKernelName(const std::string kernelName) const
+std::string ElfProgram::AdjustKernelName(const std::string &kernelName) const
 {
     std::string tripKernelName = kernelName;
     const std::string mixAicName = "_mix_aic";
@@ -1591,8 +1591,8 @@ rtError_t ElfProgram::GetKernelTypeAndMixTypeByMetaInfo(const RtKernel * const e
     return result;
 }
 
-void ElfProgram::GetKernelTypeAndMixTypeByName(const std::string kernelName,
-    rtKernelAttrType &kernelAttrType, uint8_t &mixType)
+void ElfProgram::GetKernelTypeAndMixTypeByName(const std::string &kernelName,
+    rtKernelAttrType &kernelAttrType, uint8_t &mixType) const
 {
     const std::string mixAicName = "_mix_aic";
     const std::string mixAivName = "_mix_aiv";

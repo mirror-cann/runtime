@@ -438,7 +438,7 @@ public:
 
     rtError_t UnifiedKernelRegister();
     rtError_t RegisterAllKernelCommon(void);
-    std::string AdjustKernelName(const std::string kernelName) const;
+    std::string AdjustKernelName(const std::string &kernelName) const;
     rtError_t BuildNewKernel(const std::string tripKernelName, const RtKernel * const elfkernelInfo,
         Kernel * &kernel);
     rtError_t MergeKernel(const RtKernel * const elfkernelInfo, Kernel *oldKernel);
@@ -480,8 +480,8 @@ private:
     rtError_t ParseTilingKey(const std::string &kernelName, uint64_t &tilingKey) const;
     rtError_t GetKernelTypeAndMixTypeByMetaInfo(const RtKernel * const elfkernelInfo,
         rtKernelAttrType &kernelAttrType, uint8_t &mixType);
-    void GetKernelTypeAndMixTypeByName(const std::string kernelName,
-        rtKernelAttrType &kernelAttrType, uint8_t &mixType);
+    void GetKernelTypeAndMixTypeByName(const std::string &kernelName,
+        rtKernelAttrType &kernelAttrType, uint8_t &mixType) const;
     rtError_t GetKernelTypeAndMixType(const RtKernel * const elfkernelInfo,
         rtKernelAttrType &kernelAttrType, uint8_t &mixType);
 

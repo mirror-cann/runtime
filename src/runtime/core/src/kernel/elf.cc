@@ -1090,8 +1090,7 @@ rtError_t UpdateKernelsInfo(std::map<std::string, ElfKernelInfo *>& kernelInfoMa
                             RtKernel * const kernels, rtElfData * const elfData)
 {
     const uint32_t kernelNum = elfData->kernel_num;
-    const uint32_t mapSize = kernelInfoMap.size();
-    if (mapSize == 0U) {
+    if (kernelInfoMap.empty()) {
         return RT_ERROR_NONE;
     }
 
