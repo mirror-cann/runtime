@@ -52,7 +52,7 @@
     /* EE1006 - Not_Supported */                                              \
     X(EE1006, "EE1006",                                                       \
       ("func", "type", "reason"),                                             \
-      "%s execution failed. %s is not supported. Reason: %s."                 \
+      "%s failed. %s is not supported. Reason: %s."                           \
       "ErrorCode=EE1006.\n",                                                  \
       DLOG_ERROR)                                                             \
     /* EE1007 - Resource_Error_Bind_Stream */                                 \
