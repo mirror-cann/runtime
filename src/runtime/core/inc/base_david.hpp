@@ -36,8 +36,6 @@ constexpr uint32_t RT_DAVID_AIVECTOR_NUM_PER_DIE = 36U;
 
 constexpr uint32_t RT_DAVID_DIE_MAX_NUM = 2U;
 
-constexpr uint32_t RT_MCXX_CORE_NUM_PER_DIE = 20U;
-
 constexpr uint32_t RT_SIMT_SHARE_MEM_ALIGN_LEN = 128U;
 }
 }
