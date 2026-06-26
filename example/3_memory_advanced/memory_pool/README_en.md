@@ -11,4 +11,3 @@ This directory focuses on the creation, property configuration, and asynchronous
 ## Prerequisites
 
 - [../allocator/README_en.md](../allocator/README_en.md): Custom allocators and memory management abstractions.
-- [../../1_basic_features/memory/](../../1_basic_features/memory/README_en.md): Basic memory transfer and copy samples.

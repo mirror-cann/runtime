@@ -11,5 +11,3 @@
 ## 可先参考
 
 - [../allocator/README.md](../allocator/README.md)：自定义分配器与内存管理抽象。
-- [../../1_basic_features/memory/](../../1_basic_features/memory/)：基础内存传输与拷贝样例。
-
