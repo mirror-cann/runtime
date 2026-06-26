@@ -552,7 +552,7 @@ rtError_t ModelLoadCompleteByStream(Model * const mdl)
     GetAndSaveJettyInfo(mdl);
 
     if (isNeedStreamReuse && isContextContainAicpuModel) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1016, "AI CPU model streams and stream reuse cannot be used simultaneously");
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1016, "AI CPU model streams and stream reuse cannot be used at the same time");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
