@@ -73,7 +73,7 @@ set(INCLUDE_DIR
     ${MSPROF_SOURCE_DIR}/avp/domain/transport/
     ${MSPROF_SOURCE_DIR}/avp/service/
     ${MSPROF_SOURCE_DIR}/avp/inc
-    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/pkg_inc/driver
     ${TOP_DIR}/include/external/acl
     ${TOP_DIR}/include/external/
     ${TOP_DIR}/tests/ut/msprof/st/data/
@@ -181,7 +181,7 @@ set(proftransportInc
     ${MSPROF_SOURCE_DIR}/basic/
     ${MSPROF_SOURCE_DIR}/basic/osal
     ${MSPROF_SOURCE_DIR}/avp/
-    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/pkg_inc/driver
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -271,7 +271,7 @@ set(INCLUDE_DIR
     ${MSPROF_SOURCE_DIR}/avp/domain/transport/
     ${MSPROF_SOURCE_DIR}/avp/service/
     ${MSPROF_SOURCE_DIR}/avp/inc
-    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/pkg_inc/driver
     ${TOP_DIR}/include/external/acl
     ${TOP_DIR}/include/external/
     ${TOP_DIR}/tests/ut/msprof/st/data/

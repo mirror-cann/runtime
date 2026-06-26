@@ -18,7 +18,7 @@ set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type Release/Debug (default Deb
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/out" CACHE STRING "path for install()" FORCE)
 
 include_directories(${ASCEND_CANN_PACKAGE_PATH}/include
-                    ${ASCEND_CANN_PACKAGE_PATH}/include/driver
+                    ${ASCEND_CANN_PACKAGE_PATH}/pkg_inc/driver
                     ${ASCEND_CANN_PACKAGE_PATH}/include/acl
                     ${ASCEND_CANN_PACKAGE_PATH}/runtime/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/../../..)

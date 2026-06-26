@@ -111,7 +111,7 @@ set(testSrc
 )
 
 set(libSlogdInc
-    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/pkg_inc/driver
     ${TOP_DIR}/src/dfx/adump/external
     ${TOP_DIR}/src/dfx/adump/inc/adump
     ${TOP_DIR}/pkg_inc/trace

@@ -1280,7 +1280,7 @@ target_compile_definitions(runtime_utest_intf_pub INTERFACE
 )
 
 set(RUNTIME_TEST_INC_DIR_COMMON
-    ${TOP_DIR}/include/driver
+    ${TOP_DIR}/pkg_inc/driver
     ${TOP_DIR}/pkg_inc/aicpu_sched
     ${TOP_DIR}/pkg_inc/aicpu_sched/common
     ${TOP_DIR}/src/tsd/tsdclient/inc/tsd
