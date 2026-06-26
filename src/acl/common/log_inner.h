@@ -431,7 +431,7 @@ public:
     if (UNLIKELY((val) == nullptr)) { \
         ACL_LOG_ERROR("[Check][%s]param must not be null.", #val); \
         std::string funcName = acl::AclErrorLogManager::GetFuncNameWithoutImplSuffix(__func__); \
-        acl::AclErrorLogManager::ReportInputError(acl::NULL_POINTER_FUNC_MSG, {"func", "param"}, {funcName.c_str(), name}); \
+        acl::AclErrorLogManager::ReportInputError(acl::NULL_POINTER_FUNC_MSG, {"func", "param"}, {funcName.c_str(), (name)}); \
         return ACL_ERROR_INVALID_PARAM; } \
     } \
     while (false)
