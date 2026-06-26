@@ -15,6 +15,7 @@
 #include "runtime.hpp"
 #include "rt_log.h"
 #include "runtime_handle_guard.h"
+#include "api_handle_guard.h"
 using namespace testing;
 using namespace cce::runtime;
 class RtErrorCodeTest : public Test {
@@ -416,4 +417,27 @@ TEST_F(RtErrorCodeTest, ValidateInnerObjectSuccessAndNull)
     void *outNull = reinterpret_cast<void *>(0x1);
     EXPECT_EQ(GetValidatedObjectImpl(nullptr, RT_STREAM_MAGIC, outNull), RT_ERROR_NONE);
     EXPECT_EQ(outNull, nullptr);
+}
+
+TEST_F(RtErrorCodeTest, ValidateArgsHandleForApiAcceptsLegacyObjectAddress)
+{
+    RtArgsHandle legacyArgsHandle = {};
+    InitEmbeddedInnerHandle<RtArgsHandle>(&legacyArgsHandle);
+
+    RtArgsHandle *out = nullptr;
+    const rtError_t ret = ValidateArgsHandleForApi(RtPtrToPtr<rtArgsHandle>(&legacyArgsHandle), out, __func__);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+    EXPECT_EQ(out, &legacyArgsHandle);
+}
+
+TEST_F(RtErrorCodeTest, ValidateLaunchArgsHandleForApiAcceptsLegacyObjectAddress)
+{
+    rtLaunchArgs_t legacyLaunchArgs = {};
+    InitEmbeddedInnerHandle<rtLaunchArgs_t>(&legacyLaunchArgs);
+
+    rtLaunchArgs_t *out = nullptr;
+    const rtError_t ret =
+        ValidateLaunchArgsHandleForApi(RtPtrToPtr<rtLaunchArgsHandle>(&legacyLaunchArgs), out, __func__);
+    EXPECT_EQ(ret, RT_ERROR_NONE);
+    EXPECT_EQ(out, &legacyLaunchArgs);
 }

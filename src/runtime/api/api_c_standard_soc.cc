@@ -1553,7 +1553,7 @@ rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount)
         RT_LOG(RT_LOG_WARNING, "XPU does not support rtFunctionGetParamCount");
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
-    RT_VALIDATE_AND_UNWRAP_OBJECT_WITH_VALIDATOR(const_cast<void *>(func), Kernel, realKernel, ValidateKernelHandleForApi);
+    RT_VALIDATE_AND_UNWRAP_OBJECT_WITH_VALIDATOR(func, Kernel, realKernel, ValidateKernelHandleForApi);
     const Kernel * const kernel = realKernel;
     const rtError_t error = apiInstance->FunctionGetParamCount(kernel, paramCount);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -1573,7 +1573,7 @@ rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex,
         RT_LOG(RT_LOG_WARNING, "XPU does not support rtFunctionGetParamInfo");
         return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
     }
-    RT_VALIDATE_AND_UNWRAP_OBJECT_WITH_VALIDATOR(const_cast<void *>(func), Kernel, realKernel, ValidateKernelHandleForApi);
+    RT_VALIDATE_AND_UNWRAP_OBJECT_WITH_VALIDATOR(func, Kernel, realKernel, ValidateKernelHandleForApi);
     const Kernel * const kernel = realKernel;
     const rtError_t error = apiInstance->FunctionGetParamInfo(kernel, paramIndex, paramOffset, paramSize);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

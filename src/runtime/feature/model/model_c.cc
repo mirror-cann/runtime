@@ -157,7 +157,7 @@ rtError_t MdlTaskUpdate(const Stream * const desStm, uint32_t desTaskId, Stream 
     Device *dev = sinkStm->Device_();
     Context * const curCtx = desStm->Context_();
     Program *program = nullptr;
-    rtError_t error = GetValidatedObject<Program>(reinterpret_cast<rtBinHandle>(para->hdl), program);
+    rtError_t error = GetValidatedObject<Program>(RtPtrToPtr<rtBinHandle>(para->hdl), program);
     ERROR_RETURN_MSG_INNER(error, "Failed to validate bin handle, retCode=%#x.", static_cast<uint32_t>(error));
 
     error = curCtx->CopyTilingTabToDev(program, dev, &devCopyMem, &tilingTabLen);

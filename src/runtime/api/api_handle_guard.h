@@ -12,6 +12,7 @@
 
 #include <vector>
 
+#include "base.hpp"
 #include "runtime_handle_guard.h"
 #include "rt_inner_model.h"
 
@@ -30,7 +31,7 @@ rtError_t ValidateNotifyHandleForApi(rtNotify_t handle, Notify *&outRealObj, con
 rtError_t ValidateCountNotifyHandleForApi(rtCntNotify_t handle, CountNotify *&outRealObj, const char_t *callerFuncName); 
 rtError_t ValidateCondHandleHandleForApi(rtCondHandle_t handle, CondHandle *&outRealObj, const char_t *callerFuncName);
 rtError_t ValidateProgramHandleForApi(rtBinHandle handle, Program *&outRealObj, const char_t *callerFuncName);
-rtError_t ValidateKernelHandleForApi(rtFuncHandle handle, Kernel *&outRealObj, const char_t *callerFuncName);
+rtError_t ValidateKernelHandleForApi(const void *handle, Kernel *&outRealObj, const char_t *callerFuncName);
 rtError_t ValidateArgsHandleForApi(rtArgsHandle handle, RtArgsHandle *&outRealObj, const char_t *callerFuncName);
 rtError_t ValidateParamHandleForApi(rtParaHandle handle, ParaDetail *&outRealObj, const char_t *callerFuncName);
 rtError_t ValidateLaunchArgsHandleForApi(rtLaunchArgsHandle handle, rtLaunchArgs_t *&outRealObj,
@@ -42,7 +43,7 @@ HandleT ExportEmbeddedHandle(ObjectT *realObj)
     if (realObj == nullptr) {
         return nullptr;
     } else {
-        return reinterpret_cast<HandleT>(RtInnerHandleAccessor<ObjectT>::Get(realObj));
+        return RtPtrToPtr<HandleT>(RtInnerHandleAccessor<ObjectT>::Get(realObj));
     }
 }
 

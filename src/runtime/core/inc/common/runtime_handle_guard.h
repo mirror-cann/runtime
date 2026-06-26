@@ -90,7 +90,7 @@ struct RtInnerHandleAccessor {
     }
 };
 
-rtError_t GetValidatedObjectImpl(void *handle, uint64_t expectedMagic, void *&outRealObj);
+rtError_t GetValidatedObjectImpl(const void *handle, uint64_t expectedMagic, void *&outRealObj);
 void InitializeInnerObject(rtInnerObject &inner, uint64_t magic, void *object);
 void ResetInnerObject(rtInnerObject &inner);
 
@@ -110,7 +110,7 @@ void ResetEmbeddedInnerHandle(T *realObj)
 
 // Validate object
 template <typename T>
-rtError_t GetValidatedObject(void *handle, T *&outRealObj)
+rtError_t GetValidatedObject(const void *handle, T *&outRealObj)
 {
     constexpr uint64_t expectedMagic = RtMagicTraits<T>::value;
     void *realObj = nullptr;

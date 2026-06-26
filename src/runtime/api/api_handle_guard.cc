@@ -11,7 +11,6 @@
 
 #include "api_global_err.h"
 #include "args/args_inner.h"
-#include "base.hpp"
 #include "errcode_manage.hpp"
 #include "error_message_manage.hpp"
 #include "spec/base_info.hpp"
@@ -122,7 +121,7 @@ rtError_t ValidateProgramHandleForApi(rtBinHandle handle, Program *&outRealObj, 
     }
 }
 
-rtError_t ValidateKernelHandleForApi(rtFuncHandle handle, Kernel *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateKernelHandleForApi(const void *handle, Kernel *&outRealObj, const char_t *callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Kernel>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -139,11 +138,11 @@ rtError_t ValidateArgsHandleForApi(rtArgsHandle handle, RtArgsHandle *&outRealOb
         return RT_ERROR_NONE;
     }
 
-    RtArgsHandle * const legacyArgsHandle = reinterpret_cast<RtArgsHandle *>(handle);
+    RtArgsHandle * const legacyArgsHandle = RtPtrToPtr<RtArgsHandle *>(handle);
     if (legacyArgsHandle != nullptr) {
         RtArgsHandle *realArgsHandle = nullptr;
         const rtError_t legacyRet = GetValidatedObject<RtArgsHandle>(
-            reinterpret_cast<rtArgsHandle>(RtInnerHandleAccessor<RtArgsHandle>::Get(legacyArgsHandle)), realArgsHandle);
+            RtPtrToPtr<rtArgsHandle>(RtInnerHandleAccessor<RtArgsHandle>::Get(legacyArgsHandle)), realArgsHandle);
         if ((legacyRet == RT_ERROR_NONE) && (realArgsHandle == legacyArgsHandle)) {
             outRealObj = legacyArgsHandle;
             return RT_ERROR_NONE;
@@ -171,11 +170,11 @@ rtError_t ValidateLaunchArgsHandleForApi(rtLaunchArgsHandle handle, rtLaunchArgs
         return RT_ERROR_NONE;
     }
 
-    rtLaunchArgs_t * const legacyLaunchArgs = reinterpret_cast<rtLaunchArgs_t *>(handle);
+    rtLaunchArgs_t * const legacyLaunchArgs = RtPtrToPtr<rtLaunchArgs_t *>(handle);
     if (legacyLaunchArgs != nullptr) {
         rtLaunchArgs_t *realLaunchArgs = nullptr;
         const rtError_t legacyRet = GetValidatedObject<rtLaunchArgs_t>(
-            reinterpret_cast<rtLaunchArgsHandle>(RtInnerHandleAccessor<rtLaunchArgs_t>::Get(legacyLaunchArgs)),
+            RtPtrToPtr<rtLaunchArgsHandle>(RtInnerHandleAccessor<rtLaunchArgs_t>::Get(legacyLaunchArgs)),
             realLaunchArgs);
         if ((legacyRet == RT_ERROR_NONE) && (realLaunchArgs == legacyLaunchArgs)) {
             outRealObj = legacyLaunchArgs;

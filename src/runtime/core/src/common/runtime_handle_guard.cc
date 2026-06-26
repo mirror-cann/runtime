@@ -108,7 +108,7 @@ void ResetInnerObject(rtInnerObject &inner)
     inner.object = nullptr;
 }
 
-rtError_t GetValidatedObjectImpl(void *handle, uint64_t expectedMagic, void *&outRealObj)
+rtError_t GetValidatedObjectImpl(const void *handle, uint64_t expectedMagic, void *&outRealObj)
 {
     if (handle == nullptr) {
         outRealObj = nullptr;

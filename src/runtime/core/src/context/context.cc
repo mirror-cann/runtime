@@ -2485,7 +2485,7 @@ rtError_t Context::ModelTaskUpdate(const Stream * desStm, uint32_t desTaskId, St
     uint32_t tilingTabLen = 0;
 
     Program *program = nullptr;
-    rtError_t ret = GetValidatedObject<Program>(reinterpret_cast<rtBinHandle>(para->hdl), program);
+    rtError_t ret = GetValidatedObject<Program>(RtPtrToPtr<rtBinHandle>(para->hdl), program);
     if (ret != RT_ERROR_NONE) {
         return ret;
     }
