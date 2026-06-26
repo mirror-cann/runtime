@@ -46,7 +46,7 @@ aclrtBinary aclrtCreateBinaryImpl(const void *data, size_t dataLen)
   ACL_REQUIRES_NOT_NULL_RET_NULL_INPUT_REPORT(data);
 
   rtDevBinary_t *binaryDesc = new(std::nothrow) rtDevBinary_t();
-  ACL_CHECK_MALLOC_RESULT_REPORT_RET(binaryDesc, sizeof(rtDevBinary_t), nullptr);
+  ACL_CHECK_MALLOC_RESULT_REPORT_RET(binaryDesc, sizeof(rtDevBinary_t), "new", nullptr);
 
   binaryDesc->magic = 0U;
   binaryDesc->version = 0U;

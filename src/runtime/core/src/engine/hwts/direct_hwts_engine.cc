@@ -151,7 +151,7 @@ rtError_t DirectHwtsEngine::Start()
                  "MONITOR_0" : "MONITOR_1";
     monitorThread_ = OsalFactory::CreateThread(threadName, this, monitor);
     COND_GOTO_MSG_OUTER(monitorThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()));
+        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
     
     monitorThreadRunFlag_ = true;
     err = monitorThread_->Start();
@@ -204,7 +204,7 @@ rtError_t DirectHwtsEngine::CreateRecycleThread(void)
     recycleThread_ = OsalFactory::CreateThread("RT_RECYCLE", this, recycle);
     if (recycleThread_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Failed to create recycle thread for Runtime.");
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
@@ -313,7 +313,7 @@ void DirectHwtsEngine::ProcessFastCqTask(const uint32_t streamId, const uint32_t
     } else {
         shmInfo = TaskStatusAlloc(streamId);
         if (shmInfo == nullptr) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(sizeof(rtShmQuery_t)).c_str());
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(sizeof(rtShmQuery_t)).c_str(), "new");
             return;
         }
         shmInfo->taskId = taskId;
@@ -1006,7 +1006,7 @@ bool DirectHwtsEngine::UpdateTaskIdForTaskStatus(const uint32_t streamId, const 
     } else {
         shmInfo = TaskStatusAlloc(streamId);
         if (shmInfo == nullptr) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(sizeof(rtShmQuery_t)).c_str());
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, std::to_string(sizeof(rtShmQuery_t)).c_str(), "new");
             return false;
         }
     }

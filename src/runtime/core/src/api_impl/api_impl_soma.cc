@@ -117,7 +117,7 @@ rtError_t ApiImplSoma::MemPoolFreeAsync(void * const ptr, Stream * const stm)
         RtPtrToValue(ptr));
     uint8_t *memBuffer = new (std::nothrow) uint8_t[sizeof(MemPoolFreeAsyncCallbackData)];
     COND_RETURN_AND_MSG_OUTER(memBuffer == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(MemPoolFreeAsyncCallbackData)));
+        ErrorCode::EE1013, std::to_string(sizeof(MemPoolFreeAsyncCallbackData)), "new");
     MemPoolFreeAsyncCallbackData *params = RtPtrToPtr<MemPoolFreeAsyncCallbackData *>(memBuffer);
     params->ptr = ptr;
     params->stm = stm;

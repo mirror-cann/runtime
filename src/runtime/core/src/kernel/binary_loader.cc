@@ -288,7 +288,7 @@ ElfProgram* BinaryLoader::LoadFromFile()
 
     ElfProgram *prog = new (std::nothrow) ElfProgram(kernelAttrType);
     if (prog == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfProgram));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfProgram), "new");
         char_t *buffer = RtPtrToPtr<char_t *, void *>(binaryBuffer_);
         DELETE_A(buffer);
         return nullptr;
@@ -336,7 +336,7 @@ PlainProgram* BinaryLoader::LoadCpuKernelFromData()
 {
     PlainProgram *prog = new (std::nothrow) PlainProgram(RT_KERNEL_REG_TYPE_CPU, RT_KERNEL_ATTR_TYPE_AICPU);
     if (prog == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(PlainProgram));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(PlainProgram), "new");
         return nullptr;
     }
 
@@ -357,7 +357,7 @@ ElfProgram* BinaryLoader::LoadFromData() const
 
     ElfProgram *prog = new (std::nothrow) ElfProgram(kernelAttrType);
     if (prog == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfProgram));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfProgram), "new");
         return nullptr;
     }
     RT_LOG(RT_LOG_INFO, "New ElfProgram ok, magic=%u, kernelAttrType=%d, Runtime_alloc_size=%zu",
@@ -389,7 +389,7 @@ PlainProgram* BinaryLoader::ParseJsonAndRegisterCpuKernel()
 {
     PlainProgram *prog = new (std::nothrow) PlainProgram(RT_KERNEL_REG_TYPE_CPU, RT_KERNEL_ATTR_TYPE_AICPU);
     if (prog == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(PlainProgram));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(PlainProgram), "new");
         return nullptr;
     }
     RT_LOG(RT_LOG_INFO, "New PlainProgram ok, Runtime_alloc_size %zu", sizeof(PlainProgram));

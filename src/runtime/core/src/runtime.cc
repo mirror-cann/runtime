@@ -815,7 +815,7 @@ rtError_t Runtime::InitApiImplies()
 {
     apiImpl_ = CreateImplAndGet();
     if (apiImpl_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiImpl));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiImpl), "new");
         RT_LOG(RT_LOG_ERROR, "create ApiImpl failed.");
         return RT_ERROR_API_NEW;
     }
@@ -823,7 +823,7 @@ rtError_t Runtime::InitApiImplies()
 
     apiImplMbuf_ = CreateImplMbufAndGet();
     if (apiImplMbuf_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiImplMbuf));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiImplMbuf), "new");
         RT_LOG(RT_LOG_ERROR, "create ApiImplMbuf failed.");
         return RT_ERROR_API_NEW;
     }
@@ -831,7 +831,7 @@ rtError_t Runtime::InitApiImplies()
 
     apiImplSoma_ = CreateImplSomaAndGet();
     if (apiImplSoma_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiImplSoma));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiImplSoma), "new");
         RT_LOG(RT_LOG_ERROR, "create ApiImplSoma failed.");
         return RT_ERROR_API_NEW;
     }
@@ -843,7 +843,7 @@ rtError_t Runtime::InitLogger()
 {
     logger_ = new (std::nothrow) Logger();
     if (logger_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Logger));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Logger), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
     RT_LOG(RT_LOG_INFO, "Logger:Runtime_alloc_size %zu", sizeof(Logger));
@@ -854,7 +854,7 @@ rtError_t Runtime::InitApiProfiler(Api * const apiObj)
 {
     profiler_ = new (std::nothrow) Profiler(apiObj);
     if (profiler_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Profiler));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Profiler), "new");
         return RT_ERROR_PROF_NEW;
     }
     RT_LOG(RT_LOG_INFO, "RProfiler:Runtime_alloc_size %zu", sizeof(Profiler));
@@ -871,7 +871,7 @@ rtError_t Runtime::InitApiErrorDecorator(Api * const apiObj)
 {
     apiError_ = new (std::nothrow) ApiErrorDecorator(apiObj);
     if (apiError_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiErrorDecorator));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ApiErrorDecorator), "new");
         return RT_ERROR_API_NEW;
     }
     RT_LOG(RT_LOG_INFO, "ApiErrorDecorator:Runtime_alloc_size %zu.", sizeof(ApiErrorDecorator));
@@ -882,7 +882,7 @@ rtError_t Runtime::InitThreadGuard()
 {
     threadGuard_ = new(std::nothrow) ThreadGuard();
     if (threadGuard_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ThreadGuard));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ThreadGuard), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
     RT_LOG(RT_LOG_INFO, "Runtime init:new ThreadGuard ok, Runtime_alloc_size %zu.", sizeof(ThreadGuard));
@@ -893,7 +893,7 @@ rtError_t Runtime::InitStreamObserver()
 {
     streamObserver_ = new(std::nothrow) EngineStreamObserver();
     if (streamObserver_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(EngineStreamObserver));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(EngineStreamObserver), "new");
         return RT_ERROR_ENGINE_NEW;
     }
     RT_LOG(RT_LOG_INFO, "EngineStreamObserver:Runtime_alloc_size %zu.",
@@ -905,7 +905,7 @@ rtError_t Runtime::InitAicpuStreamIdBitmap()
 {
     aicpuStreamIdBitmap_ = new(std::nothrow) Bitmap(RT_MAX_AICPU_STREAM_COUNT);
     if (aicpuStreamIdBitmap_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Bitmap));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Bitmap), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
@@ -932,7 +932,7 @@ rtError_t Runtime::InitCbSubscribe()
 
     cbSubscribe_ = new(std::nothrow) CbSubscribe(static_cast<uint32_t>(maxGrpNum));
     if (cbSubscribe_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(CbSubscribe));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(CbSubscribe), "new");
         return RT_ERROR_SUBSCRIBE_NEW;
     }
     RT_LOG(RT_LOG_INFO, "Runtime init:new CbSubscribe ok, Runtime_alloc_size %zu.", sizeof(CbSubscribe));
@@ -995,7 +995,7 @@ rtError_t Runtime::InitProgramAllocator()
     programAllocator_ = new (std::nothrow) ObjAllocator<RefObject<Program *>>(DEFAULT_PROGRAM_NUMBER,
         Runtime::maxProgramNum_);
     if (programAllocator_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ObjAllocator<RefObject<Program *>>));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ObjAllocator<RefObject<Program *>>), "new");
         return RT_ERROR_PROGRAM_NEW;
     }
     return programAllocator_->Init();
@@ -1005,7 +1005,7 @@ rtError_t Runtime::InitLabelAllocator()
 {
     labelAllocator_ = new(std::nothrow) LabelAllocator(static_cast<uint16_t>(MAX_UINT16_NUM));
     if (labelAllocator_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(LabelAllocator));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(LabelAllocator), "new");
         return RT_ERROR_LABEL_ALLOCATOR;
     }
     RT_LOG(RT_LOG_INFO, "Runtime init:new LabelAllocator ok, Runtime_alloc_size %zu.", sizeof(LabelAllocator));
@@ -1663,7 +1663,7 @@ rtError_t Runtime::AllKernelRegister(Program * const prog) const
         if (prog->KernelTable_ == nullptr) {
             prog->KernelTable_ = new (std::nothrow) rtKernelArray_t[prog->kernelCount_];
             COND_RETURN_AND_MSG_OUTER(prog->KernelTable_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                ErrorCode::EE1013, sizeof(rtKernelArray_t) * prog->kernelCount_);
+                ErrorCode::EE1013, sizeof(rtKernelArray_t) * prog->kernelCount_, "new");
         }
 
         /* add kernel to KernelTable */
@@ -1691,7 +1691,7 @@ rtError_t Runtime::MallocProgramAndRegMixKernel(const void *data, const uint64_t
     RT_LOG(RT_LOG_INFO, "new ElfProgram ok, Runtime_alloc_size %zu", sizeof(ElfProgram));
 
     COND_RETURN_AND_MSG_OUTER(prog == nullptr, RT_ERROR_PROGRAM_NEW,
-        ErrorCode::EE1013, sizeof(ElfProgram));
+        ErrorCode::EE1013, sizeof(ElfProgram), "new");
     const rtError_t error = prog->Register(data, length);
     if (error != RT_ERROR_NONE) {
         RT_LOG_CALL_MSG(ERR_MODULE_GE, "Mix program register failed.");
@@ -2383,7 +2383,7 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
                 COND_GOTO_ERROR(dev == nullptr, CTX_FREE, err, RT_ERROR_DEVICE_RETAIN, "Check param failed, dev can not be NULL!");
 
                 ctx = new(std::nothrow) Context(dev, true);
-                COND_GOTO_MSG_OUTER(ctx == nullptr, CTX_FREE, err, RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013, sizeof(Context));
+                COND_GOTO_MSG_OUTER(ctx == nullptr, CTX_FREE, err, RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013, sizeof(Context), "new");
                 RT_LOG(RT_LOG_INFO, "new Context ok, Runtime_alloc_size %zu", sizeof(Context));
 
                 err = ctx->Setup();
@@ -2715,7 +2715,7 @@ Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
             ERROR_GOTO(error, DEV_LOG_STOP, "Start AI CPU executor failed, retCode=%#x, devId=%u.", error, devId);
 
             dev = static_cast<Device *>(new (std::nothrow) RawDevice(devId));
-            COND_GOTO_MSG_OUTER(dev == nullptr, DEV_FREE, error, RT_ERROR_DEVICE_NEW, ErrorCode::EE1013, sizeof(RawDevice));
+            COND_GOTO_MSG_OUTER(dev == nullptr, DEV_FREE, error, RT_ERROR_DEVICE_NEW, ErrorCode::EE1013, sizeof(RawDevice), "new");
             if (errorTrace == RT_ERROR_NONE) {
                 dev->SetTsLogToHostFlag(RUNTIME_BUILD_VERSION);
             }
@@ -4679,7 +4679,7 @@ rtError_t Runtime::GetKernelBinByFileName(const char_t *const binFileName,
 
     *buffer = new (std::nothrow) char_t[filelength]();
     if (*buffer == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, filelength);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, filelength, "new");
         file.close();
         return RT_ERROR_MEMORY_ALLOCATION;
     }
@@ -4909,7 +4909,7 @@ rtError_t Runtime::CreateReportRasThread()
     constexpr const char_t* threadName = "REPORT_RAS";
     hbmRasThread_.reset(OsalFactory::CreateThread(threadName, &ras_, reportRas));
     COND_RETURN_AND_MSG_OUTER(hbmRasThread_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, OsalFactory::GetThreadObjectSize());
+        ErrorCode::EE1013, OsalFactory::GetThreadObjectSize(), "new");
     hbmRasThreadRunFlag_ = true;
     const int32_t error = hbmRasThread_->Start();
     if (error != EN_OK) {
@@ -5173,13 +5173,13 @@ rtError_t Runtime::SaveModuleAicpuInfo(const Module* const module, const uint32_
     // back aicpu so name
     std::unique_ptr<ModuleMemInfo> soNameMemInfo(std::make_unique<ModuleMemInfo>(devId, soNameSize, soNameBase, curDrv, false));
     COND_PROC(soNameMemInfo == nullptr, ret = RT_ERROR_MEMORY_ALLOCATION);
-    COND_RETURN_AND_MSG_OUTER(soNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo));
+    COND_RETURN_AND_MSG_OUTER(soNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
     COND_PROC(soNameBase != nullptr, moduleBackupList_.push_back(std::move(soNameMemInfo)));
 
     // backup aicpu kernel info
     std::unique_ptr<ModuleMemInfo> kernelNameMemInfo(std::make_unique<ModuleMemInfo>(devId, kenelNameSize, kernelNameBase, curDrv, false));
     COND_PROC(kernelNameMemInfo == nullptr, ret = RT_ERROR_MEMORY_ALLOCATION);
-    COND_RETURN_AND_MSG_OUTER(kernelNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo));
+    COND_RETURN_AND_MSG_OUTER(kernelNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
     COND_PROC(kernelNameBase != nullptr, moduleBackupList_.push_back(std::move(kernelNameMemInfo)));
 
     return ret;
@@ -5192,7 +5192,7 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
         if (prog->GetBinAlignBaseAddr(i) != nullptr) {
             // save program load addr
             std::unique_ptr<ModuleMemInfo> progMemInfo(std::make_unique<ModuleMemInfo>(i, prog->LoadSize(), prog->GetBinAlignBaseAddr(i), nullptr, readonly));
-            COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo));
+            COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
             moduleBackupList_.push_back(std::move(progMemInfo));
         }
 
@@ -5202,7 +5202,7 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
             void* soNameDevAddr = iter.second;
             if (soNameDevAddr != nullptr) {
                 std::unique_ptr<ModuleMemInfo> progMemInfo(std::make_unique<ModuleMemInfo>(i, soName.size() + 1, soNameDevAddr, nullptr, false));
-                COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo));
+                COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
                 moduleBackupList_.push_back(std::move(progMemInfo));
                 RT_LOG(RT_LOG_INFO, "prog id=%u, soName=%s, soNameDevAddr=%p", prog->Id_(), soName.c_str(), soNameDevAddr);
             }
@@ -5214,7 +5214,7 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
             void* funcNameDevAddr = iter.second;
             if (funcNameDevAddr != nullptr) {
                 std::unique_ptr<ModuleMemInfo> progMemInfo(std::make_unique<ModuleMemInfo>(i, funcName.size() + 1, funcNameDevAddr, nullptr, false));
-                COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo));
+                COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
                 moduleBackupList_.push_back(std::move(progMemInfo));
                 RT_LOG(RT_LOG_INFO, "prog id=%u, funcName=%s, funcNameDevAddr=%p", prog->Id_(), funcName.c_str(), funcNameDevAddr);
             }
@@ -5234,7 +5234,7 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
         uint32_t memSize = module->GetBaseAddrSize();
         // The address in the module may be the same as that in the prog.
         std::unique_ptr<ModuleMemInfo> kernelMemInfo(std::make_unique<ModuleMemInfo>(devId, memSize, devAddr, curDrv, readonly));
-        COND_RETURN_AND_MSG_OUTER(kernelMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo));
+        COND_RETURN_AND_MSG_OUTER(kernelMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
         COND_PROC((prog->GetBinAlignBaseAddr(devId) != devAddr && prog->LoadSize() != memSize),
             moduleBackupList_.push_back(std::move(kernelMemInfo)));
 

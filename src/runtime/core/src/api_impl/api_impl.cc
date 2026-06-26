@@ -757,13 +757,13 @@ rtError_t ApiImpl::CreateLaunchArgs(size_t const argsSize, size_t const hostInfo
         argsSize, hostInfoTotalSize, hostInfoNum, argsData);
     auto *hdlHostInputInfo = new (std::nothrow) rtHostInputInfo_t[hostInfoNum];
     COND_RETURN_AND_MSG_OUTER((hdlHostInputInfo == nullptr), RT_ERROR_CALLOC, ErrorCode::EE1013,
-        sizeof(rtHostInputInfo_t) * hostInfoNum);
+        sizeof(rtHostInputInfo_t) * hostInfoNum, "new");
     (void)memset_s(hdlHostInputInfo, sizeof(rtHostInputInfo_t) * hostInfoNum,
                    0xFF, sizeof(rtHostInputInfo_t) * hostInfoNum);
     rtLaunchArgs_t *hdlArgs = new (std::nothrow) rtLaunchArgs_t{{nullptr, nullptr, 0, 0, 0, 0, 0, 1, {0}},
         0, static_cast<uint16_t>(argsSize), static_cast<uint16_t>(hostInfoNum), static_cast<uint16_t>(argsSize)};
     COND_PROC_RETURN_AND_MSG_ALLOC_FAILED((hdlArgs == nullptr), RT_ERROR_CALLOC,
-        delete [] hdlHostInputInfo, sizeof(rtLaunchArgs_t));
+        delete [] hdlHostInputInfo, sizeof(rtLaunchArgs_t), "new");
     *argsHandle = hdlArgs;
     rtArgsEx_t *argsInfo = &(hdlArgs->argsInfo);
     argsInfo->args = argsData;
@@ -1208,7 +1208,7 @@ rtError_t ApiImpl::LaunchNonKernelByHandle(Kernel * const kernel, uint32_t block
         }
         rtHostInputInfo_t *hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
         COND_RETURN_AND_MSG_OUTER(hostArgsInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(rtHostInputInfo_t) * phNum);
+            sizeof(rtHostInputInfo_t) * phNum, "new");
         error = ConvertCpuArgsByArgsHandle(cpuKernelArgs, argHandle, hostArgsInfos, phNum);
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_A(hostArgsInfos), "convert args failed.");
         error = CpuKernelLaunchEx(kernel, blockDim, &cpuKernelArgs, taskCfg, curStm, flag);
@@ -1238,7 +1238,7 @@ rtError_t ApiImpl::LaunchNonKernelByHandle(Kernel * const kernel, uint32_t block
 
     rtHostInputInfo_t *hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
     COND_RETURN_AND_MSG_OUTER((hostArgsInfos == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(rtHostInputInfo_t) * phNum);
+        sizeof(rtHostInputInfo_t) * phNum, "new");
     error = ConvertArgsByArgsHandle(argsInfo, argHandle, hostArgsInfos, phNum);
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_A(hostArgsInfos), "convert args failed.");
     rtStreamLaunchKernelV2ExtendArgs_t launchKernelExtendArgs = {};
@@ -1949,7 +1949,7 @@ rtError_t ApiImpl::EventCreate(Event ** const evt, const uint64_t flag)
     }
     *evt = new (std::nothrow) Event(dev, flag, curCtx);
     COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-        sizeof(Event));
+        sizeof(Event), "new");
 
     dev->PushEvent(*evt);
 
@@ -1972,14 +1972,14 @@ rtError_t ApiImpl::EventCreateEx(Event ** const evt, const uint64_t flag)
     if (flag == RT_EVENT_IPC) {
         *evt = new (std::nothrow) IpcEvent(dev, flag, curCtx);
         COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-            sizeof(IpcEvent));
+            sizeof(IpcEvent), "new");
         const rtError_t error = (*evt)->Setup();
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*evt);,
                             "setup failed, retCode=%#x", error);
     } else {
         *evt = new (std::nothrow) Event(dev, flag, curCtx, false, true);
         COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-            sizeof(Event));
+            sizeof(Event), "new");
     }
     InitEmbeddedInnerHandle<Event>(*evt);
     dev->PushEvent(*evt);
@@ -2735,7 +2735,7 @@ rtError_t ApiImpl::MemcpyAsync(void * const dst, const uint64_t destMax, const v
     if ((kind != RT_MEMCPY_ADDR_DEVICE_TO_DEVICE) && (UvmCallback::IsUvmMem(src, cnt) || UvmCallback::IsUvmMem(dst, cnt))) {
         rtMemcpyCallbackParam *params = new (std::nothrow) rtMemcpyCallbackParam;
         COND_RETURN_AND_MSG_OUTER((params == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(rtMemcpyCallbackParam));
+            sizeof(rtMemcpyCallbackParam), "new");
         UvmCallback::CreateMemcpyCallbackParam(dst, destMax, src, cnt, kind, checkKind, curStm, params);
         rtError_t error = LaunchHostFunc(curStm, UvmCallback::MemcpyAsyncCallback, static_cast<void *>(params));
         ERROR_PROC_RETURN_MSG_INNER(error, delete params, "CallbackLaunch fails in MemcopyAsync, err:%#x.", static_cast<uint32_t>(error));
@@ -3038,7 +3038,7 @@ rtError_t ApiImpl::MemsetAsync(void * const ptr, const uint64_t destMax, const u
     if (UvmCallback::IsUvmMem(ptr, cnt)) {
         MemsetCallbackStruct *memsetCallbackParams = new (std::nothrow) MemsetCallbackStruct;
         COND_RETURN_AND_MSG_OUTER((memsetCallbackParams == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(MemsetCallbackStruct));
+            sizeof(MemsetCallbackStruct), "new");
         memsetCallbackParams->ptr = ptr;
         memsetCallbackParams->destMax = destMax;
         memsetCallbackParams->val = val;
@@ -3162,7 +3162,7 @@ rtError_t ApiImpl::GetDeviceIDs(uint32_t * const devId, const uint32_t len)
 
     uint32_t *devices = new (std::nothrow) uint32_t[devCnt];
     COND_RETURN_AND_MSG_OUTER((devices == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(uint32_t) * devCnt);
+        sizeof(uint32_t) * devCnt, "new");
 
     error = curDrv.GetDeviceIDs(devices, static_cast<uint32_t>(devCnt));
     ERROR_PROC_RETURN_MSG_INNER(error, delete [] devices,
@@ -3836,7 +3836,7 @@ rtError_t ApiImpl::NewContext(const uint32_t deviceId, const uint32_t tsId, Cont
 
     Context *curCtx = new (std::nothrow) Context(dev, false);
     COND_RETURN_AND_MSG_OUTER((curCtx == nullptr), RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013,
-        sizeof(Context));
+        sizeof(Context), "new");
     RT_LOG(RT_LOG_INFO, "curCtx=%p, device_id=%d, ts_id=%u, Runtime_alloc_size %zu", curCtx, deviceId, tsId, sizeof(Context));
     rtError_t error = curCtx->Setup();
     ERROR_PROC_RETURN_MSG_INNER(error, curCtx->TearDown(); DELETE_O(curCtx);, "Failed to setup context, retCode=%#x",
@@ -4593,7 +4593,7 @@ rtError_t ApiImpl::NotifyCreate(const int32_t deviceId, Notify ** const retNotif
 
     *retNotify = new (std::nothrow) Notify(static_cast<uint32_t>(deviceId), dev->DevGetTsId());
     COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013,
-        sizeof(Notify));
+        sizeof(Notify), "new");
 
     (*retNotify)->SetNotifyFlag(static_cast<uint32_t>(flag));
     rtError_t error = (*retNotify)->Setup();
@@ -4778,7 +4778,7 @@ rtError_t ApiImpl::IpcOpenNotify(Notify ** const retNotify, const char_t * const
 
     *retNotify = new (std::nothrow) Notify(dev->Id_(), dev->DevGetTsId());
     COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013,
-        sizeof(Notify));
+        sizeof(Notify), "new");
 
     rtError_t error = (*retNotify)->OpenIpcNotify(name, flag);
     ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(*retNotify);,
@@ -6060,7 +6060,7 @@ rtError_t ApiImpl::SyncGetDevMsg(Device * const dev, const void * const devMemAd
     std::unique_ptr<Stream, void(*)(Stream*)> stm(StreamFactory::CreateStream(dev, 0U),
                                                   [](Stream* ptr) {ptr->Destructor();});
     COND_RETURN_AND_MSG_OUTER((stm == nullptr), RT_ERROR_STREAM_NEW, ErrorCode::EE1013,
-        sizeof(Stream));
+        sizeof(Stream), "new");
     rtError_t error = stm->Setup();
     ERROR_RETURN_MSG_INNER(error, "stream setup failed, retCode=%#x.", static_cast<uint32_t>(error));
     const std::function<void()> streamTearDownFunc = [&stm]() {
@@ -6659,7 +6659,7 @@ rtError_t ApiImpl::MemcpyHostTask(void * const dst, const uint64_t destMax, cons
     }
     HostTaskMemCpy *hostTask = new (std::nothrow) HostTaskMemCpy(curCtx->Device_(), dst, destMax, src, cnt, kind);
     COND_RETURN_AND_MSG_OUTER((hostTask == nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1013,
-        sizeof(HostTaskMemCpy));
+        sizeof(HostTaskMemCpy), "new");
     const rtError_t error = hostTask->AsyncCall();
     if (error != RT_ERROR_NONE) {
         DELETE_O(hostTask);

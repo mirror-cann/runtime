@@ -80,7 +80,7 @@ bool PackageRebuilder::PackageReportReceive(const rtTaskReport_t * const report,
         const size_t packageBufLen = (packageReportNum + 1U) * sizeof(uint32_t);
         pkgBuf = static_cast<rtPackageBuf_t *>(malloc(packageBufLen));
         COND_RETURN_AND_MSG_OUTER(pkgBuf == nullptr, false, ErrorCode::EE1013,
-            std::to_string(packageBufLen).c_str());
+            std::to_string(packageBufLen).c_str(), "malloc");
         const errno_t rc = memset_s(pkgBuf, packageBufLen, 0, packageBufLen);
         if (rc != EOK) {
             RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, 

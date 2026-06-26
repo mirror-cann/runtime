@@ -107,7 +107,7 @@ aclrtGroupInfo *aclrtCreateGroupInfoImpl()
     }
 
     aclrtGroupInfo *const groupInfo = new(std::nothrow) aclrtGroupInfo[count];
-    ACL_CHECK_MALLOC_RESULT_REPORT_RET(groupInfo, sizeof(aclrtGroupInfo) * count, nullptr);
+    ACL_CHECK_MALLOC_RESULT_REPORT_RET(groupInfo, sizeof(aclrtGroupInfo) * count, "new", nullptr);
 
     ACL_LOG_INFO("successfully execute aclrtCreateGroupInfo, group number is %u.", count);
     ACL_ADD_APPLY_SUCCESS_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_GROUP_INFO);

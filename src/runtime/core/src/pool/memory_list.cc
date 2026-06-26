@@ -32,13 +32,13 @@ rtError_t MemoryList::AddBlock(void *address, size_t size)
     rtError_t error = RT_ERROR_NONE;
     MemoryBlock* block = new (std::nothrow) MemoryBlock;
     COND_RETURN_AND_MSG_OUTER(block == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        std::to_string(sizeof(MemoryBlock)).c_str());
+        std::to_string(sizeof(MemoryBlock)).c_str(), "new");
     block->address = address;
     block->size = size;
 
     ListNode* node = new (std::nothrow) ListNode;
     COND_GOTO_MSG_OUTER(node == nullptr, BLOCK_FREE, error,
-        RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(ListNode)).c_str());
+        RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(ListNode)).c_str(), "new");
     node->block = block;
     node->next = nullptr;
 

@@ -40,14 +40,14 @@ Engine *EngineFactory::CreateEngine(const rtChipType_t chipType, Device *dev)
         allocSize = sizeof(AsyncHwtsEngine);
     }
     COND_RETURN_AND_MSG_OUTER((newEngine == nullptr), nullptr, ErrorCode::EE1013,
-        std::to_string(allocSize).c_str());
+        std::to_string(allocSize).c_str(), "new");
     error = newEngine->Init();
     COND_RETURN_INFO((error == RT_ERROR_NONE), newEngine, "Engine init success.");
     COND_PROC_RETURN_ERROR((error != RT_ERROR_DRV_INPUT), nullptr, DELETE_O(newEngine), "Engine init failed.");
     delete newEngine;
     newEngine = new (std::nothrow) AsyncHwtsEngine(dev);
     COND_RETURN_AND_MSG_OUTER((newEngine == nullptr), nullptr, ErrorCode::EE1013,
-        std::to_string(sizeof(AsyncHwtsEngine)).c_str());
+        std::to_string(sizeof(AsyncHwtsEngine)).c_str(), "new");
     RT_LOG(RT_LOG_INFO, "New Engine, Runtime_alloc_size %zu", sizeof(AsyncHwtsEngine));
     error = newEngine->Init();
     COND_PROC_RETURN_ERROR((error != RT_ERROR_NONE), nullptr, DELETE_O(newEngine), "Engine init failed.");

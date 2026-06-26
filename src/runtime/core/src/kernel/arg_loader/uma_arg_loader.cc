@@ -65,7 +65,7 @@ rtError_t UmaArgLoader::Init()
             device_, itemSize_, argAllocatorSize, device_->GetDevProperties().maxSupportTaskNum,
             BufferAllocator::LINEAR, COPY_POLICY_DEFAULT); // 512 cell for init
         COND_RETURN_AND_MSG_OUTER(argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(H2DCopyMgr));
+            ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
         if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC)) {
             const uint32_t superArgAllocatorSize = device_->GetDevProperties().superArgAllocatorSize;
             superArgAllocator_ = new (std::nothrow) H2DCopyMgr(
@@ -73,14 +73,14 @@ rtError_t UmaArgLoader::Init()
                 device_->GetDevProperties().maxSupportTaskNum, BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
 
             COND_RETURN_AND_MSG_OUTER(superArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                ErrorCode::EE1013, sizeof(H2DCopyMgr));
+                ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
             const uint32_t maxArgAllocatorSize =  device_->GetDevProperties().maxArgAllocatorSize;
             maxArgAllocator_ = new (std::nothrow) H2DCopyMgr(
                 device_, maxItemSize_, maxArgAllocatorSize, device_->GetDevProperties().maxSupportTaskNum,
                 BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
 
             COND_RETURN_AND_MSG_OUTER(maxArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                ErrorCode::EE1013, sizeof(H2DCopyMgr));
+                ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
         } else {
             // only when the aicpu does not exist, do this
             if (Runtime::Instance()->GetAicpuCnt() != 0) {
@@ -88,14 +88,14 @@ rtError_t UmaArgLoader::Init()
                     device_, maxItemSize_, ARG_MAX_ENTRY_INIT_NUM, device_->GetDevProperties().maxSupportTaskNum,
                     BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
                 COND_RETURN_AND_MSG_OUTER(maxArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                    ErrorCode::EE1013, sizeof(H2DCopyMgr));
+                    ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
             }
         }
     }
 
     randomAllocator_ = new (std::nothrow) H2DCopyMgr(device_, COPY_POLICY_SYNC);
     COND_RETURN_AND_MSG_OUTER(randomAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(H2DCopyMgr));
+        ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
 
     RT_LOG(RT_LOG_INFO, "new BufferAllocator superArgAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
     const uint32_t handleAllocatorSize = device_->GetDevProperties().handleAllocatorSize;
@@ -103,7 +103,7 @@ rtError_t UmaArgLoader::Init()
         static_cast<uint32_t>(sizeof(Handle)), handleAllocatorSize, device_->GetDevProperties().maxSupportTaskNum);
 
     COND_RETURN_AND_MSG_OUTER(handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(BufferAllocator));
+        ErrorCode::EE1013, sizeof(BufferAllocator), "new");
     RT_LOG(RT_LOG_INFO, "new BufferAllocator handleAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
     const uint32_t kernelInfoAllocatorSize =  device_->GetDevProperties().kernelInfoAllocatorSize;
     kernelInfoAllocator_ = new (std::nothrow) BufferAllocator(
@@ -111,7 +111,7 @@ rtError_t UmaArgLoader::Init()
         BufferAllocator::LINEAR, &MallocBuffer, &FreeBuffer, device_);
 
     COND_RETURN_AND_MSG_OUTER(kernelInfoAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(BufferAllocator));
+        ErrorCode::EE1013, sizeof(BufferAllocator), "new");
     RT_LOG(RT_LOG_INFO, "new BufferAllocator kernelInfoAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
 
     RT_LOG(RT_LOG_INFO, "ALLOC PCIE is support[%d]", static_cast<int32_t>(isPcieBarSupport));
@@ -120,7 +120,7 @@ rtError_t UmaArgLoader::Init()
             device_, PCIE_BAR_COPY_SIZE, 1024U, device_->GetDevProperties().maxSupportTaskNum, BufferAllocator::LINEAR,
             COPY_POLICY_PCIE_BAR);
         COND_RETURN_AND_MSG_OUTER(argPcieBarAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(H2DCopyMgr));
+            ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
     }
     return RT_ERROR_NONE;
 }

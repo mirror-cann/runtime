@@ -45,7 +45,7 @@ rtError_t XpuLaunchKernel(const Kernel * const kernel, const uint32_t coreDim, c
     XpuStream *xpuStm = static_cast<XpuStream *>(stm);
     Kernel *newKernel =  new (std::nothrow) Kernel(kernel->GetCpuKernelSo(), kernel->GetCpuFuncName(), kernel->GetCpuOpType());
     COND_RETURN_AND_MSG_OUTER(newKernel == nullptr, RT_ERROR_KERNEL_NEW,
-        ErrorCode::EE1013, std::to_string(sizeof(Kernel)));
+        ErrorCode::EE1013, std::to_string(sizeof(Kernel)), "new");
     newKernel->SetKernelLiteralNameDevAddr(nullptr, kernel->GetFuncNameDevAddr(stm->Device_()->Id_()), stm->Device_()->Id_());
 
     bool useArgPool = true;

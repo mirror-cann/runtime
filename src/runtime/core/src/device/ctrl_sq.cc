@@ -35,7 +35,7 @@ rtError_t CtrlSQ::Setup()
     RegCtrlMsgInitFunc();
     // alloc resource: sq cq stream id
     stream_ = StreamFactory::CreateStream(device_, 0U, RT_STREAM_PRIMARY_DEFAULT);
-    COND_RETURN_AND_MSG_OUTER(stream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream));
+    COND_RETURN_AND_MSG_OUTER(stream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
     RT_LOG(RT_LOG_INFO, "CtrlSQ create success, stream_id=%d.", stream_->Id_());
     stream_->SetCtrlSQStream();
     const rtError_t error = stream_->Setup();

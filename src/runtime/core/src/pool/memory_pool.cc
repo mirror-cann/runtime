@@ -54,7 +54,7 @@ rtError_t MemoryPool::Init()
 
     memoryList_ = new (std::nothrow) MemoryList();
     COND_RETURN_AND_MSG_OUTER(memoryList_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        std::to_string(sizeof(MemoryList)).c_str());
+        std::to_string(sizeof(MemoryList)).c_str(), "new");
     return memoryList_->AddBlock(addr_, POOL_SIZE_2M);
 }
 

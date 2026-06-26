@@ -128,7 +128,7 @@ BufferAllocator* SqAddrMemoryOrder::SetUp(const uint32_t memOrderType)
         memOrderTypeList[memOrderType].sqAddrInitCount, memOrderTypeList[memOrderType].sqAddrMaxCount,
         BufferAllocator::LINEAR, &DrvAllocSqAddr, &DrvFreeSqAddr, device_);
     COND_RETURN_AND_MSG_OUTER(sqAddrAllocator == nullptr, nullptr, ErrorCode::EE1013,
-        sizeof(BufferAllocator));
+        sizeof(BufferAllocator), "new");
 
     sqAddrAllocators_.emplace_back(static_cast<SQ_ADDR_MEM_ORDER_TYPE>(memOrderType), sqAddrAllocator);
     RT_LOG(RT_LOG_DEBUG, "new BufferAllocator ok.");

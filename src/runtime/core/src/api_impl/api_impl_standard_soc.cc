@@ -381,7 +381,7 @@ rtError_t ApiImpl::IpcOpenEventHandle(rtIpcEventHandle_t *handle, IpcEvent** con
     Device * const dev = curCtx->Device_();
     *event = new (std::nothrow) IpcEvent(dev, RT_EVENT_IPC, curCtx);
     COND_RETURN_AND_MSG_OUTER((*event == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-        sizeof(IpcEvent));
+        sizeof(IpcEvent), "new");
     RT_LOG(RT_LOG_INFO, "new event success");
     const rtError_t error = (*event)->IpcOpenEventHandle(handle);
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*event);,

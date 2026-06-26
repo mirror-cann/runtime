@@ -37,7 +37,7 @@ void* ArgsBufferGuard::EnsureCapacity(uint64_t requiredSize)
 
     uint64_t allocSize = (requiredSize > ARGS_BUFFER_DEFAULT_SIZE) ? requiredSize : ARGS_BUFFER_DEFAULT_SIZE;
     buffer_ = malloc(allocSize);
-    COND_RETURN_AND_MSG_OUTER(buffer_ == nullptr, nullptr, ErrorCode::EE1013, allocSize);
+    COND_RETURN_AND_MSG_OUTER(buffer_ == nullptr, nullptr, ErrorCode::EE1013, allocSize, "malloc");
 
     size_ = allocSize;
     RT_LOG(RT_LOG_DEBUG, "alloc args buffer success, size=%llu.", allocSize);

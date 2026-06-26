@@ -66,10 +66,10 @@ rtError_t EventExpandingPool::AllocAndInsertEvent(void** const eventAddr, int32_
  	uint16_t oriPoolIndex = poolIndex_;
  	do {
  	    if (eventAllocator_[poolIndex_] == nullptr) {
- 	        eventAllocator_[poolIndex_] = new (std::nothrow) BufferAllocator(sizeof(uint8_t), EVENT_INIT_CNT, PER_POOL_CNT,
- 	            BufferAllocator::LINEAR, &MallocBufferForEvent, &FreeBufferForEvent, device_);
- 	        COND_RETURN_AND_MSG_OUTER(eventAllocator_[poolIndex_] == nullptr, RT_ERROR_MEMORY_ALLOCATION,
- 	            ErrorCode::EE1013, std::to_string(sizeof(BufferAllocator)).c_str());
+  	        eventAllocator_[poolIndex_] = new (std::nothrow) BufferAllocator(sizeof(uint8_t), EVENT_INIT_CNT, PER_POOL_CNT,
+            BufferAllocator::LINEAR, &MallocBufferForEvent, &FreeBufferForEvent, device_);
+            COND_RETURN_AND_MSG_OUTER(eventAllocator_[poolIndex_] == nullptr, RT_ERROR_MEMORY_ALLOCATION,
+            ErrorCode::EE1013, std::to_string(sizeof(BufferAllocator)).c_str(), "new");
  	        RT_LOG(RT_LOG_INFO, "Init EventExpandingPool success, poolIndex=%hu.", poolIndex_);
  	    }
   	 

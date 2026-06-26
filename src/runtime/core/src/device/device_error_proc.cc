@@ -156,7 +156,7 @@ rtError_t DeviceErrorProc::GetQosInfoFromRingbuffer()
     
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[sizeof(RtQos_t)]);
     COND_RETURN_AND_MSG_OUTER(hostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(RtQos_t));
+        sizeof(RtQos_t), "new");
 
     Driver * const devDrv = device_->Driver_();
     rtError_t error = devDrv->MemCopySync(hostAddr.get(), sizeof(RtQos_t), devRtQos,
@@ -216,7 +216,7 @@ rtError_t DeviceErrorProc::GetTschCapability(const void *devMem) const
 
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[sizeof(TschCapability)]);
     COND_RETURN_AND_MSG_OUTER(hostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(TschCapability));
+        sizeof(TschCapability), "new");
     Driver * const devDrv = device_->Driver_();
     const rtError_t error = devDrv->MemCopySync(hostAddr.get(), sizeof(TschCapability), devTschCapa,
         sizeof(TschCapability), RT_MEMCPY_DEVICE_TO_HOST, false);
@@ -238,7 +238,7 @@ rtError_t DeviceErrorProc::GetTschCapability(const void *devMem) const
     }
     uint8_t *capa = new (std::nothrow) uint8_t[capaLen];
     COND_RETURN_AND_MSG_OUTER(capa == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        capaLen * sizeof(uint8_t));
+        capaLen * sizeof(uint8_t), "new");
     const int32_t ret = memcpy_s(capa, capaLen, tschCapa->capability, capaLen);
     if (ret != EOK) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR,
@@ -364,7 +364,7 @@ rtError_t DeviceErrorProc::CreateDeviceRingBufferAndSendTask()
 
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[ringBufferSize_]);
     COND_GOTO_MSG_OUTER(hostAddr == nullptr, ERROR_FREE, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        ringBufferSize_);
+        ringBufferSize_, "new");
     (void)memset_s(hostAddr.get(), ringBufferSize_, 0U, ringBufferSize_);
 
     error = WriteRuntimeCapability(hostAddr.get());
@@ -601,7 +601,7 @@ rtError_t DeviceErrorProc::ProcErrorInfoWithoutLock(const TaskInfo * const taskP
     RT_LOG(RT_LOG_INFO, "Begin to process device abnormal info.");
     std::unique_ptr<char[]> hostAddr(new (std::nothrow)  char[ringBufferSize_]);
     COND_RETURN_AND_MSG_OUTER(hostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        ringBufferSize_);
+        ringBufferSize_, "new");
     NULL_PTR_RETURN(device_, RT_ERROR_DEVICE_NULL);
 
     // 1. memcpy ringbuffer to host
@@ -786,7 +786,7 @@ rtError_t DeviceErrorProc::ProcessReportRingBuffer(const DevRingBufferCtlInfo * 
     size_t copySize  = sizeof(RingBufferElementInfo) + sizeof(StarsDeviceErrorInfoRingBuffer);
     std::unique_ptr<char[]> elementHostAddr(new (std::nothrow) char[copySize]);
     COND_RETURN_AND_MSG_OUTER(elementHostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        copySize);
+        copySize, "new");
 
     const size_t elementSize = (device_->IsDavidPlatform()) ? \
         static_cast<size_t>(tmpCtrlInfo->elementSize) : \
@@ -863,7 +863,7 @@ rtError_t DeviceErrorProc::ReportRingBuffer(uint16_t *errorStreamId)
     constexpr uint64_t headSize = sizeof(DevRingBufferCtlInfo);
     std::unique_ptr<uint8_t[]> hostAddr(new (std::nothrow) uint8_t[headSize]);
     COND_RETURN_AND_MSG_OUTER(hostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        headSize);
+        headSize, "new");
     NULL_PTR_RETURN(device_, RT_ERROR_DEVICE_NULL);
     Driver * const devDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN(devDrv, RT_ERROR_DRV_NULL);
@@ -916,7 +916,7 @@ rtError_t DeviceErrorProc::ProcCleanRingbuffer()
 {
     std::unique_ptr<char[]> hostAddr(new (std::nothrow)  char[ringBufferSize_]);
     COND_RETURN_AND_MSG_OUTER(hostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        ringBufferSize_);
+        ringBufferSize_, "new");
     NULL_PTR_RETURN(device_, RT_ERROR_DEVICE_NULL);
     (void)memset_s(hostAddr.get(), ringBufferSize_, 0U, ringBufferSize_);
     // 1. memcpy ringbuffer to host
@@ -1060,7 +1060,7 @@ rtError_t DeviceErrorProc::PrintStreamTimeoutSnapshotInfo()
     const std::unique_lock<std::mutex> lk(device_->GetErrProLock());
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[sizeof(RtsTimeoutStreamSnapshot)]);
     COND_RETURN_AND_MSG_OUTER(hostAddr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(RtsTimeoutStreamSnapshot));
+        sizeof(RtsTimeoutStreamSnapshot), "new");
     error = devDrv->MemCopySync(hostAddr.get(), static_cast<uint64_t>(snapshotLen_),
         device_->GetSnapshotAddr(), static_cast<uint64_t>(snapshotLen_), RT_MEMCPY_DEVICE_TO_HOST, false);
     ERROR_RETURN(error, "Failed to Memcpy snapshot from dev to host");

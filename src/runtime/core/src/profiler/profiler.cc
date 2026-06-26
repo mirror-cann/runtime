@@ -76,12 +76,12 @@ rtError_t Profiler::Init()
 {
     apiProfileDecorator_ = new (std::nothrow) ApiProfileDecorator(api_, this);
     COND_RETURN_AND_MSG_OUTER(apiProfileDecorator_ == nullptr, RT_ERROR_PROF_NEW,
-        ErrorCode::EE1013, std::to_string(sizeof(ApiProfileDecorator)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(ApiProfileDecorator)).c_str(), "new");
     RT_LOG(RT_LOG_DEBUG, "new ApiProfileDecorator ok, size=%zu", sizeof(ApiProfileDecorator));
 
     apiProfileLogDecorator_ = new (std::nothrow) ApiProfileLogDecorator(api_, this);
     COND_RETURN_AND_MSG_OUTER(apiProfileLogDecorator_ == nullptr, RT_ERROR_PROF_NEW,
-        ErrorCode::EE1013, std::to_string(sizeof(ApiProfileLogDecorator)).c_str());
+        ErrorCode::EE1013, std::to_string(sizeof(ApiProfileLogDecorator)).c_str(), "new");
     RT_LOG(RT_LOG_DEBUG, "new ApiProfileLogDecorator ok, size=%zu", sizeof(ApiProfileLogDecorator));
 
     RT_LOG(

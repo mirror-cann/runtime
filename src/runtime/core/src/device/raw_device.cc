@@ -180,7 +180,7 @@ rtError_t RawDevice::SetCurGroupInfo(void)
     }
 
     primaryStream_ = StreamFactory::CreateStream(this, 0U, stmFlag);
-    COND_RETURN_AND_MSG_OUTER(primaryStream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream));
+    COND_RETURN_AND_MSG_OUTER(primaryStream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
     if (ctx != nullptr) {
         ctx->SetDefaultStream(primaryStream_);
     }
@@ -622,7 +622,7 @@ rtError_t RawDevice::Init()
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL)) {
         spmPool_ = new (std::nothrow) SpmPool(this);
         COND_GOTO_MSG_OUTER(spmPool_ == nullptr, ENGINE_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(SpmPool));
+            ErrorCode::EE1013, sizeof(SpmPool), "new");
         RT_LOG(RT_LOG_INFO, "new SpmPool ok, Runtime_alloc_size %zu(bytes)", sizeof(SpmPool));
 
         error = spmPool_->Init();
@@ -634,24 +634,24 @@ rtError_t RawDevice::Init()
         (runMode == RT_RUN_MODE_ONLINE)) {
         eventPool_ = new (std::nothrow) EventPool(this, tsId_);
         COND_GOTO_MSG_OUTER(eventPool_ == nullptr, SPM_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(EventPool));
+            ErrorCode::EE1013, sizeof(EventPool), "new");
     }
 
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DFX_PROCESS_SNAPSHOT)) {
         deviceSnapshot_ = new (std::nothrow) DeviceSnapshot(this);
         COND_GOTO_MSG_OUTER(deviceSnapshot_ == nullptr, EVENT_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(DeviceSnapshot));
+            ErrorCode::EE1013, sizeof(DeviceSnapshot), "new");
     }
 
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_VALUE_WAIT)) {
         eventExpandingPool_ = new (std::nothrow) EventExpandingPool(this);
         COND_GOTO_MSG_OUTER(eventExpandingPool_ == nullptr, SNAPSHOT_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(EventExpandingPool));
+            ErrorCode::EE1013, sizeof(EventExpandingPool), "new");
     }
 
     argLoader_ = new (std::nothrow) UmaArgLoader(this);
     COND_GOTO_MSG_OUTER(argLoader_ == nullptr, EVENT_EXE_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(UmaArgLoader));
+        ErrorCode::EE1013, sizeof(UmaArgLoader), "new");
     RT_LOG(RT_LOG_INFO, "new UmaArgLoader ok, Runtime_alloc_size %zu(bytes)", sizeof(UmaArgLoader));
 
     error = argLoader_->Init();
@@ -663,12 +663,12 @@ rtError_t RawDevice::Init()
 
     streamSqCqManage_ = new (std::nothrow) StreamSqCqManage(this);
     COND_GOTO_MSG_OUTER(streamSqCqManage_ == nullptr, LOADER_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(StreamSqCqManage));
+        ErrorCode::EE1013, sizeof(StreamSqCqManage), "new");
     RT_LOG(RT_LOG_INFO, "new StreamSqCqManage ok, Runtime_alloc_size %zu(bytes)", sizeof(StreamSqCqManage));
 
     taskFactory_ = new (std::nothrow) TaskFactory(this);
     COND_GOTO_MSG_OUTER(taskFactory_ == nullptr, STREAM_TABLE_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(TaskFactory));
+        ErrorCode::EE1013, sizeof(TaskFactory), "new");
     RT_LOG(RT_LOG_INFO, "New taskFactory ok, Runtime_alloc_size %zu(bytes)", sizeof(TaskFactory));
 
     error = taskFactory_->Init();
@@ -677,7 +677,7 @@ rtError_t RawDevice::Init()
 
     kernelMemPoolMng_ = new (std::nothrow) MemoryPoolManager(this);
     COND_GOTO_MSG_OUTER(kernelMemPoolMng_ == nullptr, TASK_FACTORY_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(MemoryPoolManager));
+        ErrorCode::EE1013, sizeof(MemoryPoolManager), "new");
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_MEMORY_POOL)) {
         error = kernelMemPoolMng_->Init();
         ERROR_GOTO(error, KERNEL_POOL_FREE, "Failed to init MemoryPoolManager, retCode=%#x.",
@@ -687,7 +687,7 @@ rtError_t RawDevice::Init()
     modulesAllocator_ = new (std::nothrow) ObjAllocator<RefObject<Module *>>(DEFAULT_PROGRAM_NUMBER,
                                                                              Runtime::maxProgramNum_);
     COND_GOTO_MSG_OUTER(modulesAllocator_ == nullptr, KERNEL_POOL_FREE, error, RT_ERROR_MODULE_NEW,
-        ErrorCode::EE1013, sizeof(ObjAllocator<RefObject<Module *>>));
+        ErrorCode::EE1013, sizeof(ObjAllocator<RefObject<Module *>>), "new");
 
     error = modulesAllocator_->Init();
     ERROR_GOTO_MSG_INNER(error, MODULES_ALLOC_FREE,
@@ -696,7 +696,7 @@ rtError_t RawDevice::Init()
 
     deviceSqCqPool_ = new (std::nothrow) DeviceSqCqPool(this);
     COND_GOTO_MSG_OUTER(deviceSqCqPool_ == nullptr, MODULES_ALLOC_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(DeviceSqCqPool));
+        ErrorCode::EE1013, sizeof(DeviceSqCqPool), "new");
     RT_LOG(RT_LOG_INFO, "new DeviceSqCqPool ok, Runtime_alloc_size %zu(bytes)", sizeof(DeviceSqCqPool));
     error = deviceSqCqPool_->Init();
     ERROR_GOTO(error, DEVICE_SQ_CQ_FREE,
@@ -705,7 +705,7 @@ rtError_t RawDevice::Init()
 
     sqAddrMemoryOrder_ = new (std::nothrow) SqAddrMemoryOrder(this);
     COND_GOTO_MSG_OUTER(sqAddrMemoryOrder_ == nullptr, DEVICE_SQ_CQ_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(SqAddrMemoryOrder));
+        ErrorCode::EE1013, sizeof(SqAddrMemoryOrder), "new");
     RT_LOG(RT_LOG_INFO, "new SqAddrMemoryOrder ok, Runtime_alloc_size %zu(bytes)", sizeof(SqAddrMemoryOrder));
     error = sqAddrMemoryOrder_->Init();
     ERROR_GOTO(error, SQ_ADDR_MEMORY_FREE,
@@ -1026,7 +1026,7 @@ rtError_t RawDevice::Start()
     }
     primaryStream_ = StreamFactory::CreateStream(this, 0U, stmFlag);
     COND_PROC_RETURN_AND_MSG_OUTER(primaryStream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013,
-        static_cast<void>(FreeSimtStackPhyBase()), sizeof(Stream));
+        static_cast<void>(FreeSimtStackPhyBase()), sizeof(Stream), "new");
     error = primaryStream_->Setup();
     if (error != RT_ERROR_NONE) {
         DeleteStream(primaryStream_);
@@ -1071,7 +1071,7 @@ rtError_t RawDevice::Start()
     if (GetDevProperties().ringbufSize != 0) {
         deviceErrorProc_ = new (std::nothrow) DeviceErrorProc(this, GetDevProperties().ringbufSize);
         COND_GOTO_MSG_OUTER(deviceErrorProc_ == nullptr, ERROR_STOP, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(DeviceErrorProc));
+            sizeof(DeviceErrorProc), "new");
         error = deviceErrorProc_->CreateDeviceRingBufferAndSendTask();
         COND_PROC_GOTO_MSG_INNER((error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_MEMORY), ERROR_STOP, ;,
             "Failed to create ring buffer, error_code=%#x.", static_cast<uint32_t>(error));
@@ -1094,7 +1094,7 @@ rtError_t RawDevice::Start()
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DFX_AICPU_ERROR_MESSAGE)) {
         errMsgObj_ = new (std::nothrow) AicpuErrMsg(this);
         COND_GOTO_MSG_OUTER(errMsgObj_ == nullptr, ERROR_STOP, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(AicpuErrMsg));
+            sizeof(AicpuErrMsg), "new");
         errMsgObj_->SetErrMsgBufAddr();
     }
 #else
@@ -1146,7 +1146,7 @@ uint64_t RawDevice::AllocSqIdMemAddr(void)
             sizeof(uint64_t), SQ_ID_MEM_POOL_INIT_COUNT, GetDevProperties().maxAllocStreamNum, BufferAllocator::LINEAR,
             &MallocBufferForSqIdMem, &FreeBufferForSqIdMem, this);
         COND_RETURN_AND_MSG_OUTER(sqIdMemAddrPool_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(BufferAllocator));
+            sizeof(BufferAllocator), "new");
     }
     auto id = sqIdMemAddrPool_->AllocId(true);
     return RtPtrToValue(sqIdMemAddrPool_->GetItemById(id));
@@ -1437,7 +1437,7 @@ Module *RawDevice::ModuleAlloc(Program * const prog)
     }
 
     Module *mdl = new (std::nothrow) Module(this);
-    COND_RETURN_AND_MSG_OUTER(mdl == nullptr, nullptr, ErrorCode::EE1013, sizeof(Module));
+    COND_RETURN_AND_MSG_OUTER(mdl == nullptr, nullptr, ErrorCode::EE1013, sizeof(Module), "new");
     if (mdl->Load(prog) != RT_ERROR_NONE) {
         refObj->ResetValForAbort();
         delete mdl;
@@ -1649,7 +1649,7 @@ void RawDevice::CreateMessageQueue()
         const uint32_t arraySize = messageQueueSize_;
         messageQueue_ = new (std::nothrow) uint64_t[arraySize]();
         COND_RETURN_VOID_AND_MSG_OUTER(messageQueue_ == nullptr, ErrorCode::EE1013,
-            arraySize * sizeof(uint64_t));
+            arraySize * sizeof(uint64_t), "new");
 
         (void)memset_s(messageQueue_, arraySize * sizeof(uint64_t), 0x0, arraySize * sizeof(uint64_t));
     }
@@ -1661,7 +1661,7 @@ void RawDevice::CreateFreeEventQueue()
 
     freeEvent_ = new (std::nothrow) int32_t[arraySize]();
     COND_RETURN_VOID_AND_MSG_OUTER(freeEvent_ == nullptr, ErrorCode::EE1013,
-        arraySize * sizeof(int32_t));
+        arraySize * sizeof(int32_t), "new");
 
     (void)memset_s(freeEvent_, arraySize * sizeof(int32_t), 0x0, arraySize * sizeof(int32_t));
 }
@@ -1829,7 +1829,7 @@ ERROR_RETURN:
 void RawDevice::CtrlResEntrySetup()
 {
     ctrlRes_ = new (std::nothrow) CtrlResEntry();
-    COND_RETURN_VOID_AND_MSG_OUTER(ctrlRes_ == nullptr, ErrorCode::EE1013, sizeof(CtrlResEntry));
+    COND_RETURN_VOID_AND_MSG_OUTER(ctrlRes_ == nullptr, ErrorCode::EE1013, sizeof(CtrlResEntry), "new");
     const rtError_t error = ctrlRes_->Init(this);
     COND_PROC((error != RT_ERROR_NONE), DELETE_O(ctrlRes_);)
 }
@@ -1872,7 +1872,7 @@ void RawDevice::CtrlStreamSetup()
 
     ctrlStream_ = new (std::nothrow) CtrlStream(this);
     COND_PROC_RETURN_VOID_AND_MSG_OUTER(ctrlStream_ == nullptr, ErrorCode::EE1013, DELETE_O(ctrlRes_),
-        sizeof(CtrlStream));
+        sizeof(CtrlStream), "new");
 
     const rtError_t error = ctrlStream_->Setup();
     COND_PROC((error != RT_ERROR_NONE),

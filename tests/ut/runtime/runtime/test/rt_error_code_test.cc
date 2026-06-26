@@ -116,7 +116,7 @@ TEST_F(RtErrorCodeTest, PrintErrMsgToLog2)
     std::vector<std::string> values1012 = {"NotifyWait", "0", "current deviceId", "The current device cannot deliver Notify Wait"};
     PrintErrMsgToLog(ErrorCode::EE1012, "file", 1000, "func", values1012);
 
-    std::vector<std::string> values1013 = {"100"};
+    std::vector<std::string> values1013 = {"100", "malloc"};
     PrintErrMsgToLog(ErrorCode::EE1013, "file", 1000, "func", values1013);
 
     std::vector<std::string> values1014 = {"The ELF section header address in the operator binary ELF file header cannot be empty"};
@@ -170,7 +170,7 @@ TEST_F(RtErrorCodeTest, RePortErrCode)
         "stream_id=123, stream_ctx=0x7f8a0001, cur_ctx=0x7f8a0002.");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1011, "rtMemCpy", "0", "size", "size is not 0");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1012, "NotifyWait", "0", "current deviceId", "The current device cannot deliver Notify Wait");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, "100");
+    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, "100", "malloc");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1014, "The ELF section header address in the operator binary ELF file header cannot be empty");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1015, "rtsIpcMemImportByKey", "The driver interface halShmemInfoGet does not exist.");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1016, "MemCopySync", "Other threads of the current context are in the capture state");
@@ -213,7 +213,7 @@ TEST_F(RtErrorCodeTest, CheckErrCodeParams2)
     auto names = GetParamNames(ErrorCode::EE1012);
     EXPECT_EQ(names, (std::vector<std::string>{"func", "value", "param", "reason"}));
     names = GetParamNames(ErrorCode::EE1013);
-    EXPECT_EQ(names, (std::vector<std::string>{"buf_size"}));
+    EXPECT_EQ(names, (std::vector<std::string>{"buf_size", "alloc_interface"}));
     names = GetParamNames(ErrorCode::EE1014);
     EXPECT_EQ(names, (std::vector<std::string>{"reason"}));
     names = GetParamNames(ErrorCode::EE1015);
@@ -253,7 +253,7 @@ TEST_F(RtErrorCodeTest, ErrorCodeTableParamCountMatchesMessageFormat)
         {ErrorCode::EE1004, 2}, {ErrorCode::EE1005, 1}, {ErrorCode::EE1006, 3},
         {ErrorCode::EE1007, 2}, {ErrorCode::EE1009, 2},
         {ErrorCode::EE1010, 3}, {ErrorCode::EE1011, 4}, {ErrorCode::EE1012, 4},
-        {ErrorCode::EE1013, 1}, {ErrorCode::EE1014, 1}, {ErrorCode::EE1015, 2},
+        {ErrorCode::EE1013, 2}, {ErrorCode::EE1014, 1}, {ErrorCode::EE1015, 2},
         {ErrorCode::EE1016, 2}, {ErrorCode::EE1017, 3}, {ErrorCode::EE1018, 2},
         {ErrorCode::EE1019, 2}, {ErrorCode::EE1020, 5}, {ErrorCode::EE1021, 2},
         {ErrorCode::EE1022, 4}, {ErrorCode::EE2002, 3}, {ErrorCode::WE0001, 2},

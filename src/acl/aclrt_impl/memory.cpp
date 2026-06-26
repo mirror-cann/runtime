@@ -2468,7 +2468,7 @@ aclError aclrtMemManagedPrefetchBatchAsyncImpl(const void** ptrs, size_t* sizes,
     }
 
     rtMemManagedLocation* uvmPrefetchLocs = new(std::nothrow) rtMemManagedLocation[numPrefetchLocs];
-    ACL_CHECK_MALLOC_RESULT_REPORT_RET(uvmPrefetchLocs, sizeof(rtMemManagedLocation) * numPrefetchLocs, ACL_ERROR_BAD_ALLOC);
+    ACL_CHECK_MALLOC_RESULT_REPORT_RET(uvmPrefetchLocs, sizeof(rtMemManagedLocation) * numPrefetchLocs, "new", ACL_ERROR_BAD_ALLOC);
 
     for (size_t numPrefetchIdx = 0; numPrefetchIdx < numPrefetchLocs; numPrefetchIdx++) {
         uvmPrefetchLocs[numPrefetchIdx].id = prefetchLocs[numPrefetchIdx].id;

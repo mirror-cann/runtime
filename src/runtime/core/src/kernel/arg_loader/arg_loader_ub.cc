@@ -38,18 +38,18 @@ rtError_t UbArgLoader::Init()
         device_, UB_ARG_MAX_ENTRY_SIZE, UB_ARG_INIT_CNT, device_->GetDevProperties().maxSupportTaskNum,
         BufferAllocator::LINEAR, COPY_POLICY_UB);
     COND_RETURN_AND_MSG_OUTER(argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(H2DCopyMgr));
+        sizeof(H2DCopyMgr), "new");
 
     superArgAllocator_ = new (std::nothrow) H2DCopyMgr(
         device_, UB_ARG_MAX_SUPER_ENTRY_SIZE, UB_ARG_SUPER_INIT_CNT, device_->GetDevProperties().maxSupportTaskNum,
         BufferAllocator::LINEAR, COPY_POLICY_UB);
     COND_RETURN_AND_MSG_OUTER(superArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(H2DCopyMgr));
+        sizeof(H2DCopyMgr), "new");
 
     handleAllocator_ = new (std::nothrow) BufferAllocator(
         static_cast<uint32_t>(sizeof(UbHandle)), UB_ARG_INIT_CNT, device_->GetDevProperties().maxSupportTaskNum);
     COND_RETURN_AND_MSG_OUTER(handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(BufferAllocator));
+        sizeof(BufferAllocator), "new");
     RT_LOG(RT_LOG_INFO, "new argAllocator and handleAllocator success.");
 
     return RT_ERROR_NONE;
@@ -178,7 +178,7 @@ rtError_t UbArgLoader::AllocCopyPtr(const uint32_t size, StarsArgLoaderResult* c
 
     result->handle = handleAllocator_->AllocItem();
     COND_RETURN_AND_MSG_OUTER(result->handle == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(UbHandle));
+        sizeof(UbHandle), "new");
     argHandle = static_cast<UbHandle *>(result->handle);
     argHandle->argsAlloc = nullptr;
     void *devTsegInfo = nullptr;

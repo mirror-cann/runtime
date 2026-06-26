@@ -399,7 +399,7 @@ rtError_t Context::Init()
                                                                  Runtime::maxProgramNum_,
                                                                  true);
     COND_RETURN_AND_MSG_OUTER(
-        moduleAllocator_ == nullptr, RT_ERROR_MODULE_NEW, ErrorCode::EE1013, sizeof(ObjAllocator<Module*>));
+        moduleAllocator_ == nullptr, RT_ERROR_MODULE_NEW, ErrorCode::EE1013, sizeof(ObjAllocator<Module*>), "new");
 
     const rtError_t error = moduleAllocator_->Init();
     ERROR_RETURN_MSG_INNER(error, "Failed to init moduleAllocator_, retCode=%#x.", error);
@@ -419,7 +419,7 @@ void Context::TryAllocFastCq()
     }
     onlineStream_ = StreamFactory::CreateStream(device_, 0U);
     if (onlineStream_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Stream));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Stream), "new");
         return;
     }
     RT_LOG(RT_LOG_INFO, "New onlineStream_ ok, Runtime_alloc_size %zu, stream_id=%d.",
@@ -505,7 +505,7 @@ rtError_t Context::Setup()
             stmFlag = RT_STREAM_PRIMARY_DEFAULT | RT_STREAM_FAST_LAUNCH | RT_STREAM_FAST_SYNC;
         }
         defaultStream_ = StreamFactory::CreateStream(device_, 0U, stmFlag);
-        COND_RETURN_AND_MSG_OUTER(defaultStream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream));
+        COND_RETURN_AND_MSG_OUTER(defaultStream_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
         RT_LOG(RT_LOG_INFO, "New defaultStream_ ok, Runtime_alloc_size %zu, stream_id=%d.", sizeof(Stream), defaultStream_->Id_());
 
         error = defaultStream_->Setup();
@@ -1091,7 +1091,7 @@ rtError_t Context::StreamCreate(const uint32_t prio, const uint32_t flag, Stream
 
     Stream *newStream = StreamFactory::CreateStream(device_, prio, flag, grp);
     COND_GOTO_MSG_OUTER(
-        newStream == nullptr, ERROR_RETURN, error, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream));
+        newStream == nullptr, ERROR_RETURN, error, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
 
     if ((flag & RT_STREAM_FAST_SYNC) != 0U) {
         newStream->SetStreamFastSync(true);
@@ -1371,7 +1371,7 @@ rtError_t Context::ModelCreate(Model ** const result, ModelType type)
         new (std::nothrow) Model();
     COND_GOTO_MSG_OUTER(
         newModel == nullptr, ERROR_RETURN, error, RT_ERROR_MODEL_NEW, ErrorCode::EE1013,
-        (type == RT_MODEL_CAPTURE_MODEL) ? sizeof(CaptureModel) : sizeof(Model));
+        (type == RT_MODEL_CAPTURE_MODEL) ? sizeof(CaptureModel) : sizeof(Model), "new");
 
     error = newModel->Setup(this);
     ERROR_GOTO(error, ERROR_RECYCLE, "Setup model failed, retCode=%#x.", error);
@@ -1560,7 +1560,7 @@ rtError_t Context::ModelAddEndGraph(Model * const mdl, Stream * const stm, const
         if (notify == nullptr) {
             RT_LOG(RT_LOG_INFO, "create notify, stream_id=%d", stm->Id_());
             notify = new (std::nothrow) Notify(device_->Id_(), device_->DevGetTsId());
-            COND_RETURN_AND_MSG_OUTER(notify == nullptr, RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013, sizeof(Notify));
+            COND_RETURN_AND_MSG_OUTER(notify == nullptr, RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013, sizeof(Notify), "new");
             error = notify->Setup();
             COND_PROC_RETURN_WARN(error != RT_ERROR_NONE, error, DELETE_O(notify), "Notify setup, retCode=%#x", error);
         } else {
@@ -2772,7 +2772,7 @@ ERROR_RECYCLE:
 rtError_t Context::DvppGroupCreate(DvppGrp **grp, const uint32_t flags)
 {
     DvppGrp *newGrp = new (std::nothrow) DvppGrp(device_, flags);
-    COND_RETURN_AND_MSG_OUTER(newGrp == nullptr, RT_ERROR_DVPP_GRP_NEW, ErrorCode::EE1013, sizeof(DvppGrp));
+    COND_RETURN_AND_MSG_OUTER(newGrp == nullptr, RT_ERROR_DVPP_GRP_NEW, ErrorCode::EE1013, sizeof(DvppGrp), "new");
 
     newGrp->SetContext(this);
     const rtError_t error = newGrp->Setup();
@@ -2824,7 +2824,7 @@ rtError_t Context::GetSatStatusForStars(const uint64_t outputSize, Stream * cons
     std::shared_ptr<void> hostPtrGuard;
     // H2D copy
     hostPtr = AlignedMalloc(Context::MEM_ALIGN_SIZE, sizeof(uint64_t));
-    COND_RETURN_AND_MSG_OUTER(hostPtr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(uint64_t));
+    COND_RETURN_AND_MSG_OUTER(hostPtr == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(uint64_t), "malloc");
     hostPtrGuard.reset(hostPtr, &AlignedFree);
     const errno_t ret = memset_s(hostPtr, sizeof(uint64_t), 0, sizeof(uint64_t));
     COND_PROC_RETURN_ERROR_MSG_INNER(
@@ -2920,7 +2920,7 @@ rtError_t Context::CreateContextCallBackThread()
     hostFuncCallBackThread_.reset(OsalFactory::CreateThread(threadName, &threadCallBack_, callback));
     COND_RETURN_AND_MSG_OUTER(
         hostFuncCallBackThread_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        OsalFactory::GetThreadObjectSize());
+        OsalFactory::GetThreadObjectSize(), "new");
     threadCallBack_.callBackThreadRunFlag_ = true;
     const int32_t error = hostFuncCallBackThread_ ->Start();
     if (error != EN_OK) {

@@ -74,10 +74,10 @@ rtError_t CtrlResEntry::Init(Device* const dev)
 
     taskPool_ = new (std::nothrow) CtrlTaskPoolEntry[CTRL_TASK_POOL_SIZE];
     COND_RETURN_AND_MSG_OUTER(taskPool_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        std::to_string(CTRL_TASK_POOL_SIZE * sizeof(CtrlTaskPoolEntry)));
+        std::to_string(CTRL_TASK_POOL_SIZE * sizeof(CtrlTaskPoolEntry)), "new");
     taskList_ = new (std::nothrow) uint8_t[CTRL_TASK_POOL_SIZE];
     COND_PROC_RETURN_AND_MSG_OUTER(taskList_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        DELETE_A(taskPool_), std::to_string(CTRL_TASK_POOL_SIZE * sizeof(uint8_t)));
+        DELETE_A(taskPool_), std::to_string(CTRL_TASK_POOL_SIZE * sizeof(uint8_t)), "new");
     taskBuffCellSize_ = TaskFactory::GetTaskMaxSize();
     if ((taskBuffCellSize_ & (CTRL_BUFF_ASSING_NUM - 1U)) > 0) {
         taskBuffCellSize_ += CTRL_BUFF_ASSING_NUM;
@@ -87,7 +87,7 @@ rtError_t CtrlResEntry::Init(Device* const dev)
     const uint64_t buffSize = static_cast<uint64_t>(taskBuffCellSize_ * CTRL_TASK_POOL_SIZE);
     taskBaseAddr_ = new (std::nothrow) uint8_t[buffSize];
     COND_PROC_RETURN_AND_MSG_OUTER(taskBaseAddr_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        DELETE_A(taskPool_); DELETE_A(taskList_), std::to_string(buffSize * sizeof(uint8_t)));
+        DELETE_A(taskPool_); DELETE_A(taskList_), std::to_string(buffSize * sizeof(uint8_t)), "new");
     RT_LOG(RT_LOG_DEBUG, "[ctrlSq]taskBaseAddr_=0x%x taskBuffCellSize_=%u.", taskBaseAddr_, taskBuffCellSize_);
 
     for (uint32_t i = 0U; i < CTRL_TASK_POOL_SIZE; i++) {

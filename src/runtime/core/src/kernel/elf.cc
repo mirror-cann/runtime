@@ -181,7 +181,7 @@ std::unique_ptr<char_t[]> GetStringTableCopy(const char_t * const src, const uin
     /* + 1 so that we can '\0' terminate invalid string table sections.  */
     std::unique_ptr<char_t[]> strTbl(new (std::nothrow) char_t[size + 1UL]);
     if (strTbl == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, size + 1UL);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, size + 1UL, "new");
         return nullptr;
     }
 
@@ -231,7 +231,7 @@ int32_t Get64bitSectionHeaders(rtElfData * const elfData)
 
     elfData->section_headers = new (std::nothrow) Elf_Internal_Shdr[num];
     if (elfData->section_headers == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Elf_Internal_Shdr) * num);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Elf_Internal_Shdr) * num, "new");
         return ELF_FAIL;
     }
 
@@ -311,7 +311,7 @@ std::unique_ptr<Elf_Internal_Sym[]> Get64bitElfSymbols(const rtElfData * const e
 
     std::unique_ptr<Elf_Internal_Sym[]> isyms(new (std::nothrow) Elf_Internal_Sym[number]);
     if (isyms == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Elf_Internal_Sym) * number);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Elf_Internal_Sym) * number, "new");
         return nullptr;
     }
 
@@ -1063,7 +1063,7 @@ static rtError_t UpdateCachedParamInfos(RtKernelMetaInfo *metaInfo,
     );
 
     if (metaInfo->paramInfos == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfParamInfo) * kernelInfo->paramCount);
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfParamInfo) * kernelInfo->paramCount, "new");
         RT_LOG(RT_LOG_ERROR, "Failed to allocate memory for paramInfos, kernel_name=%s, paramCount=%u.",
                kernelName, kernelInfo->paramCount);
         return RT_ERROR_MEMORY_ALLOCATION;
@@ -1563,7 +1563,7 @@ int32_t GetEhSizeOffset(void * const elfData, const uint32_t elfLen, uint32_t* o
     rtElfData *elfDataF = new (std::nothrow) rtElfData();
 
     if (elfDataF == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(rtElfData));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(rtElfData), "new");
         return ELF_FAIL;
     }
 

@@ -64,46 +64,6 @@ namespace acl {
     // 配置文件最大数组个数
     constexpr size_t MAX_CONFIG_ARRAY_DEPTH = 10U;
 
-    void JsonParser::GetMaxNestedLayers(const char_t *const fileName, const size_t length,
-        size_t &maxObjDepth, size_t &maxArrayDepth)
-    {
-        if (length <= 0) {
-            ACL_LOG_ERROR("[Check][Length]the length of file %s must be larger than 0.", fileName);
-            return;
-        }
-
-        char_t *pBuffer = new(std::nothrow) char_t[length];
-        if (pBuffer == nullptr) {
-            ACL_LOG_ERROR("[Check][Malloc]Allocate memory failed, bufferSize=%zu.", length);
-            const std::string lengthVal = std::to_string(length);
-            acl::AclErrorLogManager::ReportInputError(acl::ALLOC_MEMORY_FAILED_MSG,
-                std::vector<const char *>({"buf_size"}),
-                std::vector<const char *>({lengthVal.c_str()}));
-            return;
-        }
-        const std::shared_ptr<char_t> buffer(pBuffer, [](char_t *const deletePtr) { delete[] deletePtr; });
-
-        std::ifstream fin(fileName);
-        if (!fin.is_open()) {
-            ACL_LOG_INNER_ERROR("[Open][File]Read file %s failed.", fileName);
-            return;
-        }
-        (void)fin.seekg(0, fin.beg);
-        (void)fin.read(buffer.get(), static_cast<int64_t>(length));
-
-        size_t arrayDepth = 0U;
-        size_t objDepth = 0U;
-        for (size_t i = 0U; i < length; ++i) {
-            const char_t v = buffer.get()[i];
-            if (v == '\0') {
-                fin.close();
-                return;
-            }
-            CountDepth(v, objDepth, maxObjDepth, arrayDepth, maxArrayDepth);
-        }
-        fin.close();
-    }
-
     bool JsonParser::IsValidFileName(const char_t *const fileName)
     {
         char_t trustedPath[MMPA_MAX_PATH] = {};
@@ -148,6 +108,46 @@ namespace acl {
             return false;
         }
         return true;
+    }
+
+    void JsonParser::GetMaxNestedLayers(const char_t *const fileName, const size_t length,
+        size_t &maxObjDepth, size_t &maxArrayDepth)
+    {
+        if (length <= 0) {
+            ACL_LOG_ERROR("[Check][Length]the length of file %s must be larger than 0.", fileName);
+            return;
+        }
+
+        char_t *pBuffer = new(std::nothrow) char_t[length];
+        if (pBuffer == nullptr) {
+            ACL_LOG_ERROR("[Check][Malloc]Allocate memory failed, bufferSize=%zu.", length);
+            const std::string lengthVal = std::to_string(length);
+            acl::AclErrorLogManager::ReportInputError(acl::ALLOC_MEMORY_FAILED_MSG,
+                std::vector<const char *>({"buf_size", "alloc_interface"}),
+                std::vector<const char *>({lengthVal.c_str(), "new"}));
+            return;
+        }
+        const std::shared_ptr<char_t> buffer(pBuffer, [](char_t *const deletePtr) { delete[] deletePtr; });
+
+        std::ifstream fin(fileName);
+        if (!fin.is_open()) {
+            ACL_LOG_INNER_ERROR("[Open][File]Read file %s failed.", fileName);
+            return;
+        }
+        (void)fin.seekg(0, fin.beg);
+        (void)fin.read(buffer.get(), static_cast<int64_t>(length));
+
+        size_t arrayDepth = 0U;
+        size_t objDepth = 0U;
+        for (size_t i = 0U; i < length; ++i) {
+            const char_t v = buffer.get()[i];
+            if (v == '\0') {
+                fin.close();
+                return;
+            }
+            CountDepth(v, objDepth, maxObjDepth, arrayDepth, maxArrayDepth);
+        }
+        fin.close();
     }
 
     aclError JsonParser::ParseJson(const char_t* const fileName, const char_t *const configStr, nlohmann::json &js)

@@ -348,7 +348,7 @@ acltdtQueueAttr* acltdtCreateQueueAttr()
 {
     ACL_ADD_APPLY_TOTAL_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_QUEUE_ATTR);
     acltdtQueueAttr *const attr = new(std::nothrow) acltdtQueueAttr();
-    ACL_CHECK_MALLOC_RESULT_REPORT_RET(attr, sizeof(acltdtQueueAttr), nullptr);
+    ACL_CHECK_MALLOC_RESULT_REPORT_RET(attr, sizeof(acltdtQueueAttr), "new", nullptr);
     acl::QueueProcessor::acltdtSetDefaultQueueAttr(*attr);
     ACL_ADD_APPLY_SUCCESS_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_QUEUE_ATTR);
     return attr;
@@ -430,7 +430,7 @@ acltdtQueueRoute* acltdtCreateQueueRoute(uint32_t srcId, uint32_t dstId)
 {
     ACL_ADD_APPLY_TOTAL_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_QUEUE_ROUTE);
     acltdtQueueRoute *const route = new(std::nothrow) acltdtQueueRoute();
-    ACL_CHECK_MALLOC_RESULT_REPORT_RET(route, sizeof(acltdtQueueRoute), nullptr);
+    ACL_CHECK_MALLOC_RESULT_REPORT_RET(route, sizeof(acltdtQueueRoute), "new", nullptr);
     route->srcId = srcId;
     route->dstId = dstId;
     route->status = 0;
@@ -528,7 +528,7 @@ acltdtQueueRouteQueryInfo* acltdtCreateQueueRouteQueryInfo()
 {
     ACL_ADD_APPLY_TOTAL_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_QUEUE_ROUTE_QUERY);
     acltdtQueueRouteQueryInfo *const info = new(std::nothrow) acltdtQueueRouteQueryInfo();
-    ACL_CHECK_MALLOC_RESULT_REPORT_RET(info, sizeof(acltdtQueueRouteQueryInfo), nullptr);
+    ACL_CHECK_MALLOC_RESULT_REPORT_RET(info, sizeof(acltdtQueueRouteQueryInfo), "new", nullptr);
     ACL_ADD_APPLY_SUCCESS_COUNT(acl::ACL_STATISTICS_CREATE_DESTROY_QUEUE_ROUTE_QUERY);
     info->isConfigDst = false;
     info->isConfigSrc = false;
