@@ -114,7 +114,9 @@ rtError_t GetKernelTaskParams(const TaskInfo* const taskInfo, rtTaskParams* cons
 {
     const AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     rtKernelTaskParams* kernelTaskParams = &(params->kernelTaskParams);
-    kernelTaskParams->funcHandle = aicTaskInfo->kernel;
+    Kernel * const kernel = aicTaskInfo->kernel;
+    NULL_PTR_RETURN_MSG_OUTER(kernel, RT_ERROR_INVALID_VALUE);
+    kernelTaskParams->funcHandle = kernel->GetInnerHandle();
     kernelTaskParams->cfg = nullptr;
     kernelTaskParams->args = aicTaskInfo->comm.args;
     kernelTaskParams->isHostArgs = 0U;
@@ -213,7 +215,9 @@ rtError_t UpdateKernelParams(TaskInfo* const taskInfo, rtTaskParams* const param
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1003, "rtModelTaskSetParams", params->taskGrp, "params->taskGrp", "NULL pointer");
 
     const rtKernelTaskParams* kernelTaskParams = &(params->kernelTaskParams);
-    Kernel* const kernel = RtPtrToPtr<Kernel*>(kernelTaskParams->funcHandle);
+    Kernel *kernel = nullptr;
+    rtError_t error = GetValidatedObject<Kernel>(kernelTaskParams->funcHandle, kernel);
+    ERROR_RETURN(error, "Failed to validate funcHandle, retCode=%#x.", static_cast<uint32_t>(error));
     COND_RETURN_AND_MSG_OUTER((kernel == nullptr),
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "rtModelTaskSetParams", "params->kernelTaskParams->funcHandle");
     COND_RETURN_AND_MSG_OUTER((kernelTaskParams->args == nullptr),
@@ -222,7 +226,7 @@ rtError_t UpdateKernelParams(TaskInfo* const taskInfo, rtTaskParams* const param
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1003, "rtModelTaskSetParams", kernelTaskParams->argsSize, "params->kernelTaskParams->argsSize", "greater than 0");
 
     TaskCfg taskCfg = {};
-    rtError_t error = ConvertLaunchCfgToTaskCfg(taskCfg, kernelTaskParams->cfg);
+    error = ConvertLaunchCfgToTaskCfg(taskCfg, kernelTaskParams->cfg);
     ERROR_RETURN(error, "convert task cfg failed, retCode=%#x.", error);
 
     rtArgsEx_t argsInfo = {};
