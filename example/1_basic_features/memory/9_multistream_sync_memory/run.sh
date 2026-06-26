@@ -9,17 +9,22 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
 
-set -e
+set -euo pipefail
 
-_ASCEND_INSTALL_PATH=$ASCEND_INSTALL_PATH
+_ASCEND_CANN_PATH="${ASCEND_HOME_PATH:-}"
+if [[ -z "${_ASCEND_CANN_PATH}" ]]; then
+    echo "[ERROR]: ASCEND_HOME_PATH is not set."
+    echo "[ERROR]: Please source CANN set_env.sh before running this sample."
+    exit 1
+fi
 
-source $_ASCEND_INSTALL_PATH/bin/setenv.bash
+source "${_ASCEND_CANN_PATH}/bin/setenv.bash"
 echo "[INFO]: Current compile soc version is ${SOC_VERSION}"
 
 rm -rf build
 mkdir -p build
 cmake -B build \
-    -DASCEND_CANN_PACKAGE_PATH=${_ASCEND_INSTALL_PATH}
+    -DASCEND_CANN_PACKAGE_PATH="${_ASCEND_CANN_PATH}"
 cmake --build build -j
 cmake --install build
 
@@ -28,15 +33,14 @@ mkdir -p file
 
 file_path=output_msg.txt
 
-./build/main | tee $file_path
+./build/main | tee "${file_path}"
 
-wait_value=$(grep "Flag value read by the waiting thread:" $file_path | awk -F':' '{gsub(/^ +| +$/, "", $2); print $2}' | head -n 1)
-write_value_after=$(grep "Flag value after the writing thread starts:" $file_path | awk -F':' '{gsub(/^ +| +$/, "", $2); print $2}' | head -n 1)
+wait_value=$(awk -F':' '/Flag value read by the waiting thread:/ {gsub(/^ +| +$/, "", $2); print $2; exit}' "${file_path}")
+write_value_after=$(awk -F':' '/Flag value after the writing thread starts:/ {gsub(/^ +| +$/, "", $2); print $2; exit}' "${file_path}")
 
-if [ "$wait_value" = "$write_value_after" ]; then
+if [[ -n "${wait_value}" && "${wait_value}" = "${write_value_after}" ]]; then
     echo "[SUCCESS] Memory semantics synchronization across multiple streams is successful"
 else
     echo "[FAILURE] Memory semantics synchronization across multiple streams failed"
+    exit 1
 fi
-
-exit 0

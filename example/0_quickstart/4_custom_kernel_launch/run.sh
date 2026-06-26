@@ -9,35 +9,36 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
 
-set -e
+set -euo pipefail
 
-if [ -z "${ASCEND_INSTALL_PATH}" ]; then
-    echo "[ERROR]: ASCEND_INSTALL_PATH is not set. Please source \${install_root}/cann/set_env.sh first."
+_ASCEND_CANN_PATH="${ASCEND_HOME_PATH:-}"
+if [[ -z "${_ASCEND_CANN_PATH}" ]]; then
+    echo "[ERROR]: ASCEND_HOME_PATH is not set."
+    echo "[ERROR]: Please source CANN set_env.sh before running this sample."
     exit 1
 fi
 
-if [ ! -f "${ASCEND_INSTALL_PATH}/bin/setenv.bash" ]; then
-    echo "[ERROR]: ${ASCEND_INSTALL_PATH}/bin/setenv.bash does not exist."
+if [[ ! -f "${_ASCEND_CANN_PATH}/bin/setenv.bash" ]]; then
+    echo "[ERROR]: ${_ASCEND_CANN_PATH}/bin/setenv.bash does not exist."
     exit 1
 fi
 
-if [ -z "${SOC_VERSION}" ]; then
+if [[ -z "${SOC_VERSION:-}" ]]; then
     echo "[ERROR]: SOC_VERSION is not set. Please export SOC_VERSION before building this sample."
     exit 1
 fi
 
-if [ -z "${ASCENDC_CMAKE_DIR}" ]; then
+if [[ -z "${ASCENDC_CMAKE_DIR:-}" ]]; then
     echo "[ERROR]: ASCENDC_CMAKE_DIR is not set. Please export ASCENDC_CMAKE_DIR before building this sample."
     exit 1
 fi
 
-if [ ! -f "${ASCENDC_CMAKE_DIR}/ascendc.cmake" ]; then
+if [[ ! -f "${ASCENDC_CMAKE_DIR}/ascendc.cmake" ]]; then
     echo "[ERROR]: ${ASCENDC_CMAKE_DIR}/ascendc.cmake does not exist."
     exit 1
 fi
 
-_ASCEND_INSTALL_PATH=$ASCEND_INSTALL_PATH
-source "${_ASCEND_INSTALL_PATH}/bin/setenv.bash"
+source "${_ASCEND_CANN_PATH}/bin/setenv.bash"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
@@ -48,7 +49,7 @@ cd "${BUILD_DIR}"
 
 echo "Configuring CMake..."
 cmake .. \
-    -DASCEND_CANN_PACKAGE_PATH="${_ASCEND_INSTALL_PATH}"
+    -DASCEND_CANN_PACKAGE_PATH="${_ASCEND_CANN_PATH}"
 
 echo "Building..."
 make -j"$(nproc)"

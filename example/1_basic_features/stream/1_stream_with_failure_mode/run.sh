@@ -9,18 +9,23 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
 
-set -e
-set -o pipefail
+set -euo pipefail
 
-_ASCEND_INSTALL_PATH=$ASCEND_INSTALL_PATH
-source $_ASCEND_INSTALL_PATH/bin/setenv.bash
+_ASCEND_CANN_PATH="${ASCEND_HOME_PATH:-}"
+if [[ -z "${_ASCEND_CANN_PATH}" ]]; then
+    echo "[ERROR]: ASCEND_HOME_PATH is not set."
+    echo "[ERROR]: Please source CANN set_env.sh before running this sample."
+    exit 1
+fi
+
+source "${_ASCEND_CANN_PATH}/bin/setenv.bash"
 
 rm -rf build
 mkdir -p build
 cmake -B build \
-    -DASCEND_CANN_PACKAGE_PATH=${_ASCEND_INSTALL_PATH}
+    -DASCEND_CANN_PACKAGE_PATH="${_ASCEND_CANN_PATH}"
 cmake --build build -j
 cmake --install build
 
 file_path=output_msg.txt
-./build/main 2>&1 | tee $file_path
+./build/main 2>&1 | tee "${file_path}"

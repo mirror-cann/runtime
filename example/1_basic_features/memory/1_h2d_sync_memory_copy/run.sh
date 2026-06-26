@@ -11,28 +11,32 @@
 
 set -euo pipefail
 
-_ASCEND_INSTALL_PATH=$ASCEND_INSTALL_PATH
+_ASCEND_CANN_PATH="${ASCEND_HOME_PATH:-}"
+if [[ -z "${_ASCEND_CANN_PATH}" ]]; then
+    echo "[ERROR]: ASCEND_HOME_PATH is not set."
+    echo "[ERROR]: Please source CANN set_env.sh before running this sample."
+    exit 1
+fi
 
-source $_ASCEND_INSTALL_PATH/bin/setenv.bash
+source "${_ASCEND_CANN_PATH}/bin/setenv.bash"
 echo "[INFO]: Current compile soc version is ${SOC_VERSION}"
 
 rm -rf build
 mkdir -p build
 cmake -B build \
-    -DASCEND_CANN_PACKAGE_PATH=${_ASCEND_INSTALL_PATH}
+    -DASCEND_CANN_PACKAGE_PATH="${_ASCEND_CANN_PATH}"
 cmake --build build -j
 cmake --install build
 
 file_path=output_msg.txt
-./build/main | tee $file_path
+./build/main | tee "${file_path}"
 
-source_value=$(grep "Source data:" $file_path | awk -F':' '{gsub(/^ +| +$/, "", $2); print $2}' | head -n 1)
-destination_value=$(grep "Destination data:" $file_path | awk -F':' '{gsub(/^ +| +$/, "", $2); print $2}' | head -n 1)
+source_value=$(awk -F':' '/Source data:/ {gsub(/^ +| +$/, "", $2); print $2; exit}' "${file_path}")
+destination_value=$(awk -F':' '/Destination data:/ {gsub(/^ +| +$/, "", $2); print $2; exit}' "${file_path}")
 
-if [ "$source_value" = "$destination_value" ]; then
-    echo "[SUCCESS] Memory copy successfully. Values at source and destination are equal: $source_value"
+if [[ -n "${source_value}" && "${source_value}" = "${destination_value}" ]]; then
+    echo "[SUCCESS] Memory copy successfully. Values at source and destination are equal: ${source_value}"
 else
-    echo "[FAILURE] Memory copy failed. Value at source is $source_value, but value at destination is $destination_value"
+    echo "[FAILURE] Memory copy failed. Value at source is ${source_value}, but value at destination is ${destination_value}"
+    exit 1
 fi
-
-exit 0

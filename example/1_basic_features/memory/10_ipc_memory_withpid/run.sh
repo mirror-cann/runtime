@@ -9,40 +9,56 @@
 # See LICENSE in the root of the software repository for the full text of the License.
 # -----------------------------------------------------------------------------------------------------------
 
-set -e
+set -euo pipefail
 
-_ASCEND_INSTALL_PATH=$ASCEND_INSTALL_PATH
+_ASCEND_CANN_PATH="${ASCEND_HOME_PATH:-}"
+if [[ -z "${_ASCEND_CANN_PATH}" ]]; then
+    echo "[ERROR]: ASCEND_HOME_PATH is not set."
+    echo "[ERROR]: Please source CANN set_env.sh before running this sample."
+    exit 1
+fi
 
-source $_ASCEND_INSTALL_PATH/bin/setenv.bash
+source "${_ASCEND_CANN_PATH}/bin/setenv.bash"
 echo "[INFO]: Current compile soc version is ${SOC_VERSION}"
 
 rm -rf build
 mkdir -p build
 cmake -B build \
-    -DASCEND_CANN_PACKAGE_PATH=${_ASCEND_INSTALL_PATH}
+    -DASCEND_CANN_PACKAGE_PATH="${_ASCEND_CANN_PATH}"
 cmake --build build -j
 cmake --install build
 
 rm -rf file
 mkdir -p file
 
-file_path_proc_a=output_msg_proc_a.txt
-file_path_proc_b=output_msg_proc_b.txt
+file_path_proc_a="output_msg_proc_a.txt"
+file_path_proc_b="output_msg_proc_b.txt"
 
-./build/proc_a | tee "$file_path_proc_a" &
+(
+    ./build/proc_a | tee "${file_path_proc_a}"
+) &
 pid_a=$!
-./build/proc_b | tee "$file_path_proc_b" &
+(
+    ./build/proc_b | tee "${file_path_proc_b}"
+) &
 pid_b=$!
 
-wait $pid_a $pid_b
+status_a=0
+status_b=0
+wait "${pid_a}" || status_a=$?
+wait "${pid_b}" || status_b=$?
 
-source_value=$(grep "Source data:" $file_path_proc_a | awk -F':' '{gsub(/^ +| +$/, "", $2); print $2}' | head -n 1)
-destination_value=$(grep "Destination data:" $file_path_proc_b | awk -F':' '{gsub(/^ +| +$/, "", $2); print $2}' | head -n 1)
-
-if [ "$source_value" = "$destination_value" ]; then
-    echo "[SUCCESS] IPC memory sharing successfully. Values at source and destination are equal: $source_value"
-else
-    echo "[FAILURE] IPC memory sharing failed. Value at source is $source_value, but value at destination is $destination_value"
+if [[ "${status_a}" -ne 0 || "${status_b}" -ne 0 ]]; then
+    echo "[FAILURE] IPC memory sharing failed. proc_a exit code is ${status_a}, proc_b exit code is ${status_b}"
+    exit 1
 fi
 
-exit 0
+source_value=$(awk -F':' '/Source data:/ {gsub(/^ +| +$/, "", $2); print $2; exit}' "${file_path_proc_a}")
+destination_value=$(awk -F':' '/Destination data:/ {gsub(/^ +| +$/, "", $2); print $2; exit}' "${file_path_proc_b}")
+
+if [[ -n "${source_value}" && "${source_value}" = "${destination_value}" ]]; then
+    echo "[SUCCESS] IPC memory sharing successfully. Values at source and destination are equal: ${source_value}"
+else
+    echo "[FAILURE] IPC memory sharing failed. Value at source is ${source_value}, but value at destination is ${destination_value}"
+    exit 1
+fi

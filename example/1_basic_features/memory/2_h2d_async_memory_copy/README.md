@@ -24,11 +24,8 @@ cd ${git_clone_path}/example/1_basic_features/memory/2_h2d_async_memory_copy
 ```bash
 # ${install_root} 替换为 CANN 安装根目录，默认安装在`/usr/local/Ascend`目录
 source ${install_root}/cann/set_env.sh
-export ASCEND_INSTALL_PATH=${install_root}/cann
 
-# 设置 SOC_VERSION 和 ASCENDC_CMAKE_DIR
-# -SOC_VERSION: 昇腾AI处理器的型号，如 Ascend910_9362，Ascend910B2等
-# -ASCENDC_CMAKE_DIR: 样例中涉及调用AscendC算子，需配置AscendC编译器 ascendc.cmake 路径，如 /usr/local/Ascend/cann/x86_64-linux/tikcpp/ascendc_kernel_cmake
+# 自动识别 SOC_VERSION 和 ASCENDC_CMAKE_DIR
 source ${git_clone_path}/example/set_sample_env.sh
 ```
 
