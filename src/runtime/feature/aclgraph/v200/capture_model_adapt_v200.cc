@@ -217,9 +217,8 @@ rtError_t CaptureModel::ReleaseJetty(int32_t streamId, JettyType type)
         }
     }
 
-    Driver* driver = context->filledWqeCount > 0 ? Context_()->Device_()->Driver_() : nullptr;
-    if (driver != nullptr) {
-        context->ReleaseBuffers(driver);
+    if (!context->wqeBuffers.empty()) {
+        context->ReleaseBuffers(Context_()->Device_()->Driver_());
     }
 
     jettyMgr->DestroyStreamJettyContext(streamId, type);
