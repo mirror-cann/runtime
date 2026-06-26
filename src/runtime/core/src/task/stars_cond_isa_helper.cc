@@ -2830,7 +2830,7 @@ void ConstructWhileCondSetupBranch(rtStarsCaptureCondFcPara_t &para, RtStarsWhil
 
     constexpr uint64_t part3Offset = offsetof(RtStarsCaptureWhileCondFc, addiModelIndex) / sizeof(uint32_t);
     ConstructSetJumpPcFc(r1, part3Offset, setupBranch.jumpPcToaddiModel);
-    const uint8_t instrOffset = static_cast<uint8_t>(part3Offset & 0xFUL);
+    constexpr uint8_t instrOffset = static_cast<uint8_t>(part3Offset & 0xFUL);
     ConstructBranch(r2, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, instrOffset, setupBranch.bneToExecute);
 }
 
