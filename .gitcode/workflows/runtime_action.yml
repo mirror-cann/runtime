@@ -1,0 +1,428 @@
+name: runtime_action
+
+concurrency: 
+  max: 5 
+  exceed-action: QUEUE 
+  enable: true 
+  preemption:
+    enable: true 
+    events: [mr_id] 
+
+on:
+  pull_request_comment:
+    types: [created]
+    branches: [ '*' ]
+    comments: [ '^(?:\/)?compile*' ]
+  pr_comment:
+    types: [ created ]
+    keyword: '^(?:\/)?compile*'
+
+env:
+  org_name: "cann"
+  repo_name: "runtime"
+  obs_path: "${{ vars.OBS_PATH}}/${{ env.MERGE_ID }}"
+
+stages:
+  stage1:
+    name: image
+    select: selected_by_default
+    jobs:
+      JOB_image:
+        name: image
+        select: selected_by_default
+        needs: []
+        steps:
+          - name: revise_image
+            identifier: revise_image
+            uses: cann/.gitcode/actions/revise-img@master
+            with:
+              repo_name: ${{ env.repo_name }}
+              target_branch: ${{ env.TARGET_BRANCH }}
+              repo_url: ${{ vars.CI_PATH }}
+          -
+            name: show_output
+            run: |
+              echo "image: ${{ steps.revise_image.outputs.Compile_Ascend_X86 }}"
+        if: "${{ default() }}"
+        runs-on: ["codearts-hosted", "ubuntu-latest", "x64", "large"]
+      JOB_pr:
+        name: get_pr_files
+        select: selected_by_default
+        needs: []
+        steps:
+          - 
+            name: Checkout
+            identifier: process_checkout
+            uses: checkout
+            with:
+              ref: ${{ atomgit.event.pull_request.merge_commit_sha }}
+              token: ${{secrets.GIT_TOKEN}}
+          -
+            name: get_pr
+            identifier: get_pr
+            uses: cann/.gitcode/actions/get-pr@master
+            with:
+              workspace: ${{ steps.process_checkout.outputs.path }}
+              target_branch: ${{ env.TARGET_BRANCH }}
+              git_token: ${{secrets.GIT_TOKEN}}
+          - 
+            name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{secrets.AK}}
+              secret-key: ${{secrets.SK}}
+              artifact-path: |
+                ${{ steps.process_checkout.outputs.path }}/pr_filelist.txt
+                ${{ steps.process_checkout.outputs.path }}/pr_filelist_mod.txt
+                ${{ steps.process_checkout.outputs.path }}/pr_filelist_precommit.txt
+                ${{ steps.process_checkout.outputs.path }}/update_file_detail.txt
+              object-prefix: ${{ env.obs_path }}/
+        if: "${{ default() }}"
+        runs-on: 
+        - default
+    pre:
+    - type: auto
+    fail-fast: true
+  stage2:
+    name: compile
+    select: selected_by_default
+    jobs:
+      JOB_x86_compile_ubuntu24:
+        name: x86_compile_ubuntu24
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/x86_compile_action.yml
+        with:
+          task_name: 'compile_x86_ubuntu24'
+          image_version: ${{ jobs.JOB_image.outputs.Compile_Ascend_X86_ubuntu24 }}
+      JOB_x86_compile:
+        name: x86_compile
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/x86_compile_action.yml
+        with:
+          task_name: 'compile_x86'
+          image_version: ${{ jobs.JOB_image.outputs.Compile_Ascend_X86 }}
+      JOB_arm_compile:
+        name: arm_compile
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/arm_compile_action.yml
+        with:
+          task_name: 'arm'
+          image_version: ${{ jobs.JOB_image.outputs.Compile_Ascend_ARM }}
+      JOB_arm_compile_ubuntu24:
+        name: arm_compile_ubuntu24
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/arm_compile_action.yml
+        with:
+          task_name: 'arm_ubuntu24'
+          image_version: ${{ jobs.JOB_image.outputs.Compile_Ascend_ARM_ubuntu24 }}
+      JOB_codecheck_action:
+        name: codecheck_action
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/codecheck_action.yml
+      JOB_staticcheck_markdown:
+        name: staticcheck_markdown
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/staticcheck_action.yml
+        with:
+          check_type: 'markdown'
+      JOB_staticcheck_codespell_check:
+        name: staticcheck_codespell_check
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/staticcheck_action.yml
+        with:
+          check_type: 'codespell_check'
+      JOB_staticcheck_tag_closed_check:
+        name: staticcheck_tag_closed_check
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/staticcheck_action.yml
+        with:
+          check_type: 'tag_closed_check'
+      JOB_staticcheck_resource_existence_check:
+        name: staticcheck_resource_existence_check
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/staticcheck_action.yml
+        with:
+          check_type: 'resource_existence_check'
+      JOB_staticcheck_link_validity_check:
+        name: staticcheck_link_validity_check
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/staticcheck_action.yml
+        with:
+          check_type: 'link_validity_check'
+    pre:
+    - type: auto
+  stage3:
+    name: ut
+    select: selected_by_default
+    jobs:
+      JOB_ut_acl:
+        name: ut_test_acl
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'acl'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_acl }}
+      JOB_ut_platform:
+        name: ut_test_platform
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'platform'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_platform }}
+      JOB_ut_qs:
+        name: ut_test_qs
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'qs'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_qs }}
+      JOB_ut_aicpusd:
+        name: ut_test_aicpusd
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'aicpusd'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_aicpusd }}
+      JOB_ut_tsd:
+        name: ut_test_tsd
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'tsd'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_tsd }}
+      JOB_ut_mmpa:
+        name: ut_test_mmpa
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'mmpa'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_mmpa }}
+      JOB_ut_rts_v201:
+        name: ut_test_rts_v201
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'rts_v201'
+          ut_package: 'coverage_*.info'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_rts_v201 }}
+      JOB_ut_rts_david:
+        name: ut_test_rts_david
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'rts_david'
+          ut_package: 'coverage_*.info'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_rts_david }}
+      JOB_ut_rts_910b:
+        name: ut_test_rts_910b
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'rts_910b'
+          ut_package: 'coverage_*.info'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_rts_910b }}
+      JOB_ut_rts_common:
+        name: ut_test_rts_common
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'rts_common'
+          ut_package: 'coverage_*.info'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_rts_common }}
+      JOB_ut_rts_c:
+        name: ut_test_rts_c
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'rts_c'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_rts_c }}
+      JOB_ut_dfx_error_manager:
+        name: ut_test_dfx_error_manager
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'dfx_error_manager'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_dfx }}
+      JOB_ut_dfx_log:
+        name: ut_test_dfx_log
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'dfx_log'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_dfx }}
+      JOB_ut_dfx_trace:
+        name: ut_test_dfx_trace
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'dfx_trace'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_dfx }}
+      JOB_ut_dfx_msprof_part1:
+        name: ut_test_dfx_msprof_part1
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'dfx_msprof_part1'
+          ut_package: 'coverage_*.info'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_dfx }}
+      JOB_ut_dfx_msprof_part2:
+        name: ut_test_dfx_msprof_part2
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'dfx_msprof_part2'
+          ut_package: 'coverage_*.info'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_dfx }}
+      JOB_ut_dfx_adump:
+        name: ut_test_dfx_adump
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'dfx_adump'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_dfx }}
+      JOB_ut_camodel:
+        name: ut_test_camodel
+        select: selected_by_default
+        needs: []
+        uses: .gitcode/workflows/llt_action.yml
+        with:
+          ut_type: 'camodel'
+          image_version: ${{ jobs.JOB_image.outputs.UT_Test_camodel }}
+    pre:
+    - type: auto
+  stage4:
+    name: ut_report
+    select: selected_by_default
+    jobs:
+      JOB_ut_report_rts:
+        name: ut_report_rts
+        select: selected_by_default
+        needs: []
+        steps:
+          - 
+            name: Checkout
+            identifier: process_checkout
+            uses: checkout
+            with:
+              ref: ${{ atomgit.event.pull_request.merge_commit_sha }}
+              token: ${{secrets.GIT_TOKEN}}
+          -
+            name: download
+            uses: obs-download
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              key: |
+                ${{ env.obs_path }}/pr_filelist.txt
+                ${{ env.obs_path }}/pr_filelist_mod.txt
+              path: ${{ steps.process_checkout.outputs.path }}
+          -
+            name: ut_report
+            identifier: ut-report
+            uses: cann/.gitcode/actions/ut-cov-report@master
+            with:
+              workspace: ${{ steps.process_checkout.outputs.path }}
+              cov_mode: "report"
+              ut_field: "rts_common"
+              modules: "rts_v201 rts_david rts_910b rts_common"
+              source_branch: ${{ env.SOURCE_BRANCH }}
+              target_branch: ${{ env.TARGET_BRANCH }}
+              obs_path: ${{ env.obs_path }}
+              git_token: ${{secrets.GIT_TOKEN}}
+          -
+            name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{secrets.AK}}
+              secret-key: ${{secrets.SK}}
+              artifact-path: |
+                ${{ steps.process_checkout.outputs.path }}/ut_cov_*.tar.gz
+              object-prefix: ${{ env.obs_path }}/             
+        if: env.TARGET_BRANCH == 'master'
+        runs-on: [dedicate-hosted, x64, large]
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/ci_cann/ubuntu24.04_x86:lv6_v1.1073
+      JOB_ut_report_dfx_msprof:
+        name: ut_report_dfx_msprof
+        select: selected_by_default
+        needs: []
+        steps:
+          - 
+            name: Checkout
+            identifier: process_checkout
+            uses: checkout
+            with:
+              ref: ${{ atomgit.event.pull_request.merge_commit_sha }}
+              token: ${{secrets.GIT_TOKEN}}
+          -
+            name: download
+            uses: obs-download
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              key: |
+                ${{ env.obs_path }}/pr_filelist.txt
+                ${{ env.obs_path }}/pr_filelist_mod.txt
+              path: ${{ steps.process_checkout.outputs.path }}
+          -
+            name: ut_report
+            identifier: ut-report
+            uses: cann/.gitcode/actions/ut-cov-report@master
+            with:
+              workspace: ${{ steps.process_checkout.outputs.path }}
+              cov_mode: "report"
+              ut_field: "dfx_msprof"
+              modules: "dfx_msprof_part1 dfx_msprof_part2"
+              source_branch: ${{ env.SOURCE_BRANCH }}
+              target_branch: ${{ env.TARGET_BRANCH }}
+              obs_path: ${{ env.obs_path }}
+              git_token: ${{secrets.GIT_TOKEN}}
+          -
+            name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{secrets.AK}}
+              secret-key: ${{secrets.SK}}
+              artifact-path: |
+                ${{ steps.process_checkout.outputs.path }}/ut_cov_*.tar.gz
+              object-prefix: ${{ env.obs_path }}/             
+        if: env.TARGET_BRANCH == 'master'
+        runs-on: [dedicate-hosted, x64, large]
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/ci_cann/ubuntu24.04_x86:lv6_v1.1073
+    pre:
+    - type: auto
+    fail-fast: true
