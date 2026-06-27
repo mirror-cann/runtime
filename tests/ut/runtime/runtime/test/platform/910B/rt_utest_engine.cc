@@ -36,6 +36,8 @@
 #include "davinci_kernel_task.h"
 #include "task_fail_callback_manager.hpp"
 #include "device/device_error_proc.hpp"
+#include <chrono>
+#include <thread>
 #include <map>
 #include <utility>  // For std::pair and std::make_pair.
 #include "mmpa_api.h"
@@ -761,7 +763,7 @@ TEST_F(EngineTest, recycle_thread_run_test)
 {
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
     engine->RecycleThreadRun();
-    EXPECT_EQ(engine->recycleThreadRunFlag_, false);
+    EXPECT_EQ(engine->recycleThreadAlive_.load(std::memory_order_acquire), false);
 }
 
 TEST_F(EngineTest, davinci_task_exception_test)
@@ -859,7 +861,7 @@ TEST_F(EngineTest, create_recycle_thread_1)
     EXPECT_EQ(result, RT_ERROR_NONE);
 
     engine->DestroyRecycleThread();
-    EXPECT_EQ(engine->recycleThreadRunFlag_ , false);
+    EXPECT_EQ(engine->recycleThreadAlive_.load(std::memory_order_acquire), false);
 
     delete device;
 }
@@ -875,6 +877,113 @@ TEST_F(EngineTest, create_recycle_thread_2)
     EXPECT_EQ(result, RT_ERROR_MEMORY_ALLOCATION);
 
     delete device;
+}
+
+TEST_F(EngineTest, wakeup_recycle_thread_alive_false)
+{
+    std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
+    EXPECT_EQ(engine->recycleThreadAlive_.load(std::memory_order_acquire), false);
+
+    engine->WakeUpRecycleThread();
+    EXPECT_EQ(engine->inFlightWakeUps_.load(std::memory_order_acquire), 0);
+}
+
+TEST_F(EngineTest, wakeup_recycle_thread_alive_true)
+{
+    RawDevice *device = new RawDevice(0);
+    std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
+
+    rtError_t result = engine->CreateRecycleThread();
+    EXPECT_EQ(result, RT_ERROR_NONE);
+
+    engine->WakeUpRecycleThread();
+    EXPECT_EQ(engine->inFlightWakeUps_.load(std::memory_order_acquire), 0);
+
+    engine->DestroyRecycleThread();
+    delete device;
+}
+
+TEST_F(EngineTest, destroy_with_inflight_wakeup)
+{
+    RawDevice *device = new RawDevice(0);
+    std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
+
+    rtError_t result = engine->CreateRecycleThread();
+    EXPECT_EQ(result, RT_ERROR_NONE);
+
+    engine->inFlightWakeUps_.store(1, std::memory_order_release);
+    std::thread drainThread([&engine]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        engine->inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
+    });
+
+    engine->DestroyRecycleThread();
+    drainThread.join();
+
+    EXPECT_EQ(engine->inFlightWakeUps_.load(std::memory_order_acquire), 0);
+    delete device;
+}
+
+TEST_F(EngineTest, stars_wakeup_recycle_thread_alive_false)
+{
+    std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
+    EXPECT_EQ(engine->recycleThreadAlive_.load(std::memory_order_acquire), false);
+
+    engine->WakeUpRecycleThread();
+    EXPECT_EQ(engine->inFlightWakeUps_.load(std::memory_order_acquire), 0);
+}
+
+TEST_F(EngineTest, stars_destroy_with_inflight_wakeup)
+{
+    RawDevice *device = new RawDevice(0);
+    std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device);
+
+    MOCKER_CPP_VIRTUAL(engine.get(), &StarsEngine::RecycleThreadDo)
+        .stubs().will(ignoreReturnValue());
+
+    rtError_t result = engine->CreateRecycleThread();
+    EXPECT_EQ(result, RT_ERROR_NONE);
+
+    engine->inFlightWakeUps_.store(1, std::memory_order_release);
+    std::thread drainThread([&engine]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        engine->inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
+    });
+
+    engine->DestroyRecycleThread();
+    drainThread.join();
+
+    EXPECT_EQ(engine->inFlightWakeUps_.load(std::memory_order_acquire), 0);
+    delete device;
+}
+
+TEST_F(EngineTest, stars_wakeup_recycle_thread_concurrent)
+{
+    std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
+    (void)mmSemInit(&engine->recycleThreadSem_, 0U);
+    engine->recycleThreadAlive_.store(true, std::memory_order_release);
+
+    std::atomic<bool> stopFlag{false};
+    std::vector<std::thread> threads;
+    for (int i = 0; i < 4; i++) {
+        threads.emplace_back([&engine, &stopFlag]() {
+            while (!stopFlag.load(std::memory_order_acquire)) {
+                engine->WakeUpRecycleThread();
+            }
+        });
+    }
+
+    for (int i = 0; i < 200; i++) {
+        engine->recycleThreadAlive_.store(false, std::memory_order_release);
+        engine->recycleThreadAlive_.store(true, std::memory_order_release);
+    }
+
+    stopFlag.store(true, std::memory_order_release);
+    for (auto &t : threads) {
+        t.join();
+    }
+    engine->recycleThreadAlive_.store(false, std::memory_order_release);
+    (void)mmSemDestroy(&engine->recycleThreadSem_);
 }
 
 TEST_F(EngineTest, device_status_proc)

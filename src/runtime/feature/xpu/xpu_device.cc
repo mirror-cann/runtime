@@ -9,6 +9,8 @@
  */
 
 #include "xpu_device.hpp"
+#include <thread>
+#include "recycle_thread_utils.hpp"
 #include "stream_sqcq_manage_xpu.hpp"
 #include "task_xpu_recycle.hpp"
 #include "utils.h"
@@ -156,10 +158,13 @@ rtError_t XpuDevice::Start()
 rtError_t XpuDevice::Stop()
 {
     if (recycleThread_ != nullptr) {
-        recycleThreadRunFlag_ = false;
-        WakeUpRecycleThread();
+        recycleThreadAlive_.store(false, std::memory_order_release);
+        (void)mmSemPost(&recycleThreadSem_);
         recycleThread_->Join();
         RT_LOG(RT_LOG_INFO, "Xpu joined recycle thread OK.");
+        while (inFlightWakeUps_.load(std::memory_order_acquire) > 0) {
+            std::this_thread::yield();
+        }
         DELETE_O(recycleThread_);
         (void)mmSemDestroy(&recycleThreadSem_);
     }
@@ -206,16 +211,27 @@ int32_t XpuDevice::AllocStreamId() const
 
 void XpuDevice::WakeUpRecycleThread(void)
 {
+    if (!recycleThreadAlive_.load(std::memory_order_acquire)) {
+        return;
+    }
+    inFlightWakeUps_.fetch_add(1, std::memory_order_acq_rel);
+    if (!recycleThreadAlive_.load(std::memory_order_acquire)) {
+        inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
+        return;
+    }
     int val = 0;
-    sem_getvalue(&recycleThreadSem_, &val);
-    // < 2的作用是以安全的方式唤醒回收线程，确保信号量值不超过1，避免重复唤醒或计数溢出
+    (void)sem_getvalue(&recycleThreadSem_, &val);
     if (val < 2) {
         (void)mmSemPost(&recycleThreadSem_);
     }
+    inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
 }
 
 void XpuDevice::RecycleThreadDo(void) const
 {
+    if (GetStreamSqCqManage() == nullptr) {
+        return;
+    }
     std::vector<uint32_t> streamIdList;
     std::shared_ptr<Stream> stream = nullptr;
     (void)GetStreamSqCqManage()->GetAllStreamId(streamIdList);
@@ -237,7 +253,7 @@ void XpuDevice::RecycleThreadDo(void) const
 void XpuDevice::RecycleThreadRun(void)
 {
     RT_LOG(RT_LOG_INFO, "RecycleThreadRun thread enter.");
-    while (recycleThreadRunFlag_) {
+    while (recycleThreadAlive_.load(std::memory_order_acquire)) {
         (void)mmSemWait(&recycleThreadSem_);
         SetIsDoingRecycling(true);
         RecycleThreadDo();
@@ -274,13 +290,11 @@ rtError_t XpuDevice::CreateRecycleThread()
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
-    recycleThreadRunFlag_ = true;
+    recycleThreadAlive_.store(true, std::memory_order_release);
 
     const int32_t ret = recycleThread_->Start();
     if (ret != EN_OK) {
-        recycleThreadRunFlag_ = false;
-        DELETE_O(recycleThread_);
-        (void)mmSemDestroy(&recycleThreadSem_);
+        CleanupRecycleThreadOnFailure(recycleThreadAlive_, recycleThread_, recycleThreadSem_, inFlightWakeUps_);
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 

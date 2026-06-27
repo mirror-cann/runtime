@@ -10,6 +10,7 @@
 #ifndef CCE_RUNTIME_DIRECT_HWTS_ENGINE_HPP
 #define CCE_RUNTIME_DIRECT_HWTS_ENGINE_HPP
 
+#include <atomic>
 #include "hwts_engine.hpp"
 #include "device.hpp"
 #include "runtime.hpp"
@@ -84,7 +85,8 @@ private:
 
     Thread *monitorThread_;
     Thread *recycleThread_;
-    volatile bool recycleThreadRunFlag_ = false;
+    std::atomic<bool> recycleThreadAlive_{false};
+    std::atomic<int32_t> inFlightWakeUps_{0};
     volatile bool monitorThreadRunFlag_ = false;
     mmSem_t recycleThreadSem_;
     ShmCq shmCq_;

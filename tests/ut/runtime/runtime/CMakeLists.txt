@@ -475,6 +475,40 @@ set(runtime_raw_device_adpt_david_list
     ${TOP_DIR}/src/runtime/driver/npu_driver_dcache_lock_david.cpp
 )
 
+set(runtime_xpu_src
+    ${TOP_DIR}/src/runtime/api/api_c_xpu.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/json_parse.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/runtime_xpu_adapt.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_manager_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_aicpu_c.hpp
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_context.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_device.cc
+    ${TOP_DIR}/src/runtime/driver/xpu_driver.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_aicpu_c.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_sqcq_manage_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu.cc
+    ${TOP_DIR}/src/tprt/c/tprt_api.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_cqhandle.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_device.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_log.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_sqhandle.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_worker.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_timer.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/v200/task_res_da.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu_recycle.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/load_policy.cc
+    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/arg_manage_xpu.cc
+    ${TOP_DIR}/src/runtime/core/src/pool/h2h_copy_mgr.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/arg_loader_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu_c.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_kernel_task.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_profiling.cc
+)
+
 set(runtimeut_src_list
     ${runtimeut_src_task_list}
     ${runtimeut_src_api_list}
@@ -486,7 +520,6 @@ set(runtimeut_src_list
     ${runtimeut_src_pool_list}
     ${runtimeut_src_ttlv_list}
     ${runtimeut_src_callback_list}
-    ${runtime_xpu_src}
     ${TOP_DIR}/src/runtime/api/api.cc
     ${TOP_DIR}/src/runtime/feature/xpu/api_decorator_xpu.cc
     ${TOP_DIR}/src/runtime/core/src/api_impl/api_decorator.cc
@@ -601,41 +634,6 @@ set(runtimeut_src_list
     ${TOP_DIR}/src/runtime/core/src/runtime_v100/runtime_adapt.cc
     ${runtimeut_src_common_list}
     ${runtimeut_platform_list}
-)
-
-###################################################################################################
-set(runtime_xpu_src
-    ${TOP_DIR}/src/runtime/api/api_c_xpu.cc
-    ${TOP_DIR}/src/runtime/core/src/kernel/json_parse.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/runtime_xpu_adapt.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/task_manager_xpu.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/xpu_aicpu_c.hpp
-    ${TOP_DIR}/src/runtime/feature/xpu/xpu_context.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/xpu_device.cc
-    ${TOP_DIR}/src/runtime/driver/xpu_driver.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/xpu_aicpu_c.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/stream_sqcq_manage_xpu.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu.cc
-    ${TOP_DIR}/src/tprt/c/tprt_api.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_cqhandle.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_device.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_log.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_sqhandle.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_worker.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_timer.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/v200/task_res_da.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu_recycle.cc
-    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/load_policy.cc
-    ${TOP_DIR}/src/runtime/core/src/kernel/arg_loader/stars_arg_manager.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/arg_manage_xpu.cc
-    ${TOP_DIR}/src/runtime/core/src/pool/h2h_copy_mgr.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/arg_loader_xpu.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu_c.cc
-    ${TOP_DIR}/src/runtime/feature/xpu/xpu_kernel_task.cc
-    ${TOP_DIR}/src/tprt/feature/src/tprt_profiling.cc
 )
 
 set(runtimeut_david_src_list
@@ -1050,6 +1048,33 @@ add_executable(runtime_utest_engine
     test/rt_utest_direct_hwts_engine.cc
     test/platform/others/rt_utest_direct_hwts_engine.cc
     # test/platform/others/rt_utest_async_hwts_engine.cc
+    # XPU sources needed for XpuDevice tests in rt_utest_engine.cc
+    # Note: runtime_xpu_adapt.cc excluded - conflicts with runtime_adapt.cc in static lib
+    # Note: xpu_aicpu_c.cc excluded - conflicts with xpu_aicpu_c_stub.cc already linked
+    ${TOP_DIR}/src/runtime/api/api_c_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_manager_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_context.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_device.cc
+    ${TOP_DIR}/src/runtime/driver/xpu_driver.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_sqcq_manage_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu.cc
+    ${TOP_DIR}/src/tprt/c/tprt_api.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_cqhandle.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_device.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_log.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_sqhandle.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_worker.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_timer.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/v200/task_res_da.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu_recycle.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/arg_manage_xpu.cc
+    ${TOP_DIR}/src/runtime/core/src/pool/h2h_copy_mgr.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/arg_loader_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu_c.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_kernel_task.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_profiling.cc
 )
 
 target_compile_definitions(runtime_utest_engine PUBLIC
@@ -1349,6 +1374,8 @@ set(RUNTIME_TEST_INC_DIR_COMMON
     ${TOP_DIR}/src/runtime/feature/xpu/
     ${TOP_DIR}/src/runtime/core/src/uvm
     ${TOP_DIR}/src/runtime/core/src/event
+    ${TOP_DIR}/src/tprt/inc/external
+    ${TOP_DIR}/src/tprt/feature/inc
     ${TOP_DIR}/src
     ${TOP_DIR}/src/runtime/raw_driver
     ${TOP_DIR}/src/cmodel_driver
@@ -1719,6 +1746,33 @@ add_executable(runtime_utest_api_normal
     test/rt_utest_api_common_defination.cc
     #test/rt_utest_api.cc
     test/rt_utest_engine.cc
+    # XPU sources needed for XpuDevice tests in rt_utest_engine.cc
+    # Note: runtime_xpu_adapt.cc excluded - conflicts with runtime_adapt.cc in static lib
+    # Note: xpu_aicpu_c.cc excluded - conflicts with xpu_aicpu_c_stub.cc already linked
+    ${TOP_DIR}/src/runtime/api/api_c_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_manager_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_context.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_device.cc
+    ${TOP_DIR}/src/runtime/driver/xpu_driver.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_sqcq_manage_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu.cc
+    ${TOP_DIR}/src/tprt/c/tprt_api.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_cqhandle.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_device.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_log.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_sqhandle.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_worker.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_timer.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/v200/task_res_da.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/task_xpu_recycle.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/arg_manage_xpu.cc
+    ${TOP_DIR}/src/runtime/core/src/pool/h2h_copy_mgr.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/arg_loader_xpu.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/stream_xpu_c.cc
+    ${TOP_DIR}/src/runtime/feature/xpu/xpu_kernel_task.cc
+    ${TOP_DIR}/src/tprt/feature/src/tprt_profiling.cc
 )
 
 target_compile_definitions(runtime_utest_api_normal PUBLIC

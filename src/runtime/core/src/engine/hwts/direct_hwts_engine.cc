@@ -9,7 +9,9 @@
  */
 #include "direct_hwts_engine.hpp"
 #include <ctime>
+#include <thread>
 #include "engine.hpp"
+#include "recycle_thread_utils.hpp"
 #include "base.hpp"
 #include "securec.h"
 #include "runtime.hpp"
@@ -54,7 +56,6 @@ DirectHwtsEngine::DirectHwtsEngine(Device * const dev)
     : HwtsEngine(dev),
       monitorThread_(static_cast<Thread *>(nullptr)),
       recycleThread_(static_cast<Thread *>(nullptr)),
-      recycleThreadRunFlag_(false),
       monitorThreadRunFlag_(false)
 {
     RT_LOG(RT_LOG_EVENT, "Constructor.");
@@ -215,11 +216,10 @@ rtError_t DirectHwtsEngine::CreateRecycleThread(void)
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
-    recycleThreadRunFlag_ = true;
+    recycleThreadAlive_.store(true, std::memory_order_release);
     const int32_t err = recycleThread_->Start();
     if (err != EN_OK) {
-        recycleThreadRunFlag_ = false;
-        DELETE_O(recycleThread_);
+        CleanupRecycleThreadOnFailure(recycleThreadAlive_, recycleThread_, recycleThreadSem_, inFlightWakeUps_);
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
@@ -229,10 +229,13 @@ rtError_t DirectHwtsEngine::CreateRecycleThread(void)
 void DirectHwtsEngine::DestroyRecycleThread(void)
 {
     if (recycleThread_ != nullptr) {
-        recycleThreadRunFlag_ = false;
-        WakeUpRecycleThread();
+        recycleThreadAlive_.store(false, std::memory_order_release);
+        (void)mmSemPost(&recycleThreadSem_);
         recycleThread_->Join();
         RT_LOG(RT_LOG_INFO, "engine joined recycle thread OK.");
+        while (inFlightWakeUps_.load(std::memory_order_acquire) > 0) {
+            std::this_thread::yield();
+        }
         DELETE_O(recycleThread_);
         (void)mmSemDestroy(&recycleThreadSem_);
     }
@@ -243,7 +246,7 @@ void DirectHwtsEngine::DestroyRecycleThread(void)
 void DirectHwtsEngine::RecycleThreadRun(void)
 {
     RT_LOG(RT_LOG_INFO, "RecycleThreadRun thread start.");
-    while (recycleThreadRunFlag_) {
+    while (recycleThreadAlive_.load(std::memory_order_acquire)) {
         (void)mmSemWait(&recycleThreadSem_);
         RecycleThreadDo();
     }
@@ -253,7 +256,16 @@ void DirectHwtsEngine::RecycleThreadRun(void)
 
 void DirectHwtsEngine::WakeUpRecycleThread(void)
 {
+    if (!recycleThreadAlive_.load(std::memory_order_acquire)) {
+        return;
+    }
+    inFlightWakeUps_.fetch_add(1, std::memory_order_acq_rel);
+    if (!recycleThreadAlive_.load(std::memory_order_acquire)) {
+        inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
+        return;
+    }
     (void)mmSemPost(&recycleThreadSem_);
+    inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
 }
 
 void DirectHwtsEngine::SendingWait(Stream * const stm, uint8_t &failCount)

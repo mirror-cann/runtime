@@ -8,6 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "stars_engine.hpp"
+#include <thread>
+#include "recycle_thread_utils.hpp"
 #include "securec.h"
 #include "context.hpp"
 #include "runtime.hpp"
@@ -178,11 +180,10 @@ rtError_t StarsEngine::CreateRecycleThread(void)
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
-    recycleThreadRunFlag_ = true;
+    recycleThreadAlive_.store(true, std::memory_order_release);
     const int32_t err = recycleThread_->Start();
     if (err != EN_OK) {
-        recycleThreadRunFlag_ = false;
-        DELETE_O(recycleThread_);
+        CleanupRecycleThreadOnFailure(recycleThreadAlive_, recycleThread_, recycleThreadSem_, inFlightWakeUps_);
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
@@ -192,10 +193,13 @@ rtError_t StarsEngine::CreateRecycleThread(void)
 void StarsEngine::DestroyRecycleThread(void)
 {
     if (recycleThread_ != nullptr) {
-        recycleThreadRunFlag_ = false;
-        WakeUpRecycleThread();
+        recycleThreadAlive_.store(false, std::memory_order_release);
+        (void)mmSemPost(&recycleThreadSem_);
         recycleThread_->Join();
         RT_LOG(RT_LOG_INFO, "Stars engine joined recycle thread OK.");
+        while (inFlightWakeUps_.load(std::memory_order_acquire) > 0) {
+            std::this_thread::yield();
+        }
         DELETE_O(recycleThread_);
         (void)mmSemDestroy(&recycleThreadSem_);
     }
@@ -206,7 +210,7 @@ void StarsEngine::DestroyRecycleThread(void)
 void StarsEngine::RecycleThreadRun(void)
 {
     RT_LOG(RT_LOG_INFO, "RecycleThreadRun thread start.");
-    while (recycleThreadRunFlag_) {
+    while (recycleThreadAlive_.load(std::memory_order_acquire)) {
         (void)mmSemWait(&recycleThreadSem_);
         device_->SetIsDoingRecycling(true);
         if (device_->IsDavidPlatform()) {
@@ -222,12 +226,20 @@ void StarsEngine::RecycleThreadRun(void)
 
 void StarsEngine::WakeUpRecycleThread(void)
 {
+    if (!recycleThreadAlive_.load(std::memory_order_acquire)) {
+        return;
+    }
+    inFlightWakeUps_.fetch_add(1, std::memory_order_acq_rel);
+    if (!recycleThreadAlive_.load(std::memory_order_acquire)) {
+        inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
+        return;
+    }
     int32_t val = 0;
     (void)sem_getvalue(&recycleThreadSem_, &val);
-    // < 2的作用是以安全的方式唤醒回收线程，确保信号量值不超过1，避免重复唤醒或计数溢出
     if (val < 2) {
         (void)mmSemPost(&recycleThreadSem_);
     }
+    inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
 }
 
 bool StarsEngine::CheckMonitorThreadAlive()

@@ -10,6 +10,7 @@
 #ifndef __CCE_RUNTIME_STARS_ENGINE_HPP__
 #define __CCE_RUNTIME_STARS_ENGINE_HPP__
 
+#include <atomic>
 #include <map>
 #include <condition_variable>
 #include "base.hpp"
@@ -141,8 +142,11 @@ private:
     Thread *monitorThread_;
     Thread *recycleThread_;
     std::string recycleThreadName_;
-    bool recycleThreadRunFlag_ = false;
-    bool monitorThreadRunFlag_ = false;
+    
+    std::atomic<bool> recycleThreadAlive_{false};
+    std::atomic<int32_t> inFlightWakeUps_{0};
+    volatile bool monitorThreadRunFlag_ = false;
+
     mmSem_t recycleThreadSem_;
 
 #ifndef CFG_DEV_PLATFORM_PC

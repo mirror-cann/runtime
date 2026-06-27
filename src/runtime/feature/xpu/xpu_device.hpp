@@ -10,6 +10,7 @@
 #ifndef CCE_RUNTIME_XPU_DEVICE_HPP
 #define CCE_RUNTIME_XPU_DEVICE_HPP
 
+#include <atomic>
 #include "raw_device.hpp"
 #include "bitmap.hpp"
 #include "xpu_driver.hpp"
@@ -52,7 +53,7 @@ public:
     }
     bool GetRecycleThreadRunFlag() const
     {
-        return recycleThreadRunFlag_;
+        return recycleThreadAlive_.load(std::memory_order_acquire);
     }
     rtError_t InitStreamIdBitmap();
     void FreeStreamIdBitmap(const int32_t id);
@@ -98,7 +99,8 @@ private:
     Bitmap *streamIdBitmap_;
     StreamSqCqManage *streamSqCqManage_;
     XpuConfigInfo configInfo_;
-	bool recycleThreadRunFlag_ = false;
+    std::atomic<bool> recycleThreadAlive_{false};
+    std::atomic<int32_t> inFlightWakeUps_{0};
     mmSem_t recycleThreadSem_;
     Atomic<uint32_t> taskXpuSn_{0U};
     bool xpuTaskReportEnable_ = false;
