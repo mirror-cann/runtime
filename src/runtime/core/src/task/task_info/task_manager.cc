@@ -889,6 +889,31 @@ const std::vector<rtChipType_t>& GetV201Chips()
     return chips;
 }
 
+void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs)
+{
+    if (chipType < CHIP_BEGIN || chipType >= CHIP_END) {
+        RT_LOG(RT_LOG_ERROR, "chip type is invalid: %d", chipType);
+        return;
+    }
+    
+    if (taskType >= TS_TASK_TYPE_RESERVED) {
+        RT_LOG(RT_LOG_ERROR, "task type is invalid: %d", taskType);
+        return;
+    }
+    
+    TaskFuncArrays& arrays = g_taskFuncArrays[chipType];
+    arrays.toCommandFunc[taskType] = funcs.toCommandFunc;
+    arrays.toSqeFunc[taskType] = funcs.toSqeFunc;
+    arrays.doCompleteSuccFunc[taskType] = funcs.doCompleteSuccFunc;
+    arrays.taskUnInitFunc[taskType] = funcs.taskUnInitFunc;
+    arrays.waitAsyncCpCompleteFunc[taskType] = funcs.waitAsyncCpCompleteFunc;
+    arrays.printErrorInfoFunc[taskType] = funcs.printErrorInfoFunc;
+    arrays.setResultFunc[taskType] = funcs.setResultFunc;
+    arrays.setStarsResultFunc[taskType] = funcs.setStarsResultFunc;
+    
+    return;
+}
+
 void RefreshTaskFuncPointer(rtChipType_t chipType)
 {
     if (chipType < CHIP_BEGIN || chipType >= CHIP_END) {
@@ -914,31 +939,6 @@ void RefreshTaskFuncPointer(rtChipType_t chipType)
     g_setResultFunc = arrays.setResultFunc;
     g_setStarsResultFunc = arrays.setStarsResultFunc;
     RT_LOG(RT_LOG_INFO, "Task func pointer refreshed to chip type: %d", chipType);
-}
-
-void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs)
-{
-    if (chipType < CHIP_BEGIN || chipType >= CHIP_END) {
-        RT_LOG(RT_LOG_ERROR, "chip type is invalid: %d", chipType);
-        return;
-    }
-    
-    if (taskType >= TS_TASK_TYPE_RESERVED) {
-        RT_LOG(RT_LOG_ERROR, "task type is invalid: %d", taskType);
-        return;
-    }
-    
-    TaskFuncArrays& arrays = g_taskFuncArrays[chipType];
-    arrays.toCommandFunc[taskType] = funcs.toCommandFunc;
-    arrays.toSqeFunc[taskType] = funcs.toSqeFunc;
-    arrays.doCompleteSuccFunc[taskType] = funcs.doCompleteSuccFunc;
-    arrays.taskUnInitFunc[taskType] = funcs.taskUnInitFunc;
-    arrays.waitAsyncCpCompleteFunc[taskType] = funcs.waitAsyncCpCompleteFunc;
-    arrays.printErrorInfoFunc[taskType] = funcs.printErrorInfoFunc;
-    arrays.setResultFunc[taskType] = funcs.setResultFunc;
-    arrays.setStarsResultFunc[taskType] = funcs.setStarsResultFunc;
-    
-    return;
 }
 
 #endif

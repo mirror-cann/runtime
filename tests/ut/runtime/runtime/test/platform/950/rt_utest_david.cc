@@ -77,6 +77,7 @@
 #include "jetty_pool.h"
 #include "jetty_manager.h"
 #include "task_info_base.hpp"
+#include "capture_model_utils.hpp"
 #undef protected
 #undef private
 
