@@ -145,7 +145,6 @@ set(libruntime_v200_context_src_files
     ${RUNTIME_CORE_DIR}/src/context/context.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/context_aclgraph.cc
     ${RUNTIME_CORE_DIR}/src/context/context_manage.cc
-    ${RUNTIME_CORE_DIR}/src/context/context_protect.cc
 )
 
 set(libruntime_v200_stream_common_src_files

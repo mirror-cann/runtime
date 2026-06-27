@@ -17,17 +17,89 @@ namespace runtime {
 static std::mutex g_ctxManLock;
 static ContextDataManage &g_ctxMan = ContextDataManage::Instance();
 
-bool ContextManage::CheckContextIsValid(Context *const curCtx, const bool inUseFlag)
+namespace {
+bool IsCurrentThreadBinding(Context *const ctx)
 {
-    const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
-    if (!g_ctxMan.ExistsSetValueWithoutLock(curCtx)) {
+    if (ctx == nullptr) {
         return false;
     }
-    if (likely(inUseFlag)) {
-        curCtx->ContextInUse();
+    if (InnerThreadLocalContainer::GetCurCtx() == ctx) {
+        return true;
+    }
+    RefObject<Context *> *const curRef = InnerThreadLocalContainer::GetCurRef();
+    return (curRef != nullptr) && (curRef->GetVal(false) == ctx);
+}
+
+void DetachInvalidContextFromThread(Context *const ctx)
+{
+    if (!IsCurrentThreadBinding(ctx)) {
+        return;
+    }
+    if (InnerThreadLocalContainer::GetCurCtx() == ctx) {
+        InnerThreadLocalContainer::SetCurCtx(nullptr);
+        return;
+    }
+    RefObject<Context *> *const curRef = InnerThreadLocalContainer::GetCurRef();
+    if ((curRef != nullptr) && (curRef->GetVal(false) == ctx)) {
+        InnerThreadLocalContainer::SetCurRef(nullptr);
+    }
+}
+
+ContextAccessMode ResolveAccessMode(Context *const ctx, const ContextAccessMode accessMode)
+{
+    if (accessMode == ContextAccessMode::INTERNAL) {
+        return accessMode;
+    }
+    if (InnerThreadLocalContainer::IsInternalContextAccess() && IsCurrentThreadBinding(ctx)) {
+        return ContextAccessMode::INTERNAL;
+    }
+    return ContextAccessMode::USER;
+}
+
+bool IsContextAccessAllowed(Context *const ctx, const ContextAccessMode accessMode, const bool isTracked)
+{
+    if (isTracked) {
+        return ctx->IsStateAccessible(accessMode);
+    }
+    return (accessMode == ContextAccessMode::INTERNAL) && IsCurrentThreadBinding(ctx) &&
+        ctx->IsStateAccessible(accessMode);
+}
+
+}
+
+bool ContextManage::CheckContextIsValid(Context *const curCtx,
+    ContextAccessMode accessMode, rtError_t *errorCode)
+{
+    bool needDetach = false;
+    bool needDetachUserBinding = false;
+    if (errorCode != nullptr) {
+        *errorCode = RT_ERROR_CONTEXT_NULL;
+    }
+    if (curCtx == nullptr) {
+        return false;
+    }
+    {
+        const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
+        const bool isTracked = g_ctxMan.ExistsSetValueWithoutLock(curCtx);
+        const ContextAccessMode resolvedAccessMode = ResolveAccessMode(curCtx, accessMode);
+        if (IsContextAccessAllowed(curCtx, resolvedAccessMode, isTracked)) {
+            if (errorCode != nullptr) {
+                *errorCode = RT_ERROR_NONE;
+            }
+            return true;
+        }
+        if (isTracked && (errorCode != nullptr)) {
+            *errorCode = RT_ERROR_CONTEXT_DEL;
+        }
+        needDetach = true;
+        needDetachUserBinding = (resolvedAccessMode == ContextAccessMode::USER);
     }
 
-    return true;
+    if (needDetach && needDetachUserBinding) {
+        // Detach may unbind the last thread ref and delete ctx, so keep it outside the set read lock.
+        DetachInvalidContextFromThread(curCtx);
+    }
+    return false;
 }
 
 void ContextManage::InsertContext(Context *const insertCtx)
@@ -39,17 +111,16 @@ void ContextManage::InsertContext(Context *const insertCtx)
     return;
 }
 
-rtError_t ContextManage::EraseContextFromSet(Context *const eraseCtx)
+rtError_t ContextManage::MarkContextForDelete(Context *const eraseCtx)
 {
-    if (!g_ctxMan.EraseSetValueWithLock(eraseCtx)) {
+    if (eraseCtx == nullptr) {
         return RT_ERROR_CONTEXT_NULL;
     }
-    eraseCtx->ContextInUse();
     eraseCtx->SetContextDeleteStatus();
     return RT_ERROR_NONE;
 }
 
-rtError_t ContextManage::EraseContextFromSetForRetainRollback(Context *const eraseCtx)
+rtError_t ContextManage::RemoveContextFromSet(Context *const eraseCtx)
 {
     if (!g_ctxMan.EraseSetValueWithLock(eraseCtx)) {
         return RT_ERROR_CONTEXT_NULL;
@@ -57,23 +128,93 @@ rtError_t ContextManage::EraseContextFromSetForRetainRollback(Context *const era
     return RT_ERROR_NONE;
 }
 
-rtError_t ContextManage::EraseContextAndDeleteIfNeeded(Context *const eraseCtx)
+bool ContextManage::IsContextTracked(Context *const ctx)
 {
-    const rtError_t ret = EraseContextFromSet(eraseCtx);
-    // After erasing from the global set, new ContextProtect acquisitions through CheckContextIsValid() cannot start.
-    // ContextOutUse() only releases the protect reference acquired by EraseContextFromSet(); remaining users keep the
-    // context alive and are responsible for their own ContextOutUse().
-    if ((ret != RT_ERROR_CONTEXT_NULL) && (eraseCtx->ContextOutUse() == 0ULL)) {
-        delete eraseCtx;
+    if (ctx == nullptr) {
+        return false;
     }
-    return ret;
+    const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
+    return g_ctxMan.ExistsSetValueWithoutLock(ctx);
+}
+
+bool ContextManage::IsActiveContext(Context *const ctx)
+{
+    return (ctx != nullptr) && (ctx->GetState() == ContextState::CTX_STATE_ACTIVE);
+}
+
+bool ContextManage::HasAttachedDevice(Context *const ctx)
+{
+    return (ctx != nullptr) && (ctx->Device_() != nullptr);
+}
+
+bool ContextManage::HasActiveDevice(Context *const ctx)
+{
+    return GetActiveContextDevice(ctx) != nullptr;
+}
+
+Device *ContextManage::GetActiveContextDevice(Context *const ctx)
+{
+    if (!IsActiveContext(ctx)) {
+        return nullptr;
+    }
+    return ctx->Device_();
+}
+
+bool ContextManage::IsContextOnDevice(Context *const ctx, const int32_t devId)
+{
+    if (!HasAttachedDevice(ctx) || (devId < 0)) {
+        return false;
+    }
+    return ctx->Device_()->Id_() == static_cast<uint32_t>(devId);
+}
+
+bool ContextManage::IsActiveContextOnDevice(Context *const ctx, const int32_t devId)
+{
+    Device *const dev = GetActiveContextDevice(ctx);
+    if ((dev == nullptr) || (devId < 0)) {
+        return false;
+    }
+    return dev->Id_() == static_cast<uint32_t>(devId);
+}
+
+bool ContextManage::AcquireInactiveContextForDestroy(Context *const ctx, rtError_t *errorCode)
+{
+    // This only allows an inactive explicit context to enter destroy flow.
+    // The final object deletion is still guarded by Context::TryDeleteIfNeeded().
+    if (errorCode != nullptr) {
+        *errorCode = RT_ERROR_CONTEXT_NULL;
+    }
+    if (ctx == nullptr) {
+        return false;
+    }
+
+    const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
+    if (!g_ctxMan.ExistsSetValueWithoutLock(ctx)) {
+        return false;
+    }
+    if (ctx->IsPrimary()) {
+        return false;
+    }
+
+    const ContextState state = ctx->GetState();
+    if ((state != ContextState::CTX_STATE_NOT_INITIALIZED) && (state != ContextState::CTX_STATE_FINALIZED)) {
+        if (errorCode != nullptr) {
+            *errorCode = RT_ERROR_CONTEXT_DEL;
+        }
+        return false;
+    }
+
+    if (errorCode != nullptr) {
+        *errorCode = RT_ERROR_NONE;
+    }
+    return true;
 }
 
 bool ContextManage::IsSupportDeviceAbort(const int32_t devId)
 {
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         if (!ctx->Device_()->CheckFeatureSupport(TS_FEATURE_TASK_ABORT)) {
             RT_LOG(RT_LOG_WARNING, "feature not support because tsch version too low");
             return false;
@@ -88,7 +229,7 @@ rtError_t ContextManage::DeviceAbort(const int32_t devId)
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         ctx->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
         ctx->SetFailureError(RT_ERROR_DEVICE_TASK_ABORT);
         ctx->SetStreamsStatus(RT_ERROR_DEVICE_TASK_ABORT);
@@ -105,7 +246,7 @@ rtError_t ContextManage::Devicekill(const int32_t devId)
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         error = ctx->StreamsKill();
         ERROR_RETURN(error, "Failed to kill streams, retCode=%#x.", error);
         RT_LOG(RT_LOG_INFO, "Devicekill end");
@@ -129,7 +270,7 @@ rtError_t ContextManage::DeviceQuery(const int32_t devId, const uint32_t step, c
         uint32_t status;
         mmTimeval endTv = {};
         for (Context *const ctx : g_ctxMan.GetSetObj()) {
-            COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+            COND_PROC(!IsContextOnDevice(ctx, devId), continue);
             error = ctx->StreamsQuery(status);
             ERROR_RETURN(error, "Failed to query streams, retCode=%#x.", error);
             if (status >= step) {
@@ -153,7 +294,7 @@ void ContextManage::QueryContextInUse(const int32_t devId, bool &isInUse)
     uint32_t cnt = 0U;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsActiveContextOnDevice(ctx, devId), continue);
         cnt++;
         break;  // 只统计一个即可
     }
@@ -169,7 +310,7 @@ rtError_t ContextManage::DeviceClean(const int32_t devId)
     Device *dev = nullptr;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         dev = ctx->Device_();
         error = ctx->StreamsTaskClean();
         ERROR_RETURN(error, "Failed to clean tasks, retCode=%#x.", error);
@@ -190,7 +331,7 @@ rtError_t ContextManage::DeviceClean(const int32_t devId)
     }
 
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         ctx->SetStreamsStatus(RT_ERROR_NONE);
         ctx->SetFailureError(RT_ERROR_NONE);
     }
@@ -289,6 +430,7 @@ void ContextManage::TryToRecycleCtxMdlPool()
     RT_LOG(RT_LOG_INFO, "start recycle ctx pool");
     const ReadProtect rp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
+        COND_PROC(!ContextManage::HasAttachedDevice(ctx), continue);
         ctx->TryToRecycleModulePool();
     }
     RT_LOG(RT_LOG_INFO, "finish recycle ctx pool");
@@ -302,15 +444,13 @@ void ContextManage::SetGlobalErrToCtx(const rtError_t errCode)
     }
     Context *curCtx = InnerThreadLocalContainer::GetCurCtx();
     if (curCtx != nullptr) {
-        if (ContextManage::CheckContextIsValid(curCtx, true)) {
-            const ContextProtect tmpCtxCp(curCtx);
+        if (ContextManage::CheckContextIsValid(curCtx)) {
             curCtx->SetContextLastErr(errCode);
         }
     }
     RefObject<Context *> *curRef = InnerThreadLocalContainer::GetCurRef();
     if ((curRef != nullptr) && (curRef->GetVal() != nullptr)) {
-        if (ContextManage::CheckContextIsValid(curRef->GetVal(), true)) {
-            const ContextProtect tmpRefCp(curRef->GetVal());
+        if (ContextManage::CheckContextIsValid(curRef->GetVal())) {
             curRef->GetVal()->SetContextLastErr(errCode);
         }
     }
@@ -324,13 +464,11 @@ void ContextManage::SetGlobalFailureErr(const uint32_t devId, const rtError_t er
     RT_LOG(RT_LOG_ERROR, "SetGlobalFailureErr start, device_id=%u, errcode=%#X", devId, errCode);
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        if (ctx != nullptr && ctx->Device_() != nullptr) {
-            COND_PROC((ctx->Device_()->Id_() != devId) ||
-                (ctx->Device_()->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT), continue);
-            ctx->SetFailureError(errCode);
-            ctx->SetStreamsStatus(errCode);
-            ctx->Device_()->SetDeviceStatus(errCode);
-        }
+        COND_PROC(!IsContextOnDevice(ctx, static_cast<int32_t>(devId)), continue);
+        COND_PROC(ctx->Device_()->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT, continue);
+        ctx->SetFailureError(errCode);
+        ctx->SetStreamsStatus(errCode);
+        ctx->Device_()->SetDeviceStatus(errCode);
     }
     RT_LOG(RT_LOG_ERROR, "SetGlobalFailureErr end");
     return;
@@ -341,10 +479,8 @@ void ContextManage::DeviceSetFaultType(const uint32_t devId, DeviceFaultType dev
     RT_LOG(RT_LOG_ERROR, "SetDeviceFaultType start, device_id=%u", devId);
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        if (ctx != nullptr && ctx->Device_() != nullptr) {
-            COND_PROC((ctx->Device_()->Id_() != devId), continue);
-            ctx->Device_()->SetDeviceFaultType(deviceFaultType);
-        }
+        COND_PROC(!IsContextOnDevice(ctx, static_cast<int32_t>(devId)), continue);
+        ctx->Device_()->SetDeviceFaultType(deviceFaultType);
     }
     RT_LOG(RT_LOG_ERROR, "SetDeviceFaultType end");
     return;
@@ -356,11 +492,9 @@ bool ContextManage::DeviceSetFaultTypeIfNoError(const uint32_t devId, DeviceFaul
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     bool setFaultFlag = false;
     for (Context *const ctx : g_ctxMan.GetSetObj()) {
-        if (ctx != nullptr && ctx->Device_() != nullptr) {
-            COND_PROC((ctx->Device_()->Id_() != devId), continue);
-            if (ctx->Device_()->SetDeviceFaultTypeIfNoError(deviceFaultType)) {
-                setFaultFlag = true;
-            }
+        COND_PROC(!IsContextOnDevice(ctx, static_cast<int32_t>(devId)), continue);
+        if (ctx->Device_()->SetDeviceFaultTypeIfNoError(deviceFaultType)) {
+            setFaultFlag = true;
         }
     }
     return setFaultFlag;
@@ -383,7 +517,7 @@ rtError_t ContextManage::DeviceResourceClean(int32_t devId)
     rtError_t error = RT_ERROR_DEVICE_NULL;
     const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
     for (Context * const ctx : g_ctxMan.GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != static_cast<uint32_t>(devId)), continue);
+        COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         error = ctx->ResourceReset();
         break;
     }

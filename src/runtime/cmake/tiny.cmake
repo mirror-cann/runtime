@@ -112,7 +112,6 @@ set(common_src_files
 set(libruntime_context_src_files
     ${RUNTIME_CORE_DIR}/src/context/context.cc
     ${RUNTIME_CORE_DIR}/src/context/context_manage.cc
-    ${RUNTIME_CORE_DIR}/src/context/context_protect.cc
 )
 
 set(libruntime_stream_common_src_files

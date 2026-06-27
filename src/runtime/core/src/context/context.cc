@@ -93,6 +93,26 @@ bool ShouldRestoreStreamAfterTearDownFailure(
     return !willDeleteOnTearDown;
 }
 
+const char_t *ContextStateToString(const ContextState state)
+{
+    switch (state) {
+        case ContextState::CTX_STATE_NOT_INITIALIZED:
+            return "CTX_STATE_NOT_INITIALIZED";
+        case ContextState::CTX_STATE_INITIALIZING:
+            return "CTX_STATE_INITIALIZING";
+        case ContextState::CTX_STATE_ACTIVE:
+            return "CTX_STATE_ACTIVE";
+        case ContextState::CTX_STATE_FINALIZING:
+            return "CTX_STATE_FINALIZING";
+        case ContextState::CTX_STATE_FINALIZED:
+            return "CTX_STATE_FINALIZED";
+        case ContextState::CTX_STATE_DEINITIALIZING:
+            return "CTX_STATE_DEINITIALIZING";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 rtError_t CheckMemoryParam(const rtDebugMemoryParam_t *const param)
 {
     static const std::map<rtDebugMemoryType_t, uint64_t> BUFFER_SIZE = {
@@ -219,9 +239,12 @@ Context::Context(Device * const ctxDevice, const bool primaryCtx)
       moduleAllocator_(nullptr),
       isPrimary_(primaryCtx),
       taskGenCallback_(nullptr),
-      count_(0U),
+      threadRefCount_(0U),
       isNeedDelete_(false),
       tearDownStatus_(TEARDOWN_NOT_EXECUTE),
+      lifecycleState_(ContextState::CTX_STATE_NOT_INITIALIZED),
+      deleteScheduled_(false),
+      resourcesReleased_(false),
       infMode_(true),
       failureError_(RT_ERROR_NONE),
       lastErr_(ACL_RT_SUCCESS),
@@ -236,6 +259,26 @@ Context::Context(Device * const ctxDevice, const bool primaryCtx)
 
 Context::~Context()
 {
+    ReleaseResourcesAfterTearDown();
+}
+
+void Context::ReleaseResourcesAfterTearDown()
+{
+    bool expected = false;
+    if (!resourcesReleased_.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+        return;
+    }
+    SetState(ContextState::CTX_STATE_DEINITIALIZING, "ReleaseResourcesAfterTearDownBegin");
+    ReleaseModulesAfterTearDown();
+    ReleaseOverflowAddrAfterTearDown();
+    ResetCallbackAfterTearDown();
+    ReleaseDeviceAfterTearDown();
+    ResetResourceFieldsAfterTearDown();
+    SetState(ContextState::CTX_STATE_NOT_INITIALIZED, "ReleaseResourcesAfterTearDownDone");
+}
+
+void Context::ReleaseModulesAfterTearDown()
+{
     uint32_t i = 0U;
     while ((i < Runtime::maxProgramNum_) && (moduleAllocator_ != nullptr)) {
         if (!moduleAllocator_->CheckIdValid(i)) {
@@ -245,22 +288,94 @@ Context::~Context()
         ReleaseModule(i);
         i++;
     }
+}
 
-    if (overflowAddr_ != nullptr) {
+void Context::ReleaseOverflowAddrAfterTearDown()
+{
+    if ((overflowAddr_ != nullptr) && (device_ != nullptr)) {
         const rtError_t error = device_->Driver_()->DevMemFree(overflowAddr_, device_->Id_());
         COND_LOG(error != RT_ERROR_NONE, "overflowAddr DevMemFree failed, retCode=%#x.", error);
-        overflowAddr_ = nullptr;
-        overflowAddrOffset_ = 0ULL;
     }
+    overflowAddr_ = nullptr;
+    overflowAddrOffset_ = INVALID_CONTEXT_OVERFLOW_OFFSET;
     sysParamOpt_.clear();
-    DestroyContextCallBackThread();
-    Runtime::Instance()->DeviceRelease(device_, isForceReset_);
+}
 
+void Context::ResetCallbackAfterTearDown()
+{
+    DestroyContextCallBackThread();
+    callBackThreadExist_.Set(false);
+    threadCallBack_.callBackThreadRunFlag_ = false;
+    callBackThreadId_ = 0U;
+}
+
+void Context::ReleaseDeviceAfterTearDown()
+{
+    if (defaultStream_ != nullptr) {
+        defaultStream_->SetContext(nullptr);
+    }
+    Runtime * const runtime = Runtime::Instance();
+    if ((device_ != nullptr) &&
+        (IS_SUPPORT_CHIP_FEATURE(device_->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU))) {
+        runtime->XpuDeviceRelease(device_);
+    } else {
+        runtime->DeviceRelease(device_, isForceReset_);
+    }
+}
+
+void Context::ResetResourceFieldsAfterTearDown()
+{
     DELETE_O(moduleAllocator_);
 
     defaultStream_ = nullptr;
     onlineStream_ = nullptr;
+    models_.clear();
+    streams_.clear();
     device_ = nullptr;
+    containAicpuExecuteModel_ = false;
+    failureError_.Set(RT_ERROR_NONE);
+    lastErr_.Set(ACL_RT_SUCCESS);
+    captureMode_ = RT_STREAM_CAPTURE_MODE_MAX;
+    (void)memset_s(captureModeRefNum_, sizeof(captureModeRefNum_), 0, sizeof(captureModeRefNum_));
+    isForceReset_ = false;
+    ctxMode_ = CONTINUE_ON_FAILURE;
+    tearDownStatus_.store(TEARDOWN_NOT_EXECUTE, std::memory_order_release);
+    deleteScheduled_.store(false, std::memory_order_release);
+}
+
+void Context::LogStateTransition(const ContextState fromState, const ContextState toState,
+    const char_t * const trigger) const
+{
+    if (fromState == toState) {
+        return;
+    }
+
+    const char_t * const triggerName = (trigger == nullptr) ? "unknown" : trigger;
+    const uint32_t deviceId = (device_ == nullptr) ? MAX_UINT32_NUM : device_->Id_();
+    const uint32_t tsId = (device_ == nullptr) ? MAX_UINT32_NUM : device_->DevGetTsId();
+    RT_LOG(RT_LOG_DEBUG,
+        "Context state transition, ctx=%p, primary=%d, device_id=%u, ts_id=%u"
+        ", trigger=%s, from=%s(%u), to=%s(%u).",
+        this, static_cast<int32_t>(isPrimary_), deviceId, tsId,
+        triggerName, ContextStateToString(fromState), static_cast<uint32_t>(fromState),
+        ContextStateToString(toState), static_cast<uint32_t>(toState));
+}
+
+bool Context::TrySwitchState(const ContextState expectedState, const ContextState targetState,
+    const char_t * const trigger)
+{
+    ContextState expected = expectedState;
+    const bool switched = lifecycleState_.compare_exchange_strong(expected, targetState, std::memory_order_acq_rel);
+    if (switched) {
+        LogStateTransition(expectedState, targetState, trigger);
+    }
+    return switched;
+}
+
+void Context::SetState(const ContextState state, const char_t * const trigger)
+{
+    const ContextState oldState = lifecycleState_.exchange(state, std::memory_order_acq_rel);
+    LogStateTransition(oldState, state, trigger);
 }
 
 bool Context::ModelIsExistInContext(const Model *mdl)
@@ -411,6 +526,7 @@ void Context::ProcessReportFastRingBuffer() const
 
 rtError_t Context::Init()
 {
+    tearDownStatus_.store(TEARDOWN_NOT_EXECUTE, std::memory_order_release);
     moduleAllocator_ = new (std::nothrow) ObjAllocator<Module *>(DEFAULT_PROGRAM_NUMBER,
                                                                  Runtime::maxProgramNum_,
                                                                  true);
@@ -499,6 +615,7 @@ rtError_t Context::Setup()
 {
     rtError_t error;
     const rtChipType_t chipType = device_->GetChipType();
+    SetState(ContextState::CTX_STATE_INITIALIZING, "ContextSetupBegin");
 
     error = Init();
     ERROR_RETURN(error, "Failed to init context, retCode=%#x.", error);
@@ -540,11 +657,16 @@ rtError_t Context::Setup()
             error != RT_ERROR_NONE, error, "Failed to synchronize default stream, retCode=%#x.", error);
     }
 
-    return OnlineStreamInit(chipType);
+    error = OnlineStreamInit(chipType);
+    if (error == RT_ERROR_NONE) {
+        SetState(ContextState::CTX_STATE_ACTIVE, "ContextSetupSuccess");
+    }
+    return error;
 }
 
 rtError_t Context::TearDown()
 {
+    (void)TrySwitchState(ContextState::CTX_STATE_ACTIVE, ContextState::CTX_STATE_FINALIZING, "ContextTearDown");
     const Stream * const defaultStream = defaultStream_;
     NULL_PTR_RETURN_MSG(defaultStream, RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL);
 
@@ -1662,6 +1784,22 @@ Module *Context::GetModule(Program * const prog)
     return mdl;
 }
 
+Module *Context::GetModuleWithoutCreate(const Program * const prog)
+{
+    const uint32_t progId = prog->Id_();
+    if (progId >= Runtime::maxProgramNum_) {
+        return nullptr;
+    }
+
+    const std::unique_lock<std::mutex> taskLock(moduleLock_);
+    Module ** const module = moduleAllocator_->GetDataToItemApplied(progId);
+    if (module == nullptr) {
+        RT_LOG(RT_LOG_ERROR, "Get module pool NULL by id:%u", progId);
+        return nullptr;
+    }
+    return *module;
+}
+
 void Context::PutModule(Module * const delModule)
 {
     if (likely(delModule != nullptr)) {
@@ -1690,14 +1828,40 @@ rtError_t Context::ReleaseModule(const uint32_t id)
 
 bool Context::TearDownIsCanExecute()
 {
-    // for multi-thread
-    // only one thread can execute context teardown.
-    TearDownStatus expected = TEARDOWN_NOT_EXECUTE;
-    TearDownStatus desired = TEARDOWN_WORKING;
-    if (!tearDownStatus_.compare_exchange_strong(expected, desired)) {
-        expected = TEARDOWN_ERROR;
-        return tearDownStatus_.compare_exchange_strong(expected, desired);
+    // For multi-thread: block user access before waiting for in-use refs to drain.
+    TearDownStatus previousStatus = TEARDOWN_NOT_EXECUTE;
+    if (!tearDownStatus_.compare_exchange_strong(previousStatus, TEARDOWN_WORKING)) {
+        previousStatus = TEARDOWN_ERROR;
+        if (!tearDownStatus_.compare_exchange_strong(previousStatus, TEARDOWN_WORKING)) {
+            return false;
+        }
     }
+
+    if (!TrySwitchState(ContextState::CTX_STATE_ACTIVE, ContextState::CTX_STATE_FINALIZING, "TearDownIsCanExecute")) {
+        tearDownStatus_.store(previousStatus, std::memory_order_release);
+        return false;
+    }
+    return true;
+}
+
+bool Context::TryDeleteIfNeeded()
+{
+    if (isPrimary_ || !GetContextIsNeedDelStatus()) {
+        return false;
+    }
+
+    if (GetThreadRefCount() != 0U) {
+        return false;
+    }
+
+    bool expected = false;
+    if (!deleteScheduled_.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+        return false;
+    }
+
+    SetState(ContextState::CTX_STATE_DEINITIALIZING, "TryDeleteIfNeeded");
+    (void)ContextManage::RemoveContextFromSet(this);
+    delete this;
     return true;
 }
 
@@ -3241,8 +3405,8 @@ bool Context::IsStreamInContext(Stream * const stm)
         }
     }
 
-    // streams_ not include default stream
-    return (DefaultStream_() == stm);
+    // streams_ does not include default/online streams.
+    return (DefaultStream_() == stm) || (OnlineStream_() == stm);
 }
 
 rtError_t Context::ResourceReset(void)

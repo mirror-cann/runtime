@@ -20,7 +20,6 @@
 #define protected public
 #include "runtime.hpp"
 #include "context.hpp"
-#include "context_protect.hpp"
 #include "profiling_task.h"
 #include "cond_op_stream_task.h"
 #include "reduce_task.h"
@@ -59,6 +58,7 @@
 #include "barrier_task.h"
 #include "stream_task.h"
 #include "../../data/elf.h"
+#include "../../common/rt_utest_context_reset_helper.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -105,7 +105,7 @@ protected:
     {
         std::cout << "CloudV2ContextTest TearDown" << std::endl;
         GlobalMockObject::verify();
-        rtDeviceReset(0);
+        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         std::cout << "CloudV2ContextTest TearDown end" << std::endl;
     }
 };
@@ -152,12 +152,19 @@ TEST_F(CloudV2ContextTest, TEAR_DOWN_TEST)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
+    Stream *onlineStream = ctx->onlineStream_;
     ctx->defaultStream_ = NULL;
+    ctx->streams_.clear();
+    ctx->onlineStream_ = nullptr;
 
     error = ctx->TearDown();
     EXPECT_EQ(error, RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL);
 
     ctx->defaultStream_ = stream;
+    ctx->streams_ = streams;
+    ctx->onlineStream_ = onlineStream;
+    ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -1981,129 +1988,6 @@ TEST_F(CloudV2ContextTest, kernel_launch_module_load_failed)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-class ContextConcurrcyTest : public testing::Test
-{
-protected:
-    static void SetUpTestCase()
-    {
-        uint32_t binary[32];
-        rtDevBinary_t devBin;
-
-        devBin.magic = RT_DEV_BINARY_MAGIC_ELF;
-        devBin.version = 2;
-        devBin.data = (void*)elf_o;
-        devBin.length = elf_o_len;
-
-        rtError_t error1, error2;
-        error1 = rtDevBinaryRegister(&devBin, &binHandle_);
-        error2 = rtFunctionRegister(binHandle_, ContextConcurrcyTest::binHandle_, "foo", NULL, 0);
-        if (error1 != RT_ERROR_NONE || error2 != RT_ERROR_NONE)
-        {
-            exit(-1);
-        }
-
-    }
-
-    static void TearDownTestCase()
-    {
-        rtError_t error;
-        error = rtDevBinaryUnRegister(binHandle_);
-        if (error != RT_ERROR_NONE)
-        {
-            exit(-1);
-        }
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-        rtDeviceReset(0);
-    }
-
-public:
-    static void * binHandle_;
-};
-
-void * ContextConcurrcyTest::binHandle_ = NULL;
-
-#define CHECK_ERROR_RETURN(error) do { if (error != RT_ERROR_NONE) { \
-               std::cout<<"ConcurrcyThread errorcode: "<<error<<", errorline: "<<__LINE__<<std::endl; \
-               return error; } } while (0)
-
-class ConcurrcyThread : public ThreadRunnable
-{
-public:
-    ConcurrcyThread()
-    {
-        error_ = RT_ERROR_NONE;
-    }
-
-    static rtError_t TestOnCurrentContext(rtEvent_t event)
-    {
-        rtError_t error;
-        void *args[] = {NULL, NULL, NULL};
-
-        for (uint32_t i = 0; i < 32; i++)
-        {
-            error = rtEventRecord(event, NULL);
-            CHECK_ERROR_RETURN(error);
-
-            error = rtStreamWaitEvent(NULL, event);
-            CHECK_ERROR_RETURN(error);
-
-            error = rtEventSynchronize(event);
-            CHECK_ERROR_RETURN(error);
-
-            error = rtMemcpyAsync(&args, 128, &event, 128, RT_MEMCPY_HOST_TO_DEVICE, NULL);
-            //CHECK_ERROR_RETURN(error);
-
-            error = rtKernelLaunch(ContextConcurrcyTest::binHandle_, 1, args, sizeof(args), NULL, NULL);
-            CHECK_ERROR_RETURN(error);
-
-            error = rtStreamSynchronize(NULL);
-            CHECK_ERROR_RETURN(error);
-        }
-        return RT_ERROR_NONE;
-    }
-
-    void Run(const void *param)
-    {
-        rtEvent_t event;
-        error_ = rtEventCreate(&event);
-        if (error_ != RT_ERROR_NONE)
-            return;
-
-        error_ = rtCtxSetCurrent((rtContext_t)param);
-        if (error_ != RT_ERROR_NONE)
-        {
-            rtEventDestroy(event);
-            return;
-        }
-
-        error_= TestOnCurrentContext(event);
-        {
-            rtEventDestroy(event);
-            return;
-        }
-
-
-        error_ = rtCtxSetCurrent(NULL);
-        {
-            rtEventDestroy(event);
-            return;
-        }
-
-        error_ = rtEventDestroy(event);
-    }
-    rtError_t error_;
-};
-
 TEST_F(CloudV2ContextTest, genmode_notsupport)
 {
     rtContext_t context;
@@ -2517,33 +2401,37 @@ TEST_F(CloudV2ContextTest, NONFAIL_SYNCHRONIZE_TEST)
     Context *ctx;
     RefObject<Context *> *refObject = NULL;
     refObject = (RefObject<Context *> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(0);
+    ASSERT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *originDefaultStream = ctx->defaultStream_;
+    std::list<Stream *> originStreams = ctx->streams_;
     ctx->streams_.clear();
     ctx->defaultStream_ = new Stream(ctx->Device_(), 0);
+    ASSERT_NE(ctx->defaultStream_, nullptr);
+    ctx->defaultStream_->SetContext(ctx);
 
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    if (error != RT_ERROR_NONE) {
+        delete ctx->defaultStream_;
+        ctx->defaultStream_ = originDefaultStream;
+        ctx->streams_ = originStreams;
+        (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(0);
+    }
+    ASSERT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
     stmPtr->failureMode_ = CONTINUE_ON_FAILURE;
     stmPtr->flags_ = 0;
-    ctx->streams_.push_back(stmPtr);
     MOCKER_CPP_VIRTUAL(ctx->defaultStream_, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_STREAM_BASE));
     error = ctx->Synchronize(-1);
-    ctx->streams_.clear();
-    delete ctx->defaultStream_;
-    ctx->defaultStream_ = NULL;
-
     rtStreamDestroy(stm);
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(0);
-}
+    delete ctx->defaultStream_;
+    ctx->defaultStream_ = originDefaultStream;
+    ctx->streams_ = originStreams;
 
-TEST_F(CloudV2ContextTest, ContextProtect_delete)
-{
-    Context *ctx = nullptr;
-    ContextProtect *ctxProtect = new ContextProtect(ctx);
-    EXPECT_NE(ctxProtect, nullptr);
-    delete ctxProtect;
+    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(0);
 }
 
 TEST_F(CloudV2ContextTest, DebugReadAICore_invalid_param)
@@ -2898,6 +2786,7 @@ TEST_F(CloudV2ContextTest, ReduceAsyncV2_test)
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    stream->SetContext(ctx);
 
     int tempMemory;
     auto preVal = stream->taskResMang_;
@@ -2946,6 +2835,7 @@ TEST_F(CloudV2ContextTest, ReduceAsync_test)
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    stream->SetContext(ctx);
 
     int tempMemory;
     auto preVal = stream->taskResMang_;

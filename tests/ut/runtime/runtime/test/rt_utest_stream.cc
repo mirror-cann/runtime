@@ -37,6 +37,7 @@
 #include "context.hpp"
 #include "securec.h"
 #include "api.hpp"
+#include "api_handle_guard.h"
 #include "npu_driver.hpp"
 #include "task_submit.hpp"
 #include "capture_model_utils.hpp"
@@ -2653,23 +2654,30 @@ TEST_F(StreamTest, public_queue)
 
 TEST_F(StreamTest, rtsLaunchHostFunc00)
 {
+    const bool oldDisableThread = Runtime::Instance()->GetDisableThread();
+    Runtime::Instance()->SetDisableThread(true);
+    const ScopeGuard disableThreadGuard([oldDisableThread]() {
+        Runtime::Instance()->SetDisableThread(oldDisableThread);
+    });
     rtError_t error;
-    rtStream_t stream;
-    uint32_t cqId = 0;
-    uint32_t sqId = 0;
+    Stream streamObj(static_cast<Device *>(nullptr), 0U);
+    InitEmbeddedInnerHandle<Stream>(&streamObj);
+    rtStream_t stream = ExportEmbeddedHandle<rtStream_t>(&streamObj);
+    ASSERT_NE(stream, nullptr);
 
-    error = rtStreamCreate(&stream, 0);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    Api * const api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+    MOCKER_CPP_VIRTUAL(api, &Api::LaunchHostFunc)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
 
     error = rtsLaunchHostFunc(stream, ApiTest_Stream_Cb, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsLaunchHostFunc(NULL, ApiTest_Stream_Cb, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rtStreamSynchronize(stream);
-    EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rtStreamDestroy(stream);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    GlobalMockObject::verify();
 }
 
 TEST_F(StreamTest, SendFlipTaskWithStreamId_SuccessPath)

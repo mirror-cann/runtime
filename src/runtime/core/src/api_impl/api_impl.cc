@@ -2270,10 +2270,9 @@ rtError_t ApiImpl::DevFreeStatic(void * const devPtr, Context * const curCtx)
     Driver *curDrv = nullptr;
     Runtime* rt = Runtime::Instance();
     uint32_t id = RT_MAX_DEV_NUM;
-    if (!ContextManage::CheckContextIsValid(curCtx, true)) {
+    if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
         id = curCtx->Device_()->Id_();
     }
@@ -2298,10 +2297,9 @@ rtError_t ApiImpl::DevDvppFree(void * const devPtr)
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
     uint32_t id = RT_MAX_DEV_NUM;
-    if (!ContextManage::CheckContextIsValid(curCtx, true)) {
+    if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER); // stub id???
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
         id = curCtx->Device_()->Id_();
     }
@@ -2405,10 +2403,9 @@ rtError_t ApiImpl::HostFree(void * const hostPtr)
 {
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
-    if (!ContextManage::CheckContextIsValid(curCtx, true)) {
+    if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
     }
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
@@ -2560,16 +2557,14 @@ rtError_t ApiImpl::ManagedMemFree(const void * const ptr)
 
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
-    if (!ContextManage::CheckContextIsValid(curCtx, true)) {
+    if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
     }
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
 
-    if (ContextManage::CheckContextIsValid(curCtx, true)) {
-        const ContextProtect cp(curCtx);
+    if (ContextManage::CheckContextIsValid(curCtx)) {
         if (curCtx->Device_()->IsSPM(ptr)) {
             return curCtx->Device_()->FreeSPM(ptr);
         }
@@ -3140,10 +3135,9 @@ rtError_t ApiImpl::PointerGetAttributes(rtPointerAttributes_t * const attributes
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
 
-    if (!ContextManage::CheckContextIsValid(curCtx, true)) {
+    if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
     }
     return curDrv->PointerGetAttributes(attributes, ptr);
@@ -3154,10 +3148,9 @@ rtError_t ApiImpl::PtrGetAttributes(const void * const ptr, rtPtrAttributes_t * 
     RT_LOG(RT_LOG_DEBUG, "get memory attribute.");
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
-    if (!ContextManage::CheckContextIsValid(curCtx, true)) {
+    if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
     }
     rtError_t error = curDrv->PtrGetAttributes(ptr, attributes);
@@ -3302,7 +3295,7 @@ rtError_t ApiImpl::GetDevice(int32_t * const devId)
 {
     Runtime * const rtInstance = Runtime::Instance();
     Context * const curCtx = rtInstance->CurrentContext();
-    const bool flag = ContextManage::CheckContextIsValid(curCtx, true);
+    const bool flag = ContextManage::CheckContextIsValid(curCtx);
     if (!flag) {
         if (rtInstance->GetSetDefaultDevIdFlag()) {
             const uint32_t drvDeviceId = rtInstance->GetDefaultDeviceId();
@@ -3316,8 +3309,6 @@ rtError_t ApiImpl::GetDevice(int32_t * const devId)
         }
         return RT_ERROR_CONTEXT_NULL;
     }
-    const ContextProtect cp(curCtx);
-
     uint32_t deviceId = curCtx->UserDeviceId();
     rtError_t error = RT_ERROR_NONE;
     COND_PROC(deviceId == MAX_UINT32_NUM,
@@ -3562,6 +3553,15 @@ void ApiImpl::DumpTimeStampPart2() const
     TIMESTAMP_DUMP(rtEventSynchronize);
     TIMESTAMP_DUMP(rtHostRegisterV2);
     TIMESTAMP_DUMP(rtHostGetDevicePointer);
+}
+
+static rtError_t DestroyInactiveContext(Context * const ctx)
+{
+    COND_RETURN_ERROR_MSG_INNER(ctx == nullptr, RT_ERROR_CONTEXT_NULL, "Context destroy failed, ctx is null.");
+    COND_RETURN_ERROR_MSG_INNER(ctx->GetContextIsNeedDelStatus(), RT_ERROR_CONTEXT_DEL, "Ctx is destroying.");
+    ctx->SetContextDeleteStatus();
+    (void)ctx->TryDeleteIfNeeded();
+    return RT_ERROR_NONE;
 }
 
 rtError_t ApiImpl::DeviceReset(const int32_t devId, const bool isForceReset)
@@ -3906,31 +3906,55 @@ rtError_t ApiImpl::ContextCreate(Context ** const inCtx, const int32_t devId)
 
 rtError_t ApiImpl::ContextDestroy(Context * const inCtx)
 {
-    CHECK_CONTEXT_VALID_WITH_RETURN(inCtx, RT_ERROR_CONTEXT_NULL);
-
+    rtError_t validError = RT_ERROR_CONTEXT_NULL;
+    if (!ContextManage::CheckContextIsValid(inCtx, ContextAccessMode::USER, &validError)) {
+        COND_RETURN_ERROR_MSG_INNER(!ContextManage::AcquireInactiveContextForDestroy(inCtx, &validError), validError,
+            "Context destroy failed, ctx=%p.", inCtx);
+        return DestroyInactiveContext(inCtx);
+    }
     COND_RETURN_AND_MSG_OUTER(inCtx->IsPrimary(), RT_ERROR_CONTEXT_NULL, ErrorCode::EE1017,
         __func__, "context", "Primary context cannot be destroyed explicitly");
+    COND_RETURN_AND_MSG_OUTER(inCtx->GetContextIsNeedDelStatus(), RT_ERROR_CONTEXT_DEL, ErrorCode::EE1017,
+        __func__, "context", "Context is being destroyed");
     COND_RETURN_AND_MSG_OUTER(!inCtx->TearDownIsCanExecute(), RT_ERROR_CONTEXT_DEL, ErrorCode::EE1017,
         __func__, "context", "Context is being destroyed");
+    {
+        Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+        const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
+        Runtime::Instance()->SetInternalThreadContext(inCtx);
+        const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess, inCtx]() {
+            InnerThreadLocalContainer::SetCurCtx((previousCtx == inCtx) ? nullptr : previousCtx, previousInternalAccess);
+        });
 
-    /* first call back default stream, make sure that the slave stream is destroyed behind the mainstream */
-    if (inCtx->Device_()->PrimaryStream_() != inCtx->DefaultStream_()) {
+        /* first call back default stream, make sure that the slave stream is destroyed behind the mainstream */
+        if (inCtx->Device_()->PrimaryStream_() != inCtx->DefaultStream_()) {
             StreamStateCallbackManager::Instance().Notify(inCtx->DefaultStream_(), false);
+        }
+        const rtError_t error = inCtx->TearDown();
+        if (error != RT_ERROR_NONE) {
+            inCtx->SetTearDownExecuteResult(TEARDOWN_ERROR);
+            ERROR_RETURN_MSG_INNER(error, "Failed to destroy context because TearDown failed, retCode=%#x",
+                static_cast<uint32_t>(error));
+        }
+        inCtx->SetTearDownExecuteResult(TEARDOWN_SUCCESS);
+        inCtx->SetContextDeleteStatus();
     }
-    const rtError_t error = inCtx->TearDown();
-    if (error != RT_ERROR_NONE) {
-        inCtx->SetTearDownExecuteResult(TEARDOWN_ERROR);
-        RT_LOG(RT_LOG_ERROR, "Failed to destroy context because TearDown failed, retCode=%#x", static_cast<uint32_t>(error));
-        return error;
-    }
-    inCtx->SetTearDownExecuteResult(TEARDOWN_SUCCESS);
-    (void)ContextManage::EraseContextAndDeleteIfNeeded(inCtx);
+    (void)inCtx->TryDeleteIfNeeded();
     return RT_ERROR_NONE;
 }
 
 rtError_t ApiImpl::ContextSetCurrent(Context * const inCtx)
 {
     RT_LOG(RT_LOG_INFO, "set context=%p", inCtx);
+    if (inCtx == nullptr) {
+        InnerThreadLocalContainer::SetCurCtx(nullptr);
+        InnerThreadLocalContainer::SetCurRef(nullptr);  // must be null for context switch
+        return RT_ERROR_NONE;
+    }
+
+    rtError_t validError = RT_ERROR_CONTEXT_NULL;
+    COND_RETURN_ERROR_MSG_INNER(!ContextManage::CheckContextIsValid(inCtx, ContextAccessMode::USER,
+        &validError), validError, "Set current context failed, ctx=%p.", inCtx);
     InnerThreadLocalContainer::SetCurCtx(inCtx);
     InnerThreadLocalContainer::SetCurRef(nullptr);  // must be null for context switch
     return RT_ERROR_NONE;
@@ -5301,7 +5325,7 @@ rtError_t ApiImpl::LabelListCpy(Label ** const lbl, const uint32_t labelNumber, 
 
     for (uint32_t lbIdx = 0U; lbIdx < labelNumber; lbIdx++) {
         if (lbl[lbIdx]->Context_() != curCtx) {
-            std::string extendInfo = RtFmtMsg("label_id=%u, label_ctx=%p, cur_ctx=%p.", 
+            std::string extendInfo = RtFmtMsg("label_id=%u, label_ctx=%p, cur_ctx=%p.",
                 lbl[lbIdx]->Id_(), lbl[lbIdx]->Context_(), curCtx);
             RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1010, __func__, "label[" + std::to_string(lbIdx) + "]", extendInfo);
             return RT_ERROR_LABEL_CONTEXT;
@@ -6750,9 +6774,8 @@ rtError_t ApiImpl::BarrierTaskLaunch(const rtBarrierTaskInfo_t * const taskInfo,
 rtError_t ApiImpl::SetDeviceSatMode(const rtFloatOverflowMode_t floatOverflowMode)
 {
     Context * const curCtx = CurrentContext();
-    const bool isValidFlag = ContextManage::CheckContextIsValid((curCtx), true);
+    const bool isValidFlag = ContextManage::CheckContextIsValid((curCtx));
     if (isValidFlag) {
-        const ContextProtect cp(curCtx);
         curCtx->Device_()->SetSatMode(floatOverflowMode);
         RT_LOG(RT_LOG_INFO, "Set saturation mode to %u for device %u", floatOverflowMode, curCtx->Device_()->Id_());
     }

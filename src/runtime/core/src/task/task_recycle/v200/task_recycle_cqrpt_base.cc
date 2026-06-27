@@ -293,7 +293,7 @@ static void SaveCurrCtxForRecyleThread(Device * const dev, uint32_t streamId)
     Stream *stm = nullptr;
     (void)dev->GetStreamSqCqManage()->GetStreamById(streamId, &stm);
     if ((stm != nullptr) && (stm->IsSeparateSendAndRecycle())) {
-        InnerThreadLocalContainer::SetCurCtx(stm->Context_());
+        Runtime::Instance()->SetInternalThreadContext(stm->Context_());
     }
 
     return;

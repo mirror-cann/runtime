@@ -3957,29 +3957,40 @@ protected:
     virtual void TearDown()
     {
         Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        stream_->SetSqBaseAddr(oldSqAddr_);
-        MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_ ));
-        taskResMang->ResetTaskRes();
-        MOCKER_CPP_VIRTUAL(driver,
-            &Driver::GetSqHead).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
-            .will(returnValue(RT_ERROR_NONE));
-        Stream *dft = stream_->Context_()->DefaultStream_();
-        taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(dft)->taskResMang_ ));
-        taskResMang->ResetTaskRes();
-        while (stream_->GetPendingNum() > 0) {
-            stream_->pendingNum_.Sub(1U);
+        Context * const streamCtx = (stream_ != nullptr) ? stream_->Context_() : nullptr;
+        if (streamCtx != nullptr) {
+            (void)rtCtxSetCurrent(streamCtx);
         }
-        while (engine_->GetPendingNum() > 0) {
-            engine_->pendingNum_.Set(0U);
-        }
+        if (stream_ != nullptr) {
+            stream_->SetSqBaseAddr(oldSqAddr_);
+            MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
+            TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_ ));
+            taskResMang->ResetTaskRes();
+            MOCKER_CPP_VIRTUAL(driver,
+                &Driver::GetSqHead).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),
+                outBound(taskResMang->GetTaskPosTail()))
+                .will(returnValue(RT_ERROR_NONE));
+            Stream *dft = stream_->Context_()->DefaultStream_();
+            taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(dft)->taskResMang_ ));
+            taskResMang->ResetTaskRes();
+            while (stream_->GetPendingNum() > 0) {
+                stream_->pendingNum_.Sub(1U);
+            }
+            while ((engine_ != nullptr) && (engine_->GetPendingNum() > 0)) {
+                engine_->pendingNum_.Set(0U);
+            }
 
-        rtStreamDestroy(streamHandle_);
+            rtStreamDestroy(streamHandle_);
+        }
         free(davidSqe_);
         davidSqe_ = nullptr;
         stream_ = nullptr;
+        streamHandle_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+        if (device_ != nullptr) {
+            ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+            device_ = nullptr;
+        }
         ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
 
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetRunMode)
@@ -3991,6 +4002,13 @@ protected:
     }
 
 public:
+    void MarkPrimaryContextReset()
+    {
+        streamHandle_ = nullptr;
+        stream_ = nullptr;
+        engine_ = nullptr;
+    }
+
     Device *device_ = nullptr;
     Stream *stream_ = nullptr;
     Engine *engine_ = nullptr;
@@ -5853,6 +5871,7 @@ TEST_F(ApiDavidTest, TEST_RT_DEV_SETLIMIT_01)
 
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    MarkPrimaryContextReset();
 }
 
 uint32_t gget_times = 0U;
@@ -5895,6 +5914,7 @@ TEST_F(ApiDavidTest, TEST_RT_DEV_SETLIMIT_02)
     rt->DeviceRelease(device);
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    MarkPrimaryContextReset();
     gget_times = 0U;
 }
 
@@ -5926,6 +5946,7 @@ TEST_F(ApiDavidTest, TEST_RT_DEV_SETLIMIT_03)
     rt->DeviceRelease(device);
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    MarkPrimaryContextReset();
     gget_times = 0U;
 }
 
@@ -5957,6 +5978,7 @@ TEST_F(ApiDavidTest, TEST_RT_DEV_SETLIMIT_04)
     rt->DeviceRelease(device);
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    MarkPrimaryContextReset();
     gget_times = 0U;
 }
 
@@ -6024,6 +6046,7 @@ TEST_F(ApiDavidTest, TEST_RT_DEV_SETLIMIT_REPEAT)
     rt->DeviceRelease(device);
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    MarkPrimaryContextReset();
     gset_times = 0U;
     gget_times = 0U;
 }
@@ -6628,7 +6651,7 @@ TEST_F(ApiDavidTest, DavidrtDeviceTaskAbort_01)
     error = rtDeviceTaskAbort(0, 0);
 
     EXPECT_EQ(error, RT_ERROR_NONE);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceQuery_01)
@@ -6656,7 +6679,7 @@ TEST_F(ApiDavidTest, DavidDeviceQuery_02)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceQuery(0, OP_QUERY_ABORT_STATUS, 100);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceQuery_09)
@@ -6672,7 +6695,7 @@ TEST_F(ApiDavidTest, DavidDeviceQuery_09)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceQuery(0, OP_QUERY_RECOVER_STATUS, 500);
     EXPECT_EQ(error, RT_ERROR_WAIT_TIMEOUT);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceQuery_10)
@@ -6688,7 +6711,7 @@ TEST_F(ApiDavidTest, DavidDeviceQuery_10)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceQuery(10, OP_QUERY_RECOVER_STATUS, 100);
     EXPECT_EQ(error, RT_ERROR_CONTEXT_NULL);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceQuery_03)
@@ -6704,7 +6727,7 @@ TEST_F(ApiDavidTest, DavidDeviceQuery_03)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceQuery(0, OP_QUERY_RECOVER_STATUS, 100);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 // sleep 5
@@ -6721,7 +6744,7 @@ TEST_F(ApiDavidTest, DavidDeviceQuery_04)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceQuery(0, OP_QUERY_RECOVER_STATUS, 100);
     EXPECT_EQ(error, RT_ERROR_WAIT_TIMEOUT);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceKill_01)
@@ -6737,7 +6760,7 @@ TEST_F(ApiDavidTest, DavidDeviceKill_01)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceKill(0, OP_ABORT_APP, 100);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceKill_02)
@@ -6753,7 +6776,7 @@ TEST_F(ApiDavidTest, DavidDeviceKill_02)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceKill(0, OP_RECOVER_APP, 100);
     EXPECT_EQ(error, RT_ERROR_TSFW_ILLEGAL_PARAM);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidDeviceKill_03)
@@ -6769,7 +6792,7 @@ TEST_F(ApiDavidTest, DavidDeviceKill_03)
     .will(returnValue(DRV_ERROR_NONE));
     error = DavidDeviceKill(0, OP_RECOVER_APP, 100);
     EXPECT_EQ(error, RT_ERROR_WAIT_TIMEOUT);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, DavidrtDeviceTaskAbort_05)
@@ -6792,7 +6815,7 @@ TEST_F(ApiDavidTest, DavidrtDeviceTaskAbort_05)
 
     EXPECT_EQ(error, ACL_ERROR_RT_WAIT_TIMEOUT);
     device_->SetDeviceStatus(RT_ERROR_NONE);
-    rtCtxDestroy(&ctx);
+    rtCtxDestroy(ctx);
 }
 
 TEST_F(ApiDavidTest, test_event_kinds_task_on_david)
@@ -8773,6 +8796,8 @@ TEST_F(ApiDavidTest, StreamLaunchKernel_aclgraph_update)
     error = impl.KernelLaunch(&function_, 1 /* coredim */, &wwargsInfo, stream, nullptr, false);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
+    error = rtCtxDestroy(current);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtDevBinaryUnRegister(binHandle_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -10188,6 +10213,7 @@ TEST_F(ApiDavidTest, GetNotifyAddressApi)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
+    MarkPrimaryContextReset();
 }
 
 

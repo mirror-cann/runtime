@@ -229,6 +229,7 @@ private:
     std::mutex mutex_;
     Device *device_;
     void *deviceRingBufferAddr_;
+    bool stopTaskSent_{false};
     std::mutex fastRingbufferMutex_;
     void *fastRingBufferAddr_{nullptr};
     size_t fastRingBufferSize_{DEVICE_FAST_RINGBUFFER_SIZE};

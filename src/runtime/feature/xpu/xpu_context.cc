@@ -25,12 +25,12 @@ XpuContext::XpuContext(Device *const ctxDevice, const bool primaryCtx)
 XpuContext::~XpuContext()
 {
     RT_LOG(RT_LOG_EVENT, "~xpu context.");
-    Runtime::Instance()->XpuDeviceRelease(Device_());
-    device_ = nullptr;
+    ReleaseResourcesAfterTearDown();
 }
 
 rtError_t XpuContext::TearDown()
 {
+    (void)TrySwitchState(ContextState::CTX_STATE_ACTIVE, ContextState::CTX_STATE_FINALIZING, "XpuContextTearDown");
     std::unique_lock<std::mutex> taskLock(streamLock_);
     for (Stream * const tdStream : StreamList_()) {
         RT_LOG(RT_LOG_INFO, "Tear down stream abandon, stream_id=%d.", tdStream->Id_());
@@ -55,7 +55,9 @@ rtError_t XpuContext::TearDownStream(Stream *stm, bool flag) const
 
 rtError_t XpuContext::Setup()
 {
+    SetState(ContextState::CTX_STATE_INITIALIZING);
     SetCtxMode(STOP_ON_FAILURE);
+    SetState(ContextState::CTX_STATE_ACTIVE);
     return RT_ERROR_NONE;
 }
 

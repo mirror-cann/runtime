@@ -35,25 +35,20 @@
 #include "profiler_struct.hpp"
 #include "task_to_sqe.hpp"
 #include "context_manage.hpp"
-#include "context_protect.hpp"
 #include "rts/rts.h"
 #include "mmpa_linux.h"
 #include "cond_handle.hpp"
 
 #define CHECK_CONTEXT_VALID_WITH_RETURN(tmpCtx, ERRCODE) \
     { \
-        const bool isValidFlag = ContextManage::CheckContextIsValid((tmpCtx), true); \
+        const bool isValidFlag = ContextManage::CheckContextIsValid((tmpCtx)); \
         COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, !isValidFlag, (ERRCODE), "ctx is NULL!"); \
-    } \
-    const ContextProtect tmpCtx##Cp(tmpCtx);
-
+    }
 #define CHECK_CONTEXT_VALID_WITH_PROC_RETURN(tmpCtx, ERRCODE, PROC) \
     { \
-        const bool flag = ContextManage::CheckContextIsValid((tmpCtx), true); \
+        const bool flag = ContextManage::CheckContextIsValid((tmpCtx)); \
         COND_PROC_RETURN_WARN(!flag, (ERRCODE), PROC, "ctx is NULL!"); \
-    } \
-    const ContextProtect tmpCtx##Cp(tmpCtx);
-
+    }
 #define RT_STARS_MODEL_RDMADB_TASK_NUM (2U)
 namespace cce {
 namespace runtime {
@@ -78,6 +73,21 @@ enum TearDownStatus {
     TEARDOWN_WORKING       = 1,      // TDT threads is working
     TEARDOWN_ERROR         = 2,      // TDT threads begin to stop
     TEARDOWN_SUCCESS       = 3       // TDT threads stopped
+};
+
+enum class ContextState : uint8_t {
+    /* Not set up, or reset and waiting for reuse. */
+    CTX_STATE_NOT_INITIALIZED = 0U,
+    /* Setup is running; only internal paths may access. */
+    CTX_STATE_INITIALIZING = 1U,
+    /* Ready for user API access. */
+    CTX_STATE_ACTIVE = 2U,
+    /* Teardown is running; user API access is blocked. */
+    CTX_STATE_FINALIZING = 3U,
+    /* Teardown finished, resources are not fully released yet. */
+    CTX_STATE_FINALIZED = 4U,
+    /* Releasing resources or deleting the context. */
+    CTX_STATE_DEINITIALIZING = 5U,
 };
 
 constexpr uint64_t MEM_BLOCK_SIZE = 64ULL * 1024ULL * 1024ULL; // 64MB:64 * 1024 * 1024
@@ -312,21 +322,7 @@ public:
         }
     }
 
-    Module *GetModuleWithoutCreate(const Program * const prog)
-    {
-        const uint32_t progId = prog->Id_();
-        if (progId >= Runtime::maxProgramNum_) {
-            return nullptr;
-        }
-
-        const std::unique_lock<std::mutex> taskLock(moduleLock_);
-        Module ** const module = moduleAllocator_->GetDataToItemApplied(progId);
-        if (module == nullptr) {
-            RT_LOG(RT_LOG_ERROR, "Get module pool NULL by id:%u", progId);
-            return nullptr;
-        }
-        return *module;
-    }
+    Module *GetModuleWithoutCreate(const Program * const prog);
 
     Module *GetModule(Program * const prog);
     void PutModule(Module * const delModule);
@@ -361,30 +357,71 @@ public:
 
     rtError_t LaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, Stream * const stm, const void *reserve) const;
 
-    void ContextInUse()
+    void ContextThreadBind()
     {
-        count_++;
+        (void)threadRefCount_.fetch_add(1U, std::memory_order_acq_rel);
     }
 
-    uint64_t ContextOutUse()
+    uint64_t ContextThreadUnbind()
     {
-        return --count_;
+        uint64_t oldCount = threadRefCount_.load(std::memory_order_acquire);
+        while (oldCount != 0U) {
+            if (threadRefCount_.compare_exchange_weak(oldCount, oldCount - 1U, std::memory_order_acq_rel)) {
+                return oldCount - 1U;
+            }
+        }
+        return 0U;
     }
 
-    uint64_t GetCount() const
+    uint64_t GetThreadRefCount() const
     {
-        return count_;
+        return threadRefCount_.load(std::memory_order_acquire);
+    }
+
+    void ResetThreadRefCount()
+    {
+        threadRefCount_.store(0U, std::memory_order_release);
     }
 
     void SetContextDeleteStatus()
     {
         isNeedDelete_.Set(true);
     }
-
     bool GetContextIsNeedDelStatus() const
     {
         return isNeedDelete_.Value();
     }
+
+    ContextState GetState() const
+    {
+        return lifecycleState_.load(std::memory_order_acquire);
+    }
+
+    bool IsStateAccessible(const ContextAccessMode accessMode) const
+    {
+        const ContextState state = GetState();
+        if (state == ContextState::CTX_STATE_ACTIVE) {
+            return true;
+        }
+        if (accessMode != ContextAccessMode::INTERNAL) {
+            return false;
+        }
+        return (state == ContextState::CTX_STATE_INITIALIZING) || (state == ContextState::CTX_STATE_FINALIZING);
+    }
+
+    bool TrySwitchState(const ContextState expectedState, const ContextState targetState,
+        const char_t * const trigger = nullptr);
+
+    void SetState(const ContextState state, const char_t * const trigger = nullptr);
+    void AttachDevice(Device * const device)
+    {
+        device_ = device;
+        resourcesReleased_.store(false, std::memory_order_release);
+    }
+
+    void ReleaseResourcesAfterTearDown();
+
+    bool TryDeleteIfNeeded();
 
     void SetCallBackThreadExistFlag()
     {
@@ -400,6 +437,13 @@ public:
     void SetTearDownExecuteResult(TearDownStatus status)
     {
         tearDownStatus_ = status;
+        if (status == TEARDOWN_ERROR) {
+            (void)TrySwitchState(ContextState::CTX_STATE_FINALIZING, ContextState::CTX_STATE_ACTIVE,
+                "SetTearDownExecuteResultError");
+        } else if (status == TEARDOWN_SUCCESS) {
+            (void)TrySwitchState(ContextState::CTX_STATE_FINALIZING, ContextState::CTX_STATE_FINALIZED,
+                "SetTearDownExecuteResultSuccess");
+        }
     }
 
     void SetINFMode(bool mode)
@@ -574,6 +618,13 @@ private:
     rtError_t DeleteStreamNoThrowForPrimaryRelease(Stream *&stream) const;
     void PrepareModelForDelete(Model *mdl) const;
     void DeleteModelOnContextTearDown(Model *mdl) const;
+    void ReleaseModulesAfterTearDown();
+    void ReleaseOverflowAddrAfterTearDown();
+    void ResetCallbackAfterTearDown();
+    void ReleaseDeviceAfterTearDown();
+    void ResetResourceFieldsAfterTearDown();
+    void LogStateTransition(const ContextState fromState, const ContextState toState,
+        const char_t * const trigger) const;
 
     bool IsStreamNotSync(const uint32_t flags) const;
 
@@ -598,9 +649,12 @@ private:
 
     bool isPrimary_;
     rtTaskGenCallback taskGenCallback_;
-    std::atomic<uint64_t> count_;
+    std::atomic<uint64_t> threadRefCount_;
     Atomic<bool> isNeedDelete_;
     std::atomic<TearDownStatus> tearDownStatus_;
+    std::atomic<ContextState> lifecycleState_;
+    std::atomic<bool> deleteScheduled_;
+    std::atomic<bool> resourcesReleased_;
     bool infMode_;
     void *overflowAddr_ = nullptr;
     uint64_t overflowAddrOffset_ = INVALID_CONTEXT_OVERFLOW_OFFSET;

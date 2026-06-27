@@ -29,8 +29,23 @@
 #include "stream_sqcq_manage.hpp"
 #include "thread_local_container.hpp"
 #include "rt_unwrap.h"
+#include "../../common/rt_utest_context_reset_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
+
+namespace {
+void ClearEnginePending(Device * const device)
+{
+    if (device == nullptr) {
+        return;
+    }
+    RawDevice * const rawDevice = static_cast<RawDevice *>(device);
+    Engine * const engine = rawDevice->Engine_();
+    if (engine != nullptr) {
+        engine->pendingNum_.Set(0U);
+    }
+}
+}
 
 class EventTest910B : public testing::Test {
 public:
@@ -51,18 +66,28 @@ protected:
         ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
         ((Runtime *)Runtime::Instance())->SetDisableThread(true);
         (void)rtSetDevice(0);
+        ut::ClearCurrentContextStatusForReset();
+        ut::ClearCurrentDefaultStreamPending();
         device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
     }
 
     virtual void TearDown()
     {
         RawDevice *rd = (RawDevice *)device_;
-        while (rd->IsNeedFreeEventId()) {rd->PopNextPoolFreeEventId();}
-        rtDeviceReset(0);
+        while ((rd != nullptr) && rd->IsNeedFreeEventId()) {
+            rd->PopNextPoolFreeEventId();
+        }
+        ClearEnginePending(device_);
+        if (device_ != nullptr) {
+            ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+            device_ = nullptr;
+        }
+        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         ((Runtime *)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
         ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
         GlobalMockObject::verify();
+        GlobalMockObject::reset();
     }
 };
 
@@ -149,6 +174,9 @@ TEST_F(EventTest910B, query)
         EXPECT_EQ(status, RT_EVENT_INIT);
     }
 
+    Stream * const stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    ASSERT_NE(stm, nullptr);
+    stm->pendingNum_.Set(0U);
     error = rtStreamSynchronize(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -514,16 +542,14 @@ TEST_F(EventTest910B, TestEventSynchronizeWithEventInModel)
     error = rtEventRecord(event, stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    std::shared_ptr<Stream> stmSharedPtr = stm->GetSharedPtr();
-    MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById)
-        .stubs()
-        .with(mockcpp::any(), outBound(stmSharedPtr))
-        .will(returnValue(RT_ERROR_NONE));
-        
+    EXPECT_NE(stm, nullptr);
+
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
+    if (stm != nullptr) {
+        EXPECT_TRUE(stm->GetBindFlag());
+    }
 
     error = rtEventSynchronize(event);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);

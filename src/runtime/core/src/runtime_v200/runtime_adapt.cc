@@ -65,7 +65,7 @@ Runtime::~Runtime()
             Context *context = priCtxs_[i][j].GetVal(false);
             priCtxs_[i][j].ResetVal();
             if (context != nullptr) {
-                if (context->GetCount() == 0ULL) {
+                if (context->GetThreadRefCount() == 0ULL) {
                     TearDownAndDeleteContextNoThrow(context);
                 }
             }
@@ -73,9 +73,9 @@ Runtime::~Runtime()
     }
     Context *context = GetXpuCtxt();
     if (context != nullptr) {
-        const rtError_t ret = ContextManage::EraseContextFromSet(context);
+        const rtError_t ret = ContextManage::RemoveContextFromSet(context);
         if (ret != RT_ERROR_CONTEXT_NULL) {
-            if (context->ContextOutUse() == 0ULL) {
+            if (context->GetThreadRefCount() == 0ULL) {
                 TearDownAndDeleteContextNoThrow(context);
             }
         }

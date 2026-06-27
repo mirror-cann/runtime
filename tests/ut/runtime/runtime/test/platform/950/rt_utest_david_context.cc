@@ -32,6 +32,7 @@
 #include "rdma_task.h"
 #include "device_sq_cq_pool.hpp"
 #include "sq_addr_memory_pool.hpp"
+#include "../../common/rt_utest_context_reset_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
 
@@ -54,7 +55,7 @@ protected:
 
     virtual void TearDown()
     {
-        rtDeviceReset(0);
+        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         GlobalMockObject::verify();
     }
 public:

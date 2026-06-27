@@ -28,34 +28,27 @@
 #include "xpu_kernel_task.h"
 #include "xpu_aicpu_c.hpp"
 #include "api_impl.hpp"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
 
 using namespace cce::runtime;
-class XpuStreamTest : public testing::Test {
+class XpuStreamSynchronizeTest : public ut::XpuRuntimeMockTest {
 protected:
     static void SetUpTestCase()
     {
-        std::cout << "XpuStreamTest SetUP" << std::endl;
+        std::cout << "XpuStreamSynchronizeTest SetUP" << std::endl;
 
-        std::cout << "XpuStreamTest start" << std::endl;
+        std::cout << "XpuStreamSynchronizeTest start" << std::endl;
     }
 
     static void TearDownTestCase()
     {
-        std::cout << "XpuStreamTest end" << std::endl;
-    }
-
-    virtual void SetUp()
-    {}
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
+        std::cout << "XpuStreamSynchronizeTest end" << std::endl;
     }
 };
 
-TEST_F(XpuStreamTest, Stream_synchronize_null)
+TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_null)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
@@ -74,7 +67,7 @@ TEST_F(XpuStreamTest, Stream_synchronize_null)
     delete result;
 }
 
-TEST_F(XpuStreamTest, Stream_synchronize_fail)
+TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_fail)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
@@ -120,14 +113,15 @@ TEST_F(XpuStreamTest, Stream_synchronize_fail)
     delete kernel;
 }
 
-TEST_F(XpuStreamTest, Stream_synchronize_with_stream_null)
+TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_with_stream_null)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     ApiImpl impl;
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    impl.StreamSynchronize(nullptr, 1000);
-    rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
+    error = impl.StreamSynchronize(nullptr, 1000);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    error = rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
 }

@@ -9,6 +9,7 @@
  */
 #include "snapshot_process_helper.hpp"
 #include "context_data_manage.h"
+#include "context_manage.hpp"
 #include "context.hpp"
 #include "device.hpp"
 #include "runtime.hpp"
@@ -19,12 +20,17 @@
 
 namespace cce {
 namespace runtime {
+
 rtError_t SnapShotPreProcessBackup(ContextDataManage& ctxMan)
 {
     // 做device同步，确保已经没有任务在执行
     rtError_t ret = RT_ERROR_CONTEXT_NULL;
     const ReadProtect wp(&(ctxMan.GetSetRwLock()));
     for (Context* const ctx : ctxMan.GetSetObj()) {
+        // Primary contexts stay in the global set after reset, but their resources have been released.
+        if (!ContextManage::IsActiveContext(ctx)) {
+            continue;
+        }
         ret = ctx->Synchronize(-1); // -1表示永不超时
         ERROR_RETURN(ret, "Synchronize failed, ret=%#x.", ret);
     }
@@ -58,6 +64,9 @@ rtError_t SnapShotResourceRestore(ContextDataManage& ctxMan)
         const ReadProtect wp(&(ctxMan.GetSetRwLock()));
         // 重新申请所有ctx上的stream id/event id/notify id
         for (Context* const ctx : ctxMan.GetSetObj()) {
+            if (!ContextManage::HasActiveDevice(ctx)) {
+                continue;
+            }
             ret = ctx->StreamsTaskClean();
             ERROR_RETURN(ret, "clean stream, ret=%#x.", ret);
             ret = ctx->StreamsRestore();
@@ -101,7 +110,7 @@ rtError_t SnapShotAclGraphRestore(Device* const dev)
     const uint32_t tsId = dev->DevGetTsId();
 
     for (Context* const ctx : ctxMan.GetSetObj()) {
-        if (ctx->Device_()->Id_() != deviceId) {
+        if (!ContextManage::IsActiveContextOnDevice(ctx, deviceId)) {
             continue;
         }
         SpinLock& modelLock = ctx->GetModelLock();
@@ -162,7 +171,7 @@ rtError_t ModelBackup(const int32_t devId)
     ContextDataManage& ctxMan = ContextDataManage::Instance();
     const ReadProtect rp(&ctxMan.GetSetRwLock());
     for (Context* const ctx : ctxMan.GetSetObj()) {
-        if (ctx->Device_()->Id_() != static_cast<uint32_t>(devId)) {
+        if (!ContextManage::IsActiveContextOnDevice(ctx, devId)) {
             continue;
         }
         SpinLock& mdlLock = ctx->GetModelLock();
@@ -205,7 +214,7 @@ rtError_t ModelRestore(const int32_t devId)
     const ReadProtect rp(&ctxMan.GetSetRwLock());
     // loop ctx
     for (Context* const ctx : ctxMan.GetSetObj()) {
-        if (ctx->Device_()->Id_() != static_cast<uint32_t>(devId)) {
+        if (!ContextManage::IsActiveContextOnDevice(ctx, devId)) {
             continue;
         }
         SpinLock& modelLock = ctx->GetModelLock();

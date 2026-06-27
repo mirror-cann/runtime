@@ -31,8 +31,7 @@ rtError_t ApiImpl::MemManagedGetAttr(rtMemManagedRangeAttribute attribute, const
 
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
-    if (ContextManage::CheckContextIsValid(curCtx, true)) {
-        const ContextProtect cp(curCtx);
+    if (ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = curCtx->Device_()->Driver_();
     } else {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
@@ -47,11 +46,10 @@ rtError_t ApiImpl::MemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, si
     Context * const curCtx = CurrentContext();
     Driver *curDrv = nullptr;
 
-    const bool isContextValid = ContextManage::CheckContextIsValid(curCtx, true);
+    const bool isContextValid = ContextManage::CheckContextIsValid(curCtx);
     if (!isContextValid) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
-        const ContextProtect cp(curCtx);
         curDrv = curCtx->Device_()->Driver_();
     }
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);

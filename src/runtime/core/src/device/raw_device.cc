@@ -14,6 +14,7 @@
 #include "device_snapshot.hpp"
 #include "uma_arg_loader.hpp"
 #include "runtime.hpp"
+#include "context_manage.hpp"
 #include "ctrl_stream.hpp"
 #include "stream_sqcq_manage.hpp"
 #include "program.hpp"
@@ -164,6 +165,13 @@ rtError_t RawDevice::SetCurGroupInfo(void)
 
     if (primaryStream_ != nullptr) {
         ctx = primaryStream_->Context_();
+        rtError_t contextError = RT_ERROR_CONTEXT_NULL;
+        if (!ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL, &contextError)) {
+            RT_LOG(RT_LOG_WARNING,
+                "Skip raw device default stream context rebinding because context is invalid, ctx=%p, retCode=%#x.",
+                ctx, static_cast<uint32_t>(contextError));
+            ctx = nullptr;
+        }
         error = primaryStream_->TearDown();
         ERROR_RETURN(error, "Stream teardown failed, retCode=%#x.", static_cast<uint32_t>(error));
         DeleteStream(primaryStream_);
@@ -1219,6 +1227,23 @@ void RawDevice::ProfSwitchEnable()
                                sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     RT_LOG(RT_LOG_INFO, "profiling enabled, device_id=%u", deviceId_);
     return;
+}
+
+rtError_t RawDevice::PrepareStop()
+{
+    if (deviceErrorProc_ == nullptr) {
+        return RT_ERROR_NONE;
+    }
+    if (GetDevRunningState() != static_cast<uint32_t>(DEV_RUNNING_NORMAL)) {
+        return RT_ERROR_NONE;
+    }
+    const rtError_t error = deviceErrorProc_->SendTaskToStopUseRingBuffer();
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_WARNING,
+            "PrepareStop send ringbuffer stop task failed, devId=%u, retCode=%#x. RawDevice::Stop will retry.",
+            deviceId_, static_cast<uint32_t>(error));
+    }
+    return error;
 }
 
 rtError_t RawDevice::Stop()

@@ -30,31 +30,12 @@
 #undef protected
 #include "raw_device.hpp"
 #include "xpu_stub.h"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
-class XpuTaskTest : public testing::Test
-{
-protected:
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
-};
+class XpuTaskTest : public ut::XpuRuntimeMockTest {};
+class XpuTaskPureTest : public testing::Test {};
 
 drvError_t drvGetPlatformInfo_online7(uint32_t *info)
 {
@@ -159,7 +140,7 @@ TEST_F(XpuTaskTest, xpu_task_test_04)
     delete result;
 }
 
-TEST_F(XpuTaskTest, xpu_task_test_05)
+TEST_F(XpuTaskPureTest, xpu_task_test_05)
 {
     const char* ans = GetXpuSqeDescByType(100);
     EXPECT_STREQ(ans, "unknown");
@@ -259,7 +240,7 @@ TEST_F(XpuTaskTest, xpu_task_test_07)
     delete kernel;
 }
 
-TEST_F(XpuTaskTest, xpu_task_test_08)
+TEST_F(XpuTaskPureTest, xpu_task_test_08)
 {
     rtError_t ret = RT_ERROR_NONE;
     TaskInfo task = {};
@@ -269,7 +250,7 @@ TEST_F(XpuTaskTest, xpu_task_test_08)
     XpuPrintErrorInfo(taskInfo, 1);
 }
 
-TEST_F(XpuTaskTest, xpu_task_test_09)
+TEST_F(XpuTaskPureTest, xpu_task_test_09)
 {
     rtError_t ret = RT_ERROR_NONE;
     TaskInfo task = {};

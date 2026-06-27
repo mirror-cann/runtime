@@ -9,6 +9,7 @@
  */
 
 #include "inner_thread_local.hpp"
+#include "context.hpp"
 
 namespace cce {
 namespace runtime {
@@ -23,8 +24,53 @@ __THREAD_LOCAL__ rtStreamCaptureMode InnerThreadLocalContainer::exchangeCaptureM
 __THREAD_LOCAL__ rtError_t InnerThreadLocalContainer::globalError_ = ACL_RT_SUCCESS;
 __THREAD_LOCAL__ uint8_t InnerThreadLocalContainer::groupId_ = UNINIT_GROUP_ID;
 __THREAD_LOCAL__ const Stream* InnerThreadLocalContainer::curResLimitStream_ = nullptr;
+__THREAD_LOCAL__ bool InnerThreadLocalContainer::curCtxInternalAccess_ = false;
+__THREAD_LOCAL__ bool InnerThreadLocalContainer::curRefInternalAccess_ = false;
 __THREAD_LOCAL__
 std::array<uint32_t, RT_STREAM_CAPTURE_MODE_MAX> InnerThreadLocalContainer::threadCaptureModeRefNum_ = {0U};
+
+namespace {
+Context *GetBoundContext(Context *curCtx, RefObject<Context *> *curRef)
+{
+    if (curCtx != nullptr) {
+        return curCtx;
+    }
+    if (curRef != nullptr) {
+        return curRef->GetVal(false);
+    }
+    return nullptr;
+}
+
+bool GetEffectiveContextInternalAccess(Context *curCtx, bool curCtxInternalAccess,
+    RefObject<Context *> *curRef, bool curRefInternalAccess)
+{
+    if (curCtx != nullptr) {
+        return curCtxInternalAccess;
+    }
+    if (curRef != nullptr) {
+        return curRefInternalAccess;
+    }
+    return false;
+}
+
+bool UpdateThreadBinding(Context *oldCtx, bool oldNeedThreadRef, Context *newCtx, bool newNeedThreadRef)
+{
+    const bool needUnbindOldCtx = oldNeedThreadRef && ((oldCtx != newCtx) || !newNeedThreadRef) && (oldCtx != nullptr);
+    const bool needBindNewCtx = newNeedThreadRef && ((oldCtx != newCtx) || !oldNeedThreadRef) && (newCtx != nullptr);
+    const bool oldCtxIsNewCtx = (oldCtx == newCtx);
+    bool oldCtxDeleted = false;
+    if (needUnbindOldCtx) {
+        (void)oldCtx->ContextThreadUnbind();
+        // oldCtx may be deleted here; callers must not use it.
+        oldCtxDeleted = oldCtx->TryDeleteIfNeeded();
+    }
+
+    if (needBindNewCtx && ((!oldCtxDeleted) || !oldCtxIsNewCtx)) {
+        newCtx->ContextThreadBind();
+    }
+    return oldCtxDeleted;
+}
+}
 
 uint32_t InnerThreadLocalContainer::GetLastTaskId(void)
 {
@@ -58,31 +104,78 @@ Context* InnerThreadLocalContainer::GetCurCtx(void)
 {
     return curCtx_;
 }
-void InnerThreadLocalContainer::SetCurCtx(Context * const inCurCtx)
+
+void InnerThreadLocalContainer::ClearDeletedContextBinding(Context * const deletedCtx)
 {
-    curCtx_ = inCurCtx;
-    if (inCurCtx != nullptr)
-    {
-        device_ = inCurCtx->Device_();
+    if (deletedCtx == nullptr) {
+        return;
     }
+    if (curCtx_ == deletedCtx) {
+        curCtx_ = nullptr;
+        curCtxInternalAccess_ = false;
+    }
+    if ((curRef_ != nullptr) && (curRef_->GetVal(false) == deletedCtx)) {
+        curRef_ = nullptr;
+        curRefInternalAccess_ = false;
+    }
+}
+
+void InnerThreadLocalContainer::RefreshDevice()
+{
+    Context * const boundCtx = GetBoundContext(curCtx_, curRef_);
+    device_ = (boundCtx != nullptr) ? boundCtx->Device_() : nullptr;
+}
+
+void InnerThreadLocalContainer::SetCurCtx(Context * const inCurCtx, bool internalAccess)
+{
+    Context * const oldCtx = GetBoundContext(curCtx_, curRef_);
+    const bool oldInternalAccess = GetEffectiveContextInternalAccess(curCtx_, curCtxInternalAccess_,
+        curRef_, curRefInternalAccess_);
+    Context * const newCtx = GetBoundContext(inCurCtx, curRef_);
+    const bool newInternalAccess = GetEffectiveContextInternalAccess(inCurCtx,
+        (inCurCtx != nullptr) ? internalAccess : false, curRef_, curRefInternalAccess_);
+    const bool oldNeedThreadRef = (oldCtx != nullptr) && (!oldInternalAccess);
+    const bool newNeedThreadRef = (newCtx != nullptr) && (!newInternalAccess);
+    const bool oldCtxDeleted = UpdateThreadBinding(oldCtx, oldNeedThreadRef, newCtx, newNeedThreadRef);
+    curCtx_ = inCurCtx;
+    curCtxInternalAccess_ = ((curCtx_ != nullptr) ? internalAccess : false);
+    if (oldCtxDeleted) {
+        ClearDeletedContextBinding(oldCtx);
+    }
+    RefreshDevice();
 }
 
 RefObject<Context *>* InnerThreadLocalContainer::GetCurRef(void)
 {
     return curRef_;
 }
-void InnerThreadLocalContainer::SetCurRef(RefObject<Context *> * const inCurRef)
+void InnerThreadLocalContainer::SetCurRef(RefObject<Context *> * const inCurRef, const bool internalAccess)
 {
+    Context * const oldCtx = GetBoundContext(curCtx_, curRef_);
+    const bool oldInternalAccess = GetEffectiveContextInternalAccess(curCtx_, curCtxInternalAccess_,
+        curRef_, curRefInternalAccess_);
+    Context * const newCtx = GetBoundContext(curCtx_, inCurRef);
+    const bool newInternalAccess = GetEffectiveContextInternalAccess(curCtx_, curCtxInternalAccess_,
+        inCurRef, (inCurRef != nullptr) ? internalAccess : false);
+    const bool oldNeedThreadRef = (oldCtx != nullptr) && (!oldInternalAccess);
+    const bool newNeedThreadRef = (newCtx != nullptr) && (!newInternalAccess);
+    const bool oldCtxDeleted = UpdateThreadBinding(oldCtx, oldNeedThreadRef, newCtx, newNeedThreadRef);
     curRef_ = inCurRef;
-    if ((inCurRef != nullptr) && (inCurRef->GetVal() != nullptr))
-    {
-        device_ = inCurRef->GetVal()->Device_();
-    }    
+    curRefInternalAccess_ = ((curRef_ != nullptr) ? internalAccess : false);
+    if (oldCtxDeleted) {
+        ClearDeletedContextBinding(oldCtx);
+    }
+    RefreshDevice();
+}
+
+bool InnerThreadLocalContainer::IsInternalContextAccess(void)
+{
+    return GetEffectiveContextInternalAccess(curCtx_, curCtxInternalAccess_, curRef_, curRefInternalAccess_);
 }
 
 Device* InnerThreadLocalContainer::GetDevice(void)
 {
-    return device_; 
+    return device_;
 }
 
 uint8_t InnerThreadLocalContainer::GetGroupId(void)
@@ -93,7 +186,7 @@ uint8_t InnerThreadLocalContainer::GetGroupId(void)
 void InnerThreadLocalContainer::SetGroupId(const uint8_t groupId)
 {
     groupId_ = groupId;
-} 
+}
 
 void InnerThreadLocalContainer::ThreadCaptureModeRefNumInc(rtStreamCaptureMode mode)
 {

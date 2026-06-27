@@ -20,9 +20,10 @@
 #undef protected
 #undef private
 #include "xpu_stub.h"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 
 using namespace cce::runtime;
-class XpuDeviceTest : public testing::Test {
+class XpuDeviceTest : public ut::XpuRuntimeMockTest {
 protected:
     static void SetUpTestCase()
     {
@@ -34,15 +35,6 @@ protected:
     static void TearDownTestCase()
     {
         std::cout << "XpuDeviceTest end" << std::endl;
-    }
-
-    virtual void SetUp()
-    {
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
     }
 };
 

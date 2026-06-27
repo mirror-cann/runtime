@@ -23,10 +23,11 @@ public:
     static void SetTsId(const uint32_t inTsId);
 
     static Context* GetCurCtx(void);
-    static void SetCurCtx(Context * const inCurCtx);
+    static void SetCurCtx(Context * const inCurCtx, bool internalAccess = false);
 
     static RefObject<Context *>* GetCurRef(void);
-    static void SetCurRef(RefObject<Context *> * const inCurRef);
+    static void SetCurRef(RefObject<Context *> * const inCurRef, const bool internalAccess = false);
+    static bool IsInternalContextAccess(void);
 
     static Device* GetDevice(void);
 
@@ -53,6 +54,9 @@ public:
     static void SetCurrentResLimitStream(const Stream* stm);
     static const Stream* GetCurrentResLimitStream();
 private:
+    static void ClearDeletedContextBinding(Context * const deletedCtx);
+    static void RefreshDevice();
+
     static __THREAD_LOCAL__ uint32_t lastTaskId_;
     static __THREAD_LOCAL__ uint32_t lastStreamId_;
     static __THREAD_LOCAL__ uint32_t tsId_;
@@ -67,6 +71,8 @@ private:
     static __THREAD_LOCAL__ uint8_t groupId_;
     static __THREAD_LOCAL__ rtError_t globalError_;
     static __THREAD_LOCAL__ const Stream* curResLimitStream_; // when destroying this stream, it is essential to ensure that no other threads are using this stream.
+    static __THREAD_LOCAL__ bool curCtxInternalAccess_;
+    static __THREAD_LOCAL__ bool curRefInternalAccess_;
 };
 }  // namespace runtime
 }  // namespace cce

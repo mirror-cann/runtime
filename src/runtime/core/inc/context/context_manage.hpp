@@ -17,14 +17,18 @@
 namespace cce {
 namespace runtime {
 class Context;
+class Device;
+enum class ContextAccessMode : uint8_t {
+    USER = 0,
+    INTERNAL = 1,
+};
 
 class ContextManage {
 public:
-    static bool CheckContextIsValid(Context * const curCtx, const bool inUseFlag);
+    static bool CheckContextIsValid(Context * const curCtx,
+        ContextAccessMode accessMode = ContextAccessMode::USER, rtError_t *errorCode = nullptr);
     static void InsertContext(Context * const insertCtx);
-    static rtError_t EraseContextFromSet(Context * const eraseCtx);
-    static rtError_t EraseContextFromSetForRetainRollback(Context * const eraseCtx);
-    static rtError_t EraseContextAndDeleteIfNeeded(Context * const eraseCtx);
+    static rtError_t MarkContextForDelete(Context * const eraseCtx);
     static rtError_t DeviceAbort(const int32_t devId);
     static rtError_t Devicekill(const int32_t devId);
     static rtError_t DeviceQuery(const int32_t devId, const uint32_t step, const uint32_t timeout);
@@ -39,6 +43,16 @@ public:
     static bool CheckStreamPtrIsValid(Stream * const stm);
     static rtError_t DeviceResourceClean(int32_t devId);
     static void QueryContextInUse(const int32_t devId, bool &isInUse);
+    static bool IsContextTracked(Context * const ctx);
+    static bool HasAttachedDevice(Context * const ctx);
+    static bool IsActiveContext(Context * const ctx);
+    static bool HasActiveDevice(Context * const ctx);
+    static Device *GetActiveContextDevice(Context * const ctx);
+    static bool IsContextOnDevice(Context * const ctx, const int32_t devId);
+    static bool IsActiveContextOnDevice(Context * const ctx, const int32_t devId);
+    // Validate inactive explicit context before destroy. This does not acquire an API-level in-use reference.
+    static bool AcquireInactiveContextForDestroy(Context * const ctx, rtError_t *errorCode = nullptr);
+    static rtError_t RemoveContextFromSet(Context * const eraseCtx);
 private:
 };
 }

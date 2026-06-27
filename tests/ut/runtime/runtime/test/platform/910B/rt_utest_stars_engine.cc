@@ -67,6 +67,10 @@ uint16_t GetAicpuKernelCredit(uint16_t timeout);
 using std::pair;
 using std::make_pair;
 
+extern int32_t reportRasProcFlag;
+extern int32_t faultEventFlag;
+extern int32_t checkProcessStatusFlag;
+
 class CloudV2StarsEngineTest : public testing::Test {
 protected:
     static void SetUpTestCase()
@@ -101,15 +105,33 @@ protected:
 
     virtual void TearDown()
     {
-        device_->SetIsChipSupportRecycleThread(false);
-        if (stream_->GetPendingNum() > 0) {
-            stream_->pendingNum_.Set(0U);
+        if (device_ != nullptr) {
+            device_->SetIsChipSupportRecycleThread(false);
         }
-        if (engine_->GetPendingNum() > 0) {
+        ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+        reportRasProcFlag = 0;
+        faultEventFlag = 0;
+        checkProcessStatusFlag = 0;
+        Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_WORKING;
+
+        ClearStreamState(stream_);
+        ClearStreamState(streamDvpp_);
+        if ((device_ != nullptr) && (device_->GetTaskFactory() != nullptr)) {
+            if (stream_ != nullptr) {
+                device_->GetTaskFactory()->ClearSerialVecId(stream_);
+            }
+            if (streamDvpp_ != nullptr) {
+                device_->GetTaskFactory()->ClearSerialVecId(streamDvpp_);
+            }
+        }
+        if ((engine_ != nullptr) && (engine_->GetPendingNum() > 0)) {
             engine_->pendingNum_.Set(0U);
         }
         rtStreamDestroy(streamHandle_);
         rtStreamDestroy(streamHandleDvpp_);
+        if ((engine_ != nullptr) && (engine_->GetPendingNum() > 0)) {
+            engine_->pendingNum_.Set(0U);
+        }
         delete grp_;
         stream_ = nullptr;
         streamDvpp_ = nullptr;
@@ -117,9 +139,29 @@ protected:
         ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
         rtDeviceReset(0);
         GlobalMockObject::verify();
+        GlobalMockObject::reset();
     }
 
 protected:
+    static void ClearStreamState(Stream * const stream)
+    {
+        if (stream == nullptr) {
+            return;
+        }
+        stream->SetAbortStatus(RT_ERROR_NONE);
+        stream->SetBeingAbortedFlag(false);
+        stream->SetIsSubmitTaskFailFlag(false);
+        stream->SetRecycleFlag(false);
+        stream->pendingNum_.Set(0U);
+        if (stream->Context_() != nullptr) {
+            stream->Context_()->SetFailureError(RT_ERROR_NONE);
+            stream->Context_()->SetStreamsStatus(RT_ERROR_NONE);
+        }
+        if (stream->Device_() != nullptr) {
+            stream->Device_()->SetDeviceStatus(RT_ERROR_NONE);
+        }
+    }
+
     void MockDriverApi()
     {
         Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
@@ -1735,8 +1777,6 @@ TEST_F(CloudV2StarsEngineTest, ClearSerId)
     device_->GetTaskFactory()->ClearSerialVecId(stream_);
 }
 
-extern int32_t reportRasProcFlag;
-extern int32_t faultEventFlag;
 TEST_F(CloudV2StarsEngineTest, ReportRasProc)
 {
     faultEventFlag = 1;
@@ -1819,7 +1859,6 @@ TEST_F(CloudV2StarsEngineTest, ReportRasProc_no_support)
     reportRasProcFlag = 0;
 }
 
-extern int32_t checkProcessStatusFlag;
 TEST_F(CloudV2StarsEngineTest, TestMemUceError)
 {
     EXPECT_EQ(HasMemUceErr(0), true);

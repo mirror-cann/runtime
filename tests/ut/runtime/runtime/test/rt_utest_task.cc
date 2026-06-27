@@ -108,6 +108,54 @@ protected:
     static Event *event_;
     static rtStream_t streamHandle_;
     static rtEvent_t eventHandle_;
+
+    static void ResetDeviceAndRecreateSharedResources()
+    {
+        rtError_t error = rtDeviceReset(0);
+        EXPECT_EQ(error, RT_ERROR_NONE);
+        error = rtSetDevice(0);
+        EXPECT_EQ(error, RT_ERROR_NONE);
+        streamHandle_ = NULL;
+        eventHandle_ = NULL;
+        error = rtStreamCreate(&streamHandle_, 0);
+        EXPECT_EQ(error, RT_ERROR_NONE);
+        stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
+        error = rtEventCreate(&eventHandle_);
+        EXPECT_EQ(error, RT_ERROR_NONE);
+        event_ = rt_ut::UnwrapOrNull<Event>(eventHandle_);
+    }
+
+    static Model *EnsureStreamModel(rtModel_t *modelHandle)
+    {
+        *modelHandle = nullptr;
+        Model *model = stream_->Model_();
+        if (model != nullptr) {
+            return model;
+        }
+
+        rtError_t error = rtModelCreate(modelHandle, 0);
+        EXPECT_EQ(error, RT_ERROR_NONE);
+        if (error != RT_ERROR_NONE) {
+            return nullptr;
+        }
+        model = rt_ut::UnwrapOrNull<Model>(*modelHandle);
+        EXPECT_NE(model, nullptr);
+        if (model == nullptr) {
+            return nullptr;
+        }
+        stream_->SetModel(model);
+        stream_->SetLatestModlId(model->Id_());
+        return model;
+    }
+
+    static void ReleaseOwnedStreamModel(rtModel_t modelHandle, Model *model)
+    {
+        if (modelHandle == nullptr) {
+            return;
+        }
+        stream_->DelModel(model);
+        (void)rtModelDestroy(modelHandle);
+    }
 };
 
 Stream *TaskTest::stream_ = NULL;
@@ -889,8 +937,7 @@ TEST_F(TaskTest, commamdBodyForLabel)
     Complete(&task, 0);
 
     rtStreamDestroy(stream);
-    error = rtDeviceReset(0);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    ResetDeviceAndRecreateSharedResources();
 }
 TEST_F(TaskTest, base_aicpu_info_load_task)
 {
@@ -2485,7 +2532,9 @@ TEST_F(TaskTest, FftsPlusTaskForDevAddr)
     rtError_t ret = FftsPlusTaskInit(&fftsPlusTask, &fftsPlusTaskInfo, flag);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    Model *tmpModel = stream_->Model_();
+    rtModel_t tmpModelHandle = nullptr;
+    Model *tmpModel = EnsureStreamModel(&tmpModelHandle);
+    ASSERT_NE(tmpModel, nullptr);
     stream_->models_.clear();
     DoCompleteSuccForFftsPlusTask(&fftsPlusTask, 0);
     rtStarsSqe_t sqe[3] = {};
@@ -2518,10 +2567,9 @@ TEST_F(TaskTest, FftsPlusTaskForDevAddr)
     FftsPlusTaskUnInit(&fftsPlusTask);
 
     free((void *)fftsPlusTaskInfo.descBuf);
-    if (tmpModel != nullptr) {
-        stream_->SetModel(tmpModel);
-        stream_->SetLatestModlId(tmpModel->Id_());
-    }
+    stream_->SetModel(tmpModel);
+    stream_->SetLatestModlId(tmpModel->Id_());
+    ReleaseOwnedStreamModel(tmpModelHandle, tmpModel);
 }
 
 TEST_F(TaskTest, FftsPlusTaskForDevMemErr)
@@ -3213,8 +3261,7 @@ TEST_F(TaskTest, davinci_kernel_task_abort)
 
     rtStreamDestroy(stream);
 
-    error = rtDeviceReset(0);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    ResetDeviceAndRecreateSharedResources();
 }
 
 TEST_F(TaskTest, stars_ipc_notify_record_sqe)
@@ -3427,10 +3474,12 @@ TEST_F(TaskTest, WaitAsyncCopyCompleteForUpdateTask)
     TaskInfo task = {};
     rtError_t error;
     Stream *taskStream = NULL;
+    rtStream_t taskStreamHandle = NULL;
     NpuDriver drv;
 
-    error = rtStreamCreate((rtStream_t *)&taskStream, 0);
+    error = rtStreamCreate(&taskStreamHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    taskStream = rt_ut::UnwrapOrNull<Stream>(taskStreamHandle);
 
     Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     InitByStream(&task, taskStream);
@@ -3462,6 +3511,7 @@ TEST_F(TaskTest, WaitAsyncCopyCompleteForUpdateTask)
 
     delete argAllocator;
     delete device;
+    rtStreamDestroy(taskStreamHandle);
     GlobalMockObject::verify();
 }
 

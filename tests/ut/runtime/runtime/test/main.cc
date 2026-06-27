@@ -13,6 +13,7 @@
 #include "engine.hpp"
 #include "runtime.hpp"
 #include "mockcpp/mockcpp.hpp"
+#include "common/rt_utest_context_reset_helper.hpp"
 
 using namespace cce::runtime;
 
@@ -28,7 +29,7 @@ public:
     }
     virtual void TearDown()
     {
-        rtDeviceReset(0);
+        ut::ResetPrimaryDeviceIfActive();
         std::cout << "Runtime UT  Environment TearDown" << std::endl;
     }
 };

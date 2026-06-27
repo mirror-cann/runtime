@@ -51,6 +51,7 @@
 #include "timeout_set_task.h"
 #include "device_error_proc.hpp"
 #include "api_impl_creator.hpp"
+#include "context_manage.hpp"
 #include "dev_info_manage.h"
 #include "soc_info.h"
 #include "global_state_manager.hpp"
@@ -72,7 +73,7 @@ constexpr uint32_t  TSD_ADD_AICPUSD_TO_CGROUP_FAILED = 104;
 constexpr uint32_t  TSD_OPEN_NOT_SUPPORT_FOR_MDC = 200U;
 constexpr uint32_t  MONITOR_THREAD_MAX_WAIT_TIMES = 10U;
 constexpr uint32_t  TSD_CLOSE_EX_FLAG_QUICK_CLOSE = 1U;
-constexpr uint32_t  PAGE_FAULT_CNT_THRESHOLD = 5000U; // 单次aicore可能发生最多缺页数量48*48 
+constexpr uint32_t  PAGE_FAULT_CNT_THRESHOLD = 5000U; // 单次aicore可能发生最多缺页数量48*48
 constexpr uint64_t  PAGE_FAULT_TIME_THRESHOLD = 2000U;
 constexpr uint32_t KERNEL_INFO_EXT_MAX = 4096U;
 enum AiCpuProfilingConfig : uint32_t {
@@ -84,6 +85,302 @@ enum AiCpuProfilingConfig : uint32_t {
     PROFILING_FEATURE_TIME_L2 = 5U,      // bit5 means l2
     PROFILING_FEATURE_TIME_L3 = 6U,      // bit6 means l3
 };
+
+struct PrimaryContextInitInfo {
+    Context *ctx = nullptr;
+    Device *dev = nullptr;
+    bool reusedCtx = false;
+    bool attachedDevice = false;
+    rtError_t err = RT_ERROR_NONE;
+};
+
+PrimaryContextInitInfo PreparePrimaryContext(Runtime * const runtime, RefObject<Context *> &refObj,
+    const uint32_t devId, const uint32_t tsId)
+{
+    PrimaryContextInitInfo initInfo;
+    initInfo.ctx = refObj.GetVal(false);
+    initInfo.reusedCtx = (initInfo.ctx != nullptr);
+    initInfo.dev = runtime->DeviceRetain(devId, tsId);
+    if (initInfo.dev == nullptr) {
+        initInfo.err = RT_ERROR_DEVICE_RETAIN;
+        return initInfo;
+    }
+
+    if (!initInfo.reusedCtx) {
+        initInfo.ctx = new(std::nothrow) Context(initInfo.dev, true);
+        if (initInfo.ctx == nullptr) {
+            initInfo.err = RT_ERROR_CONTEXT_NEW;
+            return initInfo;
+        }
+        RT_LOG(RT_LOG_INFO, "new Context ok, Runtime_alloc_size %zu", sizeof(Context));
+    }
+    return initInfo;
+}
+
+rtError_t InitializePrimaryContext(PrimaryContextInitInfo &initInfo)
+{
+    initInfo.ctx->AttachDevice(initInfo.dev);
+    initInfo.attachedDevice = true;
+    initInfo.ctx->SetContextForceReset(false);
+    Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+    const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
+    InnerThreadLocalContainer::SetCurCtx(initInfo.ctx, true);
+    const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess]() {
+        InnerThreadLocalContainer::SetCurCtx(previousCtx, previousInternalAccess);
+    });
+
+    rtError_t err = initInfo.ctx->Setup();
+    ERROR_RETURN_MSG_INNER(err, "Primary context setup failed, devId=%u, retCode=%#x.",
+        initInfo.dev->Id_(), static_cast<uint32_t>(err));
+
+    err = initInfo.dev->UpdateTimeoutConfig();
+    ERROR_RETURN_MSG_INNER(err, "Primary context update timeout config failed, devId=%u, retCode=%#x.",
+        initInfo.dev->Id_(), static_cast<uint32_t>(err));
+
+    err = initInfo.dev->RegisterAndLaunchDcacheLockOp(initInfo.ctx);
+    ERROR_RETURN_MSG_INNER(err, "Primary context register dcache lock op failed, devId=%u, retCode=%#x.",
+        initInfo.dev->Id_(), static_cast<uint32_t>(err));
+    return RT_ERROR_NONE;
+}
+
+void RollbackPrimaryContextInit(Runtime * const runtime, RefObject<Context *> &refObj,
+    PrimaryContextInitInfo &initInfo)
+{
+    if ((initInfo.ctx != nullptr) && initInfo.attachedDevice) {
+        Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+        const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
+        InnerThreadLocalContainer::SetCurCtx(initInfo.ctx, true);
+        const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess]() {
+            InnerThreadLocalContainer::SetCurCtx(previousCtx, previousInternalAccess);
+        });
+        (void)initInfo.ctx->TearDown();
+        initInfo.ctx->ReleaseResourcesAfterTearDown();
+    } else if (initInfo.dev != nullptr) {
+        runtime->DeviceRelease(initInfo.dev, false);
+    }
+
+    if (!initInfo.reusedCtx) {
+        DELETE_O(initInfo.ctx);
+    }
+
+    const bool resetRefSuccess = refObj.TrySetValAndResetRef(initInfo.reusedCtx ? initInfo.ctx : nullptr);
+    if (!resetRefSuccess) {
+        RT_LOG(RT_LOG_ERROR, "Rollback primary context init failed to reset ref.");
+    }
+    refObj.SetPrimaryCtxCallBackFlag(false);
+}
+
+void RestorePrimaryContextRef(RefObject<Context *> &refObj)
+{
+    Context * const ctx = refObj.GetVal(false);
+    const uint64_t refCount = refObj.GetRefCount();
+    if (refCount > 1ULL) {
+        (void)refObj.DecRef();
+        refObj.SetPrimaryCtxCallBackFlag(false);
+        return;
+    }
+    if ((ctx != nullptr) && (refCount == 1ULL)) {
+        (void)refObj.DecRef();
+        (void)ctx->TearDown();
+        ctx->ReleaseResourcesAfterTearDown();
+        const bool resetRefSuccess = refObj.TrySetValAndResetRef(ctx);
+        if (!resetRefSuccess) {
+            RT_LOG(RT_LOG_ERROR, "Restore primary context ref failed to reset ref.");
+        }
+    }
+    refObj.SetPrimaryCtxCallBackFlag(false);
+}
+
+bool TryReuseActivePrimaryContext(RefObject<Context *> &refObj)
+{
+    Context * const ctx = refObj.GetVal(false);
+    if ((ctx == nullptr) || (ctx->GetState() != ContextState::CTX_STATE_ACTIVE)) {
+        return false;
+    }
+    refObj.SetVal(ctx);
+    refObj.SetPrimaryCtxCallBackFlag(false);
+    return true;
+}
+
+bool IsCurrentPrimaryCtx(RefObject<Context *> * const refObj, const Context * const ctx)
+{
+    return (InnerThreadLocalContainer::GetCurRef() == refObj) ||
+        ((ctx != nullptr) && (InnerThreadLocalContainer::GetCurCtx() == ctx));
+}
+
+uint64_t GetPrimaryRetainCount(const RefObject<Context *> &refObj)
+{
+    return refObj.GetRefCount();
+}
+
+uint64_t GetPrimaryTotalRef(const RefObject<Context *> &refObj, const Context * const ctx)
+{
+    const uint64_t threadRefCount = (ctx == nullptr) ? 0ULL : ctx->GetThreadRefCount();
+    return GetPrimaryRetainCount(refObj) + threadRefCount;
+}
+
+void WaitPrimaryRefReady(const RefObject<Context *> &refObj)
+{
+    while (refObj.IsRefUpdating()) {
+        (void)sched_yield();
+    }
+}
+
+bool MarkPrimaryRefUpdatingForForceReset(RefObject<Context *> &refObj, uint64_t &releasedRetainCount)
+{
+    releasedRetainCount = 0ULL;
+    while (true) {
+        WaitPrimaryRefReady(refObj);
+        const uint64_t retainCount = GetPrimaryRetainCount(refObj);
+        if (retainCount == 0ULL) {
+            // No retain refs remain; reserve the slot for force teardown.
+            if (refObj.TryMarkRefUpdating()) {
+                return true;
+            }
+            continue;
+        }
+
+        bool reset = false;
+        while (!reset) {
+            // Drain retain refs; the last decrement switches count_ to REF_UPDATING.
+            const bool isRetainReleased = refObj.TryDecRef(reset);
+            if (!isRetainReleased) {
+                break;
+            }
+            releasedRetainCount++;
+        }
+        if (reset) {
+            return true;
+        }
+    }
+}
+
+enum class PrimaryReleaseAction : uint32_t {
+    SKIP_SLOT,       // No teardown is needed for this primary slot.
+    TEAR_DOWN_SLOT,  // This slot should enter teardown.
+    RETURN_ERROR,    // Release decision failed before teardown can start.
+};
+
+struct PrimaryReleaseDecision {
+    PrimaryReleaseAction action;   // Next operation for the primary slot.
+    uint64_t retainRestoreCount;   // Retain references to restore if teardown fails.
+    bool restoreCurBinding;        // Restore current-thread binding after ordinary reset rollback.
+    bool originForceReset;         // Original force-reset flag saved before teardown.
+};
+
+PrimaryReleaseDecision DecideOrdinaryPrimaryReleaseAction(RefObject<Context *> &refObj, Context * const ctx,
+    const uint32_t devId, const uint32_t tsId, bool &ret)
+{
+    PrimaryReleaseDecision decision{PrimaryReleaseAction::TEAR_DOWN_SLOT, 0ULL, false, false};
+    bool reset = false;  // must be false.
+    const bool isRetainReleased = refObj.TryDecRef(reset);
+    ret = ret || isRetainReleased;
+    const uint64_t refObjValue = refObj.GetRef();
+    const uint64_t threadRefCount = (ctx == nullptr) ? 0ULL : ctx->GetThreadRefCount();
+    RT_LOG(RT_LOG_INFO, "Context TryDecRef, ts_id=%u, count=0x%llx, thread=%llu, reset:%hhu",
+        tsId, refObjValue, threadRefCount, reset);
+    if (!isRetainReleased) {
+        // Retain count is already zero; only the last bound thread may tear down.
+        const uint64_t totalRef = GetPrimaryTotalRef(refObj, ctx);
+        if ((ctx == nullptr) || (ctx->GetState() != ContextState::CTX_STATE_ACTIVE) || (totalRef == 0ULL)) {
+            decision.action = PrimaryReleaseAction::SKIP_SLOT;
+            return decision;
+        }
+        const bool boundToPrimary = IsCurrentPrimaryCtx(&refObj, ctx);
+        if ((totalRef != 1ULL) || !boundToPrimary) {
+            ret = true;
+            decision.action = PrimaryReleaseAction::SKIP_SLOT;
+            return decision;
+        }
+        reset = true;
+        ret = true;
+        decision.restoreCurBinding = true;
+        if (!refObj.TryMarkRefUpdating()) {
+            RT_LOG(RT_LOG_INFO,
+                "Skip primary context teardown because primary ref is changed, devId=%u, ts_id=%u.",
+                devId, tsId);
+            decision.action = PrimaryReleaseAction::SKIP_SLOT;
+            return decision;
+        }
+    }
+    if (!reset) {
+        decision.action = PrimaryReleaseAction::SKIP_SLOT;
+        return decision;
+    }
+    const uint64_t remainThreadRefCount = (ctx == nullptr) ? 0ULL : ctx->GetThreadRefCount();
+    const bool boundToPrimary = IsCurrentPrimaryCtx(&refObj, ctx);
+    if ((remainThreadRefCount > 1ULL) || ((remainThreadRefCount == 1ULL) && !boundToPrimary)) {
+        // Other threads still hold the primary; keep it active.
+        refObj.SetVal(ctx);
+        RT_LOG(RT_LOG_INFO,
+            "Skip primary context teardown, devId=%u, ts_id=%u, retain=%llu, thread=%llu, bound=%hhu.",
+            devId, tsId, GetPrimaryRetainCount(refObj), remainThreadRefCount, boundToPrimary);
+        decision.action = PrimaryReleaseAction::SKIP_SLOT;
+        return decision;
+    }
+    decision.retainRestoreCount = isRetainReleased ? 1ULL : 0ULL;
+    return decision;
+}
+
+PrimaryReleaseDecision DecideForcePrimaryReleaseAction(RefObject<Context *> &refObj, Context * const ctx,
+    bool &ret)
+{
+    PrimaryReleaseDecision decision{PrimaryReleaseAction::TEAR_DOWN_SLOT, 0ULL, false, false};
+    const uint64_t totalRef = GetPrimaryTotalRef(refObj, ctx);
+    if ((ctx == nullptr) || (totalRef == 0ULL)) {
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "PrimaryContextRelease failed, total ref count is 0.");
+        decision.action = PrimaryReleaseAction::RETURN_ERROR;
+        return decision;
+    }
+    uint64_t releasedRetainCount = 0ULL;
+    // Force reset drains retain refs before teardown.
+    if (!MarkPrimaryRefUpdatingForForceReset(refObj, releasedRetainCount)) {
+        RT_LOG_INNER_MSG(RT_LOG_ERROR,
+            "PrimaryContextRelease failed during force reset, retain count is 0.");
+        decision.action = PrimaryReleaseAction::RETURN_ERROR;
+        return decision;
+    }
+    decision.retainRestoreCount = releasedRetainCount;
+    ret = true;
+    return decision;
+}
+
+PrimaryReleaseDecision DecidePrimaryReleaseAction(RefObject<Context *> &refObj, Context * const ctx,
+    const bool isForceReset, const uint32_t devId, const uint32_t tsId, bool &ret)
+{
+    if (isForceReset) {
+        return DecideForcePrimaryReleaseAction(refObj, ctx, ret);
+    }
+    return DecideOrdinaryPrimaryReleaseAction(refObj, ctx, devId, tsId, ret);
+}
+
+rtError_t RollbackPrimaryTearDown(RefObject<Context *> &refObj, Context * const ctx, const uint32_t devId,
+    const rtError_t tearDownRet, const bool isForceReset, const uint64_t retainRestoreCount,
+    const bool restoreCurBinding, const bool originForceReset)
+{
+    refObj.SetPrimaryCtxCallBackFlag(false);
+    // Make the primary slot visible again with its original force-reset mode.
+    ctx->SetContextForceReset(originForceReset);
+    if (retainRestoreCount > 0ULL) {
+        const bool restoreSuccess = refObj.RestoreValAfterFailedReset(ctx, retainRestoreCount);
+        if (!restoreSuccess) {
+            RT_LOG(RT_LOG_ERROR, "Primary context teardown failed and retain restore failed, devId=%u.", devId);
+        }
+    } else if (refObj.IsRefUpdating()) {
+        // retain may already be zero; clear REF_UPDATING so the active primary can be reused after rollback.
+        const bool resetRefSuccess = refObj.TrySetValAndResetRef(ctx);
+        if (!resetRefSuccess) {
+            RT_LOG(RT_LOG_ERROR, "Primary context teardown failed and ref reset failed, devId=%u.", devId);
+        }
+    }
+    if ((!isForceReset) && restoreCurBinding) {
+        // Ordinary reset rollback keeps the original current context usable for this thread.
+        InnerThreadLocalContainer::SetCurCtx(ctx);
+    }
+    RT_LOG(RT_LOG_ERROR, "Primary context teardown failed, devId=%u, retCode=%#x.",
+        devId, static_cast<uint32_t>(tearDownRet));
+    return tearDownRet;
+}
 }
 
 TIMESTAMP_EXTERN(rtBinaryLoad_DevMemAlloc);
@@ -772,7 +1069,7 @@ rtError_t Runtime::InitSocVersion()
     if (error != RT_ERROR_NONE) {
         return error;
     }
-    
+
     drvError_t drvRet;
     int64_t tsNumber = 0;
     drvRet = halGetDeviceInfo(workingDev_, MODULE_TYPE_SYSTEM, INFO_TYPE_CORE_NUM, &tsNumber);
@@ -1232,7 +1529,7 @@ void Runtime::FindDcacheLockOp()
         dcacheLockMixOpData_.clear();
         return;
     }
-    
+
     RT_LOG(RT_LOG_INFO, "read dcache lock op file success");
     return;
 }
@@ -1913,7 +2210,7 @@ rtError_t Runtime::OpenNetService(const rtNetServiceOpenArgs *args) const
     CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
     uint32_t userDeviceId = 0U;
     error = GetUserDevIdByDeviceId(ctx->Device_()->Id_(), &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", 
+    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.",
         static_cast<uint32_t>(error), ctx->Device_()->Id_());
     const TDT_StatusType tdtStatus = tsdOpenNetService_(userDeviceId, RtPtrToPtr<const NetServiceOpenArgs *>(args));
     if (tdtStatus != TSD_OK) {
@@ -1932,7 +2229,7 @@ rtError_t Runtime::CloseNetService() const
     CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
     uint32_t userDeviceId = 0U;
     error = GetUserDevIdByDeviceId(ctx->Device_()->Id_(), &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", 
+    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.",
         static_cast<uint32_t>(error), ctx->Device_()->Id_());
     const TDT_StatusType tdtStatus = tsdCloseNetService_(userDeviceId);
     if (tdtStatus != TSD_OK) {
@@ -1946,7 +2243,7 @@ rtError_t Runtime::CloseNetService() const
 rtError_t Runtime::StartAicpuSd(Device * const device) const
 {
     rtError_t error = InitDrvEventThread(device->Id_());
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Init drv event thread failed, error=%#x, devId=%u.", 
+    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Init drv event thread failed, error=%#x, devId=%u.",
         static_cast<uint32_t>(error), device->Id_());
 #if (!defined CFG_DEV_PLATFORM_PC)
     RT_LOG(RT_LOG_DEBUG, "OpenAicpuSd, devId=%u, chipType=%d, isAicpuSchStart=%u", device->Id_(), chipType_,
@@ -1992,7 +2289,7 @@ rtError_t Runtime::StartAicpuSd(Device * const device) const
     device->SetIsAiCpuSdStarted(true);
     if (device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_AICPUSD_LATER_PROCEDURE)) {
         error = device->SendTopicMsgVersionToAicpu();
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, aicpuSchSdLock->Unlock();, "send topic msg version to aicpu failed,"	 
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, aicpuSchSdLock->Unlock();, "send topic msg version to aicpu failed,"
   	        "retCode=%#x, devId=%u.", static_cast<uint32_t>(error), device->Id_());
  	}
     aicpuSchSdLock->Unlock();
@@ -2033,7 +2330,7 @@ rtError_t Runtime::StopAicpuExecutor(const uint32_t devId, const uint32_t tsId, 
     } else {
         tdtStatus = tsdClose_(userDeviceId);
     }
-    
+
     if (tdtStatus != TSD_OK) {
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "TsdClose failed. devId=%u, tdt error=%u.", devId, tdtStatus);
         return RT_ERROR_DRV_CLOSE_TSD;
@@ -2369,8 +2666,6 @@ rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * c
 
 RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
 {
-    rtError_t err = RT_ERROR_NONE;
-
     COND_RETURN_ERROR_MSG_INNER(devId >= RT_MAX_DEV_NUM, nullptr,
         "Primary context retain failed because value %u for parameter devId is invalid, valid range is [0, %u).",
         devId, RT_MAX_DEV_NUM);
@@ -2378,6 +2673,7 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
     COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), nullptr,
         "Primary context retain failed because value %u for tsNum is invalid, valid range is [1, %u].",
         tsNum_, RT_MAX_TS_NUM);
+
     const bool sentinelMode = Runtime::Instance()->GetSentinelMode();
     if (sentinelMode) {
         RT_LOG(RT_LOG_EVENT, "sentinel mode or single f, set ts id[1]");
@@ -2385,53 +2681,56 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
     }
 
     for (uint32_t i = 0U; i < tsNum_; i++) {
-        if((sentinelMode) && (i == RT_TSC_ID)) {
- 	            continue;
- 	    }
-        Context *ctx = nullptr;
+        if ((sentinelMode) && (i == RT_TSC_ID)) {
+            continue;
+        }
         RefObject<Context *> &refObj = priCtxs_[devId][i];
 
         if (!refObj.IncRef()) {
-            do {
-                Device * const dev = DeviceRetain(devId, i);
-                COND_GOTO_ERROR(dev == nullptr, CTX_FREE, err, RT_ERROR_DEVICE_RETAIN, "Check param failed, dev can not be NULL!");
+            if (TryReuseActivePrimaryContext(refObj)) {
+                RT_LOG(RT_LOG_INFO, "Reuse active primary context, devId=%u, ts_id=%u, count=%#llx",
+                    devId, i, refObj.GetRef());
+                continue;
+            }
+            PrimaryContextInitInfo initInfo = PreparePrimaryContext(this, refObj, devId, i);
+            if (initInfo.err == RT_ERROR_NONE) {
+                initInfo.err = InitializePrimaryContext(initInfo);
+            }
+            if (initInfo.err != RT_ERROR_NONE) {
+                RollbackPrimaryContextInit(this, refObj, initInfo);
+                if (i == RT_TSV_ID) {
+                    RestorePrimaryContextRef(priCtxs_[devId][RT_TSC_ID]);
+                }
+                RT_LOG(RT_LOG_ERROR, "Primary context retain failed, devId=%u, ts_id=%u, retCode=%#x",
+                    devId, i, static_cast<uint32_t>(initInfo.err));
+                return nullptr;
+            }
 
-                ctx = new(std::nothrow) Context(dev, true);
-                COND_GOTO_MSG_OUTER(ctx == nullptr, CTX_FREE, err, RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013, sizeof(Context), "new");
-                RT_LOG(RT_LOG_INFO, "new Context ok, Runtime_alloc_size %zu", sizeof(Context));
-
-                err = ctx->Setup();
-                ERROR_GOTO_MSG_INNER(err, CTX_FREE, "Failed to setup context.");
-
-                err = dev->UpdateTimeoutConfig();
-                ERROR_GOTO_MSG_INNER(err, CTX_FREE, "Update time config of runtime failed, retCode=%#x.", static_cast<uint32_t>(err));
-
-                ContextManage::InsertContext(ctx);
-                refObj.SetVal(ctx);
-
-                err = dev->RegisterAndLaunchDcacheLockOp(ctx);
-                ERROR_GOTO_MSG_INNER(err, CTX_FREE, "device launch dcache lock op failed, retCode=%#x.", static_cast<uint32_t>(err));
-
-                break;
-            CTX_FREE:
-                RollbackFailedPrimaryContextRetain(ctx, refObj);
-            } while (false);
+            if (!initInfo.reusedCtx) {
+                ContextManage::InsertContext(initInfo.ctx);
+            }
+            refObj.SetVal(initInfo.ctx);
+            refObj.SetPrimaryCtxCallBackFlag(false);
         }
 
         const uint64_t refObjValue = refObj.GetRef();
         RT_LOG(RT_LOG_INFO, "Context inc ref, devId=%u, ts_id=%u, count=%#llx", devId, i, refObjValue);
-        ctx = refObj.GetVal();
-        NULL_PTR_GOTO_MSG_INNER(ctx, CTX_DEC, err, RT_ERROR_CONTEXT_NULL);
-        continue;
-
-        CTX_DEC:
-            if (!refObj.DecRef()) {
-                refObj.ResetVal();
+        Context * const ctx = refObj.GetVal();
+        if (ctx != nullptr) {
+            continue;
+        }
+        if (refObj.GetRef() != 0U && !refObj.DecRef()) {
+            const bool resetRefSuccess = refObj.TrySetValAndResetRef(nullptr);
+            if (!resetRefSuccess) {
+                RT_LOG(RT_LOG_ERROR, "Primary context retain failed to reset ref, devId=%u, ts_id=%u.",
+                    devId, i);
             }
-            if (i == RT_TSV_ID) {
-                RollbackTsvPrimaryContextRetainFailure(devId);
-            }
-            return nullptr;
+        }
+        if (i == RT_TSV_ID) {
+            RestorePrimaryContextRef(priCtxs_[devId][RT_TSC_ID]);
+        }
+        RT_LOG(RT_LOG_ERROR, "Primary context retain failed, ctx is null, devId=%u, ts_id=%u.", devId, i);
+        return nullptr;
     }
 
     MsProfNotifyWhenSetDevice(devId);
@@ -2455,9 +2754,12 @@ rtError_t Runtime::GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int3
 
     for (uint32_t i = 0U; i < tsNum_; i++) {
         RefObject<Context *> &refObj = priCtxs_[devId][i];
-        const uint64_t refCnt = refObj.GetRef();
-        RT_LOG(RT_LOG_INFO, "Default ctx state, devId =%u, ts_id=%u, count=%#llx", devId, i, refCnt);
-        if (refCnt > 0ULL) {
+        Context * const ctx = refObj.GetVal(false);
+        const uint64_t refCnt = GetPrimaryRetainCount(refObj);
+        const uint64_t threadRefCount = (ctx == nullptr) ? 0ULL : ctx->GetThreadRefCount();
+        RT_LOG(RT_LOG_INFO, "Default ctx state, devId=%u, ts_id=%u, retain=%#llx, thread=%#llx",
+            devId, i, refCnt, threadRefCount);
+        if ((refCnt + threadRefCount) > 0ULL) {
             *active = 1; // 1 means ctx is in use
             return RT_ERROR_NONE;
         }
@@ -2495,7 +2797,6 @@ void Runtime::DetachContextOwnedStreams(const Context *ctx) const
 
 rtError_t Runtime::TearDownPrimaryContext(Context *ctx) const
 {
-    const ContextProtect cp(ctx);
     const rtError_t error = ctx->TearDownForFinalRelease();
     if (error == RT_ERROR_NONE) {
         DetachContextOwnedStreams(ctx);
@@ -2517,103 +2818,93 @@ void Runtime::TearDownAndDeleteContextNoThrow(Context *&ctx) const
     ctx = nullptr;
 }
 
-void Runtime::RollbackFailedPrimaryContextRetain(Context *&ctx, RefObject<Context *> &refObj) const
+rtError_t Runtime::ExecutePrimaryTearDown(RefObject<Context *> &refObj, Context * const ctx, const uint32_t devId,
+    const uint32_t tsId, const bool isForceReset, bool &earlyReturn)
 {
-    if (ctx != nullptr) {
-        (void)ContextManage::EraseContextFromSetForRetainRollback(ctx);
-        (void)ctx->TearDownForFinalRelease();
-    }
-    DELETE_O(ctx);
-    refObj.SetVal(nullptr);
-}
-
-void Runtime::RollbackTsvPrimaryContextRetainFailure(const uint32_t devId)
-{
-    RefObject<Context *> &tscRefObj = priCtxs_[devId][RT_TSC_ID];
-    bool needReset = false;
-    if (!tscRefObj.TryDecRef(needReset)) {
-        return;
-    }
-    if (!needReset) {
-        return;
-    }
-
-    // needReset means TryDecRef() has moved count_ to REF_UPDATING, so concurrent IncRef/TryIncRef cannot add a new
-    // reference before ResetVal().
-    Context *tscCtx = tscRefObj.GetVal(false);
-    tscRefObj.ResetVal();
-    if (tscCtx != nullptr) {
-        (void)tscCtx->TearDownForFinalRelease();
-    }
-    DELETE_O(tscCtx);
-}
-
-rtError_t Runtime::AcquirePrimaryContextForRelease(
-    RefObject<Context *> &refObj, const uint32_t tsId, const bool isForceReset, bool &ret, bool &shouldRelease,
-    Context *&ctx, uint64_t &restoreRefCount) const
-{
-    bool reset = false; // must be false.
-    shouldRelease = false;
-    ctx = nullptr;
-    restoreRefCount = 0ULL;
-    if (!isForceReset) {
-        ret = refObj.TryDecRef(reset);
-        const uint64_t refObjValue = refObj.GetRef();
-        RT_LOG(RT_LOG_INFO, "Context TryDecRef, ts_id=%u, count=0x%llx, reset:%hhu", tsId, refObjValue, reset);
-        if (!reset) {
-            return RT_ERROR_NONE;
-        }
-        restoreRefCount = 1ULL;
-    } else {
-        if (refObj.GetRef() == 0ULL) {
-            RT_LOG(RT_LOG_INFO, "Skip primary context release during force reset because ref count is 0, ts_id=%u.",
-                tsId);
-            return RT_ERROR_NONE;
-        }
-        uint64_t releasedRefCount = 0ULL;
-        while (!reset) {
-            ret = refObj.TryDecRef(reset);
-            if (!ret) {
-                RT_LOG_INNER_MSG(RT_LOG_ERROR, "PrimaryContextRelease failed during force reset, ref count is 0.");
-                return RT_ERROR_CONTEXT_DEL;
-            }
-            releasedRefCount++;
-        }
-        restoreRefCount = releasedRefCount;
-    }
-    ctx = refObj.GetVal(false);
-    if (unlikely(!ContextManage::CheckContextIsValid(ctx, true))) {
-        refObj.ResetVal();
-        return ret ? RT_ERROR_NONE : RT_ERROR_CONTEXT_DEL;
-    }
-    shouldRelease = true;
-    return RT_ERROR_NONE;
-}
-
-rtError_t Runtime::ProcContexRelease(
-    RefObject<Context *> &refObj, Context *const ctx, const uint32_t devId, const bool isForceReset,
-    const uint64_t restoreRefCount)
-{
-    Context *releaseCtx = ctx;
-    const bool originForceReset = releaseCtx->IsContextForceReset();
-    releaseCtx->SetContextForceReset(isForceReset);
-    refObj.SetPrimaryCtxCallBackFlag(true);
-    PrimaryContextCallBack(releaseCtx, devId);
-    const rtError_t error = TearDownPrimaryContext(releaseCtx);
-    if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Primary context teardown failed, restore primary context owner, dev_id=%u, retCode=%#x.",
-            devId, error);
-        releaseCtx->SetContextForceReset(originForceReset);
+    earlyReturn = false;
+    if (unlikely(!ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL))) {
         refObj.SetPrimaryCtxCallBackFlag(false);
-        if (!refObj.RestoreValAfterFailedReset(releaseCtx, restoreRefCount)) {
-            RT_LOG(RT_LOG_ERROR, "Restore primary context owner failed after teardown failure, dev_id=%u.", devId);
-        }
-        return error;
+        earlyReturn = true;
+        return RT_ERROR_CONTEXT_DEL;
     }
-    (void)ContextManage::EraseContextAndDeleteIfNeeded(releaseCtx);
-    InnerThreadLocalContainer::SetCurRef(nullptr);
+    rtError_t tearDownRet = RT_ERROR_NONE;
+    {
+        ctx->SetContextForceReset(isForceReset);
+        if (!ctx->TearDownIsCanExecute()) {
+            refObj.SetPrimaryCtxCallBackFlag(false);
+            earlyReturn = true;
+            return RT_ERROR_CONTEXT_DEL;
+        }
+        refObj.SetPrimaryCtxCallBackFlag(true);
+        Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+        const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
+        Runtime::SetInternalThreadContext(ctx);
+        const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess, ctx]() {
+            InnerThreadLocalContainer::SetCurCtx((previousCtx == ctx) ? nullptr : previousCtx,
+                previousInternalAccess);
+        });
+        PrimaryContextCallBack(ctx, devId);
+        tearDownRet = ctx->TearDown();
+        if (tearDownRet == RT_ERROR_NONE) {
+            Runtime::SetInternalThreadContext(ctx);
+            Device * const ownerDev = ctx->Device_();
+            if (ownerDev != nullptr) {
+                const rtError_t prepareRet = ownerDev->PrepareStop();
+                if (prepareRet != RT_ERROR_NONE) {
+                        RT_LOG(RT_LOG_WARNING,
+                            "PrimaryContextRelease PrepareStop failed, devId=%u, ts_id=%u, retCode=%#x. "
+                            "Continue tearing down.", devId, tsId, static_cast<uint32_t>(prepareRet));
+                }
+            }
+        }
+        Stream * const ctrlSqStream = ctx->GetCtrlSQStream();
+        if (ctrlSqStream != nullptr) {
+            ctrlSqStream->SetContext(nullptr);
+        }
+        ctx->SetTearDownExecuteResult((tearDownRet == RT_ERROR_NONE) ? TEARDOWN_SUCCESS : TEARDOWN_ERROR);
+        if (tearDownRet == RT_ERROR_NONE) {
+            ctx->ReleaseResourcesAfterTearDown();
+            InnerThreadLocalContainer::SetCurRef(nullptr);
+        }
+    }
+    return tearDownRet;
+}
+
+rtError_t Runtime::ReleasePrimaryContextSlot(const uint32_t devId, const uint32_t tsId, const bool isForceReset,
+    const bool sentinelMode, bool &ret)
+{
+    RefObject<Context *> &refObj = priCtxs_[devId][tsId];
+    if ((sentinelMode) && (tsId == RT_TSC_ID)) {
+        return RT_ERROR_NONE;
+    }
+    Context *ctx = refObj.GetVal(false);
+    PrimaryReleaseDecision decision =
+        DecidePrimaryReleaseAction(refObj, ctx, isForceReset, devId, tsId, ret);
+    if (decision.action == PrimaryReleaseAction::SKIP_SLOT) {
+        return RT_ERROR_NONE;
+    }
+    if (decision.action == PrimaryReleaseAction::RETURN_ERROR) {
+        return RT_ERROR_CONTEXT_DEL;
+    }
+    decision.originForceReset = ctx->IsContextForceReset();
+    bool earlyReturn = false;
+    const rtError_t tearDownRet = ExecutePrimaryTearDown(refObj, ctx, devId, tsId, isForceReset, earlyReturn);
+    if (earlyReturn) {
+        return RollbackPrimaryTearDown(refObj, ctx, devId, tearDownRet, isForceReset,
+            decision.retainRestoreCount, decision.restoreCurBinding, decision.originForceReset);
+    }
+    if (tearDownRet != RT_ERROR_NONE) {
+        return RollbackPrimaryTearDown(refObj, ctx, devId, tearDownRet, isForceReset,
+            decision.retainRestoreCount, decision.restoreCurBinding, decision.originForceReset);
+    }
     PrimaryContextCallBackAfterTeardown(devId);
-    refObj.ResetVal();
+    refObj.SetPrimaryCtxCallBackFlag(false);
+    const bool resetRefSuccess = refObj.TrySetValAndResetRef(ctx);
+    COND_RETURN_ERROR_MSG_INNER(!resetRefSuccess, RT_ERROR_CONTEXT_DEL,
+        "Primary context release failed to reset ref, devId=%u, ts_id=%u.", devId, tsId);
+    if (isForceReset) {
+        ctx->ResetThreadRefCount();
+    }
     return RT_ERROR_NONE;
 }
 
@@ -2624,31 +2915,17 @@ rtError_t Runtime::PrimaryContextRelease(const uint32_t devId, const bool isForc
         "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
     COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_CONTEXT_DEL,
         "PrimaryContextRelease failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+
     Device * const dev = GetDevice(devId, 0U);
     if (dev != nullptr) {
         dev->WaitForParsePrintf();
     }
     const bool sentinelMode = Runtime::Instance()->GetSentinelMode();
     for (uint32_t i = tsNum_; i > 0U; i--) {
-        const uint32_t ts_id = i - 1U;
-        RefObject<Context *> &refObj = priCtxs_[devId][ts_id];
-        if((sentinelMode) && (ts_id == RT_TSC_ID)) {
- 	        continue;
-        }
-        Context *ctx = nullptr;
-        bool shouldRelease = false;
-        uint64_t restoreRefCount = 0ULL;
-        const rtError_t error =
-            AcquirePrimaryContextForRelease(refObj, ts_id, isForceReset, ret, shouldRelease, ctx, restoreRefCount);
-        if (error != RT_ERROR_NONE) {
-            return error;
-        }
-        if (!shouldRelease) {
-            continue;
-        }
-        const rtError_t releaseError = ProcContexRelease(refObj, ctx, devId, isForceReset, restoreRefCount);
-        if (releaseError != RT_ERROR_NONE) {
-            return releaseError;
+        const uint32_t tsId = i - 1U;
+        const rtError_t slotRet = ReleasePrimaryContextSlot(devId, tsId, isForceReset, sentinelMode, ret);
+        if (slotRet != RT_ERROR_NONE) {
+            return slotRet;
         }
     }
     return ret ? RT_ERROR_NONE : RT_ERROR_CONTEXT_DEL;
@@ -3305,7 +3582,7 @@ void Runtime::ReportAllStreamSqInfo(const Device *const dev) const
 {
     std::vector<uint32_t> streamIds;
     dev->GetStreamSqCqManage()->GetAllStreamId(streamIds);
-    RT_LOG(RT_LOG_INFO, "Report all stream sq info, deviceId=%u, stream count=%zu", 
+    RT_LOG(RT_LOG_INFO, "Report all stream sq info, deviceId=%u, stream count=%zu",
         dev->Id_(), streamIds.size());
     for (uint32_t streamId : streamIds) {
         Stream *stm = nullptr;
@@ -4020,7 +4297,7 @@ rtError_t Runtime::TaskAbortCallBack(int32_t devId, rtTaskAbortStage_t stage, ui
             rtDeviceTaskAbortStage newStage = RT_DEVICE_TASK_ABORT_PRE;
             if (stage == RT_DEVICE_ABORT_POST) {
                 newStage = RT_DEVICE_TASK_ABORT_POST;
-            } 
+            }
             auto callback = info.second.callbackV2;
             error = callback(userDeviceId, newStage, timeout, args);
             ERROR_RETURN_MSG_INNER(error, "regName:%s retCode=%#x.", info.first.c_str(), error);
@@ -4158,7 +4435,21 @@ Context *Runtime::GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId)
     }
 
     RefObject<Context *> &refObj = priCtxs_[deviceId][tsId];
-    return refObj.GetPrimaryCtxCallBackFlag() ? refObj.GetVal(false) : refObj.GetVal();
+    Context * const ctx = refObj.GetPrimaryCtxCallBackFlag() ? refObj.GetVal(false) : refObj.GetVal();
+    if (!ContextManage::IsActiveContextOnDevice(ctx, static_cast<int32_t>(deviceId))) {
+        RT_LOG(RT_LOG_DEBUG, "Primary context is unavailable, deviceId=%u, tsId=%u, ctx=%p.", deviceId, tsId, ctx);
+        return nullptr;
+    }
+    return ctx;
+}
+
+void Runtime::SetInternalThreadContext(Context * const ctx)
+{
+    Context *validCtx = nullptr;
+    if (ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL)) {
+        validCtx = ctx;
+    }
+    InnerThreadLocalContainer::SetCurCtx(validCtx, true);
 }
 
 RefObject<Context *> *Runtime::GetRefPriCtx(const uint32_t deviceId, const uint32_t tsId)
@@ -4977,14 +5268,17 @@ void Runtime::ReadStreamSyncModeFromConfigIni(void)
 
 Context *Runtime::CurrentContext() const
 {
+    const ContextAccessMode accessMode = InnerThreadLocalContainer::IsInternalContextAccess() ?
+        ContextAccessMode::INTERNAL : ContextAccessMode::USER;
     Context * const curCtx = InnerThreadLocalContainer::GetCurCtx();
     if (curCtx != nullptr) {
-        return curCtx;
+        return ContextManage::CheckContextIsValid(curCtx, accessMode) ? curCtx : nullptr;
     }
 
     RefObject<Context *> * const curRef = InnerThreadLocalContainer::GetCurRef();
     if (curRef != nullptr) {
-        return curRef->GetPrimaryCtxCallBackFlag() ? curRef->GetVal(false) : curRef->GetVal();
+        Context * const refCtx = curRef->GetPrimaryCtxCallBackFlag() ? curRef->GetVal(false) : curRef->GetVal();
+        return ContextManage::CheckContextIsValid(refCtx, accessMode) ? refCtx : nullptr;
     }
     return nullptr;
 }
@@ -5277,7 +5571,7 @@ void Runtime::ProcPageFault(Device * const device, const uint32_t value)
     RT_LOG(RT_LOG_ERROR, "ProcPageFault start, drv devId=%u, get WatchDogDevStatus, ret=%u.", devId, deviceStatus);
     if (error == RT_ERROR_NONE && deviceStatus == RT_DEVICE_STATUS_NORMAL) {
         device->SetDevicePageFault(true);
-        RT_LOG(RT_LOG_ERROR, "PageFault occurred, drv devId=%u, current page fault count=%u.", devId, value); 
+        RT_LOG(RT_LOG_ERROR, "PageFault occurred, drv devId=%u, current page fault count=%u.", devId, value);
     }
     pageFaultSupportFlag_ = false;
 }
@@ -5365,7 +5659,7 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
         COND_PROC(iter.first == nullptr, break);
 
         Context* const dereferenceCtx = iter.second;
-        Module* const module = dereferenceCtx->GetModuleWithoutCreate(prog);                
+        Module* const module = dereferenceCtx->GetModuleWithoutCreate(prog);
         COND_PROC(module == nullptr, break);
 
         Driver* curDrv = dereferenceCtx->Device_()->Driver_();
@@ -5391,20 +5685,20 @@ rtError_t Runtime::SaveModule(void)
     Runtime * const rt = Runtime::Instance();
     ObjAllocator<RefObject<Program *>> *programAllocator = rt->GetProgramAllocator();
     NULL_PTR_RETURN_MSG(programAllocator, RT_ERROR_PROGRAM_BASE);
- 
+
     COND_PROC(moduleBackupList_.empty() == false, DeleteModuleBackupPoint());
 
     RefObject<Program *> **progPool = programAllocator->GetObjAllocatorPool();
     NULL_PTR_RETURN_MSG(progPool, RT_ERROR_PROGRAM_BASE);
- 
+
     std::mutex *progMtx = programAllocator->GetObjAllocatorMutex();
     NULL_PTR_RETURN_MSG(progMtx, RT_ERROR_PROGRAM_BASE);
- 
+
     const uint32_t poolNum = Runtime::maxProgramNum_ / DEFAULT_PROGRAM_NUMBER;
- 
+
     for (uint32_t i = 0; i < poolNum; i++) {
         COND_PROC(progPool[i] == nullptr, continue);
- 
+
         std::function<void()> const errRecycle = [ret, this]() {
             if (ret != RT_ERROR_NONE) {
                 this->moduleBackupList_.clear();
@@ -5412,18 +5706,18 @@ rtError_t Runtime::SaveModule(void)
         };
         ScopeGuard tskErrRecycle(errRecycle);
         const std::lock_guard<std::mutex> lk(progMtx[i]);
-        
+
         const uint32_t baseId = programAllocator->AccumulatePoolCount(i);
         for (uint32_t index = baseId; index < baseId + DEFAULT_PROGRAM_NUMBER; index++) {
             RefObject<Program *> * const refObj = programAllocator->GetDataToItemApplied(index);
             COND_PROC(refObj == nullptr, continue);
- 
+
             const uint64_t refObjValue = refObj->GetRef();
             COND_PROC(refObjValue == 0, continue);
- 
+
             Program *prog = refObj->GetVal(false);
             COND_PROC(prog == nullptr, continue);
-            
+
             RT_LOG(RT_LOG_DEBUG, "prog ctx cnt=%u, prog id=%u", prog->GetCtxMap().size(), prog->Id_());
             ret = SaveModuleDataInfoToList(prog);
             COND_PROC(ret != RT_ERROR_NONE, return ret);
@@ -5433,7 +5727,7 @@ rtError_t Runtime::SaveModule(void)
     ret = SaveModelAllDataToHost();
     return ret;
 }
- 
+
 rtError_t Runtime::RestoreModule(void) const
 {
     rtError_t ret = RT_ERROR_NONE;
@@ -5456,13 +5750,13 @@ rtError_t Runtime::RestoreModule(void) const
             COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
                 "BinaryMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.", node->devId, hostAddr, devAddr, memSize);
         }
-  
+
         RT_LOG(RT_LOG_DEBUG,"baseAddr=0x%llx, hostMem=0x%llx.", devAddr, hostAddr);
     }
-    RT_LOG(RT_LOG_DEBUG, "backup work finish");    
+    RT_LOG(RT_LOG_DEBUG, "backup work finish");
     return ret;
 }
- 
+
 void Runtime::DeleteModuleBackupPoint(void)
 {
     RT_LOG(RT_LOG_DEBUG, "Delete begin");
@@ -5488,7 +5782,7 @@ rtError_t Runtime::SubscribeCallback(const uint64_t threadId, Stream *stm, void 
 
 rtError_t Runtime::SetSimdPrintFifoSize(uint32_t val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMD_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMD_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE,
         val, "[" + std::to_string(SIMD_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
     uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1U) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
     printblockLen_ = assignVal;
@@ -5498,7 +5792,7 @@ rtError_t Runtime::SetSimdPrintFifoSize(uint32_t val)
 
 rtError_t Runtime::SetSimtPrintFifoSize(uint32_t val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMT_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMT_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE,
         val, "[" + std::to_string(SIMT_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
     uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1U) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
     simtPrintLen_ = assignVal;
@@ -5520,7 +5814,7 @@ uint32_t GetRuntimeStreamNum(void)
 
 Stream *Runtime::GetCurStream(Stream * const stm) const
 {
-    if (stm == nullptr && 
+    if (stm == nullptr &&
         IS_SUPPORT_CHIP_FEATURE(GetChipType(), RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
         Context *curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, nullptr);

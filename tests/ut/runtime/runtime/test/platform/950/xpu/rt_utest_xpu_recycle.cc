@@ -29,31 +29,12 @@
 #include "tprt.hpp"
 #include "inner_thread_local.hpp"
 #include "task_xpu_recycle.hpp"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
 
-class XpuRecycleTest : public testing::Test {
-protected:
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
-};
+class XpuRecycleTest : public ut::XpuRuntimeMockTest {};
 
 rtError_t GetSqState1(const uint32_t deviceId, const uint32_t sqId, uint32_t &status)
 {

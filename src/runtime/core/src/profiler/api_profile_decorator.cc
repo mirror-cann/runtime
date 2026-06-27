@@ -94,8 +94,7 @@ void ApiProfileDecorator::CallApiEnd(const rtError_t retCode, const uint32_t dev
     if (deviceId == static_cast<uint32_t>(UINT16_MAX)) {
         Context *curCtx = nullptr;
         const rtError_t error = impl_->ContextGetCurrent(&curCtx);
-        if ((error == RT_ERROR_NONE) && (ContextManage::CheckContextIsValid(curCtx, true))) {
-            const ContextProtect cp(curCtx);
+        if ((error == RT_ERROR_NONE) && (ContextManage::CheckContextIsValid(curCtx))) {
             deviceId = curCtx->Device_()->Id_();
         }
     }

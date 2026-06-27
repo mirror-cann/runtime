@@ -14,6 +14,7 @@
 #include "ccu_stream.hpp"
 #include "runtime_handle_guard.h"
 #include "context.hpp"
+#include "context_manage.hpp"
 #include "stream_c.hpp"
 #include "aix_c.hpp"
 #include "aicpu_c.hpp"
@@ -1960,7 +1961,9 @@ static void L3PortErrorStatusReset(Device * const dev)
     dev->SetDeviceStatus(RT_ERROR_NONE);
     const ReadProtect rp(&ContextDataManage::Instance().GetSetRwLock());
     for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
-        COND_PROC((ctx->Device_()->Id_() != dev->Id_()), continue);
+        if (!ContextManage::IsContextOnDevice(ctx, static_cast<int32_t>(dev->Id_()))) {
+            continue;
+        }
         ctx->SetStreamsStatus(RT_ERROR_NONE);
         ctx->SetFailureError(RT_ERROR_NONE);
     }

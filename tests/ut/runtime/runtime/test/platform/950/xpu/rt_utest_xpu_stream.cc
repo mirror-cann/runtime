@@ -24,6 +24,7 @@
 #undef private
 #undef protected
 #include "xpu_stub.h"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 
 using namespace cce::runtime;
 class XpuStreamTest : public testing::Test {
@@ -314,6 +315,7 @@ TEST_F(XpuStreamTest, xpu_stream_launch_kernel_recycle_error)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+    ut::MockXpuTprtRuntime();
 
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -362,6 +364,7 @@ TEST_F(XpuStreamTest, get_cur_sq_pos)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+    ut::MockXpuTprtRuntime();
 
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -385,6 +388,7 @@ TEST_F(XpuStreamTest, david_update_public_queue)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+    ut::MockXpuTprtRuntime();
 
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -405,6 +409,7 @@ TEST_F(XpuStreamTest, Is_exist_cqe)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+    ut::MockXpuTprtRuntime();
 
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -426,6 +431,7 @@ TEST_F(XpuStreamTest, arg_release_single_task)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+    ut::MockXpuTprtRuntime();
 
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);

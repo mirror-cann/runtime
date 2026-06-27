@@ -30,6 +30,7 @@
 #include "thread_local_container.hpp"
 #include "api_impl.hpp"
 #include "memory_task.h"
+#include "../../common/rt_utest_context_reset_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
 
@@ -52,6 +53,8 @@ protected:
         ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
         ((Runtime *)Runtime::Instance())->SetDisableThread(true);
         (void)rtSetDevice(0);
+        ut::ClearCurrentContextStatusForReset();
+        ut::ClearCurrentDefaultStreamPending();
         device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
     }
 
@@ -59,7 +62,7 @@ protected:
     {
         RawDevice *rd = (RawDevice *)device_;
         while (rd->IsNeedFreeEventId()) {rd->PopNextPoolFreeEventId();}
-        rtDeviceReset(0);
+        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         ((Runtime *)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
         ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);

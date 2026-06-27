@@ -19,31 +19,36 @@
 #undef protected
 #undef private
 #include "xpu_stub.h"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 
 using namespace cce::runtime;
 
-class XpuKernelTest : public testing::Test {
+class XpuKernelTest : public ut::XpuRuntimeMockTest {
 protected:
     static void SetUpTestCase()
     {
         std::cout << "XpuKernelTest start" << std::endl;
         MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
         MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
+        MockTprtRuntime();
         rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
         EXPECT_EQ(error, ACL_RT_SUCCESS);
+        GlobalMockObject::verify();
     }
 
     static void TearDownTestCase()
     {
         std::cout << "XpuKernelTest end" << std::endl;
+        MockTprtRuntime();
         rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
+        GlobalMockObject::verify();
     }
 
-    virtual void SetUp()
+    void SetUp() override
     {
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         GlobalMockObject::verify();
     }

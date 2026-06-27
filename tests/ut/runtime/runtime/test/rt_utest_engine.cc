@@ -47,6 +47,7 @@
 #include "model_execute_task.h"
 #include "rt_unwrap.h"
 #include "../task_test_helper.h"
+#include "common/rt_utest_context_reset_helper.hpp"
 
 using namespace testing;
 using namespace cce::runtime;
@@ -83,6 +84,8 @@ protected:
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
         rtSetDevice(0);
+        ut::ClearCurrentContextStatusForReset();
+        ut::ClearCurrentDefaultStreamPending();
 
         device_ = rtInstance->DeviceRetain(0, 0);
         engine_ = ((RawDevice *)device_)->engine_;
@@ -107,6 +110,8 @@ protected:
         stream_ = nullptr;
         engine_ = nullptr;
         rtInstance->DeviceRelease(device_);
+        ut::ClearCurrentContextStatusForReset();
+        ut::ClearCurrentDefaultStreamPending();
         rtDeviceReset(0);
         GlobalMockObject::verify();
         GlobalMockObject::reset();

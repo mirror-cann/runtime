@@ -617,7 +617,7 @@ rtError_t StarsEngine::MonitorTaskReclaim(uint16_t errorStreamId)
         return RT_ERROR_NONE;
     }
     if (stm->Context_() != nullptr) {
-        InnerThreadLocalContainer::SetCurCtx(stm->Context_());
+        Runtime::Instance()->SetInternalThreadContext(stm->Context_());
     }
     if (stm->GetPendingNum() == 0U || stm->IsBindDvppGrp()) {
         // dvpp task recycled by rtDvppWaitGroupReport
@@ -1615,7 +1615,7 @@ void StarsEngine::ProcLogicCqReport(const rtLogicCqReport_t &logicCq, const bool
         Runtime::Instance()->SetWatchDogDevStatus(device_, RT_DEVICE_STATUS_ABNORMAL);
     }
     if (stm->IsSeparateSendAndRecycle()) {
-        InnerThreadLocalContainer::SetCurCtx(stm->Context_());
+        Runtime::Instance()->SetInternalThreadContext(stm->Context_());
         (void)RecycleSeparatedStmByFinishedId(stm, taskId, true);
         if (isExceptionFlag) {
             stm->EnterFailureAbort();

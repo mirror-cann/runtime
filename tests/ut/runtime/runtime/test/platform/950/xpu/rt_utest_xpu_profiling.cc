@@ -32,10 +32,11 @@
 #include "raw_device.hpp"
 #include "xpu_stub.h"
 #include "tprt.hpp"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 
 
 using namespace cce::runtime;
-class XpuProfilingTest : public testing::Test {
+class XpuProfilingTest : public ut::XpuRuntimeMockTest {
 protected:
     static void SetUpTestCase()
     {
@@ -47,15 +48,6 @@ protected:
     static void TearDownTestCase()
     {
         std::cout << "XpuProfilingTest end" << std::endl;
-    }
-
-    virtual void SetUp()
-    {
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
     }
 };
 

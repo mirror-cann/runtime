@@ -111,7 +111,6 @@ set(runtimeut_src_context_list
     ${TOP_DIR}/src/runtime/feature/aclgraph/context_standard_soc_aclgraph.cc
     ${TOP_DIR}/src/runtime/feature/ffts/context_ffts_standard_soc.cc
     ${TOP_DIR}/src/runtime/core/src/context/context_manage.cc
-    ${TOP_DIR}/src/runtime/core/src/context/context_protect.cc
 )
 
 set(runtimeut_src_aclgraph_list

@@ -306,6 +306,7 @@ public:
     rtError_t GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t * const threadId);
     bool IsHostFuncCbReg(const Stream * const stm) const;
     Context *GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId) override;
+    void SetInternalThreadContext(Context * const ctx);
     RefObject<Context *> *GetRefPriCtx(const uint32_t deviceId, const uint32_t tsId);
     rtError_t SetTimeoutConfig(const rtTaskTimeoutType_t type, const uint64_t timeout, const RtTaskTimeUnitType timeUnitType);
     rtError_t GetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset) const override;
@@ -880,18 +881,10 @@ private:
     void PrimaryContextCallBack(const Context * const ctx, const uint32_t devId);
     void PrimaryContextCallBackAfterTeardown(const uint32_t devId) const;
     void TearDownAndDeleteContextNoThrow(Context *&ctx) const;
-    rtError_t AcquirePrimaryContextForRelease(
-        RefObject<Context *> &refObj, const uint32_t tsId, const bool isForceReset, bool &ret,
-        bool &shouldRelease, Context *&ctx, uint64_t &restoreRefCount) const;
-    rtError_t ProcContexRelease(
-        RefObject<Context *> &refObj, Context *const ctx, const uint32_t devId, const bool isForceReset,
-        const uint64_t restoreRefCount);
     bool AcquirePrimaryXpuContextForRelease(Context *&ctx);
     rtError_t FinalizePrimaryXpuContextRelease(Context *ctx);
     void DetachContextOwnedStreams(const Context *ctx) const;
     rtError_t TearDownPrimaryContext(Context *ctx) const;
-    void RollbackFailedPrimaryContextRetain(Context *&ctx, RefObject<Context *> &refObj) const;
-    void RollbackTsvPrimaryContextRetainFailure(const uint32_t devId);
     rtError_t StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted) const;
     rtError_t PrepareDeviceRetain(
         const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted) const;
@@ -899,6 +892,10 @@ private:
         RefObject<Device *> &refObj, Device *&dev, const uint32_t devId, const uint32_t tsId,
         const bool aicpuExecutorStarted) const;
     void FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, const bool isForceReset);
+    rtError_t ExecutePrimaryTearDown(RefObject<Context *> &refObj, Context * const ctx, const uint32_t devId,
+        const uint32_t tsId, const bool isForceReset, bool &earlyReturn);
+    rtError_t ReleasePrimaryContextSlot(const uint32_t devId, const uint32_t tsId, const bool isForceReset,
+        const bool sentinelMode, bool &ret);
     Device *DeviceAddObserver(Device *dev);
     rtError_t RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t numsDev,
         const uint32_t * const deviceList, const uint32_t cacheFlag);

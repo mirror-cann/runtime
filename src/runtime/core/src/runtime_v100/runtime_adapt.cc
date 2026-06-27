@@ -63,7 +63,7 @@ Runtime::~Runtime()
             Context *context = priCtxs_[i][j].GetVal(false);
             priCtxs_[i][j].ResetVal();
             if (context != nullptr) {
-                if (context->GetCount() == 0ULL) {
+                if (context->GetThreadRefCount() == 0ULL) {
                     TearDownAndDeleteContextNoThrow(context);
                 }
             }

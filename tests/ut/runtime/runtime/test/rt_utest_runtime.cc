@@ -812,6 +812,36 @@ TEST_F(RuntimeTest, PrimaryContextRetain_InvalidDevId)
     EXPECT_EQ(rtInstance->PrimaryContextRetain(RT_MAX_DEV_NUM + 1), nullptr);
 }
 
+// 等价性验证：PrimaryContextRelease 入参校验早退分支（devId 越界 -> RT_ERROR_DEVICE_ID）。
+TEST_F(RuntimeTest, PrimaryContextRelease_InvalidDevId)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    EXPECT_EQ(rtInstance->PrimaryContextRelease(RT_MAX_DEV_NUM + 1), RT_ERROR_DEVICE_ID);
+    EXPECT_EQ(rtInstance->PrimaryContextRelease(RT_MAX_DEV_NUM + 1, true), RT_ERROR_DEVICE_ID);
+}
+
+// 等价性验证：多次 retain 后单次 non-force release，引用计数未归零，
+// 决策返回 kSkip 但 ret=true，PrimaryContextRelease 应返回 RT_ERROR_NONE 且 primary context 不被 teardown。
+// 本用例对 fixture 引用计数保持平衡（额外 retain 1 次、release 1 次）。
+TEST_F(RuntimeTest, PrimaryContextRelease_MultiRetainKeepsPrimaryAlive)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    int32_t devId = 0;
+    EXPECT_EQ(rtGetDevice(&devId), RT_ERROR_NONE);
+
+    RefObject<Context *> *refObject = rtInstance->PrimaryContextRetain(static_cast<uint32_t>(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context *ctxBefore = refObject->GetVal();
+    EXPECT_NE(ctxBefore, nullptr);
+
+    // 引用计数仍 > 0，不触发 teardown，返回 RT_ERROR_NONE。
+    EXPECT_EQ(rtInstance->PrimaryContextRelease(static_cast<uint32_t>(devId)), RT_ERROR_NONE);
+
+    // primary context 仍存活，未被释放，指针保持不变。
+    Context *ctxAfter = refObject->GetVal();
+    EXPECT_EQ(ctxAfter, ctxBefore);
+}
+
 TEST_F(RuntimeTest, FreeAiCpuStreamId_Invalid)
 {
     Runtime *rtInstance = (Runtime *)Runtime::Instance();

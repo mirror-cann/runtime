@@ -129,6 +129,21 @@ public:
         return count_.Value();
     }
 
+    uint64_t GetRefCount() const
+    {
+        return count_.Value() & (~REF_UPDATING);
+    }
+
+    bool IsRefUpdating() const
+    {
+        return (count_.Value() & REF_UPDATING) != 0ULL;
+    }
+
+    bool TryMarkRefUpdating()
+    {
+        return count_.CompareExchange(0ULL, REF_UPDATING);
+    }
+
     // callef after IncRef return 0.
     void SetVal(T val)
     {
@@ -165,6 +180,22 @@ public:
         return false;
     }
 
+    // Publish val and clear REF_UPDATING for paths that intentionally leave no retain refs.
+    bool TrySetValAndResetRef(T val)
+    {
+        const uint64_t oldRef = count_.Value();
+        if ((oldRef & REF_UPDATING) == 0ULL) {
+            return false;
+        }
+
+        const T oldVal = value_;
+        value_ = val;
+        if (count_.CompareExchange(oldRef, 0ULL)) {
+            return true;
+        }
+        value_ = oldVal;
+        return false;
+    }
     // safe call after IncRef
     const T GetVal(bool polling = true) const
     {

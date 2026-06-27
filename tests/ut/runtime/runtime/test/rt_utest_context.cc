@@ -24,7 +24,6 @@
 #include "label_c.hpp"
 #include "dvpp_c.hpp"
 #include "cmo_barrier_c.hpp"
-#include "context_protect.hpp"
 #include "profiling_task.h"
 #include "cond_op_stream_task.h"
 #include "reduce_task.h"
@@ -46,6 +45,7 @@
 #include "task.hpp"
 #include "task_res.hpp"
 #include "thread_local_container.hpp"
+#include "inner_thread_local.hpp"
 #include "async_hwts_engine.hpp"
 #include "runtime_keeper.h"
 #include "memory_task.h"
@@ -91,6 +91,7 @@ protected:
         std::cout << "ContextTest TearDown" << std::endl;
         GlobalMockObject::verify();
         rtDeviceReset(0);
+        GlobalMockObject::reset();
         std::cout << "ContextTest TearDown end" << std::endl;
     }
 };
@@ -126,7 +127,6 @@ TEST_F(ContextTest, NpuGetFloatStatus_abnormal_001)
     int32_t devId;
     rtError_t error;
     Context *ctx;
-    rtStream_t liteStream;
     Driver * drv;
 
     drv = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
@@ -143,14 +143,15 @@ TEST_F(ContextTest, NpuGetFloatStatus_abnormal_001)
         .stubs()
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    error = rtStreamCreateWithFlags(&liteStream, 0, RT_STREAM_FAST_LAUNCH);
-    usleep(100000);
-    EXPECT_EQ(error, RT_ERROR_NONE);
-
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(liteStream);
-
+    Stream * stm = ctx->DefaultStream_();
+    EXPECT_NE(stm, nullptr);
+    if (stm == nullptr) {
+        (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+        return;
+    }
 
     TaskResManage taskResMng;
+    auto preTaskResMng = stm->taskResMang_;
     stm->taskResMang_ = &taskResMng;
     EXPECT_NE(stm->taskResMang_, nullptr);
 
@@ -164,11 +165,7 @@ TEST_F(ContextTest, NpuGetFloatStatus_abnormal_001)
 
     error = ctx->NpuGetFloatStatus(nullptr, 0U, 0U, stm, true);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    stm->taskResMang_ = nullptr;
-
-    error = rtStreamDestroy(liteStream);
-    delete stm;
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    stm->taskResMang_ = preTaskResMng;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
     delete engine;
 }
@@ -178,7 +175,6 @@ TEST_F(ContextTest, NpuClearFloatStatus_abnormal_001)
     int32_t devId;
     rtError_t error;
     Context *ctx;
-    rtStream_t liteStream;
     Driver * drv;
 
     drv = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
@@ -195,13 +191,15 @@ TEST_F(ContextTest, NpuClearFloatStatus_abnormal_001)
         .stubs()
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    error = rtStreamCreateWithFlags(&liteStream, 0, RT_STREAM_FAST_LAUNCH);
-    usleep(100000);
-    EXPECT_EQ(error, RT_ERROR_NONE);
-
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(liteStream);
+    Stream * stm = ctx->DefaultStream_();
+    EXPECT_NE(stm, nullptr);
+    if (stm == nullptr) {
+        (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+        return;
+    }
 
     TaskResManage taskResMng;
+    auto preTaskResMng = stm->taskResMang_;
     stm->taskResMang_ = &taskResMng;
 
     EXPECT_NE(stm->taskResMang_, nullptr);
@@ -216,11 +214,7 @@ TEST_F(ContextTest, NpuClearFloatStatus_abnormal_001)
 
     error = ctx->NpuClearFloatStatus(0U, stm, true);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    stm->taskResMang_ = nullptr;
-
-    error = rtStreamDestroy(liteStream);
-    delete stm;
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    stm->taskResMang_ = preTaskResMng;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
     delete engine;
 }
@@ -230,7 +224,6 @@ TEST_F(ContextTest, launch_update_sqe_anormal_001)
     int32_t devId;
     rtError_t error;
     Context *ctx;
-    rtStream_t liteStream;
     Driver * drv;
 
     drv = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
@@ -247,13 +240,15 @@ TEST_F(ContextTest, launch_update_sqe_anormal_001)
         .stubs()
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    error = rtStreamCreateWithFlags(&liteStream, 0, RT_STREAM_FAST_LAUNCH);
-    usleep(100000);
-    EXPECT_EQ(error, RT_ERROR_NONE);
-
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(liteStream);
+    Stream * stm = ctx->DefaultStream_();
+    EXPECT_NE(stm, nullptr);
+    if (stm == nullptr) {
+        (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+        return;
+    }
 
     TaskResManage taskResMng;
+    auto preTaskResMng = stm->taskResMang_;
     stm->taskResMang_ = &taskResMng;
 
     EXPECT_NE(stm->taskResMang_, nullptr);
@@ -268,11 +263,7 @@ TEST_F(ContextTest, launch_update_sqe_anormal_001)
 
     error = ctx->LaunchSqeUpdateTask(nullptr, 40U, 2U, 0, stm);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-    stm->taskResMang_ = nullptr;
-
-    error = rtStreamDestroy(liteStream);
-    delete stm;
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    stm->taskResMang_ = preTaskResMng;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
     delete engine;
 }
@@ -397,13 +388,43 @@ TEST_F(ContextTest, TEAR_DOWN_TEST)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
+    Stream *onlineStream = ctx->onlineStream_;
     ctx->defaultStream_ = NULL;
+    ctx->streams_.clear();
+    ctx->onlineStream_ = nullptr;
 
     error = ctx->TearDown();
     EXPECT_EQ(error, RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL);
 
     ctx->defaultStream_ = stream;
+    ctx->streams_ = streams;
+    ctx->onlineStream_ = onlineStream;
+    ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownIsCanExecuteRejectsInvalidStateAndDuplicateTearDown)
+{
+    Context ctx(nullptr, false);
+
+    ctx.SetState(ContextState::CTX_STATE_INITIALIZING, "ut_initializing_state");
+    EXPECT_EQ(ctx.GetState(), ContextState::CTX_STATE_INITIALIZING);
+
+    const ContextState unknownState = static_cast<ContextState>(0xFFU);
+    ctx.SetState(unknownState, "ut_unknown_state");
+    EXPECT_EQ(ctx.GetState(), unknownState);
+
+    ctx.SetState(ContextState::CTX_STATE_NOT_INITIALIZED, "ut_not_initialized_state");
+    EXPECT_FALSE(ctx.TearDownIsCanExecute());
+    EXPECT_EQ(ctx.GetState(), ContextState::CTX_STATE_NOT_INITIALIZED);
+
+    ctx.SetState(ContextState::CTX_STATE_ACTIVE, "ut_active_state");
+    EXPECT_TRUE(ctx.TearDownIsCanExecute());
+    EXPECT_EQ(ctx.GetState(), ContextState::CTX_STATE_FINALIZING);
+    EXPECT_FALSE(ctx.TearDownIsCanExecute());
+
+    ctx.SetTearDownExecuteResult(TEARDOWN_SUCCESS);
 }
 
 TEST_F(ContextTest, PrimaryContextReleaseRestoresContextWhenFinalReleaseFails)
@@ -442,6 +463,95 @@ TEST_F(ContextTest, PrimaryContextReleaseRestoresContextWhenFinalReleaseFails)
     error = runtime->PrimaryContextRelease(devId, true);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(refObject->GetRef(), 0ULL);
+    error = rtSetDevice(devId);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
+TEST_F(ContextTest, PrimaryContextReleaseRollsBackOrdinaryResetWhenLastThreadReleaseFails)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    const bool originSentinelMode = runtime->GetSentinelMode();
+    const uint32_t originTsNum = runtime->tsNum_;
+    runtime->SetDisableThread(false);
+    runtime->SetSentinelMode(false);
+    runtime->tsNum_ = 1U;
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+
+    InnerThreadLocalContainer::SetCurCtx(nullptr);
+    InnerThreadLocalContainer::SetCurRef(nullptr);
+    ctx->ResetThreadRefCount();
+    InnerThreadLocalContainer::SetCurRef(refObject);
+    ASSERT_EQ(ctx->GetThreadRefCount(), 1ULL);
+    bool reset = false;
+    while (refObject->TryDecRef(reset) && !reset) {
+    }
+    ASSERT_TRUE(reset);
+    ASSERT_TRUE(refObject->TrySetValAndResetRef(ctx));
+    ASSERT_EQ(refObject->GetRef(), 0ULL);
+
+    MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    error = runtime->PrimaryContextRelease(devId, false);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(refObject->GetVal(false), ctx);
+    EXPECT_EQ(refObject->GetRef(), 0ULL);
+    EXPECT_EQ(InnerThreadLocalContainer::GetCurCtx(), ctx);
+    EXPECT_EQ(ctx->GetState(), ContextState::CTX_STATE_ACTIVE);
+
+    GlobalMockObject::reset();
+    error = runtime->PrimaryContextRelease(devId, true);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    runtime->SetDisableThread(disableThread);
+    runtime->SetSentinelMode(originSentinelMode);
+    runtime->tsNum_ = originTsNum;
+}
+
+TEST_F(ContextTest, PrimaryContextRetainRollsBackWhenInitializationFails)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool originSentinelMode = runtime->GetSentinelMode();
+    const uint32_t originTsNum = runtime->tsNum_;
+    (void)runtime->PrimaryContextRelease(devId, true);
+    runtime->SetSentinelMode(false);
+    runtime->tsNum_ = 1U;
+
+    RefObject<Context *> &refObject = runtime->priCtxs_[devId][RT_TSC_ID];
+    ASSERT_EQ(refObject.GetRef(), 0ULL);
+
+    Device * const dev = runtime->DeviceRetain(static_cast<uint32_t>(devId), RT_TSC_ID);
+    ASSERT_NE(dev, nullptr);
+    MOCKER_CPP_VIRTUAL(dev, &Device::RegisterAndLaunchDcacheLockOp)
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
+
+    RefObject<Context *> * const failedRefObject =
+        static_cast<RefObject<Context *> *>(runtime->PrimaryContextRetain(devId));
+    EXPECT_EQ(failedRefObject, nullptr);
+    EXPECT_EQ(refObject.GetRef(), 0ULL);
+    EXPECT_FALSE(refObject.GetPrimaryCtxCallBackFlag());
+
+    GlobalMockObject::reset();
+    runtime->DeviceRelease(dev, false);
+    runtime->SetSentinelMode(originSentinelMode);
+    runtime->tsNum_ = originTsNum;
+    error = rtSetDevice(devId);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(ContextTest, PrimaryContextRetainRollbackKeepsReferencedTscContext)
@@ -476,7 +586,7 @@ TEST_F(ContextTest, PrimaryContextRetainRollbackKeepsReferencedTscContext)
     EXPECT_EQ(failedRetain, nullptr);
     EXPECT_EQ(firstRefObject->GetVal(false), tscCtx);
     EXPECT_EQ(firstRefObject->GetRef(), refCountBeforeRollback);
-    EXPECT_TRUE(ContextManage::CheckContextIsValid(tscCtx, false));
+    EXPECT_TRUE(ContextManage::CheckContextIsValid(tscCtx));
 
     tsvRefObj.ResetValForAbort();
     runtime->tsNum_ = 1U;
@@ -499,10 +609,10 @@ TEST_F(ContextTest, PrimaryContextRetainRollbackErasesInsertedContext)
     Context *ctx = new (std::nothrow) Context(dev, true);
     ASSERT_NE(ctx, nullptr);
     ContextManage::InsertContext(ctx);
-    ASSERT_TRUE(ContextManage::CheckContextIsValid(ctx, false));
+    ASSERT_TRUE(ContextManage::IsContextTracked(ctx));
 
-    EXPECT_EQ(ContextManage::EraseContextFromSetForRetainRollback(ctx), RT_ERROR_NONE);
-    EXPECT_FALSE(ContextManage::CheckContextIsValid(ctx, false));
+    EXPECT_EQ(ContextManage::RemoveContextFromSet(ctx), RT_ERROR_NONE);
+    EXPECT_FALSE(ContextManage::IsContextTracked(ctx));
 
     ctx->device_ = nullptr;
     DELETE_O(ctx);
@@ -629,6 +739,7 @@ TEST_F(ContextTest, TearDownReturnsOwnerStreamFailureAndKeepsStreamRestored)
     }
     EXPECT_TRUE(found);
 
+    ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
     GlobalMockObject::reset();
     error = ctx->StreamDestroy(stream, false);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -659,6 +770,7 @@ TEST_F(ContextTest, TearDownSkipsRestoringBoundStreamFailure)
     stream->SetModel(&model);
     error = ctx->TearDown();
     EXPECT_EQ(error, RT_ERROR_NONE);
+    ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
 
     bool found = false;
     for (const Stream * const ownedStream : ctx->streams_) {
@@ -702,6 +814,7 @@ TEST_F(ContextTest, TearDownKeepsOnlineStreamOnFailure)
     error = ctx->TearDown();
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(ctx->onlineStream_, onlineStream);
+    ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
     GlobalMockObject::reset();
     error = ctx->StreamDestroy(onlineStream, false);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -741,6 +854,7 @@ TEST_F(ContextTest, TearDownKeepsDefaultStreamOnFailure)
     error = ctx->TearDown();
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(ctx->defaultStream_, defaultStream);
+    ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
     GlobalMockObject::reset();
     error = ctx->StreamDestroy(defaultStream, false);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -766,6 +880,7 @@ TEST_F(ContextTest, SYNCHRONIZE_TEST)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
     error = ctx->Synchronize(-1);
@@ -774,21 +889,26 @@ TEST_F(ContextTest, SYNCHRONIZE_TEST)
     ctx->defaultStream_ = stream;
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
+    ctx->streams_.push_back(stmPtr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
-    ctx->streams_.push_back(stmPtr);
-    MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs()
+    MOCKER_CPP_VIRTUAL(stmPtr, &Stream::Synchronize).stubs()
         .will(returnValue(RT_ERROR_STREAM_SYNC_TIMEOUT))
         .then(returnValue(RT_ERROR_STREAM_BASE));
-    error = ctx->Synchronize(-1);
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs()
+        .will(returnValue(RT_ERROR_NONE));
+    error = ctx->Synchronize(-1);
+    MOCKER_CPP_VIRTUAL(stmPtr, &Stream::Synchronize).stubs()
         .will(returnValue(RT_ERROR_STREAM_BASE));
     error = ctx->Synchronize(-1);
-    ctx->streams_.clear();
 
+    ctx->streams_.clear();
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -807,6 +927,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_test_timeout)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
 
@@ -816,7 +937,9 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_test_timeout)
     ctx->defaultStream_ = stream;
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
@@ -832,6 +955,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_test_timeout)
     ctx->streams_.clear();
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -850,6 +974,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_ctxFailureMode)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
 
@@ -859,7 +984,9 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_ctxFailureMode)
     ctx->defaultStream_ = stream;
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
@@ -875,6 +1002,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_ctxFailureMode)
     ctx->streams_.clear();
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -893,6 +1021,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_deviceTaskAbort)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
 
@@ -902,7 +1031,9 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_deviceTaskAbort)
     ctx->defaultStream_ = stream;
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
@@ -922,6 +1053,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_deviceTaskAbort)
     ctx->streams_.clear();
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -940,6 +1072,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_test_error)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
 
@@ -949,7 +1082,9 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_test_error)
     ctx->defaultStream_ = stream;
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
@@ -965,6 +1100,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_test_error)
     ctx->streams_.clear();
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 TEST_F(ContextTest, TaskReclaimforSyncDevice_DeviceAbort)
@@ -982,13 +1118,16 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_DeviceAbort)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
     ctx->defaultStream_ = stream;
 
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = CONTINUE_ON_FAILURE;
     ctx->streams_.push_back(stmPtr);
@@ -1003,6 +1142,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_DeviceAbort)
     ctx->streams_.clear();
     dev->SetDeviceStatus(RT_ERROR_NONE);
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -1021,13 +1161,16 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_DeviceAbortStopOnfaliure)
     ctx = refObject->GetVal();
 
     stream = ctx->defaultStream_;
+    const auto streams = ctx->streams_;
     ctx->defaultStream_ = NULL;
     ctx->streams_.clear();
     ctx->defaultStream_ = stream;
 
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     ctx->streams_.push_back(stmPtr);
@@ -1042,6 +1185,7 @@ TEST_F(ContextTest, TaskReclaimforSyncDevice_DeviceAbortStopOnfaliure)
     ctx->streams_.clear();
     dev->SetDeviceStatus(RT_ERROR_NONE);
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -1055,13 +1199,15 @@ TEST_F(ContextTest, StarsLaunchDvppRRProcess_Test)
     RefObject<Context*> *refObject = NULL;
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     ctx = refObject->GetVal();
+    const auto streams = ctx->streams_;
     error = rtStreamCreate(&stm, 0);
+    ASSERT_EQ(error, RT_ERROR_NONE);
     usleep(200000);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
-    ctx->streams_.push_back(stmPtr);
     error = StarsLaunchDvppRRProcess(stmPtr);
     TaskResManage mTaskResManage;
     mTaskResManage.taskPoolNum_ = 1;
@@ -1072,9 +1218,9 @@ TEST_F(ContextTest, StarsLaunchDvppRRProcess_Test)
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
     GlobalMockObject::verify();
     stmPtr->taskResMang_ = nullptr;
-    ctx->streams_.clear();
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
     delete device;
 }
@@ -1089,13 +1235,15 @@ TEST_F(ContextTest, SetStreamOverflowSwitch_Test)
     RefObject<Context*> *refObject = NULL;
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     ctx = refObject->GetVal();
+    const auto streams = ctx->streams_;
     error = rtStreamCreate(&stm, 0);
+    ASSERT_EQ(error, RT_ERROR_NONE);
     usleep(100000);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
-    ctx->streams_.push_back(stmPtr);
     Stream * defaultStream = ctx->defaultStream_;
     ctx->defaultStream_ = stmPtr;
     TaskResManage mTaskResManage;
@@ -1109,10 +1257,10 @@ TEST_F(ContextTest, SetStreamOverflowSwitch_Test)
     EXPECT_EQ(error, RT_ERROR_NONE);
     stmPtr->taskResMang_ = nullptr;
     GlobalMockObject::verify();
-    ctx->streams_.clear();
     ctx->defaultStream_ = defaultStream;
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
     delete device;
 }
@@ -1130,23 +1278,24 @@ TEST_F(ContextTest, ModelAddEndGraph_Test)
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     ctx = refObject->GetVal();
     error = ctx->ModelCreate(&model);
+    const auto streams = ctx->streams_;
     error = rtStreamCreate(&stm, 0);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    ASSERT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
 
     stmPtr->failureMode_ = STOP_ON_FAILURE;
     stmPtr->flags_ = 0;
-    ctx->streams_.push_back(stmPtr);
     Stream *defaultStream = ctx->defaultStream_;
     ctx->defaultStream_ = stmPtr;
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend310P1");
     error = ctx->ModelAddEndGraph(model, stmPtr, 0);
     GlobalContainer::SetSocVersion(socVersion);
-    ctx->streams_.clear();
     ctx->defaultStream_ = defaultStream;
 
     rtStreamDestroy(stm);
+    ctx->streams_ = streams;
     (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
@@ -3572,33 +3721,37 @@ TEST_F(ContextTest, NONFAIL_SYNCHRONIZE_TEST)
     Context *ctx;
     RefObject<Context *> *refObject = NULL;
     refObject = (RefObject<Context *> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(0);
+    ASSERT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+    Stream *originDefaultStream = ctx->defaultStream_;
+    std::list<Stream *> originStreams = ctx->streams_;
     ctx->streams_.clear();
     ctx->defaultStream_ = new Stream(ctx->Device_(), 0);
+    ASSERT_NE(ctx->defaultStream_, nullptr);
+    ctx->defaultStream_->SetContext(ctx);
 
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    if (error != RT_ERROR_NONE) {
+        delete ctx->defaultStream_;
+        ctx->defaultStream_ = originDefaultStream;
+        ctx->streams_ = originStreams;
+        (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(0);
+    }
+    ASSERT_EQ(error, RT_ERROR_NONE);
     Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+    ASSERT_NE(stmPtr, nullptr);
     stmPtr->failureMode_ = CONTINUE_ON_FAILURE;
     stmPtr->flags_ = 0;
-    ctx->streams_.push_back(stmPtr);
     MOCKER_CPP_VIRTUAL(ctx->defaultStream_, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_STREAM_BASE));
     error = ctx->Synchronize(-1);
-    ctx->streams_.clear();
-    delete ctx->defaultStream_;
-    ctx->defaultStream_ = NULL;
-
     rtStreamDestroy(stm);
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(0);
-}
+    delete ctx->defaultStream_;
+    ctx->defaultStream_ = originDefaultStream;
+    ctx->streams_ = originStreams;
 
-TEST_F(ContextTest, ContextProtect_delete)
-{
-    Context *ctx = nullptr;
-    ContextProtect *ctxProtect = new ContextProtect(ctx);
-    EXPECT_NE(ctxProtect, nullptr);
-    delete ctxProtect;
+    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(0);
 }
 
 TEST_F(ContextTest, GetSatStatusForStars_test)
@@ -3981,6 +4134,7 @@ TEST_F(ContextTest, ReduceAsyncV2_test)
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    stream->SetContext(ctx);
 
     int tempMemory;
     auto preVal = stream->taskResMang_;
@@ -4029,6 +4183,7 @@ TEST_F(ContextTest, ReduceAsync_test)
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    stream->SetContext(ctx);
 
     int tempMemory;
     auto preVal = stream->taskResMang_;

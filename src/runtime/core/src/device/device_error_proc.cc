@@ -293,6 +293,9 @@ rtError_t DeviceErrorProc::SendTaskToStopUseRingBuffer()
         if (deviceRingBufferAddr_ == nullptr) {
             return RT_ERROR_NONE;
         }
+        if (stopTaskSent_) {
+            return RT_ERROR_NONE;
+        }
         devMem = deviceRingBufferAddr_;
     }
     rtError_t error = RT_ERROR_NONE;
@@ -303,6 +306,10 @@ rtError_t DeviceErrorProc::SendTaskToStopUseRingBuffer()
     }
     ERROR_RETURN(error, "Failed to pass the buffer addr to device.");
 
+    {
+        const std::lock_guard<std::mutex> mutexLock(mutex_);
+        stopTaskSent_ = true;
+    }
     RT_LOG(RT_LOG_DEBUG, "End to send destroy task for deleting device ringbuffer.");
     return RT_ERROR_NONE;
 }
@@ -388,6 +395,7 @@ rtError_t DeviceErrorProc::CreateDeviceRingBufferAndSendTask()
     {
         const std::lock_guard<std::mutex> mutexLock(mutex_);
         deviceRingBufferAddr_ = devMem;
+        stopTaskSent_ = false;
     }
     RT_LOG(RT_LOG_DEBUG, "End to Create device ringbuffer and send task, ringbuffer size=%u(bytes).", ringBufferSize_);
     return RT_ERROR_NONE;
@@ -409,6 +417,7 @@ rtError_t DeviceErrorProc::DestroyDeviceRingBuffer()
         const rtError_t error = devDrv->DevMemFree(deviceRingBufferAddr_, device_->Id_());
         ERROR_RETURN(error, "Failed to release device memory, device_id=%u.", device_->Id_());
         deviceRingBufferAddr_ = nullptr;
+        stopTaskSent_ = false;
     }
 
     return RT_ERROR_NONE;

@@ -24,29 +24,11 @@
 #include "runtime.hpp"
 #include "api.hpp"
 #include "tprt.hpp"
+#include "../../../common/rt_utest_xpu_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
-class XpuArgLoaderTest : public testing::Test
+class XpuArgLoaderTest : public ut::XpuRuntimeMockTest
 {
-protected:
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
 };
 
 TEST_F(XpuArgLoaderTest, xpu_arg_loader_test_01)

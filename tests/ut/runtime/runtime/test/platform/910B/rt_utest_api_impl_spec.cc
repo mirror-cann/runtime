@@ -53,6 +53,7 @@
 #include "../../task_test_helper.h"
 #include "memcpy_c.hpp"
 #include "model_execute_task.h"
+#include "../../common/rt_utest_context_reset_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
 
@@ -71,6 +72,7 @@ protected:
 
     virtual void SetUp()
     {
+        GlobalMockObject::reset();
         driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
@@ -79,8 +81,11 @@ protected:
 
     virtual void TearDown()
     {
+        ut::ClearCurrentContextStatusForReset();
+        ut::ClearCurrentDefaultStreamPending();
         rtDeviceReset(0);
         GlobalMockObject::verify();
+        GlobalMockObject::reset();
     }
 private:
     Driver *driver_;
@@ -414,6 +419,12 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_TASK_UPDATE_TEST_1)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
+    error = rtStreamDestroy(desStm);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    error = rtStreamDestroy(sinkStm);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    error = rtBinaryUnLoad(reinterpret_cast<rtBinHandle>(handle));
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     Device* dev2 = curCtx->DefaultStream_()->Device_();
     MOCKER_CPP_VIRTUAL(dev2, &Device::GetDevRunningState)
@@ -462,6 +473,8 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_BACKUP)
     error = rtModelUnbindStream(model, sinkStm);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelDestroy(model);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    error = rtStreamDestroy(sinkStm);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     Device* dev2 = curCtx->DefaultStream_()->Device_();

@@ -32,36 +32,19 @@
 #include "utils.h"
 #include "npu_driver.hpp"
 #include "para_convertor.hpp"
+#include "tprt_api.h"
 #include "xpu_kernel_task.h"
 #include "arg_manage_xpu.hpp"
 #include "api_impl_david.hpp"
 #undef protected
 #undef private
+#include "../../../common/rt_utest_xpu_helper.hpp"
 #include "xpu_stub.h"
 #include "rt_unwrap.h"
 
 using namespace cce::runtime;
-class XpuLaunchTest : public testing::Test {
+class XpuLaunchTest : public ut::XpuRuntimeMockTest {
 protected:
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
-
     static XpuContext* GetContext() 
     {
         Context* ctx = InnerThreadLocalContainer::GetCurCtx();

@@ -13,6 +13,7 @@
 #include "kernel.hpp"
 #include "runtime.hpp"
 #include "context.hpp"
+#include "context_manage.hpp"
 #include "inner_thread_local.hpp"
 #include "error_message_manage.hpp"
 #include "uma_arg_loader.hpp"
@@ -101,7 +102,7 @@ rtError_t DeviceSnapshot::OpMemoryBackup(void)
     const ReadProtect rp(&ctxMan.GetSetRwLock());
     const uint32_t devId = device_->Id_();
     for (Context* const ctx : ctxMan.GetSetObj()) {
-        if (ctx->Device_()->Id_() != devId) {
+        if (!ContextManage::IsActiveContextOnDevice(ctx, static_cast<int32_t>(devId))) {
             continue;
         }
         SpinLock& modelLock = ctx->GetModelLock();

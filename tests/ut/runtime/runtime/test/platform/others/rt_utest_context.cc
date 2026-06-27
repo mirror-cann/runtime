@@ -20,7 +20,6 @@
 #define protected public
 #include "runtime.hpp"
 #include "context.hpp"
-#include "context_protect.hpp"
 #include "raw_device.hpp"
 #include "kernel.hpp"
 #include "module.hpp"
@@ -130,6 +129,7 @@ TEST_F(ChipContextTest, ReduceAsync_test)
     refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
+    stream->SetContext(ctx);
 
     int tempMemory;
     auto preVal = stream->taskResMang_;

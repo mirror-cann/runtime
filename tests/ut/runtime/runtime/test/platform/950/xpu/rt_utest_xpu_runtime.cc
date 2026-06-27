@@ -47,9 +47,8 @@ TEST_F(XpuRuntimeTest, createStreamArgRes_Success)
     Context *ctx = new Context(nullptr,true);
     RefObject<Context *> &refObj = rt->priCtxs_[0][0];
     refObj.SetVal(ctx);
-    MOCKER(ContextManage::EraseContextFromSet).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER(ContextManage::RemoveContextFromSet).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(ctx,&Context::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Context::ContextOutUse).stubs().will(returnValue(0UL));
     XpuContext *xpuCtx = new XpuContext(nullptr,true);
     rt->xpuCtxt_ = xpuCtx;
     DELETE_O(rt);

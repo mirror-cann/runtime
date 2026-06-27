@@ -48,6 +48,7 @@
 #include "davinci_kernel_task.h"
 #include "dvpp_c.hpp"
 #include "../../task_test_helper.h"
+#include "../../common/rt_utest_context_reset_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
 
@@ -79,6 +80,8 @@ protected:
         Runtime *rtInstance = (Runtime *)Runtime::Instance();
         int32_t devId = -1;
         rtSetDevice(0);
+        ut::ClearCurrentContextStatusForReset();
+        ut::ClearCurrentDefaultStreamPending();
         rtGetDevice(&devId);
         dev_ = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
         old = dev_->GetChipType();
@@ -98,7 +101,7 @@ protected:
         dev_->SetChipType(old);
         ((Runtime *)Runtime::Instance())->DeviceRelease(dev_);
         ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        rtDeviceReset(0);
+        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         stream_ = nullptr;
         streamHandle_ = nullptr;
         dev_ = nullptr;
@@ -1699,7 +1702,7 @@ TEST_F(StarsTaskTest, SQE_SET_SchedMode)
 
     // 优先级配置校验2
     k1->SetSchedMode(RT_SCHEM_MODE_BATCH);
-    AicTaskInit(&taskInfo, k1, k1->GetKernelAttrType(), 1, nullptr, false);   
+    AicTaskInit(&taskInfo, k1, k1->GetKernelAttrType(), 1, nullptr, false);
     ConstructAicAivSqeForDavinciTask(&taskInfo, &sqe);
     EXPECT_EQ(sqe.fftsPlusKernelSqe.schem, RT_SCHEM_MODE_BATCH);
 

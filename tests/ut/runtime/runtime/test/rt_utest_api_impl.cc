@@ -99,6 +99,28 @@ static void ApiImplTest_Stream_Cb(void *arg)
 {
 }
 
+TEST_F(ApiImplTest, ContextSetCurrentNullClearsCurrentContext)
+{
+    ApiImpl apiImpl;
+
+    EXPECT_EQ(apiImpl.ContextSetCurrent(nullptr), RT_ERROR_NONE);
+}
+
+TEST_F(ApiImplTest, ContextDestroyInactiveContext)
+{
+    ApiImpl apiImpl;
+    Context *ctx = new (std::nothrow) Context(nullptr, false);
+    ASSERT_NE(ctx, nullptr);
+    ContextManage::InsertContext(ctx);
+
+    const rtError_t error = apiImpl.ContextDestroy(ctx);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    if (error != RT_ERROR_NONE) {
+        (void)ContextManage::RemoveContextFromSet(ctx);
+        delete ctx;
+    }
+}
+
 TEST_F(ApiImplTest, dev_binary_register_test)
 {
     ApiImpl apiImpl;

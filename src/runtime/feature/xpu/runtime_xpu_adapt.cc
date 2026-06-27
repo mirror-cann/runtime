@@ -19,29 +19,40 @@ namespace runtime {
 
 rtError_t Runtime::PrimaryXpuContextRelease(const uint32_t devId)
 {
-    UNUSED(devId);
     const std::unique_lock<std::mutex> xpuSetDevLock(XpuSetDevMutex());
     Context *ctx = GetXpuCtxt();
     COND_RETURN_WARN((ctx == nullptr), RT_ERROR_NONE, "context is null");
-    if (unlikely(!ContextManage::CheckContextIsValid(ctx, true))) {
+    if (unlikely(!ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL))) {
         RT_LOG(RT_LOG_ERROR, "context is deleted.");
         return RT_ERROR_NONE;
     }
+
+    bool tearDownSuccess = false;
     ctx->SetContextForceReset(true);
-    {
-        const ContextProtect cp(ctx);
-        (void)ctx->TearDown();
+    if (!ctx->TearDownIsCanExecute()) {
+        return RT_ERROR_NONE;
     }
-    if (ContextManage::EraseContextFromSet(ctx) != RT_ERROR_CONTEXT_NULL) {
-        if (ctx->ContextOutUse() == 0ULL) {
-            delete ctx;
-            ctx = nullptr;
-        }
+    Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+    const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
+    SetInternalThreadContext(ctx);
+    ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess, ctx]() {
+        InnerThreadLocalContainer::SetCurCtx((previousCtx == ctx) ? nullptr : previousCtx, previousInternalAccess);
+    });
+    if (ctx->TearDown() == RT_ERROR_NONE) {
+        ctx->SetTearDownExecuteResult(TEARDOWN_SUCCESS);
+        ctx->ReleaseResourcesAfterTearDown();
+        tearDownSuccess = true;
+    } else {
+        ctx->SetTearDownExecuteResult(TEARDOWN_ERROR);
+    }
+    if (!tearDownSuccess) {
+        RT_LOG(RT_LOG_ERROR, "Primary xpu context teardown failed, devId=%u.", devId);
+        return RT_ERROR_CONTEXT_DEL;
     }
     xpuDevice_ = nullptr;
-    xpuCtxt_ = nullptr;
     InnerThreadLocalContainer::SetCurRef(nullptr);
     InnerThreadLocalContainer::SetCurCtx(nullptr);
+    internalCtxGuard.ReleaseGuard();
     return RT_ERROR_NONE;
 }
 
@@ -84,28 +95,39 @@ Device *Runtime::XpuDeviceRetain(const uint32_t devId) const
 
 Context *Runtime::PrimaryXpuContextRetain(const uint32_t devId)
 {
-    Context *ctx = nullptr;
     rtError_t err = RT_ERROR_NONE;
     Device *dev = XpuDeviceRetain(devId);
     if (dev == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Xpu device is null, device_id=%u.", devId);
         return nullptr;
     }
-    ctx = new (std::nothrow) XpuContext(dev, true);
+
+    Context *ctx = GetXpuCtxt();
+    const bool reusedCtx = (ctx != nullptr);
+    if (!reusedCtx) {
+        ctx = new (std::nothrow) XpuContext(dev, true);
+    }
     if (ctx == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Xpu ctx is null, device_id=%u.", devId);
-        (void)dev->Stop();
-        DELETE_O(dev);
+        XpuDeviceRelease(dev);
         return nullptr;
     }
+
+    ctx->AttachDevice(dev);
+    ctx->SetContextForceReset(false);
     err = ctx->Setup();
     if (err != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Failed to setup context, device_id=%u.", devId);
         (void)ctx->TearDown();
-        DELETE_O(ctx);
+        ctx->ReleaseResourcesAfterTearDown();
+        if (!reusedCtx) {
+            DELETE_O(ctx);
+        }
         return nullptr;
     }
-    ContextManage::InsertContext(ctx);
+    if (!reusedCtx || !ContextManage::IsContextTracked(ctx)) {
+        ContextManage::InsertContext(ctx);
+    }
     xpuDevice_ = dev;
     xpuCtxt_ = ctx;
     return ctx;

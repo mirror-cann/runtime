@@ -20,7 +20,6 @@
 #define protected public
 #include "runtime.hpp"
 #include "context.hpp"
-#include "context_protect.hpp"
 #include "raw_device.hpp"
 #include "kernel.hpp"
 #include "module.hpp"

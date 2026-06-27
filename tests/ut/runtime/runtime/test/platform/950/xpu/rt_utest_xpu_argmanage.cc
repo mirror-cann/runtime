@@ -21,6 +21,7 @@
 #include "stream_xpu.hpp"
 #undef protected
 #undef private
+#include "../../../common/rt_utest_xpu_helper.hpp"
 #include "xpu_stub.h"
 #include "stream.hpp"
 #include "runtime.hpp"
@@ -31,7 +32,7 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ArgManageXpuTest : public testing::Test {
+class ArgManageXpuTest : public ut::XpuRuntimeMockTest {
 protected:
     XpuContext *context_ = nullptr;
 
@@ -45,6 +46,7 @@ protected:
 
     virtual void SetUp()
     {
+        ut::XpuRuntimeMockTest::SetUp();
         MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_online));
         MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
         rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
@@ -56,7 +58,7 @@ protected:
     virtual void TearDown()
     {
         rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
-        GlobalMockObject::verify();
+        ut::XpuRuntimeMockTest::TearDown();
     }
 };
 
