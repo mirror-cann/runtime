@@ -239,7 +239,7 @@ static bool DumpTaskRegister()
     };
 
     const auto& chips = GetDavidChips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_FUSIONDUMP_ADDR_SET, fusionDumpAddrSetFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_DATADUMP_LOADINFO, dataDumpLoadInfoFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_DEBUG_REGISTER, debugRegisterFuncs);

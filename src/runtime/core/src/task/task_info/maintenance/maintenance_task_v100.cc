@@ -178,7 +178,7 @@ static bool MaintenanceTaskRegister()
     };
 
     const auto& chips = GetV100Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MAINTENANCE, maintenanceFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_GET_DEVICE_MSG, getDeviceMsgFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_GET_STARS_VERSION, getStarsVersionFuncs);

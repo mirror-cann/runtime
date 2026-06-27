@@ -226,7 +226,7 @@ static bool ProfilingTaskRegister()
     };
     
     const auto& chips = GetV100Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE, profilerDynamicEnableFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE, profilerDynamicDisableFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILING_ENABLE, profilingEnableFuncs);

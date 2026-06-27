@@ -246,7 +246,7 @@ static bool EventTaskRegister()
     };
 
     const auto &chips = GetV100Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_EVENT_RECORD, eventRecordFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_EVENT_RESET, eventResetFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_REMOTE_EVENT_WAIT, remoteEventWaitFuncs);

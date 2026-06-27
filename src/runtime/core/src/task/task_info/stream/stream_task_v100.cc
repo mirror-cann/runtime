@@ -367,7 +367,7 @@ static bool StreamTaskRegister()
     };
 
     const auto& chips = GetV100Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_CREATE_STREAM, createStreamFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_STREAM_ACTIVE, streamActiveFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_ACTIVE_AICPU_STREAM, activeAicpuStreamFuncs);

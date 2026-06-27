@@ -76,7 +76,7 @@ static bool BarrierTaskRegister()
     };
 
     const auto &chips = GetV100Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_BARRIER, funcs);
     }
 

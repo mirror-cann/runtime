@@ -211,7 +211,7 @@ static bool CommonTaskRegister()
     };
 
     const auto& chips = GetDavidChips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_STARS_COMMON, starsCommonFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_WRITE_VALUE, writeValueFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_COMMON_CMD, commonCmdFuncs);

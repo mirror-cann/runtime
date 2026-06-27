@@ -29,7 +29,7 @@ static bool BarrierTaskRegister()
     };
 
     const auto &chips = GetDavidChips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_BARRIER, funcs);
     }
 

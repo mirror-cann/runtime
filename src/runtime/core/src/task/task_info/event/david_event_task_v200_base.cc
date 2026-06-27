@@ -385,7 +385,7 @@ static bool EventTaskRegister()
     };
 
     const auto &chips = GetDavidChips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_REMOTE_EVENT_WAIT, remoteEventWaitFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_DAVID_EVENT_RECORD, davidEventRecordFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_DAVID_EVENT_WAIT, davidEventWaitFuncs);

@@ -39,7 +39,7 @@ static bool RdmaTaskRegister()
     };
 
     const auto &chips = GetDavidChips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_RDMA_SEND, rdmaSendFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_RDMA_DB_SEND, rdmaDbSendFuncs);
     }

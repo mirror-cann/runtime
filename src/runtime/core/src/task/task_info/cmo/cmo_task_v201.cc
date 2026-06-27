@@ -48,7 +48,7 @@ static bool CmoTaskRegister()
     };
 
     const auto& chips = GetV201Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_CMO, funcs);
     }
 

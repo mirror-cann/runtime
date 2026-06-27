@@ -100,7 +100,7 @@ static bool ReduceTaskRegister()
     };
 
     const auto &chips = GetV100Chips();
-    for (auto chip : chips) {
+    for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_REDUCE_ASYNC_V2, funcs);
     }
 
