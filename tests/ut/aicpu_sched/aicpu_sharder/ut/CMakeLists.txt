@@ -33,8 +33,6 @@ add_executable(aicpu_sharder_utest
 target_include_directories (aicpu_sharder_utest PRIVATE
     ${SRC_PATH}
     ${RUNTIME_DIR}/include
-    ${RUNTIME_DIR}/pkg_inc
-    ${RUNTIME_DIR}/pkg_inc/driver
     ${RUNTIME_DIR}/pkg_inc/base
     ${RUNTIME_DIR}/pkg_inc/aicpu_sched/aicpu_schedule
     ${RUNTIME_DIR}/pkg_inc/aicpu_sched

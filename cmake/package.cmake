@@ -113,8 +113,8 @@ install(FILES ${RUNTIME_DIR}/scripts/package/runtime/set_env.sh
     COMPONENT npu-runtime
 )
 
-install(DIRECTORY ${RUNTIME_DIR}/pkg_inc/driver
-    DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/pkg_inc
+install(DIRECTORY ${RUNTIME_DIR}/include/driver
+    DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/include
     ${INSTALL_OPTIONAL}
     COMPONENT npu-runtime
 )
@@ -210,7 +210,7 @@ install(FILES
     COMPONENT npu-runtime
 )
 
-install(DIRECTORY ${RUNTIME_DIR}/pkg_inc/driver
+install(DIRECTORY ${RUNTIME_DIR}/include/driver
     DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/pkg_inc
     COMPONENT npu-runtime
 )

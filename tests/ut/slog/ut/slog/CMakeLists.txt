@@ -114,7 +114,7 @@ set(slogSrc
 )
 
 set(slogInc
-    ${TOP_DIR}/pkg_inc/driver
+    ${TOP_DIR}/include/driver
     ${LIBC_SEC_HEADER}
     ${LOG_SOURCE_PATH}/inc/stackcore
     ${LOG_SOURCE_PATH}/shared

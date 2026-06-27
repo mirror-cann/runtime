@@ -93,7 +93,7 @@ target_include_directories(ascend_devprof PRIVATE
     ${RUNTIME_DIR}/src/dfx/msprof/inc/toolchain
     ${RUNTIME_DIR}/src/dfx/msprof/inc
     ${LIBC_SEC_HEADER}
-    ${RUNTIME_DIR}/pkg_inc/driver
+    ${RUNTIME_DIR}/include/driver
     ${RUNTIME_DIR}/include/external
     ${RUNTIME_DIR}/src/dfx/error_manager
     ../

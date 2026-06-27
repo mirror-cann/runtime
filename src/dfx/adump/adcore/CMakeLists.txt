@@ -22,7 +22,7 @@ set(adcoreHeaders
     ${CMAKE_CURRENT_LIST_DIR}/hdc
 
     ${LIBC_SEC_HEADER}
-    ${PROJECT_TOP_DIR}/pkg_inc/driver
+    ${PROJECT_TOP_DIR}/include/driver
 )
 
 set(adcoreSrcList

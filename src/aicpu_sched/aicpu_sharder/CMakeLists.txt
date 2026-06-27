@@ -41,8 +41,6 @@ target_compile_options(aicpu_sharder PRIVATE
 
 target_include_directories(aicpu_sharder PRIVATE
     ${RUNTIME_DIR}/include
-    ${RUNTIME_DIR}/pkg_inc
-    ${RUNTIME_DIR}/pkg_inc/driver
     ${RUNTIME_DIR}/pkg_inc/base
     ${RUNTIME_DIR}/pkg_inc/aicpu_sched/aicpu_schedule
     ${RUNTIME_DIR}/pkg_inc/aicpu_sched

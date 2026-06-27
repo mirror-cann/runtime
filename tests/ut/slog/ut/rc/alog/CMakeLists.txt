@@ -35,7 +35,7 @@ set(libAlogSrc
 )
 
 set(libAlogInc
-    ${TOP_DIR}/pkg_inc/driver
+    ${TOP_DIR}/include/driver
     ${LOG_SOURCE_PATH}/liblog/slog
     ${LOG_SOURCE_PATH}/liblog/slog/dlog_communication
     ${LOG_SOURCE_PATH}/utils
