@@ -1880,7 +1880,7 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
             kernelObj->SetStub_(stubFunc);
             kernelObj->SetStubName_(stubName);
             if (kernelInfoExt != nullptr) {
-                kernelObj->SetKernelInfoExt(static_cast<const char_t *>(kernelInfoExt));
+                kernelObj->SetKernelInfoExt(RtPtrToPtr<const char_t *>(kernelInfoExt));
             }
 
             const uint32_t funcModeInner = (funcMode & 0xFFFFU);

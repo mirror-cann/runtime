@@ -27,7 +27,7 @@ BufferAllocator::BufferAllocator(const uint32_t size, const uint32_t initCnt, co
       initCount_((initCnt < maxCnt) ? initCnt : maxCnt),
       maxCount_(maxCnt),
       poolSize_(0),
-      bitmap_(maxCnt <= BUFF_SLIP_NUMBER ? maxCnt : BUFF_SLIP_NUMBER),
+      bitmap_(maxCnt <= static_cast<uint32_t>(BUFF_SLIP_NUMBER) ? maxCnt : BUFF_SLIP_NUMBER),
       para_(allocParam),
       pool_(nullptr),
       currentCount_((initCnt < maxCnt) ? initCnt : maxCnt),
@@ -109,7 +109,7 @@ int32_t BufferAllocator::AllocBitMap(uint32_t curCount)
     if (openHugeBuff_ == true && hugeBitmap_ == nullptr) {
         const std::lock_guard<std::mutex> lock(hugeBitmapMutex_);
         if (hugeBitmap_ == nullptr) {
-            hugeBitmap_ = new (std::nothrow) Bitmap(maxCount_ - BUFF_SLIP_NUMBER);
+            hugeBitmap_ = new (std::nothrow) Bitmap(maxCount_ - static_cast<uint32_t>(BUFF_SLIP_NUMBER));
         }
     }
 
@@ -140,7 +140,7 @@ int32_t BufferAllocator::AllocIdWithoutRetry(const bool isLogError)
                     newPoolSize, poolIdx);
                 return -1;
             }
-            pool_[poolIdx] = static_cast<uint8_t *>(ptr);
+            pool_[poolIdx] = RtPtrToPtr<uint8_t *>(ptr);
         }
         // Anyway, currentCount_ is increased
         id = AllocBitMap(currentCount_);

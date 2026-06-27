@@ -1642,6 +1642,7 @@ static rtError_t CheckStreamSynchronizeParam(Stream *&curStm, Context * const cu
             curStm = defaultStream;
         }
         NULL_STREAM_PTR_RETURN_MSG(curStm);
+    } else {
     }
     return RT_ERROR_NONE;
 }
@@ -3869,7 +3870,7 @@ rtError_t ApiImpl::NewContext(const uint32_t deviceId, const uint32_t tsId, Cont
         sizeof(Context), "new");
     RT_LOG(RT_LOG_INFO, "curCtx=%p, device_id=%d, ts_id=%u, Runtime_alloc_size %zu", curCtx, deviceId, tsId, sizeof(Context));
     rtError_t error = curCtx->Setup();
-    ERROR_PROC_RETURN_MSG_INNER(error, curCtx->TearDown(); DELETE_O(curCtx);, "Failed to setup context, retCode=%#x",
+    ERROR_PROC_RETURN_MSG_INNER(error, (void)curCtx->TearDown(); DELETE_O(curCtx);, "Failed to setup context, retCode=%#x",
         static_cast<uint32_t>(error));
 
     *ctx = curCtx;
@@ -5424,7 +5425,7 @@ rtError_t ApiImpl::GetAiCpuCount(uint32_t * const aiCpuCnt)
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "Get soc spec failed, ret = %u, please check.", ret);
     
     try {
-        const uint32_t aiCpuCount = std::stoi(result);
+        const uint32_t aiCpuCount = static_cast<uint32_t>(std::stoi(result));
         *aiCpuCnt = aiCpuCount;
     } catch (...) {
         RT_LOG(RT_LOG_ERROR, "ai_cpu_cnt=%s is invalid.", result.c_str());
@@ -7203,7 +7204,7 @@ rtError_t ApiImpl::ExportToShareableHandleV2(
         Context *curCtx = Runtime::Instance()->CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         NULL_PTR_RETURN_MSG(curCtx->Device_(), RT_ERROR_DEVICE_NULL);
-        const uint32_t devId = curCtx->Device_()->Id_();
+        const uint32_t devId = static_cast<uint32_t>(curCtx->Device_()->Id_());
         int64_t localServerId = 0;
         error = NpuDriver::GetServerId(devId, &localServerId);
         COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE,
@@ -8985,18 +8986,18 @@ rtError_t ApiImpl::MemMapSelectedLink(void *virPtrDst, size_t size, void *virPtr
         rtHandleAttr attrOrg;
         rtHandleAttr attrNew;
         error = NpuDriver::MemHandleGetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, &attrOrg);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MemHandleGetAttribute failed, handle=%p, type=%d.", handle, HANDLE_ATTR_MEM_MAP_ROUTE);
         attrNew.memMapRoute = linkIdx;
         error = NpuDriver::MemHandleSetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, attrNew);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MemHandleSetAttribute failed, handle=%p, type=%d, linkIdx=%u, attrNew.memMapRoute=%u.",
             handle, HANDLE_ATTR_MEM_MAP_ROUTE, linkIdx, attrNew.memMapRoute);
         error = MapMem(virPtrNew, baseSize, 0, handle, 0);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MapMem failed, baseSize=%" PRIu64 ", ptr=%p.", baseSize, virPtrNew);
         error = NpuDriver::MemHandleSetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, attrOrg);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MemHandleGetAttribute failed, handle=%p, type=%d.", handle, HANDLE_ATTR_MEM_MAP_ROUTE);
 
         error = FreePhysical(handle);
@@ -9068,7 +9069,7 @@ rtError_t ApiImpl::GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info,
 
 rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
 {
-    const TaskInfo* const taskInfo = static_cast<const TaskInfo *>(task);
+    const TaskInfo* const taskInfo = RtPtrToPtr<const TaskInfo *>(task);
     const Stream* stm = taskInfo->stream;
     NULL_PTR_RETURN(stm, RT_ERROR_STREAM_NULL);
     Model* const mdl = stm->Model_();
@@ -9144,6 +9145,7 @@ rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
                 "now this task doesn't support get params, stream_id=%d, task_id=%hu, typeName=%s, task type=%d",
                 stm->Id_(), taskInfo->id, taskInfo->typeName, taskInfo->type);
             error = RT_ERROR_INVALID_VALUE;
+            break;
     }
     return error;
 }
