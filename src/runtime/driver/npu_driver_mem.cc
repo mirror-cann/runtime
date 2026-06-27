@@ -21,8 +21,17 @@
 #include "register_memory.hpp"
 #include "mem_type.hpp"
 
+#include <array>
+#include <memory>
+#include <new>
+
 namespace cce {
 namespace runtime {
+
+static constexpr uint32_t BuildMemTypeFlag(const uint32_t typeValue)
+{
+    return 1U << typeValue;
+}
 
 static void MapPhysicalMemTypeByPolicy(rtDrvMemProp_t * const prop, const PhysicalMemTypePolicy policy)
 {
@@ -34,6 +43,8 @@ static void MapPhysicalMemTypeByPolicy(rtDrvMemProp_t * const prop, const Physic
         prop->mem_type = MEM_DDR_TYPE;
     } else if (prop->mem_type == MEM_P2P_HBM_TYPE) {
         prop->mem_type = MEM_P2P_DDR_TYPE;
+    } else {
+        // no operation
     }
 }
 
@@ -53,14 +64,15 @@ rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const i
         RT_LOG(RT_LOG_INFO, "Shared memory type %u.", in->flag);
         struct stat buf;
         constexpr const char_t *path = "/dev/shm/";
-        char_t name[MMPA_MAX_PATH] = {};
-        errno_t retSafe = strcpy_s(&name[0], sizeof(name), path);
+        const std::unique_ptr<char_t[]> name(new (std::nothrow) char_t[MMPA_MAX_PATH]());
+        NULL_PTR_RETURN(name, RT_ERROR_MEMORY_ALLOCATION);
+        errno_t retSafe = strcpy_s(name.get(), MMPA_MAX_PATH, path);
         COND_LOG_ERROR(retSafe != EOK, "Failed to call strcpy_s to copy name, size=%zu, retCode=%d.",
-                       sizeof(name), retSafe);
-        retSafe = strcat_s(name, sizeof(name), in->name);
+                       static_cast<size_t>(MMPA_MAX_PATH), retSafe);
+        retSafe = strcat_s(name.get(), MMPA_MAX_PATH, in->name);
         COND_LOG_ERROR(retSafe != EOK, "Failed to call strcat_s to append name, size=%zu, retCode=%d.",
-                       sizeof(name), retSafe);
-        retVal = stat(name, &buf);
+                       static_cast<size_t>(MMPA_MAX_PATH), retSafe);
+        retVal = stat(name.get(), &buf);
 
         out->fd = shm_open(in->name, static_cast<int32_t>(O_CREAT) | static_cast<int32_t>(O_RDWR),
             static_cast<mode_t>(S_IRUSR) | static_cast<mode_t>(S_IWUSR));
@@ -94,9 +106,10 @@ rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const i
         COND_LOG(ret != 0, "madvise failed, size=%" PRIu64 "(bytes), retCode=%d.", in->size, ret);
 
         if (retVal == -1) {
-            const uint64_t loop = (in->size + PAGE_SIZE - 1U) / PAGE_SIZE;
+            const uint64_t loop = (in->size / PAGE_SIZE) + (((in->size % PAGE_SIZE) == 0U) ? 0U : 1U);
+            char_t * const mappedPtr = static_cast<char_t *>(out->ptr);
             for (uint64_t i = 0U; i < loop; ++i) {
-                *(static_cast<char_t *>(out->ptr) + (PAGE_SIZE * i)) = '\0';
+                mappedPtr[PAGE_SIZE * i] = '\0';
             }
         }
 
@@ -133,11 +146,11 @@ rtError_t NpuDriver::FreeHostSharedMemory(rtFreeHostSharedMemoryIn * const in, c
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MEM_HOST_REGISTER)) {
         struct stat buf;
         constexpr const char_t *path = "/dev/shm/";
-        char_t name[MMPA_MAX_PATH] = {};
-        errno_t secRet = strcpy_s(name, sizeof(name), path);
-        COND_LOG_ERROR(secRet != EOK, "strcpy_s failed, size=%zu(bytes), retCode=%d!", sizeof(name), secRet);
-        secRet = strcat_s(&name[0], sizeof(name), in->name);
-        COND_LOG_ERROR(secRet != EOK, "strcat_s failed, size=%zu(bytes), retCode=%d!", sizeof(name), secRet);
+        std::array<char_t, MMPA_MAX_PATH> name{};
+        errno_t secRet = strcpy_s(name.data(), name.size(), path);
+        COND_LOG_ERROR(secRet != EOK, "strcpy_s failed, size=%zu(bytes), retCode=%d!", name.size(), secRet);
+        secRet = strcat_s(name.data(), name.size(), in->name);
+        COND_LOG_ERROR(secRet != EOK, "strcat_s failed, size=%zu(bytes), retCode=%d!", name.size(), secRet);
         /* 1980c wide&&deep temp code */
         drvError_t drvRet = DRV_ERROR_NONE;
         drvRet = halHostUnregister(in->ptr, deviceId);
@@ -153,7 +166,7 @@ rtError_t NpuDriver::FreeHostSharedMemory(rtFreeHostSharedMemoryIn * const in, c
             "Call munmap failed, retCode=%d, size=%" PRIu64 "(bytes)", ret, in->size);
         RT_LOG(RT_LOG_DEBUG, "free host shared mem munmap success");
 
-        ret = stat(name, &buf);
+        ret = stat(name.data(), &buf);
         if ((ret == 0) && (in->size == static_cast<uint64_t>(buf.st_size))) {
             (void)close(in->fd);
             ret = shm_unlink(in->name);
@@ -185,12 +198,12 @@ rtError_t NpuDriver::HostRegister(void *ptr, uint64_t size, rtHostRegisterType t
     if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MEM_HOST_REGISTER_PCIE_THROUGH)) {
         flag = static_cast<uint32_t>(HOST_MEM_MAP_DEV);
     }
-    uint32_t typeMask = static_cast<uint32_t>(type);
-    if ((typeMask & RT_HOST_REGISTER_IOMEMORY) != 0U) {
-        flag = HOST_IO_MAP_DEV;
+    const uint32_t typeMask = static_cast<uint32_t>(type);
+    if ((typeMask & static_cast<uint32_t>(RT_HOST_REGISTER_IOMEMORY)) != 0U) {
+        flag = static_cast<uint32_t>(HOST_IO_MAP_DEV);
     }
-    if ((typeMask & RT_HOST_REGISTER_READONLY) != 0U) {
-        flag |= MEM_REGISTER_READ_ONLY;
+    if ((typeMask & static_cast<uint32_t>(RT_HOST_REGISTER_READONLY)) != 0U) {
+        flag |= static_cast<uint32_t>(MEM_REGISTER_READ_ONLY);
     }
 
     RT_LOG(RT_LOG_INFO, "memory type %u.", flag);
@@ -345,7 +358,7 @@ rtError_t NpuDriver::MallocPhysical(rtDrvMemHandle* handle, size_t size, rtDrvMe
     const rtChipType_t chipType = rtInstance->GetChipType();
     // The mem_type definitions of acl and runtime is different from drvier.
     DevProperties properties;
-    auto error = GET_DEV_PROPERTIES(chipType, properties);
+    const auto error = GET_DEV_PROPERTIES(chipType, properties);
     COND_RETURN_WARN(error != RT_ERROR_NONE, RT_ERROR_FEATURE_NOT_SUPPORT,
         "Failed to access device properties when chipType=%d.", chipType);
 
@@ -467,7 +480,7 @@ rtError_t NpuDriver::GetAllocationGranularity(const rtDrvMemProp_t *prop, rtDrvM
 
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     DevProperties properties;
-    auto error = GET_DEV_PROPERTIES(chipType, properties);
+    const auto error = GET_DEV_PROPERTIES(chipType, properties);
     COND_RETURN_WARN(error != RT_ERROR_NONE, RT_ERROR_FEATURE_NOT_SUPPORT,
         "Failed to access device properties when chipType=%d.", chipType);
 
@@ -1090,7 +1103,7 @@ rtError_t NpuDriver::DevMemAllocOnline(void ** const dptr, const uint64_t size, 
 
     if (type == RT_MEMORY_TS) {
         Runtime * const rtInstance = Runtime::Instance();
-        type = rtInstance->GetTsMemType(MEM_REQUEST_FEATURE_DEFAULT, static_cast<uint32_t>(size));
+        type = rtInstance->GetTsMemType(MEM_REQUEST_FEATURE_DEFAULT, size);
     }
     RT_LOG(RT_LOG_DEBUG, "device_id=%u, type=%u, size=%" PRIu64 ", chip type=%d, policy=0x%x.",
            deviceId, type, size, chipType_, memPolicy);
@@ -1402,7 +1415,7 @@ rtError_t NpuDriver::DevDvppMemAlloc(void ** const dptr, const uint64_t size, co
         RT_LOG(RT_LOG_DEBUG, "dvpp use giant page size, flag=%u, memAttr=%#" PRIx64, flag, memAttr);
     }
 
-    constexpr uint8_t defaultAlignSize = 9ULL;
+    constexpr uint8_t defaultAlignSize = 9U;
     uint8_t alignSize = static_cast<uint8_t>((flag & RT_MEMORY_ALIGN_SIZE_MASK) >> RT_MEMORY_ALIGN_SIZE_BIT);
     alignSize = (alignSize == 0U) ? defaultAlignSize : alignSize;
 
@@ -1615,7 +1628,7 @@ rtError_t NpuDriver::AllocFastRingBufferAndDispatch(void ** const dptr, const ui
         "[drv api] halMemAlloc failed: size=%" PRIu64 "(bytes), drvRetCode=%d, device_id=%u, "
         "drvFlag=%#" PRIx64 ", moduleId=%hu", size, static_cast<int32_t>(drvRet), deviceId, drvFlag, moduleId);
 
-    rtError_t ret = SetMemSharing(ptr, size, deviceId);
+    const rtError_t ret = SetMemSharing(ptr, size, deviceId);
     if (ret != RT_ERROR_NONE) {
         (void)halMemFree(ptr);
         RT_LOG(RT_LOG_ERROR, "SetMemSharing failed: ret=%u, device_id=%u, drvFlag=%#" PRIx64 ", moduleId=%hu",
@@ -1638,7 +1651,7 @@ rtError_t NpuDriver::SetMemSharing(void *ptr, const uint64_t size, const uint32_
     para.side = MEM_HOST_SIDE;
     para.accessor = TS_ACCESSOR;
     para.enable_flag = 0U; /* 0:enable; 1:disable */
-    drvError_t drvRet = halSetMemSharing(&para);
+    const drvError_t drvRet = halSetMemSharing(&para);
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(drvRet, "[drv api] halSetMemSharing failed: size=%" PRIu64 "(bytes), drvRetCode=%d, device_id=%u, ",
             size, static_cast<int32_t>(drvRet), deviceId);
@@ -1823,19 +1836,21 @@ rtError_t NpuDriver::MemGetInfo(const uint32_t deviceId, bool isHugeOnly, size_t
 static void ConvertAddrCheckMemType(const rtMemType_t type, rtMemInfo_t * const info, struct MemInfo * const drvInfo)
 {
     if (type == RT_MEM_INFO_TYPE_ADDR_CHECK) {
-        static uint32_t cvtTable[][2] = {
-            {RT_MEM_MASK_SVM_TYPE,  static_cast<uint32_t>(MEM_SVM_TYPE)},
-            {RT_MEM_MASK_DEV_TYPE,  static_cast<uint32_t>(MEM_DEV_TYPE)},
-            {RT_MEM_MASK_HOST_TYPE, static_cast<uint32_t>(MEM_HOST_TYPE)},
-            {RT_MEM_MASK_DVPP_TYPE, static_cast<uint32_t>(MEM_DVPP_TYPE)},
-            {RT_MEM_MASK_HOST_AGENT_TYPE, static_cast<uint32_t>(MEM_HOST_AGENT_TYPE)},
-            {RT_MEM_MASK_RSVD_TYPE, static_cast<uint32_t>(MEM_RESERVE_TYPE)}
-        };
+        constexpr std::array<std::array<uint32_t, 2U>, 6U> cvtTable = {{
+            {RT_MEM_MASK_SVM_TYPE,  BuildMemTypeFlag(static_cast<uint32_t>(MEM_SVM_VAL))},
+            {RT_MEM_MASK_DEV_TYPE,  BuildMemTypeFlag(static_cast<uint32_t>(MEM_DEV_VAL))},
+            {RT_MEM_MASK_HOST_TYPE, BuildMemTypeFlag(static_cast<uint32_t>(MEM_HOST_VAL))},
+            {RT_MEM_MASK_DVPP_TYPE, BuildMemTypeFlag(static_cast<uint32_t>(MEM_DVPP_VAL))},
+            {RT_MEM_MASK_HOST_AGENT_TYPE, BuildMemTypeFlag(static_cast<uint32_t>(MEM_HOST_AGENT_VAL))},
+            {RT_MEM_MASK_RSVD_TYPE, BuildMemTypeFlag(static_cast<uint32_t>(MEM_RESERVE_VAL))}
+        }};
+        constexpr size_t maskIndex = 0U;
+        constexpr size_t drvTypeIndex = 1U;
+        constexpr size_t arraySize = cvtTable.size();
         uint32_t drvMemType = 0U;
-        constexpr std::int8_t arraySize = sizeof(cvtTable) / sizeof(cvtTable[0]);
-        for (std::int8_t idx = 0; idx < arraySize; ++idx) {
-            if ((info->addrInfo.memType & cvtTable[idx][0]) != 0) {
-                drvMemType |= cvtTable[idx][1];
+        for (size_t idx = 0U; idx < arraySize; ++idx) {
+            if ((info->addrInfo.memType & cvtTable[idx][maskIndex]) != 0U) {
+                drvMemType |= cvtTable[idx][drvTypeIndex];
             }
         }
         RT_LOG(RT_LOG_DEBUG, "check memory type[%u->%u].", info->addrInfo.memType, drvMemType);
