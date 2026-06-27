@@ -1,10 +1,10 @@
 # 任务注册机制重构通用规则
 
 ## 版本信息
-- **版本**: 1.4
-- **更新日期**: 2026-05-20
+- **版本**: 1.5
+- **更新日期**: 2026-06-25
 - **适用范围**: 纯粹任务注册修改
-- **新增规则**: G11（编译适配规则-扩展cmake范围）、G13（静态注册函数无需头文件声明）
+- **新增规则**: G11（编译适配规则-扩展cmake范围）、G13（静态注册函数无需头文件声明）、G14（本地迁移经验补充）
 
 ## G1: Skills优化约束
 - **禁止删除现有规则**：优化规则时仅允许新增或修改描述，禁止删除已有规则
@@ -14,12 +14,15 @@
 ## G2: 任务粒度迁移约束
 - **必须以任务为粒度**：禁止跨任务批量迁移，每个任务必须完整迁移（v100→v200_base→v200→v201）后再迁移下一任务
 - **版本顺序**：单任务迁移必须按 v100 → v200_base → v200 → v201 顺序执行
+- **版本顺序不等于注册落点**：按顺序检查各版本，但不要求每个版本都新增注册文件。若任务已有 `_v200.cc/_v201.cc` 叶子文件，则由叶子文件分别注册 `GetV200Chips()/GetV201Chips()`，对应 `_v200_base.cc` 只放共用操作数据；若只有 `_v200_base.cc`，才由 `_v200_base.cc` 注册 `GetDavidChips()`。
+- **feature特例需说明**：DQS 等仅 v201 使用的 feature task 可由现有 owner 文件注册 `GetV201Chips()`；XPU 使用独立函数表，不套普通 `TaskFuncSingle` 迁移流程。
 - **编译适配同步**：每版本迁移后立即进行编译适配，David不再依赖该任务的xx_v100.cc
 
 ## G3: 代码删除约束
 - **先增后删**：必须先新增注册代码，编译通过后再删除旧赋值代码
 - **删除位置记录**：删除的每行代码必须记录文件路径和行号
 - **禁止删除未迁移任务代码**：仅删除已迁移任务的赋值代码，未迁移任务代码保留
+- **保留非注册逻辑**：任务名称/描述表、日志诊断用途的 task type 映射、以及仍被运行时功能逻辑直接调用的 helper/include 不属于注册赋值，禁止因迁移误删。
 
 ## G4: 注册函数命名约束
 - **注册函数名**：`{TaskName}TaskRegister`
@@ -41,9 +44,10 @@
 - **连续失败处理**：同一错误连续出现2次，暂停执行并请求用户介入
 
 ## G7: David SQE注册约束
-- **v200_base/v200/v201必须注册**：David版本任务必须调用RegDavidSqeFunc注册SQE函数
+- **有旧SQE赋值才注册**：v200_base/v200/v201 中旧机制层存在 David SQE 赋值的任务，必须调用RegDavidSqeFunc注册SQE函数；旧机制层没有 David SQE 赋值的任务（如部分 common/stream 任务）不新增RegDavidSqeFunc
 - **v100不注册**：v100版本任务不调用RegDavidSqeFunc
 - **SQE函数指针**：David版本toSqeFunc字段置为nullptr
+- **循环位置**：RegDavidSqeFunc 写入的是按 task type 索引的全局表，不按芯片区分，放在芯片循环外
 
 ## G8: Config只读约束
 - **全流程禁止修改**：config.md仅Step 0读取确认，全程只读
@@ -63,6 +67,7 @@
   - `src/runtime/cmake/cmodel.cmake` - cmodel版本编译配置
   - `src/runtime/cmake/runtime.cmake` - v100版本编译配置（检查是否遗漏）
   - `src/runtime/cmake/tiny.cmake` - tiny版本编译配置（检查是否遗漏）
+- **tiny/cmodel差异**：tiny 和 cmodel 的挂载按现有产品能力边界处理，不机械复制 v200/v201 的新增源文件；如 tiny 仅提供 stub 能力，应记录保留/不挂载原因。
 
 ### 删除范围
 - **仅删除机制依赖的v100文件**：只删除在 `# mechanism dependance` 注释后面、当前任务对应的v100文件
@@ -114,8 +119,9 @@ ${TOP_DIR}/.../maintenance/float_status_task_v100.cc
 
 ### TaskFuncSingle赋值函数检查
 - **检查范围**：TaskFuncSingle结构体中赋值的所有函数指针
-- **检查方法**：使用grep搜索每个函数在代码库中的调用情况（排除定义位置）
+- **检查方法**：优先使用 `rg` 搜索每个函数在代码库中的调用情况（排除定义位置）；`rg` 不可用时使用 grep
 - **判断标准**：若函数仅在定义文件内使用，或仅通过函数指针注册调用，则删除头文件声明
+- **符号收敛**：删除头文件声明后，若函数只在定义文件内使用，应同步将函数定义改为 `static`，避免留下无声明的全局符号
 
 ### 需保留声明的函数
 - **跨文件调用**：函数在其他源文件中被直接调用（非通过函数指针）
@@ -125,7 +131,7 @@ ${TOP_DIR}/.../maintenance/float_status_task_v100.cc
 
 ### 检查流程（Step 3.4新增）
 1. **提取函数列表**：从注册函数中提取所有TaskFuncSingle赋值的函数名
-2. **逐函数检查**：使用grep搜索每个函数的跨文件调用情况
+2. **逐函数检查**：优先使用 `rg` 搜索每个函数的跨文件调用情况；`rg` 不可用时使用 grep
 3. **判断是否删除**：若无跨文件调用，则删除对应头文件声明
 4. **记录删除位置**：记录删除的头文件路径、行号、函数名
 
@@ -181,3 +187,11 @@ void ToCommandBodyForAicAivTask(TaskInfo* taskInfo, rtCommand_t *const command);
 - `SetStarsResultCommon`：task_manager.h已声明
 - `DoCompleteSuccess`：task_manager.h已声明
 - `SetStarsResultCommonForDavid`：stars_david.hpp已声明
+
+## G14: 本地迁移经验补充
+- **memory类任务**：有 `memory_task_v200.cc` 和 `memory_task_v201.cc` 时，`memory_task_v200_base.cc` 只承载共用函数，不发起注册。
+- **event/notify/barrier/reduce/rdma类任务**：没有 v200/v201 叶子文件时，可由现有或新增 `_v200_base.cc` 使用 `GetDavidChips()` 注册。
+- **maintenance额外David任务**：`TS_TASK_TYPE_TSFW_AICPU_MSG_VERSION` 属于 David SQE 表额外 task type，可归入 `maintenance_task_v200_base.cc` 注册。
+- **DQS任务**：当前仅 v201 使用，可由 `src/runtime/feature/dqs/dqs_task.cc` 使用 `GetV201Chips()` 注册，不强制新增 `dqs_task_v201.cc`。
+- **XPU任务**：XPU 专用注册由 `task_manager_xpu.cc` 内静态触发 `RegXpuTaskFunc()`，不使用 `TaskFuncSingle`/`RegDavidSqeFunc` 普通路径。
+- **芯片范围**：迁移以当前代码中的 `GetV100Chips/GetDavidChips/GetV200Chips/GetV201Chips` 为准；历史文档与当前代码不一致时记录风险，不直接修改芯片范围。
