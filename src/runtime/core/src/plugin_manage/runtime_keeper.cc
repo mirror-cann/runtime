@@ -123,23 +123,18 @@ static void DestroyRuntimeImpl(Runtime *rt, const void *soHandle)
 #endif
 }
 
-static void PrepareRuntimeProcessExitImpl(Runtime *rt, const void *soHandle)
+static void DestroyPoolRegistryImpl(void *soHandle)
 {
     UNUSED(soHandle);
-    if (rt != nullptr) {
-        rt->PrepareProcessExitNoThrow();
-    }
-    Runtime::runtime_ = nullptr;
-#ifdef XPU_UT
-    cce::tprt::TprtManage::tprt_ = nullptr;
-#endif
+    PoolRegistry::DestroyPoolRegistry();
+    return;
 }
 
 #else
 static const std::string LIBRUNTIME_SO_NAME = "libruntime_v100.so";  // default so name
 using ConstructFunc = Runtime *(*)();
 using DesConstructFunc = void (*)(Runtime *);
-using PrepareProcessExitFunc = void (*)(Runtime *);
+using DesConstructPool = void (*)();
 
 static rtChipType_t g_chipType = CHIP_BEGIN;
 rtChipType_t Runtime::GetChipType()
@@ -217,6 +212,23 @@ static Runtime *CreateRuntimeImpl(void **soHandle)
     return rt;
 }
 
+static void DestroyPoolRegistryImpl(void *soHandle)
+{
+    if (soHandle == nullptr) {
+        RT_LOG(RT_LOG_INFO, "soHandle is nullptr.");
+        return;
+    }
+    DesConstructPool const func = RtPtrToPtr<DesConstructPool, void *>(mmDlsym(soHandle, "DestroyPoolRegistryImpl"));
+    if (func == nullptr) {
+        const std::string libSoName = GetLibRuntimeSoName();
+        RT_LOG(RT_LOG_ERROR, "No symbol found in %s.", libSoName.c_str());
+        return;
+    }
+    func();
+    RT_LOG(RT_LOG_INFO, "Destroy PoolRegistry success.");
+    return;
+}
+
 static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
 {
     if ((soHandle == nullptr) || (rt == nullptr)) {
@@ -234,27 +246,11 @@ static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
     return;
 }
 
-static void PrepareRuntimeProcessExitImpl(Runtime *rt, void *soHandle)
-{
-    if ((soHandle == nullptr) || (rt == nullptr)) {
-        RT_LOG(RT_LOG_INFO, "soHandle or rt is nullptr");
-        return;
-    }
-    PrepareProcessExitFunc const func =
-        RtPtrToPtr<PrepareProcessExitFunc, void *>(mmDlsym(soHandle, "PrepareRuntimeProcessExitImpl"));
-    if (func == nullptr) {
-        const std::string libSoName = GetLibRuntimeSoName();
-        RT_LOG(RT_LOG_ERROR, "No process exit prepare symbol found in %s.", libSoName.c_str());
-        return;
-    }
-    func(rt);
-    RT_LOG(RT_LOG_INFO, "Prepare Runtime process exit success");
-    return;
-}
-
 #endif
 
 #ifndef CFG_DEV_PLATFORM_PC
+ErrorManager& RuntimeKeeper::errManager_ = ErrorManager::GetInstance();
+
 static void RegisterDrvErrMsgHandle(void)
 {
     if (&drv_log_report_err_msg_handle_register == nullptr) {
@@ -291,6 +287,7 @@ RuntimeKeeper::RuntimeKeeper() : NoCopy(), runtime_(nullptr)
     (void)GlobalStateManager::GetInstance();
     (void)ErrorcodeManage::Instance();
 #ifndef CFG_DEV_PLATFORM_PC
+    (void)ErrorManager::GetInstance();
     (void)RegisterDrvErrMsgHandle();
 #endif
     (void)ProfCtrlCallbackManager::Instance();
@@ -307,22 +304,20 @@ RuntimeKeeper::~RuntimeKeeper()
 #ifndef CFG_DEV_PLATFORM_PC
         (void)UnregisterDrvErrMsgHandle();
 #endif
-        PrepareRuntimeProcessExitImpl(runtime_, soHandle_);
+        DestroyPoolRegistryImpl(soHandle_);
+        DestroyRuntimeImpl(runtime_, soHandle_);
     } catch (...) {}
 
     Runtime::runtime_ = nullptr;
     runtime_ = nullptr;
-    // Process exit relies on OS loader cleanup. Do not destroy Runtime, PoolRegistry or runtime so here:
-    // their destructors may touch heap or lower modules after other atexit handlers have started.
+    if (soHandle_ != nullptr) {
+        (void)mmDlclose(soHandle_);
+    }
     soHandle_ = nullptr;
 }
 
 Runtime *RuntimeKeeper::BootRuntime()
 {
-    if (IsRuntimeKeeperExiting()) {
-        RT_LOG(RT_LOG_WARNING, "RuntimeKeeper is exiting, skip runtime boot.");
-        return nullptr;
-    }
     if (bootStage_.CompareExchange(BOOT_INIT, BOOT_ON)) {
         // get chip type and dlopen different so
         void *handle = nullptr;
@@ -366,10 +361,6 @@ Runtime *RuntimeKeeper::BootRuntime()
 
 Runtime *RuntimeKeeperGetRuntime()
 {
-    if (IsRuntimeKeeperExiting()) {
-        RT_LOG(RT_LOG_WARNING, "RuntimeKeeper is exiting, runtime instance is unavailable.");
-        return nullptr;
-    }
     return (g_runtimeKeeper.BootRuntime());
 }
 

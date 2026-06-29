@@ -924,8 +924,6 @@ private:
     rtError_t InitQosCfg();
     rtError_t InitSwapBufferInfo();
     rtError_t GetQosInfoByIpc();
-    void ReleaseOwnedObjectsOnDestroy() noexcept;
-    void ReleaseDriverResourcesOnDestroy() noexcept;
 
     rtError_t ParseSimtPrintInfo();
     rtError_t ParseSimdPrintInfo();

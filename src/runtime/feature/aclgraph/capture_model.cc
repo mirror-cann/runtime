@@ -17,7 +17,6 @@
 #include "profiler.hpp"
 #include "api_impl.hpp"
 #include "api.hpp"
-#include "runtime.hpp"
 #include "capture_adapt.hpp"
 #include "thread_local_container.hpp"
 #include "stream_task.h"
@@ -40,12 +39,6 @@ CaptureModel::CaptureModel(ModelType type) : Model(type)
 }
 CaptureModel::~CaptureModel() noexcept
 {
-    Runtime * const rt = Runtime::Instance();
-    if (Runtime::IsProcessExiting(rt)) {
-        FinalizeHostStateOnExit();
-        return;
-    }
-
     // 清空capturestream和单算子流关系
     singleOperStmIdAndCaptureStmIdMap_.clear();
 
@@ -276,11 +269,6 @@ void CaptureModel::ReleaseArgLoaderBackupOnDestroy()
 
 rtError_t CaptureModel::TearDown()
 {
-    Runtime * const rt = Runtime::Instance();
-    if (Runtime::IsProcessExiting(rt)) {
-        return Model::TearDown();
-    }
-
     Profiler *profilerPtr = Runtime::Instance()->Profiler_();
     if (profilerPtr != nullptr) {
         if (profilerPtr->GetTrackProfEnable()) {
@@ -289,23 +277,6 @@ rtError_t CaptureModel::TearDown()
     }
     return Model::TearDown();
 }
-
-void CaptureModel::FinalizeHostStateOnExit() noexcept
-{
-    RT_LOG(RT_LOG_WARNING, "Runtime is exiting, finalize capture model host state only, model_id=%u.", Id_());
-    singleOperStmIdAndCaptureStmIdMap_.clear();
-    singleOperEvents_.clear();
-    captureEvents_.clear();
-    addStreamMap_.clear();
-    addStreamNotifyList_.clear();
-    executeNotifyList_.clear();
-    taskGroupStmIds_.clear();
-    rdmaPiValueModifyTaskInfoMap_.clear();
-    argLoaderBackup_.clear();
-    isNeedUpdateEndGraph_ = false;
-    trackDataReportFlag_ = false;
-}
-
 rtError_t CaptureModel::ResetCaptureEvents(Stream * const stm) const
 {
     return ResetCaptureEventsProc(this, stm);

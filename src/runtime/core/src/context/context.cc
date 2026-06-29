@@ -850,8 +850,7 @@ rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag) c
         return deleteError;
     }
 
-    const Runtime * const rt = Runtime::Instance();
-    if (!Runtime::IsProcessExiting(rt)) {
+    if (!Runtime::Instance()->IsExiting()) {
         StreamStateCallbackManager::Instance().Notify(tdStream, false);
     }
     bool destroyTaskRecycledStream = false;
@@ -862,8 +861,9 @@ rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag) c
         return HandlePrimaryReleaseStreamTearDownFailure(stream, tdStream, error, destroyTaskRecycledStream);
     }
 
+    const Runtime * const rtInstance = Runtime::Instance();
     if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
-        ((rt != nullptr) && rt->GetDisableThread())) {
+        (rtInstance->GetDisableThread())) {
         const rtError_t deleteError = DeleteStreamNoThrowForPrimaryRelease(tdStream);
         if (deleteError != RT_ERROR_NONE) {
             stream = tdStream;
@@ -978,8 +978,7 @@ void Context::FlushPendingTasksBeforeStreamTearDown(Stream *stm) const
 
 rtError_t Context::TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destroyTaskRecycledStream) const
 {
-    const Runtime * const rt = Runtime::Instance();
-    if (!Runtime::IsProcessExiting(rt)) {
+    if (!Runtime::Instance()->IsExiting()) {
         StreamStateCallbackManager::Instance().Notify(stm, false);
     }
     if (destroyTaskRecycledStream != nullptr) {
@@ -996,9 +995,10 @@ rtError_t Context::TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destr
         stm->ClearDestroyTaskRecycledOnTearDownOutput();
     }
 
+    const Runtime * const rtInstance = Runtime::Instance();
     const bool isRecycledByDestroyTask = (destroyTaskRecycledStream != nullptr) && (*destroyTaskRecycledStream);
     if (!isRecycledByDestroyTask && (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
-        ((rt != nullptr) && rt->GetDisableThread()))) {
+        (rtInstance->GetDisableThread()))) {
         DeleteStream(stm);
     }
     return error;

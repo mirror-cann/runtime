@@ -26,6 +26,9 @@ public:
     Runtime *BootRuntime();
 
 private:
+#ifndef CFG_DEV_PLATFORM_PC
+    static ErrorManager &errManager_;
+#endif
     Runtime *runtime_;
     Atomic<uint32_t> bootStage_{BOOT_INIT};
     void* soHandle_{nullptr};
@@ -49,7 +52,6 @@ extern "C" {
 
 cce::runtime::Runtime* ConstructRuntimeImpl();
 void DestructorRuntimeImpl(cce::runtime::Runtime *rt);
-void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime *rt);
 void DestroyPoolRegistryImpl();
 
 #if defined(__cplusplus)
