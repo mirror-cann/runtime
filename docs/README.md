@@ -63,10 +63,10 @@
 
 | 问题类型 | 典型场景 | 入口 |
 |---------|---------|------|
-| **入门阶段** | 初始化失败、Device 配置、版本兼容等入门常见问题 | [版本不匹配](04_FAQ/Runtime版本与CANN版本不匹配导致的问题.md) · [aclInit 失败](04_FAQ/aclInit初始化失败常见原因排查.md) · [aclrtSetDevice 失败](04_FAQ/aclrtSetDevice调用失败.md) · [默认机制](04_FAQ/如何理解默认Device和默认Stream机制.md) |
-| **基础开发** | 内存管理、Stream 同步、数据复制等基础 API 使用问题 | [内存申请失败](04_FAQ/aclrtMalloc内存申请失败常见原因.md) · [Stream 下发失败](04_FAQ/aclrtMemcpyAsync在错误的Stream上下发失败.md) · [内存策略](04_FAQ/如何选择合适的内存分配策略.md) · [同步机制](04_FAQ/Stream同步与Event同步的区别与选择.md) |
-| **进阶场景** | 多设备编程、ACL Graph、进程通信等复杂场景问题 | [多Device Stream](04_FAQ/多Device场景下Stream跨Device下发失败.md) · [ACL Graph 任务提交](04_FAQ/ACLGraph捕获过程中任务提交限制.md) · [IPC 页表对齐](04_FAQ/进程间IPC内存共享的页表对齐要求.md) · [P2P 配置失败](04_FAQ/跨DeviceP2P数据交互配置失败.md) |
-| **错误排查** | 错误码解读、算子异常、日志定位等诊断方法 | [异步错误码](04_FAQ/如何获取和解读Runtime异步错误码.md) · [算子输出异常](04_FAQ/算子执行输出全0的常见原因排查.md) · [遇错即停定位](04_FAQ/遇错即停模式下错误定位方法.md) · [plog 日志定位](04_FAQ/如何通过plog日志定位Device侧异常.md) |
+| **入门阶段** | 初始化失败、Device 配置、版本兼容等入门常见问题 | [版本不匹配](FAQ/Runtime版本与CANN版本不匹配导致的问题.md) · [aclInit 失败](FAQ/aclInit初始化失败常见原因排查.md) · [aclrtSetDevice 失败](FAQ/aclrtSetDevice调用失败.md) · [默认机制](FAQ/如何理解默认Device和默认Stream机制.md) |
+| **基础开发** | 内存管理、Stream 同步、数据复制等基础 API 使用问题 | [内存申请失败](FAQ/aclrtMalloc内存申请失败常见原因.md) · [Stream 下发失败](FAQ/aclrtMemcpyAsync在错误的Stream上下发失败.md) · [内存策略](FAQ/如何选择合适的内存分配策略.md) · [同步机制](FAQ/Stream同步与Event同步的区别与选择.md) |
+| **进阶场景** | 多设备编程、ACL Graph、进程通信等复杂场景问题 | [多Device Stream](FAQ/多Device场景下Stream跨Device下发失败.md) · [ACL Graph 任务提交](FAQ/ACLGraph捕获过程中任务提交限制.md) · [IPC 页表对齐](FAQ/进程间IPC内存共享的页表对齐要求.md) · [P2P 配置失败](FAQ/跨DeviceP2P数据交互配置失败.md) |
+| **错误排查** | 错误码解读、算子异常、日志定位等诊断方法 | [异步错误码](FAQ/如何获取和解读Runtime异步错误码.md) · [算子输出异常](FAQ/算子执行输出全0的常见原因排查.md) · [遇错即停定位](FAQ/遇错即停模式下错误定位方法.md) · [plog 日志定位](FAQ/如何通过plog日志定位Device侧异常.md) |
 
 ---
 

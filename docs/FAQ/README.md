@@ -1,0 +1,18 @@
+# 常见问题（FAQ）
+
+- [Runtime版本与CANN版本不匹配导致的问题](Runtime版本与CANN版本不匹配导致的问题.md)
+- [aclInit初始化失败常见原因排查](aclInit初始化失败常见原因排查.md)
+- [aclrtSetDevice调用失败](aclrtSetDevice调用失败.md)
+- [如何理解默认Device和默认Stream机制](如何理解默认Device和默认Stream机制.md)
+- [aclrtMalloc内存申请失败常见原因](aclrtMalloc内存申请失败常见原因.md)
+- [aclrtMemcpyAsync在错误的Stream上下发失败](aclrtMemcpyAsync在错误的Stream上下发失败.md)
+- [如何选择合适的内存分配策略](如何选择合适的内存分配策略.md)
+- [Stream同步与Event同步的区别与选择](Stream同步与Event同步的区别与选择.md)
+- [多Device场景下Stream跨Device下发失败](多Device场景下Stream跨Device下发失败.md)
+- [ACLGraph捕获过程中任务提交限制](ACLGraph捕获过程中任务提交限制.md)
+- [进程间IPC内存共享的页表对齐要求](进程间IPC内存共享的页表对齐要求.md)
+- [跨DeviceP2P数据交互配置失败](跨DeviceP2P数据交互配置失败.md)
+- [如何获取和解读Runtime异步错误码](如何获取和解读Runtime异步错误码.md)
+- [算子执行输出全0的常见原因排查](算子执行输出全0的常见原因排查.md)
+- [遇错即停模式下错误定位方法](遇错即停模式下错误定位方法.md)
+- [如何通过plog日志定位Device侧异常](如何通过plog日志定位Device侧异常.md)
