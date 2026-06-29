@@ -167,8 +167,7 @@ rtError_t StarsResumeRtsq(const rtLogicCqReport_t *logicCq, const TaskInfo * con
         static_cast<uint32_t>(error));
 
     if (taskInfo->type == static_cast<uint16_t>(TS_TASK_TYPE_MULTIPLE_TASK)) {
-        head = (dynamic_cast<TaskResManageDavid *>(failStm->taskResMang_))->GetTaskPosHead() +
-            GetSendDavidSqeNum(taskInfo);
+        head = ((taskInfo->pos +  GetSendDavidSqeNum(taskInfo)) % failStm->GetSqDepth());
     } else {
         head = ((static_cast<uint32_t>(logicCq->sqHead) + offset) % failStm->GetSqDepth());
     }
@@ -309,6 +308,7 @@ rtError_t ProcReport(Device * const dev, uint32_t streamId, const uint32_t syncP
     rtLogicCqReport_t reclaimCqReport = {};
     uint32_t targetTaskSn = 0xFFFFFFFFU;     /* invalid value */
     for (uint32_t idx = 0U; idx < cnt; ++idx) {
+        isResumeRtsq = true;
         rtLogicCqReport_t &report = logicReport[idx];
         if (syncPos != UINT32_MAX) {
             TaskInfo *targetTask = GetTaskInfo(dev, streamId, syncPos);
