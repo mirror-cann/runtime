@@ -8,7 +8,7 @@
 - 推理场景下的流与事件编排。
 - 多设备资源划分与性能观察。
 
-## 可先参考
+## 可选参考
 
 - [../../1_basic_features/device/](../../1_basic_features/device/)
 - [../../1_basic_features/memory/](../../1_basic_features/memory/)

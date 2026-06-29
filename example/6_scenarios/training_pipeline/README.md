@@ -8,7 +8,7 @@
 - 多阶段任务编排与调试思路。
 - 训练执行链路中的同步与资源管理。
 
-## 可先参考
+## 可选参考
 
 - [../../1_basic_features/stream/](../../1_basic_features/stream/)
 - [../../1_basic_features/memory/](../../1_basic_features/memory/)

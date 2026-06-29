@@ -8,7 +8,7 @@
 - Device 与 Context 的关联关系。
 - 多线程场景下的上下文隔离与复用。
 
-## 可先参考
+## 可选参考
 
 - [../device/](../device/)：Device 初始化与切换。
 - [../stream/](../stream/)：流与上下文的配合关系。

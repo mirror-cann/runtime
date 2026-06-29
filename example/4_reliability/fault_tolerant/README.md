@@ -8,7 +8,6 @@
 - 与多设备或多进程配合时的容错思路。
 - 诊断、重试和降级之间的协同设计。
 
-## 可先参考
+## 可选参考
 
-- [../snapshot/README.md](../snapshot/README.md)：快照备份与恢复。
 - [../error_recovery/README.md](../error_recovery/README.md)：错误恢复策略。

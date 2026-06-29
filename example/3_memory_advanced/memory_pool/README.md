@@ -8,6 +8,6 @@
 - 异步申请/释放与流同步之间的关系。
 - 与常规 aclrtMalloc/aclrtFree 的适用场景对比。
 
-## 可先参考
+## 可选参考
 
 - [../allocator/README.md](../allocator/README.md)：自定义分配器与内存管理抽象。
