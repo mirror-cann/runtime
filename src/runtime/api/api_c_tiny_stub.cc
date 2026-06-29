@@ -1357,6 +1357,37 @@ rtError_t rtLaunchSIMTKernelWithArgsArray(void *func, rtDim3 gridDim,rtDim3 bloc
 }
 
 VISIBILITY_DEFAULT
+rtError_t rtNotifyReset(rtNotify_t notify)
+{
+    UNUSED(notify);
+    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
+}
+
+VISIBILITY_DEFAULT
+rtError_t rtSetOpExecuteTimeOut(uint32_t timeout)
+{
+    UNUSED(timeout);
+    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t rtBarrierTaskLaunch(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag)
+{
+    UNUSED(taskInfo);
+    UNUSED(stm);
+    UNUSED(flag);
+    return ACL_RT_SUCCESS;
+}
+
+VISIBILITY_DEFAULT
+rtError_t rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, rtBinHandle *binHandle)
+{
+    UNUSED(data);
+    UNUSED(length);
+    UNUSED(binHandle);
+    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
+}
+
+VISIBILITY_DEFAULT
 rtError_t rtLaunchSIMTKernelWithHostArgs(void *func, rtDim3 gridDim, rtDim3 blockDim,
     size_t dynUbufSize, rtStream_t stm, rtKernelLaunchCfg_t *cfg, void *hostArgs,
     uint32_t argsSize, rtPlaceHolderInfo_t *placeHolderArray, uint32_t placeHolderNum)

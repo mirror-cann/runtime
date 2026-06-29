@@ -42,6 +42,7 @@
 #include "subscribe.hpp"
 #include "rdma_task.h"
 #include <fstream>
+#include <new>
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
@@ -183,6 +184,139 @@ TEST_F(CloudV2ApiAbnormalTest, rtFftsPlusTaskLaunchAbnormal)
     rtError_t error;
     error = rtFftsPlusTaskLaunch(nullptr, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtNotifyResetSuccess)
+{
+    Notify notify(0, 0);
+    rtNotify_t notifyHandle = rt_ut::InitAndExportHandle<rtNotify_t>(&notify);
+    Api *api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+
+    MOCKER_CPP_VIRTUAL(api, &Api::NotifyReset)
+        .stubs()
+        .with(&notify)
+        .will(returnValue(RT_ERROR_NONE));
+
+    EXPECT_EQ(rtNotifyReset(notifyHandle), ACL_RT_SUCCESS);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtNotifyResetApiError)
+{
+    Notify notify(0, 0);
+    rtNotify_t notifyHandle = rt_ut::InitAndExportHandle<rtNotify_t>(&notify);
+    Api *api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+
+    MOCKER_CPP_VIRTUAL(api, &Api::NotifyReset)
+        .stubs()
+        .with(&notify)
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
+
+    EXPECT_NE(rtNotifyReset(notifyHandle), ACL_RT_SUCCESS);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtSetOpExecuteTimeOutSuccess)
+{
+    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    ASSERT_NE(rtInstance, nullptr);
+    const int64_t oldAicpuCnt = rtInstance->GetAicpuCnt();
+    rtInstance->SetAicpuCnt(1);
+    Api *api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+
+    MOCKER_CPP_VIRTUAL(api, &Api::SetOpExecuteTimeOut)
+        .stubs()
+        .with(static_cast<uint32_t>(10U), RT_TIME_UNIT_TYPE_S)
+        .will(returnValue(RT_ERROR_NONE));
+
+    EXPECT_EQ(rtSetOpExecuteTimeOut(10U), ACL_RT_SUCCESS);
+    rtInstance->SetAicpuCnt(oldAicpuCnt);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtSetOpExecuteTimeOutNotSupportWithoutAicpu)
+{
+    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    ASSERT_NE(rtInstance, nullptr);
+    const rtChipType_t oldChipType = rtInstance->GetChipType();
+    const rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+    const int64_t oldAicpuCnt = rtInstance->GetAicpuCnt();
+    rtInstance->SetChipType(CHIP_AS31XM1);
+    GlobalContainer::SetRtChipType(CHIP_AS31XM1);
+    rtInstance->SetAicpuCnt(0);
+
+    EXPECT_EQ(rtSetOpExecuteTimeOut(10U), ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    rtInstance->SetAicpuCnt(oldAicpuCnt);
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtBarrierTaskLaunchNotSupport)
+{
+    rtBarrierTaskInfo_t barrierTask = {};
+
+    EXPECT_EQ(rtBarrierTaskLaunch(&barrierTask, nullptr, 0U), ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtBarrierTaskLaunchSuccess)
+{
+    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    ASSERT_NE(rtInstance, nullptr);
+    const rtChipType_t oldChipType = rtInstance->GetChipType();
+    const rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
+    rtInstance->SetChipType(CHIP_MINI_V3);
+    GlobalContainer::SetRtChipType(CHIP_MINI_V3);
+    Stream stream(static_cast<Device *>(nullptr), 0);
+    rtStream_t streamHandle = rt_ut::InitAndExportHandle<rtStream_t>(&stream);
+    rtBarrierTaskInfo_t barrierTask = {};
+    Api *api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+
+    MOCKER_CPP_VIRTUAL(api, &Api::BarrierTaskLaunch)
+        .stubs()
+        .with(static_cast<const rtBarrierTaskInfo_t *>(&barrierTask), &stream, static_cast<uint32_t>(0U))
+        .will(returnValue(RT_ERROR_NONE));
+
+    EXPECT_EQ(rtBarrierTaskLaunch(&barrierTask, streamHandle, 0U), ACL_RT_SUCCESS);
+    GlobalContainer::SetRtChipType(oldGlobalChipType);
+    rtInstance->SetChipType(oldChipType);
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtBinaryLoadWithoutTilingKeySuccess)
+{
+    uint8_t data = 0U;
+    rtBinHandle binHandle = nullptr;
+    Program *program = new (std::nothrow) ElfProgram(RT_KERNEL_ATTR_TYPE_AICORE);
+    ASSERT_NE(program, nullptr);
+    Api *api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+
+    MOCKER_CPP_VIRTUAL(api, &Api::BinaryLoadWithoutTilingKey)
+        .stubs()
+        .with(static_cast<const void *>(&data), static_cast<uint64_t>(sizeof(data)),
+            outBoundP(&program, sizeof(Program *)))
+        .will(returnValue(RT_ERROR_NONE));
+
+    EXPECT_EQ(rtBinaryLoadWithoutTilingKey(&data, sizeof(data), &binHandle), ACL_RT_SUCCESS);
+    Program *realProgram = rt_ut::UnwrapOrNull<Program>(binHandle);
+    EXPECT_EQ(realProgram, program);
+    delete program;
+}
+
+TEST_F(CloudV2ApiAbnormalTest, rtBinaryLoadWithoutTilingKeyApiError)
+{
+    uint8_t data = 0U;
+    rtBinHandle binHandle = nullptr;
+    Api *api = Api::Instance();
+    ASSERT_NE(api, nullptr);
+
+    MOCKER_CPP_VIRTUAL(api, &Api::BinaryLoadWithoutTilingKey)
+        .stubs()
+        .with(static_cast<const void *>(&data), static_cast<uint64_t>(sizeof(data)), mockcpp::any())
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
+
+    EXPECT_NE(rtBinaryLoadWithoutTilingKey(&data, sizeof(data), &binHandle), ACL_RT_SUCCESS);
+    EXPECT_EQ(binHandle, nullptr);
 }
 
 TEST_F(CloudV2ApiAbnormalTest, rtNpuGetFloatStatusAbnormal)

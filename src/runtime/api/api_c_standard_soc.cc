@@ -1899,6 +1899,88 @@ rtError_t rtLaunchSIMTKernelWithHostArgs(void *func, rtDim3 gridDim, rtDim3 bloc
 }
 
 VISIBILITY_DEFAULT
+rtError_t rtNotifyReset(rtNotify_t notify)
+{
+    GLOBAL_STATE_WAIT_IF_LOCKED();
+    Api * const apiInstance = Api::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
+    const Runtime * const rtInstance = Runtime::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
+
+    if (IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_NOTIFY_RESET)) {
+        RT_VALIDATE_AND_UNWRAP_OBJECT(notify, Notify, notifyPtr);
+        const rtError_t error = apiInstance->NotifyReset(notifyPtr);
+        ERROR_RETURN_WITH_EXT_ERRCODE(error);
+    } else {
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
+        return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
+    }
+    return ACL_RT_SUCCESS;
+}
+
+VISIBILITY_DEFAULT
+rtError_t rtSetOpExecuteTimeOut(uint32_t timeout)
+{
+    Api * const apiInstance = Api::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
+    const Runtime * const rtInstance = Runtime::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
+    const rtChipType_t chipType = rtInstance->GetChipType();
+    if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_TIMEOUT_CONFIG)) {
+        COND_RETURN_WARN(rtInstance->GetAicpuCnt() == 0,
+            ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "does not support rtSetOpExecuteTimeOut.");
+    } else {
+        COND_RETURN_WARN(IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_OP_EXE_TIMEOUT_CONFIG),
+            ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "does not support rtSetOpExecuteTimeOut.");
+    }
+    const rtError_t error = apiInstance->SetOpExecuteTimeOut(timeout, RT_TIME_UNIT_TYPE_S);
+    ERROR_RETURN_WITH_EXT_ERRCODE(error);
+    return ACL_RT_SUCCESS;
+}
+
+rtError_t rtBarrierTaskLaunch(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag)
+{
+    GLOBAL_STATE_WAIT_IF_LOCKED();
+    const Runtime * const rtInstance = Runtime::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
+    const rtChipType_t chipType = rtInstance->GetChipType();
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_ASYNC_CMO)) {
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
+    }
+
+    Api * const apiInstance = Api::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
+    RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
+    const rtError_t error = apiInstance->BarrierTaskLaunch(taskInfo, streamPtr, flag);
+    ERROR_RETURN_WITH_EXT_ERRCODE(error);
+    return ACL_RT_SUCCESS;
+}
+
+VISIBILITY_DEFAULT
+rtError_t rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, rtBinHandle *binHandle)
+{
+    GLOBAL_STATE_WAIT_IF_LOCKED();
+    const Runtime * const rtInstance = Runtime::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
+    const rtChipType_t chipType = rtInstance->GetChipType();
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_BINARY_LOAD_DOT_WITHOUT_TILING)) {
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support.", static_cast<int32_t>(chipType));
+        return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
+    }
+
+    Api * const apiInstance = Api::Instance();
+    NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
+    const rtError_t ret = apiInstance->BinaryLoadWithoutTilingKey(data, length,
+                                                                  RtPtrToPtr<Program **>(binHandle));
+    ERROR_RETURN_WITH_EXT_ERRCODE(ret);
+    Program * const realProgram = RtPtrToPtr<Program *>(*binHandle);
+    InitEmbeddedInnerHandle<Program>(realProgram);
+    *binHandle = ExportEmbeddedHandle<rtBinHandle>(realProgram);
+    return ACL_RT_SUCCESS;
+}
+
+VISIBILITY_DEFAULT
 rtError_t rtLaunchSIMTKernelWithArgsArray(void *func, rtDim3 gridDim, rtDim3 blockDim,
     size_t dynUbufSize, rtStream_t stm, rtKernelLaunchCfg_t *cfg, void **args)
 {
