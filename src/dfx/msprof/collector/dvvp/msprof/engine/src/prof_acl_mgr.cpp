@@ -98,27 +98,27 @@ std::string GetFreqConfigReason(const std::string &config)
 {
     if (config == "sys_interconnection_freq" || config == "sys_cpu_freq" ||
         config == "host_sys_usage_freq") {
-        return "Please input an integer value in range [1, 50].";
+        return "Please input an integer value in range [1, 50]";
     }
     if (config == "sys_hardware_mem_freq" &&
         Platform::instance()->CheckIfSupport(PLATFORM_SYS_DEVICE_US)) {
-        return "Please input an integer value in range [1, 10000].";
+        return "Please input an integer value in range [1, 10000]";
     }
-    return "Please input an integer value in range [1, 100].";
+    return "Please input an integer value in range [1, 100]";
 }
 
 std::string GetJsonConfigInvalidReason(const std::string &config)
 {
     if (config == "aic_metrics") {
-        return "Please input a supported aic_metrics value.";
+        return "Please input a supported aic_metrics value";
     }
     if (config == "ge_api") {
-        return "Please input 'l0', 'l1' or 'off'.";
+        return "Please input 'l0', 'l1' or 'off'";
     }
     if (config == "task_trace" || config == "task_time") {
         return Platform::instance()->CheckIfSupport(PLATFORM_TASK_TRACE_L3) ?
-            "Please input 'on', 'off', 'l0', 'l1', 'l2' or 'l3'." :
-            "Please input 'on', 'off', 'l0', 'l1' or 'l2'.";
+            "Please input 'on', 'off', 'l0', 'l1', 'l2' or 'l3'" :
+            "Please input 'on', 'off', 'l0', 'l1' or 'l2'";
     }
     if (config == "sys_hardware_mem_freq" || config == "sys_io_sampling_freq" ||
         config == "sys_interconnection_freq" || config == "sys_cpu_freq" ||
@@ -126,21 +126,21 @@ std::string GetJsonConfigInvalidReason(const std::string &config)
         return GetFreqConfigReason(config);
     }
     if (config == "llc_profiling") {
-        return "Please input 'read' or 'write'.";
+        return "Please input 'read' or 'write'";
     }
     if (config == "host_sys") {
-        return "Please input one or more of 'cpu', 'mem', 'disk', 'network', 'osrt' or 'numa'.";
+        return "Please input one or more of 'cpu', 'mem', 'disk', 'network', 'osrt' or 'numa'";
     }
     if (config == "host_sys_usage") {
-        return "Please input 'cpu' or 'mem'.";
+        return "Please input 'cpu' or 'mem'";
     }
     if (config == "sys_mem_serviceflow") {
-        return "Please input a non-empty value.";
+        return "Please input a non-empty value";
     }
     if (config == "task_block") {
-        return "Please input 'all', 'on' or 'off'.";
+        return "Please input 'all', 'on' or 'off'";
     }
-    return "Please input 'on' or 'off'.";
+    return "Please input 'on' or 'off'";
 }
 
 std::string GetAclProfSetFreqReason(aclprofConfigType cfgType)
@@ -161,7 +161,7 @@ std::string GetAclProfSetFreqReason(aclprofConfigType cfgType)
         case ACL_PROF_LOW_POWER_FREQ:
             return GetFreqConfigReason("sys_lp_freq");
         default:
-            return "The config value is invalid or out of range.";
+            return "The config value is invalid or out of range";
     }
 }
 
@@ -169,7 +169,7 @@ std::string GetAclProfSetConfigReason(aclprofConfigType cfgType)
 {
     switch (cfgType) {
         case ACL_PROF_STORAGE_LIMIT:
-            return "Please input a value in range [200, 4294967295] and end with MB, for example 200MB.";
+            return "Please input a value in range [200, 4294967295] and end with MB, for example 200MB";
         case ACL_PROF_LLC_MODE:
             return GetJsonConfigInvalidReason("llc_profiling");
         case ACL_PROF_HOST_SYS:
@@ -179,15 +179,22 @@ std::string GetAclProfSetConfigReason(aclprofConfigType cfgType)
         case ACL_PROF_SYS_MEM_SERVICEFLOW:
             return GetJsonConfigInvalidReason("sys_mem_serviceflow");
         case ACL_PROF_OPTYPE:
-            return "Please input non-empty comma-separated op types, and total length should not exceed 256.";
+            return "Please input non-empty comma-separated op types, and total length should not exceed 256";
         case ACL_PROF_NTS_METRICS:
             return "Please input 'PipeUtilization' or 'Custom:<event>[,<event>...]', with 1 to 10 events in "
-                "range [0, 65535].";
+                "range [0, 65535]";
         case ACL_PROF_PATH:
-            return "Please input a valid profiling result path.";
+            return "Please input a valid profiling result path";
         default:
             return GetAclProfSetFreqReason(cfgType);
     }
+}
+
+void ReportOutputPathInvalidError(const std::string &output)
+{
+    std::string reason = "Output path contains invalid character";
+    MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"value", "config", "reason"}),
+        std::vector<std::string>({output, "output", reason}));
 }
 
 const uint32_t ACL_CFG_LEN_MAX = 1024 * 1024;  // max input cfg len is 1024 * 1024
@@ -1794,12 +1801,13 @@ int32_t ProfAclMgr::MsprofAclJsonParamConstruct(NanoJson::Json &acljsonCfg)
     ChangeLevelConf(params_);
     AddCcuInstruction(params_);
     MsprofAclJsonParamAdaper(params_);
-    params_->result_dir = acljsonCfg.Contains("output") ?
-        MsprofResultDirAdapter(acljsonCfg["output"].GetValue<std::string>()) :
-        MsprofResultDirAdapter(MSVP_PROF_EMPTY_STRING);
-    if (!Utils::CheckPathWithInvalidChar(params_->result_dir)) {
+    std::string output = acljsonCfg.Contains("output") ? acljsonCfg["output"].GetValue<std::string>() :
+        MSVP_PROF_EMPTY_STRING;
+    if (!output.empty() && !Utils::CheckPathWithInvalidChar(output)) {
+        ReportOutputPathInvalidError(output);
         return MSPROF_ERROR_CONFIG_INVALID;
     }
+    params_->result_dir = MsprofResultDirAdapter(output);
     resultPath_ = params_->result_dir;
     baseDir_ = Utils::CreateProfDir(0);
     int32_t ret = MsprofAclJsonParamConstructTwo(acljsonCfg);
@@ -1976,6 +1984,7 @@ int32_t ProfAclMgr::MsprofResultPathAdapter(const std::string &dir, std::string 
             MSPROF_LOGI("No result path set, use %s path", ASCEND_WORK_PATH_ENV.c_str());
             std::string path = Utils::RelativePathToAbsolutePath(ascendWorkPath) + MSVP_SLASH + PROFILING_RESULT_PATH;
             if (!Utils::CheckPathWithInvalidChar(path)) {
+                ReportOutputPathInvalidError(path);
                 return PROFILING_FAILED;
             }
             if (Utils::CreateDir(path) != PROFILING_SUCCESS) {
@@ -1989,6 +1998,7 @@ int32_t ProfAclMgr::MsprofResultPathAdapter(const std::string &dir, std::string 
     } else {
         std::string path = Utils::RelativePathToAbsolutePath(dir);
         if (!Utils::CheckPathWithInvalidChar(path)) {
+            ReportOutputPathInvalidError(dir);
             return PROFILING_FAILED;
         }
         if (Utils::CreateDir(path) != PROFILING_SUCCESS) {
@@ -2454,7 +2464,7 @@ void ProfAclMgr::DoFinalizeHandle(void)
 int32_t ProfAclMgr::MsprofFinalizeHandle(void)
 {
     if (ProfAclMgr::instance()->IsModeOff() || ProfAclMgr::instance()->IsSubscribeMode()) {
-        MSPROF_LOGW("Finalize profiling not common or aclapi task.");
+        MSPROF_LOGW("Skip profiling finalize process because current mode is not common or aclapi.");
         return MSPROF_ERROR_NONE;
     }
     DoFinalizeHandle();

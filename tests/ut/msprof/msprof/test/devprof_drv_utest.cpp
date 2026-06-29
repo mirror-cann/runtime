@@ -359,6 +359,13 @@ TEST_F(DEVPROF_DRV_UTEST, AdprofGetHashId)
     EXPECT_NE(PROFILING_FAILED, AdprofGetHashId(test.c_str(), test.length()));
 }
 
+TEST_F(DEVPROF_DRV_UTEST, AdprofStr2Id)
+{
+    EXPECT_EQ(PROFILING_FAILED, AdprofStr2Id(nullptr, 0));
+    std::string test("test");
+    EXPECT_EQ(AdprofGetHashId(test.c_str(), test.length()), AdprofStr2Id(test.c_str(), test.length()));
+}
+
 static int halProfQueryAvailBufLenStub(unsigned int dev_id, unsigned int chan_id, unsigned int *buff_avail_len)
 {
     static int count = 0;

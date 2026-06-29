@@ -141,6 +141,14 @@ void ExpectLastInputErrorReasonContains(const std::string &reason)
     EXPECT_NE(std::string::npos, values[2].find(reason));
 }
 
+void ExpectLastInputErrorReasonNotEndWithPeriod()
+{
+    const std::vector<std::string> &values = MsprofUtestStub::GetMsprofLastInputErrorValues();
+    ASSERT_GE(values.size(), 3U);
+    ASSERT_FALSE(values[2].empty());
+    EXPECT_NE('.', values[2].back());
+}
+
 void ExpectLastInputErrorParamAndReasonContains(const std::string &param, const std::string &reason)
 {
     const std::vector<std::string> &values = MsprofUtestStub::GetMsprofLastInputErrorValues();
@@ -1960,12 +1968,22 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitAclJsonInvalidInputsReportInputError)
     EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
     ExpectLastInputErrorReasonContains("valid json string");
 
+    std::string invalidOutput = "{\"switch\":\"on\",\"output\":\"p\\n\"}";
+    ProfAclMgr aclJsonMgr;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        aclJsonMgr.MsprofInitAclJson((void *)invalidOutput.c_str(), invalidOutput.size()));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("output", "invalid character");
+    ExpectLastInputErrorReasonNotEndWithPeriod();
+
     std::string invalidValue = "{\"switch\":\"on\",\"l2\":\"xx\"}";
     MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
         ProfAclMgr::instance()->MsprofInitAclJson((void *)invalidValue.c_str(), invalidValue.size()));
     EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
     ExpectLastInputErrorReasonContains("'on' or 'off'");
+    ExpectLastInputErrorReasonNotEndWithPeriod();
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitAclJsonTooLongReportsInputError)
@@ -2020,12 +2038,21 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsInvalidInputsReportInputError)
         ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
     EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
 
+    (void)strcpy_s(options.options, sizeof(options.options), "{\"output\":\"p\\n\"}");
+    ProfAclMgr geOptionMgr;
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, geOptionMgr.MsprofInitGeOptions(&options, sizeof(options)));
+    EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorReasonContains("invalid character");
+    ExpectLastInputErrorReasonNotEndWithPeriod();
+
     (void)strcpy_s(options.options, sizeof(options.options), "{\"l2\":\"xx\"}");
     MsprofUtestStub::ResetMsprofLastInputErrorCode();
     EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
         ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
     EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
     ExpectLastInputErrorReasonContains("'on' or 'off'");
+    ExpectLastInputErrorReasonNotEndWithPeriod();
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, MsprofAclJsonParamConstruct) {
@@ -4506,6 +4533,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForRa
         EXPECT_EQ(PROFILING_FAILED, ProfAclMgr::instance()->MsprofSetConfig(configCase.type, "bad"));
         EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
         ExpectLastInputErrorParamAndReasonContains(configCase.param, configCase.reason);
+        ExpectLastInputErrorReasonNotEndWithPeriod();
     }
 }
 
@@ -4540,6 +4568,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForOp
         EXPECT_EQ(PROFILING_FAILED, ProfAclMgr::instance()->MsprofSetConfig(configCase.type, "bad"));
         EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
         ExpectLastInputErrorParamAndReasonContains(configCase.param, configCase.reason);
+        ExpectLastInputErrorReasonNotEndWithPeriod();
     }
 }
 
@@ -4558,6 +4587,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForMi
         ProfAclMgr::instance()->MsprofSetConfig(static_cast<aclprofConfigType>(2), "bad"));
     EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
     ExpectLastInputErrorParamAndReasonContains("2", "invalid or out of range");
+    ExpectLastInputErrorReasonNotEndWithPeriod();
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, CreateParserTransport)
