@@ -35,9 +35,6 @@ rtError_t StreamWithDqs::SetupByFlagAndCheck(void)
     }
 
     if ((flags_ & RT_STREAM_DQS_INTER_CHIP) != 0U) {
-        COND_RETURN_ERROR_MSG_INNER(Device_()->DevGetTsId() == RT_TSC_ID, RT_ERROR_INVALID_VALUE,
-            "The DQS stream cannot be created by using ts_id %u. Instead, it should be created by using ts_id %u.",
-            RT_TSC_ID, RT_TSV_ID);
         error = CreateDqsInterChipSpace();
         ERROR_RETURN(error, "Failed to init dqs inter chip space, retCode=%#x.", static_cast<uint32_t>(error));
     }
