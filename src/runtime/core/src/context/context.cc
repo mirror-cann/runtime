@@ -1046,8 +1046,16 @@ rtError_t Context::SyncStreamsWithTimeout(const std::list<Stream *> &streams, in
     for (const auto &syncStream : streams) {
         COND_PROC(syncStream->IsSyncFinished() && (GetCtxMode() == ABORT_ON_FAILURE), continue;);
         error = syncStream->Synchronize(false, remainTime);
-        COND_RETURN_ERROR_MSG_INNER(IsProcessTimeout(start, timeout, &remainTime), RT_ERROR_STREAM_SYNC_TIMEOUT,
-            "Sync stream timeout, stream_id=%d.", syncStream->Id_());
+        if (IsProcessTimeout(start, timeout, &remainTime)) {
+            uint16_t taskId = MAX_UINT16_NUM;
+            const char_t *taskTypeName = "UNKOWN";
+            tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
+            syncStream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
+            RT_LOG_OUTER_MSG(RT_STREAM_SYNC_TIMEOUT_INNER_ERROR,
+                "Stream synchronize timeout, the current task is type_name=%s, device_id=%u, stream_id=%d, task_id=%u, task_type=%d.",
+                taskTypeName, syncStream->Device_()->Id_(), syncStream->Id_(), taskId, taskType);
+            return RT_ERROR_STREAM_SYNC_TIMEOUT;
+        }
 
         if (unlikely(error != RT_ERROR_NONE)) {
             RT_LOG(RT_LOG_ERROR, "Failed to synchronize stream, stream_id=%d, retCode=%#x.", syncStream->Id_(), error);

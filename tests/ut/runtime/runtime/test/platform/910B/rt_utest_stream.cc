@@ -340,3 +340,92 @@ TEST_F(CloudV2StreamTest, rtGetAvailStreamNum)
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
+
+TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_01)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Device *device = rtInstance->DeviceRetain(0, 0);
+    rtStream_t stm;
+    rtError_t error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stm);
+
+    stream->posToTaskIdMapSize_ = 10U;
+    stream->posToTaskIdMap_ = new uint16_t[stream->posToTaskIdMapSize_];
+    (void)memset_s(stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t),
+                   0xFF, stream->posToTaskIdMapSize_ * sizeof(uint16_t));
+    MOCKER_CPP(&Device::IsStarsPlatform).stubs().will(returnValue(true));
+    uint16_t taskId = 0U;
+    tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
+    const char_t *taskTypeName = nullptr;
+    stream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
+    
+    EXPECT_EQ(taskId, MAX_UINT16_NUM);
+    EXPECT_EQ(taskType, TS_TASK_TYPE_RESERVED);
+    
+    delete[] stream->posToTaskIdMap_;
+    stream->posToTaskIdMap_ = nullptr;
+    rtInstance->DeviceRelease(device);
+}
+
+TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_02)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Device *device = rtInstance->DeviceRetain(0, 0);
+    rtStream_t stm;
+    rtError_t error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stm);
+
+    stream->posToTaskIdMapSize_ = 10U;
+    stream->posToTaskIdMap_ = new uint16_t[stream->posToTaskIdMapSize_];
+    stream->taskHead_ = 0U;
+    (void)memset_s(stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t),
+                   0xFF, stream->posToTaskIdMapSize_ * sizeof(uint16_t));
+    MOCKER_CPP(&Device::IsStarsPlatform).stubs().will(returnValue(false));
+    uint16_t taskId = 0U;
+    tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
+    const char_t *taskTypeName = nullptr;
+    stream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
+    
+    EXPECT_EQ(taskId, MAX_UINT16_NUM);
+    EXPECT_EQ(taskType, TS_TASK_TYPE_RESERVED);
+    
+    delete[] stream->posToTaskIdMap_;
+    stream->posToTaskIdMap_ = nullptr;
+    rtInstance->DeviceRelease(device);
+}
+
+TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_03)
+{
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Device *device = rtInstance->DeviceRetain(0, 0);
+    rtStream_t stm;
+    rtError_t error = rtStreamCreate(&stm, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stm);
+
+    stream->posToTaskIdMapSize_ = 10U;
+    stream->posToTaskIdMap_ = new uint16_t[stream->posToTaskIdMapSize_];
+    stream->taskHead_ = 0U;
+    (void)memset_s(stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t),
+                   0U, stream->posToTaskIdMapSize_ * sizeof(uint16_t));
+    MOCKER_CPP(&Device::IsStarsPlatform).stubs().will(returnValue(false));
+    uint16_t taskId = 0U;
+    tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
+    const char_t *taskTypeName = nullptr;
+    TaskInfo mockTaskInfo = {};
+    mockTaskInfo.typeName = "KERNEL_AICORE";
+    mockTaskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
+    TaskFactory *taskFactory = device->GetTaskFactory();
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(&mockTaskInfo));
+    MOCKER_CPP_VIRTUAL(device, &Device::GetTaskFactory).stubs().will(returnValue(taskFactory));
+
+    stream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
+    EXPECT_EQ(taskId, 0U);
+    EXPECT_EQ(taskType, TS_TASK_TYPE_KERNEL_AICORE);
+    
+    delete[] stream->posToTaskIdMap_;
+    stream->posToTaskIdMap_ = nullptr;
+    rtInstance->DeviceRelease(device);
+}

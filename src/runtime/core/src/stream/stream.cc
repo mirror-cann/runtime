@@ -5298,5 +5298,43 @@ rtError_t Stream::RestoreForSoftwareSq()
 
     return RT_ERROR_NONE;
 }
+
+void Stream::GetCurrentRunningTaskInfo(uint16_t &taskId, tsTaskType_t &taskType, const char_t *&taskTypeName) const
+{
+    taskId = MAX_UINT16_NUM;
+    taskTypeName = "UNKNOWN";
+    taskType = TS_TASK_TYPE_RESERVED;
+
+    uint32_t taskPos = 0U;
+    if (device_->IsStarsPlatform()) {
+        uint16_t sqHead = 0U;
+        (void)device_->Driver_()->GetSqHead(device_->Id_(), device_->DevGetTsId(), sqId_, sqHead);
+        taskPos = static_cast<uint32_t>(sqHead);
+    } else {
+        taskPos = taskHead_;
+    }
+
+    if (taskPos < posToTaskIdMapSize_) {
+        taskId = posToTaskIdMap_[taskPos];
+    }
+    if (taskId == MAX_UINT16_NUM) {
+        return;
+    }
+
+    TaskInfo *taskInfo = nullptr;
+    TaskFactory *taskFactory = device_->GetTaskFactory();
+    if (taskFactory != nullptr) {
+        taskInfo = taskFactory->GetTask(streamId_, taskId);
+    }
+
+    if ((taskInfo == nullptr) && (taskResMang_ != nullptr)) {
+        taskInfo = taskResMang_->GetTaskInfo(taskId);
+    }
+
+    if (taskInfo != nullptr) {
+        taskTypeName = taskInfo->typeName;
+        taskType = taskInfo->type;
+    }
+}
 }  // namespace runtime
 }  // namespace cce

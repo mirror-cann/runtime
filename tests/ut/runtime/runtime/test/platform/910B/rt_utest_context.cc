@@ -3830,3 +3830,53 @@ TEST_F(CloudV2ContextTest, LabelSwitchListCreateMemSetFailed)
     ReleasePrimaryContext(devId);
     GlobalMockObject::verify();
 }
+
+TEST_F(CloudV2ContextTest, SyncStreamsWithTimeout_ProcessTimeout)
+{
+    int32_t devId;
+    rtError_t error;
+    Context *ctx;
+    Stream *stream;
+
+    // 获取device和context
+    error = rtGetDevice(&devId);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    RefObject<Context*> *refObject = NULL;
+    refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    ctx = refObject->GetVal();
+
+    // 创建stream
+    stream = ctx->defaultStream_;
+    ctx->defaultStream_ = NULL;
+    ctx->streams_.clear();
+    ctx->defaultStream_ = stream;
+
+    rtStream_t stm;
+    error = rtStreamCreate(&stm, 0);
+    Stream *stmPtr = rt_ut::UnwrapOrNull<Stream>(stm);
+
+    stmPtr->failureMode_ = STOP_ON_FAILURE;
+    stmPtr->flags_ = 0;
+    ctx->streams_.push_back(stmPtr);
+
+    // Mock Synchronize让stream同步返回，不真实等待
+    MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs()
+        .will(returnValue(RT_ERROR_NONE));
+
+    // Mock IsProcessTimeout返回true，触发超时分支
+    MOCKER_CPP(&IsProcessTimeout).stubs()
+        .will(returnValue(true));
+
+    // 设置timeout为100ms（大于0，不阻塞）
+    mmTimespec startTime = mmGetTickCount();
+    error = ctx->Synchronize(100);
+
+    // 期望返回超时错误码
+    EXPECT_EQ(error, RT_ERROR_STREAM_SYNC_TIMEOUT);
+
+    // 清理
+    ctx->streams_.clear();
+    rtStreamDestroy(stm);
+    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+}

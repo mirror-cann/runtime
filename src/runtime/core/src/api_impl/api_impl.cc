@@ -1693,6 +1693,13 @@ rtError_t ApiImpl::StreamSynchronize(Stream * const stm, const int32_t timeout)
     errCode = curStm->Synchronize(false, timeout);
     if (errCode == RT_ERROR_STREAM_SYNC_TIMEOUT) {
         (void)GetStreamTimeoutSnapshotMsg();
+        uint16_t taskId = MAX_UINT16_NUM;
+        const char_t *taskTypeName = "UNKOWN";
+        tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
+        curStm->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
+        RT_LOG_OUTER_MSG(RT_STREAM_SYNC_TIMEOUT_INNER_ERROR,
+            "Stream synchronize timeout, the current task is type_name=%s, device_id=%u, stream_id=%d, task_id=%u, task_type=%d",
+            taskTypeName, curStm->Device_()->Id_(), curStm->Id_(), taskId, taskType);
     } else {
         if ((curStm->Device_()->GetIsRingbufferGetErr()) && (curCtx->GetFailureError() == RT_ERROR_NONE) &&
             (curCtx->GetCtxMode() != CONTINUE_ON_FAILURE)) {
