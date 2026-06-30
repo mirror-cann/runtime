@@ -446,14 +446,13 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfAclInit_failed) {
         .stubs()
         .will(invoke(RelativePathToAbsolutePath_stub));
 
-    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
+    MOCKER(analysis::dvvp::common::utils::Utils::CheckPathWithInvalidChar)
         .stubs()
-        .will(returnValue(PROFILING_FAILED));
+        .will(returnValue(false));
 
     Msprofiler::Api::ProfAclMgr::instance()->isReady_ = true;
     Msprofiler::Api::ProfAclMgr::instance()->mode_ = Msprofiler::Api::WORK_MODE_OFF;
 
-    analysis::dvvp::common::utils::Utils::CreateDir(result);
     EXPECT_EQ(ACL_ERROR_INVALID_FILE, Msprofiler::Api::ProfAclMgr::instance()->ProfAclInit(result.c_str()));
     EXPECT_EQ(ACL_ERROR_INVALID_FILE, Msprofiler::Api::ProfAclMgr::instance()->ProfAclInit(result.c_str()));
     analysis::dvvp::common::utils::Utils::RemoveDir(result);
@@ -499,13 +498,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AclProfPath_SetConfigAfterInit_Wins) {
 
     MOCKER(analysis::dvvp::common::utils::Utils::RelativePathToAbsolutePath)
         .stubs().will(invoke(PathIdentity_stub));
-    MOCKER(analysis::dvvp::common::utils::Utils::CanonicalizePath)
-        .stubs().will(invoke(PathIdentity_stub));
     MOCKER(analysis::dvvp::common::utils::Utils::CheckPathWithInvalidChar)
-        .stubs().will(returnValue(true));
-    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
-        .stubs().will(returnValue(static_cast<int32_t>(PROFILING_SUCCESS)));
-    MOCKER(analysis::dvvp::common::utils::Utils::IsDirAccessible)
         .stubs().will(returnValue(true));
 
     ProfAclMgr::instance()->InitParams();
@@ -515,7 +508,8 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AclProfPath_SetConfigAfterInit_Wins) {
 
     EXPECT_EQ(PROFILING_SUCCESS,
         ProfAclMgr::instance()->MsprofSetConfig(ACL_PROF_PATH, "/tmp/lww_setcfg_a"));
-    // the later ACL_PROF_PATH overrides the path given at init time.
+    // the later ACL_PROF_PATH overrides the path given at init time. The path is only recorded
+    // (not created) here; it is materialized at start time.
     EXPECT_EQ("/tmp/lww_setcfg_a", ProfAclMgr::instance()->resultPath_);
     EXPECT_EQ("/tmp/lww_setcfg_a", ProfAclMgr::instance()->GetResultPath());
 
@@ -531,13 +525,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AclProfPath_InitAfterSetConfig_Wins) {
 
     MOCKER(analysis::dvvp::common::utils::Utils::RelativePathToAbsolutePath)
         .stubs().will(invoke(PathIdentity_stub));
-    MOCKER(analysis::dvvp::common::utils::Utils::CanonicalizePath)
-        .stubs().will(invoke(PathIdentity_stub));
     MOCKER(analysis::dvvp::common::utils::Utils::CheckPathWithInvalidChar)
-        .stubs().will(returnValue(true));
-    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
-        .stubs().will(returnValue(static_cast<int32_t>(PROFILING_SUCCESS)));
-    MOCKER(analysis::dvvp::common::utils::Utils::IsDirAccessible)
         .stubs().will(returnValue(true));
 
     ProfAclMgr::instance()->Init();
@@ -548,7 +536,8 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AclProfPath_InitAfterSetConfig_Wins) {
     ProfAclMgr::instance()->InitParams();
     ProfAclMgr::instance()->params_->resultPath = "/tmp/lww_setcfg_a";
 
-    // explicit init path should win over the earlier ACL_PROF_PATH
+    // explicit init path should win over the earlier ACL_PROF_PATH. ProfAclInit only records the
+    // path (it is created later at start time), so resultPath_ is the recorded absolute path.
     EXPECT_EQ(ACL_SUCCESS, ProfAclMgr::instance()->ProfAclInit("/tmp/lww_init_b"));
     EXPECT_EQ("/tmp/lww_init_b", ProfAclMgr::instance()->resultPath_);
 
@@ -564,10 +553,9 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AclProfPath_SetConfigAfterInit_InvalidPath_Fails) 
 
     MOCKER(analysis::dvvp::common::utils::Utils::RelativePathToAbsolutePath)
         .stubs().will(invoke(PathIdentity_stub));
+    // setConfig no longer creates the dir; an invalid path is rejected by the invalid-char check.
     MOCKER(analysis::dvvp::common::utils::Utils::CheckPathWithInvalidChar)
-        .stubs().will(returnValue(true));
-    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
-        .stubs().will(returnValue(static_cast<int32_t>(PROFILING_FAILED)));
+        .stubs().will(returnValue(false));
 
     ProfAclMgr::instance()->InitParams();
     ProfAclMgr::instance()->mode_ = WORK_MODE_API_CTRL;
@@ -581,6 +569,154 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AclProfPath_SetConfigAfterInit_InvalidPath_Fails) 
     ProfAclMgr::instance()->mode_ = WORK_MODE_OFF;
     ProfAclMgr::instance()->resultPath_.clear();
     ProfAclMgr::instance()->params_->resultPath.clear();
+}
+
+// MaterializeResultPath: creates and validates the recorded path, writes back the canonical path.
+TEST_F(MSPROF_ACL_CORE_UTEST, MaterializeResultPath_Success) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
+        .stubs().will(returnValue(static_cast<int32_t>(PROFILING_SUCCESS)));
+    MOCKER(analysis::dvvp::common::utils::Utils::CanonicalizePath)
+        .stubs().will(invoke(PathIdentity_stub));
+    MOCKER(analysis::dvvp::common::utils::Utils::IsDirAccessible)
+        .stubs().will(returnValue(true));
+
+    ProfAclMgr::instance()->resultPath_ = "/tmp/lww_materialize_ok";
+    EXPECT_EQ(ACL_SUCCESS, ProfAclMgr::instance()->MaterializeResultPath());
+    EXPECT_EQ("/tmp/lww_materialize_ok", ProfAclMgr::instance()->resultPath_);
+
+    ProfAclMgr::instance()->resultPath_.clear();
+}
+
+// MaterializeResultPath: empty recorded path fails.
+TEST_F(MSPROF_ACL_CORE_UTEST, MaterializeResultPath_EmptyPath_Fails) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    ProfAclMgr::instance()->resultPath_.clear();
+    EXPECT_EQ(ACL_ERROR_INVALID_FILE, ProfAclMgr::instance()->MaterializeResultPath());
+}
+
+// MaterializeResultPath: CreateDir failure fails.
+TEST_F(MSPROF_ACL_CORE_UTEST, MaterializeResultPath_CreateDirFail_Fails) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
+        .stubs().will(returnValue(static_cast<int32_t>(PROFILING_FAILED)));
+
+    ProfAclMgr::instance()->resultPath_ = "/tmp/lww_materialize_createfail";
+    EXPECT_EQ(ACL_ERROR_INVALID_FILE, ProfAclMgr::instance()->MaterializeResultPath());
+
+    ProfAclMgr::instance()->resultPath_.clear();
+}
+
+// MaterializeResultPath: dir not accessible fails.
+TEST_F(MSPROF_ACL_CORE_UTEST, MaterializeResultPath_NotAccessible_Fails) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
+        .stubs().will(returnValue(static_cast<int32_t>(PROFILING_SUCCESS)));
+    MOCKER(analysis::dvvp::common::utils::Utils::CanonicalizePath)
+        .stubs().will(invoke(PathIdentity_stub));
+    MOCKER(analysis::dvvp::common::utils::Utils::IsDirAccessible)
+        .stubs().will(returnValue(false));
+
+    ProfAclMgr::instance()->resultPath_ = "/tmp/lww_materialize_noaccess";
+    EXPECT_EQ(ACL_ERROR_INVALID_FILE, ProfAclMgr::instance()->MaterializeResultPath());
+
+    ProfAclMgr::instance()->resultPath_.clear();
+}
+
+// ProfAclInit only records the path; it must not create the directory on disk.
+TEST_F(MSPROF_ACL_CORE_UTEST, ProfAclInit_RecordsPathWithoutCreatingDir) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    MOCKER(analysis::dvvp::common::utils::Utils::RelativePathToAbsolutePath)
+        .stubs().will(invoke(PathIdentity_stub));
+    MOCKER(analysis::dvvp::common::utils::Utils::CheckPathWithInvalidChar)
+        .stubs().will(returnValue(true));
+
+    std::string result = "/tmp/lww_init_no_create";
+    analysis::dvvp::common::utils::Utils::RemoveDir(result);
+
+    ProfAclMgr::instance()->Init();
+    ProfAclMgr::instance()->isReady_ = true;
+    ProfAclMgr::instance()->mode_ = WORK_MODE_OFF;
+    ProfAclMgr::instance()->resultPath_.clear();
+
+    EXPECT_EQ(ACL_SUCCESS, ProfAclMgr::instance()->ProfAclInit(result.c_str()));
+    EXPECT_EQ(result, ProfAclMgr::instance()->resultPath_);
+    // The directory must not exist yet: it is created only at start time.
+    EXPECT_FALSE(analysis::dvvp::common::utils::Utils::IsFileExist(result));
+
+    ProfAclMgr::instance()->mode_ = WORK_MODE_OFF;
+    ProfAclMgr::instance()->resultPath_.clear();
+}
+
+// Warmup flag: Set/Reset/Is reflect the internal warmup state correctly.
+TEST_F(MSPROF_ACL_CORE_UTEST, ProfWarmupFlag_SetResetQuery) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    ProfAclMgr::instance()->ResetProfWarmup();
+    EXPECT_FALSE(ProfAclMgr::instance()->IsProfWarmup());
+
+    ProfAclMgr::instance()->SetProfWarmup();
+    EXPECT_TRUE(ProfAclMgr::instance()->IsProfWarmup());
+
+    ProfAclMgr::instance()->ResetProfWarmup();
+    EXPECT_FALSE(ProfAclMgr::instance()->IsProfWarmup());
+}
+
+// Warmup materializes the result path through the same PrepareStartAclApi path as start:
+// aclprofWarmup issues ProfConfigStart(PROF_CONFIG_ACL_API), so the output directory is
+// created at warmup time (not at init time). This guards that the path fix covers warmup.
+TEST_F(MSPROF_ACL_CORE_UTEST, ProfWarmup_MaterializesResultPath) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    // Record the path without creating it (init-time behavior after the path fix).
+    MOCKER(analysis::dvvp::common::utils::Utils::CanonicalizePath)
+        .stubs().will(invoke(PathIdentity_stub));
+    MOCKER(analysis::dvvp::common::utils::Utils::IsDirAccessible)
+        .stubs().will(returnValue(true));
+    // CreateDir must be invoked exactly once when the path is materialized at warmup time.
+    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
+        .expects(once())
+        .will(returnValue(static_cast<int32_t>(PROFILING_SUCCESS)));
+
+    ProfAclMgr::instance()->resultPath_ = "/tmp/warmup_materialize";
+    EXPECT_EQ(ACL_SUCCESS, ProfAclMgr::instance()->MaterializeResultPath());
+    EXPECT_EQ("/tmp/warmup_materialize", ProfAclMgr::instance()->resultPath_);
+
+    ProfAclMgr::instance()->resultPath_.clear();
+}
+
+// Warmup -> start transition must NOT create the directory again: once warmed up,
+// ChangeProfWarmupToStart reuses the directory created at warmup time and never
+// re-enters PrepareStartAclApi/MaterializeResultPath (so CreateDir is not called).
+TEST_F(MSPROF_ACL_CORE_UTEST, ChangeProfWarmupToStart_DoesNotRecreateDir) {
+    GlobalMockObject::verify();
+    using namespace Msprofiler::Api;
+
+    // If the transition wrongly materialized the path again, CreateDir would be hit.
+    MOCKER(analysis::dvvp::common::utils::Utils::CreateDir)
+        .expects(never());
+
+    ProfAclMgr::instance()->SetProfWarmup();
+    EXPECT_TRUE(ProfAclMgr::instance()->IsProfWarmup());
+
+    // Empty device list: ChangeProfWarmupToStart only flips the upload flag, no dir creation.
+    std::vector<uint32_t> devIds;
+    ProfAclMgr::instance()->ChangeProfWarmupToStart(devIds);
+    ProfAclMgr::instance()->ResetProfWarmup();
+
+    EXPECT_FALSE(ProfAclMgr::instance()->IsProfWarmup());
 }
 
 static void CustomerSigHandler(int signum) {

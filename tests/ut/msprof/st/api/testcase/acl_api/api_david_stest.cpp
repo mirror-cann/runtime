@@ -254,8 +254,11 @@ TEST_F(AclApiDavidStest, AclApiL3)
     auto config = aclprofCreateConfig(deviceIdList, 1, aicoreMetrics, aicoreEvents, dataTypeConfig);
     EXPECT_NE(nullptr, config);
 
-    EXPECT_NE(PROFILING_SUCCESS, AclApiStart(config, dataTypeConfig));
-    aclprofDestroyConfig(config);
-    aclprofFinalize();
-    aclFinalize();
+    // david now supports task-time L3 (PLATFORM_TASK_TRACE_L3), so start succeeds. AclApiStart
+    // already destroys the config and finalizes on its success path, so no extra cleanup here.
+    EXPECT_EQ(PROFILING_SUCCESS, AclApiStart(config, dataTypeConfig));
+
+    std::vector<std::string> deviceDataList = {"stars_soc.data", "ffts_profile.data"};
+    std::vector<std::string> hostDataList = {"aging.additional.msproftx"};
+    EXPECT_EQ(0, CheckFiles(aclProfPath, deviceDataList, hostDataList));
 }

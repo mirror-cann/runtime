@@ -179,12 +179,14 @@ TEST_F(AclJsonDavidStest, AclJsonScale)
 
 TEST_F(AclJsonDavidStest, AclJsonTaskTimeL3)
 {
+    // david now supports task-time L3 (PLATFORM_TASK_TRACE_L3), so start succeeds.
+    // acljson uses the "task_time" key (task_trace is only valid on the geoption path).
     nlohmann::json data;
     data["output"] = DAVID_OUTPUT_DIR;
-    data["task_trace"] = "l3";
-    std::vector<std::string> dataList = {""};
+    data["task_time"] = "l3";
+    std::vector<std::string> dataList = {"stars_soc.data", "ffts_profile.data"};
     MsprofMgr().SetDeviceCheckList(dataList);
     std::vector<uint64_t> bitList = {PROF_TASK_TIME_L3};
     MsprofMgr().SetBitSwitchCheckList(bitList);
-    EXPECT_EQ(PROFILING_FAILED, MsprofMgr().AclJsonStart(1, data));
+    EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().AclJsonStart(1, data));
 }
