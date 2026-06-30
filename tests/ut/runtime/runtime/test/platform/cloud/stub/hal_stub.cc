@@ -657,16 +657,6 @@ drvError_t drvModelGetMemInfo(uint32_t device, size_t *free, size_t *total)
     return DRV_ERROR_NONE;
 }
 
-DVresult halShmemOpenHandleV2(DVdevice dev_id, const char *name, DVdeviceptr *vptr, uint64_t flag)
-{
-    return DRV_ERROR_NONE;
-}
-
-DVresult halShmemMapRouteCheck(const char *name, DVdevice dev_id, uint32_t attr)
-{
-    return DRV_ERROR_NONE;
-}
-
 DVresult drvMemGetAttribute(DVdeviceptr vptr, struct DVattribute* addtr)
 {
     addtr->devId = 0;

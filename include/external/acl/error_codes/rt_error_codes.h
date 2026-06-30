@@ -163,7 +163,6 @@ extern "C" {
 #define  ACL_ERROR_RT_L3_PORT_ERROR              507914 // l3 port error
 #define  ACL_ERROR_RT_CCU_TIMEOUT                507915 // ccu timeout
 #define  ACL_ERROR_RT_CCU_EXCEPTION              507916 // ccu exception
-#define  ACL_ERROR_RT_ACCESS_PATH_NOT_SUPPORT    507917 // invalid access link path
 
 #ifdef __cplusplus
 }

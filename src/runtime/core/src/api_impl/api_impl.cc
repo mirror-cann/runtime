@@ -4571,26 +4571,7 @@ rtError_t ApiImpl::IpcCloseMemory(const void * const ptr)
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    const uint64_t vptr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(ptr));
-    rtError_t error = curCtx->Device_()->Driver_()->CloseIpcMem(vptr);
-    if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "close ipc memory failed, vptr=%#" PRIx64 ".", vptr);
-        return error;
-    }
-
-    std::unordered_map<uint64_t, ipcMemInfo_t> &ipcMemNameMap = Runtime::Instance()->GetIpcMemNameMap();
-    SpinLock &ipcMemNameLock = Runtime::Instance()->GetIpcMemNameLock();
-    ipcMemNameLock.Lock();
-    auto it = ipcMemNameMap.find(vptr);
-    if (it != ipcMemNameMap.end()) {
-        ipcMemNameMap.erase(it);
-    } else {
-        RT_LOG(RT_LOG_WARNING, "ipc memory vptr=%#" PRIx64 " not found in map, may be closed already.", vptr);
-    }
-    ipcMemNameLock.Unlock();
-
-    RT_LOG(RT_LOG_DEBUG, "close ipc mem success, vptr=%#" PRIx64 ".", vptr);
-    return error;
+    return curCtx->Device_()->Driver_()->CloseIpcMem(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(ptr)));
 }
 
 rtError_t ApiImpl::IpcCloseMemoryByName(const char_t * const name)
@@ -4598,31 +4579,13 @@ rtError_t ApiImpl::IpcCloseMemoryByName(const char_t * const name)
     RT_LOG(RT_LOG_DEBUG, "start close ipc memory, name=%s.", name);
     Context * const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+    Runtime * const rtInstance = Runtime::Instance();
+    std::unordered_map<uint64_t, ipcMemInfo_t> &ipcMemNameMap = rtInstance->GetIpcMemNameMap();
     const std::string ipcName(name);
-    bool isImport = false;
-    rtError_t error = RT_ERROR_NONE;
-    std::unordered_map<uint64_t, ipcMemInfo_t> &ipcMemNameMap = Runtime::Instance()->GetIpcMemNameMap();
-    SpinLock &ipcMemNameLock = Runtime::Instance()->GetIpcMemNameLock();
-    ipcMemNameLock.Lock();
-    for (auto iter = ipcMemNameMap.begin(); iter != ipcMemNameMap.end();) {
-        if (iter->second.name == ipcName) {
-            error = curCtx->Device_()->Driver_()->CloseIpcMem(iter->first);
-            if (error != RT_ERROR_NONE) {
-                RT_LOG(RT_LOG_ERROR, "close ipc memory failed, name=%s.", name);
-                ipcMemNameLock.Unlock();
-                return error;
-            }
-            isImport = true;
-            iter = ipcMemNameMap.erase(iter);
-        } else {
-            ++iter;
+    for (auto &pairMap : ipcMemNameMap) {
+        if (pairMap.second.name == ipcName) {
+            return curCtx->Device_()->Driver_()->CloseIpcMem(pairMap.first);
         }
-    }
-    ipcMemNameLock.Unlock();
-
-    if (isImport) {
-        RT_LOG(RT_LOG_DEBUG, "close ipc mem success, name=%s.", name);
-        return error;
     }
     RT_LOG(RT_LOG_DEBUG, "destroy ipc memory by IpcDestroyMemoryName, name=%s.", name);
     return curCtx->Device_()->Driver_()->DestroyIpcMem(name);
@@ -9005,16 +8968,6 @@ rtError_t ApiImpl::MemMapSelectedLink(void *virPtrDst, size_t size, void *virPtr
         totalSize += baseSize;
     }
     return RT_ERROR_NONE;
-}
-
-rtError_t ApiImpl::MemMapSetLink(rtDrvMemHandle handle, rtMemLinkType adviceLink)
-{
-    Runtime *rt = Runtime::Instance();
-    std::unique_lock<std::mutex> lock(rt->GetMemMapSelectedLinkMutex_());
-
-    rtHandleAttr attr;
-    attr.memMapRoute = static_cast<uint32_t>(adviceLink);
-    return NpuDriver::MemHandleSetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, attr);
 }
 
 rtError_t ApiImpl::BinarySetExceptionCallback(Program *binHandle, void *callback, void *userData)

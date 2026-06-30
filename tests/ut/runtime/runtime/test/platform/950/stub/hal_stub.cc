@@ -753,12 +753,12 @@ DVresult halShmemCreateHandle(DVdeviceptr vptr, uint64_t byteCount, char *name, 
     return DRV_ERROR_NONE;
 }
 
-DVresult halShmemOpenHandle(const char *name, DVdeviceptr *vptr)
+DVresult halShmemDestroyHandle(const char *name)
 {
     return DRV_ERROR_NONE;
 }
 
-DVresult halShmemDestroyHandle(const char *name)
+DVresult halShmemOpenHandle(const char *name, DVdeviceptr *vptr)
 {
     return DRV_ERROR_NONE;
 }
@@ -774,11 +774,6 @@ drvError_t halShmemSetPidHandle(const char *name, pid_t pid[], int num)
 }
 
 drvError_t drvSetIpcNotifyPid(const char *name, pid_t pid[], int num)
-{
-    return DRV_ERROR_NONE;
-}
-
-DVresult halShmemMapRouteCheck(const char *name, DVdevice dev_id, uint32_t attr)
 {
     return DRV_ERROR_NONE;
 }
@@ -1898,10 +1893,6 @@ drvError_t halMemPoolSetAttr(soma_mem_pool_t pool, soma_mem_pool_attr attr, void
 }
 
 drvError_t halMemPoolGetAttr(soma_mem_pool_t pool, soma_mem_pool_attr attr, void *value)
-{
-    return DRV_ERROR_NONE;
-}
-drvError_t halShmemOpenHandleV2(DVdevice dev_id, const char *name, DVdeviceptr *vptr, uint64_t flag)
 {
     return DRV_ERROR_NONE;
 }

@@ -259,10 +259,8 @@ enum aclrtMemType {
 };
 
 // for ACL_RT_IPC_MEM_ATTR_ACCESS_LINK value
-#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_SIO 0 // only support A3
-#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_HCCS 1 // only support A3
-#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_UB_ONE_PORT_PATH 2 // only support A5
-#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_UB_MULTI_PORT_PATH 3 // only support A5
+#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_SIO 0
+#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_HCCS 1
 
 typedef enum {
     ACL_RT_IPC_MEM_ATTR_ACCESS_LINK,
@@ -982,13 +980,6 @@ typedef enum {
     ACL_RT_HOST_MEM_MAP_NOT_SUPPORTED = 0,
     ACL_RT_HOST_MEM_MAP_SUPPORTED
 } aclrtHostMemMapCapability;
-
-typedef enum {
-    ACL_RT_MEM_ACCESS_LINK_SIO = 0, // only support A3
-    ACL_RT_MEM_ACCESS_LINK_HCCS = 1, // only support A3
-    ACL_RT_MEM_ACCESS_UB_ONE_PORT_PATH = 2, // only support A5
-    ACL_RT_MEM_ACCESS_UB_MULTI_PORT_PATH = 3, // only support A5
-} aclrtMemLinkType;
 
 typedef struct aclrtIpcEventHandle {
     char reserved[ACL_IPC_EVENT_HANDLE_SIZE];
@@ -5798,23 +5789,6 @@ ACL_FUNC_VISIBILITY aclError aclrtMemManagedPrefetchBatchAsync(const void** ptrs
  * @retval OtherValues for other failure situation.
  */
 ACL_FUNC_VISIBILITY aclError aclrtMemMapSelectedLink(void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx);
-
-/**
- * @ingroup AscendCL
- * @brief Set memory access link type for a memory handle before mapping
- * @param [in] handle Memory handle obtained from aclrtMemImportFromShareableHandle
- * @param [in] adviceLink Memory access link type. Different chips support different values:
- *        - Atlas A3 training/inference series: ACL_RT_MEM_ACCESS_LINK_SIO (0) or ACL_RT_MEM_ACCESS_LINK_HCCS (1)
- *        - Ascend 950PR/950DT: ACL_RT_MEM_ACCESS_UB_ONE_PORT_PATH (2) or ACL_RT_MEM_ACCESS_UB_MULTI_PORT_PATH (3)
- *
- * @retval ACL_SUCCESS for success
- * @retval ACL_ERROR_INVALID_PARAM for invalid parameter (handle is NULL)
- * @retval ACL_ERROR_RT_ACCESS_PATH_NOT_SUPPORT for unsupported adviceLink value
- * @retval ACL_ERROR_RT_FEATURE_NOT_SUPPORT for unsupported chip
- * @retval OtherValues for other failure
- */
-ACL_FUNC_VISIBILITY aclError aclrtMemMapSetLink(aclrtDrvMemHandle handle, aclrtMemLinkType adviceLink);
-
 #ifdef __cplusplus
 }
 #endif

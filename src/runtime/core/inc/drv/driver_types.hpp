@@ -30,11 +30,6 @@ struct ipcMemInfo_t {
     int32_t ref;
 };
 
-struct ipcMemInfoV2_t {
-    uint64_t latestAttr;                               // 最新设置的属性值
-    std::vector<std::pair<uint64_t, uint64_t>> vaInfo; // <attr, va> 配对列表
-};
-
 struct LogicCqWaitInfo {
     uint32_t devId;
     uint32_t tsId;

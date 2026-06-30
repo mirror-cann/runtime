@@ -706,11 +706,6 @@ DVresult halShmemCreateHandle(DVdeviceptr vptr, uint64_t byteCount, char *name, 
     return DRV_ERROR_NONE;
 }
 
-DVresult halShmemOpenHandleV2(DVdevice dev_id, const char *name, DVdeviceptr *vptr, uint64_t flag)
-{
-    return DRV_ERROR_NONE;
-}
-
 DVresult halShmemDestroyHandle(const char *name)
 {
     return DRV_ERROR_NONE;
@@ -722,11 +717,6 @@ DVresult halShmemOpenHandle(const char *name, DVdeviceptr *vptr)
 }
 
 DVresult halShmemCloseHandle(DVdeviceptr vptr)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halShmemMapRouteCheck(const char *name, DVdevice dev_id, uint32_t attr)
 {
     return DRV_ERROR_NONE;
 }
