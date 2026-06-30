@@ -643,8 +643,8 @@ public:
     MOCK_METHOD2(rtStreamGetPriority, rtError_t(rtStream_t stream, uint32_t *priority));
     MOCK_METHOD2(rtStreamGetFlags, rtError_t(rtStream_t stream, uint32_t *flags));
     MOCK_METHOD2(rtStreamWaitEvent, rtError_t(rtStream_t stream, rtEvent_t event));
-    MOCK_METHOD4(rtStreamWaitEventWithFlag, rtError_t(rtStream_t stream, rtEvent_t event, int32_t timeout,
-        uint32_t flag));
+    MOCK_METHOD4(
+        rtStreamWaitEventWithFlag, rtError_t(rtStream_t stream, rtEvent_t event, int32_t timeout, uint32_t flag));
     MOCK_METHOD3(rtStreamWaitEventWithTimeout, rtError_t(rtStream_t stream, rtEvent_t event, uint32_t timeout));
     MOCK_METHOD2(rtIpcGetEventHandle, rtError_t(rtEvent_t event, rtIpcEventHandle_t *handle));
     MOCK_METHOD2(rtIpcOpenEventHandle, rtError_t(rtIpcEventHandle_t handle, rtEvent_t *event));

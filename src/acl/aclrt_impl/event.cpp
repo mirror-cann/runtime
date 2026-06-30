@@ -10,6 +10,7 @@
 
 #include "acl_rt_impl.h"
 #include "runtime/event.h"
+#include "runtime/rt_inner_event.h"
 #include "runtime/config.h"
 #include "runtime/rt_ras.h"
 #include "runtime/rts/rts_event.h"
@@ -112,6 +113,27 @@ aclError aclrtRecordEventImpl(aclrtEvent event, aclrtStream stream)
         return ACL_GET_ERRCODE_RTS(rtErr);
     }
     ACL_ADD_APPLY_SUCCESS_COUNT(acl::ACL_STATISTICS_RECORD_RESET_EVENT);
+    return ACL_SUCCESS;
+}
+
+aclError aclrtRecordEventWithFlagImpl(aclrtEvent event, aclrtStream stream, uint32_t flag)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtRecordEventWithFlag);
+    ACL_LOG_INFO("start to execute aclrtRecordEventWithFlag");
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(event);
+    ACL_CHECK_INVALID_VALUE_WITH_EXPECT_RET((flag == ACL_EVENT_RECORD_DEFAULT) ||
+        (flag == ACL_EVENT_RECORD_EXTERNAL), flag, "ACL_EVENT_RECORD_DEFAULT or ACL_EVENT_RECORD_EXTERNAL",
+        ACL_ERROR_INVALID_PARAM);
+
+    if (flag == ACL_EVENT_RECORD_DEFAULT) {
+        return aclrtRecordEventImpl(event, stream);
+    }
+
+    const rtError_t rtErr = rtEventRecordWithFlag(static_cast<rtEvent_t>(event), static_cast<rtStream_t>(stream), flag);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("record event with flag failed, runtime result = %d", static_cast<int32_t>(rtErr));
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
     return ACL_SUCCESS;
 }
 

@@ -60,6 +60,7 @@
     _(aclError, aclrtCreateEventExWithFlag, (aclrtEvent * event, uint32_t flag), (event, flag)) \
     _(aclError, aclrtDestroyEvent, (aclrtEvent event), (event)) \
     _(aclError, aclrtRecordEvent, (aclrtEvent event, aclrtStream stream), (event, stream)) \
+    _(aclError, aclrtRecordEventWithFlag, (aclrtEvent event, aclrtStream stream, uint32_t flag), (event, stream, flag)) \
     _(aclError, aclrtResetEvent, (aclrtEvent event, aclrtStream stream), (event, stream)) \
     _(aclError, aclrtQueryEvent, (aclrtEvent event, aclrtEventStatus * status), (event, status)) \
     _(aclError, aclrtQueryEventStatus, (aclrtEvent event, aclrtEventRecordedStatus * status), (event, status)) \
@@ -115,6 +116,7 @@
     _(aclError, aclrtStreamGetPriority, (aclrtStream stream, uint32_t * priority), (stream, priority)) \
     _(aclError, aclrtStreamGetFlags, (aclrtStream stream, uint32_t * flags), (stream, flags)) \
     _(aclError, aclrtStreamWaitEvent, (aclrtStream stream, aclrtEvent event), (stream, event)) \
+    _(aclError, aclrtStreamWaitEventWithFlag, (aclrtStream stream, aclrtEvent event, int32_t timeout, uint32_t flag), (stream, event, timeout, flag)) \
     _(aclError, aclrtStreamWaitEventWithTimeout, (aclrtStream stream, aclrtEvent event, int32_t timeout), (stream, event, timeout)) \
     _(aclError, aclrtSetGroup, (int32_t groupId), (groupId)) \
     _(aclError, aclrtGetGroupCount, (uint32_t * count), (count)) \

@@ -19,6 +19,9 @@
 #include "acl/acl_rt.h"
 #include "acl/acl_rt_api.h"
 #include "acl_rt_impl_base.h"
+#define private public
+#include "common/resource_statistics.h"
+#undef private
 
 #include "set_device_vxx.h"
 #include "runtime/dev.h"
@@ -43,6 +46,13 @@
 using namespace testing;
 using namespace std;
 using namespace acl;
+
+namespace {
+uint64_t GetResourceCounterValue(ResourceType resourceType, ApplyReleaseType applyReleaseType)
+{
+    return ResourceStatistics::GetInstance().counter_[resourceType].appplyReleaseValue[applyReleaseType].load();
+}
+}
 
 namespace acl {
 extern void resetAclJsonHash();
@@ -797,6 +807,39 @@ TEST_F(UTEST_ACL_Runtime, aclrtStreamWaitEventWithTimeoutTest)
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 
+TEST_F(UTEST_ACL_Runtime, aclrtStreamWaitEventWithFlagTest)
+{
+    aclrtStream stream = (aclrtStream)0x01;
+    aclrtEvent event = (aclrtEvent)0x01;
+
+    aclError ret = aclrtStreamWaitEventWithFlag(stream, nullptr, 1, ACL_EVENT_WAIT_DEFAULT);
+    EXPECT_NE(ret, ACL_SUCCESS);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsEventWait(_, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtStreamWaitEventWithFlag(stream, event, 1, ACL_EVENT_WAIT_DEFAULT);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_DEFAULT);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamWaitEventWithFlag(_, _, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_EXTERNAL);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_EXTERNAL + 1U);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    ret = aclrtStreamWaitEventWithFlag(stream, event, 1, ACL_EVENT_WAIT_EXTERNAL);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamWaitEventWithFlag(_, _, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_EXTERNAL);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+}
+
 TEST_F(UTEST_ACL_Runtime, aclrtIpcGetEventHandleTest)
 {
     aclrtIpcEventHandle handle;
@@ -943,6 +986,40 @@ TEST_F(UTEST_ACL_Runtime, aclrtRecordEventTest)
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEventRecord(_, _))
         .WillOnce(Return((ACL_ERROR_RT_PARAM_INVALID)));
     ret = aclrtRecordEvent(event, stream);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtRecordEventWithFlagTest)
+{
+    aclrtEvent event = (aclrtEvent)0x01;
+    aclrtStream stream = (aclrtStream)0x01;
+
+    aclError ret = aclrtRecordEventWithFlag(nullptr, stream, ACL_EVENT_RECORD_DEFAULT);
+    EXPECT_NE(ret, ACL_SUCCESS);
+
+    const uint64_t recordTotalBefore = GetResourceCounterValue(ACL_STATISTICS_RECORD_RESET_EVENT, APPLY_TOTAL);
+    const uint64_t recordSuccessBefore = GetResourceCounterValue(ACL_STATISTICS_RECORD_RESET_EVENT, APPLY_SUCCESS);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEventRecord(_, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtRecordEventWithFlag(event, stream, ACL_EVENT_RECORD_DEFAULT);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(GetResourceCounterValue(ACL_STATISTICS_RECORD_RESET_EVENT, APPLY_TOTAL), recordTotalBefore + 1U);
+    EXPECT_EQ(GetResourceCounterValue(ACL_STATISTICS_RECORD_RESET_EVENT, APPLY_SUCCESS), recordSuccessBefore + 1U);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEventRecordWithFlag(_, _, _))
+        .WillOnce(Return(RT_ERROR_NONE));
+    ret = aclrtRecordEventWithFlag(event, stream, ACL_EVENT_RECORD_EXTERNAL);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(GetResourceCounterValue(ACL_STATISTICS_RECORD_RESET_EVENT, APPLY_TOTAL), recordTotalBefore + 1U);
+    EXPECT_EQ(GetResourceCounterValue(ACL_STATISTICS_RECORD_RESET_EVENT, APPLY_SUCCESS), recordSuccessBefore + 1U);
+
+    ret = aclrtRecordEventWithFlag(event, stream, ACL_EVENT_RECORD_EXTERNAL + 1U);
+    EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEventRecordWithFlag(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    ret = aclrtRecordEventWithFlag(event, stream, ACL_EVENT_RECORD_EXTERNAL);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 

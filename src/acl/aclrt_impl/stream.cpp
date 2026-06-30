@@ -270,6 +270,33 @@ aclError aclrtStreamWaitEventImpl(aclrtStream stream, aclrtEvent event)
     return ACL_SUCCESS;
 }
 
+aclError aclrtStreamWaitEventWithFlagImpl(aclrtStream stream, aclrtEvent event, int32_t timeout, uint32_t flag)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtStreamWaitEventWithFlag);
+    ACL_LOG_INFO("start to execute aclrtStreamWaitEventWithFlag");
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(event);
+    ACL_CHECK_INVALID_VALUE_WITH_EXPECT_RET((flag == ACL_EVENT_WAIT_DEFAULT) ||
+        (flag == ACL_EVENT_WAIT_EXTERNAL), flag, "ACL_EVENT_WAIT_DEFAULT or ACL_EVENT_WAIT_EXTERNAL",
+        ACL_ERROR_INVALID_PARAM);
+
+    if (flag == ACL_EVENT_WAIT_DEFAULT) {
+        return aclrtStreamWaitEventWithTimeoutImpl(stream, event, timeout);
+    }
+
+    ACL_CHECK_INVALID_VALUE_WITH_EXPECT_RET(
+        (flag == ACL_EVENT_WAIT_EXTERNAL) && (timeout == -1), timeout, "-1 when flag is ACL_EVENT_WAIT_EXTERNAL",
+        ACL_ERROR_INVALID_PARAM);
+
+    const rtError_t rtErr = rtStreamWaitEventWithFlag(static_cast<rtStream_t>(stream), static_cast<rtEvent_t>(event),
+        timeout, flag);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("stream wait event with flag failed, runtime result = %d", static_cast<int32_t>(rtErr));
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
+
+    return ACL_SUCCESS;
+}
+
 aclError aclrtSetStreamFailureModeImpl(aclrtStream stream, uint64_t mode)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtSetStreamFailureMode);

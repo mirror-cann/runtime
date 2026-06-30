@@ -326,6 +326,8 @@ namespace acl {
         AclmdlRICondHandleGetCondPtr,
         AclmdlRIAddCondTask,
         AclmdlRICaptureToModelRIBegin,
+        AclrtRecordEventWithFlag,
+        AclrtStreamWaitEventWithFlag,
         // this is the end, can not add after AclRtProfTypeEnd
         AclRtProfTypeEnd
     };

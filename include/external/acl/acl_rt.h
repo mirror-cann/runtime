@@ -1699,6 +1699,19 @@ ACL_FUNC_VISIBILITY aclError aclrtRecordEvent(aclrtEvent event, aclrtStream stre
 
 /**
  * @ingroup AscendCL
+ * @brief Record an Event in the Stream with an operation-level behavior flag
+ *
+ * @param event [IN]    event to record
+ * @param stream [IN]   stream handle
+ * @param flag [IN]     ACL_EVENT_RECORD_DEFAULT for normal record, ACL_EVENT_RECORD_EXTERNAL for ACL graph external record
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval OtherValues Failure
+ */
+ACL_FUNC_VISIBILITY aclError aclrtRecordEventWithFlag(aclrtEvent event, aclrtStream stream, uint32_t flag);
+
+/**
+ * @ingroup AscendCL
  * @brief Reset an event
  *
  * @par Function
@@ -2822,6 +2835,21 @@ ACL_FUNC_VISIBILITY aclError aclrtStreamGetFlags(aclrtStream stream, uint32_t *f
  * @retval OtherValues Failure
  */
 ACL_FUNC_VISIBILITY aclError aclrtStreamWaitEvent(aclrtStream stream, aclrtEvent event);
+
+/**
+ * @ingroup AscendCL
+ * @brief Blocks the specified Stream until the specified Event is completed with an operation-level behavior flag.
+ *
+ * @param stream [IN]   the wait stream. If using the default Stream, set NULL for ACL_EVENT_WAIT_DEFAULT.
+ * @param event [IN]    the event to wait
+ * @param timeout [IN]  timeout value. For ACL_EVENT_WAIT_EXTERNAL, only -1 is supported.
+ * @param flag [IN]     ACL_EVENT_WAIT_DEFAULT for normal wait, ACL_EVENT_WAIT_EXTERNAL for ACL graph external wait
+ *
+ * @retval ACL_SUCCESS The function is successfully executed.
+ * @retval OtherValues Failure
+ */
+ACL_FUNC_VISIBILITY aclError aclrtStreamWaitEventWithFlag(aclrtStream stream, aclrtEvent event, int32_t timeout,
+    uint32_t flag);
 
 /**
  * @ingroup AscendCL
