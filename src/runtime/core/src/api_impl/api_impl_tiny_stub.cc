@@ -569,5 +569,32 @@ rtError_t ApiImpl::StreamAddCondTask(rtCondTaskParams params, Stream * const stm
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
+rtError_t ApiImpl::SetGroup(const int32_t groupId)
+{
+    UNUSED(groupId);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::GetGroupCount(uint32_t * const cnt)
+{
+    UNUSED(cnt);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::GetDevMsg(const rtGetDevMsgType_t getMsgType, const rtGetMsgCallback callback)
+{
+    UNUSED(getMsgType);
+    UNUSED(callback);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const groupInfo, const uint32_t cnt)
+{
+    UNUSED(groupId);
+    UNUSED(groupInfo);
+    UNUSED(cnt);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
 }
 }

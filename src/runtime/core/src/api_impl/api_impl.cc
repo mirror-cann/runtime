@@ -4417,30 +4417,6 @@ rtError_t ApiImpl::CacheLastTaskExtendInfo(const char* const extendInfoPtr, cons
     return model->CacheLastTaskExtendInfo(stm, extendInfoPtr, infoSize);
 }
 
-rtError_t ApiImpl::GetModelTaskUpdateIsSupport(const int32_t deviceId, int32_t * const val)
-{
-    UNUSED(deviceId);
-    Context * const curCtx = CurrentContext(true, deviceId);
-
-    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    *val = static_cast<int32_t>(RT_DEV_CAP_NOT_SUPPORT);
-    Device * const dev = curCtx->Device_();
-    const rtChipType_t chipType = dev->GetChipType();
-    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_TILING_KEY_SINK)) {
-        RT_LOG(RT_LOG_INFO, "chipType = %u", static_cast<uint32_t>(chipType));
-        return RT_ERROR_NONE;
-    }
-
-    const uint32_t tschVersion = dev->GetTschVersion();
-    const bool isSupport =  dev->CheckFeatureSupport(TS_FEATURE_TILING_KEY_SINK);
-    if (isSupport) {
-        *val = RT_DEV_CAP_SUPPORT;
-    }
-
-    RT_LOG(RT_LOG_INFO, "chipType = %u,TsVersion=%u,*val=%d",
-           static_cast<uint32_t>(chipType), tschVersion, *val);
-    return RT_ERROR_NONE;
-}
 
 rtError_t ApiImpl::ModelTaskUpdate(Stream *desStm, uint32_t desTaskId, Stream *sinkStm,
                                    rtMdlTaskUpdateInfo_t *para)
@@ -5623,48 +5599,6 @@ rtError_t ApiImpl::GetOverflowDetectionCapability(rtChipType_t chipType, int64_t
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetGroup(const int32_t groupId)
-{
-    const rtChipType_t chipType = Runtime::Instance()->GetChipType();
-    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
-        RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
-        return RT_ERROR_FEATURE_NOT_SUPPORT;
-    }
-    Context * const curCtx = CurrentContext();
-    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
-    return dev->SetGroup(groupId);
-}
-
-rtError_t ApiImpl::GetGroupCount(uint32_t * const cnt)
-{
-    const rtChipType_t chipType = Runtime::Instance()->GetChipType();
-    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
-        RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
-        return RT_ERROR_FEATURE_NOT_SUPPORT;
-    }
-    Context * const curCtx = CurrentContext();
-    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
-    return dev->GetGroupCount(cnt);
-}
-
-rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const groupInfo, const uint32_t cnt)
-{
-    const rtChipType_t chipType = Runtime::Instance()->GetChipType();
-    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
-        RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
-        return RT_ERROR_FEATURE_NOT_SUPPORT;
-    }
-    Context * const curCtx = CurrentContext();
-    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
-    return dev->GetGroupInfo(groupId, groupInfo, cnt);
-}
-
 rtError_t ApiImpl::ContextSetINFMode(const bool infMode)
 {
     Context * const curCtx = CurrentContext();
@@ -6290,31 +6224,28 @@ rtError_t ApiImpl::ProcError(rtError_t error)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDevMsg(const rtGetDevMsgType_t getMsgType, const rtGetMsgCallback callback)
+rtError_t ApiImpl::GetModelTaskUpdateIsSupport(const int32_t deviceId, int32_t * const val)
 {
-    RT_LOG(RT_LOG_DEBUG, "GetDeviceMsg, getMsgType=%d", static_cast<int32_t>(getMsgType));
-    const auto chipType = Runtime::Instance()->GetChipType();
-    COND_RETURN_ERROR_MSG_INNER(!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DFX_TS_GET_DEVICE_MSG),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "chipType=%d does not support get device msg feature.", chipType);
-    rtRunMode runMode = RT_RUN_MODE_OFFLINE;
-    (void)GetRunMode(&runMode);
-    if (runMode == RT_RUN_MODE_OFFLINE) {
-        RT_LOG(RT_LOG_INFO, "runMode is RT_RUN_MODE_OFFLINE.");
+    UNUSED(deviceId);
+    Context * const curCtx = CurrentContext(true, deviceId);
+
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+    *val = static_cast<int32_t>(RT_DEV_CAP_NOT_SUPPORT);
+    Device * const dev = curCtx->Device_();
+    const rtChipType_t chipType = dev->GetChipType();
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_TILING_KEY_SINK)) {
+        RT_LOG(RT_LOG_INFO, "chipType = %u", static_cast<uint32_t>(chipType));
+        return RT_ERROR_NONE;
     }
 
-    if (getMsgType == RT_GET_DEV_ERROR_MSG) {
-        const rtError_t error = GetDevErrMsg(callback);
-        ProcError(error);
-        ERROR_RETURN(error, "Failed to GetDeviceErrMsg, retCode=%#x.", static_cast<uint32_t>(error));
-    } else if (getMsgType == RT_GET_DEV_RUNNING_STREAM_SNAPSHOT_MSG) {
-        const rtError_t error = GetDevRunningStreamSnapshotMsg(callback);
-        ERROR_RETURN(error, "Failed to GetDevRunningStreamSnapshotMsg, retCode=%#x.", static_cast<uint32_t>(error));
-    } else {
-        // The value range of this parameter in this function is [0 - 2). Parameter 2 is used in the snapshot process.
-        RT_LOG_CALL_MSG(ERR_MODULE_GE, "Unsupported get msg type=%d, range is [%d, %d)", getMsgType,
-            RT_GET_DEV_ERROR_MSG, RT_GET_DEV_PID_SNAPSHOT_MSG);
-        return RT_ERROR_FEATURE_NOT_SUPPORT;
+    const uint32_t tschVersion = dev->GetTschVersion();
+    const bool isSupport =  dev->CheckFeatureSupport(TS_FEATURE_TILING_KEY_SINK);
+    if (isSupport) {
+        *val = RT_DEV_CAP_SUPPORT;
     }
+
+    RT_LOG(RT_LOG_INFO, "chipType = %u,TsVersion=%u,*val=%d",
+           static_cast<uint32_t>(chipType), tschVersion, *val);
     return RT_ERROR_NONE;
 }
 
