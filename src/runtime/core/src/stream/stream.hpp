@@ -992,6 +992,7 @@ public:
     void *GetDvppRRTaskAddr(void);
     uint32_t GetMaxTryCount() const;
     bool IsSyncFinished();
+    void GetCurrentRunningTaskInfo(uint16_t &taskId, tsTaskType_t &taskType, const char_t *&taskTypeName) const;
 
     virtual RtSqAllocType GetTsSqAllocType() const
     {
