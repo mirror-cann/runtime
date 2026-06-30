@@ -82,7 +82,7 @@ private:
     };
     HostMoveStep AcquireHostMoveFreeSlots(uint32_t &freeSlots);
     HostMoveStep MoveOneBatchToHostMove(size_t maxBatchRecords, uint32_t freeSlots,
-        uint64_t &totalWriteLen, uint64_t &batchCount);
+        uint64_t &totalWriteLen);
 
 private:
     volatile bool stopped_;
