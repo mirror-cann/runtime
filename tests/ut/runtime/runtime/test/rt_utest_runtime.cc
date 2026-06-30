@@ -225,7 +225,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_2)
 {
     ElfProgram prog;
     char *name = new (std::nothrow) char[10];
-    strcpy(name, "a_200");
+    strcpy_s(name, 10, "a_200");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
     prog.kernels_ = &kernel;
@@ -240,7 +240,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid01)
 {
     ElfProgram prog;
     char *name = new (std::nothrow) char[10];
-    strcpy(name, "a200");
+    strcpy_s(name, 10, "a200");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
     prog.kernels_ = &kernel;
@@ -255,7 +255,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid02)
 {
     ElfProgram prog;
     char *name = new (std::nothrow) char[100];
-    strcpy(name, "a_4444444444444444444444444444444444444444444444444444444444");
+    strcpy_s(name, 100, "a_4444444444444444444444444444444444444444444444444444444444");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
     prog.kernels_ = &kernel;
@@ -270,7 +270,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid03)
 {
     ElfProgram prog;
     char *name = new (std::nothrow) char[3];
-    strcpy(name, "a_");
+    strcpy_s(name, 3, "a_");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
     prog.kernels_ = &kernel;
@@ -1047,4 +1047,19 @@ TEST_F(RuntimeTest2, XpuDeviceRelease)
     Runtime *rtInstance = (Runtime *)Runtime::Instance();
     rtInstance->XpuDeviceRelease(nullptr);
     EXPECT_TRUE(true);
+}
+
+TEST_F(RuntimeTest, ut_AllKernelRegister_mix_aiv)
+{
+    ElfProgram prog;
+    char *name = new (std::nothrow) char[20];
+    strcpy_s(name, 20, "abc_123_mix_aiv");
+    RtKernel kernel = {name, 10, 10, {}};
+    prog.elfData_->kernel_num = 1;
+    prog.kernels_ = &kernel;
+    rtError_t error = Runtime::Instance()->AllKernelRegister(&prog);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    prog.kernels_ = nullptr;
+    prog.elfData_->kernel_num = 0;
+    delete[] name;
 }

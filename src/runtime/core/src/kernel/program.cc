@@ -877,7 +877,7 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
     kernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_AICPU);
  
     // Aicpu算子注册时，把KernelName, soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName, soname
-    rtError_t ret = StoreKernelLiteralNameToDevice(kernel.get());
+    const rtError_t ret = StoreKernelLiteralNameToDevice(kernel.get());
     if (ret != RT_ERROR_NONE) {
         kernelMapLock_.Unlock();
         RT_LOG(RT_LOG_ERROR, "Failed to store kernel %s literal name to device, ret=%d", kernelName, ret);

@@ -21,6 +21,7 @@
 #include "task_info.hpp"
 #include "kernel_utils.hpp"
 #include "event_task.h"
+#include "model/capture_model_utils.hpp"
 #include <string>
 #undef private
 
@@ -211,4 +212,23 @@ TEST_F(CloudV2ApiImpltaskOwnerTest, ConvertTaskType_InnerTaskReturnsDefaultType)
     ret = ConvertTaskType(&userTaskInfo, &userTaskType);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_NE(userTaskType, rtTaskType::RT_TASK_DEFAULT);
+}
+
+TEST_F(CloudV2ApiImpltaskOwnerTest, TaskGetParams_UnknownTaskType_DefaultCase)
+{
+    MOCKER(CheckCaptureModelSupportSoftwareSq).stubs().will(returnValue(RT_ERROR_NONE));
+
+    TaskInfo taskInfo;
+    (void)memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
+    taskInfo.stream = stream_;
+    taskInfo.type = static_cast<tsTaskType_t>(0xFFFF);  // Unknown task type to trigger default case
+    taskInfo.taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_USER);
+    taskInfo.typeName = "UNKNOWN_TYPE";
+
+    ApiImpl apiImpl;
+    rtTaskParams params;
+    (void)memset_s(&params, sizeof(rtTaskParams), 0, sizeof(rtTaskParams));
+
+    rtError_t ret = apiImpl.TaskGetParams(&taskInfo, &params);
+    EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
 }

@@ -10,6 +10,7 @@
 
 #include "runtime.hpp"
 #include <fstream>
+#include <algorithm>
 #include <dlfcn.h>
 #include "mmpa/mmpa_api.h"
 #include "driver/ascend_hal.h"
@@ -1832,7 +1833,8 @@ void Runtime::KernelSetDfx(Program * const prog, const void * const kernelInfoEx
         return;
     }
     for (uint32_t idx = 0U; idx < kernelCount; idx++) {
-        if (strcmp(kernels[idx].name, RtPtrToPtr<const char_t *>(kernelInfoExt)) == 0) {
+        if (strncmp(kernels[idx].name, RtPtrToPtr<const char_t *>(kernelInfoExt),
+            std::max(strlen(kernels[idx].name), strlen(RtPtrToPtr<const char_t *>(kernelInfoExt)))) == 0) {
             kernelPtr->SetDfxSize(kernels[idx].metaInfo.dfxSize);
             kernelPtr->SetDfxAddr(kernels[idx].metaInfo.dfxAddr);
             kernelPtr->SetElfDataFlag(kernels[idx].metaInfo.elfDataFlag);
@@ -1861,9 +1863,9 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
             continue;
         }
 
-        if ((strcmp(kernelName, elfKernelInfo->name) == 0) ||
-            (strcmp(aicMixName, elfKernelInfo->name) == 0) ||
-            (strcmp(aivMixName, elfKernelInfo->name) == 0)) {
+        if ((strncmp(kernelName, elfKernelInfo->name, std::max(strlen(kernelName), strlen(elfKernelInfo->name))) == 0) ||
+            (strncmp(aicMixName, elfKernelInfo->name, std::max(strlen(aicMixName), strlen(elfKernelInfo->name))) == 0) ||
+            (strncmp(aivMixName, elfKernelInfo->name, std::max(strlen(aivMixName), strlen(elfKernelInfo->name))) == 0)) {
             rtError_t error;
             if (kernelObj != nullptr) {
                 error = elfProg->MergeKernel(elfKernelInfo, kernelObj);
