@@ -536,6 +536,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
         "host memory range already registered"};
     rtErrMap_[RT_ERROR_HOST_MEMORY_NOT_REGISTERED] = {ACL_ERROR_HOST_MEMORY_NOT_REGISTERED,
         "host memory has not been registered"};    
+    // ipc memory
+    rtErrMap_[RT_ERROR_DRV_ACCESS_PATH_NOT_SUPPORT] = {ACL_ERROR_RT_ACCESS_PATH_NOT_SUPPORT, "invalid access link path"};
 }
 
 void ErrorcodeManage::InitDrvErrCodeMap()

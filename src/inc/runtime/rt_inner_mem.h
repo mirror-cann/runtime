@@ -279,6 +279,19 @@ RTS_API rtError_t rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* size
 RTS_API rtError_t rtMemMapSelectedLink(void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx);
 
 /**
+ * @ingroup rt_mem
+ * @brief Set memory access link type for a memory handle before mapping
+ * @param [in] handle Memory handle obtained from rtMemImportFromShareableHandle
+ * @param [in] adviceLink Memory access link type
+ * @return RT_ERROR_NONE for success
+ * @return RT_ERROR_INVALID_VALUE for invalid parameter (handle is NULL)
+ * @return RT_ERROR_DRV_ACCESS_PATH_NOT_SUPPORT for unsupported adviceLink value
+ * @return RT_ERROR_FEATURE_NOT_SUPPORT for unsupported chip or driver interface not exist
+ * @return RT_ERROR_DRV_ERR for driver error
+ */
+RTS_API rtError_t rtMemMapSetLink(rtDrvMemHandle handle, rtMemLinkType adviceLink);
+
+/**
  * @ingroup dvrt_mem
  * @brief set memory with uint32_t value (element-wise)
  * @param [in] dst      destination address

@@ -3226,6 +3226,7 @@ rtError_t ApiErrorDecorator::IpcOpenMemory(void ** const ptr, const char_t * con
         flags, "[0, " + std::to_string(maxFlag) + "]");
 
     const rtError_t error = impl_->IpcOpenMemory(ptr, name, flags);
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, error);
     ERROR_RETURN(error, "Ipc open memory failed, name=%s.", name);
     return error;
 }
@@ -6575,6 +6576,14 @@ rtError_t ApiErrorDecorator::MemMapSelectedLink(void *virPtrDst, size_t size, vo
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM(linkIdx > RT_MEM_LINK_IDX_1, RT_ERROR_INVALID_VALUE, linkIdx,
         "[" + std::to_string(RT_MEM_LINK_IDX_0) + ", " + std::to_string(RT_MEM_LINK_IDX_1) + "]");
     return impl_->MemMapSelectedLink(virPtrDst, size, virPtrSrc, linkIdx);
+}
+
+rtError_t ApiErrorDecorator::MemMapSetLink(rtDrvMemHandle handle, rtMemLinkType adviceLink)
+{
+    NULL_PTR_RETURN_MSG_OUTER(handle, RT_ERROR_INVALID_VALUE);
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(adviceLink > RT_MEM_ACCESS_UB_MULTI_PORT_PATH, RT_ERROR_INVALID_VALUE, adviceLink,
+        "[" + std::to_string(RT_MEM_ACCESS_LINK_SIO) + ", " + std::to_string(RT_MEM_ACCESS_UB_MULTI_PORT_PATH) + "]");
+    return impl_->MemMapSetLink(handle, adviceLink);
 }
 
 rtError_t ApiErrorDecorator::BinarySetExceptionCallback(Program *binHandle, void *callback, void *userData)

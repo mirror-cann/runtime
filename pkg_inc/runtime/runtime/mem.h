@@ -119,13 +119,23 @@ typedef enum tagRtMemoryType {
     RT_MEMORY_TYPE_USER = 5 // by user malloc, unkown memory
 } rtMemoryType_t;
 
+typedef enum rtMemLinkType {
+    RT_MEM_ACCESS_LINK_SIO = 0, // only support A3
+    RT_MEM_ACCESS_LINK_HCCS = 1, // only support A3
+    RT_MEM_ACCESS_UB_ONE_PORT_PATH = 2, // only support A5
+    RT_MEM_ACCESS_UB_MULTI_PORT_PATH = 3, // only support A5
+    RT_MEM_ACCESS_LINK_MAX
+} rtMemLinkType;
+
 /**
  * @ingroup dvrt_mem
  * @brief ipc type
  */
 typedef enum tagRtIpcMemAttrType {
-    RT_IPC_ATTR_SIO = 0, 
-    RT_IPC_ATTR_HCCS = 1,
+    RT_IPC_ATTR_SIO = 0, // only support A3
+    RT_IPC_ATTR_HCCS = 1, // only support A3
+    RT_IPC_ATTR_UB_ONE_PORT_PATH = 2, // only support A5
+    RT_IPC_ATTR_UB_MULTI_PORT_PATH = 3, // only support A5
     RT_IPC_ATTR_MAX
 } rtIpcMemAttrType;
 

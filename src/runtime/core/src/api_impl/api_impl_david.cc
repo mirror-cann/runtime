@@ -2121,5 +2121,140 @@ rtError_t ApiImplDavid::StreamAddCondTask(rtCondTaskParams params, Stream * cons
     return cce::runtime::StreamAddCondTask(realHandle, params, stm, flags);
 }
 
+rtError_t ApiImplDavid::IpcSetMemoryAttr(const char* name, uint32_t type, uint64_t attr)
+{
+    RT_LOG(RT_LOG_DEBUG, "Set ipc memory attribute. name=%s, type=%u, attr=%" PRIu64 ".", name, type, attr);
+    
+    Context * const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+    rtError_t error = curCtx->Device_()->Driver_()->CheckIpcMapRoute(name, attr, curCtx->Device_()->Id_());
+    COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    SpinLock &ipcMemNameLock = Runtime::Instance()->GetIpcMemNameLock();
+    std::unordered_map<std::string, ipcMemInfoV2_t> &ipcMemNameVaMap = Runtime::Instance()->GetIpcMemNameVaMap();
+    ipcMemNameLock.Lock();
+    std::string ipcName(name);
+    auto it = ipcMemNameVaMap.find(ipcName);
+    if (it == ipcMemNameVaMap.end()) {
+        ipcMemInfoV2_t &info = ipcMemNameVaMap[ipcName];
+        info.latestAttr = attr;
+    } else {
+        it->second.latestAttr = attr;
+    }
+    ipcMemNameLock.Unlock();
+    return RT_ERROR_NONE;
+}
+
+rtError_t ApiImplDavid::IpcOpenMemory(void** const ptr, const char_t* const name, const uint64_t flags)
+{
+    RT_LOG(RT_LOG_INFO, "Open ipc memory, name=%s, flags=%#" PRIx64 ".", name, flags);
+    Context * const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+
+    rtError_t error = RT_ERROR_NONE;
+    Device* const dev = curCtx->Device_();
+    if ((flags & RT_IPC_MEM_IMPORT_FLAG_ENABLE_PEER_ACCESS) != 0UL) {
+        uint32_t peerPhyDeviceId = 0U;
+        error = NpuDriver::GetPhyDevIdByIpcMemName(name, &peerPhyDeviceId);
+        COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+        error = dev->EnableP2PWithOtherDevice(peerPhyDeviceId);
+        COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    }
+
+    SpinLock &ipcMemNameLock = Runtime::Instance()->GetIpcMemNameLock();
+    std::unordered_map<std::string, ipcMemInfoV2_t> &ipcMemNameVaMap = Runtime::Instance()->GetIpcMemNameVaMap();
+
+    uint64_t latestAttr = 0UL;
+    ipcMemNameLock.Lock();
+    std::string ipcName(name);
+    auto it = ipcMemNameVaMap.find(ipcName);
+    if (it != ipcMemNameVaMap.end()) {
+        latestAttr = it->second.latestAttr;  // if not set, use 0 to drv, otherwise update with cfg
+    }
+
+    error = dev->Driver_()->OpenIpcMemV2(name, RtPtrToPtr<uint64_t *>(ptr), curCtx->Device_()->Id_(), latestAttr);
+    if (error != RT_ERROR_NONE) {
+        ipcMemNameLock.Unlock();
+        return error;
+    }
+
+    if (it == ipcMemNameVaMap.end()) {
+        ipcMemInfoV2_t &info = ipcMemNameVaMap[ipcName];
+        info.latestAttr = latestAttr;
+        info.vaInfo.push_back({latestAttr, reinterpret_cast<uint64_t>(*ptr)});
+    } else {
+        it->second.vaInfo.push_back({latestAttr, reinterpret_cast<uint64_t>(*ptr)});
+    }
+    ipcMemNameLock.Unlock();
+    return error;
+}
+
+rtError_t ApiImplDavid::IpcCloseMemory(const void * const ptr)
+{
+    RT_LOG(RT_LOG_DEBUG, "Start close ipc memory.");
+    Context * const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+
+    const uint64_t vaData = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(ptr));
+    rtError_t error = curCtx->Device_()->Driver_()->CloseIpcMem(vaData);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "close ipc memory failed, vaData=%#" PRIx64 ".", vaData);
+        return error;
+    }
+
+    Runtime * const rtInstance = Runtime::Instance();
+    std::unordered_map<std::string, ipcMemInfoV2_t> &ipcMemNameVaMap = rtInstance->GetIpcMemNameVaMap();
+    SpinLock &ipcMemNameLock = Runtime::Instance()->GetIpcMemNameLock();
+    ipcMemNameLock.Lock();
+
+    for (auto vaMapIter = ipcMemNameVaMap.begin(); vaMapIter != ipcMemNameVaMap.end(); ++vaMapIter) {
+        ipcMemInfoV2_t &info = vaMapIter->second;
+        for (auto vaIter = info.vaInfo.begin(); vaIter != info.vaInfo.end(); ++vaIter) {
+            if (vaIter->second == vaData) {
+                info.vaInfo.erase(vaIter);
+                ipcMemNameLock.Unlock();
+                RT_LOG(RT_LOG_DEBUG, "close ipc mem success, vptr=%#" PRIx64 ".", vaData);
+                return error;
+            }
+        }
+    }
+    ipcMemNameLock.Unlock();
+    return error;
+}
+
+rtError_t ApiImplDavid::IpcCloseMemoryByName(const char_t* const name)
+{
+    RT_LOG(RT_LOG_DEBUG, "start close ipc memory, name=%s.", name);
+    Context * const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+    Runtime * const rtInstance = Runtime::Instance();
+    std::unordered_map<std::string, ipcMemInfoV2_t> &ipcMemNameVaMap = rtInstance->GetIpcMemNameVaMap();
+    const std::string ipcName(name);
+    SpinLock &ipcMemNameLock = Runtime::Instance()->GetIpcMemNameLock();
+    ipcMemNameLock.Lock();
+    auto it = ipcMemNameVaMap.find(ipcName);
+    if (it == ipcMemNameVaMap.end()) {
+        ipcMemNameLock.Unlock();
+        RT_LOG(RT_LOG_DEBUG, "destroy ipc memory by IpcDestroyMemoryName, name=%s.", name);
+        return curCtx->Device_()->Driver_()->DestroyIpcMem(name);
+    }
+    rtError_t error = RT_ERROR_NONE;
+    ipcMemInfoV2_t &info = it->second;
+    for (auto vaIter = info.vaInfo.begin(); vaIter != info.vaInfo.end();) {
+        error = curCtx->Device_()->Driver_()->CloseIpcMem(vaIter->second);
+        if (error == RT_ERROR_NONE) {
+            vaIter = info.vaInfo.erase(vaIter);
+        } else {
+            RT_LOG(RT_LOG_ERROR, "close ipc mem failed, name=%s.", name);
+            ipcMemNameLock.Unlock();
+            return error;
+        }
+    }
+
+    ipcMemNameVaMap.erase(it);
+    ipcMemNameLock.Unlock();
+    RT_LOG(RT_LOG_DEBUG, "close ipc mem success, name=%s.", name);
+    return error;
+}
+
 }  // namespace runtime
 }  // namespace cce

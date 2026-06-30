@@ -246,6 +246,8 @@ rtError_t rtIpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr)
      Api * const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->IpcSetMemoryAttr(name, type, attr);
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_DRV_ACCESS_PATH_NOT_SUPPORT, ACL_ERROR_RT_ACCESS_PATH_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }

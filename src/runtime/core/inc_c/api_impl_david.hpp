@@ -167,6 +167,10 @@ public:
         Stream * const stm) override;
     rtError_t MemWaitValue(const void * const devAddr, const uint64_t value, const uint32_t flag,
         Stream * const stm) override;
+    rtError_t IpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr) override;
+    rtError_t IpcOpenMemory(void ** const ptr, const char_t * const name, const uint64_t flags) override;
+    rtError_t IpcCloseMemory(const void * const ptr) override;
+    rtError_t IpcCloseMemoryByName(const char_t * const name) override;
     rtError_t SetXpuDevice(const rtXpuDevType devType, const uint32_t devId) override;
     rtError_t GetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount) override;
     rtError_t ResetXpuDevice(const rtXpuDevType devType, const uint32_t devId) override;

@@ -337,6 +337,7 @@
     _(aclError, aclrtMemcpyToSymbol, (const void *symbol, const void *src, size_t count, size_t offset, aclrtMemcpyKind kind), (symbol, src, count, offset, kind)) \
     _(aclError, aclrtMemcpyToSymbolAsync, (const void *symbol, const void *src, size_t count, size_t offset, aclrtMemcpyKind kind, aclrtStream stream), (symbol, src, count, offset, kind, stream)) \
     _(aclError, aclrtMemMapSelectedLink, (void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx), (virPtrDst, size, virPtrSrc, linkIdx)) \
+    _(aclError, aclrtMemMapSetLink, (aclrtDrvMemHandle handle, aclrtMemLinkType adviceLink), (handle, adviceLink))
 
 // aclrtAllocator interface map list
 #define ACL_RT_ALLOCATOR_FUNC_MAP(_)  \
