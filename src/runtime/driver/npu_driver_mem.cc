@@ -77,9 +77,10 @@ rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const i
         out->fd = shm_open(in->name, static_cast<int32_t>(O_CREAT) | static_cast<int32_t>(O_RDWR),
             static_cast<mode_t>(S_IRUSR) | static_cast<mode_t>(S_IWUSR));
 
+        const char_t * const logName = (in->name != nullptr) ? in->name : "";
         COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, out->fd < 0, RT_ERROR_INVALID_VALUE,
             "Call shm_open failed, name=%s.",
-            (in->name != nullptr) ? in->name : "");
+            logName);
         RT_LOG(RT_LOG_DEBUG, "malloc host shared memory shm_open success.");
 
         if (retVal == -1) {
@@ -95,7 +96,8 @@ rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const i
         } else {
             // no operation
         }
-        out->ptr = mmap(nullptr, in->size, static_cast<int32_t>(PROT_READ) | static_cast<int32_t>(PROT_WRITE),
+        const uint32_t mmapProt = static_cast<uint32_t>(PROT_READ) | static_cast<uint32_t>(PROT_WRITE);
+        out->ptr = mmap(nullptr, in->size, static_cast<int32_t>(mmapProt),
                         static_cast<int32_t>(MAP_SHARED), out->fd, 0);
         COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, out->ptr == static_cast<void*>(MAP_FAILED), ERROR,
             error, RT_ERROR_SEC_HANDLE,
@@ -255,7 +257,7 @@ rtError_t NpuDriver::HostGetDevPointer(void *srcPtr, uint32_t deviceId, void **d
 {
     COND_RETURN_WARN(&halMemHostGetDevPointer == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halMemHostGetDevPointer does not exist");
-    drvError_t drvRet = halMemHostGetDevPointer(srcPtr, deviceId, dstPtr);
+    const drvError_t drvRet = halMemHostGetDevPointer(srcPtr, deviceId, dstPtr);
     if (isLogError && (drvRet != DRV_ERROR_NONE)) {
         DRV_ERROR_PROCESS(drvRet, "Call driver api halMemHostGetDevPointer failed, drvRetCode=%d, drvDevId=%u.",
             static_cast<int32_t>(drvRet), deviceId);
@@ -664,7 +666,7 @@ static inline uint64_t FlagAddModuleId(uint64_t drvFlag, uint16_t moduleId)
 
 static inline uint64_t FlagAddReadBit(uint64_t drvFlag)
 {
-    return (drvFlag | (RT_MEM_DEV_READONLY << RT_MEM_DEV_READONLY_BIT));
+    return (drvFlag | (static_cast<uint64_t>(RT_MEM_DEV_READONLY) << RT_MEM_DEV_READONLY_BIT));
 }
 
 static inline uint64_t FlagAddCpOnlyBit(uint64_t drvFlag)
@@ -842,7 +844,7 @@ rtError_t NpuDriver::ManagedMemAlloc(void ** const dptr, const uint64_t size, co
 }
 
 rtError_t NpuDriver::ManagedMemAllocInner(void ** const dptr, const uint64_t size, const ManagedMemFlag flag,
-                                          const uint32_t deviceId, const uint16_t moduleId)
+                                          const uint32_t deviceId, const uint16_t moduleId) const
 {
     drvError_t drvRet;
     uint32_t hugePage = 1U;
@@ -1305,7 +1307,7 @@ rtError_t NpuDriver::DevMemAllocOffline(void **dptr, const uint64_t size,
         RT_LOG(RT_LOG_INFO, "Device MbindHbm begin.");
 
         // warn: compromise for FPGA & ASIC , Will be deleted when FPGA pre-smoke teardown
-        int64_t envType = envType_; // 0:FPGA 1:EMU 2:ESL 3:ASIC
+        const int64_t envType = envType_; // 0:FPGA 1:EMU 2:ESL 3:ASIC
         if ((envType == 3) && (type != RT_MEMORY_P2P_HBM)) {
             // type:2
             COND_RETURN_WARN(&drvMbindHbm == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
@@ -1397,9 +1399,10 @@ rtError_t NpuDriver::DevDvppMemAlloc(void ** const dptr, const uint64_t size, co
         memType = static_cast<uint64_t>(MEM_TYPE_HBM);
     } else if ((flag & RT_MEMORY_DDR) != 0) {
         memType = static_cast<uint64_t>(MEM_TYPE_DDR);
+    } else if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MEM_MIX_HBM_AND_DDR)) {
+        memType = static_cast<uint64_t>(MEM_TYPE_HBM);
     } else {
-        memType = static_cast<uint64_t>(
-            IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MEM_MIX_HBM_AND_DDR) ? MEM_TYPE_HBM : MEM_TYPE_DDR);
+        memType = static_cast<uint64_t>(MEM_TYPE_DDR);
     }
     uint64_t memAttr = 0UL;
     if ((flag & RT_MEMORY_ATTRIBUTE_READONLY) != 0U) {
@@ -1512,7 +1515,7 @@ rtError_t NpuDriver::DevMemAllocForPctrace(void ** const dptr, const uint64_t si
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    drvError_t drvRet = halMemAlloc(dptr, static_cast<UINT64>(size), 
+    const drvError_t drvRet = halMemAlloc(dptr, static_cast<UINT64>(size),
         static_cast<UINT64>(GetDevProperties().memAllocPctraceFlag) |
         static_cast<UINT64>(MEM_SET_ALIGN_SIZE(9ULL)) |
         static_cast<UINT64>(MEM_ADVISE_TS) | static_cast<UINT64>(NODE_TO_DEVICE(deviceId)));        
@@ -1623,7 +1626,7 @@ rtError_t NpuDriver::AllocFastRingBufferAndDispatch(void ** const dptr, const ui
     uint64_t drvFlag = static_cast<uint64_t>(MEM_SET_ALIGN_SIZE(9ULL)) | static_cast<uint64_t>(MEM_HOST) |
         static_cast<uint64_t>(MEM_CONTIGUOUS_PHY);
     drvFlag = FlagAddModuleId(drvFlag, moduleId);
-    drvError_t drvRet = halMemAlloc(&ptr, static_cast<UINT64>(size), static_cast<UINT64>(drvFlag));
+    const drvError_t drvRet = halMemAlloc(&ptr, static_cast<UINT64>(size), static_cast<UINT64>(drvFlag));
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "[drv api] halMemAlloc failed: size=%" PRIu64 "(bytes), drvRetCode=%d, device_id=%u, "
         "drvFlag=%#" PRIx64 ", moduleId=%hu", size, static_cast<int32_t>(drvRet), deviceId, drvFlag, moduleId);
@@ -1737,7 +1740,7 @@ static void ExtractDrvMemGetInfo(const rtMemType_t type, rtMemInfo_t * const inf
                                  const struct MemInfo * const drvMemInfo)
 {
     errno_t ret;
-    const char *typeDesc[] = {
+    const std::array<const char *, 11U> typeDesc = {
         "DDR_SIZE", "HBM_SIZE", "DDR_P2P_SIZE", "HBM_P2P_SIZE", "ADDR_CHECK",
         "CTRL_NUMA_INFO", "AI_NUMA_INFO", "BAR_NUMA_INFO", "SVM_GRP_INFO",
         "UB_TOKEN_INFO", "SYS_NUMA_INFO"
@@ -2068,7 +2071,7 @@ rtError_t NpuDriver::MemManagedGetAttr(rtMemManagedRangeAttribute attribute, con
 {
     COND_RETURN_WARN(&halMemManagedRangeGetAttributes == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halMemManagedRangeGetAttributes does not support.");
-    size_t attribute_num = 1U;
+    const size_t attribute_num = 1U;
     const drvError_t drvRet = halMemManagedRangeGetAttributes(&data, &dataSize, RtPtrToPtr<uint32_t *>(&attribute), attribute_num, (DVdeviceptr)(uintptr_t)(ptr), size);
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(drvRet, "Call driver api halMemManagedRangeGetAttributes failed, drvRetCode=%d.",
@@ -2442,7 +2445,7 @@ rtError_t NpuDriver::Support1GHugePageCtrl()
         RT_LOG(RT_LOG_WARNING,
             "halMemCtl failed, chip type=%d, drvRetCode=%d",
             static_cast<int32_t>(curChipType), static_cast<int32_t>(drvRet));
-        ret = RT_GET_DRV_ERRCODE(drvRet);;
+        ret = RT_GET_DRV_ERRCODE(drvRet);
     }
 
     RT_LOG(RT_LOG_INFO, "chip type=%d, support flag=%llu", curChipType, outVal.support_feature);
@@ -2559,7 +2562,7 @@ rtError_t NpuDriver::CheckSupportPcieBarCopy(const uint32_t deviceId, uint32_t &
     val = RT_CAPABILITY_NOT_SUPPORT;
 
     const uint32_t devRunMode = GetRunMode();
-    if ((devRunMode == static_cast<uint32_t>(RT_RUN_MODE_OFFLINE)) || (halMemCtl == nullptr)) {
+    if ((devRunMode == static_cast<uint32_t>(RT_RUN_MODE_OFFLINE)) || (&halMemCtl == nullptr)) {
         RT_LOG(RT_LOG_INFO, "chip type=%d, does not support pcie bar copy", static_cast<int32_t>(chipType_));
         return RT_ERROR_NONE;
     }

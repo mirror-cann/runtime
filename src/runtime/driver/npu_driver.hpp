@@ -721,7 +721,7 @@ public:
         uint64_t * const swapBufferBaseAddr) override;
 private:
     rtError_t ManagedMemAllocInner(void **const dptr, const uint64_t size, const ManagedMemFlag flag,
-        const uint32_t deviceId, const uint16_t moduleId = MODULEID_RUNTIME);
+        const uint32_t deviceId, const uint16_t moduleId = MODULEID_RUNTIME) const;
     rtError_t DevMemAllocManaged(void **const dptr, const uint64_t size, const rtMemType_t type,
         const uint32_t deviceId, const uint16_t moduleId = MODULEID_RUNTIME, const bool isLogError = true,
         const bool readOnlyFlag = false, const bool starsTillingFlag = false, const bool cpOnlyFlag = false) const;

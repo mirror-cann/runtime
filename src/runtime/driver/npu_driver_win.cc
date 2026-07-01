@@ -1554,7 +1554,7 @@ rtError_t NpuDriver::ManagedMemAlloc(void ** const dptr, const uint64_t size, co
 }
 
 rtError_t NpuDriver::ManagedMemAllocInner(void ** const dptr, const uint64_t size, const ManagedMemFlag flag,
-                                          const uint32_t deviceId, const uint16_t moduleId)
+                                          const uint32_t deviceId, const uint16_t moduleId) const
 {
     UNUSED(dptr);
     UNUSED(size);

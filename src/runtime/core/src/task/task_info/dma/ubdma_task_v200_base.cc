@@ -228,7 +228,7 @@ uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo * const taskInfo)
 }
 #endif
 
-void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
+static void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
     rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
@@ -268,7 +268,7 @@ void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, void *const sqe, c
         stream->Id_(), taskInfo->id, ubdmaDirectSqe->wqeSize);
 }
 
-void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
+static void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
 {
     rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
     UNUSED(sqeInfo);
