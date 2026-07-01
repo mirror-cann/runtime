@@ -1099,7 +1099,7 @@ rtError_t CaptureModel::BuildSqCq(Stream * const exeStream)
     uint32_t totalSqcqNum = 0;
     uint32_t sqcqPoolResNum = Context_()->Device_()->GetDeviceSqCqManage()->GetSqCqPoolTotalResNum();
     GetSqCqTotalNum(totalSqcqNum);
-    COND_RETURN_ERROR((totalSqcqNum > RT_DEVICE_SQCQ_RES_MAX_NUM), RT_ERROR_DEVICE_SQCQ_POOL_RESOURCE_FULL,
+    COND_RETURN_ERROR((totalSqcqNum > RT_DEVICE_SQCQ_RES_MAX_NUM), RT_ERROR_DRV_NO_RESOURCES,
         "exestream_id=%d, model_id=%u, totalSqcqNum=%u, sqcqPoolResNum=%u", exeStream->Id_(), Id_(), totalSqcqNum, sqcqPoolResNum);
 
     // 阶段一：Notify申请
