@@ -2352,6 +2352,7 @@ ACL_FUNC_VISIBILITY aclError aclrtMemsetD32Async(void* ptr,
  *
  * @see aclrtSynchronizeStream
  */
+ACL_DEPRECATED_MESSAGE("aclrtMemcpyAsyncWithCondition is deprecated, use aclrtMemcpyAsync instead")
 ACL_FUNC_VISIBILITY aclError aclrtMemcpyAsyncWithCondition(void *dst,
                                                            size_t destMax,
                                                            const void *src,
@@ -3793,6 +3794,7 @@ ACL_FUNC_VISIBILITY aclError aclrtValueWait(void* devAddr, uint64_t value, uint3
  * @retval ACL_SUCCESS The function is successfully executed.
  * @retval OtherValues Failure
  */
+ACL_DEPRECATED_MESSAGE("aclrtGetStreamAvailableNum is deprecated")
 ACL_FUNC_VISIBILITY aclError aclrtGetStreamAvailableNum(uint32_t *streamCount);
 
 /**
@@ -4926,6 +4928,7 @@ ACL_FUNC_VISIBILITY aclError aclmdlRITaskGetSeqId(aclmdlRITask task, uint32_t *i
  * @retval ACL_SUCCESS The function is successfully executed.
  * @retval OtherValues Failure
  */
+ACL_DEPRECATED_MESSAGE("aclrtGetVersion is deprecated, use aclSysGetVersion instead")
 ACL_FUNC_VISIBILITY aclError aclrtGetVersion(int32_t *majorVersion, int32_t *minorVersion, int32_t *patchVersion);
 
 /**

@@ -69,7 +69,7 @@ target_include_directories(ascendcl_c_utest PRIVATE
 )
 
 target_compile_options(ascendcl_c_utest PRIVATE
-    -g -Wall -Wextra -Wfloat-equal -Werror
+    -g -Wall -Wextra -Wfloat-equal -Werror -Wno-deprecated-declarations
     $<$<BOOL:${ENABLE_ASAN}>:-fsanitize=address,-fsanitize=leak>
     $<$<BOOL:${ENABLE_COV}>:--coverage -fprofile-arcs -ftest-coverage>
 )
