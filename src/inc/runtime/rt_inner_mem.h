@@ -93,6 +93,22 @@ typedef struct {
     unsigned int rev[4];
 } rtHandleAttr;
 
+typedef enum rtMemLinkType {
+    RT_MEM_ACCESS_LINK_SIO = 0, // only support A3
+    RT_MEM_ACCESS_LINK_HCCS = 1, // only support A3
+    RT_MEM_ACCESS_UB_ONE_PORT_PATH = 2, // only support A5
+    RT_MEM_ACCESS_UB_MULTI_PORT_PATH = 3, // only support A5
+    RT_MEM_ACCESS_LINK_MAX
+} rtMemLinkType;
+
+typedef enum tagRtIpcMemAttr {
+    RT_IPC_MEM_ATTR_SIO = 0, // only support A3
+    RT_IPC_MEM_ATTR_HCCS = 1, // only support A3
+    RT_IPC_MEM_ATTR_UB_ONE_PORT_PATH = 2, // only support A5
+    RT_IPC_MEM_ATTR_UB_MULTI_PORT_PATH = 3, // only support A5
+    RT_IPC_MEM_ATTR_MAX
+} rtIpcMemAttr;
+
 /**
 * @ingroup rt_mem
 * @brief Create new memory pool.

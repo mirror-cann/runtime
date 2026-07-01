@@ -67,7 +67,8 @@ drvError_t __attribute__((weak)) drvDeviceStatus(uint32_t devId, drvStatus_t *st
 drvError_t __attribute__((weak)) halEschedQueryInfo(unsigned int devId, ESCHED_QUERY_TYPE type,
     struct esched_input_info *inPut, struct esched_output_info *outPut);
 drvError_t __attribute__((weak)) halShmemOpenHandleByDevId(DVdevice dev_id, const char *name, DVdeviceptr *vptr);
-
+DVresult __attribute__((weak)) halShmemOpenHandleV2(DVdevice dev_id, const char *name, DVdeviceptr *vptr, uint64_t flag);
+DVresult __attribute__((weak)) halShmemMapRouteCheck(const char *name, DVdevice dst_devid, uint32_t map_route);
 drvError_t __attribute__((weak)) halMemAddressReserve(void **ptr, size_t size, size_t alignment, void *addr,
     uint64_t flag);
 drvError_t __attribute__((weak)) halMemAddressFree(void *ptr);

@@ -535,7 +535,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_HOST_MEMORY_ALREADY_REGISTERED] = {ACL_ERROR_HOST_MEMORY_ALREADY_REGISTERED,
         "host memory range already registered"};
     rtErrMap_[RT_ERROR_HOST_MEMORY_NOT_REGISTERED] = {ACL_ERROR_HOST_MEMORY_NOT_REGISTERED,
-        "host memory has not been registered"};    
+        "host memory has not been registered"};
+    rtErrMap_[RT_ERROR_DRV_LINK_TYPE_NOT_SUPPORTED] = {ACL_ERROR_RT_LINK_TYPE_NOT_SUPPORTED, "invalid link type"};
 }
 
 void ErrorcodeManage::InitDrvErrCodeMap()

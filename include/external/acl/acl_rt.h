@@ -261,6 +261,8 @@ enum aclrtMemType {
 // for ACL_RT_IPC_MEM_ATTR_ACCESS_LINK value
 #define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_SIO 0
 #define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_HCCS 1
+#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_UB_ONE_PORT_PATH 2
+#define ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_UB_MULTI_PORT_PATH 3
 
 typedef enum {
     ACL_RT_IPC_MEM_ATTR_ACCESS_LINK,
@@ -980,6 +982,13 @@ typedef enum {
     ACL_RT_HOST_MEM_MAP_NOT_SUPPORTED = 0,
     ACL_RT_HOST_MEM_MAP_SUPPORTED
 } aclrtHostMemMapCapability;
+
+typedef enum {
+    ACL_RT_MEM_ACCESS_LINK_SIO = 0,
+    ACL_RT_MEM_ACCESS_LINK_HCCS = 1,
+    ACL_RT_MEM_ACCESS_UB_ONE_PORT_PATH = 2,
+    ACL_RT_MEM_ACCESS_UB_MULTI_PORT_PATH = 3,
+} aclrtMemLinkType;
 
 typedef struct aclrtIpcEventHandle {
     char reserved[ACL_IPC_EVENT_HANDLE_SIZE];

@@ -79,6 +79,7 @@ enum 类型数据。
 - [acltdtQueueRouteQueryInfoParamType](#acltdtQueueRouteQueryInfoParamType)
 - [acltdtQueueRouteQueryMode](#acltdtQueueRouteQueryMode)
 - [acltdtTensorType](#acltdtTensorType)
+- [aclrtMemLinkType](#aclrtMemLinkType)
 
 <br>
 
@@ -1825,5 +1826,20 @@ enum acltdtTensorType {
     ACL_TENSOR_DATA_ABNORMAL,         // 异常数据标识
     ACL_TENSOR_DATA_SLICE_TENSOR,     // tensor分片场景下的tensor数据
     ACL_TENSOR_DATA_END_TENSOR        // tensor分片场景下标识最后一个tensor
+};
+```
+
+<br>
+
+<a id="aclrtMemLinkType"></a>
+
+## aclrtMemLinkType
+
+```
+typedef enum aclrtMemLinkType {
+    ACL_RT_MEM_ACCESS_LINK_SIO = 0, // SIO通道
+    ACL_RT_MEM_ACCESS_LINK_HCCS = 1, // HCCS通道
+    ACL_RT_MEM_ACCESS_UB_ONE_PORT_PATH = 2, // 单端口路径
+    ACL_RT_MEM_ACCESS_UB_MULTI_PORT_PATH = 3, // 多端口路径
 };
 ```
