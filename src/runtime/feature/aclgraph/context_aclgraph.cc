@@ -459,6 +459,7 @@ bool Context::CheckSubModelsIsEndCapture(const Stream * const captureStream) con
     COND_RETURN_ERROR(captureModel == nullptr, false,
         "capture model is null, capture stream_id=%d.", captureStream->Id_());
 
+    captureModel->ClearCachedAllSubModels();
     bool isEndCapture = captureModel->CheckSubModelsIsEndCapture();
     COND_RETURN_ERROR(!isEndCapture, false,
         "sub capture model is not end capture, capture model_id=%d.", captureModel->Id_());
@@ -864,7 +865,6 @@ rtError_t Context::CreateSubCaptureModels(CondHandle *condHandle, rtCondTaskPara
         }
 
         models_.remove(subModel); // capture model资源回收不遍历子模型，context析构也不遍历子图，都靠父模型递归完成。
-        subModel->SetExeStream(stm->GetCaptureStream()); // 子模型的执行流是固定的
         CaptureModel *subCaptureModel = dynamic_cast<CaptureModel *>(subModel);
         subCaptureModel->SetSubCaptureModel();
         subCaptureModel->SetCondHandle(params.handle);
@@ -872,7 +872,7 @@ rtError_t Context::CreateSubCaptureModels(CondHandle *condHandle, rtCondTaskPara
         params.modelRIArray[loop] = static_cast<rtModel_t>(subModel);
 
         RT_LOG(RT_LOG_DEBUG, "Sub capture model create success, device_id=%u, parent model_id=%u, sub model_id=%u"
-            " original stream_id=%d, capture stream_id=%d, isSubmodel=%u.",
+            " original stream_id=%d, capture stream_id=%d, isSubmodel=%d.",
             device_->Id_(), condHandle->GetParentModel()->Id_(), subModel->Id_(), stm->Id_(), stm->GetCaptureStream()->Id_(),
             (dynamic_cast<CaptureModel *>(condHandle->GetParentModel()))->IsSubCaptureModel());
     }
@@ -904,6 +904,7 @@ rtError_t Context::SubmitCaptureConditionTask(CondHandle *condHandle, Stream * c
     GET_THREAD_TASKID_AND_STREAMID(tsk, stm->AllocTaskStreamId());
     tskErrRecycle.ReleaseGuard();
 
+    condHandle->SetSubModelExeStream(tsk->stream);
     return RT_ERROR_NONE;
 }
 

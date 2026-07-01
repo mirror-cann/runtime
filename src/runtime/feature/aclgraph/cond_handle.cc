@@ -12,6 +12,7 @@
 #include "device.hpp"
 #include "stream.hpp"
 #include "cond_handle.hpp"
+#include "capture_model.hpp"
 
 #include "context.hpp"
 #include "device.hpp"
@@ -105,6 +106,16 @@ void CondHandle::SubModelDestroy()
     }
 
     subCaptureModels_.clear();
+    return;
+}
+
+void CondHandle::SetSubModelExeStream(Stream *exeStream)
+{
+    std::vector<Model*> &subModels = GetSubCaptureModels();
+    for (Model *subModel : subModels) {
+        subModel->SetExeStream(exeStream); // 子模型的执行流是固定的
+    }
+
     return;
 }
 

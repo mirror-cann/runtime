@@ -1874,6 +1874,7 @@ rtError_t ApiErrorDecorator::MemcpyAsync(void *const dst, const uint64_t destMax
             "the operation has been converted to a synchronous operation. "
             "operation not permitted when a stream is capturing and the specified capture mode is not relaxed");
     } else {
+        COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support asynchronous memory copy.");
         error = impl_->MemcpyAsync(dst, destMax, src, cnt, copyKind, stm, cfgInfo, addrCfg, checkKind);
     }
 
@@ -2572,6 +2573,7 @@ rtError_t ApiErrorDecorator::MemCopy2DAsync(void * const dst, const uint64_t dst
             "the operation has been converted to a synchronous operation. "
             "operation not permitted when a stream is capturing and the specified capture mode is not relaxed");
     } else {
+        COND_RETURN_WARN(IsStreamBindWithSubModel(curStm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support asynchronous memory copy.");
         error = impl_->MemCopy2DAsync(dst, dstPitch, src, srcPitch, width, height, curStm, copyKind, newKind);
     }
 

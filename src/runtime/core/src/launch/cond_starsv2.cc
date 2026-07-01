@@ -218,6 +218,7 @@ rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm)
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), condTask->taskSn);
 
+    condHandle->SetSubModelExeStream(condTask->stream);
     return RT_ERROR_NONE;
 }
 
