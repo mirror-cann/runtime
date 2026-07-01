@@ -123,18 +123,23 @@ static void DestroyRuntimeImpl(Runtime *rt, const void *soHandle)
 #endif
 }
 
-static void DestroyPoolRegistryImpl(void *soHandle)
+static void PrepareRuntimeProcessExitImpl(Runtime *rt, const void *soHandle)
 {
     UNUSED(soHandle);
-    PoolRegistry::DestroyPoolRegistry();
-    return;
+    if (rt != nullptr) {
+        rt->PrepareProcessExitNoThrow();
+    }
+    Runtime::runtime_ = nullptr;
+#ifdef XPU_UT
+    cce::tprt::TprtManage::tprt_ = nullptr;
+#endif
 }
 
 #else
 static const std::string LIBRUNTIME_SO_NAME = "libruntime_v100.so";  // default so name
 using ConstructFunc = Runtime *(*)();
 using DesConstructFunc = void (*)(Runtime *);
-using DesConstructPool = void (*)();
+using PrepareProcessExitFunc = void (*)(Runtime *);
 
 static rtChipType_t g_chipType = CHIP_BEGIN;
 rtChipType_t Runtime::GetChipType()
@@ -212,23 +217,6 @@ static Runtime *CreateRuntimeImpl(void **soHandle)
     return rt;
 }
 
-static void DestroyPoolRegistryImpl(void *soHandle)
-{
-    if (soHandle == nullptr) {
-        RT_LOG(RT_LOG_INFO, "soHandle is nullptr.");
-        return;
-    }
-    DesConstructPool const func = RtPtrToPtr<DesConstructPool, void *>(mmDlsym(soHandle, "DestroyPoolRegistryImpl"));
-    if (func == nullptr) {
-        const std::string libSoName = GetLibRuntimeSoName();
-        RT_LOG(RT_LOG_ERROR, "No symbol found in %s.", libSoName.c_str());
-        return;
-    }
-    func();
-    RT_LOG(RT_LOG_INFO, "Destroy PoolRegistry success.");
-    return;
-}
-
 static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
 {
     if ((soHandle == nullptr) || (rt == nullptr)) {
@@ -243,6 +231,24 @@ static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
     }
     func(rt);
     RT_LOG(RT_LOG_INFO, "Destroy Runtime success");
+    return;
+}
+
+static void PrepareRuntimeProcessExitImpl(Runtime *rt, void *soHandle)
+{
+    if ((soHandle == nullptr) || (rt == nullptr)) {
+        RT_LOG(RT_LOG_INFO, "soHandle or rt is nullptr");
+        return;
+    }
+    PrepareProcessExitFunc const func =
+        RtPtrToPtr<PrepareProcessExitFunc, void *>(mmDlsym(soHandle, "PrepareRuntimeProcessExitImpl"));
+    if (func == nullptr) {
+        const std::string libSoName = GetLibRuntimeSoName();
+        RT_LOG(RT_LOG_ERROR, "No process exit prepare symbol found in %s.", libSoName.c_str());
+        return;
+    }
+    RT_LOG(RT_LOG_INFO, "Runtime process exit prepare start.");
+    func(rt);
     return;
 }
 
@@ -304,20 +310,22 @@ RuntimeKeeper::~RuntimeKeeper()
 #ifndef CFG_DEV_PLATFORM_PC
         (void)UnregisterDrvErrMsgHandle();
 #endif
-        DestroyPoolRegistryImpl(soHandle_);
-        DestroyRuntimeImpl(runtime_, soHandle_);
+        PrepareRuntimeProcessExitImpl(runtime_, soHandle_);
     } catch (...) {}
 
     Runtime::runtime_ = nullptr;
     runtime_ = nullptr;
-    if (soHandle_ != nullptr) {
-        (void)mmDlclose(soHandle_);
-    }
+    // Process exit relies on OS loader cleanup. Do not destroy Runtime, PoolRegistry or runtime so here:
+    // their destructors may touch heap or lower modules after other atexit handlers have started.
     soHandle_ = nullptr;
 }
 
 Runtime *RuntimeKeeper::BootRuntime()
 {
+    if (IsRuntimeKeeperExiting()) {
+        RT_LOG(RT_LOG_WARNING, "RuntimeKeeper is exiting, skip runtime boot.");
+        return nullptr;
+    }
     if (bootStage_.CompareExchange(BOOT_INIT, BOOT_ON)) {
         // get chip type and dlopen different so
         void *handle = nullptr;
@@ -361,6 +369,10 @@ Runtime *RuntimeKeeper::BootRuntime()
 
 Runtime *RuntimeKeeperGetRuntime()
 {
+    if (IsRuntimeKeeperExiting()) {
+        RT_LOG(RT_LOG_WARNING, "RuntimeKeeper is exiting, runtime instance is unavailable.");
+        return nullptr;
+    }
     return (g_runtimeKeeper.BootRuntime());
 }
 

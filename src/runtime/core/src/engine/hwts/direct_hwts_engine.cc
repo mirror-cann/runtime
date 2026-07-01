@@ -192,6 +192,10 @@ rtError_t DirectHwtsEngine::Stop()
     DestroyRecycleThread();
     DestroyPrintfThread();
 
+    const Runtime * const rt = Runtime::Instance();
+    if (Runtime::IsProcessExiting(rt)) {
+        return RT_ERROR_NONE;
+    }
     if (logicCqId_ != MAX_UINT32_NUM) {
         (void)device_->Driver_()->LogicCqFree(device_->Id_(), device_->DevGetTsId(), logicCqId_);
     }

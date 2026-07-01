@@ -424,6 +424,7 @@ private:
     void ClearStreamActiveTask(void);
     void ReleaseNotifyListOnDestroy(std::vector<Notify *> &notifyList);
     void ReleaseArgLoaderBackupOnDestroy();
+    void FinalizeHostStateOnExit() noexcept;
     Stream* GetOriginalCaptureStream(void) const;
     rtError_t CheckExecuteReady(void) const;
     rtError_t PrepareModelExecute(Stream* const stm, ExternalEventRefreshInfo* externalEventRefreshInfo);

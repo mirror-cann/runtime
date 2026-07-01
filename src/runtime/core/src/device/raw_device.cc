@@ -105,6 +105,20 @@ RawDevice::RawDevice(const uint32_t devId)
 
 RawDevice::~RawDevice() noexcept
 {
+    const Runtime * const rt = Runtime::Instance();
+    if (Runtime::IsProcessExiting(rt)) {
+        return;
+    }
+
+    ReleaseOwnedObjectsOnDestroy();
+    ReleaseDriverResourcesOnDestroy();
+    dCacheLockFlag_ = false;
+    exceptionRegMap_.clear();
+    captureModelExeInfoMap_.clear();
+}
+
+void RawDevice::ReleaseOwnedObjectsOnDestroy() noexcept
+{
     DELETE_O(eventExpandingPool_);
     DELETE_O(deviceSqCqPool_);
     DELETE_O(sqAddrMemoryOrder_);
@@ -129,6 +143,10 @@ RawDevice::~RawDevice() noexcept
     DELETE_A(freeEvent_);
     DELETE_O(sqIdMemAddrPool_);
     jettyManager_.reset();
+}
+
+void RawDevice::ReleaseDriverResourcesOnDestroy() noexcept
+{
     if (driver_ != nullptr) {
         if (sqVirtualArrBaseAddr_ != nullptr) {
             (void)driver_->DevMemFree(sqVirtualArrBaseAddr_, deviceId_);
@@ -146,9 +164,6 @@ RawDevice::~RawDevice() noexcept
         (void)driver_->DeviceClose(deviceId_, tsId_);
         driver_ = nullptr;
     }
-    dCacheLockFlag_ = false;
-    exceptionRegMap_.clear();
-    captureModelExeInfoMap_.clear();
 }
 
 rtError_t RawDevice::SetCurGroupInfo(void)
@@ -1248,10 +1263,22 @@ rtError_t RawDevice::PrepareStop()
 
 rtError_t RawDevice::Stop()
 {
-    bool isThreadAlive = false;
-    const bool isDisableThread = Runtime::Instance()->GetDisableThread();
-
     Runtime * const rt = Runtime::Instance();
+    if (Runtime::IsProcessExiting(rt)) {
+        UnregisterAllProgram();
+        // Direct exit only stops host threads. Device/stream/driver resources are left to process exit
+        // and driver APP-exit cleanup; detach stream pointers because this device is removed from Runtime.
+        ctrlStream_ = nullptr;
+        primaryStream_ = nullptr;
+        if (engine_ == nullptr) {
+            return RT_ERROR_NONE;
+        }
+        return engine_->Stop();
+    }
+
+    bool isThreadAlive = false;
+    const bool isDisableThread = rt->GetDisableThread();
+
     if (rt->IsStreamSyncEsched()) {
         const rtError_t ret = NpuDriver::EschedDettachDevice(deviceId_);
         if (ret != RT_ERROR_NONE) {

@@ -1535,10 +1535,13 @@ private:
     rtError_t AllocStreamIdForAutoSplit();
     rtError_t AllocSqCqForAutoSplitWithRetry();
     void WaitAsyncRecycleThreadOnTearDown(const bool starsFlag);
-    void RecycleDelayedTasksAfterTearDown();
+    void RecycleDelayedTasksAfterTearDown(const bool eraseProfiler);
     rtError_t UnsubscribeStreamReportOnTearDown(Runtime * const rt);
     bool ShouldSkipDestroyTaskSubmissionOnTearDown(const bool starsFlag) const;
     rtError_t FinalizeTearDownWithoutDestroyTask(const bool starsFlag);
+    void FinalizeHostStateOnExit();
+    void DetachOwnerOnExit(Runtime * const rt);
+    void ResetHostPointersOnExit();
 public:
     bool isDeviceSyncFlag = false;
     uint32_t streamResId;

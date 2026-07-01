@@ -40,6 +40,18 @@ VISIBILITY_DEFAULT void DestructorRuntimeImpl(cce::runtime::Runtime *rt)
     return;
 }
 
+VISIBILITY_DEFAULT void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime *rt)
+{
+    if (rt != nullptr) {
+        rt->PrepareProcessExitNoThrow();
+    }
+    cce::runtime::Runtime::runtime_ = nullptr;
+    #ifndef CFG_DEV_PLATFORM_PC
+    cce::tprt::TprtManage::tprt_ = nullptr;
+    #endif
+    return;
+}
+
 VISIBILITY_DEFAULT void DestroyPoolRegistryImpl()
 {
     PoolRegistry::DestroyPoolRegistry();

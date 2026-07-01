@@ -17,6 +17,7 @@
 #include "profiler.hpp"
 #include "api_impl.hpp"
 #include "api.hpp"
+#include "runtime.hpp"
 #include "capture_adapt.hpp"
 #include "thread_local_container.hpp"
 #include "stream_task.h"
@@ -97,6 +98,11 @@ CaptureModel::CaptureModel(ModelType type) : Model(type)
 }
 CaptureModel::~CaptureModel() noexcept
 {
+    Runtime * const rt = Runtime::Instance();
+    if (Runtime::IsProcessExiting(rt)) {
+        FinalizeHostStateOnExit();
+        return;
+    }
     ReleaseNoEndGraphNotifyOwnerRetainedResources();
     ReleaseExternalRefreshTable();
 
@@ -412,6 +418,11 @@ void CaptureModel::ReleaseArgLoaderBackupOnDestroy()
 
 rtError_t CaptureModel::TearDown()
 {
+    Runtime * const rt = Runtime::Instance();
+    if (Runtime::IsProcessExiting(rt)) {
+        return Model::TearDown();
+    }
+
     ReleaseNoEndGraphNotifyOwnerRetainedResources();
     Profiler *profilerPtr = Runtime::Instance()->Profiler_();
     if (profilerPtr != nullptr) {
@@ -421,6 +432,28 @@ rtError_t CaptureModel::TearDown()
     }
     return Model::TearDown();
 }
+
+void CaptureModel::FinalizeHostStateOnExit() noexcept
+{
+    singleOperStmIdAndCaptureStmIdMap_.clear();
+    singleOperEvents_.clear();
+    captureEvents_.clear();
+    addStreamMap_.clear();
+    addStreamNotifyList_.clear();
+    executeNotifyList_.clear();
+    externalRecordEventItems_.clear();
+    externalWaitEventItems_.clear();
+    externalEventRefreshHostTemplate_.reset();
+    noEndGraphNotifyOwnerRetainedWaitResources_.reset();
+    externalEventRefreshDeviceBase_ = nullptr;
+    externalEventSummaryInfo_ = {};
+    taskGroupStmIds_.clear();
+    rdmaPiValueModifyTaskInfoMap_.clear();
+    argLoaderBackup_.clear();
+    isNeedUpdateEndGraph_ = false;
+    trackDataReportFlag_ = false;
+}
+
 rtError_t CaptureModel::ResetCaptureEvents(Stream * const stm) const
 {
     return ResetCaptureEventsProc(this, stm);

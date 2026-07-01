@@ -168,6 +168,11 @@ Stream::Stream(const Context * const stmCtx, const uint32_t prio,
 Stream::~Stream()
 {
     ResetEmbeddedInnerHandle<Stream>(this);
+    Runtime * const rt = Runtime::Instance();
+    if (Runtime::IsProcessExiting(rt)) {
+        FinalizeHostStateOnExit();
+        return;
+    }
     if (device_ != nullptr) {
         if ((device_->GetDevStatus() != RT_ERROR_NONE) && (this->GetBindFlag())) {
             RT_LOG(RT_LOG_WARNING, "Device fault and the model binds this stream, device_id=%u, stream_id=%d, "
@@ -1434,11 +1439,16 @@ rtError_t Stream::TearDown(const bool terminal, bool flag)
     if (fusioning_) {
         RT_LOG(RT_LOG_WARNING, "fusion is not match, stream_id=%d", stmId);
     }
+    const bool starsFlag = dev->IsStarsPlatform();
+    if (Runtime::IsProcessExiting(rt)) {
+        WaitAsyncRecycleThreadOnTearDown(starsFlag);
+        RecycleDelayedTasksAfterTearDown(false);
+        return FinalizeTearDownWithoutDestroyTask(starsFlag);
+    }
     if (argsHandle_ != nullptr) {
         (void)dev->ArgLoader_()->Release(argsHandle_);
         argsHandle_ = nullptr;
     }
-    const bool starsFlag = dev->IsStarsPlatform();
     if (rt->GetDisableThread() && (!starsFlag)) {
         bool isFastCq = false;
         error = dev->GetStreamSqCqManage()->AllocLogicCq(static_cast<uint32_t>(stmId),
@@ -1524,7 +1534,7 @@ rtError_t Stream::TearDown(const bool terminal, bool flag)
     }
 
     WaitAsyncRecycleThreadOnTearDown(starsFlag);
-    RecycleDelayedTasksAfterTearDown();
+    RecycleDelayedTasksAfterTearDown(true);
     error = UnsubscribeStreamReportOnTearDown(rt);
     ERROR_RETURN_MSG_INNER(error, "Failed to unsubscribe streamId(%d), retCode=%#x.", stmId,
         static_cast<uint32_t>(error));
@@ -1593,13 +1603,16 @@ void Stream::WaitAsyncRecycleThreadOnTearDown(const bool starsFlag)
     }
 }
 
-void Stream::RecycleDelayedTasksAfterTearDown()
+void Stream::RecycleDelayedTasksAfterTearDown(const bool eraseProfiler)
 {
     RT_LOG(RT_LOG_INFO, "stream_id=%d, delay recycle task num=%zu.", streamId_, delayRecycleTaskid_.size());
-    if (!delayRecycleTaskid_.empty()) {
-        Profiler * const profilerPtr = Runtime::Instance()->Profiler_();
-        if (profilerPtr != nullptr) {
-            profilerPtr->EraseStream(this);
+    if (eraseProfiler && !delayRecycleTaskid_.empty()) {
+        Runtime * const rt = Runtime::Instance();
+        if (rt != nullptr) {
+            Profiler * const profilerPtr = rt->Profiler_();
+            if (profilerPtr != nullptr) {
+                profilerPtr->EraseStream(this);
+            }
         }
     }
 
@@ -1637,6 +1650,60 @@ rtError_t Stream::FinalizeTearDownWithoutDestroyTask(const bool starsFlag)
     persistentTaskid_.clear();
     ReportDestroyFlipTask();
     return RT_ERROR_NONE;
+}
+
+void Stream::FinalizeHostStateOnExit()
+{
+    Runtime * const rt = Runtime::Instance();
+    DetachOwnerOnExit(rt);
+    ResetHostPointersOnExit();
+    UpdateTaskGroupStatus(StreamTaskGroupStatus::NONE);
+}
+
+void Stream::DetachOwnerOnExit(Runtime * const rt)
+{
+    if ((rt != nullptr) && (GetSubscribeFlag() != StreamSubscribeFlag::SUBSCRIBE_NONE)) {
+        rt->UnSubscribeReportHostOnly(this);
+    }
+
+    if (device_ != nullptr) {
+        if (isSupportASyncRecycle_) {
+            device_->DelStreamFromMessageQueue(this);
+        }
+        if ((((flags_ & RT_STREAM_FORBIDDEN_DEFAULT) == 0U) && ((flags_ & RT_STREAM_AICPU) == 0U)) &&
+            (device_->GetStreamSqCqManage() != nullptr)) {
+            device_->GetStreamSqCqManage()->DelStreamIdToStream(static_cast<uint32_t>(streamId_));
+        }
+    }
+}
+
+void Stream::ResetHostPointersOnExit()
+{
+    streamResId = RTS_INVALID_RES_ID;
+    context_ = nullptr;
+    device_ = nullptr;
+    l2BaseVaddr_ = nullptr;
+    onProfDeviceAddr_ = nullptr;
+    onProfHostRtAddr_ = nullptr;
+    onProfHostTsAddr_ = nullptr;
+    dvppGrp_ = nullptr;
+    taskGroup_ = nullptr;
+    updateTaskGroup_ = nullptr;
+    captureStream_ = nullptr;
+    parentCaptureStream_ = nullptr;
+    argManage_ = nullptr;
+    lastHalfRecord_ = nullptr;
+    dvppRRTaskAddr_ = nullptr;
+    timelineAddr_ = nullptr;
+    memContainOverflowAddr_ = nullptr;
+    argsHandle_ = nullptr;
+    executedTimesSvm_ = nullptr;
+    isSoftwareSqEnable_ = false;
+    sqAddr_ = 0ULL;
+    sqRegVirtualAddr_ = 0ULL;
+    sqMemOrderType_ = SQ_ADDR_MEM_ORDER_TYPE_MAX;
+    sqIdMemAddr_ = 0UL;
+    latestModelId_ = MAX_INT32_NUM;
 }
 
 rtError_t Stream::RecycleTaskWithCtrlsq(Device * const dev, const uint32_t logicCqId, const uint32_t recycleCnt)
