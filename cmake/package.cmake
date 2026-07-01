@@ -113,12 +113,6 @@ install(FILES ${RUNTIME_DIR}/scripts/package/runtime/set_env.sh
     COMPONENT npu-runtime
 )
 
-install(DIRECTORY ${RUNTIME_DIR}/include/driver
-    DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/include
-    ${INSTALL_OPTIONAL}
-    COMPONENT npu-runtime
-)
-
 install(DIRECTORY ${RUNTIME_DIR}/include/dfx/base/
     DESTINATION ${CMAKE_SYSTEM_PROCESSOR}-linux/include/base
     ${INSTALL_OPTIONAL}
