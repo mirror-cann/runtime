@@ -37,7 +37,7 @@ rtError_t CaptureModel::BindSqCqAndSendSqe(void)
     return error;
 }
 
-rtError_t CaptureModel::BuildActualExternalTaskSqe(TaskInfo* const task)
+rtError_t CaptureModel::BuildActualExternalTaskSqe(TaskInfo* const task) const
 {
     if ((task == nullptr) || (task->stream == nullptr)) {
         return RT_ERROR_INVALID_VALUE;
@@ -67,7 +67,7 @@ rtError_t CaptureModel::FillExternalRecordRefreshSlot(void* const slot, uint64_t
     if (slot == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
-    auto* const recordSlot = reinterpret_cast<RtStarsWriteValuePtrDst*>(slot);
+    auto* const recordSlot = RtPtrToPtr<RtStarsWriteValuePtrDst*>(slot);
     *recordSlot = {};
     recordSlot->snoop = 0U;
     recordSlot->awcache = 2U;

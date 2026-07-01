@@ -408,7 +408,7 @@ public:
     virtual void PrintExceedLimitHcclStream() = 0;
     virtual void SetDevFailureMode(const uint64_t failureMode) = 0;
     virtual uint64_t GetDevFailureMode() = 0;
-    virtual bool CheckFeatureSupport(const uint32_t tsFeature) = 0;
+    virtual bool CheckFeatureSupport(const uint32_t tsFeature) const = 0;
     virtual void InitTschCapability(uint8_t *tschCapability, uint32_t tschCapaLen, uint32_t tschCapaDepth) = 0;
     virtual void SetIsRingbufferGetErr(bool flag) = 0;
     virtual bool GetIsRingbufferGetErr() const = 0;

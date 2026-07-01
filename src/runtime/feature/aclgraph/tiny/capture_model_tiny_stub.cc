@@ -87,7 +87,7 @@ void CaptureModel::RestoreJettyForSnapshot() {}
 
 rtError_t CaptureModel::BindSqCqAndSendSqe(void) { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t CaptureModel::BuildActualExternalTaskSqe(TaskInfo* const task)
+rtError_t CaptureModel::BuildActualExternalTaskSqe(TaskInfo* const task) const
 {
     UNUSED(task);
     return RT_ERROR_FEATURE_NOT_SUPPORT;

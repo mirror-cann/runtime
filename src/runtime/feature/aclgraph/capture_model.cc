@@ -640,7 +640,7 @@ void CaptureModel::ReleaseExternalRefreshTable()
     externalEventSummaryInfo_ = {};
 }
 
-void CaptureModel::RollbackExternalEventRefreshInfo(ExternalEventRefreshInfo* launch)
+void CaptureModel::RollbackExternalEventRefreshInfo(ExternalEventRefreshInfo* launch) const
 {
     if (launch == nullptr) {
         return;
@@ -681,46 +681,45 @@ rtError_t CaptureModel::PrepareExternalEventRecords(ExternalEventRefreshInfo* la
     NULL_PTR_RETURN_MSG(launch, RT_ERROR_INVALID_VALUE);
     rtError_t error = RT_ERROR_NONE;
     const uint64_t recordSlotSize = static_cast<uint64_t>(GetExternalRecordRefreshSlotSize());
+    ScopeGuard rollbackGuard([this, launch]() { RollbackExternalEventRefreshInfo(launch); });
     for (size_t i = 0U; i < externalRecordEventItems_.size(); i++) {
         EventResource record = {externalRecordEventItems_[i].event, 0U, INVALID_EVENT_ID};
         void* eventAddr = nullptr;
         if ((record.event == nullptr) || (record.event->Device_() == nullptr)) {
             error = RT_ERROR_EVENT_NULL;
             RT_LOG_INNER_MSG(RT_LOG_ERROR, "External record event is invalid, model_id=%u.", Id_());
-            goto ROLLBACK;
+            return error;
         }
         error = record.event->Device_()->AllocExpandingPoolEvent(&eventAddr, &record.eventId);
-        ERROR_GOTO_MSG_INNER(
-            error, ROLLBACK, "Allocate external record event failed, model_id=%u, retCode=%#x.", Id_(), error);
+        ERROR_RETURN_MSG_INNER(
+            error, "Allocate external record event failed, model_id=%u, retCode=%#x.", Id_(), error);
         record.eventAddr = RtPtrToValue(eventAddr);
         void* recordSlot = launch->hostRefresh.get() + externalEventSummaryInfo_.recordOffset + i * recordSlotSize;
         error = FillExternalRecordRefreshSlot(recordSlot, record.eventAddr);
-        ERROR_GOTO_MSG_INNER(
-            error, ROLLBACK, "Fill external record refresh slot failed, model_id=%u, retCode=%#x.", Id_(), error);
+        ERROR_RETURN_MSG_INNER(
+            error, "Fill external record refresh slot failed, model_id=%u, retCode=%#x.", Id_(), error);
         launch->preparedRecords.push_back(record);
     }
+    rollbackGuard.ReleaseGuard();
     return RT_ERROR_NONE;
-
-ROLLBACK:
-    RollbackExternalEventRefreshInfo(launch);
-    return error;
 }
 
 rtError_t CaptureModel::PrepareExternalEventWaits(ExternalEventRefreshInfo* launch)
 {
     NULL_PTR_RETURN_MSG(launch, RT_ERROR_INVALID_VALUE);
     rtError_t error = RT_ERROR_NONE;
+    ScopeGuard rollbackGuard([this, launch]() { RollbackExternalEventRefreshInfo(launch); });
     for (size_t i = 0U; i < externalWaitEventItems_.size(); i++) {
         uint64_t eventAddr = 0U;
         EventResource resource = {};
         if (externalWaitEventItems_[i].event == nullptr) {
             error = RT_ERROR_EVENT_NULL;
             RT_LOG_INNER_MSG(RT_LOG_ERROR, "External wait event is null, model_id=%u.", Id_());
-            goto ROLLBACK;
+            return error;
         }
         error = RetainRecordedEventForExternalWait(externalWaitEventItems_[i].event, &eventAddr, &resource);
-        ERROR_GOTO_MSG_INNER(
-            error, ROLLBACK, "Retain external wait producer failed, model_id=%u, retCode=%#x.", Id_(), error);
+        ERROR_RETURN_MSG_INNER(
+            error, "Retain external wait producer failed, model_id=%u, retCode=%#x.", Id_(), error);
         uint64_t* waitEntry = RtPtrToPtr<uint64_t*>(
             launch->hostRefresh.get() + externalEventSummaryInfo_.waitOffset + i * EXTERNAL_WAIT_REFRESH_ENTRY_SIZE);
         *waitEntry = eventAddr;
@@ -728,11 +727,8 @@ rtError_t CaptureModel::PrepareExternalEventWaits(ExternalEventRefreshInfo* laun
             launch->retainedWaitResources.push_back(resource);
         }
     }
+    rollbackGuard.ReleaseGuard();
     return RT_ERROR_NONE;
-
-ROLLBACK:
-    RollbackExternalEventRefreshInfo(launch);
-    return error;
 }
 
 rtError_t CaptureModel::PrepareExternalEventRefreshInfo(ExternalEventRefreshInfo* launch)
@@ -771,7 +767,7 @@ rtError_t CaptureModel::SubmitExternalEventRefreshInfo(Stream* launchStream, Ext
         externalEventSummaryInfo_.totalSize, RT_MEMCPY_HOST_TO_DEVICE, launchStream, &realSize, launch->hostRefresh);
 }
 
-void CaptureModel::CommitExternalEventRecords(ExternalEventRefreshInfo* launch)
+void CaptureModel::CommitExternalEventRecords(ExternalEventRefreshInfo* launch) const
 {
     if (launch == nullptr) {
         return;

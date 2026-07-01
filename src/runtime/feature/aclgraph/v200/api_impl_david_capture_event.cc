@@ -244,12 +244,12 @@ rtError_t ApiImplDavid::CaptureWaitEvent(Context * const ctx, Stream * const stm
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImplDavid::CaptureExternalEventRecord(Event* const evt, Stream* const stm)
+rtError_t ApiImplDavid::CaptureExternalEventRecord(Event* const evt, Stream* const stm) const
 {
     return RegisterExternalEventTask(evt, stm, true);
 }
 
-rtError_t ApiImplDavid::CaptureExternalEventWait(Event* const evt, Stream* const stm)
+rtError_t ApiImplDavid::CaptureExternalEventWait(Event* const evt, Stream* const stm) const
 {
     return RegisterExternalEventTask(evt, stm, false);
 }

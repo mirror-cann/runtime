@@ -600,7 +600,7 @@ public:
 
     rtError_t SetCurGroupInfo() override;
 
-    bool CheckFeatureSupport(const uint32_t tsFeature) override;
+    bool CheckFeatureSupport(const uint32_t tsFeature) const override;
 
     void InitTschCapability(uint8_t *tschCapability, uint32_t tschCapaLen, uint32_t tschCapaDepth) override
     {

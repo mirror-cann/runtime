@@ -173,12 +173,12 @@ rtError_t ApiImpl::CaptureEventWait(Context * const ctx, Stream * const stm, Eve
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CaptureExternalEventWait(Event* const evt, Stream* const stm)
+rtError_t ApiImpl::CaptureExternalEventWait(Event* const evt, Stream* const stm) const
 {
     return RegisterExternalEventTask(evt, stm, false);
 }
 
-rtError_t ApiImpl::CaptureExternalEventRecord(Event* const evt, Stream* const stm)
+rtError_t ApiImpl::CaptureExternalEventRecord(Event* const evt, Stream* const stm) const
 {
     return RegisterExternalEventTask(evt, stm, true);
 }

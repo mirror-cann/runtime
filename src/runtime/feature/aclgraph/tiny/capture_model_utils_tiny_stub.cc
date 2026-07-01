@@ -27,9 +27,9 @@ rtError_t GetCaptureStream(Context * const ctx, Stream * const stm, const Event 
 
 rtError_t CheckCaptureStreamThreadIsMatch(const Stream * const stm) { UNUSED(stm); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t CheckCaptureModelSupportExternalEvent(Device * const dev, const bool isRecord) { UNUSED(dev); UNUSED(isRecord); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t CheckCaptureModelSupportExternalEvent(const Device * const dev, const bool isRecord) { UNUSED(dev); UNUSED(isRecord); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t CheckCaptureModelSupportSoftwareSq(Device* const dev) { UNUSED(dev); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t CheckCaptureModelSupportSoftwareSq(const Device* const dev) { UNUSED(dev); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
 rtError_t CheckCaptureModelForUpdate(const Stream* stm) { UNUSED(stm); return RT_ERROR_FEATURE_NOT_SUPPORT; }
 

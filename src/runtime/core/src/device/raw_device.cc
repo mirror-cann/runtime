@@ -2108,7 +2108,7 @@ uint32_t RawDevice::ConvertTsFeature(const uint32_t tsFeature) const
     return feature;
 }
 
-bool RawDevice::CheckFeatureSupport(const uint32_t tsFeature)
+bool RawDevice::CheckFeatureSupport(const uint32_t tsFeature) const
 {
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_TSCH_PACAGE_COMPATABLE)) {
         return true;

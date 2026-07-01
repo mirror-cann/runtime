@@ -187,7 +187,7 @@ rtError_t CheckCaptureModelSupportValueWaitTask(const bool isRecord)
     }
     return RT_ERROR_NONE;
 }
-rtError_t CheckCaptureModelSupportExternalEvent(Device * const dev, const bool isRecord)
+rtError_t CheckCaptureModelSupportExternalEvent(const Device * const dev, const bool isRecord)
 {
     const rtError_t ret = CheckCaptureModelSupportValueWaitTask(isRecord);
     if (ret != RT_ERROR_NONE) {
@@ -195,7 +195,7 @@ rtError_t CheckCaptureModelSupportExternalEvent(Device * const dev, const bool i
     }
     return CheckCaptureModelSupportSoftwareSq(dev);
 }
-rtError_t CheckCaptureModelSupportSoftwareSq(Device* const dev)
+rtError_t CheckCaptureModelSupportSoftwareSq(const Device* const dev)
 {
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
     if (!(dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH_SOFTWARE_ENABLE))) {

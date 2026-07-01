@@ -187,9 +187,9 @@ public:
     // 将本轮host refresh内容通过H2D提交到device refresh表。
     rtError_t SubmitExternalEventRefreshInfo(Stream *launchStream, ExternalEventRefreshInfo *launch);
     // graph launch失败时回滚本轮external record/wait资源。
-    void RollbackExternalEventRefreshInfo(ExternalEventRefreshInfo *launch);
+    void RollbackExternalEventRefreshInfo(ExternalEventRefreshInfo *launch) const;
     // graph execute提交成功后发布本轮external record资源到event。
-    void CommitExternalEventRecords(ExternalEventRefreshInfo *launch);
+    void CommitExternalEventRecords(ExternalEventRefreshInfo *launch) const;
     // endGraph notify提交失败时转移或释放external wait持有资源。
     rtError_t HandleExternalNotifyAfterExecuteFailure(ExternalEventRefreshInfo *launch);
 
@@ -435,7 +435,7 @@ private:
     rtError_t BindSqCqAndSendSqe(void);
     rtError_t MoveRetainedWaitsToNoEndGraphNotifyOwner(std::vector<EventResource>* resources);
     void ReleaseNoEndGraphNotifyOwnerRetainedResources();
-    rtError_t BuildActualExternalTaskSqe(TaskInfo * const task);
+    rtError_t BuildActualExternalTaskSqe(TaskInfo * const task) const;
     rtError_t RebuildExternalTaskSqes(void);
     rtError_t CalculateExternalEventSummaryInfo(void);
     rtError_t ValidateExternalPlaceholders(void);

@@ -254,7 +254,7 @@ rtError_t CaptureModel::ReleaseAllJetty()
     return finalError;
 }
 
-rtError_t CaptureModel::BuildActualExternalTaskSqe(TaskInfo* const task)
+rtError_t CaptureModel::BuildActualExternalTaskSqe(TaskInfo* const task) const
 {
     if ((task == nullptr) || (task->stream == nullptr)) {
         return RT_ERROR_INVALID_VALUE;
@@ -285,7 +285,7 @@ rtError_t CaptureModel::FillExternalRecordRefreshSlot(void* const slot, uint64_t
     if (slot == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
-    auto* const sqe = reinterpret_cast<rtDavidSqe_t*>(slot);
+    auto* const sqe = RtPtrToPtr<rtDavidSqe_t*>(slot);
     *sqe = {};
     sqe->writeValueSqe.header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
     sqe->writeValueSqe.header.ptrMode = 0U;

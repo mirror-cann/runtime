@@ -431,14 +431,14 @@ rtError_t ApiImpl::CaptureEventWait(Context * const ctx, Stream * const stm, Eve
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CaptureExternalEventRecord(Event* const evt, Stream* const stm)
+rtError_t ApiImpl::CaptureExternalEventRecord(Event* const evt, Stream* const stm) const
 {
     UNUSED(evt);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CaptureExternalEventWait(Event* const evt, Stream* const stm)
+rtError_t ApiImpl::CaptureExternalEventWait(Event* const evt, Stream* const stm) const
 {
     UNUSED(evt);
     UNUSED(stm);

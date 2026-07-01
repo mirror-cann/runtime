@@ -10,6 +10,8 @@
 #ifndef CCE_RUNTIME_EVENT_RESOURCE_HPP
 #define CCE_RUNTIME_EVENT_RESOURCE_HPP
 
+#include <cstdint>
+
 namespace cce {
 namespace runtime {
 class Event;
