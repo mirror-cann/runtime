@@ -32,6 +32,8 @@ constexpr uint64_t START_SWITCH = 1U;       // define by runtime
 constexpr uint32_t AICPU_SWITCH = 2U;       // define by runtime
 constexpr uint32_t MAX_ADD_REPORT_SIZE = 131072; // 512 * sizeof(MsprofAdditionalInfo)
 constexpr uint64_t HOST_MOVE_BUFFER_SIZE = 4 * 1024 * 1024;
+constexpr uint64_t NS_PER_SECOND = 1000 * 1000 * 1000; // nanoseconds per second
+constexpr uint64_t BYTES_PER_MB = 1024 * 1024;         // bytes per MB
 const char * const AICPU_EVENT_GRP_NAME = "prof_aicpu_grp";
 const char * const AI_CUSTOM_CPU_EVENT_GRP_NAME = "prof_cus_grp";
 const char * const AICPU_PROFILING_REPORT_THREAD_NAME = "Prof_Reporter";
@@ -383,7 +385,7 @@ DevprofDrvAicpu::HostMoveStep DevprofDrvAicpu::AcquireHostMoveFreeSlots(uint32_t
 // Pop one batch from the source buffer and write it into the host-move ring, accumulating stats.
 // Returns RETRY when nothing could be popped (caller should sleep), otherwise OK.
 DevprofDrvAicpu::HostMoveStep DevprofDrvAicpu::MoveOneBatchToHostMove(size_t maxBatchRecords,
-    uint32_t freeSlots, uint64_t &totalWriteLen, uint64_t &batchCount)
+    uint32_t freeSlots, uint64_t &totalWriteLen)
 {
     // recordSize is sizeof(...) so it is a compile-time non-zero constant; the division is safe.
     const size_t recordSize = sizeof(MsprofAdditionalInfo);
@@ -406,9 +408,8 @@ DevprofDrvAicpu::HostMoveStep DevprofDrvAicpu::MoveOneBatchToHostMove(size_t max
         MSPROF_LOGE("Write batch to host move buffer failed, recordCount=%u", recordCount);
     } else {
         totalWriteLen += popSize;
-        batchCount++;
         uint64_t costNs = batchEndTime - batchStartTime;
-        uint64_t rateMBps = (costNs > 0) ? (static_cast<uint64_t>(popSize) * 1000000000ULL / costNs / 1048576ULL) : 0;
+        uint64_t rateMBps = (costNs > 0) ? (static_cast<uint64_t>(popSize) * NS_PER_SECOND / costNs / BYTES_PER_MB) : 0;
         MSPROF_LOGI("Host move batch: records=%u, size=%zuB, cost=%lluns, rate=%lluMB/s",
             recordCount, popSize, costNs, rateMBps);
     }
@@ -423,8 +424,6 @@ int32_t DevprofDrvAicpu::DrainBufferToHostMove()
     // compile-time non-zero sizeof, so the division cannot divide by zero.
     const size_t maxBatchRecords = analysis::dvvp::common::queue::MAX_DRV_REPORT_SIZE / sizeof(MsprofAdditionalInfo);
     uint64_t totalWriteLen = 0;
-    uint64_t batchCount = 0;
-    const uint64_t drainStartTime = analysis::dvvp::common::utils::Utils::GetClockMonotonicRaw();
 
     while (!stopped_ || (aicpuAdditionalBuffer_.GetUsedSize() != 0)) {
         if (aicpuAdditionalBuffer_.GetUsedSize() == 0) {
@@ -442,16 +441,13 @@ int32_t DevprofDrvAicpu::DrainBufferToHostMove()
             continue;
         }
 
-        if (MoveOneBatchToHostMove(maxBatchRecords, freeSlots, totalWriteLen, batchCount) ==
+        if (MoveOneBatchToHostMove(maxBatchRecords, freeSlots, totalWriteLen) ==
             HostMoveStep::RETRY) {
             (void)OsalSleep(WAIT_DRV_TIME);
             continue;
         }
     }
-    uint64_t drainCostNs = analysis::dvvp::common::utils::Utils::GetClockMonotonicRaw() - drainStartTime;
-    uint64_t avgRateMBps = (drainCostNs > 0) ? (totalWriteLen * 1000000000ULL / drainCostNs / 1048576ULL) : 0;
-    MSPROF_LOGE("Host move: flushed total=%lluB in %llu batches, cost=%lluns, avgRate=%lluMB/s",
-        totalWriteLen, batchCount, drainCostNs, avgRateMBps);
+    MSPROF_LOGI("Host move: flushed total=%lluB", totalWriteLen);
     return PROFILING_SUCCESS;
 }
 
