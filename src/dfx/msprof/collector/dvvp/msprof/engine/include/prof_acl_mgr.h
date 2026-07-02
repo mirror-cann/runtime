@@ -373,6 +373,7 @@ private:
     int32_t GetJsonIntParam(NanoJson::Json &jsonCfg, std::string jsonOpt, int32_t defaultVal) const;
     std::string GenerateProfMainName() const;
     std::string GenerateProfDirName(const std::string& devId);
+    int32_t MaterializeResultPath();
 
 private:
     bool isReady_;

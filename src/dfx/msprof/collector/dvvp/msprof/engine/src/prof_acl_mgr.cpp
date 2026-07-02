@@ -712,18 +712,37 @@ int32_t ProfAclMgr::ProfAclInit(const std::string &profResultPath)
     if (!Utils::CheckPathWithInvalidChar(path)) {
         return ACL_ERROR_INVALID_FILE;
     }
-    if (Utils::CreateDir(path) != PROFILING_SUCCESS) {
-        MSPROF_LOGE("Failed to create dir: %s", Utils::BaseName(path).c_str());
-        char errBuf[MAX_ERR_STRING_LEN + 1] = {0};
-        int32_t errNo = OsalGetErrorCode();
-        std::string reason = "The operation create dir on directory " + path + " is abnormal. [Error " +
-            std::to_string(errNo) + "] " + std::string(OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
-        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({path, "path of aclprofInit", reason}));
+
+    resultPath_ = path;
+    MSPROF_LOGI("Base directory recorded: %s", Utils::BaseName(resultPath_).c_str());
+
+    // reset device index
+    devUuid_.clear();
+
+    FUNRET_CHECK_EXPR_ACTION(InitParams() != ACL_SUCCESS, return ACL_ERROR_PROFILING_FAILURE, "Failed to init params");
+
+    mode_ = WORK_MODE_API_CTRL;
+    return ACL_SUCCESS;
+}
+
+int32_t ProfAclMgr::MaterializeResultPath()
+{
+    if (resultPath_.empty()) {
+        MSPROF_LOGE("Result path is empty");
         return ACL_ERROR_INVALID_FILE;
     }
-    path = Utils::CanonicalizePath(path);
-    FUNRET_CHECK_EXPR_ACTION(path.empty(), return ACL_ERROR_INVALID_FILE, "Invalid path for aclprofInit");
+    if (Utils::CreateDir(resultPath_) != PROFILING_SUCCESS) {
+        MSPROF_LOGE("Failed to create dir: %s", Utils::BaseName(resultPath_).c_str());
+        char errBuf[MAX_ERR_STRING_LEN + 1] = {0};
+        int32_t errNo = OsalGetErrorCode();
+        std::string reason = "The operation create dir on directory " + resultPath_ + " is abnormal. [Error " +
+            std::to_string(errNo) + "] " + std::string(OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
+        MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+            std::vector<std::string>({resultPath_, "path of profiling output", reason}));
+        return ACL_ERROR_INVALID_FILE;
+    }
+    std::string path = Utils::CanonicalizePath(resultPath_);
+    FUNRET_CHECK_EXPR_ACTION(path.empty(), return ACL_ERROR_INVALID_FILE, "Invalid path for profiling output");
 
     // Check path is valid
     if (!Utils::IsDirAccessible(path)) {
@@ -733,26 +752,13 @@ int32_t ProfAclMgr::ProfAclInit(const std::string &profResultPath)
         std::string reason = "The operation access on directory " + path + " is abnormal. [Error " +
             std::to_string(errNo) + "] " + std::string(OsalGetErrorFormatMessage(errNo, errBuf, MAX_ERR_STRING_LEN));
         MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
-            std::vector<std::string>({path, "path of aclprofInit", reason}));
+            std::vector<std::string>({path, "path of profiling output", reason}));
         return ACL_ERROR_INVALID_FILE;
     }
 
-    // Gen sub dir by time and create it
+    // Replace the recorded path with the canonicalized absolute path that data is written to.
     resultPath_ = path;
     MSPROF_LOGI("Base directory: %s", Utils::BaseName(resultPath_).c_str());
-
-    // reset device index
-    devUuid_.clear();
-
-    FUNRET_CHECK_EXPR_ACTION(InitParams() != ACL_SUCCESS, return ACL_ERROR_PROFILING_FAILURE, "Failed to init params");
-
-    // The path passed to init reflects the latest setting at init time: if ACL_PROF_PATH was
-    // set before init, resultPath_ already carries it (auto-init passes GetResultPath() in here);
-    // if the user passes an explicit init path, it wins over the earlier ACL_PROF_PATH.
-    // A path set by ACL_PROF_PATH AFTER init is applied separately in MsprofSetConfig
-    // (last-write-wins), so no override is done here.
-
-    mode_ = WORK_MODE_API_CTRL;
     return ACL_SUCCESS;
 }
 
@@ -2649,19 +2655,10 @@ int32_t ProfAclMgr::MsprofSetConfig(aclprofConfigType cfgType, const std::string
         return PROFILING_FAILED;
     }
 
-    // last-write-wins: if ACL_PROF_PATH is set AFTER init (mode is already API_CTRL), apply the
-    // new path to resultPath_ immediately so it overrides the path given at init time. When set
-    // before init (mode is OFF), ProfAclInit consumes params_->resultPath via the auto-init flow.
     if (cfgType == ACL_PROF_PATH && mode_ == WORK_MODE_API_CTRL && !config.empty()) {
         std::string cfgPath = Utils::RelativePathToAbsolutePath(config);
-        if (cfgPath.empty() || !Utils::CheckPathWithInvalidChar(cfgPath) ||
-            Utils::CreateDir(cfgPath) != PROFILING_SUCCESS) {
+        if (cfgPath.empty() || !Utils::CheckPathWithInvalidChar(cfgPath)) {
             MSPROF_LOGE("Invalid ACL_PROF_PATH: %s", Utils::BaseName(config).c_str());
-            return PROFILING_FAILED;
-        }
-        cfgPath = Utils::CanonicalizePath(cfgPath);
-        if (cfgPath.empty() || !Utils::IsDirAccessible(cfgPath)) {
-            MSPROF_LOGE("ACL_PROF_PATH not accessible: %s", Utils::BaseName(config).c_str());
             return PROFILING_FAILED;
         }
         resultPath_ = cfgPath;
@@ -2951,6 +2948,10 @@ int32_t ProfAclMgr::PrepareStartAclApi(const MsprofConfig *config)
     // check devices
     std::lock_guard<std::mutex> lk(mtx_);
     ret = CheckDeviceTask(config);
+    if (ret != ACL_SUCCESS) {
+        return ret;
+    }
+    ret = MaterializeResultPath();
     if (ret != ACL_SUCCESS) {
         return ret;
     }

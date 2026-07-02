@@ -514,10 +514,11 @@ TEST_F(CliDavidStest, CliTaskTimeOn)
 
 TEST_F(CliDavidStest, CliTaskTimeL3)
 {
-    // david: Task-based AI core/vector metrics: ArithmeticUtilization
+    // david now supports task-time L3 (PLATFORM_TASK_TRACE_L3), so start succeeds.
     const char* argv[] = {DAVID_OUTPUT_DIR, "--task-time=l3", };
-    std::vector<std::string> dataList = {};
-    EXPECT_EQ(PROFILING_FAILED, MsprofMgr().MsprofStartByAppMode(sizeof(argv) / sizeof(char *), argv));
+    std::vector<std::string> dataList = {"stars_soc.data", "ffts_profile.data"};
+    MsprofMgr().SetDeviceCheckList(dataList);
+    EXPECT_EQ(PROFILING_SUCCESS, MsprofMgr().MsprofStartByAppMode(sizeof(argv) / sizeof(char *), argv));
 }
 
 TEST_F(CliDavidStest, CliFwkScheduleOff)
