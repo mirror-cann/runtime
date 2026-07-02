@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <bitset>
 #include <list>
+#include <memory>
+#include <atomic>
 
 #include "base.hpp"
 #include "device.hpp"
@@ -192,10 +194,10 @@ public:
     static rtError_t InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size);
     void RegisterMemPool(SegmentManager *mgr);
     rtError_t CheckRemoveMemPool(SegmentManager *memPool);
-    rtError_t RemoveMemPool(SegmentManager* memPool);
     static SegmentManager* CreateManager(Segment *seg, uint32_t deviceId, bool canDeleteOutsideDestruction);
     static void DeleteManager(SegmentManager*& manager);
-    bool QueryMemPool(SegmentManager *p);
+    rtError_t RemoveMemPool(SegmentManager* memPool, std::shared_ptr<SegmentManager>& owned);
+    std::shared_ptr<SegmentManager> QueryMemPool(SegmentManager *p);
     std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> GetSequenceMap() const;
     std::unordered_map<int32_t, uint64_t> GetStreamSeqId() const;
     void UpdateSeqMap(const int32_t streamId, const int32_t eventId);
@@ -206,8 +208,8 @@ public:
     static void EventStateCallbackWrapper(Stream* stream, Event* event, EventStatePeriod period, void *args);
     rtError_t RegisterSomaCallBack();
     bool InMemPoolRegion(uint64_t ptr);
-    SegmentManager* FindMemPoolByPtr(uint64_t ptr);
-    std::unordered_set<SegmentManager *> EnumerateMemPools(bool includeGraphPool);
+    std::shared_ptr<SegmentManager> FindMemPoolByPtr(uint64_t ptr);
+    std::unordered_set<std::shared_ptr<SegmentManager>> EnumerateMemPools(bool includeGraphPool);
 
 private:
     PoolRegistry() = default;
@@ -217,7 +219,7 @@ private:
     mutable std::mutex mutex_;
     std::set<SegmentManager*, SegmentManagerComparator> entries_;
     bool initialized_ = false;
-    std::unordered_set<SegmentManager*> validEntries_;
+    std::unordered_map<SegmentManager*, std::shared_ptr<SegmentManager>> poolOwnership_;
     std::unordered_map<int32_t, std::pair<int32_t, uint64_t>> eventsMap_;
     std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> sequenceMap_;
     std::unordered_map<int32_t, uint64_t> streamSeqId_;

@@ -532,9 +532,10 @@ rtError_t PoolRegistry::InitializeMemPool(SegmentManager *mgr, uint64_t va, uint
 
 void PoolRegistry::RegisterMemPool(SegmentManager *mgr)
 {
+    std::shared_ptr<SegmentManager> owned(mgr);
     std::lock_guard<std::mutex> lock(mutex_);
     (void)entries_.insert(mgr);
-    (void)validEntries_.insert(mgr);
+    poolOwnership_.emplace(mgr, owned);
 }
 
 rtError_t PoolRegistry::CheckRemoveMemPool(SegmentManager *memPool)
@@ -543,29 +544,38 @@ rtError_t PoolRegistry::CheckRemoveMemPool(SegmentManager *memPool)
     COND_RETURN_ERROR(!initialized_, RT_ERROR_MEM_POOL_NULL, "PoolRegistry not initialized.");
     std::lock_guard<std::mutex> lock(mutex_);
 
-    auto it = validEntries_.find(memPool);
-    COND_RETURN_ERROR(it == validEntries_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
+    auto it = poolOwnership_.find(memPool);
+    COND_RETURN_ERROR(it == poolOwnership_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
         "Failed to remove memPool, memPoolId=%#" PRIx64 ".", memPool->MemPoolId());
-    COND_RETURN_ERROR(!(*it)->CanDelete(), RT_ERROR_POOL_OP_INVALID,
+    COND_RETURN_ERROR(!it->second->CanDelete(), RT_ERROR_POOL_OP_INVALID,
         "Failed to destroy not deletable memPool(Id=%#" PRIx64 ").", memPool->MemPoolId());
     return RT_ERROR_NONE;
 }
 
-rtError_t PoolRegistry::RemoveMemPool(SegmentManager* memPool)
+rtError_t PoolRegistry::RemoveMemPool(SegmentManager* memPool, std::shared_ptr<SegmentManager>& owned)
 {
     {
         std::lock_guard<std::mutex> lock(mutex_);
+        auto ownIt = poolOwnership_.find(memPool);
+        COND_RETURN_ERROR(ownIt == poolOwnership_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
+            "Failed to remove memPool, memPoolId=%p.", memPool);
+        COND_RETURN_ERROR(!ownIt->second->CanDelete(), RT_ERROR_POOL_OP_INVALID,
+            "Failed to destroy not deletable memPool(Id=%#" PRIx64 ").", ownIt->second->MemPoolId());
+
         (void)entries_.erase(memPool);
-        (void)validEntries_.erase(memPool);
+        owned = std::move(ownIt->second);
+        poolOwnership_.erase(ownIt);
     }
-    DELETE_O(memPool);
     return RT_ERROR_NONE;
 }
 
-bool PoolRegistry::QueryMemPool(SegmentManager *p)
+std::shared_ptr<SegmentManager> PoolRegistry::QueryMemPool(SegmentManager *p)
 {
+    if (p == nullptr) return nullptr;
     std::lock_guard<std::mutex> lock(mutex_);
-    return validEntries_.find(p) != validEntries_.end();
+    auto it = poolOwnership_.find(p);
+    if (it == poolOwnership_.end()) return nullptr;
+    return it->second;
 }
 
 bool PoolRegistry::InMemPoolRegion(uint64_t ptr)
@@ -583,35 +593,35 @@ bool PoolRegistry::InMemPoolRegion(uint64_t ptr)
     return ptr < (*it)->PoolSegAddr() + (*it)->PoolSize();
 }
 
-SegmentManager *PoolRegistry::FindMemPoolByPtr(uint64_t ptr)
+std::shared_ptr<SegmentManager> PoolRegistry::FindMemPoolByPtr(uint64_t ptr)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     COND_RETURN_DEBUG(entries_.empty(), nullptr, "No memory pools created.");
- 
+
     auto it = std::lower_bound(entries_.begin(), entries_.end(), ptr,
         [](const SegmentManager *memPool, const uint64_t p) {
             return memPool->PoolSegAddr() + memPool->PoolSize() <= p;
         });
     COND_RETURN_DEBUG((it == entries_.end() || ptr < (*it)->PoolSegAddr()), nullptr,
-        "Pointer %#" PRIx64 " not found in any memory pool range.", ptr);
- 
-    return *it;
+         "Pointer %#" PRIx64 " not found in any memory pool range.", ptr);
+
+    auto ownIt = poolOwnership_.find(*it);
+    COND_RETURN_DEBUG((ownIt == poolOwnership_.end()), nullptr,
+         "entries_/poolOwnership_ inconsistency for pool %p.", *it);
+    return ownIt->second;
 }
 
-std::unordered_set<SegmentManager *> PoolRegistry::EnumerateMemPools(bool includeGraphPool)
+std::unordered_set<std::shared_ptr<SegmentManager>> PoolRegistry::EnumerateMemPools(bool includeGraphPool)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (includeGraphPool) {
-        return std::unordered_set<SegmentManager *>(entries_.begin(), entries_.end());
-    } else {
-        std::unordered_set<SegmentManager *> ret;
-        for (auto memPool : entries_) {
-            if (memPool->GraphId() == MODEL_ID_INVALID) {
-                ret.insert(memPool);
-            }
+    std::unordered_set<std::shared_ptr<SegmentManager>> ret;
+    ret.reserve(poolOwnership_.size());
+    for (auto& [rawPtr, sharedPtr] : poolOwnership_) {
+        if (includeGraphPool || rawPtr->GraphId() == MODEL_ID_INVALID) {
+            ret.insert(sharedPtr);
         }
-        return ret;
     }
+    return ret;
 }
 
 std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> PoolRegistry::GetSequenceMap() const {

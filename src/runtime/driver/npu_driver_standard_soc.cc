@@ -676,7 +676,7 @@ rtError_t NpuDriver::StreamMemPoolCreate(const uint32_t deviceId, const uint64_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId, const uint64_t va)
+rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
@@ -691,11 +691,6 @@ rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_
     DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halMemPoolDestroy failed, drvRetCode=%d.",
         static_cast<int32_t>(drvRet));
 
-    COND_RETURN_WARN(&halMemAddressFree == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halMemAddressFree does not exist");
-    drvRet = halMemAddressFree(RtValueToPtr<void *>(va));
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halMemAddressFree failed, drvRetCode=%d.",
-        static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;
 }
 

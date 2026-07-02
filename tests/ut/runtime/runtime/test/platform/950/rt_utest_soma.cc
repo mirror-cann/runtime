@@ -499,6 +499,8 @@ TEST_F(SomaTest, ReuseDisabledFreeToCached)
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_GT(memPool->cachedSegs_.size(), cachedBefore);
 
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 

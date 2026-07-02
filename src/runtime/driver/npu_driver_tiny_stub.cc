@@ -227,11 +227,10 @@ rtError_t NpuDriver::StreamMemPoolCreate(const uint32_t deviceId, const uint64_t
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId, const uint64_t va)
+rtError_t NpuDriver::StreamMemPoolDestroy(const uint32_t deviceId, const uint64_t poolId)
 {
     UNUSED(deviceId);
     UNUSED(poolId);
-    UNUSED(va);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 

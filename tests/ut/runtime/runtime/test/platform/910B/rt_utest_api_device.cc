@@ -286,7 +286,7 @@ TEST_F(CloudV2ApiDeviceTest, StreamMemPoolSetAttr_failed)
     MOCKER_CPP(&PoolRegistry::QueryMemPool)
         .stubs()
         .with(mockcpp::any())
-        .will(returnValue(false));
+        .will(returnValue(std::shared_ptr<SegmentManager>(nullptr)));
     rtError_t error = SomaApi::StreamMemPoolSetAttr(&memPool, rtMemPoolReuseFollowEventDependencies, ptr);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     delete device;
@@ -302,7 +302,7 @@ TEST_F(CloudV2ApiDeviceTest, StreamMemPoolGetAttr_failed)
     MOCKER_CPP(&PoolRegistry::QueryMemPool)
         .stubs()
         .with(mockcpp::any())
-        .will(returnValue(false));
+        .will(returnValue(std::shared_ptr<SegmentManager>(nullptr)));
     rtError_t error = SomaApi::StreamMemPoolGetAttr(&memPool, rtMemPoolReuseFollowEventDependencies, ptr);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     delete device;

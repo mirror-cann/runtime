@@ -101,7 +101,9 @@ TEST_F(SomaTest, MemPoolTest)
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_NONE);
     error = memPool->SegmentFree(ptr->basePtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, PoolAllocatorSetAttributeTest)
@@ -131,7 +133,9 @@ TEST_F(SomaTest, PoolAllocatorSetAttributeTest)
     value = &one;
     error = memPool->SetAttribute(attr, value);
     EXPECT_EQ(error, RT_ERROR_POOL_PROP_INVALID);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, PoolAllocatorGetAttributeTest)
@@ -164,7 +168,9 @@ TEST_F(SomaTest, PoolAllocatorGetAttributeTest)
     attr = rtMemPoolAttr::rtMemPoolAttrUsedMemHigh;
     error = memPool->GetAttribute(attr, value);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, StreamInternalReuseTest_Opport_Reuse)
@@ -183,7 +189,9 @@ TEST_F(SomaTest, StreamInternalReuseTest_Opport_Reuse)
     Segment *segManager = memPool->StreamInternalReuse(5U, 0, true, flag);
     EXPECT_NE(segManager, nullptr);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_STANDARD);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, StreamInternalReuseTest_Internal_Reuse)
@@ -202,7 +210,9 @@ TEST_F(SomaTest, StreamInternalReuseTest_Internal_Reuse)
     Segment *segManager = memPool->StreamInternalReuse(5U, 0, false, flag);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_INTERNAL);
     EXPECT_NE(segManager, nullptr);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, StreamEventReuseTest_Event_Reuse)
@@ -225,7 +235,9 @@ TEST_F(SomaTest, StreamEventReuseTest_Event_Reuse)
     Segment *segManager = memPool->StreamEventReuse(5U, 1, flag);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_STANDARD);
     EXPECT_NE(segManager, nullptr);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, StreamEventReuseTest_Reuse_None)
@@ -249,37 +261,41 @@ TEST_F(SomaTest, StreamEventReuseTest_Reuse_None)
     Segment *ret = memPool->StreamEventReuse(5U, 1, flag);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_NONE);
     EXPECT_EQ(ret, nullptr);
-    PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, FindMemPoolByPtrTest)
 {
     rtError_t error = RT_ERROR_NONE;
-    SegmentManager *ret = nullptr;
     uint64_t size = DEVICE_POOL_ALIGN_SIZE;
     uint64_t ptr = 0;
 
     SegmentManager *memPool1 = CreateTestMemPool(size, 0U);
     ASSERT_NE(memPool1, nullptr);
     ptr = memPool1->PoolSegAddr();
-    ret = PoolRegistry::Instance().FindMemPoolByPtr(ptr - 1);
-    EXPECT_NE(ret, memPool1);
-    ret = PoolRegistry::Instance().FindMemPoolByPtr(ptr);
-    EXPECT_EQ(ret, memPool1);
-    EXPECT_EQ(ret->PoolSize(), size);
-    ret = PoolRegistry::Instance().FindMemPoolByPtr(ptr + ret->PoolSize() - 1);
-    EXPECT_EQ(ret, memPool1);
-    ret = PoolRegistry::Instance().FindMemPoolByPtr(ptr + ret->PoolSize());
-    EXPECT_NE(ret, memPool1);
+    std::shared_ptr<SegmentManager> retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr - 1);
+    EXPECT_NE(retPool.get(), memPool1);
+    retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr);
+    EXPECT_EQ(retPool.get(), memPool1);
+    EXPECT_EQ(retPool->PoolSize(), size);
+    retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr + retPool->PoolSize() - 1);
+    EXPECT_EQ(retPool.get(), memPool1);
+    retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr + retPool->PoolSize());
+    EXPECT_NE(retPool.get(), memPool1);
 
     SegmentManager *memPool2 = CreateTestMemPool(size, 0U);
     ASSERT_NE(memPool2, nullptr);
     ptr = memPool2->PoolSegAddr() + memPool2->PoolSize() / 2;
-    ret = PoolRegistry::Instance().FindMemPoolByPtr(ptr);
-    EXPECT_EQ(ret, memPool2);
+    retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr);
+    EXPECT_EQ(retPool.get(), memPool2);
 
-    PoolRegistry::Instance().RemoveMemPool(memPool1);
-    PoolRegistry::Instance().RemoveMemPool(memPool2);
+    std::shared_ptr<SegmentManager> owned1, owned2;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool1, owned1);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    error = PoolRegistry::Instance().RemoveMemPool(memPool2, owned2);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(SomaTest, SomaApiTest_Create_Destory)
@@ -374,7 +390,8 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_trim_part)
     error = memPool->SegmentFree(ptr->basePtr);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    error = PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -419,7 +436,8 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_not_trim)
     error = memPool->SegmentFree(ptr->basePtr);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    error = PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -455,7 +473,8 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_trim_all)
     error = memPool->SegmentFree(ptr->basePtr);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    error = PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -487,14 +506,16 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_mempools)
         error = memPool2->TrimTo(0U);
         ASSERT_EQ(error, RT_ERROR_NONE);
 
-        error = PoolRegistry::Instance().RemoveMemPool(memPool2);
+        std::shared_ptr<SegmentManager> owned;
+        error = PoolRegistry::Instance().RemoveMemPool(memPool2, owned);
         ASSERT_EQ(error, RT_ERROR_NONE);
     }
 
     error = memPool->SegmentFree(ptr->basePtr);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    error = PoolRegistry::Instance().RemoveMemPool(memPool);
+    std::shared_ptr<SegmentManager> owned;
+    error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
 

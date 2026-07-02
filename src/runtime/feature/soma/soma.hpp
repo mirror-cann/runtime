@@ -9,6 +9,7 @@
  */
 #ifndef CCE_RUNTIME_SOMA_HPP
 #define CCE_RUNTIME_SOMA_HPP
+#include <memory>
 #include "stream_mem_pool.hpp"
 
 namespace cce {
@@ -19,7 +20,7 @@ public:
     static rtError_t CheckMemPool(SegmentManager *memPool);
     static rtError_t DestroyMemPool(SegmentManager *memPool);
     static rtError_t AllocFromMemPool(void **ptr, uint64_t size, rtMemPool_t memPool, int32_t streamId, ReuseFlag &flag);
- 	static rtError_t FreeToMemPool(void *ptr, bool forceFree = false);
+    static rtError_t FreeToMemPool(void *ptr, bool forceFree = false);
     static rtError_t MemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep);
     static rtError_t MemPoolTrimImplicit(bool includeGraphPool);
     static rtError_t AlignAndValidatePoolSize(rtMemPoolProps &poolProps, size_t totalSize,
@@ -31,8 +32,9 @@ public:
     static rtError_t StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value);
     static void MemPoolAsyncConfig(rtMemPool_t memPool, uint64_t va, uint64_t size, bool flag);
     static bool InMemPoolRegion(void * const ptr);
-    static SegmentManager* FindMemPoolByPtr(void * const ptr);
     static uint64_t GetAllocSize(void * const ptr);
+    static std::shared_ptr<SegmentManager> FindMemPoolByPtr(void * const ptr);
+    static std::shared_ptr<SegmentManager> QueryMemPool(rtMemPool_t memPool);
     static rtError_t MemPoolFreeSync(void* const ptr);
     static const char* MemPoolAttrToName(rtMemPoolAttr attr);
 };
