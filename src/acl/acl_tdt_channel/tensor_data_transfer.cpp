@@ -1235,7 +1235,7 @@ aclError acltdtQueryChannelSize(const acltdtChannelHandle *handle, size_t *size)
     }
     ACL_LOG_DEBUG("start to execute acltdtQueryChannelSize, device is %u, qid is %u", handle->devId, handle->qid);
     rtMemQueueInfo_t info;
-    rtError_t ret = rtMemQueueQueryInfo(static_cast<int32_t>(handle->devId), handle->qid, &info);
+    const rtError_t ret = rtMemQueueQueryInfo(static_cast<int32_t>(handle->devId), handle->qid, &info);
     if (ret != RT_ERROR_NONE) {
         ACL_LOG_CALL_ERROR("[Call][Rts]call rtMemQueueQueryInfo failed, device is %u, qid is %u",
                            handle->devId, handle->qid);

@@ -851,7 +851,7 @@ void GetFirstExtendInfoForAicpuTask(TaskInfo* taskInfo, const uint32_t devId, st
     char_t *const dataArgs = RtValueToPtr<char_t*>(tmpArgsAddr);
     rtError_t error;
     if (dataArgs == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, buffBytes * sizeof(char_t) - alignBytes + 1, "new");
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, buffBytes * sizeof(char_t) - alignBytes + 1UL, "new");
         return;
     }
     if (driver->GetRunMode() == RT_RUN_MODE_ONLINE) {
