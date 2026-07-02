@@ -865,7 +865,7 @@ rtError_t NpuDriver::StreamMemPoolAsyncConfig(const uint32_t deviceId, const uin
         .poolId = poolId,
         .devId = deviceId
     };
-    drvError_t drvRet = halMemPoolAsyncConfig(pool, va, size, flag);
+    const drvError_t drvRet = halMemPoolAsyncConfig(pool, va, size, flag);
     DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halMemPoolAsyncConfig failed, drvRetCode=%d.",
         static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;
@@ -894,7 +894,7 @@ rtError_t NpuDriver::StreamMemPoolSetAttr(const uint32_t deviceId, const uint64_
     COND_RETURN_WARN(&halMemPoolSetAttr == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halMemPoolSetAttr does not exist");
 
-    soma_mem_pool_attr halAttr = ConvertMemPoolAttr(attr);
+    const soma_mem_pool_attr halAttr = ConvertMemPoolAttr(attr);
     if (halAttr == MEM_POOL_ATTR_MAX) {
         return RT_ERROR_INVALID_VALUE;
     }
@@ -902,7 +902,7 @@ rtError_t NpuDriver::StreamMemPoolSetAttr(const uint32_t deviceId, const uint64_
         .poolId = poolId,
         .devId = deviceId
     };
-    drvError_t drvRet = halMemPoolSetAttr(pool, halAttr, value);
+    const drvError_t drvRet = halMemPoolSetAttr(pool, halAttr, value);
     DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halMemPoolSetAttr failed, drvRetCode=%d.",
         static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;
@@ -913,7 +913,7 @@ rtError_t NpuDriver::StreamMemPoolGetAttr(const uint32_t deviceId, const uint64_
     COND_RETURN_WARN(&halMemPoolGetAttr == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halMemPoolGetAttr does not exist");
 
-    soma_mem_pool_attr halAttr = ConvertMemPoolAttr(attr);
+    const soma_mem_pool_attr halAttr = ConvertMemPoolAttr(attr);
     if (halAttr == MEM_POOL_ATTR_MAX) {
         return RT_ERROR_INVALID_VALUE;
     }
@@ -921,7 +921,7 @@ rtError_t NpuDriver::StreamMemPoolGetAttr(const uint32_t deviceId, const uint64_
         .poolId = poolId,
         .devId = deviceId
     };
-    drvError_t drvRet = halMemPoolGetAttr(pool, halAttr, value);
+    const drvError_t drvRet = halMemPoolGetAttr(pool, halAttr, value);
     DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halMemPoolGetAttr failed, drvRetCode=%d.",
         static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;

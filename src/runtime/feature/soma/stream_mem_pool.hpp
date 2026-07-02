@@ -132,10 +132,10 @@ public:
     bool CanDelete() const { return canDelete_; }
     rtError_t GetAttribute(rtMemPoolAttr attr, void* value);
     rtError_t SetAttribute(rtMemPoolAttr attr, const void* value);
-    Segment* SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag &flag);
-    Segment* StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag &flag);
-    Segment* StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag);
-    Segment* TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea state, ReuseFlag &flag);
+    Segment* SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const;
+    Segment* StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag &flag) const;
+    Segment* StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const;
+    Segment* TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea &state, ReuseFlag &flag) const;
     rtError_t TrimTo(const uint64_t minBytesToKeep);
     void SetInitialSegment(Segment *seg);
 
@@ -189,7 +189,7 @@ public:
     }
     rtError_t Init();
     ~PoolRegistry();
-    rtError_t InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size);
+    static rtError_t InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size);
     void RegisterMemPool(SegmentManager *mgr);
     rtError_t CheckRemoveMemPool(SegmentManager *memPool);
     rtError_t RemoveMemPool(SegmentManager* memPool);

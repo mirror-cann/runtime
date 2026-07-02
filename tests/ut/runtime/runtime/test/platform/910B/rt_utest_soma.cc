@@ -81,6 +81,13 @@ TEST_F(SomaTest, streamMemSegmentManagerNullptr)
     SegmentManager segManeger(nullptr, 0U, true);
 }
 
+TEST_F(SomaTest, MemPoolAttrToName)
+{
+    EXPECT_STREQ(SomaApi::MemPoolAttrToName(rtMemPoolAttrReservedMemCurrent), "rtMemPoolAttrReservedMemCurrent");
+    EXPECT_STREQ(SomaApi::MemPoolAttrToName(rtMemPoolAttrUsedMemCurrent), "rtMemPoolAttrUsedMemCurrent");
+    EXPECT_STREQ(SomaApi::MemPoolAttrToName(static_cast<rtMemPoolAttr>(0xFF)), "Unknown");
+}
+
 TEST_F(SomaTest, MemPoolTest)
 {
     SegmentManager *memPool = CreateTestMemPool(64U, 0U);

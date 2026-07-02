@@ -72,7 +72,7 @@ SegmentManager::SegmentManager(Segment *seg, uint32_t deviceId, bool canDelete) 
         base_ = seg->basePtr;
         size_ = seg->size;
         seg->state = SegmentState::FREE;
-        freeSegs_.insert(seg);
+        (void)freeSegs_.insert(seg);
     }
 }
 
@@ -114,7 +114,7 @@ SegmentManager::~SegmentManager()
     delete tail_;
 }
 
-Segment* SegmentManager::TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea state, ReuseFlag &flag)
+Segment* SegmentManager::TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea &state, ReuseFlag &flag) const
 {
     UNUSED(size);
     UNUSED(streamId);
@@ -211,7 +211,7 @@ void SegmentManager::MergeIntoCachedSegs(Segment* &seg)
     (void)cachedSegs_.insert(seg);
 }
 
-Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag &flag)
+Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const
 {
     RT_LOG(RT_LOG_DEBUG, "Find segment by single stream reuse, size=%zu, streamId=%d.", size, streamId);
     Segment* curStmSeg = nullptr;
@@ -241,7 +241,7 @@ Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, 
     return curStmSeg;
 }
 
-Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag)
+Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const
 {
     RT_LOG(RT_LOG_DEBUG, "Find segment by multiple stream event reuse, size=%zu, streamId=%d.", size, streamId);
 
@@ -274,7 +274,7 @@ Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, R
     return eventStmSeg;
 }
 
-Segment* SegmentManager::StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag &flag)
+Segment* SegmentManager::StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag &flag) const
 {
     RT_LOG(RT_LOG_DEBUG, "Find segment by stream internal reuse, size=%zu, streamId=%d.", size, streamId);
 
@@ -326,7 +326,7 @@ Segment *SegmentManager::AllocFromFreeSegs(uint64_t size)
     (void)freeSegs_.erase(fit);
     Segment* ret = seg->SplitLeft(size);
     if (seg->basePtr != ret->basePtr) {
-        freeSegs_.insert(seg);
+        (void)freeSegs_.insert(seg);
     }
     return ret;
 }
@@ -383,7 +383,7 @@ void SegmentManager::SetInitialSegment(Segment *seg)
     base_  = seg->basePtr;
     size_  = seg->size;
     seg->state = SegmentState::FREE;
-    freeSegs_.insert(seg);
+    (void)freeSegs_.insert(seg);
 }
 
 rtError_t SegmentManager::TrimTo(const uint64_t minBytesToKeep)
@@ -558,7 +558,7 @@ rtError_t PoolRegistry::RemoveMemPool(SegmentManager* memPool)
         (void)entries_.erase(memPool);
         (void)validEntries_.erase(memPool);
     }
-    delete memPool;
+    DELETE_O(memPool);
     return RT_ERROR_NONE;
 }
 

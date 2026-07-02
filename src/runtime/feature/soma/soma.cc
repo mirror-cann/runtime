@@ -15,16 +15,19 @@
 namespace cce {
 namespace runtime {
 
-static const char* MemPoolAttrToName(rtMemPoolAttr attr)
+const char* SomaApi::MemPoolAttrToName(rtMemPoolAttr attr)
 {
     switch (attr) {
-        case rtMemPoolAttrReservedMemCurrent:         return "rtMemPoolAttrReservedMemCurrent";
-        case rtMemPoolAttrUsedMemCurrent:             return "rtMemPoolAttrUsedMemCurrent";
-        default:                                      return "Unknown";
+        case rtMemPoolAttrReservedMemCurrent:
+            return "rtMemPoolAttrReservedMemCurrent";
+        case rtMemPoolAttrUsedMemCurrent:
+            return "rtMemPoolAttrUsedMemCurrent";
+        default:
+            return "Unknown";
     }
 }
 
-rtError_t SomaApi::GetDevicePoolAlignSize(rtMemPoolProps curPoolProps, size_t &alignSize)
+rtError_t SomaApi::GetDevicePoolAlignSize(rtMemPoolProps &curPoolProps, size_t &alignSize)
 {
     rtDrvMemProp_t prop = {};
     prop.devid = curPoolProps.devId;
@@ -35,7 +38,7 @@ rtError_t SomaApi::GetDevicePoolAlignSize(rtMemPoolProps curPoolProps, size_t &a
     prop.reserve = curPoolProps.reserve;
 
     size_t granularity = 0;
-    rtError_t error = NpuDriver::GetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_RECOMMENDED, &granularity);
+    const rtError_t error = NpuDriver::GetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_RECOMMENDED, &granularity);
     if (error == RT_ERROR_DRV_NOT_SUPPORT) {
         RT_LOG(RT_LOG_WARNING, "Get device memory allocation granularity not supported (error=%#x), "
             "fallback to default align size %zu.", static_cast<uint32_t>(error),
@@ -59,20 +62,20 @@ rtError_t SomaApi::StreamMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProp
     ERROR_RETURN_MSG_INNER(error, "PoolRegistry init failed.");
 
     rtMemPoolProps curPoolProps = *poolProps;
-    size_t originSize = curPoolProps.maxSize / BYTES_PER_MB;
-    size_t freeSize = 0;
-    size_t totalSize = 0;
     uint32_t phyDevId;
     error = Runtime::Instance()->ChgUserDevIdToDeviceId(curPoolProps.devId, &phyDevId, false);
     ERROR_RETURN_MSG_INNER(error, "Convert user devId to physical devId failed! userDevId=%u, error Code=%u!",
         curPoolProps.devId, static_cast<uint32_t>(error));
 
+    size_t freeSize = 0;
+    size_t totalSize = 0;
     error = Runtime::Instance()->CurrentContext()->Device_()->Driver_()->MemGetInfoEx(phyDevId,
         RT_MEMORYINFO_HBM, &freeSize, &totalSize);
     ERROR_RETURN_MSG_INNER(error, "Get device totalSize failed, deviceId=%u, retCode=%#x!",
         phyDevId, static_cast<uint32_t>(error));
 
     size_t alignSize = DEVICE_POOL_ALIGN_SIZE;
+    const size_t originSize = curPoolProps.maxSize / BYTES_PER_MB;
     error = GetDevicePoolAlignSize(curPoolProps, alignSize);
     ERROR_RETURN(error, "Get device memory pool align size failed, deviceId=%u.", phyDevId);
 
@@ -94,7 +97,7 @@ rtError_t SomaApi::StreamMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProp
         return error;
     }
 
-    error = PoolRegistry::Instance().InitializeMemPool(retMemPool, outVa, curPoolProps.maxSize);
+    error = PoolRegistry::InitializeMemPool(retMemPool, outVa, curPoolProps.maxSize);
     if (error != RT_ERROR_NONE) {
         (void)Runtime::Instance()->CurrentContext()->Device_()->Driver_()->StreamMemPoolDestroy(
             retMemPool->DeviceId(), retMemPool->MemPoolId(), outVa);
@@ -140,7 +143,7 @@ rtError_t SomaApi::StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr,
     }
 
     Driver* const driver = Runtime::Instance()->CurrentContext()->Device_()->Driver_();
-    rtError_t error = driver->StreamMemPoolSetAttr(segMgr->DeviceId(), segMgr->MemPoolId(), attr, value);
+    const rtError_t error = driver->StreamMemPoolSetAttr(segMgr->DeviceId(), segMgr->MemPoolId(), attr, value);
     if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
         return segMgr->SetAttribute(attr, value);
     }
@@ -160,7 +163,7 @@ rtError_t SomaApi::StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr,
     }
 
     Driver* const driver = Runtime::Instance()->CurrentContext()->Device_()->Driver_();
-    rtError_t error = driver->StreamMemPoolGetAttr(segMgr->DeviceId(), segMgr->MemPoolId(), attr, value);
+    const rtError_t error = driver->StreamMemPoolGetAttr(segMgr->DeviceId(), segMgr->MemPoolId(), attr, value);
     if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
         return segMgr->GetAttribute(attr, value);
     }

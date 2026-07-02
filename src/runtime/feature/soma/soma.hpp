@@ -24,7 +24,7 @@ public:
     static rtError_t MemPoolTrimImplicit(bool includeGraphPool);
     static rtError_t AlignAndValidatePoolSize(rtMemPoolProps &poolProps, size_t totalSize,
         size_t alignSize = DEVICE_POOL_ALIGN_SIZE);
-    static rtError_t GetDevicePoolAlignSize(rtMemPoolProps curPoolProps, size_t &alignSize);
+    static rtError_t GetDevicePoolAlignSize(rtMemPoolProps &curPoolProps, size_t &alignSize);
     static rtError_t StreamMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps);
     static rtError_t StreamMemPoolDestroy(const rtMemPool_t memPool);
     static rtError_t StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value);
@@ -34,6 +34,7 @@ public:
     static SegmentManager* FindMemPoolByPtr(void * const ptr);
     static uint64_t GetAllocSize(void * const ptr);
     static rtError_t MemPoolFreeSync(void* const ptr);
+    static const char* MemPoolAttrToName(rtMemPoolAttr attr);
 };
 
 
