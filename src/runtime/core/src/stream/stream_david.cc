@@ -358,6 +358,9 @@ void DavidStream::BuildTraceEventForTask(TaskInfo *const task, const uint32_t fl
     if ((task->type == TS_TASK_TYPE_KERNEL_AICORE) || (task->type == TS_TASK_TYPE_KERNEL_AIVEC)) {
         AicTaskInfo *aicTaskInfo = &(task->u.aicTaskInfo);
         kernel = aicTaskInfo->kernel;
+        record.args.numBlocks = static_cast<int32_t>(aicTaskInfo->comm.dim);
+        record.args.schemMode = static_cast<int32_t>(aicTaskInfo->schemMode);
+        record.args.taskRation = (kernel != nullptr) ? static_cast<int32_t>(kernel->GetTaskRation()) : 0; 
         std::string kernelNameStr = (kernel != nullptr) ? kernel->Name_() : "AICORE_KERNEL";
         taskName = kernelNameStr;
         if ((flags & DEBUG_JSON_PRINT_VERBOSE) != 0U) {
@@ -365,6 +368,7 @@ void DavidStream::BuildTraceEventForTask(TaskInfo *const task, const uint32_t fl
         }
     } else if (task->type == TS_TASK_TYPE_KERNEL_AICPU) {
         AicpuTaskInfo *aicpuTaskInfo = &(task->u.aicpuTaskInfo);
+        record.args.numBlocks = static_cast<int32_t>(aicpuTaskInfo->comm.dim);
         kernel = aicpuTaskInfo->kernel;
         std::string kernelName = (kernel != nullptr) ? kernel->GetCpuOpType() : "AICPU_KERNEL";
         taskName = (!kernelName.empty()) ? kernelName : "AICPU_KERNEL";
