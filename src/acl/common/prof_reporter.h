@@ -328,6 +328,8 @@ namespace acl {
         AclmdlRICaptureToModelRIBegin,
         AclrtRecordEventWithFlag,
         AclrtStreamWaitEventWithFlag,
+        AclrtGetUserDevIdByPhyDevId,
+        AclrtGetPhyDevIdByUserDevId,
         // this is the end, can not add after AclRtProfTypeEnd
         AclRtProfTypeEnd
     };

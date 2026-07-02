@@ -399,6 +399,68 @@ TEST_F(UTEST_ACL_Runtime, aclrtGetPhyDevIdByLogicDevIdTest)
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 
+TEST_F(UTEST_ACL_Runtime, aclrtGetUserDevIdByPhyDevIdTest)
+{
+    int32_t phyDevId = 0;
+    int32_t userDevId;
+    aclError ret = aclrtGetUserDevIdByPhyDevId(phyDevId, &userDevId);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsGetLogicDevIdByPhyDevId(_,_))
+        .WillRepeatedly(Return((ACL_ERROR_RT_PARAM_INVALID)));
+    ret = aclrtGetUserDevIdByPhyDevId(phyDevId, &userDevId);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtGetUserDevIdByPhyDevIdNullPtrTest)
+{
+    int32_t phyDevId = 0;
+    aclError ret = aclrtGetUserDevIdByPhyDevId(phyDevId, nullptr);
+    EXPECT_NE(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtGetPhyDevIdByUserDevIdTest)
+{
+    int32_t userDevId = 0;
+    int32_t phyDevId;
+    aclError ret = aclrtGetPhyDevIdByUserDevId(userDevId, &phyDevId);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsGetPhyDevIdByLogicDevId(_,_))
+        .WillRepeatedly(Return((ACL_ERROR_RT_PARAM_INVALID)));
+    ret = aclrtGetPhyDevIdByUserDevId(userDevId, &phyDevId);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtGetPhyDevIdByUserDevIdNullPtrTest)
+{
+    int32_t userDevId = 0;
+    aclError ret = aclrtGetPhyDevIdByUserDevId(userDevId, nullptr);
+    EXPECT_NE(ret, ACL_SUCCESS);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtGetUserDevIdByPhyDevIdMappingTest)
+{
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsGetLogicDevIdByPhyDevId(6, _))
+        .WillOnce(DoAll(SetArgPointee<1>(0), Return(RT_ERROR_NONE)));
+    int32_t userDevId = -1;
+    aclError ret = aclrtGetUserDevIdByPhyDevId(6, &userDevId);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(userDevId, 0);
+}
+
+TEST_F(UTEST_ACL_Runtime, aclrtGetPhyDevIdByUserDevIdMappingTest)
+{
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsGetPhyDevIdByLogicDevId(0, _))
+        .WillOnce(DoAll(SetArgPointee<1>(6), Return(RT_ERROR_NONE)));
+    int32_t phyDevId = -1;
+    aclError ret = aclrtGetPhyDevIdByUserDevId(0, &phyDevId);
+    EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(phyDevId, 6);
+}
+
 TEST_F(UTEST_ACL_Runtime, aclrtSynchronizeDeviceTest)
 {
     aclError ret =  aclrtSynchronizeDevice();

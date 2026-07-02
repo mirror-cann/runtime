@@ -220,6 +220,8 @@ namespace acl {
         {AclProfType::AclrtGetUserDevIdByLogicDevId,            "aclrtGetUserDevIdByLogicDevId"},
         {AclProfType::AclrtGetLogicDevIdByPhyDevId,             "aclrtGetLogicDevIdByPhyDevId"},
         {AclProfType::AclrtGetPhyDevIdByLogicDevId,             "aclrtGetPhyDevIdByLogicDevId"},
+        {AclProfType::AclrtGetUserDevIdByPhyDevId,              "aclrtGetUserDevIdByPhyDevId"},
+        {AclProfType::AclrtGetPhyDevIdByUserDevId,              "aclrtGetPhyDevIdByUserDevId"},
         {AclProfType::AclrtProfTrace,                           "aclrtProfTrace"},
         {AclProfType::AclrtLaunchKernelV2,                      "aclrtLaunchKernelV2"},
         {AclProfType::AclrtLaunchKernelWithHostArgs,            "aclrtLaunchKernelWithHostArgs"},
