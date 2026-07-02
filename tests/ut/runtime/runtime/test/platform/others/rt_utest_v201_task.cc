@@ -1803,3 +1803,14 @@ TEST_F(TaskTestV201, SetTimeoutConfigWithUsUnit)
     rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = oldIsCfgOpExcTaskTimeout;
     rtInstance->timeoutConfig_.opExcTaskTimeout = oldOpExcTaskTimeout;
 }
+
+TEST_F(TaskTestV201, ProcReportIsDvppErrorAndRetryTest)
+{
+    TaskInfo task = {};
+    rtLogicCqReport_t report;
+    report.sqeType = static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC);
+    report.errorType = static_cast<uint16_t>(RT_STARS_CQE_ERR_TYPE_TASK_TIMEOUT);
+
+    rtError_t error = ProcReportIsDvppErrorAndRetry(report, &task);
+    EXPECT_EQ(error, true);
+}

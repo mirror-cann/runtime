@@ -260,6 +260,7 @@ void SetTaskTag(TaskInfo *taskInfo);
 void TaskCommonInfoInit(TaskInfo *taskInfo);
 bool IsSupportType(const uint16_t sqeType);
 bool IsDvppTask(const uint16_t sqeType);
+bool IsLogicCqInvalid(const uint8_t errorType);
 uint32_t GetProfTaskId(const TaskInfo * const taskInfo);
 uint32_t GetTaskId(const TaskInfo* const taskInfo);
 int32_t GetTaskIdBitWidth();

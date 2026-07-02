@@ -31,5 +31,10 @@ bool IsSupportType(const uint16_t sqeType)
     return IsDvppTask(sqeType);
 }
 
+bool IsLogicCqInvalid(const uint8_t errorType)
+{
+    return (errorType == static_cast<uint8_t>(RT_STARS_CQE_ERR_TYPE_TASK_TIMEOUT));
+}
+
 }
 }

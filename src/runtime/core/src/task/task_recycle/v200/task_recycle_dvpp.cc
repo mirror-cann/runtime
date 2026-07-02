@@ -140,6 +140,14 @@ bool ProcReportIsDvppErrorAndRetry(const rtLogicCqReport_t& report, TaskInfo *co
         return false;
     }
 
+    if (IsLogicCqInvalid(report.errorType)) {
+        RT_LOG(RT_LOG_ERROR, "Logic cqe invalid, sq_id=%hu, sq_head=%hu, error_code=%#x, error_type=%hhu, "
+            "sqe_type=%hhu, match_flag=%hu, drop_flag=%hu, error_bit=%hu, acc_error=%hu",
+            report.sqId, report.sqHead, report.errorCode, report.errorType, report.sqeType,
+            report.matchFlag, report.dropFlag, report.errorBit, report.accError);
+        return true;
+    }
+
     if (reportTask->u.starsCommTask.errorTimes != 0U) {
         RT_LOG(RT_LOG_ERROR, "Dvpp task error, stream_id=%hu, task_id=%hu, sqeType=%hhu.",
             reportTask->stream->Id_(), report.sqHead, report.sqeType);
