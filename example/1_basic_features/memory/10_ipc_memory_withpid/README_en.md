@@ -26,7 +26,6 @@ cd ${git_clone_path}/example/1_basic_features/memory/10_ipc_memory_withpid
 ```bash
 # Replace ${install_root} with the CANN installation root directory, which is installed in `/usr/local/Ascend` by default
 source ${install_root}/cann/set_env.sh
-export ASCEND_INSTALL_PATH=${install_root}/cann
 
 # Set SOC_VERSION and ASCENDC_CMAKE_DIR
 # -SOC_VERSION: The model of the Ascend AI processor, such as Ascend910_9362, Ascend910B2, and so on

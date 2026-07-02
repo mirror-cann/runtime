@@ -24,7 +24,6 @@ cd ${git_clone_path}/example/1_basic_features/stream/2_multi_stream
 ```bash
 # Replace ${install_root} with the CANN installation root directory. The default installation is in the `/usr/local/Ascend` directory.
 source ${install_root}/cann/set_env.sh
-export ASCEND_INSTALL_PATH=${install_root}/cann
 
 # Set SOC_VERSION and ASCENDC_CMAKE_DIR
 # -SOC_VERSION: Ascend AI processor model, such as Ascend910_9362, Ascend910B2, and so on

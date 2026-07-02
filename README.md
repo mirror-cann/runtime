@@ -237,6 +237,7 @@ runtime在编译时，依赖的第三方开源软件列表如下：
 执行如下命令安装编译生成的runtime软件包。
 
 ```bash
+cd build_out;
 ./cann-npu-runtime_<version>_linux-<arch>.run --full --install-path=${install_path}
 ```
 - \$\{version\}：表示run包版本号。

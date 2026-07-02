@@ -239,6 +239,7 @@ The third-party open-source software dependencies for runtime compilation are as
 Run the following command to install the compiled runtime software package.
 
 ```bash
+cd build_out;
 ./cann-npu-runtime_<version>_linux-<arch>.run --full --install-path=${install_path}
 ```
 - $\{version\}: Indicates the run package version number.
