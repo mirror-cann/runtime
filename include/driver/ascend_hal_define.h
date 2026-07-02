@@ -1083,7 +1083,7 @@ enum drv_mem_trans_type {
     MEM_TRANS_TYPE_MAX,
 };
 
-#define SVM_INVALID_MODULE_ID       0xffff
+#define SVM_INVALID_MODULE_ID       0xffffU
 /*=========================== Memory Manage End =======================*/
 
 /*============================= APM START ===============================*/

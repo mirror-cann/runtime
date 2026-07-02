@@ -989,16 +989,16 @@ bool GetModuleIdByMemcpyAddr(Driver const * const driver, void *memcpyAddr, uint
 
 void PrintModuleIdProc(Driver const * const driver, char_t * const errStr, void *src, void *dst, int32_t &countNum)
 {
-    uint32_t srcModuleId = static_cast<uint32_t>(SVM_INVALID_MODULE_ID);
-    uint32_t dstModuleId = static_cast<uint32_t>(SVM_INVALID_MODULE_ID);
+    uint32_t srcModuleId = SVM_INVALID_MODULE_ID;
+    uint32_t dstModuleId = SVM_INVALID_MODULE_ID;
     if (GetModuleIdByMemcpyAddr(driver, reinterpret_cast<void *>(&src), &srcModuleId)) {
-        if (srcModuleId != static_cast<uint32_t>(SVM_INVALID_MODULE_ID)) {
+        if (srcModuleId != SVM_INVALID_MODULE_ID) {
             countNum += snprintf_truncated_s(errStr + countNum,
                 (static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum)), ", src_module_id=%u", srcModuleId);
         }
     }
     if (GetModuleIdByMemcpyAddr(driver, reinterpret_cast<void *>(&dst), &dstModuleId)) {
-        if (dstModuleId != static_cast<uint32_t>(SVM_INVALID_MODULE_ID)) {
+        if (dstModuleId != SVM_INVALID_MODULE_ID) {
             countNum += snprintf_truncated_s(errStr + countNum,
                 (static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum)),", dst_module_id=%u", dstModuleId);
         }

@@ -65,7 +65,7 @@ static inline void Memset32_AVX512(uint32_t* dst, uint32_t value, size_t count)
 }
 
 // LCOV_EXCL_START
-static inline int CpuSupportsAVX2(void)
+static inline bool CpuSupportsAVX2(void)
 {
     unsigned int eax = 0U;
     unsigned int ebx = 0U;
@@ -76,7 +76,7 @@ static inline int CpuSupportsAVX2(void)
 }
 // LCOV_EXCL_STOP
 
-static inline int CpuSupportsAVX512F(void)
+static inline bool CpuSupportsAVX512F(void)
 {
     unsigned int eax = 0U;
     unsigned int ebx = 0U;

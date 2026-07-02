@@ -562,7 +562,7 @@ void ConstructDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, void *const sqe, c
         fcPara.swapBufferUpdateValue = 0U;
         fcPara.swapBufferProfCfgAddr = 0U;
     } else {
-        fcPara.swapBufferUpdateValue = 0x80000000 + fcPara.sqId;  // bit[31]=1, bit[0-11]=sqId
+        fcPara.swapBufferUpdateValue = 0x80000000U + fcPara.sqId;  // bit[31]=1, bit[0-11]=sqId
         fcPara.swapBufferProfCfgAddr =
             fcPara.swapBufferBaseAddr + (fcPara.sqId << fcPara.sqSwapShift) + fcPara.swapBufferProfCfgOffset;
     }
