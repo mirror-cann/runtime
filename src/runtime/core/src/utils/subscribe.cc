@@ -230,7 +230,7 @@ rtError_t CbSubscribe::Delete(const uint64_t threadId, Stream * const stm)
     subscribeLock_.unlock();
     const auto devDrv = stm->Device_()->Driver_();
     if (needsFreeSqCq) {
-        rtError_t ret = devDrv->SqCqFree(sqId, cqId, devId, tsId);
+        const rtError_t ret = devDrv->SqCqFree(sqId, cqId, devId, tsId);
         ERROR_RETURN(
             ret,
             "Failed to free SQ/CQ, thread_id=%" PRIu64 ", "
@@ -299,7 +299,7 @@ rtError_t CbSubscribe::Delete(Stream * const stm)
     subscribeLock_.unlock();
     Driver * const devDrv = stm->Device_()->Driver_();
     if (needsFreeSqCq) {
-        rtError_t ret = devDrv->SqCqFree(sqId, cqId, devId, tsId);
+        const rtError_t ret = devDrv->SqCqFree(sqId, cqId, devId, tsId);
         ERROR_RETURN(
             ret,
             "Failed to free SQ/CQ, thread_id=%" PRIu64 ", "

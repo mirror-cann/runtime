@@ -22,11 +22,11 @@ class Device;
 
 constexpr uint32_t RT_DEVICE_SQCQ_RES_MAX_NUM = 1024U;
 
-typedef struct {
+struct rtDeviceSqCqInfo_t {
     uint32_t sqId;
     uint32_t cqId;
     uint64_t sqRegVirtualAddr;
-} rtDeviceSqCqInfo_t;
+};
 
 class DeviceSqCqPool : public NoCopy {
 public:

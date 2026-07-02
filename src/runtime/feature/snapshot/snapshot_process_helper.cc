@@ -160,7 +160,7 @@ rtError_t SnapShotAclGraphRestore(Device* const dev)
         static_cast<uint32_t>(err));
 
     for (Context* const ctx : ctxMan.GetSetObj()) {
-        if (!ContextManage::IsActiveContextOnDevice(ctx, deviceId)) {
+        if (!ContextManage::IsActiveContextOnDevice(ctx, static_cast<int32_t>(deviceId))) {
             continue;
         }
         SpinLock& modelLock = ctx->GetModelLock();
