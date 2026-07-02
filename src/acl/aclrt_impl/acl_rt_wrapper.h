@@ -261,6 +261,8 @@
     _(aclError, aclrtGetUserDevIdByLogicDevId, (const int32_t logicDevId, int32_t *const userDevid), (logicDevId, userDevid)) \
     _(aclError, aclrtGetLogicDevIdByPhyDevId, (const int32_t phyDevId, int32_t *const logicDevId), (phyDevId, logicDevId)) \
     _(aclError, aclrtGetPhyDevIdByLogicDevId, (const int32_t logicDevId, int32_t *const phyDevId), (logicDevId, phyDevId)) \
+    _(aclError, aclrtGetUserDevIdByPhyDevId, (const int32_t phyDevId, int32_t *const userDevId), (phyDevId, userDevId)) \
+    _(aclError, aclrtGetPhyDevIdByUserDevId, (const int32_t userDevId, int32_t *const phyDevId), (userDevId, phyDevId)) \
     _(aclError, aclrtProfTrace, (void * userdata, int32_t length, aclrtStream stream), (userdata, length, stream)) \
     _(aclError, aclrtLaunchKernelV2, (aclrtFuncHandle funcHandle, uint32_t numBlocks, const void * argsData, size_t argsSize, aclrtLaunchKernelCfg * cfg, aclrtStream stream), (funcHandle, numBlocks, argsData, argsSize, cfg, stream)) \
     _(aclError, aclrtLaunchKernelWithHostArgs, (aclrtFuncHandle funcHandle, uint32_t numBlocks, aclrtStream stream, aclrtLaunchKernelCfg * cfg, void * hostArgs, size_t argsSize, aclrtPlaceHolderInfo * placeHolderArray, size_t placeHolderNum), (funcHandle, numBlocks, stream, cfg, hostArgs, argsSize, placeHolderArray, placeHolderNum)) \

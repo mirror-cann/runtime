@@ -659,6 +659,36 @@ aclError aclrtGetPhyDevIdByLogicDevIdImpl(int32_t logicDevId, int32_t *const phy
     return ACL_SUCCESS;
 }
 
+aclError aclrtGetUserDevIdByPhyDevIdImpl(int32_t phyDevId, int32_t *const userDevId)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtGetUserDevIdByPhyDevId);
+    ACL_LOG_INFO("start to execute aclrtGetUserDevIdByPhyDevId, phyDevId is [%d]", phyDevId);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(userDevId);
+    const rtError_t rtErr = rtsGetLogicDevIdByPhyDevId(phyDevId, userDevId);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("call rtsGetLogicDevIdByPhyDevId failed, runtime result = %d.", static_cast<int32_t>(rtErr));
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
+
+    ACL_LOG_INFO("successfully execute aclrtGetUserDevIdByPhyDevId");
+    return ACL_SUCCESS;
+}
+
+aclError aclrtGetPhyDevIdByUserDevIdImpl(int32_t userDevId, int32_t *const phyDevId)
+{
+    ACL_PROFILING_REG(acl::AclProfType::AclrtGetPhyDevIdByUserDevId);
+    ACL_LOG_INFO("start to execute aclrtGetPhyDevIdByUserDevId, userDevId is [%d]", userDevId);
+    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(phyDevId);
+    const rtError_t rtErr = rtsGetPhyDevIdByLogicDevId(userDevId, phyDevId);
+    if (rtErr != RT_ERROR_NONE) {
+        ACL_LOG_CALL_ERROR("call rtsGetPhyDevIdByLogicDevId failed, runtime result = %d.", static_cast<int32_t>(rtErr));
+        return ACL_GET_ERRCODE_RTS(rtErr);
+    }
+
+    ACL_LOG_INFO("successfully execute aclrtGetPhyDevIdByUserDevId");
+    return ACL_SUCCESS;
+}
+
 aclError aclrtGetOpExecuteTimeoutImpl(uint32_t *const timeoutMs)
 {
     ACL_PROFILING_REG(acl::AclProfType::AclrtGetOpExecuteTimeout);
