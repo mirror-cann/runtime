@@ -115,7 +115,7 @@ CaptureModel::~CaptureModel() noexcept
     }
     captureEvents_.clear();
     refCount_ = 0U;
-    ReleaseAllJetty();
+    (void)ReleaseAllJetty();
     DeconstructSqCq();
     ClearStreamActiveTask();
     DELETE_A(switchInfo_);

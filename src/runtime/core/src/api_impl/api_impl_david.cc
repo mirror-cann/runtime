@@ -124,7 +124,7 @@ rtError_t ApiImplDavid::LaunchKernel(Kernel * const kernel, uint32_t blockDim, c
         return RT_ERROR_KERNEL_INVALID;
     }
     TaskCfg taskCfg = {};
-    ConvertTaskCfgInfoToTaskCfg(taskCfg, cfgInfo);
+    (void)ConvertTaskCfgInfoToTaskCfg(taskCfg, cfgInfo);
     
     rtStreamLaunchKernelV2ExtendArgs_t launchKernelExtendArgs = {};
     launchKernelExtendArgs.argsInfo = argsInfo;
