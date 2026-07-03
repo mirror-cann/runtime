@@ -447,7 +447,7 @@ TEST_F(ExceptionDumperExtraUtest, NeedDumpException_IgnoredRetcode)
         ACL_ERROR_RT_AICORE_OVER_FLOW,
         ACL_ERROR_RT_AIVEC_OVER_FLOW,
         ACL_ERROR_RT_DEVICE_MEM_ERROR,
-        ACL_ERROR_RT_SUSPECT_DEVICE_MEM_ERROR,
+        ACL_ERROR_RT_SUSPECT_REMOTE_ERROR,
         ACL_ERROR_RT_LINK_ERROR
     };
 

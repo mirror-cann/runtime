@@ -157,7 +157,7 @@ bool ExceptionDumper::NeedDumpException(const rtExceptionInfo &exception) const
         exception.retcode == ACL_ERROR_RT_AIVEC_OVER_FLOW ||
         // Hardware faults do not need dump.
         exception.retcode == ACL_ERROR_RT_DEVICE_MEM_ERROR ||
-        exception.retcode == ACL_ERROR_RT_SUSPECT_DEVICE_MEM_ERROR ||
+        exception.retcode == ACL_ERROR_RT_SUSPECT_REMOTE_ERROR ||
         exception.retcode == ACL_ERROR_RT_LINK_ERROR) {
         IDE_LOGW("Ignore exception dump request, retcode: %u.", exception.retcode);
         return false;
