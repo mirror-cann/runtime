@@ -191,7 +191,11 @@ void StarsV2DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const
         }
     }
 }
-
+/**
+ * 将 srcs/dsts/sizes 三个数组整体左移 fixedCnt 个元素，使后续 batch DMA仅处理剩余条目。
+ * 当 handleFixedSize 为 true 且 fixedSize 非零时，额外对剩余首元素做偏移修正：src/dst 指针前进 fixedSize 字节，
+ * size 减去 fixedSize，用于处理 fixed-size 未拷贝完成的残余部分
+ */
 static rtError_t ShiftBatchArrays(AsyncDmaBatchInfo &batchInfo, bool handleFixedSize = false)
 {
     if (batchInfo.fixedCnt == 0) {
@@ -250,7 +254,7 @@ static rtError_t ConvertAsyncDmaBatchForSoftWareSq(TaskInfo * const taskInfo, As
     input.batch.dst = RtPtrToPtr<uint64_t *>(batchInfo.dsts);
 
     error = StreamJettyHandler::HandleUbDmaTask(
-        stream, taskInfo, jettyType, &input, &output);
+        taskInfo, jettyType, &input, &output);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, jetty_type=%u, ret=%d.",
             devId, stream->Id_(), jettyType, error);

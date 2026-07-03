@@ -21,7 +21,6 @@ namespace runtime {
 class StreamJettyHandler {
 public:
     static rtError_t HandleUbDmaTask(
-        const Stream *stream,
         const TaskInfo *task,
         JettyType jettyType,
         AsyncWqeInputPara *input,
@@ -32,7 +31,7 @@ public:
     static rtError_t GetOrCreateStreamJettyContext(
         const Stream *stream,
         JettyType jettyType,
-        StreamJettyContext *&context);
+        StreamJettyContext *&jettyCtx);
 
     static bool IsUbDmaCopyType(uint32_t copyType);
 
@@ -40,27 +39,45 @@ public:
 
     static JettyType GetJettyTypeFromTask(const TaskInfo *task);
 
-    static rtError_t SyncWqeBufferToDevice(
+    static rtError_t FillWqeToDevice(
         const Stream *stream,
-        const StreamJettyContext *context,
+        const StreamJettyContext *jettyCtx,
         const JettyInfo &jettyInfo);
 
     static rtError_t UpdateUbdmaSqeWithJettyInfo(
         const Stream *stream,
-        const StreamJettyContext *context,
+        const StreamJettyContext *jettyCtx,
         const JettyInfo &jettyInfo);
 
+    static rtError_t BindJetty(
+        Stream *stream,
+        JettyType type,
+        const CaptureModel *excludeMdl);
+
+    static rtError_t RecycleJetty(
+        Stream *stream,
+        JettyType type,
+        uint32_t &count);
+
+    static rtError_t ReleaseJetty(
+        Stream *stream,
+        JettyType type);
+
 private:
+    static rtError_t ResetJettyCi(
+        JettyManager *jettyMgr,
+        Stream *stream,
+        JettyType type,
+        const StreamJettyContext *ctx);
     static rtError_t CreateAndAppendWqe(
-        const Stream *stream,
         const TaskInfo *task,
-        StreamJettyContext *context,
+        StreamJettyContext *jettyCtx,
         AsyncWqeInputPara* input,
         AsyncWqeOutputPara *output);
 
     static rtError_t FillNopWqeForPartialBuffer(
         const Stream *stream,
-        const StreamJettyContext *context);
+        const StreamJettyContext *jettyCtx);
 
     static rtError_t GetDriverAndDeviceId(
         const Stream *stream,

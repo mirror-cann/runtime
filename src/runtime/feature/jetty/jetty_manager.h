@@ -21,8 +21,6 @@
 namespace cce {
 namespace runtime {
 
-constexpr uint32_t JETTY_POOL_ACQUIRE_RETRY_MAX_COUNT = 10U;
-
 class JettyManager {
 public:
     explicit JettyManager(uint32_t deviceId);
@@ -36,7 +34,7 @@ public:
      * @param type Jetty 类型
      * @return rtError_t 错误码
      */
-    rtError_t ReserveJetty(JettyType type);
+    rtError_t PreAllocJetty(JettyType type);
 
     /**
      * @brief 绑定 Jetty 到流(Graph Reply 阶段使用)
@@ -61,7 +59,7 @@ public:
      * @param type Jetty 类型
      * @return rtError_t 错误码
      */
-    rtError_t ReleaseJettyByHandle(uint64_t handle, JettyType type);
+    rtError_t FreeJettyByHandle(uint64_t handle, JettyType type);
 
     /**
      * @brief 获取流的 Jetty 信息
@@ -93,7 +91,7 @@ public:
      * @param streamId 流 ID
      * @param type Jetty 类型
      */
-    void DestroyStreamJettyContext(int32_t streamId, JettyType type);
+    void DeleteStreamJettyContext(int32_t streamId, JettyType type);
 
     /**
      * @brief 清空所有 Jetty
@@ -102,10 +100,10 @@ public:
 
 private:
     std::unique_ptr<JettyPool> jettyPool_;
-    std::map<std::pair<uint32_t, JettyType>, std::unique_ptr<StreamJettyContext>> streamCaptureContexts_;
+    std::map<std::pair<uint32_t, JettyType>, std::unique_ptr<StreamJettyContext>> streamJettyContexts_;
     mutable std::recursive_mutex managerLock_;
     
-    rtError_t AcquireJettyWithRetry(JettyType type, int32_t streamId,
+    rtError_t AllocJettyWithRetry(JettyType type, int32_t streamId,
         const CaptureModel * const excludeMdl, JettyInfo& jettyInfo);
 };
 

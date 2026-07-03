@@ -443,6 +443,7 @@ set(libruntime_cmodel_src_files
     ${libruntime_cmodel_callback_files}
     ${common_src_files_cmodel}
     ${libruntime_cmodel_src_files_optional}
+    ${RUNTIME_FEATURE_DIR}/jetty/stream_ub_db_stub.cc
     ${libruntime_cmodel_api_src_files_cmodel}
     ${xpu_tprt_api_file}
 )

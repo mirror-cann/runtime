@@ -873,8 +873,10 @@ void CaptureModel::ClearStreamActiveTask(void)
 void CaptureModel::CaptureModelExecuteFinish(const uint32_t errCode)
 {
     const std::unique_lock<std::mutex> lk(sqBindMutex_);
-    COND_PROC(refCount_ < 1U, return);
-    refCount_--;
+    if (refCount_ >= 1U) {
+        refCount_--;
+    }
+    // 模型执行出现异常,要释放所有jetty
     if (refCount_ == 0 && errCode != RT_ERROR_NONE) {
         ReleaseAllJetty();
     }

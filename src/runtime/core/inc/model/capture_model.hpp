@@ -14,7 +14,6 @@
 #include "task_info.hpp"
 #include "stream.hpp"
 #include "device_sq_cq_pool.hpp"
-#include "jetty_pool.h"
 #include "cond_handle.hpp"
 #include <unordered_set>
 #include <tuple>
@@ -363,6 +362,9 @@ public:
     rtError_t BindJettyForUbdma();
     rtError_t RecycleAllJetty(uint32_t &h2dCount, uint32_t &d2dCount);
     rtError_t ReleaseAllJetty();
+
+    bool GetJettyBindFlag() const { return jettyBindFlag_; }
+    void SetJettyBindFlag(bool bound) { jettyBindFlag_ = bound; }
 private:
     rtError_t AllocSqAddr(void) const;  // alloc sq addr
     rtError_t AllocSqCqProc(const uint32_t streamNum) const;
@@ -377,9 +379,6 @@ private:
     void ReportCacheTrackData();
     rtError_t InitAllSubCaptureModelCondTaskByDefValue();
     std::vector<CaptureModel *> &GetAllSubCaptureModels();
-    rtError_t BindJetty(Stream * const stm, JettyType type);
-    rtError_t RecycleJetty(int32_t streamId, JettyType type, uint32_t &count);
-    rtError_t ReleaseJetty(int32_t streamId, JettyType type);
     rtError_t RefreshJettyInfoList();
     RtCaptureModelStatus captureModelStatus_{RtCaptureModelStatus::NONE};
     mutable uint32_t cacheOpInfoSwitch_{0U}; // aclgraph stream status: 0: false, 1:true
@@ -411,6 +410,7 @@ private:
     std::atomic<uint32_t> seqId_{0};
     std::set<void *> argLoaderBackup_;
     std::mutex jettyMutex_;
+    bool jettyBindFlag_{false}; // 表示当前model里normal jetty的绑定状态 -- 改成 jettyBindFlag_
     std::mutex condHandleTaskMapLock_;
     std::map<std::tuple<int32_t, uint16_t>, CondHandle *> condHandleTaskMap_; // <stream id, condition task id>, condHandle 只有父model非空
     std::vector<CaptureModel *> cachedAllSubModels_; // 只有根model有效，子model为空。缓存所有子model

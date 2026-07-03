@@ -46,14 +46,40 @@ JettyType StreamJettyHandler::GetJettyTypeFromTask(const TaskInfo *task)
 }
 
 rtError_t StreamJettyHandler::HandleUbDmaTask(
-    const Stream *stream, const TaskInfo *task, JettyType jettyType,
+    const TaskInfo *task, JettyType jettyType,
     AsyncWqeInputPara *input, AsyncWqeOutputPara *output)
 {
-    UNUSED(stream);
     UNUSED(task);
     UNUSED(jettyType);
     UNUSED(input);
     UNUSED(output);
+    return RT_ERROR_NONE;
+}
+
+rtError_t StreamJettyHandler::BindJetty(
+    Stream *stream, JettyType type,
+    const CaptureModel *excludeMdl)
+{
+    UNUSED(stream);
+    UNUSED(type);
+    UNUSED(excludeMdl);
+    return RT_ERROR_NONE;
+}
+
+rtError_t StreamJettyHandler::RecycleJetty(
+    Stream *stream, JettyType type, uint32_t &count)
+{
+    UNUSED(stream);
+    UNUSED(type);
+    UNUSED(count);
+    return RT_ERROR_NONE;
+}
+
+rtError_t StreamJettyHandler::ReleaseJetty(
+    Stream *stream, JettyType type)
+{
+    UNUSED(stream);
+    UNUSED(type);
     return RT_ERROR_NONE;
 }
 

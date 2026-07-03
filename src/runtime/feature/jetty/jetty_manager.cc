@@ -21,18 +21,18 @@ JettyManager::JettyManager(uint32_t deviceId) : jettyPool_(std::make_unique<Jett
     RT_LOG(RT_LOG_INFO, "JettyManager created for device_id=%u.", deviceId);
 }
 
-rtError_t JettyManager::ReserveJetty(JettyType type)
+rtError_t JettyManager::PreAllocJetty(JettyType type)
 {
-    rtError_t error = jettyPool_->ReserveJetty(type);
+    rtError_t error = jettyPool_->PreAllocJetty(type);
     ERROR_RETURN_MSG_INNER(error,
         "Reserve jetty for stream failed, type=%d, ret=%d.", static_cast<int32_t>(type), error);
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyManager::AcquireJettyWithRetry(JettyType type, int32_t streamId,
+rtError_t JettyManager::AllocJettyWithRetry(JettyType type, int32_t streamId,
     const CaptureModel * const excludeMdl, JettyInfo& jettyInfo)
 {
-    rtError_t error = jettyPool_->AcquireJetty(type, jettyInfo);
+    rtError_t error = jettyPool_->AllocJetty(type, jettyInfo);
     if (error != RT_ERROR_JETTY_POOL_NO_RESOURCES) {
         return error;
     }
@@ -42,56 +42,51 @@ rtError_t JettyManager::AcquireJettyWithRetry(JettyType type, int32_t streamId,
     Context* curCtx = rt->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    for (uint32_t retry = 0U; retry < JETTY_POOL_ACQUIRE_RETRY_MAX_COUNT; ++retry) {
-        RT_LOG(RT_LOG_DEBUG, "Jetty pool exhausted, try recycle (retry=%u/%u), stream_id=%d, type=%d.",
-            retry + 1U, JETTY_POOL_ACQUIRE_RETRY_MAX_COUNT, streamId, static_cast<int32_t>(type));
-        (void)ReserveJetty(type);
-        error = jettyPool_->AcquireJetty(type, jettyInfo);
-        if (error == RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_DEBUG, "Acquire jetty success after recycle (retry=%u), stream_id=%d, type=%d.",
-                retry + 1U, streamId, static_cast<int32_t>(type));
-            return RT_ERROR_NONE;
-        }
-        error = curCtx->TryRecycleCaptureModelJettyResource(excludeMdl, type);
-        if (error != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_INFO, "Recycle jetty failed (retry=%u), stream_id=%d, type=%d, ret=%d.",
-                retry + 1U, streamId, static_cast<int32_t>(type), error);
-            continue;
-        }
-    }
+    rtError_t errorTmp = RT_ERROR_NONE;
+    do {
+        error = curCtx->CheckStatus();
+        ERROR_RETURN(error, "context is abort, status=%#x.", static_cast<uint32_t>(error));
+        (void)PreAllocJetty(type);
+        error = jettyPool_->AllocJetty(type, jettyInfo);
+        COND_PROC(error != RT_ERROR_NONE, errorTmp = curCtx->TryRecycleCaptureModelJettyResource(excludeMdl, type));
+        COND_RETURN_ERROR((errorTmp != RT_ERROR_NONE), errorTmp,
+            "release resource failed, stream_id=%u, retCode=%#x.", streamId, static_cast<uint32_t>(errorTmp));
+        COND_PROC(error != RT_ERROR_NONE, (void)mmSleep(1U)); // sleep 1ms
+    } while (((error != RT_ERROR_NONE)));
 
-    RT_LOG(RT_LOG_ERROR, "Acquire jetty failed after %u retries, stream_id=%d, type=%d.",
-        JETTY_POOL_ACQUIRE_RETRY_MAX_COUNT, streamId, static_cast<int32_t>(type));
-    return RT_ERROR_JETTY_POOL_NO_RESOURCES;
+    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
+        "jetty alloc failed, stream_id=%u, retCode=%#x.",
+        streamId, static_cast<uint32_t>(error));
+    return RT_ERROR_NONE;
 }
 
 rtError_t JettyManager::BindJettyForStream(int32_t streamId, const CaptureModel * const excludeMdl, JettyType type)
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
-    StreamJettyContext* ctx = GetStreamJettyContext(streamId, type);
-    if (ctx == nullptr) {
+    StreamJettyContext* jettyCtx = GetStreamJettyContext(streamId, type);
+    if (jettyCtx == nullptr) {
         RT_LOG(RT_LOG_ERROR, "GetStreamJettyContext failed, stream_id=%d, type=%d.",
         streamId, static_cast<int32_t>(type));
         return RT_ERROR_INVALID_VALUE;
     }
-    if (ctx->jettyHandle != 0) {
+    if (jettyCtx->jettyHandle != 0) {
         return RT_ERROR_NONE;
     }
 
     JettyInfo jettyInfo = {};
     rtError_t error = RT_ERROR_NONE;
 
-    if (ctx->isLargeDepth) {
-        error = jettyPool_->CreateLargeDepthJetty(type, ctx->capacity, jettyInfo);
+    if (jettyCtx->isLargeDepth) {
+        error = jettyPool_->AllocLargeDepthJetty(type, jettyCtx->capacity, jettyInfo);
         ERROR_RETURN_MSG_INNER(error, "Create large depth jetty failed, stream_id=%d, type=%d, ret=%d.",
             streamId, static_cast<int32_t>(type), error);
     } else {
-        error = AcquireJettyWithRetry(type, streamId, excludeMdl, jettyInfo);
+        error = AllocJettyWithRetry(type, streamId, excludeMdl, jettyInfo);
         ERROR_RETURN_MSG_INNER(error, "Acquire jetty failed, stream_id=%d, type=%d, ret=%d.",
             streamId, static_cast<int32_t>(type), error);
     }
 
-    ctx->jettyHandle = jettyInfo.handle;
+    jettyCtx->jettyHandle = jettyInfo.handle;
     RT_LOG(RT_LOG_INFO, "Bind jetty for stream success, stream_id=%d, type=%d, jetty_id=%u.",
         streamId, static_cast<int32_t>(type), jettyInfo.jettyId);
     return RT_ERROR_NONE;
@@ -100,32 +95,32 @@ rtError_t JettyManager::BindJettyForStream(int32_t streamId, const CaptureModel 
 rtError_t JettyManager::UnbindJettyForStream(int32_t streamId, JettyType type)
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
-    StreamJettyContext* ctx = GetStreamJettyContext(streamId, type);
-    if (ctx == nullptr || ctx->jettyHandle == 0) {
+    StreamJettyContext* jettyCtx = GetStreamJettyContext(streamId, type);
+    if (jettyCtx == nullptr || jettyCtx->jettyHandle == 0) {
         return RT_ERROR_NONE;
     }
     rtError_t error = RT_ERROR_NONE;
-    if (ctx->isLargeDepth) {
-        error = jettyPool_->DestroyLargeDepthJetty(ctx->jettyHandle);
+    if (jettyCtx->isLargeDepth) {
+        error = jettyPool_->FreeLargeDepthJetty(jettyCtx->jettyHandle);
     } else {
-        error = jettyPool_->MarkFree(ctx->jettyHandle);
+        error = jettyPool_->FreeJettyLazy(jettyCtx->jettyHandle);
     }
     ERROR_RETURN_MSG_INNER(error, "Unbind jetty for stream failed, stream_id=%d, type=%d, ret=%d.",
         streamId, static_cast<int32_t>(type), error);
 
-    ctx->jettyHandle = 0;
+    jettyCtx->jettyHandle = 0U;
 
     RT_LOG(RT_LOG_INFO, "Unbind jetty for stream success, stream_id=%d, type=%d.", streamId, static_cast<int32_t>(type));
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyManager::ReleaseJettyByHandle(uint64_t handle, JettyType type)
+rtError_t JettyManager::FreeJettyByHandle(uint64_t handle, JettyType type)
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
     if (handle == 0) {
         return RT_ERROR_NONE;
     }
-    rtError_t error = jettyPool_->ReleaseJetty(handle, type);
+    rtError_t error = jettyPool_->FreeJetty(handle, type);
     ERROR_RETURN_MSG_INNER(error, "Release jetty by handle failed, handle=%lu, type=%d, ret=%d.",
         handle, static_cast<int32_t>(type), error);
     RT_LOG(RT_LOG_INFO, "Release jetty by handle success, handle=%lu, type=%d.",
@@ -138,8 +133,8 @@ rtError_t JettyManager::GetJettyInfoForStream(int32_t streamId, JettyType type, 
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
 
     auto key = std::make_pair(static_cast<uint32_t>(streamId), type);
-    auto it = streamCaptureContexts_.find(key);
-    if (it == streamCaptureContexts_.end() || it->second->jettyHandle == 0) {
+    auto it = streamJettyContexts_.find(key);
+    if (it == streamJettyContexts_.end() || it->second->jettyHandle == 0) {
         RT_LOG(RT_LOG_WARNING, "Jetty not found, stream_id=%d, type=%d.", streamId, static_cast<int32_t>(type));
         return RT_ERROR_INVALID_VALUE;
     }
@@ -159,52 +154,53 @@ StreamJettyContext* JettyManager::GetOrCreateStreamJettyContext(const Stream *st
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
     int32_t streamId = static_cast<int32_t>(stream->Id_());
     auto key = std::make_pair(static_cast<uint32_t>(streamId), type);
-    auto it = streamCaptureContexts_.find(key);
-    if (it != streamCaptureContexts_.end()) {
+    auto it = streamJettyContexts_.find(key);
+    if (it != streamJettyContexts_.end()) {
         return it->second.get();
     }
 
     auto context = std::make_unique<StreamJettyContext>();
+    NULL_PTR_RETURN(context, nullptr);
     context->jettyType = type;
-    StreamJettyContext* ctxPtr = context.get();
-    streamCaptureContexts_[key] = std::move(context);
+    StreamJettyContext* jettyCtx = context.get();
+    streamJettyContexts_[key] = std::move(context);
 
-    rtError_t error = ReserveJetty(type);
+    rtError_t error = PreAllocJetty(type);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "ReserveJetty failed, stream_id=%d, type=%d, ret=%d.",
+        RT_LOG(RT_LOG_ERROR, "PreAllocJetty failed, stream_id=%d, type=%d, ret=%d.",
             streamId, static_cast<int32_t>(type), error);
-        streamCaptureContexts_.erase(key);
+        streamJettyContexts_.erase(key);
         return nullptr;
     }
     RT_LOG(RT_LOG_INFO, "Create context with reserved jetty (FREE), stream_id=%d.", streamId);
-    return ctxPtr;
+    return jettyCtx;
 }
 
 StreamJettyContext* JettyManager::GetStreamJettyContext(int32_t streamId, JettyType type) const
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
     auto key = std::make_pair(static_cast<uint32_t>(streamId), type);
-    auto it = streamCaptureContexts_.find(key);
-    if (it != streamCaptureContexts_.end()) {
+    auto it = streamJettyContexts_.find(key);
+    if (it != streamJettyContexts_.end()) {
         return it->second.get();
     }
     return nullptr;
 }
 
-void JettyManager::DestroyStreamJettyContext(int32_t streamId, JettyType type)
+void JettyManager::DeleteStreamJettyContext(int32_t streamId, JettyType type)
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
     auto key = std::make_pair(static_cast<uint32_t>(streamId), type);
-    auto it = streamCaptureContexts_.find(key);
-    if (it != streamCaptureContexts_.end()) {
-        streamCaptureContexts_.erase(it);
+    auto it = streamJettyContexts_.find(key);
+    if (it != streamJettyContexts_.end()) {
+        streamJettyContexts_.erase(it);
     }
 }
 
 void JettyManager::Clear()
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
-    streamCaptureContexts_.clear();
+    streamJettyContexts_.clear();
 }
 
 } // namespace runtime

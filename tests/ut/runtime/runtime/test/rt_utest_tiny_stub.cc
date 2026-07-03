@@ -1315,7 +1315,7 @@ TEST_F(TinyStubTest, jetty_stub)
 
     EXPECT_EQ(StreamJettyHandler::FillNopWqeOnCaptureEnd(nullptr, JettyType::JETTY_TYPE_H2D), RT_ERROR_NONE);
     EXPECT_EQ(StreamJettyHandler::GetJettyTypeFromTask(nullptr), JettyType::JETTY_TYPE_MAX);
-    EXPECT_EQ(StreamJettyHandler::HandleUbDmaTask(nullptr, nullptr, JettyType::JETTY_TYPE_H2D, nullptr, nullptr),
+    EXPECT_EQ(StreamJettyHandler::HandleUbDmaTask(nullptr, JettyType::JETTY_TYPE_H2D, nullptr, nullptr),
         RT_ERROR_NONE);
 }
 
