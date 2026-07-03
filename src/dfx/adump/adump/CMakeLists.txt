@@ -65,7 +65,8 @@ if(PRODUCT)
             PRODUCT STREQUAL "as31xm1" OR
             PRODUCT STREQUAL "ascend035" OR
             PRODUCT STREQUAL "mc62cm12a" OR
-            PRODUCT STREQUAL "mc62cm12aesl")
+            PRODUCT STREQUAL "mc62cm12aesl" OR
+            PRODUCT STREQUAL "mc32dm11a")
         include(adump_cmake/adump_couple/adump_server.cmake)
         include(adump_cmake/adump_couple/ascend_dump.cmake)
         include(adump_cmake/adump_couple/adump.cmake)

@@ -46,7 +46,8 @@ if(ENABLE_NPUF10 STREQUAL true OR
     PRODUCT STREQUAL "ascend610Lite" OR
     PRODUCT STREQUAL "ascend610Liteesl" OR
     PRODUCT STREQUAL "mc62cm12a" OR
-    PRODUCT STREQUAL "mc62cm12aesl")
+    PRODUCT STREQUAL "mc62cm12aesl" OR
+    PRODUCT STREQUAL "mc32dm11a")
     list(APPEND adumpSrcList 
         ${ADUMP_DIR}/adcore/common/thread_mdc.cpp
     )

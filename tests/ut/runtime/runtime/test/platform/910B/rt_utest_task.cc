@@ -1679,4 +1679,5 @@ TEST_F(CloudV2TaskTest, GetV201Chips_valid)
     const auto& chips = GetV201Chips();
     EXPECT_FALSE(chips.empty());
     EXPECT_TRUE(std::find(chips.begin(), chips.end(), CHIP_MC62CM12A) != chips.end());
+    EXPECT_TRUE(std::find(chips.begin(), chips.end(), CHIP_MC32DM11A) != chips.end());
 }
