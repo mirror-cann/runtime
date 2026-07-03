@@ -29,10 +29,10 @@ enum class JettyType : uint8_t { JETTY_TYPE_H2D = 0, JETTY_TYPE_D2D = 1, JETTY_T
 enum class JettyState : uint8_t { FREE = 0, BOUND };
 
 struct JettyInfo {
-    uint64_t handle = 0;
-    uint32_t dieId = 0;
-    uint32_t functionId = 0;
-    uint32_t jettyId = 0;
+    uint64_t handle = 0U;
+    uint32_t dieId = 0U;
+    uint32_t functionId = 0U;
+    uint32_t jettyId = 0U;
     uint32_t depth = JETTY_DEPTH_STANDARD;
     JettyType type = JettyType::JETTY_TYPE_MAX;
     JettyState state = JettyState::FREE;
@@ -48,7 +48,7 @@ public:
      * @param type Jetty 类型
      * @return rtError_t 错误码
      */
-    rtError_t ReserveJetty(JettyType type);
+    rtError_t PreAllocJetty(JettyType type);
 
     /**
      * @brief 释放 Jetty, 适用于非large jetty
@@ -56,7 +56,7 @@ public:
      * @param type Jetty 类型
      * @return rtError_t 错误码
      */
-    rtError_t ReleaseJetty(uint64_t handle, JettyType type);
+    rtError_t FreeJetty(uint64_t handle, JettyType type);
 
     /**
      * @brief 获取 FREE jetty 并标记为 BOUND（用于 Graph Reply 阶段绑定）
@@ -64,14 +64,14 @@ public:
      * @param jettyInfo 输出参数，返回 Jetty 信息
      * @return rtError_t 错误码
      */
-    rtError_t AcquireJetty(JettyType type, JettyInfo& jettyInfo);
+    rtError_t AllocJetty(JettyType type, JettyInfo& jettyInfo);
 
     /**
      * @brief 标记 Jetty 为空闲
      * @param handle Jetty 句柄
      * @return rtError_t 错误码
      */
-    rtError_t MarkFree(uint64_t handle);
+    rtError_t FreeJettyLazy(uint64_t handle);
 
     /**
      * @brief 创建大深度 Jetty(深度 > 2k，不走标准池)
@@ -80,14 +80,14 @@ public:
      * @param jettyInfo 输出参数，返回创建的 Jetty 信息
      * @return rtError_t 错误码
      */
-    rtError_t CreateLargeDepthJetty(JettyType type, uint32_t depth, JettyInfo& jettyInfo);
+    rtError_t AllocLargeDepthJetty(JettyType type, uint32_t depth, JettyInfo& jettyInfo);
 
     /**
      * @brief 销毁大深度 Jetty
      * @param handle Jetty 句柄
      * @return rtError_t 错误码
      */
-    rtError_t DestroyLargeDepthJetty(uint64_t handle);
+    rtError_t FreeLargeDepthJetty(uint64_t handle);
 
     /**
      * @brief 查询 Jetty 信息
@@ -97,7 +97,7 @@ public:
      * @param jettyId 输出参数，返回 Jetty ID
      * @return rtError_t 错误码
      */
-    rtError_t QueryJettyInfo(uint64_t handle, uint32_t& dieId, uint32_t& functionId, uint32_t& jettyId) const;
+    rtError_t GetJettyInfo(uint64_t handle, uint32_t& dieId, uint32_t& functionId, uint32_t& jettyId) const;
 
     /**
      * @brief 根据句柄查找 Jetty 信息(适用于全部类型)

@@ -742,8 +742,8 @@ rtError_t NpuDriver::AsyncDmaJettyDestroy(const uint32_t devId, const uint64_t h
     const drvError_t drvRet = halAsyncDmaJettyDestroy(devId, &param);
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(
-            drvRet, "[drv api] halAsyncDmaJettyDestroy failed: handle=%lu, drvRetCode=%d", handle,
-            static_cast<int32_t>(drvRet));
+            drvRet, "[drv api] halAsyncDmaJettyDestroy failed: handle=%lu, drvDevId=%u, drvRetCode=%d",
+            handle, devId, static_cast<int32_t>(drvRet));
     }
     return RT_GET_DRV_ERRCODE(drvRet);
 }
@@ -760,8 +760,8 @@ rtError_t NpuDriver::AsyncDmaJettyQuery(
     const drvError_t drvRet = halAsyncDmaJettyQuery(devId, &in, &out);
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(
-            drvRet, "[drv api] halAsyncDmaJettyQuery failed: handle=%lu, drvRetCode=%d",
-            handle, static_cast<int32_t>(drvRet));
+            drvRet, "[drv api] halAsyncDmaJettyQuery failed: handle=%lu, drvDevId=%u, drvRetCode=%d",
+            handle, devId, static_cast<int32_t>(drvRet));
     }
     if (drvRet == DRV_ERROR_NONE) {
         dieId = out.dieId;
@@ -818,7 +818,8 @@ rtError_t NpuDriver::AsyncDmaWqeConvert(const uint32_t devId, AsyncWqeInputPara*
     const drvError_t drvRet = halAsyncDmaWqeConvert(devId, &halIn, &halOut);
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(
-            drvRet, "[drv api] halAsyncDmaWqeConvert failed, drvRetCode=%d", static_cast<int32_t>(drvRet));
+            drvRet, "[drv api] halAsyncDmaWqeConvert failed: drvDevId=%u, drvRetCode=%d",
+            devId, static_cast<int32_t>(drvRet));
     }
 
     if (drvRet == DRV_ERROR_NONE) {
@@ -847,7 +848,8 @@ rtError_t NpuDriver::AsyncDmaWqeFill(const uint32_t devId, AsyncWqeFillInfo* fil
     const drvError_t drvRet = halAsyncDmaJettyWqeFill(devId, &info);
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(
-            drvRet, "[drv api] halAsyncDmaJettyWqeFill failed, drvRetCode=%d", static_cast<int32_t>(drvRet));
+            drvRet, "[drv api] halAsyncDmaJettyWqeFill failed: drvDevId=%u, drvRetCode=%d",
+            devId, static_cast<int32_t>(drvRet));
     }
     return RT_GET_DRV_ERRCODE(drvRet);
 }

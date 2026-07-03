@@ -190,16 +190,16 @@ public:
 };
 rtChipType_t JettyPoolTest::originType_ = CHIP_DAVID;
 
-TEST_F(JettyPoolTest, ReleaseJetty_InvalidHandle)
+TEST_F(JettyPoolTest, FreeJetty_InvalidHandle)
 {
-    rtError_t error = jettyPool_->ReleaseJetty(99999, JettyType::JETTY_TYPE_H2D);
+    rtError_t error = jettyPool_->FreeJetty(99999, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-TEST_F(JettyPoolTest, AcquireJetty_Success)
+TEST_F(JettyPoolTest, AllocJetty_Success)
 {
-    rtError_t reserveError = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
-    EXPECT_EQ(reserveError, RT_ERROR_NONE);
+    rtError_t preAllocError = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
+    EXPECT_EQ(preAllocError, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
     ASSERT_TRUE(jettyPool_->FindJettyByState(JettyType::JETTY_TYPE_H2D, JettyState::FREE, freeInfo));
@@ -207,24 +207,24 @@ TEST_F(JettyPoolTest, AcquireJetty_Success)
     uint64_t expectedHandle = freeInfo->handle;
 
     JettyInfo acquireInfo;
-    rtError_t acquireError = jettyPool_->AcquireJetty(JettyType::JETTY_TYPE_H2D, acquireInfo);
-    EXPECT_EQ(acquireError, RT_ERROR_NONE);
+    rtError_t allocError = jettyPool_->AllocJetty(JettyType::JETTY_TYPE_H2D, acquireInfo);
+    EXPECT_EQ(allocError, RT_ERROR_NONE);
     EXPECT_EQ(acquireInfo.handle, expectedHandle);
     EXPECT_EQ(acquireInfo.state, JettyState::BOUND);
 }
 
-TEST_F(JettyPoolTest, AcquireJetty_NoAvailable)
+TEST_F(JettyPoolTest, AllocJetty_NoAvailable)
 {
     jettyPool_->Clear();
 
     JettyInfo acquireInfo;
-    rtError_t error = jettyPool_->AcquireJetty(JettyType::JETTY_TYPE_H2D, acquireInfo);
+    rtError_t error = jettyPool_->AllocJetty(JettyType::JETTY_TYPE_H2D, acquireInfo);
     EXPECT_EQ(error, RT_ERROR_JETTY_POOL_NO_RESOURCES);
 }
 
-TEST_F(JettyPoolTest, MarkFree_Success)
+TEST_F(JettyPoolTest, FreeJettyLazy_Success)
 {
-    rtError_t error = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
@@ -232,8 +232,8 @@ TEST_F(JettyPoolTest, MarkFree_Success)
     ASSERT_NE(freeInfo, nullptr);
     uint64_t handle = freeInfo->handle;
 
-    rtError_t markFreeError = jettyPool_->MarkFree(handle);
-    EXPECT_EQ(markFreeError, RT_ERROR_NONE);
+    rtError_t freeLazyError = jettyPool_->FreeJettyLazy(handle);
+    EXPECT_EQ(freeLazyError, RT_ERROR_NONE);
 
     JettyInfo* foundInfo = nullptr;
     bool found = jettyPool_->FindJettyByHandle(handle, foundInfo);
@@ -241,41 +241,41 @@ TEST_F(JettyPoolTest, MarkFree_Success)
     EXPECT_EQ(foundInfo->state, JettyState::FREE);
 }
 
-TEST_F(JettyPoolTest, MarkFree_InvalidHandle)
+TEST_F(JettyPoolTest, FreeJettyLazy_InvalidHandle)
 {
-    rtError_t error = jettyPool_->MarkFree(99999);
+    rtError_t error = jettyPool_->FreeJettyLazy(99999);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-TEST_F(JettyPoolTest, CreateLargeDepthJetty_InvalidDepth_LessThanStandard)
+TEST_F(JettyPoolTest, AllocLargeDepthJetty_InvalidDepth_LessThanStandard)
 {
     JettyInfo jettyInfo;
-    rtError_t error = jettyPool_->CreateLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 1024, jettyInfo);
+    rtError_t error = jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 1024, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-TEST_F(JettyPoolTest, DestroyLargeDepthJetty_Success)
+TEST_F(JettyPoolTest, FreeLargeDepthJetty_Success)
 {
     JettyInfo jettyInfo;
-    rtError_t createError = jettyPool_->CreateLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, jettyInfo);
+    rtError_t createError = jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, jettyInfo);
     EXPECT_EQ(createError, RT_ERROR_NONE);
 
-    rtError_t destroyError = jettyPool_->DestroyLargeDepthJetty(jettyInfo.handle);
+    rtError_t destroyError = jettyPool_->FreeLargeDepthJetty(jettyInfo.handle);
     EXPECT_EQ(destroyError, RT_ERROR_NONE);
 
     JettyInfo* foundInfo = nullptr;
     bool found = jettyPool_->FindJettyByHandle(jettyInfo.handle, foundInfo);
 }
 
-TEST_F(JettyPoolTest, DestroyLargeDepthJetty_InvalidHandle)
+TEST_F(JettyPoolTest, FreeLargeDepthJetty_InvalidHandle)
 {
-    rtError_t error = jettyPool_->DestroyLargeDepthJetty(99999);
+    rtError_t error = jettyPool_->FreeLargeDepthJetty(99999);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-TEST_F(JettyPoolTest, QueryJettyInfo_Success)
+TEST_F(JettyPoolTest, GetJettyInfo_Success)
 {
-    rtError_t error = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
@@ -285,13 +285,13 @@ TEST_F(JettyPoolTest, QueryJettyInfo_Success)
     uint32_t dieId = 0;
     uint32_t functionId = 0;
     uint32_t jettyId = 0;
-    rtError_t queryError = jettyPool_->QueryJettyInfo(freeInfo->handle, dieId, functionId, jettyId);
-    EXPECT_EQ(queryError, RT_ERROR_NONE);
+    rtError_t getInfoError = jettyPool_->GetJettyInfo(freeInfo->handle, dieId, functionId, jettyId);
+    EXPECT_EQ(getInfoError, RT_ERROR_NONE);
 }
 
 TEST_F(JettyPoolTest, FindJettyByHandle_Found)
 {
-    rtError_t error = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
@@ -317,11 +317,11 @@ TEST_F(JettyPoolTest, FindJettyByHandle_NotFound)
 TEST_F(JettyPoolTest, Clear)
 {
     JettyInfo info;
-    rtError_t error1 = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error1 = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error1, RT_ERROR_NONE);
-    rtError_t error2 = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_D2D);
+    rtError_t error2 = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_D2D);
     EXPECT_EQ(error2, RT_ERROR_NONE);
-    rtError_t error3 = jettyPool_->CreateLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, info);
+    rtError_t error3 = jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, info);
     EXPECT_EQ(error3, RT_ERROR_NONE);
 
     jettyPool_->Clear();
@@ -534,22 +534,24 @@ protected:
 TEST_F(StreamJettyHandlerIntegrationTest, HandleUbDmaTask_NullStream)
 {
     TaskInfo taskInfo = {};
+    taskInfo.stream = nullptr;
     taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::HandleUbDmaTask(nullptr, &taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
+    rtError_t error = StreamJettyHandler::HandleUbDmaTask(&taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
 TEST_F(StreamJettyHandlerIntegrationTest, HandleUbDmaTask_NonUbType)
 {
     TaskInfo taskInfo = {};
+    taskInfo.stream = stream_;
     taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
     Runtime::Instance()->SetConnectUbFlag(false);
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::HandleUbDmaTask(stream_, &taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    rtError_t error = StreamJettyHandler::HandleUbDmaTask(&taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     Runtime::Instance()->SetConnectUbFlag(true);
 }
 
@@ -563,26 +565,26 @@ TEST_F(StreamJettyHandlerIntegrationTest, HandleUbDmaTask_NullTask)
 {
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::HandleUbDmaTask(stream_, nullptr, JettyType::JETTY_TYPE_H2D, &input, &output);
+    rtError_t error = StreamJettyHandler::HandleUbDmaTask(nullptr, JettyType::JETTY_TYPE_H2D, &input, &output);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-TEST_F(StreamJettyHandlerIntegrationTest, SyncWqeBufferToDevice_NullContext)
+TEST_F(StreamJettyHandlerIntegrationTest, FillWqeToDevice_NullContext)
 {
     JettyInfo jettyInfo = {};
-    rtError_t error = StreamJettyHandler::SyncWqeBufferToDevice(stream_, nullptr, jettyInfo);
+    rtError_t error = StreamJettyHandler::FillWqeToDevice(stream_, nullptr, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-TEST_F(StreamJettyHandlerIntegrationTest, SyncWqeBufferToDevice_EmptyBuffers)
+TEST_F(StreamJettyHandlerIntegrationTest, FillWqeToDevice_EmptyBuffers)
 {
     JettyInfo jettyInfo = {};
     StreamJettyContext context;
-    rtError_t error = StreamJettyHandler::SyncWqeBufferToDevice(stream_, &context, jettyInfo);
+    rtError_t error = StreamJettyHandler::FillWqeToDevice(stream_, &context, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(StreamJettyHandlerIntegrationTest, SyncWqeBufferToDevice_WithValidBuffers)
+TEST_F(StreamJettyHandlerIntegrationTest, FillWqeToDevice_WithValidBuffers)
 {
     StreamJettyContext context;
     context.capacity = 2048;
@@ -590,7 +592,7 @@ TEST_F(StreamJettyHandlerIntegrationTest, SyncWqeBufferToDevice_WithValidBuffers
     auto buffer = std::unique_ptr<uint8_t[]>(new uint8_t[2048 * 64]);
     context.wqeBuffers.push_back(std::move(buffer));
     JettyInfo jettyInfo = {};
-    rtError_t error = StreamJettyHandler::SyncWqeBufferToDevice(stream_, &context, jettyInfo);
+    rtError_t error = StreamJettyHandler::FillWqeToDevice(stream_, &context, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -675,7 +677,7 @@ TEST_F(StreamJettyHandlerIntegrationTest, JettyManager_BindJettyForStream_Alread
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     rtError_t error = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_D2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ctx->jettyHandle = 1;
+    ctx->jettyHandle = 1U;
     error = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_D2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -761,7 +763,7 @@ TEST_F(JettyManagerTest, GetStreamJettyContext_NotFound)
 
 TEST_F(JettyManagerTest, DestroyStreamJettyContext_NotExist)
 {
-    manager_->DestroyStreamJettyContext(999, JettyType::JETTY_TYPE_H2D);
+    manager_->DeleteStreamJettyContext(999, JettyType::JETTY_TYPE_H2D);
     StreamJettyContext* ctx = manager_->GetStreamJettyContext(999, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(ctx, nullptr);
 }
@@ -787,6 +789,7 @@ protected:
         captureModel_->context_ = currentCtx;
         captureModel_->SetSoftwareSqEnable();
         stream_ = new Stream(device_, 0);
+        stream_->SetContext(currentCtx);
     }
 
     virtual void TearDown() override
@@ -961,11 +964,14 @@ TEST_F(CaptureModelJettyTest, RecycleAllJetty_LargeJetty_Success)
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     rtError_t bindError = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_D2D);
     ASSERT_EQ(bindError, RT_ERROR_NONE);
+    MOCKER(StreamUbDbSend).stubs().will(returnValue(RT_ERROR_NONE));
     uint32_t h2dCount = 0;
     uint32_t d2dCount = 0;
     rtError_t error = captureModel_->RecycleAllJetty(h2dCount, d2dCount);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(d2dCount, 0U);
+    error = StreamJettyHandler::ReleaseJetty(stream_, JettyType::JETTY_TYPE_D2D);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(CaptureModelJettyTest, RecycleAllJetty_BothTypes_Success)
@@ -1017,14 +1023,14 @@ TEST_F(CaptureModelJettyTest, ReleaseJetty_Success)
     rtError_t bindError = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
     ASSERT_EQ(bindError, RT_ERROR_NONE);
 
-    rtError_t error = captureModel_->ReleaseJetty(streamId, JettyType::JETTY_TYPE_H2D);
+    rtError_t error = StreamJettyHandler::ReleaseJetty(stream_, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     SetupJettyContext(stream_, JettyType::JETTY_TYPE_D2D, 3000, true);
     rtError_t bindError2 = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_D2D);
     ASSERT_EQ(bindError2, RT_ERROR_NONE);
 
-    rtError_t error2 = captureModel_->ReleaseJetty(streamId, JettyType::JETTY_TYPE_D2D);
+    rtError_t error2 = StreamJettyHandler::ReleaseJetty(stream_, JettyType::JETTY_TYPE_D2D);
     EXPECT_EQ(error2, RT_ERROR_NONE);
 }
 
@@ -1040,6 +1046,8 @@ TEST_F(CaptureModelJettyTest, TryRecycleCaptureModelJettyResource_Success)
     Context* currentCtx = Runtime::Instance()->CurrentContext();
     ASSERT_NE(currentCtx, nullptr);
     currentCtx->models_.push_back(captureModel_);
+
+    MOCKER(StreamUbDbSend).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = currentCtx->TryRecycleCaptureModelJettyResource(nullptr, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1130,7 +1138,8 @@ static rtError_t SetupAndRunH2DTask(Stream* stream, StreamJettyContext& context)
     taskInfo.id = 1;
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    return StreamJettyHandler::CreateAndAppendWqe(stream, &taskInfo, &context, &input, &output);
+    taskInfo.stream = stream;
+    return StreamJettyHandler::CreateAndAppendWqe(&taskInfo, &context, &input, &output);
 }
 
 static void SetupWqeTestContext(Stream* stream, StreamJettyContext& context, TaskInfo& taskInfo, uint64_t size)
@@ -1315,10 +1324,11 @@ TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_Success)
     TaskInfo taskInfo;
     SetupCreateAndAppendWqeTest(context, taskInfo,
         reinterpret_cast<void*>(0x10000), reinterpret_cast<void*>(0x20000), 1024, 1);
-    
+    taskInfo.stream = stream_;
+
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::CreateAndAppendWqe(stream_, &taskInfo, &context, &input, &output);
+    rtError_t error = StreamJettyHandler::CreateAndAppendWqe(&taskInfo, &context, &input, &output);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -1337,7 +1347,8 @@ TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_LargeSize)
     
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::CreateAndAppendWqe(stream_, &taskInfo, &context, &input, &output);
+    taskInfo.stream = stream_;
+    rtError_t error = StreamJettyHandler::CreateAndAppendWqe(&taskInfo, &context, &input, &output);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -1353,10 +1364,11 @@ TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_ConvertFail)
     TaskInfo taskInfo;
     SetupCreateAndAppendWqeTest(context, taskInfo,
         reinterpret_cast<void*>(0x10000), reinterpret_cast<void*>(0x20000), 1024, 1);
-    
+    taskInfo.stream = stream_;
+
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::CreateAndAppendWqe(stream_, &taskInfo, &context, &input, &output);
+    rtError_t error = StreamJettyHandler::CreateAndAppendWqe(&taskInfo, &context, &input, &output);
     (void)error;
 }
 
@@ -1419,8 +1431,8 @@ TEST_F(JettyPoolTest, CreateJetty_QueryFail)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-// Cover ReserveJetty pool exhausted path
-TEST_F(JettyPoolTest, ReserveJetty_PoolExhausted)
+// Cover PreAllocJetty pool exhausted path
+TEST_F(JettyPoolTest, PreAllocJetty_PoolExhausted)
 {
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
@@ -1428,7 +1440,7 @@ TEST_F(JettyPoolTest, ReserveJetty_PoolExhausted)
     
     // Fill the pool beyond limit
     for (uint32_t i = 0; i < JETTY_POOL_H2D_MAX_SIZE + 5; ++i) {
-        rtError_t error = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
+        rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
         if (error == RT_ERROR_JETTY_POOL_NO_RESOURCES) {
             // Expected - pool exhausted
             EXPECT_EQ(i, JETTY_POOL_H2D_MAX_SIZE);
@@ -1438,25 +1450,25 @@ TEST_F(JettyPoolTest, ReserveJetty_PoolExhausted)
     }
 }
 
-// Cover ReleaseJetty handle not found
-TEST_F(JettyPoolTest, ReleaseJetty_HandleNotFound)
+// Cover FreeJetty handle not found
+TEST_F(JettyPoolTest, FreeJetty_HandleNotFound)
 {
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
     
-    rtError_t error = jettyPool_->ReleaseJetty(99999, JettyType::JETTY_TYPE_H2D);
+    rtError_t error = jettyPool_->FreeJetty(99999, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
-// Cover DestroyLargeDepthJetty handle not found
-TEST_F(JettyPoolTest, DestroyLargeDepthJetty_HandleNotFound)
+// Cover FreeLargeDepthJetty handle not found
+TEST_F(JettyPoolTest, FreeLargeDepthJetty_HandleNotFound)
 {
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
     
-    rtError_t error = jettyPool_->DestroyLargeDepthJetty(99999);
+    rtError_t error = jettyPool_->FreeLargeDepthJetty(99999);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
@@ -1467,11 +1479,11 @@ TEST_F(JettyPoolTest, FindJettyByState_BoundState)
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
     
-    rtError_t error = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     ASSERT_EQ(error, RT_ERROR_NONE);
     
     JettyInfo jettyInfo2;
-    error = jettyPool_->AcquireJetty(JettyType::JETTY_TYPE_H2D, jettyInfo2);
+    error = jettyPool_->AllocJetty(JettyType::JETTY_TYPE_H2D, jettyInfo2);
     ASSERT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(jettyInfo2.state, JettyState::BOUND);
 }
@@ -1483,7 +1495,7 @@ TEST_F(JettyPoolTest, FindJettyByHandle_D2DPool)
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
     
-    rtError_t error = jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_D2D);
+    rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_D2D);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
@@ -1504,7 +1516,7 @@ TEST_F(JettyPoolTest, FindJettyByHandle_LargePool)
     SetupJettyDriverMocks(driver);
     
     JettyInfo jettyInfo;
-    rtError_t error = jettyPool_->CreateLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, jettyInfo);
+    rtError_t error = jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, jettyInfo);
     ASSERT_EQ(error, RT_ERROR_NONE);
     
     JettyInfo* foundInfo = nullptr;
@@ -1521,10 +1533,10 @@ TEST_F(JettyPoolTest, Clear_AllPools)
     SetupJettyDriverMocks(driver);
     
     // Add jets to all pools
-    ASSERT_EQ(jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_H2D), RT_ERROR_NONE);
-    ASSERT_EQ(jettyPool_->ReserveJetty(JettyType::JETTY_TYPE_D2D), RT_ERROR_NONE);
+    ASSERT_EQ(jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D), RT_ERROR_NONE);
+    ASSERT_EQ(jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_D2D), RT_ERROR_NONE);
     JettyInfo largeInfo;
-    ASSERT_EQ(jettyPool_->CreateLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, largeInfo), RT_ERROR_NONE);
+    ASSERT_EQ(jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, largeInfo), RT_ERROR_NONE);
     
     jettyPool_->Clear();
     
@@ -1535,14 +1547,14 @@ TEST_F(JettyPoolTest, Clear_AllPools)
 
 // ========== JettyManager extended coverage tests ==========
 
-// Cover GetOrCreateStreamJettyContext with ReserveJetty retry
+// Cover GetOrCreateStreamJettyContext with PreAllocJetty retry
 TEST_F(NpuDriverJettyTest, GetOrCreateStreamJettyContext_ReserveFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     // Mock to exhaust pool quickly
     JettyPool* pool = new JettyPool(0);
     for (uint32_t i = 0; i < JETTY_POOL_H2D_MAX_SIZE + 5; ++i) {
-        if (pool->ReserveJetty(JettyType::JETTY_TYPE_H2D) == RT_ERROR_JETTY_POOL_NO_RESOURCES) {
+        if (pool->PreAllocJetty(JettyType::JETTY_TYPE_H2D) == RT_ERROR_JETTY_POOL_NO_RESOURCES) {
             break;
         }
     }
@@ -1633,7 +1645,7 @@ TEST_F(NpuDriverJettyTest, UnbindJettyForStream_NoContext)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(NpuDriverJettyTest, ReleaseJettyByHandle_Success)
+TEST_F(NpuDriverJettyTest, FreeJettyByHandle_Success)
 {
     int32_t streamId = 0;
     JettyManager* mgr = SetupAndBindJettyForStream(stream_, streamId);
@@ -1645,23 +1657,23 @@ TEST_F(NpuDriverJettyTest, ReleaseJettyByHandle_Success)
     rtError_t unbindError = mgr->UnbindJettyForStream(streamId, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(unbindError, RT_ERROR_NONE);
 
-    rtError_t error = mgr->ReleaseJettyByHandle(savedHandle, JettyType::JETTY_TYPE_H2D);
+    rtError_t error = mgr->FreeJettyByHandle(savedHandle, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(NpuDriverJettyTest, ReleaseJettyByHandle_ZeroHandle)
+TEST_F(NpuDriverJettyTest, FreeJettyByHandle_ZeroHandle)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
-    rtError_t error = mgr->ReleaseJettyByHandle(0, JettyType::JETTY_TYPE_H2D);
+    rtError_t error = mgr->FreeJettyByHandle(0, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(NpuDriverJettyTest, ReleaseJettyByHandle_InvalidHandle)
+TEST_F(NpuDriverJettyTest, FreeJettyByHandle_InvalidHandle)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
-    rtError_t error = mgr->ReleaseJettyByHandle(99999, JettyType::JETTY_TYPE_H2D);
+    rtError_t error = mgr->FreeJettyByHandle(99999, JettyType::JETTY_TYPE_H2D);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
@@ -1706,13 +1718,13 @@ TEST_F(NpuDriverJettyTest, HandleUbDmaTask_InvalidCopyType)
     Runtime::Instance()->SetConnectUbFlag(true);
     
     TaskInfo taskInfo = {};
+    taskInfo.stream = stream_;
     taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2D_SDMA;  // Not UB type for H2D/D2H
     
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error = StreamJettyHandler::HandleUbDmaTask(stream_, &taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
-    // Should return NONE for non-UB type
-    EXPECT_EQ(error, RT_ERROR_NONE);
+    rtError_t error = StreamJettyHandler::HandleUbDmaTask(&taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     
     Runtime::Instance()->SetConnectUbFlag(false);
 }
@@ -1725,9 +1737,9 @@ TEST_F(NpuDriverJettyTest, FillNopWqeOnCaptureEnd_D2D_Success)
     Runtime::Instance()->SetConnectUbFlag(false);
 }
 
-// ========== SyncWqeBufferToDevice extended coverage ==========
+// ========== FillWqeToDevice extended coverage ==========
 
-TEST_F(NpuDriverJettyTest, SyncWqeBufferToDevice_Success)
+TEST_F(NpuDriverJettyTest, FillWqeToDevice_Success)
 {
     GlobalMockObject::reset();
     SetupJettyDriverMocks(stream_->Device_()->Driver_());
@@ -1739,15 +1751,15 @@ TEST_F(NpuDriverJettyTest, SyncWqeBufferToDevice_Success)
     JettyInfo jettyInfo;
     jettyInfo.handle = 1;
     
-    rtError_t error = StreamJettyHandler::SyncWqeBufferToDevice(stream_, &context, jettyInfo);
+    rtError_t error = StreamJettyHandler::FillWqeToDevice(stream_, &context, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(NpuDriverJettyTest, SyncWqeBufferToDevice_NullStream)
+TEST_F(NpuDriverJettyTest, FillWqeToDevice_NullStream)
 {
     StreamJettyContext context;
     JettyInfo jettyInfo;
-    rtError_t error = StreamJettyHandler::SyncWqeBufferToDevice(nullptr, &context, jettyInfo);
+    rtError_t error = StreamJettyHandler::FillWqeToDevice(nullptr, &context, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
@@ -1802,15 +1814,15 @@ TEST_F(NpuDriverJettyTest, JettyPool_ReserveJetty_FromFreePool)
     
     JettyPool pool(0);
     
-    rtError_t error1 = pool.ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error1 = pool.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error1, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
     ASSERT_TRUE(pool.FindJettyByState(JettyType::JETTY_TYPE_H2D, JettyState::FREE, freeInfo));
     ASSERT_NE(freeInfo, nullptr);
-    pool.MarkFree(freeInfo->handle);
+    pool.FreeJettyLazy(freeInfo->handle);
     
-    rtError_t error2 = pool.ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error2 = pool.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error2, RT_ERROR_NONE);
 }
 
@@ -1821,7 +1833,7 @@ TEST_F(NpuDriverJettyTest, JettyManager_ReserveJetty_Success)
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     
     JettyManager mgr(0);
-    rtError_t error = mgr.ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    rtError_t error = mgr.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -1863,6 +1875,7 @@ TEST_F(NpuDriverJettyTest, Handler_HandleUbDmaTask_H2D_Success)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     TaskInfo taskInfo = {};
+    taskInfo.stream = stream_;
     taskInfo.id = 2;
     taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
     taskInfo.u.memcpyAsyncTaskInfo.src = RtValueToPtr<void*>(0x30000);
@@ -1871,7 +1884,7 @@ TEST_F(NpuDriverJettyTest, Handler_HandleUbDmaTask_H2D_Success)
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
     rtError_t error2 = StreamJettyHandler::HandleUbDmaTask(
-        stream_, &taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
+        &taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
     EXPECT_EQ(error2, RT_ERROR_NONE);
 
     Runtime::Instance()->SetConnectUbFlag(false);
@@ -1937,29 +1950,29 @@ TEST_F(NpuDriverJettyTest, Handler_FillNopWqeForPartialBuffer_WithBuffers)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-// ========== Additional coverage for GrowBuffer ==========
+// ========== Additional coverage for ExpandCapacity ==========
 
-TEST_F(NpuDriverJettyTest, Context_GrowBuffer_Success)
+TEST_F(NpuDriverJettyTest, Context_ExpandCapacity_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER(halMemAlloc).stubs().will(invoke(StubHalMemAlloc));
     MOCKER(halMemFree).stubs().will(invoke(StubHalMemFree));
     StreamJettyContext context;
-    rtError_t error = context.GrowBuffer(stream_->Device_()->Driver_());
+    rtError_t error = context.ExpandCapacity(stream_->Device_()->Driver_());
     
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
 }
 // ========== Additional coverage for JettyManager functions ==========
 
-TEST_F(NpuDriverJettyTest, JettyManager_AcquireJettyWithRetry_Success)
+TEST_F(NpuDriverJettyTest, JettyManager_AllocJettyWithRetry_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     
     JettyManager mgr(0);
-    mgr.ReserveJetty(JettyType::JETTY_TYPE_H2D);
+    mgr.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     
     JettyInfo jettyInfo2;
-    rtError_t error = mgr.AcquireJettyWithRetry(JettyType::JETTY_TYPE_H2D, 0, nullptr, jettyInfo2);
+    rtError_t error = mgr.AllocJettyWithRetry(JettyType::JETTY_TYPE_H2D, 0, nullptr, jettyInfo2);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -1972,7 +1985,7 @@ TEST_F(NpuDriverJettyTest, JettyManager_BindJettyForStream_Success)
     JettyManager mgr(0);
     StreamJettyContext* ctx = mgr.GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
     ASSERT_NE(ctx, nullptr);
-    ctx->jettyHandle = 0;
+    ctx->jettyHandle = 0U;
     
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     rtError_t error = mgr.BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
@@ -1999,7 +2012,7 @@ TEST_F(NpuDriverJettyTest, JettyManager_DestroyStreamJettyContext_Success)
     mgr.GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
     
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
-    mgr.DestroyStreamJettyContext(streamId, JettyType::JETTY_TYPE_H2D);
+    mgr.DeleteStreamJettyContext(streamId, JettyType::JETTY_TYPE_H2D);
     
     StreamJettyContext* ctx = mgr.GetStreamJettyContext(streamId, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(ctx, nullptr);
@@ -2046,7 +2059,7 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDma_SoftwareSqUb_Success)
     taskInfo.u.memcpyAsyncTaskInfo.src = reinterpret_cast<void*>(0x10000);
     taskInfo.u.memcpyAsyncTaskInfo.destPtr = reinterpret_cast<void*>(0x20000);
     taskInfo.u.memcpyAsyncTaskInfo.size = 1024;
-    taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2D_SDMA;
+    taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
 
     rtError_t error = ConvertAsyncDma(&taskInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2116,7 +2129,7 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDmaForTaskUpdate_SoftwareSqUb_Persistent_
     taskInfo.u.memcpyAsyncTaskInfo.src = reinterpret_cast<void*>(0x10000);
     taskInfo.u.memcpyAsyncTaskInfo.destPtr = reinterpret_cast<void*>(0x20000);
     taskInfo.u.memcpyAsyncTaskInfo.size = 1024;
-    taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2D_SDMA;
+    taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
 
     TaskInfo updateTaskInfo = {};
     updateTaskInfo.stream = updateStream;
@@ -2273,10 +2286,9 @@ TEST_F(NpuDriverJettyTest, Context_RoundUpCapacity_AllBranches)
     }
 }
 
-static rtError_t StubHandleUbDmaTaskFixedCntOne(const Stream *stream, const TaskInfo *task,
+static rtError_t StubHandleUbDmaTaskFixedCntOne(const TaskInfo *task,
     JettyType jettyType, AsyncWqeInputPara *input, AsyncWqeOutputPara *output)
 {
-    (void)stream;
     (void)task;
     (void)jettyType;
     (void)input;

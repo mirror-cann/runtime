@@ -26,6 +26,7 @@
 #include "pctrace.hpp"
 #include "model.hpp"
 #include "capture_model.hpp"
+#include "jetty_pool.h"
 #include "label.hpp"
 #include "rw_lock.h"
 #include "error_message_manage.hpp"

@@ -276,6 +276,7 @@ set(runtimeut_src_aclgraph_list
     ${TOP_DIR}/src/runtime/feature/jetty/jetty_pool.cc
     ${TOP_DIR}/src/runtime/feature/jetty/stream_jetty_context.cc
     ${TOP_DIR}/src/runtime/feature/jetty/stream_jetty_handler.cc
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_ub_db_stub.cc
 )
 
 set(runtimeut_common_src_stream_list
@@ -771,6 +772,10 @@ set(runtimeut_david_src_list
     ${TOP_DIR}/src/runtime/core/src/kernel/json_parse.cc
     ${runtimeut_src_common_list}
     ${runtimeut_platform_list}
+)
+
+list(REMOVE_ITEM runtimeut_david_src_list
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_ub_db_stub.cc
 )
 add_library(runtime_ut_david_static_lib STATIC ${runtimeut_david_src_list})
 
@@ -1639,6 +1644,10 @@ set(runtimeut_v201_src_list
     ${runtimeut_src_common_list}
     ${runtimeut_platform_list}
     ${TOP_DIR}/src/runtime/core/src/common/ioctl/v201/ioctl_utils.cc
+)
+
+list(REMOVE_ITEM runtimeut_v201_src_list
+    ${TOP_DIR}/src/runtime/feature/jetty/stream_ub_db_stub.cc
 )
 
 add_executable(runtime_utest_task_v201

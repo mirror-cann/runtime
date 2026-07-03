@@ -66,7 +66,7 @@ rtError_t JettyPool::CreateJetty(JettyType type, uint32_t depth, JettyInfo &jett
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyPool::ReserveJetty(JettyType type)
+rtError_t JettyPool::PreAllocJetty(JettyType type)
 {
     std::lock_guard<std::mutex> lock(poolLock_);
     std::vector<JettyInfo> &pool = (type == JettyType::JETTY_TYPE_H2D) ? h2dJettyPool_ : d2dJettyPool_;
@@ -87,7 +87,7 @@ rtError_t JettyPool::ReserveJetty(JettyType type)
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyPool::ReleaseJetty(uint64_t handle, JettyType type)
+rtError_t JettyPool::FreeJetty(uint64_t handle, JettyType type)
 {
     std::lock_guard<std::mutex> lock(poolLock_);
 
@@ -115,7 +115,7 @@ rtError_t JettyPool::ReleaseJetty(uint64_t handle, JettyType type)
     return RT_ERROR_INVALID_VALUE;
 }
 
-rtError_t JettyPool::AcquireJetty(JettyType type, JettyInfo &jettyInfo)
+rtError_t JettyPool::AllocJetty(JettyType type, JettyInfo &jettyInfo)
 {
     std::lock_guard<std::mutex> lock(poolLock_);
     JettyInfo *freeJetty = nullptr;
@@ -131,13 +131,13 @@ rtError_t JettyPool::AcquireJetty(JettyType type, JettyInfo &jettyInfo)
     return RT_ERROR_JETTY_POOL_NO_RESOURCES;
 }
 
-rtError_t JettyPool::MarkFree(uint64_t handle)
+rtError_t JettyPool::FreeJettyLazy(uint64_t handle)
 {
     std::lock_guard<std::mutex> lock(poolLock_);
 
     JettyInfo *jetty = nullptr;
     if (!FindJettyByHandle(handle, jetty)) {
-        RT_LOG(RT_LOG_ERROR, "Jetty not found for MarkFree, device_id=%u, handle=%llu.",
+        RT_LOG(RT_LOG_ERROR, "Jetty not found for FreeJettyLazy, device_id=%u, handle=%llu.",
             deviceId_, handle);
         return RT_ERROR_INVALID_VALUE;
     }
@@ -148,7 +148,7 @@ rtError_t JettyPool::MarkFree(uint64_t handle)
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyPool::CreateLargeDepthJetty(JettyType type, uint32_t depth, JettyInfo &jettyInfo)
+rtError_t JettyPool::AllocLargeDepthJetty(JettyType type, uint32_t depth, JettyInfo &jettyInfo)
 {
     if (depth < JETTY_DEPTH_STANDARD) {
         RT_LOG(RT_LOG_ERROR, "Invalid large depth jetty depth=%u.", depth);
@@ -169,7 +169,7 @@ rtError_t JettyPool::CreateLargeDepthJetty(JettyType type, uint32_t depth, Jetty
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyPool::DestroyLargeDepthJetty(uint64_t handle)
+rtError_t JettyPool::FreeLargeDepthJetty(uint64_t handle)
 {
     std::lock_guard<std::mutex> lock(poolLock_);
 
@@ -211,7 +211,7 @@ rtError_t JettyPool::GetJettyInfoByHandle(uint64_t handle, JettyInfo &jettyInfo)
     return RT_ERROR_NONE;
 }
 
-rtError_t JettyPool::QueryJettyInfo(uint64_t handle, uint32_t &dieId, uint32_t &functionId, uint32_t &jettyId) const
+rtError_t JettyPool::GetJettyInfo(uint64_t handle, uint32_t &dieId, uint32_t &functionId, uint32_t &jettyId) const
 {
     Driver* const driver = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     if (driver == nullptr) {

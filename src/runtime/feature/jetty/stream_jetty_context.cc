@@ -53,7 +53,7 @@ rtError_t StreamJettyContext::AllocWqeBuffer(Driver *driver)
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamJettyContext::GrowBuffer(Driver *driver)
+rtError_t StreamJettyContext::ExpandCapacity(Driver *driver)
 {
     if (driver == nullptr) {
         return RT_ERROR_DRV_NULL;

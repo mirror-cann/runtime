@@ -475,7 +475,7 @@ static rtError_t ConvertAsyncDma2DForSoftWareSq(TaskInfo * const taskInfo2D, voi
     input.matrix2d.height = height;
     input.matrix2d.fixedSize = fixedSize;
     error = StreamJettyHandler::HandleUbDmaTask(
-        stream, taskInfo2D, jettyType, &input, &output);
+        taskInfo2D, jettyType, &input, &output);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, ret=%d.",
             devId, stream->Id_(), error);
@@ -655,7 +655,7 @@ static rtError_t ConvertAsyncDmaForSoftWareSqUb(TaskInfo * const taskInfo, TaskI
     }
     input.normal.len = memcpyAsyncTaskInfo->size;
     error = StreamJettyHandler::HandleUbDmaTask(
-        stream, taskInfo, jettyType, &input, &output);
+        taskInfo, jettyType, &input, &output);
     ERROR_RETURN_MSG_INNER(error, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, ret=%d.",
         devId, stream->Id_(), error);
     return error;

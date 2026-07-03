@@ -28,18 +28,18 @@ struct StreamJettyContext {
     // Host WQE buffers, each chunk is WQE_BUFFER_DEPTH * WQE_SIZE bytes
     std::vector<std::unique_ptr<uint8_t[]>> wqeBuffers;
 
-    uint32_t filledWqeCount = 0;
-    uint32_t capacity = 0;
+    uint32_t filledWqeCount = 0U;
+    uint32_t capacity = 0U;
 
     // Record of tasks that need jetty info patch: (taskId, wqeCount)
     std::vector<std::pair<uint32_t, uint32_t>> taskWqeCounts;
 
     JettyType jettyType = JettyType::JETTY_TYPE_MAX;
     bool isLargeDepth = false;
-    uint64_t jettyHandle = 0;
+    uint64_t jettyHandle = 0U;
 
     uint8_t *GetNextWqeBuffer() const;
-    rtError_t GrowBuffer(Driver *driver);
+    rtError_t ExpandCapacity(Driver *driver);
     rtError_t RoundUpCapacity(Driver *driver, uint32_t deviceId);
     void ReleaseBuffers(Driver *driver);
 
