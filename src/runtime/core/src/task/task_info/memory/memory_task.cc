@@ -1016,44 +1016,6 @@ static void PrintUbdmaErrorInfo(const MemcpyAsyncTaskInfo * const memcpyAsyncTas
     }
 }
 
-static uint8_t GetMemCpyErrorModule(const uint32_t copyType)
-{
-    uint8_t errorModuleType = ERR_MODULE_RTS;
-    if ((copyType >= RT_MEMCPY_DIR_SDMA_AUTOMATIC_ADD) && (copyType <= RT_MEMCPY_DIR_SDMA_AUTOMATIC_EQUAL)) {
-        errorModuleType = ERR_MODULE_HCCL;
-    }
-    return errorModuleType;
-}
-
-static const char_t* TransMemCopyDirToStr(const uint32_t copyType)
-{
-    struct CopyTypeToStr {
-        rtMemCopyAsyncDirect type;
-        const char_t *desc;
-    };
-
-    static const  CopyTypeToStr table[] = {
-        {RT_MEMCPY_DIR_H2D, "MEMCPY_DIR_H2D(0)"},
-        {RT_MEMCPY_DIR_D2H, "MEMCPY_DIR_D2H(1)"},
-        {RT_MEMCPY_DIR_D2D_SDMA, "MEMCPY_DIR_D2D_SDMA(2)"},
-        {RT_MEMCPY_DIR_D2D_HCCs, "MEMCPY_DIR_D2D_HCCS(3)"},
-        {RT_MEMCPY_DIR_D2D_PCIe, "MEMCPY_DIR_D2D_PCIE(4)"},
-        {RT_MEMCPY_ADDR_D2D_SDMA, "MEMCPY_ADDR_D2D_SDMA(5)"},
-        {RT_MEMCPY_DIR_D2D_UB, "MEMCPY_DIR_D2D_UB(6)"},
-        {RT_MEMCPY_DIR_SDMA_AUTOMATIC_ADD, "MEMCPY_DIR_SDMA_AUTOMATIC_ADD(10)"},
-        {RT_MEMCPY_DIR_SDMA_AUTOMATIC_MAX, "MEMCPY_DIR_SDMA_AUTOMATIC_MAX(11)"},
-        {RT_MEMCPY_DIR_SDMA_AUTOMATIC_MIN, "MEMCPY_DIR_SDMA_AUTOMATIC_MIN(12)"},
-        {RT_MEMCPY_DIR_SDMA_AUTOMATIC_EQUAL, "MEMCPY_DIR_SDMA_AUTOMATIC_EQUAL(13)"},
-    };
-
-    for (const auto& element : table) {
-        if (copyType == static_cast<uint32_t>(element.type)) {
-            return element.desc;
-        }
-    }
-    return "UNKNOWN";
-}
-
 void PrintErrorInfoForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t devId)
 {
     MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
@@ -1083,9 +1045,8 @@ void PrintErrorInfoForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t 
         if (memcpyAsyncTaskInfo->dsaSqeUpdateFlag || memcpyAsyncTaskInfo->isSqeUpdateD2H) {
             countNum += sprintf_s(errStr + countNum,
                 (static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum)),
-                "copy_type=%s, sq_id=%u, task_pos=%u, cp_size=%#" PRIx64,
-                TransMemCopyDirToStr(copyType), memcpyAsyncTaskInfo->sqId, memcpyAsyncTaskInfo->taskPos,
-                memcpyAsyncTaskInfo->size);
+                "copy_type=%u, sq_id=%u, task_pos=%u, cp_size=%#" PRIx64,
+                copyType, memcpyAsyncTaskInfo->sqId, memcpyAsyncTaskInfo->taskPos, memcpyAsyncTaskInfo->size);
             (void)snprintf_truncated_s(errStr + countNum,
                 (static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum)),
                 ", src_dev_addr=%#" PRIx64,
@@ -1093,8 +1054,8 @@ void PrintErrorInfoForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t 
         } else {
             countNum += sprintf_s(errStr + countNum,
                 (static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum)),
-                "copy_type=%s, copy_method=%u, memcpy_type=%u, copy_data_type=%u, length=%u",
-                TransMemCopyDirToStr(copyType), static_cast<uint32_t>(memcpyAsyncTaskInfo->copyMethod),
+                "copy_type=%u, copy_method=%u, memcpy_type=%u, copy_data_type=%u, length=%u",
+                copyType, static_cast<uint32_t>(memcpyAsyncTaskInfo->copyMethod),
                 static_cast<uint32_t>(memcpyAsyncTaskInfo->dmaAddr.phyAddr.flag),
                 static_cast<uint32_t>(memcpyAsyncTaskInfo->copyDataType), memcpyAsyncTaskInfo->dmaAddr.phyAddr.len);
             (void)snprintf_truncated_s(errStr + countNum,
@@ -1104,9 +1065,9 @@ void PrintErrorInfoForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t 
                 static_cast<uint64_t>(reinterpret_cast<uintptr_t>(memcpyAsyncTaskInfo->dmaAddr.phyAddr.dst)));
         }
     } else {
-        errorModuleType = GetMemCpyErrorModule(copyType);
+        errorModuleType = ERR_MODULE_HCCL;
         countNum += sprintf_s(errStr + countNum, (static_cast<size_t>(MSG_LENGTH) - static_cast<uint64_t>(countNum)),
-            "copy_type=%s, copy_method=%u, memcpy_type=%u, copy_data_type=%u, length=%" PRIu64, TransMemCopyDirToStr(copyType),
+            "copy_type=%u, copy_method=%u, memcpy_type=%u, copy_data_type=%u, length=%" PRIu64, copyType,
             static_cast<uint32_t>(memcpyAsyncTaskInfo->copyMethod),
             static_cast<uint32_t>(memcpyAsyncTaskInfo->dmaAddr.phyAddr.flag),
             static_cast<uint32_t>(memcpyAsyncTaskInfo->copyDataType), memcpyAsyncTaskInfo->size);
