@@ -597,7 +597,7 @@ static rtError_t CrossDeviceEventWait(Stream * const stm, Event * const evt, con
         evt->EventIdCountSub(eventId);
         return RT_ERROR_DEVICE_NULL;
     }
-    uint64_t addr = CalculateCrossDeviceEventAddr(srcDevice, eventId);
+    const uint64_t addr = CalculateCrossDeviceEventAddr(srcDevice, eventId);
     TaskInfo submitTask = {};
     // Use the MemWait task for cross-device event wait.
     TaskInfo *tsk = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEM_WAIT_VALUE, error, MEM_WAIT_SQE_NUM);
@@ -611,7 +611,7 @@ static rtError_t CrossDeviceEventWait(Stream * const stm, Event * const evt, con
     ScopeGuard tskErrRecycle(errRecycle);
     tsk->typeName = "MEM_WAIT_VALUE";
     tsk->type = TS_TASK_TYPE_MEM_WAIT_VALUE;
-    error = MemWaitValueTaskInit(tsk, RtPtrToPtr<void*>(addr), 1, 0x0);
+    error = MemWaitValueTaskInit(tsk, RtPtrToPtr<void*>(addr), 1UL, 0x0U);
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to init MemWait task, retCode=%#x.", static_cast<uint32_t>(error));
     MemWaitValueTaskInfo *memWaitTask = &tsk->u.memWaitValueTask;
     memWaitTask->event = evt;
@@ -705,12 +705,12 @@ rtError_t Event::Wait(Stream * const stm, const uint32_t timeout)
     RT_LOG(RT_LOG_INFO, "record device_id=%u, wait device_id=%u, event_id=%d.", recDevId, dev->Id_(), eventId);
     TaskInfo *tsk = nullptr;
     TaskInfo submitTask = {};
-    rtError_t errorReason;
     const bool isRemoteEventWait = (recDevId != dev->Id_());
 
     if (isRemoteEventWait) {
         return CrossDeviceEventWait(stm, this, eventId, recDevId);
     } else {
+        rtError_t errorReason;
         tsk = stm->AllocTask(&submitTask, TS_TASK_TYPE_STREAM_WAIT_EVENT, errorReason);
         COND_PROC_RETURN_ERROR_MSG_INNER((tsk == nullptr), errorReason,
                                         EventIdCountSub(eventId), "Failed to allocate task, retCode=%#x.",

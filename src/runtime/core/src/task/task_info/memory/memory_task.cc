@@ -1680,7 +1680,7 @@ void DoCompleteSuccessForMemWaitValueTask(TaskInfo* taskInfo, const uint32_t dev
     }
 
     Event *event = memWaitValueTask->event;
-    int32_t eventId = event->EventId_();
+    const int32_t eventId = event->EventId_();
     RT_LOG(RT_LOG_INFO, "Cross device event wait complete: device_id=%u, stream_id=%d, "
         "task_id=%hu, event_id=%d.", devId, stream->Id_(), taskInfo->id, eventId);
 
