@@ -52,6 +52,30 @@ using namespace cce::runtime;
 
 static uint16_t ind = 0;
 
+namespace {
+struct StreamDestroyPreCallbackCheck {
+    bool called = false;
+    rtError_t validationResult = RT_ERROR_INVALID_HANDLE;
+    Stream *stream = nullptr;
+};
+
+void ValidateStreamDestroyPreCallback(rtStream_t stm, rtStreamState state, void *args)
+{
+    if (state != RT_STREAM_STATE_DESTROY_PRE) {
+        return;
+    }
+    auto * const check = static_cast<StreamDestroyPreCallbackCheck *>(args);
+    if (check == nullptr) {
+        return;
+    }
+
+    Stream *stream = nullptr;
+    check->validationResult = GetValidatedObject<Stream>(stm, stream);
+    check->stream = stream;
+    check->called = true;
+}
+} // namespace
+
 class StreamTest : public testing::Test {
 protected:
     static void SetUpTestCase()
@@ -2285,6 +2309,29 @@ TEST_F(StreamTest, stream_handle_invalid_after_destroy)
 
     Stream *destroyedStream = nullptr;
     EXPECT_EQ(GetValidatedObject<Stream>(stream, destroyedStream), RT_ERROR_INVALID_HANDLE);
+}
+
+TEST_F(StreamTest, stream_destroy_pre_callback_receives_valid_handle)
+{
+    const char_t * const regName = "ValidateDestroyPreHandle";
+    StreamDestroyPreCallbackCheck check;
+    EXPECT_EQ(rtsRegStreamStateCallback(regName, ValidateStreamDestroyPreCallback, &check), RT_ERROR_NONE);
+
+    rtStream_t stream = nullptr;
+    rtError_t error = rtStreamCreate(&stream, 0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    Stream *createdStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    EXPECT_NE(createdStream, nullptr);
+
+    error = rtStreamDestroy(stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_TRUE(check.called);
+    EXPECT_EQ(check.validationResult, RT_ERROR_NONE);
+    EXPECT_EQ(check.stream, createdStream);
+
+    Stream *destroyedStream = nullptr;
+    EXPECT_EQ(GetValidatedObject<Stream>(stream, destroyedStream), RT_ERROR_INVALID_HANDLE);
+    EXPECT_EQ(rtsRegStreamStateCallback(regName, nullptr, nullptr), RT_ERROR_NONE);
 }
 
 TEST_F(StreamTest, stream_destroy_bound_stream_keeps_handle_valid)

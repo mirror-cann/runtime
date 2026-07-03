@@ -93,6 +93,14 @@ bool ShouldRestoreStreamAfterTearDownFailure(
     return !willDeleteOnTearDown;
 }
 
+void NotifyStreamDestroyPre(Stream * const stm)
+{
+    const Runtime * const rt = Runtime::Instance();
+    if (!Runtime::IsProcessExiting(rt)) {
+        StreamStateCallbackManager::Instance().Notify(stm, false);
+    }
+}
+
 const char_t *ContextStateToString(const ContextState state)
 {
     switch (state) {
@@ -746,7 +754,6 @@ rtError_t Context::TearDownOwnedStreamsOnContextTearDown()
         const int32_t streamId = tdStream->Id_();
         const bool willDeleteOnTearDown = WillStreamBeDeletedOnTearDown(tdStream);
         RT_LOG(RT_LOG_INFO, "Tear down stream abandon, stream_id=%d.", tdStream->Id_());
-        ResetEmbeddedInnerHandle<Stream>(tdStream);
         bool destroyTaskRecycledStream = false;
         const rtError_t streamError = TearDownOwnedStream(tdStream, true, &destroyTaskRecycledStream);
         bool restoredStream = false;
@@ -843,17 +850,15 @@ rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag) c
         RT_LOG(RT_LOG_WARNING, "Unknown flush pending stream tasks exception caught during final release.");
         return RT_ERROR_STREAM_INVALID;
     }
-    ResetEmbeddedInnerHandle<Stream>(tdStream);
     if (tdStream->NeedDelSelfStream()) {
+        ResetEmbeddedInnerHandle<Stream>(tdStream);
         const rtError_t deleteError = DeleteStreamNoThrowForPrimaryRelease(tdStream);
         stream = tdStream;
         return deleteError;
     }
 
-    const Runtime * const rt = Runtime::Instance();
-    if (!Runtime::IsProcessExiting(rt)) {
-        StreamStateCallbackManager::Instance().Notify(tdStream, false);
-    }
+    NotifyStreamDestroyPre(tdStream);
+    ResetEmbeddedInnerHandle<Stream>(tdStream);
     bool destroyTaskRecycledStream = false;
     tdStream->SetDestroyTaskRecycledOnTearDownOutput(&destroyTaskRecycledStream);
     const rtError_t error = tdStream->TearDown(false, flag);
@@ -862,6 +867,7 @@ rtError_t Context::TearDownStreamForPrimaryRelease(Stream *&stream, bool flag) c
         return HandlePrimaryReleaseStreamTearDownFailure(stream, tdStream, error, destroyTaskRecycledStream);
     }
 
+    const Runtime * const rt = Runtime::Instance();
     if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
         ((rt != nullptr) && rt->GetDisableThread())) {
         const rtError_t deleteError = DeleteStreamNoThrowForPrimaryRelease(tdStream);
@@ -978,10 +984,8 @@ void Context::FlushPendingTasksBeforeStreamTearDown(Stream *stm) const
 
 rtError_t Context::TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destroyTaskRecycledStream) const
 {
-    const Runtime * const rt = Runtime::Instance();
-    if (!Runtime::IsProcessExiting(rt)) {
-        StreamStateCallbackManager::Instance().Notify(stm, false);
-    }
+    NotifyStreamDestroyPre(stm);
+    ResetEmbeddedInnerHandle<Stream>(stm);
     if (destroyTaskRecycledStream != nullptr) {
         stm->SetDestroyTaskRecycledOnTearDownOutput(destroyTaskRecycledStream);
     }
@@ -997,6 +1001,7 @@ rtError_t Context::TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destr
     }
 
     const bool isRecycledByDestroyTask = (destroyTaskRecycledStream != nullptr) && (*destroyTaskRecycledStream);
+    const Runtime * const rt = Runtime::Instance();
     if (!isRecycledByDestroyTask && (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE) ||
         ((rt != nullptr) && rt->GetDisableThread()))) {
         DeleteStream(stm);
@@ -1026,6 +1031,7 @@ rtError_t Context::TearDownOwnedStream(Stream *stm, bool flag, bool *destroyTask
         stm->Model_()->Id_(), RT_ERROR_STREAM_INVALID);
     FlushPendingTasksBeforeStreamTearDown(stm);
     if (stm->NeedDelSelfStream()) {
+        ResetEmbeddedInnerHandle<Stream>(stm);
         DeleteStream(stm);
         return RT_ERROR_NONE;
     }
@@ -1595,7 +1601,6 @@ rtError_t Context::StreamDestroy(Stream * const stm, bool flag)
         }
     }
     taskLock.unlock();
-    ResetEmbeddedInnerHandle<Stream>(stm);
     bool destroyTaskRecycledStream = false;
     const rtError_t error = TearDownOwnedStream(stm, flag, &destroyTaskRecycledStream);
     if ((error != RT_ERROR_NONE) &&

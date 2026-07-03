@@ -50,6 +50,7 @@
 #include "runtime_keeper.h"
 #include "memory_task.h"
 #include "maintenance_task.h"
+#include "runtime_handle_guard.h"
 #include "rt_unwrap.h"
 #undef protected
 #undef private
@@ -863,6 +864,73 @@ TEST_F(ContextTest, TearDownKeepsDefaultStreamOnFailure)
     ctx->defaultStream_ = savedDefaultStream;
     ctx->isPrimary_ = savedPrimary;
 
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownStreamForPrimaryReleaseInvalidatesNormalStreamHandle)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, 0U, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+    EXPECT_FALSE(stream->NeedDelSelfStream());
+    rtStream_t handle = reinterpret_cast<rtStream_t>(stream->GetInnerHandle());
+
+    MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
+    Stream *tdStream = stream;
+    error = ctx->TearDownStreamForPrimaryRelease(tdStream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(tdStream, stream);
+
+    Stream *validatedStream = nullptr;
+    EXPECT_EQ(GetValidatedObject<Stream>(handle, validatedStream), RT_ERROR_INVALID_HANDLE);
+
+    GlobalMockObject::reset();
+    InitEmbeddedInnerHandle<Stream>(stream);
+    error = ctx->StreamDestroy(stream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    runtime->SetDisableThread(disableThread);
+    (void)runtime->PrimaryContextRelease(devId);
+}
+
+TEST_F(ContextTest, TearDownStreamForPrimaryReleaseInvalidatesSelfStreamHandle)
+{
+    int32_t devId = 0;
+    rtError_t error = rtGetDevice(&devId);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+
+    Runtime * const runtime = static_cast<Runtime *>(Runtime::Instance());
+    const bool disableThread = runtime->GetDisableThread();
+    runtime->SetDisableThread(false);
+
+    RefObject<Context*> * const refObject = static_cast<RefObject<Context*> *>(runtime->PrimaryContextRetain(devId));
+    ASSERT_NE(refObject, nullptr);
+    Context * const ctx = refObject->GetVal();
+    ASSERT_NE(ctx, nullptr);
+
+    Stream *stream = nullptr;
+    error = ctx->StreamCreate(0U, RT_STREAM_FORBIDDEN_DEFAULT, &stream);
+    ASSERT_EQ(error, RT_ERROR_NONE);
+    ASSERT_NE(stream, nullptr);
+    EXPECT_TRUE(stream->NeedDelSelfStream());
+
+    error = ctx->TearDownStreamForPrimaryRelease(stream, false);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(stream, nullptr);
     runtime->SetDisableThread(disableThread);
     (void)runtime->PrimaryContextRelease(devId);
 }
