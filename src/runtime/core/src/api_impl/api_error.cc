@@ -8,7 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "api_error.hpp"
-#include "common/enum_to_string_utils.hpp"
+#include "enum_desc.hpp"
+#include "device_enum_desc.hpp"
 #include "osal.hpp"
 #include "program.hpp"
 #include "stream.hpp"
@@ -1151,8 +1152,8 @@ rtError_t ApiErrorDecorator::StreamGetFlags(Stream * const stm,  uint32_t * cons
 rtError_t ApiErrorDecorator::GetMaxStreamAndTask(const uint32_t streamType, uint32_t * const maxStrCount,
     uint32_t * const maxTaskCount)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((streamType != RT_NORMAL_STREAM) && (streamType != RT_HUGE_STREAM), 
-        RT_ERROR_INVALID_VALUE, streamType, "[" + std::to_string(RT_NORMAL_STREAM) + ", " 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((streamType != RT_NORMAL_STREAM) && (streamType != RT_HUGE_STREAM), 
+        RT_ERROR_INVALID_VALUE, StreamTypeToString(streamType), "streamType", "[" + std::to_string(RT_NORMAL_STREAM) + ", " 
         + std::to_string(RT_HUGE_STREAM) + "]");
     NULL_PTR_RETURN_MSG_OUTER(maxStrCount, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(maxTaskCount, RT_ERROR_INVALID_VALUE);
@@ -1166,8 +1167,8 @@ rtError_t ApiErrorDecorator::GetMaxStreamAndTask(const uint32_t streamType, uint
 
 rtError_t ApiErrorDecorator::GetAvailStreamNum(const uint32_t streamType, uint32_t * const streamCount)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((streamType != RT_NORMAL_STREAM) && (streamType != RT_HUGE_STREAM), 
-        RT_ERROR_INVALID_VALUE, streamType, "[" + std::to_string(RT_NORMAL_STREAM) + ", " 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((streamType != RT_NORMAL_STREAM) && (streamType != RT_HUGE_STREAM), 
+        RT_ERROR_INVALID_VALUE, StreamTypeToString(streamType), "streamType", "[" + std::to_string(RT_NORMAL_STREAM) + ", " 
         + std::to_string(RT_HUGE_STREAM) + "]");
     NULL_PTR_RETURN_MSG_OUTER(streamCount, RT_ERROR_INVALID_VALUE);
     const rtError_t error = impl_->GetAvailStreamNum(streamType, streamCount);
@@ -2329,8 +2330,8 @@ rtError_t ApiErrorDecorator::ReduceAsyncV2(void * const dst, const void * const 
     NULL_PTR_RETURN_MSG_OUTER(src, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(overflowAddr, RT_ERROR_INVALID_VALUE);
     ZERO_RETURN_AND_MSG_OUTER(cnt);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((kind != RT_MEMCPY_SDMA_AUTOMATIC_ADD), RT_ERROR_INVALID_VALUE, 
-        kind, std::to_string(RT_MEMCPY_SDMA_AUTOMATIC_ADD));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((kind != RT_MEMCPY_SDMA_AUTOMATIC_ADD), RT_ERROR_INVALID_VALUE, 
+        ReduceKindToString(kind), "kind", "MEMCPY_SDMA_AUTOMATIC_ADD(10)");
 	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((cnt > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, 
         cnt, "(0, " + std::to_string(MAX_MEMCPY_SIZE_OF_D2D) + "]");
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM((type >= RT_DATA_TYPE_END) || (type < RT_DATA_TYPE_FP32), 
@@ -2534,8 +2535,8 @@ rtError_t ApiErrorDecorator::MemGetInfoEx(const rtMemInfoType_t memInfoType, siz
 {
     NULL_PTR_RETURN_MSG_OUTER(freeSize, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG_OUTER(totalSize, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((memInfoType < RT_MEMORYINFO_DDR) || (memInfoType > RT_MEMORYINFO_P2P_HUGE1G), 
-        RT_ERROR_INVALID_MEMORY_TYPE, memInfoType, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((memInfoType < RT_MEMORYINFO_DDR) || (memInfoType > RT_MEMORYINFO_P2P_HUGE1G), 
+        RT_ERROR_INVALID_MEMORY_TYPE, MemInfoTypeToString(memInfoType), "memInfoType", 
         "[" + std::to_string(RT_MEMORYINFO_DDR) + ", " + std::to_string(RT_MEMORYINFO_P2P_HUGE1G) + "]");
     const rtError_t error = impl_->MemGetInfoEx(memInfoType, freeSize, totalSize);
     ERROR_RETURN(error, "Get Memory extend info failed, memInfoType=%u, free=%zu, total=%zu.",
@@ -2880,8 +2881,8 @@ rtError_t ApiErrorDecorator::DeviceGetStreamPriorityRange(int32_t * const leastP
 rtError_t ApiErrorDecorator::GetDeviceInfo(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
     int64_t * const val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(moduleType == MODULE_TYPE_HOST_AICPU, RT_ERROR_INVALID_VALUE, 
-        moduleType, "not equal to " + std::to_string(MODULE_TYPE_HOST_AICPU));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME(moduleType == MODULE_TYPE_HOST_AICPU, RT_ERROR_INVALID_VALUE,
+        ModuleTypeToString(moduleType), "moduleType", "not equal to " + ModuleTypeToString(MODULE_TYPE_HOST_AICPU));
     uint32_t realDeviceId;
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(deviceId, &realDeviceId);
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error,
@@ -3710,8 +3711,8 @@ rtError_t ApiErrorDecorator::StreamSwitchEx(void * const ptr, const rtCondition_
     NULL_PTR_RETURN_MSG_OUTER(curStm, RT_ERROR_INVALID_VALUE);
 	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((condition > RT_LESS_OR_EQUAL) || (condition < 0), RT_ERROR_INVALID_VALUE, 
         condition, "[0, " + std::to_string(RT_LESS_OR_EQUAL) + "]");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((dataType > RT_SWITCH_INT64) || (dataType < 0), RT_ERROR_INVALID_VALUE, 
-        dataType, "[0, " + std::to_string(RT_SWITCH_INT64) + "]");
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((dataType > RT_SWITCH_INT64) || (dataType < 0), RT_ERROR_INVALID_VALUE, 
+        SwitchDataTypeToString(dataType), "dataType", "[0, " + std::to_string(RT_SWITCH_INT64) + "]");
     const rtError_t error = impl_->StreamSwitchEx(ptr, condition, valuePtr, trueStream, curStm, dataType);
     ERROR_RETURN(error, "Stream switch[extend] failed, condition=%d, dataType=%d.",
         condition, static_cast<int32_t>(dataType));
@@ -3737,8 +3738,8 @@ rtError_t ApiErrorDecorator::StreamSwitchN(void * const ptr, const uint32_t size
         NULL_PTR_RETURN_MSG_OUTER(trueStreamPtr[i], RT_ERROR_INVALID_VALUE);
     }
 
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((dataType > RT_SWITCH_INT64) || (dataType < 0), RT_ERROR_INVALID_VALUE, 
-        dataType, "[0, " + std::to_string(RT_SWITCH_INT64) + "]");
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((dataType > RT_SWITCH_INT64) || (dataType < 0), RT_ERROR_INVALID_VALUE, 
+        SwitchDataTypeToString(dataType), "dataType", "[0, " + std::to_string(RT_SWITCH_INT64) + "]");
     const rtError_t error = impl_->StreamSwitchN(ptr, size, valuePtr, trueStreamPtr, elementSize, curStm, dataType);
     ERROR_RETURN(error, "Stream switchN failed, size=%u(bytes), elementSize=%u(bytes) dataType=%d",
         size, elementSize, dataType);
@@ -5221,7 +5222,7 @@ rtError_t ApiErrorDecorator::CleanDeviceSatStatus(Stream * const stm)
 rtError_t ApiErrorDecorator::GetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t * const util)
 {
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM((kind >= RT_UTIL_TYPE_MAX) || (kind < 0), RT_ERROR_INVALID_VALUE, 
-        kind, "[0, " + std::to_string(RT_UTIL_TYPE_MAX) + ")");
+        kind, RtFmtMsg("[0, %d)", RT_UTIL_TYPE_MAX));
     NULL_PTR_RETURN_MSG_OUTER(util, RT_ERROR_INVALID_VALUE);
     int32_t realDeviceId;
     const rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(static_cast<uint32_t>(devId),

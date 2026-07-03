@@ -1188,8 +1188,8 @@ aclError aclrtMallocPhysicalImpl(aclrtDrvMemHandle *handle,
     bool isDeviceAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_DEVICE);
     if (isDeviceAlloc && ((prop->memAttr == ACL_DDR_MEM_HUGE) || (prop->memAttr == ACL_DDR_MEM_NORMAL) || (prop->memAttr == ACL_DDR_MEM_P2P_HUGE) 
         || (prop->memAttr == ACL_DDR_MEM_P2P_NORMAL))) {
-        ACL_LOG_ERROR("memAttr [%d] only support ACL_MEM_LOCATION_TYPE_HOST or ACL_MEM_LOCATION_TYPE_HOST_NUMA.", static_cast<int32_t>(prop->memAttr));
-        const std::string memAttrVal = std::to_string(prop->memAttr);
+        ACL_LOG_ERROR("memAttr [%s] only support ACL_MEM_LOCATION_TYPE_HOST or ACL_MEM_LOCATION_TYPE_HOST_NUMA.", acl::GetMemAttrDesc(prop->memAttr));
+        const std::string memAttrVal = acl::GetMemAttrDesc(prop->memAttr);
         std::string funcName = acl::AclErrorLogManager::GetFuncNameWithoutImplSuffix(__func__);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_VALUE_MSG,
             std::vector<const char *>({"func", "value", "param", "expect"}),
@@ -1203,10 +1203,10 @@ aclError aclrtMallocPhysicalImpl(aclrtDrvMemHandle *handle,
         const bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
         it->second(rtProp, isHostAlloc, isDeviceAlloc);
     } else {
-        ACL_LOG_ERROR("memAttr [%d] is not supported. "
+        ACL_LOG_ERROR("memAttr [%s] is not supported. "
                       "For details, please refer to the manual.",
-                      static_cast<int32_t>(prop->memAttr));
-        const std::string memAttrVal = std::to_string(prop->memAttr);
+                      acl::GetMemAttrDesc(prop->memAttr));
+        const std::string memAttrVal = acl::GetMemAttrDesc(prop->memAttr);
         std::string funcName = acl::AclErrorLogManager::GetFuncNameWithoutImplSuffix(__func__);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
             std::vector<const char *>({"func", "value", "param", "reason"}),
@@ -1424,8 +1424,8 @@ aclError aclrtMemGetAllocationGranularityImpl(aclrtPhysicalMemProp *prop, aclrtM
     bool isDeviceAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_DEVICE);
     if (isDeviceAlloc && ((prop->memAttr == ACL_DDR_MEM_HUGE) || (prop->memAttr == ACL_DDR_MEM_NORMAL) || (prop->memAttr == ACL_DDR_MEM_P2P_HUGE) 
         || (prop->memAttr == ACL_DDR_MEM_P2P_NORMAL))) {
-        ACL_LOG_ERROR("memAttr [%d] only support ACL_MEM_LOCATION_TYPE_HOST or ACL_MEM_LOCATION_TYPE_HOST_NUMA.", static_cast<int32_t>(prop->memAttr));
-        const std::string memAttrVal = std::to_string(prop->memAttr);
+        ACL_LOG_ERROR("memAttr [%s] only support ACL_MEM_LOCATION_TYPE_HOST or ACL_MEM_LOCATION_TYPE_HOST_NUMA.", acl::GetMemAttrDesc(prop->memAttr));
+        const std::string memAttrVal = acl::GetMemAttrDesc(prop->memAttr);
         std::string funcName = acl::AclErrorLogManager::GetFuncNameWithoutImplSuffix(__func__);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_VALUE_MSG,
             std::vector<const char *>({"func", "value", "param", "expect"}),
@@ -1439,10 +1439,10 @@ aclError aclrtMemGetAllocationGranularityImpl(aclrtPhysicalMemProp *prop, aclrtM
         const bool isHostAlloc = (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST) || (prop->location.type == ACL_MEM_LOCATION_TYPE_HOST_NUMA);
         it->second(rtProp1, isHostAlloc, isDeviceAlloc);
     } else {
-        ACL_LOG_ERROR("memAttr [%d] is not supported. "
+        ACL_LOG_ERROR("memAttr [%s] is not supported. "
                       "For details, please refer to the manual.",
-                      static_cast<int32_t>(prop->memAttr));
-        const std::string memAttrVal2 = std::to_string(prop->memAttr);
+                      acl::GetMemAttrDesc(prop->memAttr));
+        const std::string memAttrVal2 = acl::GetMemAttrDesc(prop->memAttr);
         std::string funcName = acl::AclErrorLogManager::GetFuncNameWithoutImplSuffix(__func__);
         acl::AclErrorLogManager::ReportInputError(acl::INVALID_PARAM_REASON_MSG,
             std::vector<const char *>({"func", "value", "param", "reason"}),

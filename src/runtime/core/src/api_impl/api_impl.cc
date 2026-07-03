@@ -9,7 +9,7 @@
  */
 
 #include <string>
-#include "common/enum_to_string_utils.hpp"
+#include "device_enum_desc.hpp"
 #include "cond_c.hpp"
 #include "internal_error_define.hpp"
 #include "label_c.hpp"
@@ -1561,12 +1561,12 @@ rtError_t ApiImpl::StreamWaitEvent(Stream * const stm, Event * const evt, const 
 
     if (evt->IsCapturing()) {
         COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, __func__,
-            StreamFlagsToString(curStm->Flags()), "stream flag",
+            std::to_string(curStm->Flags()), "stream flag",
             RtFmtMsg("Stream (stream_id=%d) does not support the ACL Graph", curStm->Id_()));
         COND_RETURN_AND_MSG_OUTER(curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, __func__,
             "stream", RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
         COND_RETURN_AND_MSG_OUTER(evt->IsEventWithoutWaitTask(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, __func__,
-            EventFlagsToString(evt->GetEventFlag()), "event flag",
+            std::to_string(evt->GetEventFlag()), "event flag",
             RtFmtMsg("Event (event_id=%d) does not support the ACL Graph", evt->EventId_()));
         const std::lock_guard<std::mutex> lk(curCtx->GetCaptureLock());
         if (evt->IsCapturing()) {
@@ -2043,7 +2043,7 @@ rtError_t ApiImpl::EventRecord(Event * const evt, Stream * const stm)
             "Calling rtEventCreate or rtEventCreateWithFlag without the external flag is not supported, mode=%d",
             evt->IsNewMode());
         COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, __func__,
-            StreamFlagsToString(curStm->Flags()), "stream flag",
+            std::to_string(curStm->Flags()), "stream flag",
             RtFmtMsg("Stream (stream_id=%d) does not support the ACL Graph", curStm->Id_()));
         COND_RETURN_AND_MSG_OUTER(curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, __func__,
             "stream", RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
@@ -2088,12 +2088,12 @@ rtError_t ApiImpl::EventReset(Event * const evt, Stream * const stm)
 
     if (evt->IsCapturing()) {
         COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, __func__,
-            StreamFlagsToString(curStm->Flags()), "stream flag",
+            std::to_string(curStm->Flags()), "stream flag",
             RtFmtMsg("Stream (stream_id=%d) does not support the ACL Graph", curStm->Id_()));
         COND_RETURN_AND_MSG_OUTER(curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, __func__,
             "stream", RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
         COND_RETURN_AND_MSG_OUTER(evt->IsEventWithoutWaitTask(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, __func__,
-            EventFlagsToString(evt->GetEventFlag()), "event flag",
+            std::to_string(evt->GetEventFlag()), "event flag",
             RtFmtMsg("Event (event_id=%d) does not support the ACL Graph", evt->EventId_()));
         const std::lock_guard<std::mutex> lk(curCtx->GetCaptureLock());
         if (evt->IsCapturing()) {
