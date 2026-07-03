@@ -16,8 +16,6 @@ import logging
 from enum import Enum
 
 ACL_RT_SET = {"acl_rt_impl.h"}
-ACL_MODEL_SET = set()
-ACL_OP_EXECUTOR_SET = set()
 WRAPPER_FILE_NAME = "acl_rt_wrapper.h"
 TARGET_WRAPPER_MAPS = (
     "ACL_FUNC_MAP",
@@ -52,28 +50,30 @@ def get_func_infos(func):
 PATTERN_FUNCTION = re.compile(r'ACL_FUNC_VISIBILITY\s+\n*(.+\w+\([^();]*\);)')
 
 HANDLE_GET = '\n'                       \
+             'namespace {\n' \
+             '\n' \
              'std::string GetSoPath(const void *instance, std::string so_name)\n'    \
              '{\n'   \
              '   Dl_info dlInfo;\n' \
              '   std::string realFilePath;\n'   \
              '   if (dladdr(instance, &dlInfo) == 0) {\n'   \
-             '       printf("Call dladdr failed.\\n");\n'    \
+             '       (void)printf("Call dladdr failed.\\n");\n'    \
              '       return realFilePath;\n'    \
              '   }\n'   \
              '   std::string soPath = dlInfo.dli_fname;\n'  \
              '   if (soPath.empty()) {\n'   \
-             '       printf("So file path is empty.\\n");\n' \
+             '       (void)printf("So file path is empty.\\n");\n' \
              '       return realFilePath;\n'    \
              '   }\n'   \
-             '   char resolvedPath[PATH_MAX] = {0x00};\n'   \
-             '   if (realpath(soPath.c_str(), resolvedPath) == NULL) {\n'   \
-             '       printf("Got realpath failed, soPath is %s.\\n", soPath.c_str());\n' \
+             '   char resolvedPath[PATH_MAX] = {};\n'   \
+             '   if (realpath(soPath.c_str(), resolvedPath) == nullptr) {\n'   \
+             '       (void)printf("Got realpath failed, soPath is %s.\\n", soPath.c_str());\n' \
              '       return realFilePath;\n'    \
              '    }\n'   \
              '    std::string soFilePath = resolvedPath;\n'  \
-             '    std::string::size_type pos = soFilePath.rfind(\'/\');\n' \
+             '    const std::string::size_type pos = soFilePath.rfind(\'/\');\n' \
              '    if (pos == std::string::npos) {\n' \
-             '        printf("Invalid path %s, not contain /\\n", soFilePath.c_str());\n' \
+             '        (void)printf("Invalid path %s, not contain /\\n", soFilePath.c_str());\n' \
              '        return realFilePath;\n'    \
              '    }\n'   \
              '    realFilePath = soFilePath.substr(0, pos + 1);\n'   \
@@ -82,47 +82,28 @@ HANDLE_GET = '\n'                       \
              '\n'   \
              '\n'   \
              'void *GetSoHandleAclRt() {\n' \
-             '  static void *dl_handle = dlopen(GetSoPath((void *)GetSoHandleAclRt, \
-"libruntime.so").c_str(), RTLD_NOW | RTLD_GLOBAL);\n'  \
-             '  if (!dl_handle) {\n'    \
-             '      printf("Failed to dlopen libruntime.so, please check your install environment.\\n");\n'    \
+             '  static void *dl_handle = dlopen(\n' \
+             '      GetSoPath((void *)&GetSoHandleAclRt, "libruntime.so").c_str(),\n' \
+             '      static_cast<int32_t>(static_cast<uint32_t>(RTLD_NOW) | ' \
+             'static_cast<uint32_t>(RTLD_GLOBAL)));\n'  \
+             '  if (dl_handle == nullptr) {\n'    \
+             '      (void)printf("Failed to dlopen libruntime.so, please check your install environment.\\n");\n'    \
              '      _exit(-1);\n'   \
              '  }\n'    \
              '  return dl_handle;\n'    \
              '}\n'  \
              '\n'   \
-             '\n'   \
-             'void *GetSoHandleAclModel() {\n' \
-             '  static void *dl_handle = dlopen(GetSoPath((void *)GetSoHandleAclModel, \
-"libacl_mdl.so").c_str(), RTLD_NOW | RTLD_GLOBAL);\n'  \
-             '  if (!dl_handle) {\n'    \
-             '      printf("Failed to dlopen libacl_mdl.so, please check your install environment.\\n");\n'    \
-             '      _exit(-1);\n'   \
-             '  }\n'    \
-             '  return dl_handle;\n'    \
-             '}\n'  \
-             '\n'   \
-             '\n'   \
-             'void *GetSoHandleAclOpExecutor() {\n' \
-             '  static void *dl_handle = dlopen(GetSoPath((void *)GetSoHandleAclOpExecutor, \
-"libacl_op_executor.so").c_str(), RTLD_NOW | RTLD_GLOBAL);\n'  \
-             '  if (!dl_handle) {\n'    \
-             '      printf("Failed to dlopen libacl_op_executor.so, please check your install environment.\\n");\n'    \
-             '      _exit(-1);\n'   \
-             '  }\n'    \
-             '  return dl_handle;\n'    \
-             '}\n'  \
+             '} // namespace\n' \
              '\n'   \
              '#define ASSERT_SOHANDLE_VALID(handle)\\\n'    \
-             'if (!handle) {\\\n'   \
-             '  printf("handle for \'%s\' is null.\\n", __FUNCTION__);\\\n' \
+             'if ((handle) == nullptr) {\\\n'   \
+             '  (void)printf("handle for \'%s\' is null.\\n", __FUNCTION__);\\\n' \
              '  _exit(-1);\\\n' \
              '}\n'
 
 
 class PathType(Enum):
     RUNTIME_INC = 1
-    GE_INC = 2
 
 
 def collect_header_files(path, path_type):
@@ -133,10 +114,6 @@ def collect_header_files(path, path_type):
         for file in files:
             file_name = file.split("/")[-1]
             if path_type == PathType.RUNTIME_INC and file_name in ACL_RT_SET:
-                file_path = os.path.join(root, file)
-                file_path = file_path.replace('\\', '/')
-                acl_headers.append(file_path)
-            elif path_type == PathType.GE_INC and (file_name in ACL_MODEL_SET or file_name in ACL_OP_EXECUTOR_SET):
                 file_path = os.path.join(root, file)
                 file_path = file_path.replace('\\', '/')
                 acl_headers.append(file_path)
@@ -297,10 +274,6 @@ def process_headers(headers, inc_dir, content):
         so_handler = "GetSoHandleAclRt"
         if file_name in ACL_RT_SET:
             so_handler = "GetSoHandleAclRt"
-        if file_name in ACL_OP_EXECUTOR_SET:
-            so_handler = "GetSoHandleAclOpExecutor"
-        if file_name in ACL_MODEL_SET:
-            so_handler = "GetSoHandleAclModel"
         content.append("// stub for {}\n".format(header[len(inc_dir):]))
         function_entries = collect_functions(header)
         logging.info("inc file:%s, functions numbers:%s", header, len(function_entries))
@@ -338,7 +311,7 @@ def implement_function(function_entry, so_handler):
 
 def generate_stub_file(ge_inc_dir, runtime_inc_dir):
     """input inc_dir and return relevant contents"""
-    ge_header_files = collect_header_files(ge_inc_dir, PathType.GE_INC)
+    ge_header_files = []
     runtime_header_files = collect_header_files(runtime_inc_dir, PathType.RUNTIME_INC)
     logging.info("header files has been generated")
     acl_content = generate_function(ge_header_files, runtime_header_files, ge_inc_dir, runtime_inc_dir)
@@ -372,11 +345,15 @@ def generate_function(ge_header_files, runtime_header_files, ge_inc_dir, runtime
     logging.info("include concent build success")
     total = 0
     content.append('\n')
+    content.append('extern "C" {\n')
+    content.append('\n')
     # generate implement
     total += process_headers(ge_header_files, ge_inc_dir, content)
     total += process_headers(runtime_header_files, runtime_inc_dir, content)
     logging.info("implement concent build success")
     logging.info('total functions number is %s', total)
+    content.append('} // extern "C"\n')
+    content.append('\n')
     content.append('// LCOV_EXCL_STOP\n')
     return content
 
