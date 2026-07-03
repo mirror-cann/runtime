@@ -38,7 +38,10 @@ public:
     bool Push(T &value)
     {
         std::unique_lock<std::mutex> lk(mtx_);
-        cvPop_.wait(lk, [this] { return !this->IsFull() || this->quit_;});
+        cvPop_.wait(lk, [this] { return !this->IsFullUnlocked() || this->quit_;});
+        if (this->quit_) {
+            return false;
+        }
         dataQueue_.push(value);
         cvPush_.notify_all();
         return true;
@@ -47,8 +50,8 @@ public:
     bool Pop(T &value)
     {
         std::unique_lock<std::mutex> lk(mtx_);
-        cvPush_.wait(lk, [this] { return !this->IsEmpty() || this->quit_; });
-        if (!this->IsEmpty()) {
+        cvPush_.wait(lk, [this] { return !this->IsEmptyUnlocked() || this->quit_; });
+        if (!this->IsEmptyUnlocked()) {
             value = this->dataQueue_.front();
             this->dataQueue_.pop();
             cvPop_.notify_all();
@@ -60,10 +63,49 @@ public:
 
     bool IsEmpty() const
     {
-        return dataQueue_.empty();
+        std::lock_guard<std::mutex> lk(mtx_);
+        return IsEmptyUnlocked();
     }
 
     bool IsFull() const
+    {
+        std::lock_guard<std::mutex> lk(mtx_);
+        return IsFullUnlocked();
+    }
+
+    void Init()
+    {
+        std::lock_guard<std::mutex> lk(mtx_);
+        quit_ = false;
+        std::queue<T>().swap(dataQueue_);
+    }
+
+    void Quit()
+    {
+        std::lock_guard<std::mutex> lk(mtx_);
+        quit_ = true;
+        cvPush_.notify_all();
+        cvPop_.notify_all();
+    }
+
+    uint32_t Size() const
+    {
+        std::lock_guard<std::mutex> lk(mtx_);
+        return dataQueue_.size();
+    }
+
+    void SetPath(std::string path)
+    {
+        path_ = path;
+    }
+
+private:
+    bool IsEmptyUnlocked() const
+    {
+        return dataQueue_.empty();
+    }
+
+    bool IsFullUnlocked() const
     {
         struct sysinfo info;
         const size_t queueSize = 60;
@@ -84,33 +126,6 @@ public:
         return (info.freeram < (info.totalram * (1 - ADX_QUEUE_FULL_SIZE))) && dataQueue_.size() > queueSize;
     }
 
-    void Init()
-    {
-        std::lock_guard<std::mutex> lk(mtx_);
-        quit_ = false;
-    }
-
-    void Quit()
-    {
-        std::lock_guard<std::mutex> lk(mtx_);
-        if (!quit_) {
-            quit_ = true;
-            cvPush_.notify_all();
-            cvPop_.notify_all();
-        }
-    }
-
-    uint32_t Size() const
-    {
-        return dataQueue_.size();
-    }
-
-    void SetPath(std::string path)
-    {
-        path_ = path;
-    }
-
-private:
     uint64_t InitMemLimit() const {
         std::ifstream memLimitV1(MEM_LIMIT_V1);
         std::ifstream memLimitV2(MEM_LIMIT_V2);

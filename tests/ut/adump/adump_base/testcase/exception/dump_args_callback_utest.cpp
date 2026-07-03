@@ -492,15 +492,16 @@ TEST_F(DumpArgsCallbackUtest, Test_Constructor_WithDisplayName)
     Tools::CaseWorkspace ws("Test_Constructor_WithDisplayName");
     rtExceptionInfo exception = {0};
     InitExceptionInfo(exception);
-    
+
     ExceptionDumpInfo info = {0};
     info.coreId = 0;
     info.coreType = 1;
     SetKernelName(info, "test");
     SetDisplayName(info, "display");
 
+    // 无 dfx args / extra tensor / 日志时，Dump 应跳过并返回成功，且不生成空文件
     DumpArgsCallback callback(exception, info, ws.Root());
-    EXPECT_EQ(callback.Dump(), ADUMP_FAILED);
+    EXPECT_EQ(callback.Dump(), ADUMP_SUCCESS);
 }
 
 TEST_F(DumpArgsCallbackUtest, Test_Constructor_EmptyDisplayName)
@@ -508,13 +509,14 @@ TEST_F(DumpArgsCallbackUtest, Test_Constructor_EmptyDisplayName)
     Tools::CaseWorkspace ws("Test_Constructor_EmptyDisplayName");
     rtExceptionInfo exception = {0};
     InitExceptionInfo(exception);
-    
+
     ExceptionDumpInfo info = {0};
     SetKernelName(info, "test");
     info.kernelDisplayName[0] = '\0';
-    
+
+    // 无数据无日志的空 dump 跳过，返回成功且不落盘
     DumpArgsCallback callback(exception, info, ws.Root());
-    EXPECT_EQ(callback.Dump(), ADUMP_FAILED);
+    EXPECT_EQ(callback.Dump(), ADUMP_SUCCESS);
 }
 
 TEST_F(DumpArgsCallbackUtest, Test_DumpExtraTensors_SkipNull)

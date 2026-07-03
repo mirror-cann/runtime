@@ -12,6 +12,7 @@
 #include <map>
 #include <cinttypes>
 #include <functional>
+#include <pthread.h>
 #include "mmpa_api.h"
 #include "adx_log.h"
 #include "file_utils.h"
@@ -21,7 +22,6 @@
 #include "adx_dump_process.h"
 #include "ide_os_type.h"
 namespace Adx {
-static const int32_t WAIT_RECORD_FILE_FINISH_TIME   = 500;
 static const std::size_t MAX_IP_LENGTH              = 16;
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
 constexpr char STRING_BIN[] = ".bin";
@@ -139,6 +139,11 @@ AdxDumpRecord::AdxDumpRecord()
     : dumpRecordFlag_(true),
       dumpInitNum_(0)
 {
+    int32_t ret = pthread_atfork(
+        AdxDumpRecord::PrepareFork, AdxDumpRecord::PostForkParent, AdxDumpRecord::PostForkChild);
+    if (ret != 0) {
+        IDE_LOGW("call pthread_atfork failed, ret: %d", ret);
+    }
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
     fileNameStatus_.reserve(FILENAME_CHECK_SIZE_MAX);
     for (size_t idx = 0; idx < FILENAME_CHECK_SIZE_MAX; ++idx) {
@@ -186,13 +191,6 @@ bool AdxDumpRecord::CanShutdownServer() const
     return dumpInitNum_ <= 1;
 }
 
-/**
- * @brief initialize record file
- * @param [in] recordPath : record file Path
- * @return
- *      IDE_DAEMON_ERROR : falied
- *      IDE_DAEMON_OK : success
- */
 int32_t AdxDumpRecord::Init(const std::string &hostPid)
 {
     // non-soc case
@@ -234,10 +232,35 @@ int32_t AdxDumpRecord::Init(const std::string &hostPid)
     if (!dumpPath_.empty() && dumpPath_.back() != OS_SPLIT_CHAR) {
         dumpPath_ += OS_SPLIT_CHAR;
     }
-    hostDumpDataInfoQueue_.Init();
+
+    std::lock_guard<std::mutex> lock(recordMutex_);
+    if (hostDumpDataInfoQueue_ == nullptr) {
+        hostDumpDataInfoQueue_.reset(new(std::nothrow) BoundQueueMemory<HostDumpDataInfo>());
+        IDE_CTRL_VALUE_FAILED(hostDumpDataInfoQueue_ != nullptr, return IDE_DAEMON_ERROR,
+            "Failed to new hostDumpDataInfoQueue");
+    }
+    hostDumpDataInfoQueue_->Init();
     IDE_LOGI("record remote dump temp path: %s", dumpPath_.c_str());
-    hostDumpDataInfoQueue_.SetPath(dumpPath_);
+    hostDumpDataInfoQueue_->SetPath(dumpPath_);
     dumpRecordFlag_ = true;
+    return IDE_DAEMON_OK;
+}
+
+int32_t AdxDumpRecord::StartRecord()
+{
+    std::lock_guard<std::mutex> lock(recordMutex_);
+    if (recordThread_.joinable()) {
+        IDE_LOGI("dump record thread has been started, no need to start again");
+        return IDE_DAEMON_OK;
+    }
+    dumpRecordFlag_ = true;
+    try {
+        recordThread_ = std::thread(&AdxDumpRecord::RecordDumpInfo, this);
+    } catch (const std::exception &ex) {
+        dumpRecordFlag_ = false;
+        IDE_LOGE("Create the dump record thread failed, message: %s", ex.what());
+        return IDE_DAEMON_ERROR;
+    }
     return IDE_DAEMON_OK;
 }
 
@@ -250,18 +273,39 @@ int32_t AdxDumpRecord::Init(const std::string &hostPid)
  */
 int32_t AdxDumpRecord::UnInit()
 {
+    std::lock_guard<std::mutex> lock(recordMutex_);
     IDE_LOGI("start to dump uninit");
     dumpRecordFlag_ = false;
-#if !defined(__IDE_UT) && !defined(__IDE_ST)
-    while (!DumpDataQueueIsEmpty()) {
-        mmSleep(WAIT_RECORD_FILE_FINISH_TIME);
+    if (hostDumpDataInfoQueue_ != nullptr) {
+        hostDumpDataInfoQueue_->Quit();
     }
-#if !defined(ANDROID)
-    this->hostDumpDataInfoQueue_.Quit();
-#endif
-#endif
+    if (recordThread_.joinable()) {
+        recordThread_.join();
+    }
     IDE_LOGI("dump uninit success");
     return IDE_DAEMON_OK;
+}
+
+void AdxDumpRecord::PrepareFork()
+{
+    Instance().recordMutex_.lock();
+}
+
+void AdxDumpRecord::PostForkParent()
+{
+    Instance().recordMutex_.unlock();
+}
+
+void AdxDumpRecord::PostForkChild()
+{
+    auto &instance = Instance();
+    instance.dumpRecordFlag_ = false;
+    if (instance.recordThread_.joinable()) {
+        instance.recordThread_.detach();
+    }
+
+    (void)instance.hostDumpDataInfoQueue_.release();
+    instance.recordMutex_.unlock();
 }
 
 /**
@@ -654,9 +698,9 @@ void AdxDumpRecord::RecordDumpInfo()
 {
     IDE_RUN_LOGI("start dump thread, remote dump record temp path : %s.", dumpPath_.c_str());
     uint32_t chunkHeaderLen = static_cast<uint32_t>(sizeof(DumpChunk));
-    while (dumpRecordFlag_ || !DumpDataQueueIsEmpty()) {
+    while (hostDumpDataInfoQueue_ != nullptr && (dumpRecordFlag_ || !DumpDataQueueIsEmpty())) {
         HostDumpDataInfo data = {nullptr, 0};
-        if (!hostDumpDataInfoQueue_.Pop(data)) {
+        if (!hostDumpDataInfoQueue_->Pop(data)) {
             continue;
         }
 
@@ -674,13 +718,14 @@ void AdxDumpRecord::RecordDumpInfo()
             "bufLen(%u) exceeds actual data buffer size(%u bytes), fileName: %s",
             dumpChunk->bufLen, data.recvLen - chunkHeaderLen, dumpChunk->fileName);
 
-        IDE_LOGI("Queue pop data success! filename: %s, offset: %" PRId64 ", bufLen: %u bytes, isLast: %u, flag: %d.",
-            dumpChunk->fileName, dumpChunk->offset, dumpChunk->bufLen, dumpChunk->isLastChunk, dumpChunk->flag);
+        IDE_LOGI("Queue pop data success! filename: %s, offset: %" PRId64 ", bufLen: %u bytes, "
+            "isLast: %u, flag: %d, remaining queue size: %u.",
+            dumpChunk->fileName, dumpChunk->offset, dumpChunk->bufLen, dumpChunk->isLastChunk,
+            dumpChunk->flag, hostDumpDataInfoQueue_->Size());
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
         if (FileNameCheck(*dumpChunk)) {
             IDE_CTRL_VALUE_FAILED_NODO(StatsDataParsing(*dumpChunk), continue,
                 "Failed to parse dump data with file name %s", dumpChunk->fileName);
-            IDE_LOGD("New popped data process success");
             continue;
         }
 #endif
@@ -701,7 +746,6 @@ void AdxDumpRecord::RecordDumpInfo()
         } else if (!RecordDumpDataToDisk(*dumpChunk)) {
             IDE_LOGE("failed to record dump data to disk.");
         }
-        IDE_LOGD("new popped data process success");
     }
     IDE_LOGI("exit record file thread");
 }
@@ -715,15 +759,22 @@ void AdxDumpRecord::RecordDumpInfo()
  */
 bool AdxDumpRecord::RecordDumpDataToQueue(HostDumpDataInfo &info)
 {
-    if (hostDumpDataInfoQueue_.IsFull()) {
+    if (hostDumpDataInfoQueue_ == nullptr) {
+        IDE_LOGW("dump data queue is not initialized, drop this data packet.");
+        return false;
+    }
+    if (hostDumpDataInfoQueue_->IsFull()) {
         const std::string tipFull = "Memory usage exceeds 85%, the dump data queue is full";
         const std::string tipReduce = "Please reduce model batches, images or dump layers";
         const std::string tipMemory = "Or clear the used memory or increase the maximum memory";
         IDE_LOGW("%s. %s. %s.", tipFull.c_str(), tipReduce.c_str(), tipMemory.c_str());
         return false;
     } else {
-        hostDumpDataInfoQueue_.Push(info);
-        IDE_LOGD("Insert dump data to queue success.");
+        if (!hostDumpDataInfoQueue_->Push(info)) {
+            IDE_LOGW("dump data queue has quit, drop this data packet.");
+            return false;
+        }
+        IDE_LOGI("Insert dump data to queue success, queue size: %u.", hostDumpDataInfoQueue_->Size());
     }
 
     return true;
@@ -738,7 +789,7 @@ bool AdxDumpRecord::RecordDumpDataToQueue(HostDumpDataInfo &info)
  */
 bool AdxDumpRecord::DumpDataQueueIsEmpty() const
 {
-    return hostDumpDataInfoQueue_.IsEmpty();
+    return hostDumpDataInfoQueue_ == nullptr || hostDumpDataInfoQueue_->IsEmpty();
 }
 
 void AdxDumpRecord::SetDumpPath(const std::string &dumpPath)

@@ -9,6 +9,8 @@
  */
 #include <gtest/gtest.h>
 #include <sstream>
+#include <unistd.h>
+#include <sys/wait.h>
 #include "mockcpp/mockcpp.hpp"
 #define protected public
 #define private public
@@ -85,6 +87,109 @@ TEST_F(ADX_DUMP_RECORD_TEST, UnInit)
     EXPECT_EQ(IDE_DAEMON_OK, ret);
 }
 
+TEST_F(ADX_DUMP_RECORD_TEST, StartRecordAndUnInit)
+{
+    // start the consumer thread, then UnInit drains the queue and joins it
+    Adx::AdxDumpRecord::Instance().Init("");
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().StartRecord());
+    // starting again while running is a no-op success
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().StartRecord());
+
+    const char *srcFile = "adx_data_dump_server_manager";
+    uint32_t dataLen = strlen(srcFile) + 1 + sizeof(Adx::DumpChunk);
+    MsgProto *msg = Adx::AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
+    Adx::SharedPtr<MsgProto> msgPtr(msg, IdeXfree);
+    Adx::HostDumpDataInfo info = {msgPtr, dataLen};
+    EXPECT_EQ(true, Adx::AdxDumpRecord::Instance().RecordDumpDataToQueue(info));
+
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().UnInit());
+    // after join, the queue must be fully drained
+    EXPECT_EQ(true, Adx::AdxDumpRecord::Instance().DumpDataQueueIsEmpty());
+}
+
+// queue is released after fork in child / before Init; access must be null-safe (no crash)
+TEST_F(ADX_DUMP_RECORD_TEST, QueueNullSafeAfterRelease)
+{
+    Adx::AdxDumpRecord::Instance().Init("");
+    EXPECT_NE(nullptr, Adx::AdxDumpRecord::Instance().hostDumpDataInfoQueue_.get());
+    // simulate the post-fork-child release: drop ownership of the inherited queue
+    (void)Adx::AdxDumpRecord::Instance().hostDumpDataInfoQueue_.release();
+    EXPECT_EQ(nullptr, Adx::AdxDumpRecord::Instance().hostDumpDataInfoQueue_.get());
+
+    // null queue must be treated as empty so the consumer loop can exit
+    EXPECT_EQ(true, Adx::AdxDumpRecord::Instance().DumpDataQueueIsEmpty());
+
+    // enqueue on a null queue must fail gracefully instead of crashing
+    const char *srcFile = "adx_data_dump_server_manager";
+    uint32_t dataLen = strlen(srcFile) + 1 + sizeof(Adx::DumpChunk);
+    MsgProto *msg = Adx::AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
+    Adx::SharedPtr<MsgProto> msgPtr(msg, IdeXfree);
+    Adx::HostDumpDataInfo info = {msgPtr, dataLen};
+    EXPECT_EQ(false, Adx::AdxDumpRecord::Instance().RecordDumpDataToQueue(info));
+
+    // RecordDumpInfo on a null queue must return immediately, not spin
+    Adx::AdxDumpRecord::Instance().dumpRecordFlag_ = true;
+    Adx::AdxDumpRecord::Instance().RecordDumpInfo();
+
+    // a fresh Init rebuilds the queue so dump can work again
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().Init(""));
+    EXPECT_NE(nullptr, Adx::AdxDumpRecord::Instance().hostDumpDataInfoQueue_.get());
+}
+
+// directly drive the pthread_atfork callbacks: child must reset to a clean, restartable state
+TEST_F(ADX_DUMP_RECORD_TEST, ForkCallbacksResetChildState)
+{
+    Adx::AdxDumpRecord::Instance().Init("");
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().StartRecord());
+
+    // PrepareFork locks recordMutex_; PostForkParent unlocks it (parent path keeps queue & thread)
+    Adx::AdxDumpRecord::PrepareFork();
+    Adx::AdxDumpRecord::PostForkParent();
+    EXPECT_NE(nullptr, Adx::AdxDumpRecord::Instance().hostDumpDataInfoQueue_.get());
+
+    // parent still owns a joinable thread; reclaim it cleanly
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().UnInit());
+
+    // PrepareFork + PostForkChild: child detaches the ghost thread, releases the inherited queue,
+    // clears the flag, and unlocks the mutex -> clean restartable state
+    Adx::AdxDumpRecord::Instance().Init("");
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().StartRecord());
+    Adx::AdxDumpRecord::PrepareFork();
+    Adx::AdxDumpRecord::PostForkChild();
+    EXPECT_EQ(false, Adx::AdxDumpRecord::Instance().dumpRecordFlag_);
+    EXPECT_EQ(nullptr, Adx::AdxDumpRecord::Instance().hostDumpDataInfoQueue_.get());
+    EXPECT_EQ(false, Adx::AdxDumpRecord::Instance().recordThread_.joinable());
+
+    // after the child reset, dump can be rebuilt and torn down again without hang
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().Init(""));
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().StartRecord());
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().UnInit());
+}
+
+// real fork: child rebuilds its own dump pipeline, parent keeps running
+TEST_F(ADX_DUMP_RECORD_TEST, ForkChildRebuildDump)
+{
+    Adx::AdxDumpRecord::Instance().Init("");
+    EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().StartRecord());
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child: pthread_atfork(PostForkChild) already reset state; rebuild a fresh pipeline
+        int32_t initRet = Adx::AdxDumpRecord::Instance().Init("");
+        int32_t startRet = Adx::AdxDumpRecord::Instance().StartRecord();
+        int32_t uninitRet = Adx::AdxDumpRecord::Instance().UnInit();
+        _exit((initRet == IDE_DAEMON_OK && startRet == IDE_DAEMON_OK &&
+               uninitRet == IDE_DAEMON_OK) ? 0 : 1);
+    } else if (pid > 0) {
+        int status = 0;
+        waitpid(pid, &status, 0);
+        EXPECT_TRUE(WIFEXITED(status));
+        EXPECT_EQ(0, WEXITSTATUS(status));
+        // parent's own pipeline is intact and can be torn down cleanly
+        EXPECT_EQ(IDE_DAEMON_OK, Adx::AdxDumpRecord::Instance().UnInit());
+    }
+}
+
 TEST_F(ADX_DUMP_RECORD_TEST, UpdateDumpInitNum)
 {
     Adx::AdxDumpRecord::Instance().UpdateDumpInitNum(true);
@@ -154,6 +259,8 @@ TEST_F(ADX_DUMP_RECORD_TEST, RecordDumpDataToQueue)
     MsgProto *msg = Adx::AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
     Adx::SharedPtr<MsgProto> msgPtr(msg, IdeXfree);
     Adx::HostDumpDataInfo info = {msgPtr, dataLen};
+    Adx::AdxDumpRecord::Instance().Init("");            // 复位队列 quit_，使 Push 可入队
+    Adx::AdxDumpRecord::Instance().dumpRecordFlag_ = false;  // 让 RecordDumpInfo 排空后即退出，避免同步调用阻塞
     bool ret = Adx::AdxDumpRecord::Instance().RecordDumpDataToQueue(info);
     EXPECT_EQ(true, ret);
     Adx::AdxDumpRecord::Instance().RecordDumpInfo();
@@ -228,6 +335,33 @@ TEST_F(ADX_DUMP_RECORD_TEST, RecordDumpDataToFullQueueLimit)
     EXPECT_EQ(false, ret);
 }
 
+TEST_F(ADX_DUMP_RECORD_TEST, PushAfterQuitRejected)
+{
+    const char *srcFile = "adx_data_dump_server_manager";
+    uint32_t dataLen = strlen(srcFile) + 1 + sizeof(Adx::DumpChunk);
+    MsgProto *msg = Adx::AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
+    Adx::SharedPtr<MsgProto> msgPtr(msg, IdeXfree);
+    Adx::HostDumpDataInfo info = {msgPtr, dataLen};
+
+    MOCKER(sysinfo).stubs().will(invoke(SysinfoAmpleMem));
+    BoundQueueMemory<HostDumpDataInfo> mem;
+
+    // Quit 之前正常入队
+    EXPECT_EQ(true, mem.Push(info));
+    EXPECT_EQ(1u, mem.Size());
+
+    // Quit 之后拒绝入队，队列大小不再增长（避免 join 后数据滞留丢失）
+    mem.Quit();
+    EXPECT_EQ(false, mem.Push(info));
+    EXPECT_EQ(1u, mem.Size());
+
+    // Init 复位：清空上一轮残留数据 + 恢复入队能力
+    mem.Init();
+    EXPECT_EQ(0u, mem.Size());          // 残留数据被清空
+    EXPECT_EQ(true, mem.Push(info));
+    EXPECT_EQ(1u, mem.Size());
+}
+
 TEST_F(ADX_DUMP_RECORD_TEST, RecordDumpInfoToMindspore)
 {
     const char *srcFile = "adx_data_dump_server_manager";
@@ -236,6 +370,8 @@ TEST_F(ADX_DUMP_RECORD_TEST, RecordDumpInfoToMindspore)
     MsgProto *msg = Adx::AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
     Adx::SharedPtr<MsgProto> msgPtr(msg, IdeXfree);
     Adx::HostDumpDataInfo info = {msgPtr, dataLen};
+    Adx::AdxDumpRecord::Instance().Init("");            // 复位队列 quit_，使 Push 可入队
+    Adx::AdxDumpRecord::Instance().dumpRecordFlag_ = false;  // 让 RecordDumpInfo 排空后即退出，避免同步调用阻塞
     bool ret = Adx::AdxDumpRecord::Instance().RecordDumpDataToQueue(info);
     EXPECT_EQ(true, ret);
     Adx::AdxDumpRecord::Instance().RecordDumpInfo();
@@ -249,6 +385,8 @@ TEST_F(ADX_DUMP_RECORD_TEST, RecordOptimizedMode)
     MsgProto *msg = Adx::AdxMsgProto::CreateMsgPacket(IDE_DUMP_REQ, 0, nullptr, dataLen);
     Adx::SharedPtr<MsgProto> msgPtr(msg, IdeXfree);
     Adx::HostDumpDataInfo info = {msgPtr, dataLen};
+    Adx::AdxDumpRecord::Instance().Init("");            // 复位队列 quit_，使 Push 可入队
+    Adx::AdxDumpRecord::Instance().dumpRecordFlag_ = false;  // 让 RecordDumpInfo 排空后即退出，避免同步调用阻塞
     bool ret = Adx::AdxDumpRecord::Instance().RecordDumpDataToQueue(info);
     EXPECT_EQ(true, ret);
     uint64_t statsItem = DUMP_STATS_MAX | DUMP_STATS_MIN | DUMP_STATS_AVG | DUMP_STATS_NAN | DUMP_STATS_NEG_INF | DUMP_STATS_POS_INF;

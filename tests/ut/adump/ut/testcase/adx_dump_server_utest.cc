@@ -86,7 +86,7 @@ TEST_F(ADX_DATADUMP_SERVER_UTEST, AdxDataDumpServerInit_AdxDumpRecord_Failed)
 TEST_F(ADX_DATADUMP_SERVER_UTEST, AdxDataDumpServerInit_CreateRecordProcess_Failed)
 {
     MOCKER(rtGetRunMode).stubs().will(returnValue(1));
-    MOCKER_CPP(&Thread::CreateDetachTaskWithDefaultAttr).stubs().will(returnValue(EN_ERROR));
+    MOCKER_CPP(&Adx::AdxDumpRecord::StartRecord).stubs().will(returnValue(IDE_DAEMON_ERROR));
     EXPECT_EQ(IDE_DAEMON_ERROR, AdxDataDumpServerInit());
     EXPECT_EQ(Adx::AdxDumpRecord::Instance().GetDumpInitNum(), 0);
     EXPECT_EQ(IDE_DAEMON_OK, AdxDataDumpServerUnInit());
@@ -98,8 +98,7 @@ TEST_F(ADX_DATADUMP_SERVER_UTEST, AdxDataDumpServerInit_CreateServerProcess_Fail
     MOCKER(rtGetRunMode).stubs().will(returnValue(1));
     MOCKER_CPP(&Thread::CreateDetachTaskWithDefaultAttr)
         .stubs()
-        .will(returnValue(EN_OK))
-        .then(returnValue(EN_ERROR));
+        .will(returnValue(EN_ERROR));
     EXPECT_EQ(IDE_DAEMON_ERROR, AdxDataDumpServerInit());
     EXPECT_EQ(Adx::AdxDumpRecord::Instance().GetDumpInitNum(), 0);
     EXPECT_EQ(IDE_DAEMON_OK, AdxDataDumpServerUnInit());
