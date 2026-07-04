@@ -639,5 +639,52 @@ rtError_t ApiImpl::GetDevMsg(const rtGetDevMsgType_t getMsgType, rtGetMsgCallbac
     return RT_ERROR_NONE;
 }
 
+rtError_t ApiImpl::IpcSetMemoryName(
+    const void *const ptr, const uint64_t byteCount, char_t *const name, const uint32_t len, const uint64_t flags)
+{
+    Context *const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+
+    const Runtime *const rtInstance = Runtime::Instance();
+    const rtChipType_t chipType = rtInstance->GetChipType();
+    if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
+        RT_LOG(RT_LOG_WARNING, "chipType=%d does not support, return.", chipType);
+        return RT_ERROR_FEATURE_NOT_SUPPORT;
+    }
+
+    auto error = curCtx->Device_()->Driver_()->CreateIpcMem(ptr, byteCount, name, len);
+    COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    if ((flags & RT_IPC_MEM_EXPORT_FLAG_DISABLE_PID_VALIDATION) != 0UL) {
+        error = curCtx->Device_()->Driver_()->SetIpcMemAttr(
+            name, SHMEM_ATTR_TYPE_NO_WLIST_IN_SERVER, SHMEM_NO_WLIST_ENABLE);
+        COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    }
+    RT_LOG(RT_LOG_DEBUG, "Name=%s, byteCount=%" PRIu64 ", len=%u, flags=%#" PRIx64 ".", name, byteCount, len, flags);
+    return error;
+}
+
+rtError_t ApiImpl::IpcOpenMemory(void ** const ptr, const char_t * const name, const uint64_t flags)
+{
+    RT_LOG(RT_LOG_INFO, "Open ipc memory, name=%s, flags=%#" PRIx64 ".", name, flags);
+    Context * const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+
+    if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
+        return RT_ERROR_FEATURE_NOT_SUPPORT;
+    }
+
+    rtError_t error = RT_ERROR_NONE;
+    Device* const dev = curCtx->Device_();
+    if ((flags & RT_IPC_MEM_IMPORT_FLAG_ENABLE_PEER_ACCESS) != 0UL) {
+        uint32_t peerPhyDeviceId = 0U;
+        error = NpuDriver::GetPhyDevIdByIpcMemName(name, &peerPhyDeviceId);
+        COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+        error = dev->EnableP2PWithOtherDevice(peerPhyDeviceId);
+        COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    }
+
+    error = dev->Driver_()->OpenIpcMem(name, RtPtrToPtr<uint64_t *>(ptr), curCtx->Device_()->Id_());
+    return error;
+}
 }
 }

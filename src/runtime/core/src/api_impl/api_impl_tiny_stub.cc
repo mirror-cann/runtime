@@ -602,5 +602,23 @@ rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const gro
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
+rtError_t ApiImpl::IpcSetMemoryName(
+    const void *const ptr, const uint64_t byteCount, char_t *const name, const uint32_t len, const uint64_t flags)
+{
+    UNUSED(ptr);
+    UNUSED(byteCount);
+    UNUSED(name);
+    UNUSED(len);
+    UNUSED(flags);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::IpcOpenMemory(void ** const ptr, const char_t * const name, const uint64_t flags)
+{
+    UNUSED(ptr);
+    UNUSED(name);
+    UNUSED(flags);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 }
 }
