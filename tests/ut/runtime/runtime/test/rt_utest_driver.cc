@@ -119,3 +119,16 @@ TEST_F(DriverTest, register_driver_fail)
     EXPECT_EQ(ret, false);
     delete rawDrv;
 }
+
+TEST_F(DriverTest, test_HostGetDevPointer_not_exist)
+{
+    rtError_t error;
+    NpuDriver* rawDrv = new NpuDriver();
+
+    MOCKER(halMemHostGetDevPointer)
+        .stubs()
+        .will(returnValue(DRV_ERROR_NOT_EXIST));
+    error = rawDrv->HostGetDevPointer(nullptr, 0, nullptr);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    delete rawDrv;
+}
