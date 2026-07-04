@@ -36,12 +36,12 @@ RTS_API rtError_t rtStreamGetTasks(rtStream_t const stm, rtTask_t* tasks, uint32
  * @brief wait an event with operation-level behavior flag
  * @param [in] stm the wait stream
  * @param [in] evt the event to wait
- * @param [in] timeout timeout value. For RT_EVENT_WAIT_EXTERNAL, only -1 is supported.
+ * @param [in] timeout timeout value. For RT_EVENT_WAIT_EXTERNAL, only 0 is supported.
  * @param [in] flag RT_EVENT_WAIT_DEFAULT for normal wait, RT_EVENT_WAIT_EXTERNAL for ACL graph external wait
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtStreamWaitEventWithFlag(rtStream_t stm, rtEvent_t evt, int32_t timeout, uint32_t flag);
+RTS_API rtError_t rtStreamWaitEventWithFlag(rtStream_t stm, rtEvent_t evt, uint32_t timeout, uint32_t flag);
 
 #if defined(__cplusplus)
 }

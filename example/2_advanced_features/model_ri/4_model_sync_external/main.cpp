@@ -50,7 +50,7 @@ static int Scenario1StreamRecordGraphWaitExternal()
     aclmdlRI modelRI;
 
     CHECK_ERROR(aclmdlRICaptureBegin(graphStream, ACL_MODEL_RI_CAPTURE_MODE_RELAXED));
-    CHECK_ERROR(aclrtStreamWaitEventWithFlag(graphStream, event, -1, ACL_EVENT_WAIT_EXTERNAL));
+    CHECK_ERROR(aclrtStreamWaitEventWithFlag(graphStream, event, 0U, ACL_EVENT_WAIT_EXTERNAL));
     CHECK_ERROR(aclrtMemcpyAsync(dstDevice, size, srcDevice, size, ACL_MEMCPY_DEVICE_TO_DEVICE, graphStream));
     CHECK_ERROR(aclmdlRICaptureEnd(graphStream, &modelRI));
 
@@ -159,7 +159,7 @@ static int Scenario3Graph1RecordGraph2WaitExternal()
     CHECK_ERROR(aclmdlRICaptureEnd(graphStream1, &modelRI1));
 
     CHECK_ERROR(aclmdlRICaptureBegin(graphStream2, ACL_MODEL_RI_CAPTURE_MODE_RELAXED));
-    CHECK_ERROR(aclrtStreamWaitEventWithFlag(graphStream2, event, -1, ACL_EVENT_WAIT_EXTERNAL));
+    CHECK_ERROR(aclrtStreamWaitEventWithFlag(graphStream2, event, 0U, ACL_EVENT_WAIT_EXTERNAL));
     CHECK_ERROR(aclrtMemcpyAsync(dstDevice, size, midDevice, size, ACL_MEMCPY_DEVICE_TO_DEVICE, graphStream2));
     CHECK_ERROR(aclmdlRICaptureEnd(graphStream2, &modelRI2));
 

@@ -227,13 +227,14 @@ TEST_F(RtApiTest, rtStreamWaitEventWithFlagApiValidation)
     rtEvent_t event = nullptr;
     ExpectCreateStreamEvent(stream, event, RT_EVENT_DDSYNC_NS);
 
-    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL + 1U),
+    EXPECT_EQ(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_DEFAULT), RT_ERROR_NONE);
+    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL + 1U),
         RT_ERROR_NONE);
     EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, 1U, RT_EVENT_WAIT_EXTERNAL), RT_ERROR_NONE);
 
     const uint32_t originalEnvFlags = ThreadLocalContainer::GetEnvFlags();
     ThreadLocalContainer::SetEnvFlags(0xA5A50000U);
-    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
     EXPECT_EQ(ThreadLocalContainer::GetEnvFlags(), API_ENV_FLAGS_DEFAULT);
     ThreadLocalContainer::SetEnvFlags(originalEnvFlags);
@@ -248,13 +249,13 @@ TEST_F(RtApiTest, rtEventWithFlagExternalRejectsUnsupportedEventModes)
     rtEvent_t event = nullptr;
     ExpectCreateStreamEvent(stream, event);
     EXPECT_NE(rtEventRecordWithFlag(event, stream, RT_EVENT_RECORD_EXTERNAL), RT_ERROR_NONE);
-    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
     ExpectDestroy(stream, event);
 
     ExpectCreateStreamEvent(stream, event, RT_EVENT_TIME_LINE);
     EXPECT_NE(rtEventRecordWithFlag(event, stream, RT_EVENT_RECORD_EXTERNAL), RT_ERROR_NONE);
-    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    EXPECT_NE(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
     ExpectDestroy(stream, event);
 }
@@ -277,7 +278,7 @@ TEST_F(RtApiTest, capture_external_refresh_table_mixed_layout)
 
     ASSERT_EQ(rtEventRecordWithFlag(event1, stream, RT_EVENT_RECORD_EXTERNAL), RT_ERROR_NONE);
     ASSERT_EQ(rtEventRecordWithFlag(event2, stream, RT_EVENT_RECORD_EXTERNAL), RT_ERROR_NONE);
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, event1, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, event1, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
 
     rtModel_t modelHandle = nullptr;

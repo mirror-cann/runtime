@@ -105,7 +105,7 @@ TEST_F(ExternalEventTaskTest910B, ExternalWaitPlaceholderMaterializesMemWaitReso
     Stream *captureStream = streamObj->GetCaptureStream();
     ASSERT_NE(captureStream, nullptr);
 
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, event, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
     ASSERT_EQ(model->externalWaitEventItems_.size(), 1U);
     TaskInfo *waitTask = captureStream->Device_()->GetTaskFactory()->GetTask(captureStream->Id_(),
@@ -170,9 +170,9 @@ TEST_F(ExternalEventTaskTest910B, ExternalWaitLaunchRetainsRecordedProducerOnly)
     EnableSoftwareRecord(rt_ut::UnwrapOrNull<Event>(resetEvent), &recordValue, 8);
     rt_ut::UnwrapOrNull<Event>(resetEvent)->SetHasReset(true);
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, recordedEvent, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, recordedEvent, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, resetEvent, static_cast<uint32_t>(-1), RT_EVENT_WAIT_EXTERNAL),
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, resetEvent, 0U, RT_EVENT_WAIT_EXTERNAL),
         RT_ERROR_NONE);
     ASSERT_EQ(rtStreamEndCapture(stream, &modelHandle), RT_ERROR_NONE);
 

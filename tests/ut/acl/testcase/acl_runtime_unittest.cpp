@@ -877,28 +877,25 @@ TEST_F(UTEST_ACL_Runtime, aclrtStreamWaitEventWithFlagTest)
     aclError ret = aclrtStreamWaitEventWithFlag(stream, nullptr, 1, ACL_EVENT_WAIT_DEFAULT);
     EXPECT_NE(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsEventWait(_, _, _))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamWaitEventWithFlag(_, _, _, _))
         .WillOnce(Return(RT_ERROR_NONE));
     ret = aclrtStreamWaitEventWithFlag(stream, event, 1, ACL_EVENT_WAIT_DEFAULT);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_DEFAULT);
-    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
-
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamWaitEventWithFlag(_, _, _, _))
         .WillOnce(Return(RT_ERROR_NONE));
-    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_EXTERNAL);
+    ret = aclrtStreamWaitEventWithFlag(stream, event, 0U, ACL_EVENT_WAIT_EXTERNAL);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_EXTERNAL + 1U);
+    ret = aclrtStreamWaitEventWithFlag(stream, event, 0U, ACL_EVENT_WAIT_EXTERNAL + 1U);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    ret = aclrtStreamWaitEventWithFlag(stream, event, 1, ACL_EVENT_WAIT_EXTERNAL);
+    ret = aclrtStreamWaitEventWithFlag(stream, event, 1U, ACL_EVENT_WAIT_EXTERNAL);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamWaitEventWithFlag(_, _, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
-    ret = aclrtStreamWaitEventWithFlag(stream, event, -1, ACL_EVENT_WAIT_EXTERNAL);
+    ret = aclrtStreamWaitEventWithFlag(stream, event, 0U, ACL_EVENT_WAIT_EXTERNAL);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 

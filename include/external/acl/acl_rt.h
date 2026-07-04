@@ -2852,13 +2852,13 @@ ACL_FUNC_VISIBILITY aclError aclrtStreamWaitEvent(aclrtStream stream, aclrtEvent
  *
  * @param stream [IN]   the wait stream. If using the default Stream, set NULL for ACL_EVENT_WAIT_DEFAULT.
  * @param event [IN]    the event to wait
- * @param timeout [IN]  timeout value. For ACL_EVENT_WAIT_EXTERNAL, only -1 is supported.
+ * @param timeout [IN]  timeout value. For ACL_EVENT_WAIT_EXTERNAL, only 0 is supported.
  * @param flag [IN]     ACL_EVENT_WAIT_DEFAULT for normal wait, ACL_EVENT_WAIT_EXTERNAL for ACL graph external wait
  *
  * @retval ACL_SUCCESS The function is successfully executed.
  * @retval OtherValues Failure
  */
-ACL_FUNC_VISIBILITY aclError aclrtStreamWaitEventWithFlag(aclrtStream stream, aclrtEvent event, int32_t timeout,
+ACL_FUNC_VISIBILITY aclError aclrtStreamWaitEventWithFlag(aclrtStream stream, aclrtEvent event, uint32_t timeout,
     uint32_t flag);
 
 /**

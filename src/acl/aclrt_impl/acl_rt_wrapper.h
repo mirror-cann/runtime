@@ -116,7 +116,7 @@
     _(aclError, aclrtStreamGetPriority, (aclrtStream stream, uint32_t * priority), (stream, priority)) \
     _(aclError, aclrtStreamGetFlags, (aclrtStream stream, uint32_t * flags), (stream, flags)) \
     _(aclError, aclrtStreamWaitEvent, (aclrtStream stream, aclrtEvent event), (stream, event)) \
-    _(aclError, aclrtStreamWaitEventWithFlag, (aclrtStream stream, aclrtEvent event, int32_t timeout, uint32_t flag), (stream, event, timeout, flag)) \
+    _(aclError, aclrtStreamWaitEventWithFlag, (aclrtStream stream, aclrtEvent event, uint32_t timeout, uint32_t flag), (stream, event, timeout, flag)) \
     _(aclError, aclrtStreamWaitEventWithTimeout, (aclrtStream stream, aclrtEvent event, int32_t timeout), (stream, event, timeout)) \
     _(aclError, aclrtSetGroup, (int32_t groupId), (groupId)) \
     _(aclError, aclrtGetGroupCount, (uint32_t * count), (count)) \
