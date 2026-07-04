@@ -33,6 +33,7 @@ public:
     rtCondHandleFlag_t GetFlag() const { return flag_; }
     Model *GetParentModel() const { return model_; }
     uint64_t *GetDevAddr() const { return devAddr_; }
+    void SetSubModelExeStream(Stream *exeStream);
 
     rtInnerObject *GetInnerHandle()
     {

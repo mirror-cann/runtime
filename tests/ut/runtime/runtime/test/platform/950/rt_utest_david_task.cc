@@ -2180,7 +2180,7 @@ protected:
         MOCKER_CPP_VIRTUAL(device_, &Device::CheckFeatureSupport)
             .stubs().with(eq(TS_FEATURE_SOFTWARE_SQ_ENABLE)).will(returnValue(true));
         MOCKER_CPP_VIRTUAL(device_, &Device::CheckFeatureSupport)
-            .stubs().with(eq(TS_FEATURE_ACLGRAPH_CONDOP)).will(returnValue(true));
+            .stubs().with(eq(TS_FEATURE_ACLGRAPH_COND_OP)).will(returnValue(true));
 
         MOCKER(CheckCaptureModelSupportSoftwareSq).stubs().will(returnValue(RT_ERROR_NONE));
 

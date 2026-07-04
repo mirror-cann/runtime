@@ -160,10 +160,6 @@ public:
 
     rtError_t StreamAddCondTask(CondHandle *condHandle, rtCondTaskParams params, Stream * const stm, uint32_t flags);
     rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm);
-    rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm);
-    
-
-    rtError_t CheckCondTaskParamsSize(rtCondTaskParams params);
 
     rtError_t ModelGetNodes(const Model * const mdl, uint32_t * const num);
 
