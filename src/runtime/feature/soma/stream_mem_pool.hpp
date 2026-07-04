@@ -36,7 +36,7 @@ namespace runtime {
 constexpr uint64_t DEVICE_POOL_MIN_BLOCK_SIZE = (2UL << 20); // 2 MB
 constexpr uint64_t DEVICE_POOL_ALIGN_SIZE = (2UL << 20);     // 2 MB
 constexpr uint32_t APP_MODE_ID = 33U;
-constexpr size_t HASH_GOLDEN_RATIO = 0x9E3779B9U;
+constexpr size_t HASH_GOLDEN_RATIO = 0x9E3779B9UL;
 constexpr size_t BYTES_PER_MB = 1024U * 1024U;
 constexpr int32_t INVALID_STREAM_ID = -1;
 constexpr int32_t INVALID_SEQ_ID = -1;
