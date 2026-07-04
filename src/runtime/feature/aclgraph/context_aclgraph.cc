@@ -249,7 +249,7 @@ static inline rtError_t CheckCaptureModelIsCaptured(Model * const mdl)
     COND_PROC((mdl == nullptr), return RT_ERROR_NONE);
     CaptureModel *captureModelTmp = dynamic_cast<CaptureModel *>(mdl);
     if (captureModelTmp->GetCaptureModelStatus() != RtCaptureModelStatus::NONE) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, "rtStreamBeginCaptureToModel", "model", RtFmtMsg("Model (model_id=%u) is already captured", mdl->Id_()));
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, "rtStreamBeginCaptureToModel", "modelRI", RtFmtMsg("ModelRI (model_id=%u) is already captured", mdl->Id_()));
         return RT_ERROR_MODEL_CAPTURED;
     }
 
