@@ -2802,7 +2802,7 @@ rtError_t ApiImpl::MemcpyAsync(void * const dst, const uint64_t destMax, const v
         COND_RETURN_AND_MSG_OUTER((params == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
             sizeof(rtMemcpyCallbackParam), "new");
         UvmCallback::CreateMemcpyCallbackParam(dst, destMax, src, cnt, kind, checkKind, curStm, params);
-        rtError_t error = LaunchHostFunc(curStm, UvmCallback::MemcpyAsyncCallback, static_cast<void *>(params));
+        const rtError_t error = LaunchHostFunc(curStm, &UvmCallback::MemcpyAsyncCallback, static_cast<void *>(params));
         ERROR_PROC_RETURN_MSG_INNER(error, delete params, "CallbackLaunch fails in MemcopyAsync, err:%#x.", static_cast<uint32_t>(error));
         return RT_ERROR_NONE;
     }
@@ -4808,7 +4808,7 @@ rtError_t ApiImpl::IpcOpenNotify(Notify ** const retNotify, const char_t * const
     COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013,
         sizeof(Notify), "new");
 
-    rtError_t error = (*retNotify)->OpenIpcNotify(name, flag);
+    const rtError_t error = (*retNotify)->OpenIpcNotify(name, flag);
     ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(*retNotify);,
                                 "Ipc open notify failed, retCode=%#x", static_cast<uint32_t>(error));
     return error;

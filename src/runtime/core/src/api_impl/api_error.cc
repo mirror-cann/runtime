@@ -5178,7 +5178,7 @@ rtError_t ApiErrorDecorator::SetStreamPriorityValue(Stream * const stm, const ui
         RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1006, __func__, "Parameter stm->Flags() value " +
         std::to_string(stm->Flags()),
         "The current stream is used to carry AI CPU scheduling tasks and does not support priority setting");
-    int32_t validPriority = static_cast<int32_t>(streamPriority);
+    const int32_t validPriority = static_cast<int32_t>(streamPriority);
     uint32_t priority = streamPriority;
     if (validPriority < RT_STREAM_GREATEST_PRIORITY) {
         priority = RT_STREAM_GREATEST_PRIORITY;
