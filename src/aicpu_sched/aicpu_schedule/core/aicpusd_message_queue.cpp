@@ -283,6 +283,16 @@ void MessageQueue::SendResponse(const uint32_t errCode, const uint32_t status)
     SetCQE(errCode, status);
 }
 
+bool MessageQueue::IsMsqRspComplete()
+{
+    if (readMsqStatusFunc_ == nullptr) {
+        return false;
+    }
+
+    const MsqStatus status = readMsqStatusFunc_();
+    return (status.valid == 0U);
+}
+
 void MessageQueue::SetCQE(const uint32_t errCode, const uint32_t status)
 {
     /**

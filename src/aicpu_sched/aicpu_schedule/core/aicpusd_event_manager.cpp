@@ -1128,7 +1128,12 @@ namespace AicpuSchedule {
                 (void)ResponseMsq(0U, 0U, resp);
                 return AICPU_SCHEDULE_OK;
             }
-            (void)ProcessEvent(drvEventInfo, threadIndex);
+            const int32_t ret = ProcessEvent(drvEventInfo, threadIndex);
+            hwts_response_t resp = {};
+            resp.result = static_cast<uint32_t>(AicpuUtil::TransformInnerErrCode(ret));
+            resp.status = (ret == AICPU_SCHEDULE_OK) ? static_cast<uint32_t>(TASK_SUCC) :
+                                                       static_cast<uint32_t>(TASK_FAIL);
+            (void)ResponseMsq(0U, 0U, resp);
         }
 
         return AICPU_SCHEDULE_OK;
@@ -1139,6 +1144,10 @@ namespace AicpuSchedule {
     {
         (void)deviceId;
         (void)subEventId;
+        if (MessageQueue::IsMsqRspComplete()) {
+            aicpusd_info("msq already response complete, skip send response");
+            return AICPU_SCHEDULE_OK;
+        }
         MessageQueue::SendResponse(resp.result, resp.status);
         return AICPU_SCHEDULE_OK;
     }

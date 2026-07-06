@@ -5190,10 +5190,31 @@ bool WaitMsqInfoOnceFake(MsqDatas &datas)
     return true;
 }
 
+bool WaitMsqDrvEventFake(MsqDatas &datas)
+{
+    AicpuTopicMailbox mb = {};
+    mb.pid = 1;
+    mb.topicId = EVENT_DRV_MSG;
+    datas = *(PtrToPtr<AicpuTopicMailbox, MsqDatas>(&mb));
+    return true;
+}
+
 TEST_F(AICPUScheduleTEST, DoOnceMsqRescueOpSuccess)
 {
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     MOCKER_CPP(&MessageQueue::WaitMsqInfoOnce).stubs().will(invoke(WaitMsqInfoOnceFake));
+    int ret = AicpuEventManager::GetInstance().DoOnceMsq(0, 0, 0);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+}
+
+TEST_F(AICPUScheduleTEST, DoOnceMsqLoopOwnerSendResponse)
+{
+    MOCKER_CPP(&AicpuQueueEventProcess::ProcessDrvMsg)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&MessageQueue::SendResponse)
+        .expects(once());
+    MOCKER_CPP(&MessageQueue::WaitMsqInfoOnce).stubs().will(invoke(WaitMsqDrvEventFake));
     int ret = AicpuEventManager::GetInstance().DoOnceMsq(0, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
@@ -5266,6 +5287,26 @@ TEST_F(AICPUScheduleTEST, SendMsqResponseSuccess) {
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     int ret = AicpuEventManager::GetInstance().ResponseMsq(0, 1, rsp);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+}
+
+TEST_F(AICPUScheduleTEST, SendMsqResponseCompleteSkipSend) {
+    hwts_response_t rsp = {};
+    MOCKER_CPP(&MessageQueue::IsMsqRspComplete).stubs().will(returnValue(true));
+    MOCKER_CPP(&MessageQueue::SendResponse).expects(never());
+    int ret = AicpuEventManager::GetInstance().ResponseMsq(0, 1, rsp);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    GlobalMockObject::verify();
+}
+
+TEST_F(AICPUScheduleTEST, SendMsqResponseIncompleteDoSend) {
+    hwts_response_t rsp = {};
+    rsp.result = 1U;
+    rsp.status = 2U;
+    MOCKER_CPP(&MessageQueue::IsMsqRspComplete).stubs().will(returnValue(false));
+    MOCKER_CPP(&MessageQueue::SendResponse).expects(once()).with(eq(1U), eq(2U));
+    int ret = AicpuEventManager::GetInstance().ResponseMsq(0, 1, rsp);
+    EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
+    GlobalMockObject::verify();
 }
 
 TEST_F(AICPUScheduleTEST, ComputeProcessStart_LoadKernelSo_extend) {

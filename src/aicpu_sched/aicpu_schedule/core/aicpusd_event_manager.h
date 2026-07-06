@@ -12,6 +12,7 @@
 #define CORE_AICPUSD_EVENT_MANAGER_PROC_H
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <mutex>
 #include <thread>

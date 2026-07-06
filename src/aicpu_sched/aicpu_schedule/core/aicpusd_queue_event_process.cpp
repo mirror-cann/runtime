@@ -80,9 +80,6 @@ namespace AicpuSchedule {
                 ret = resRet;
             }
         }
-        if (FeatureCtrl::GetAicpuSchedMode() == SCHED_MODE_MSGQ) {
-            MessageQueue::SendResponse(0U, 0U);
-        }
         aicpusd_debug("End to process drv event. eventId=%u, subEventId=%u, hostPid=%d, grpId=%u",
                       event.comm.event_id, event.comm.subevent_id, event.comm.host_pid, event.comm.grp_id);
         return ret;

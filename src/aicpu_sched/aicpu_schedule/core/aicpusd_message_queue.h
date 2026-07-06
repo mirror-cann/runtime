@@ -50,6 +50,7 @@ public:
     int32_t InitMessageQueue(const uint32_t deviceId, const std::vector<uint32_t> &aicpuPhyIds);
     int32_t InitMessageQueueForThread(const size_t threadIndex) const;
     static bool WaitMsqInfoOnce(MsqDatas &datas);
+    static bool IsMsqRspComplete();
     static void SendResponse(const uint32_t errCode, const uint32_t status);
 
     using MsqStatusFunc = MsqStatus (*)();
