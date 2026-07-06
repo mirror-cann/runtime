@@ -33,6 +33,7 @@
 #include "notify_task.h"
 #include "profiler.hpp"
 #include "thread_local_container.hpp"
+#include "capture_model.hpp"
 #include "rt_unwrap.h"
 #undef private
 #undef protected
@@ -502,6 +503,52 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, socket_close)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtCtxDestroy(ctx);
     EXPECT_EQ(ret, RT_ERROR_NONE);
+}
+
+TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, sub_aclgraph_execution_failed)
+{
+    rtContext_t ctx;
+    rtError_t ret = rtCtxCreate(&ctx, 0, 0);
+    ASSERT_EQ(ret, RT_ERROR_NONE);
+
+    Context *currentCtx = Runtime::Instance()->CurrentContext();
+    ASSERT_NE(currentCtx, nullptr);
+
+    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+
+    auto *captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    captureModel->context_ = currentCtx;
+    captureModel->isSubCaptureModel_ = true;
+
+    auto *stream = new Stream(device, 0);
+    stream->streamId_ = 5;
+    stream->SetModel(captureModel);
+    captureModel->ModelPushFrontStream(stream);
+
+    TaskInfo taskInfo = {};
+    taskInfo.errorCode = RT_ERROR_WAIT_TIMEOUT;
+    taskInfo.type = TS_TASK_TYPE_MODEL_EXECUTE;
+    taskInfo.bindFlag = true;
+    taskInfo.stream = stream;
+    taskInfo.typeName = "MODEL_EXECUTE";
+
+    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
+    modelExecuteTaskInfo->errorStreamId = 100;
+    modelExecuteTaskInfo->errorTaskId = 200;
+    modelExecuteTaskInfo->modelId = 300;
+
+    MOCKER(PrintErrorInfo).stubs();
+    MOCKER(TaskFailCallBack).stubs();
+    MOCKER(GetRealReportFaultTaskForModelExecuteTask).stubs().with(outBoundP(&taskInfo)).will(returnValue(&taskInfo));
+    ReportErrorInfoForModelExecuteTask(&taskInfo, 0);
+
+    captureModel->ModelRemoveStream(stream);
+    stream->DelModel(captureModel);
+    delete stream;
+    delete captureModel;
+    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ret = rtCtxDestroy(ctx);
+    ASSERT_EQ(ret, RT_ERROR_NONE);
 }
 
 class CloudV2CaptureModelProfilerTest : public testing::Test
