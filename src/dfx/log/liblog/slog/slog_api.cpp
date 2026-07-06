@@ -630,7 +630,7 @@ static uint32_t GetAcllogModuleId(int32_t moduleId)
     return static_cast<uint32_t>(moduleId) & MODULE_ID_MASK;
 }
 
-extern "C" __attribute((weak)) int32_t acllogCheckDebugLevel(int32_t moduleId, int32_t logLevel)
+extern "C" LOG_FUNC_VISIBILITY __attribute((weak)) int32_t acllogCheckDebugLevel(int32_t moduleId, int32_t logLevel)
 {
     if (moduleId < 0) {
         return FALSE;
@@ -648,7 +648,8 @@ extern "C" __attribute((weak)) int32_t acllogCheckDebugLevel(int32_t moduleId, i
     return CheckLogLevel(moduleId, logLevel);
 }
 
-extern "C" __attribute((weak)) void acllogVaList(int32_t moduleId, int32_t level, const char *fmt, va_list list)
+extern "C" LOG_FUNC_VISIBILITY __attribute((weak)) void acllogVaList(int32_t moduleId, int32_t level, const char *fmt,
+    va_list list)
 {
     if (g_slogFuncInfo[DLOG_VA_LIST].handle != nullptr) {
         reinterpret_cast<DlogVaListFunc>(g_slogFuncInfo[DLOG_VA_LIST].handle)(moduleId, level, fmt, list);
@@ -671,7 +672,8 @@ extern "C" __attribute((weak)) void acllogVaList(int32_t moduleId, int32_t level
     (void)DlogWriteInner(&msgArg, fmt, list);
 }
 
-extern "C" __attribute((weak)) void acllogRecord(int32_t moduleId, int32_t level, const char *fmt, ...)
+extern "C" LOG_FUNC_VISIBILITY __attribute((weak)) void acllogRecord(int32_t moduleId, int32_t level, const char *fmt,
+    ...)
 {
     va_list list;
     va_start(list, fmt);
