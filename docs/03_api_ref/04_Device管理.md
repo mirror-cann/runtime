@@ -757,6 +757,10 @@ aclError aclrtDevicePeerAccessStatus(int32_t deviceId, int32_t peerDeviceId, int
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
 
+### 约束说明
+
+该接口仅可用于查询取值范围内两个Device ID对应设备的数据交互状态。若传入的Device ID超出[0, (可用的Device数量-1)]取值区间，接口查询结果为0或直接返回错误码ACL_ERROR_RT_PARAM_INVALID。
+
 
 <br>
 <br>
