@@ -9,10 +9,13 @@
  */
 #ifndef ADX_DUMP_RECORE_H
 #define ADX_DUMP_RECORE_H
+#include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <cstdint>
 #include <sstream>
+#include <thread>
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
 #include "proto/dump_task.pb.h"
 #endif
@@ -84,6 +87,7 @@ public:
     int32_t Init(const std::string &hostPid);
     int32_t UnInit();
     void SetWorkPath(const std::string &path);
+    int32_t StartRecord();
     void RecordDumpInfo();
     bool RecordDumpDataToQueue(HostDumpDataInfo &info);
     bool DumpDataQueueIsEmpty() const;
@@ -97,6 +101,9 @@ public:
 
 private:
     bool JudgeRemoteFalg(const std::string &msg) const;
+    static void PrepareFork();
+    static void PostForkParent();
+    static void PostForkChild();
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
     bool DumpDataToCallback(const std::string &filename, const std::string &dumpData, int64_t offSet, int32_t flag);
     bool StatsDataParsing(const DumpChunk &dumpChunk);
@@ -117,11 +124,14 @@ private:
 #endif
 
 private:
-    bool dumpRecordFlag_;
+    std::atomic<bool> dumpRecordFlag_;
     std::string dumpPath_;
     std::string workPath_;
-    BoundQueueMemory<HostDumpDataInfo> hostDumpDataInfoQueue_;
+    std::unique_ptr<BoundQueueMemory<HostDumpDataInfo>> hostDumpDataInfoQueue_;
     int32_t dumpInitNum_;
+    std::thread recordThread_;
+    std::mutex recordMutex_;
+
 #if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
     uint64_t dumpStatsItem_{0};
     uint32_t filenameIndex_{0};

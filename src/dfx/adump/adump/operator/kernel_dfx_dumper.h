@@ -59,6 +59,7 @@ private:
     std::string dumpPath_;
     std::atomic<bool> taskInit_ = false;
     std::atomic<bool> taskRunning_ = false;
+    bool destructed_ = false;
     std::thread taskThread_;
     std::mutex mutex_;
     std::unique_ptr<BoundQueueMemory<DumpDfxInfo>> dumpDfxInfoQueue_;

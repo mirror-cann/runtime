@@ -218,9 +218,27 @@ void DumpFile::SetTensorBuffer(const std::vector<TensorBuffer> &tensorBuffer)
     }
 }
 
+bool DumpFile::HasDumpData() const
+{
+    if (!inputs_.empty() || !outputs_.empty() || !workspaces_.empty() || !inputBuffer_.empty()) {
+        return true;
+    }
+#if !defined(ADUMP_SOC_HOST) || ADUMP_SOC_HOST == 1
+    if (!mc2Spaces_.empty()) {
+        return true;
+    }
+#endif
+    return false;
+}
+
 int32_t DumpFile::Dump(std::vector<std::string> &record)
 {
-    int32_t ret = file_.IsFileOpen();
+    if (!HasDumpData()) {
+        IDE_LOGI("No dump data, skip dump file.");
+        return ADUMP_SUCCESS;
+    }
+
+    int32_t ret = file_.EnsureOpen();
     if (ret != ADUMP_SUCCESS) {
         return ret;
     }

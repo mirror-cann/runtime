@@ -24,7 +24,7 @@ namespace Adx {
 class DumpFile {
 public:
     DumpFile(const uint32_t deviceId, const std::string &filePath) : deviceId_(deviceId),
-        file_(filePath, M_RDWR | M_CREAT | M_APPEND, M_IRUSR | M_IWUSR) {}
+        file_(filePath, M_RDWR | M_CREAT | M_APPEND, M_IRUSR | M_IWUSR, true) {}
     void SetHeader(const std::string &opName);
     void SetInputTensors(const std::vector<DumpTensor> &inputTensors);
     void SetOutputTensors(const std::vector<DumpTensor> &outputTensors);
@@ -37,6 +37,7 @@ public:
 #endif
 
 private:
+    bool HasDumpData() const;
     void SetAicInfo(std::vector<std::string> &record);
     int32_t WriteHeader() const;
     int32_t WriteInputTensors();

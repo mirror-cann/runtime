@@ -172,6 +172,7 @@ int32_t KernelDfxDumper::UnInitTask()
 void KernelDfxDumper::UnInit()
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    destructed_ = true;
     UnInitTask();
     dumpPath_.clear();
     enabledDfxTypes_.clear();
@@ -207,7 +208,6 @@ void KernelDfxDumper::PostForkChild()
         instance.dumpDfxInfoQueue_ = nullptr;
     }
     instance.mutex_.unlock();
-    IDE_LOGI("KernelDfxDumper has been reset in the child process.");
 }
 
 KernelDfxDumper::KernelDfxDumper()
@@ -263,6 +263,7 @@ int32_t KernelDfxDumper::EnableDfxDumper(const DumpDfxConfig config)
         return ADUMP_SUCCESS;
     }
     std::lock_guard<std::mutex> lock(mutex_);
+    destructed_ = false;
     std::set<rtKernelDfxInfoType> rtDfxTypes;
     GetRegisterDfxTypes(config.dfxTypes, rtDfxTypes);
     for (auto& rtDfxType : rtDfxTypes) {
@@ -326,6 +327,9 @@ std::string KernelDfxDumper::GetDfxInfoFilePath(uint32_t coreId, std::string &co
 int32_t KernelDfxDumper::DumpKernelDfxInfo(rtKernelDfxInfoType dfxType, uint32_t coreType, uint32_t coreId,
     const uint8_t *buffer, size_t length)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+    IDE_CTRL_VALUE_WARN(!destructed_, return ADUMP_FAILED, "KernelDfxDumper has been destructed.");
+
     std::string dfxTypeStr = GetDfxTypeStr(dfxType);
     std::string coreTypeStr = GetCoreTypeStr(coreType);
     IDE_CTRL_VALUE_WARN(IsEnabled(dfxType), return ADUMP_FAILED,

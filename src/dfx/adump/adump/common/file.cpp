@@ -22,11 +22,27 @@ constexpr int64_t MAX_BUFFER_LENGTH = 512;
 static const std::string MAPPING_FILE_NAME = "mapping.csv";
 }  // namespace
 
-File::File(const std::string &path, int32_t flag, mmMode_t mode) : filePath_(path), fd_(INVALID_FILE_FD)
+File::File(const std::string &path, int32_t flag, mmMode_t mode, bool lazyOpen)
+    : filePath_(path), fd_(INVALID_FILE_FD), flag_(flag), mode_(mode)
 {
+    if (lazyOpen) {
+        return;
+    }
     if (Open(flag, mode) != ADUMP_SUCCESS) {
         fd_ = INVALID_FILE_FD;
     }
+}
+
+int32_t File::EnsureOpen()
+{
+    if (fd_ != INVALID_FILE_FD) {
+        return ADUMP_SUCCESS;
+    }
+    if (Open(flag_, mode_) != ADUMP_SUCCESS) {
+        fd_ = INVALID_FILE_FD;
+        return ADUMP_FAILED;
+    }
+    return ADUMP_SUCCESS;
 }
 
 File::~File()

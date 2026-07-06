@@ -92,14 +92,10 @@ TEST_F(DumpFileUtest, Test_DumpData)
     int32_t ret = dumpFile.Dump(logRecord);
     EXPECT_EQ(ret, ADUMP_SUCCESS);
 
+    // 所有 tensorAddr 均为 nullptr，无任何真实 tensor/workspace/buffer 数据进入落盘容器，
+    // 日志仅为附加信息；新口径下无真实数据不落盘，故文件不应生成
     DumpFileChecker checker;
-    EXPECT_EQ(checker.Load(dumpFilePath), true);
-    EXPECT_EQ(checker.CheckHead("test_op"), true);
-    // tensorAddr is nullptr, so SetInputTensors/SetOutputTensors AND SetWorkspaces skip it;
-    // only the header is written
-    EXPECT_EQ(checker.CheckInputTensorNum(0), true);
-    EXPECT_EQ(checker.CheckOutputTensorNum(0), true);
-    EXPECT_EQ(checker.CheckWorkspaceNum(0), true);
+    EXPECT_EQ(checker.Load(dumpFilePath), false);
 }
 
 // TEST_F(DumpFileUtest, Test_Dump_With_CopyDeviceData_Fail)

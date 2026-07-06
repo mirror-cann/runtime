@@ -16,9 +16,10 @@
 namespace Adx {
 class File {
 public:
-    explicit File(const std::string &path, int32_t flag, mmMode_t mode = M_IRUSR | M_IWUSR);
+    explicit File(const std::string &path, int32_t flag, mmMode_t mode = M_IRUSR | M_IWUSR, bool lazyOpen = false);
     ~File();
     int32_t IsFileOpen() const;
+    int32_t EnsureOpen();
     int64_t Write(const char * const buffer, int64_t length) const;
     int64_t Read(char *buffer, int64_t length) const;
     static int32_t Copy(const std::string &srcPath, const std::string &dstPath);
@@ -29,6 +30,8 @@ private:
     int32_t AddMapping(const std::string &filePath, const std::string &fileName, const std::string &hashName);
     std::string filePath_;
     int32_t fd_;
+    int32_t flag_;
+    mmMode_t mode_;
 };
 } // namespace Adx
 #endif // ADUMP_COMMON_FILE_H

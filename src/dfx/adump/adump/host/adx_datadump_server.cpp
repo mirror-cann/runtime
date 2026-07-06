@@ -43,13 +43,6 @@ IdeThreadArg AdxDataDumpServerProcess(const IdeThreadArg arg)
     return nullptr;
 }
 
-IdeThreadArg AdxDumpRecordProcess(const IdeThreadArg arg)
-{
-    UNUSED(arg);
-    AdxDumpRecord::Instance().RecordDumpInfo();
-    return nullptr;
-}
-
 static bool IsOnDeviceSide()
 {
     uint32_t platformInfo = static_cast<uint32_t>(SysPlatformType::INVALID);
@@ -77,10 +70,9 @@ int32_t AdxDataDumpServerInit()
         IDE_LOGE("AdxDumpRecord init failed.");
         return IDE_DAEMON_ERROR;
     }
-    funcBlock.procFunc = AdxDumpRecordProcess;
-    funcBlock.pulArg = nullptr;
-    ret = Thread::CreateDetachTaskWithDefaultAttr(tid, funcBlock);
-    if (ret != EN_OK) {
+    ret = AdxDumpRecord::Instance().StartRecord();
+    if (ret != IDE_DAEMON_OK) {
+        IDE_LOGE("start dump record thread failed.");
         return IDE_DAEMON_ERROR;
     }
 
@@ -110,23 +102,25 @@ int32_t AdxDataDumpServerUnInit()
     }
 
     IDE_LOGI("start to do dump uninit");
-    if (AdxDumpRecord::Instance().UnInit() != IDE_DAEMON_OK) {
-        IDE_LOGE("dump record uninit failed");
-        return IDE_DAEMON_ERROR;
-    }
-
     std::string hostPid;
     ADX_GET_ENV(MM_ENV_ASCEND_HOSTPID, hostPid);
-    if (IsOnDeviceSide() && !hostPid.empty()) {
-        AdxDumpRecord::Instance().UpdateDumpInitNum(false);
-        IDE_LOGI("dump server not start on helper device");
-        return IDE_DAEMON_OK;
-    }
-    if (g_manager.Exit() != IDE_DAEMON_OK) {
+    int32_t ret = IDE_DAEMON_OK;
+    bool isHelper = IsOnDeviceSide() && !hostPid.empty();
+    if (!isHelper && g_manager.Exit() != IDE_DAEMON_OK) {
         IDE_LOGE("AdxServerManager Exit failed");
-        return IDE_DAEMON_ERROR;
+        ret = IDE_DAEMON_ERROR;
+    }
+    if (isHelper) {
+        IDE_LOGI("dump server not start on helper device");
     }
 
-    AdxDumpRecord::Instance().UpdateDumpInitNum(false);
-    return IDE_DAEMON_OK;
+    if (AdxDumpRecord::Instance().UnInit() != IDE_DAEMON_OK) {
+        IDE_LOGE("dump record uninit failed");
+        ret = IDE_DAEMON_ERROR;
+    }
+
+    if (ret == IDE_DAEMON_OK) {
+        AdxDumpRecord::Instance().UpdateDumpInitNum(false);
+    }
+    return ret;
 }
