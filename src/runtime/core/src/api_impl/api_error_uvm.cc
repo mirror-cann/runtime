@@ -25,10 +25,6 @@ rtError_t ApiErrorDecorator::MemManagedAdvise(const void *const ptr, uint64_t si
         COND_RETURN_AND_MSG_OUTER_WITH_PARAM((location.id > (numDev - 1)) || (location.id < 0), RT_ERROR_INVALID_VALUE, 
                                             location.id, "[0, " + std::to_string(numDev - 1) + "]");
     }
-
-    if (location.type == rtMemLocationTypeHostNuma) {
-        location.id ++;
-    }
     const rtError_t error = impl_->MemManagedAdvise(ptr, size, advise, location);
     COND_RETURN_ERROR((error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_NOT_SUPPORT),
         error, "MemManaged advise failed, size=%" PRIu64 ", advise=%hu", size, advise);

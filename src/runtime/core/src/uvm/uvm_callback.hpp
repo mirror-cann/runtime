@@ -71,7 +71,6 @@ public :
     // UVM Prefetch
     static void PrefetchCallbackWrapper(void *userData);
     static void PrefetchBatchCallbackWrapper(void *userData);
-    static int32_t ConvertUvmLocIdForHostNumaType(drv_uvm_location_type drvUvmLocType, int32_t oriDrvUvmLocId);
     static rtError_t GetCurrentThreadNumaNode(int32_t &currentNumaNode);
     static drv_uvm_location_type ConvertUvmLocTypeToDrvUvmLocType(rtMemManagedLocationType const uvmLocType);
     static rtError_t ConvertUvmLocationStruct(drv_uvm_location& drvUvmLoc, rtMemManagedLocation& memManagedLoc);

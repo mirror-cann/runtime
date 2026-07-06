@@ -109,15 +109,6 @@ drv_uvm_location_type UvmCallback::ConvertUvmLocTypeToDrvUvmLocType(rtMemManaged
     }
 }
 
-int32_t UvmCallback::ConvertUvmLocIdForHostNumaType(drv_uvm_location_type drvUvmLocType, int32_t oriDrvUvmLocId)
-{
-    // When location type is DRV_UVM_LOCATION_TYPE_HOST_NUM, runtime should pass (id + 1) to drv
-    if (drvUvmLocType == DRV_UVM_LOCATION_TYPE_HOST_NUMA) {
-        return oriDrvUvmLocId + 1;
-    }
-    return oriDrvUvmLocId;
-}
-
 rtError_t UvmCallback::ConvertUvmLocationStruct(drv_uvm_location& drvUvmLoc, rtMemManagedLocation& memManagedLoc)
 {
     const drv_uvm_location_type tmpDrvUvmLocType = ConvertUvmLocTypeToDrvUvmLocType(memManagedLoc.type);
@@ -140,7 +131,7 @@ rtError_t UvmCallback::ConvertUvmLocationStruct(drv_uvm_location& drvUvmLoc, rtM
     }
 
     drvUvmLoc.type = tmpDrvUvmLocType;
-    drvUvmLoc.id = ConvertUvmLocIdForHostNumaType(tmpDrvUvmLocType, drvUvmLocId);
+    drvUvmLoc.id = drvUvmLocId;
     return RT_ERROR_NONE;
 }
 
