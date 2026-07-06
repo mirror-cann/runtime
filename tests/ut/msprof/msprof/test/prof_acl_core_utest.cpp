@@ -1915,7 +1915,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsParamAdaper) {
     message["aicpu"] = "on";
     message["training_trace"] = "on";
     message["task_trace"] = "on";
-    message["task_tsfw"] = "on";
     std::string jobInfo = "123";
     MOCKER_CPP(&Msprofiler::Api::ProfAclMgr::MsprofResultPathAdapter)
         .stubs()
@@ -1927,7 +1926,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsParamAdaper) {
     EXPECT_EQ("on", params->aicpuTrace);
     EXPECT_EQ("on", params->ts_fw_training);
     EXPECT_EQ("level1", params->prof_level);
-    EXPECT_EQ("on", params->taskTsfw);
     EXPECT_EQ(analysis::dvvp::common::utils::Utils::GetPid(), params->host_sys_pid);
 
     message["task_block"] = "on";
@@ -2008,22 +2006,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptions) {
     strcpy(options.jobId, "123");
     strcpy(options.options, ge_json.c_str());
     EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
-    ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom:0x500,0x502,0x504,0x506,0x508,0x50a,0xc,0xd\"}";
-    strcpy(options.jobId, "123");
-    strcpy(options.options, ge_json.c_str());
-    EXPECT_EQ(MSPROF_ERROR_NONE, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
-    ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom:0x500,0x502,0x504,0x506,0x508,0x50a,0xc,0xpp\"}";
-    strcpy(options.jobId, "123");
-    strcpy(options.options, ge_json.c_str());
-    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
-    ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom:0x500,0x502,0x504,0x506,0x508,0x50a,0xc,0x10,0x20\"}";
-    strcpy(options.jobId, "123");
-    strcpy(options.options, ge_json.c_str());
-    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
-    ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom:0x500,100,0x123,200\"}";
-    strcpy(options.jobId, "123");
-    strcpy(options.options, ge_json.c_str());
-    EXPECT_EQ(MSPROF_ERROR_NONE, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
     ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"task_trace\": \"on\",\"ge_api\": \"off\"}";
     strcpy(options.jobId, "123");
     strcpy(options.options, ge_json.c_str());
@@ -4464,8 +4446,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfSetConfigWillCheckConfigWhenPlatformSupported)
     EXPECT_EQ(ACL_SUCCESS, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
     configType = ACL_PROF_SYS_INTERCONNECTION_FREQ;
     EXPECT_EQ(ACL_SUCCESS, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
-    configType = ACL_PROF_SYS_MEM_SERVICEFLOW;
-    EXPECT_EQ(ACL_SUCCESS, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
     configType = ACL_PROF_HOST_SYS_USAGE_FREQ;
     EXPECT_EQ(ACL_SUCCESS, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
     int expectRet = ACL_ERROR_INVALID_PROFILING_CONFIG;
@@ -4685,7 +4665,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofSetConfigInvalidConfigReportsInputErrorForOp
         {ACL_PROF_LLC_MODE, "ACL_PROF_LLC_MODE", "'read' or 'write'"},
         {ACL_PROF_HOST_SYS, "ACL_PROF_HOST_SYS", "'cpu', 'mem', 'disk'"},
         {ACL_PROF_HOST_SYS_USAGE, "ACL_PROF_HOST_SYS_USAGE", "'cpu' or 'mem'"},
-        {ACL_PROF_SYS_MEM_SERVICEFLOW, "ACL_PROF_SYS_MEM_SERVICEFLOW", "non-empty"},
         {ACL_PROF_OPTYPE, "ACL_PROF_OPTYPE", "total length should not exceed 256"},
         {ACL_PROF_NTS_METRICS, "ACL_PROF_NTS_METRICS", "PipeUtilization"},
         {ACL_PROF_PATH, "ACL_PROF_PATH", "valid profiling result path"},
@@ -5904,7 +5883,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfParamsAdapter_StartReqTrf_AllFields)
     auto a = NewAdapter();
     auto req = NewStartReq();
     auto p = NewParams();
-    p->taskTsfw = "on";
     req->jobId = "j1";
     req->tsFwTraining = "fw";
     req->hwtsLog = "hwts";
@@ -5926,9 +5904,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfParamsAdapter_StartReqTrf_AllFields)
 TEST_F(MSPROF_ACL_CORE_UTEST, ProfParamsAdapter_StartCfgTrf_AllMasks)
 {
     auto a = NewAdapter();
-    auto p = NewParams();
-    a->StartCfgTrfToInnerParam(PROF_TASK_TSFW_MASK, p);
-    EXPECT_EQ("on", p->taskTsfw);
     auto p2 = NewParams();
     a->StartCfgTrfToInnerParam(PROF_TASK_TIME_MASK, p2);
     EXPECT_EQ(analysis::dvvp::common::config::MSVP_PROF_ON, p2->ts_memcpy);
@@ -6185,9 +6160,6 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfParamsAdapter_CheckJsonConfig_AllSwitchNames)
     MOCKER_CPP(&analysis::dvvp::common::validation::ParamValidation::CheckHostSysUsageOptionsIsValid)
         .stubs().will(returnValue(true));
     EXPECT_TRUE(a->CheckJsonConfig("host_sys_usage", v));
-    GlobalMockObject::verify();
-    MOCKER_CPP(&ParamValidation::CheckMemServiceflowValid).stubs().will(returnValue(true));
-    EXPECT_TRUE(a->CheckJsonConfig("sys_mem_serviceflow", v));
     GlobalMockObject::verify();
 #ifndef BUILD_OPEN_PROJECT
     MOCKER_CPP(&ParamValidation::CheckTaskBlockValid).stubs().will(returnValue(true));

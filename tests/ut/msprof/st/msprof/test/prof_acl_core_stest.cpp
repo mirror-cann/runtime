@@ -1619,14 +1619,10 @@ TEST_F(MSPROF_ACL_CORE_STEST, ge_option_ParamAdaper) {
     analysis::dvvp::common::utils::Utils::RemoveDir(result);
     analysis::dvvp::common::utils::Utils::CreateDir(result);
     EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
-    std::string ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom:0x500,0x502,0x504,0x506,0x508,0x50a,0xc,0xd\",\"aicpu\": \"on\",\"l2\": \"on\"}";
+    std::string ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"PipeUtilization\",\"aicpu\": \"on\",\"l2\": \"on\"}";
     strcpy(options.jobId, "123");
     strcpy(options.options, ge_json.c_str());
     EXPECT_EQ(MSPROF_ERROR_NONE, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
-    ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom:0x500,0x502,0x504,0x506,0x508,0x50a,0xc,0xss\",\"aicpu\": \"on\",\"l2\": \"on\"}";
-    strcpy(options.jobId, "123");
-    strcpy(options.options, ge_json.c_str());
-    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID, ProfAclMgr::instance()->MsprofInitGeOptions((void *)&options, sizeof(options)));
     ge_json = "{\"output\": \"/tmp/MsprofInitGeOptions\",\"aic_metrics\": \"Custom;0x5\",\"aicpu\": \"on\",\"l2\": \"on\"}";
     strcpy(options.jobId, "123");
     strcpy(options.options, ge_json.c_str());

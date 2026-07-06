@@ -79,7 +79,7 @@ const char *GetAclProfConfigTypeName(aclprofConfigType type)
         "ACL_PROF_HOST_SYS_USAGE",
         "ACL_PROF_HOST_SYS_USAGE_FREQ",
         "ACL_PROF_LOW_POWER_FREQ",
-        "ACL_PROF_SYS_MEM_SERVICEFLOW",
+        nullptr,
         "ACL_PROF_SYS_CPU_FREQ",
         "ACL_PROF_OPTYPE",
         "ACL_PROF_NTS_METRICS",
@@ -134,11 +134,8 @@ std::string GetJsonConfigInvalidReason(const std::string &config)
     if (config == "host_sys_usage") {
         return "Please input 'cpu' or 'mem'";
     }
-    if (config == "sys_mem_serviceflow") {
-        return "Please input a non-empty value";
-    }
     if (config == "task_block") {
-        return "Please input 'all', 'on' or 'off'";
+        return "Please input 'on' or 'off'";
     }
     return "Please input 'on' or 'off'";
 }
@@ -176,8 +173,6 @@ std::string GetAclProfSetConfigReason(aclprofConfigType cfgType)
             return GetJsonConfigInvalidReason("host_sys");
         case ACL_PROF_HOST_SYS_USAGE:
             return GetJsonConfigInvalidReason("host_sys_usage");
-        case ACL_PROF_SYS_MEM_SERVICEFLOW:
-            return GetJsonConfigInvalidReason("sys_mem_serviceflow");
         case ACL_PROF_OPTYPE:
             return "Please input non-empty comma-separated op types, and total length should not exceed 256";
         case ACL_PROF_NTS_METRICS:
@@ -915,7 +910,6 @@ void ProfAclMgr::AddProfLevelConf(SHARED_PTR_ALIA<analysis::dvvp::message::Profi
 
 void ProfAclMgr::ChangeLevelConf(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const
 {
-    // change input config [on, l0, l1, l2, l3] to level0 level1 level2, level3
     if (params->prof_level == MSVP_PROF_L3) {
         params->prof_level = MSVP_LEVEL_L3;
     }
@@ -1074,7 +1068,6 @@ std::string ProfAclMgr::GetParamJsonStr()
     }
     NanoJson::Json object;
     params_->ToObject(object);
-    object.RemoveByKey("memServiceflow");
     object.RemoveByKey("ubProfiling");
     object.RemoveByKey("ubInterval");
     object.RemoveByKey("opType");
@@ -1715,7 +1708,6 @@ void ProfAclMgr::UpdateDataTypeConfigBySwitches(const SHARED_PTR_ALIA<analysis::
     UpdateDataTypeConfigBySwitch(params->hwts_log, PROF_TASK_TIME);
     UpdateDataTypeConfigBySwitch(params->aicpuTrace, PROF_AICPU_TRACE);
     UpdateDataTypeConfigBySwitch(params->runtimeApi, PROF_RUNTIME_API);
-    UpdateDataTypeConfigBySwitch(params->taskTsfw, PROF_TASK_TSFW);
     UpdateDataTypeConfigBySwitch(params->runtimeTrace, PROF_RUNTIME_TRACE);
     UpdateDataTypeConfigBySwitch(params->ts_fw_training, PROF_TRAINING_TRACE);
     UpdateDataTypeConfigBySwitch(params->ts_keypoint, PROF_TRAINING_TRACE);
@@ -1789,21 +1781,14 @@ int32_t ProfAclMgr::MsprofAclJsonParamConstruct(NanoJson::Json &acljsonCfg)
     params_->runtimeApi = GetJsonStringParam(acljsonCfg, "runtime_api", MSVP_PROF_ON);
     params_->taskTrace = GetJsonStringParam(acljsonCfg, "task_time", MSVP_PROF_ON);
     params_->prof_level = params_->taskTrace;
-    if (GetJsonStringParam(acljsonCfg, "task_block", MSVP_PROF_OFF).compare(MSVP_PROF_ALL) == 0) {
-        params_->taskBlock = MSVP_PROF_ON;
-        params_->taskBlockShink = MSVP_PROF_OFF;
-    } else {
-        params_->taskBlock = GetJsonStringParam(acljsonCfg, "task_block", MSVP_PROF_OFF);
-        params_->taskBlockShink = params_->taskBlock.compare(MSVP_PROF_ON) == 0 ? MSVP_PROF_ON : MSVP_PROF_OFF;
-    }
-    params_->taskTsfw = GetJsonStringParam(acljsonCfg, "task_tsfw", MSVP_PROF_OFF);
+    params_->taskBlock = GetJsonStringParam(acljsonCfg, "task_block", MSVP_PROF_OFF);
+    params_->taskBlockShink = params_->taskBlock.compare(MSVP_PROF_ON) == 0 ? MSVP_PROF_ON : MSVP_PROF_OFF;
     params_->aicpuTrace = GetJsonStringParam(acljsonCfg, "aicpu", MSVP_PROF_OFF);
     params_->hcclTrace = GetJsonStringParam(acljsonCfg, "hccl", MSVP_PROF_OFF);
     params_->msproftx = GetJsonStringParam(acljsonCfg, "msproftx", MSVP_PROF_OFF);
     params_->l2CacheTaskProfiling = GetJsonStringParam(acljsonCfg, "l2", MSVP_PROF_OFF);
     Platform::instance()->L2CacheAdaptor(params_->npuEvents, params_->l2CacheTaskProfiling,
         params_->l2CacheTaskProfilingEvents);
-    params_->memServiceflow = GetJsonStringParam(acljsonCfg, "sys_mem_serviceflow", MSVP_PROF_EMPTY_STRING);
     ChangeLevelConf(params_);
     AddCcuInstruction(params_);
     MsprofAclJsonParamAdaper(params_);
@@ -1942,14 +1927,8 @@ void ProfAclMgr::MsprofInitGeOptionsParamAdaper(SHARED_PTR_ALIA<analysis::dvvp::
     params->taskTrace = GetJsonStringParam(geoptionCfg, "task_trace", MSVP_PROF_ON);
     params->taskTrace = GetJsonStringParam(geoptionCfg, "task_time", MSVP_PROF_ON);
     params->prof_level = params->taskTrace;
-    if (GetJsonStringParam(geoptionCfg, "task_block", MSVP_PROF_OFF).compare(MSVP_PROF_ALL) == 0) {
-        params->taskBlock = MSVP_PROF_ON;
-        params->taskBlockShink = MSVP_PROF_OFF;
-    } else {
-        params->taskBlock = GetJsonStringParam(geoptionCfg, "task_block", MSVP_PROF_OFF);
-        params->taskBlockShink = params->taskBlock.compare(MSVP_PROF_ON) == 0 ? MSVP_PROF_ON : MSVP_PROF_OFF;
-    }
-    params->taskTsfw = GetJsonStringParam(geoptionCfg, "task_tsfw", MSVP_PROF_OFF);
+    params->taskBlock = GetJsonStringParam(geoptionCfg, "task_block", MSVP_PROF_OFF);
+    params->taskBlockShink = params->taskBlock.compare(MSVP_PROF_ON) == 0 ? MSVP_PROF_ON : MSVP_PROF_OFF;
     params->aicpuTrace = GetJsonStringParam(geoptionCfg, "aicpu", MSVP_PROF_OFF);
     params->hcclTrace = GetJsonStringParam(geoptionCfg, "hccl", MSVP_PROF_OFF);
     params->ts_fw_training = GetJsonStringParam(geoptionCfg, "training_trace", MSVP_PROF_OFF);
@@ -2052,7 +2031,6 @@ int32_t ProfAclMgr::MsprofGeOptionsParamConstruct(const std::string &jobInfo,
         MSPROF_LOGW("storage_limit para is invalid");
     }
     storageLimit_ = params_->storageLimit;
-    params_->memServiceflow = GetJsonStringParam(geoptionCfg, "sys_mem_serviceflow", MSVP_PROF_EMPTY_STRING);
 
     params_->instrProfiling = GetJsonStringParam(geoptionCfg, "instr_profiling", MSVP_PROF_OFF);
     if (Platform::instance()->CheckIfSupport(PLATFORM_TASK_INSTR_PROFILING)) {

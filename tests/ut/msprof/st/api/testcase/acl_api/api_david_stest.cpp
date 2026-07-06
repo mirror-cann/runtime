@@ -182,11 +182,6 @@ TEST_F(AclApiDavidStest, AclApiSetConfig)
     ret = aclprofSetConfig(configType, setConfig.c_str(), setConfig.size());
     EXPECT_EQ(ACL_SUCCESS, ret);
  
-    configType = ACL_PROF_SYS_MEM_SERVICEFLOW;
-    setConfig = "aaa,bbb";
-    ret = aclprofSetConfig(configType, setConfig.c_str(), setConfig.size());
-    EXPECT_EQ(ACL_SUCCESS, ret);
- 
     configType = ACL_PROF_LLC_MODE;
     setConfig = "read";
     ret = aclprofSetConfig(configType, setConfig.c_str(), setConfig.size());

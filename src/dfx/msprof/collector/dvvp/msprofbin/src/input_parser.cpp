@@ -1185,7 +1185,7 @@ int32_t InputParser::PreCheckPlatform(int32_t opt, CONST_CHAR_PTR argv[])
 {
     std::vector<MsprofArgsType> socBlackSwith = {ARGS_HOST_SYS, ARGS_HOST_SYS_PID, ARGS_HOST_SYS_USAGE,
         ARGS_HOST_SYS_USAGE_FREQ, ARGS_PARSE, ARGS_QUERY, ARGS_EXPORT, ARGS_EXPORT_ITERATION_ID, ARGS_EXPORT_MODEL_ID,
-        ARGS_SUMMARY_FORMAT, ARGS_PYTHON_PATH, ARGS_ANALYZE, ARGS_RULE, ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_SUMMARY_FORMAT, ARGS_PYTHON_PATH, ARGS_ANALYZE, ARGS_RULE, ARGS_OPTYPE};
     Analysis::Dvvp::Common::Config::PlatformType platformType = ConfigManager::instance()->GetPlatformType();
 #ifndef BUILD_OPEN_PROJECT
     if (platformType < PlatformType::MINI_TYPE || platformType >= PlatformType::END_TYPE) {
@@ -1213,21 +1213,20 @@ void InputParser::InitOpenBlackLists(std::map<PlatformType, std::vector<MsprofAr
 #ifndef BUILD_OPEN_PROJECT
     std::vector<MsprofArgsType> miniBlackSwith = {ARGS_INTERCONNECTION_PROFILING, ARGS_INTERCONNECTION_FREQ,
         ARGS_L2_PROFILING, ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS, ARGS_STORAGE_LIMIT,
-        ARGS_TASK_BLOCK, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ, ARGS_DYNAMIC_PROF, ARGS_DYNAMIC_PROF_PID,
-        ARGS_NPU_EVENTS, ARGS_DELAY_PROF, ARGS_DURATION_PROF, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
-        ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_TASK_BLOCK, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ, ARGS_DYNAMIC_PROF, ARGS_DYNAMIC_PROF_PID, ARGS_DELAY_PROF, ARGS_DURATION_PROF, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
+        ARGS_OPTYPE};
 #endif // BUILD_OPEN_PROJECT
     std::vector<MsprofArgsType> cloudBlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
         ARGS_TASK_BLOCK, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ,
-        ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_OPTYPE};
     std::vector<MsprofArgsType> dcBlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
         ARGS_IO_PROFILING, ARGS_IO_SAMPLING_FREQ, ARGS_TASK_BLOCK, ARGS_INSTR_PROFILING,
-        ARGS_INSTR_PROFILING_FREQ, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_INSTR_PROFILING_FREQ, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_OPTYPE};
     std::vector<MsprofArgsType> cloudBlackSwithV2 = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
         ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_OPTYPE};
     std::vector<MsprofArgsType> miniV3BlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
         ARGS_INTERCONNECTION_PROFILING, ARGS_INTERCONNECTION_FREQ, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ,
-        ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_OPTYPE};
     #ifndef BUILD_OPEN_PROJECT
     platformArgsType[PlatformType::MINI_TYPE] = miniBlackSwith;
 #endif // BUILD_OPEN_PROJECT
@@ -1245,12 +1244,12 @@ void InputParser::InitClosedBlackLists(std::map<PlatformType, std::vector<Msprof
         ARGS_SUMMARY_FORMAT, ARGS_PARSE, ARGS_QUERY, ARGS_EXPORT, ARGS_EXPORT_ITERATION_ID, ARGS_EXPORT_MODEL_ID,
         ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ, ARGS_DYNAMIC_PROF, ARGS_DYNAMIC_PROF_PID, ARGS_ANALYZE,
         ARGS_RULE, ARGS_DELAY_PROF, ARGS_DURATION_PROF, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
-        ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_OPTYPE};
     std::vector<MsprofArgsType> mdcMiniV3BlackSwith = {ARGS_AICPU, ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_QUERY,
         ARGS_AIV_METRICS, ARGS_INTERCONNECTION_PROFILING, ARGS_INTERCONNECTION_FREQ, ARGS_DYNAMIC_PROF, ARGS_EXPORT,
         ARGS_HOST_SYS, ARGS_HOST_SYS_PID, ARGS_EXPORT_ITERATION_ID, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ,
         ARGS_MODEL_EXECUTION, ARGS_EXPORT_MODEL_ID, ARGS_PYTHON_PATH, ARGS_PARSE, ARGS_DYNAMIC_PROF_PID,
-        ARGS_SUMMARY_FORMAT, ARGS_IO_PROFILING, ARGS_IO_SAMPLING_FREQ, ARGS_TASK_BLOCK, ARGS_MEM_SERVICEFLOW,
+        ARGS_SUMMARY_FORMAT, ARGS_IO_PROFILING, ARGS_IO_SAMPLING_FREQ, ARGS_TASK_BLOCK,
         ARGS_ANALYZE, ARGS_RULE, ARGS_DELAY_PROF, ARGS_DURATION_PROF, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
         ARGS_OPTYPE};
     std::vector<MsprofArgsType> mdcLiteBlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
@@ -1258,7 +1257,7 @@ void InputParser::InitClosedBlackLists(std::map<PlatformType, std::vector<Msprof
         ARGS_AICPU, ARGS_TASK_BLOCK, ARGS_PYTHON_PATH, ARGS_SUMMARY_FORMAT, ARGS_PARSE, ARGS_QUERY,
         ARGS_EXPORT, ARGS_EXPORT_ITERATION_ID, ARGS_EXPORT_MODEL_ID, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ,
         ARGS_DYNAMIC_PROF, ARGS_DYNAMIC_PROF_PID, ARGS_ANALYZE, ARGS_RULE, ARGS_DELAY_PROF, ARGS_DURATION_PROF,
-        ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
+        ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_OPTYPE};
     std::vector<MsprofArgsType> davidBlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS};
     std::vector<MsprofArgsType> david121BlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS};
     std::vector<MsprofArgsType> mdcV2BlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS};
@@ -1495,9 +1494,6 @@ void InputParser::ParamsSwitchValid(const struct MsprofCmdInfo &cmdInfo, int32_t
         case ARGS_RUNTIME_API:
             params_->runtimeApi = cmdInfo.args[opt];
             break;
-        case ARGS_TASK_TSFW:
-            params_->taskTsfw = cmdInfo.args[opt];
-            break;
         case ARGS_TASK_TIME:
             params_->taskTime = cmdInfo.args[opt];
             SetTaskTimeSwitch(cmdInfo.args[opt]);
@@ -1562,14 +1558,6 @@ int32_t InputParser::MsprofCmdCheckValid(const struct MsprofCmdInfo &cmdInfo, in
         case ARGS_AIC_METRICS:
         case ARGS_AIV_METRICS:
             ret = CheckAiCoreMetricsValid(cmdInfo, opt);
-            break;
-        case ARGS_NPU_EVENTS:
-#ifndef BUILD_OPEN_PROJECT
-            ret = CheckNpuEventsValid(cmdInfo, opt);
-#else
-            params_->npuEvents = cmdInfo.args[opt];
-            ret = MSPROF_DAEMON_OK;
-#endif // BUILD_OPEN_PROJECT
             break;
         case ARGS_SYS_DEVICES:
             ret = CheckSysDevicesValid(cmdInfo);
@@ -1660,13 +1648,8 @@ void InputParser::ParamsSwitchValid2(const struct MsprofCmdInfo &cmdInfo, int32_
 
 void InputParser::SetTaskBlockParam(const char *argValue)
 {
-    if (strcmp(argValue, MSVP_PROF_ALL) == 0) {
-        params_->taskBlock = MSVP_PROF_ON;
-        params_->taskBlockShink = MSVP_PROF_OFF;
-    } else {
-        params_->taskBlock = argValue;
-        params_->taskBlockShink = params_->taskBlock.compare(MSVP_PROF_ON) ? MSVP_PROF_ON : MSVP_PROF_OFF;
-    }
+    params_->taskBlock = argValue;
+    params_->taskBlockShink = params_->taskBlock.compare(MSVP_PROF_ON) == 0 ? MSVP_PROF_ON : MSVP_PROF_OFF;
 }
 
 
@@ -1690,16 +1673,6 @@ int32_t InputParser::MsprofCmdCheckValid2(const struct MsprofCmdInfo &cmdInfo, i
             break;
         case ARGS_REPORTS:
             ret = CheckReports(cmdInfo);
-            break;
-        case ARGS_MEM_SERVICEFLOW:
-#ifndef BUILD_OPEN_PROJECT
-            ret = CheckMemServiceflow(cmdInfo);
-#else
-            if (cmdInfo.args[ARGS_MEM_SERVICEFLOW] != nullptr) {
-                params_->memServiceflow = cmdInfo.args[ARGS_MEM_SERVICEFLOW];
-            }
-            ret = MSPROF_DAEMON_OK;
-#endif // BUILD_OPEN_PROJECT
             break;
         case ARGS_RULE:
             ret = CheckAnalyzeRuleSwitch(cmdInfo);
@@ -1836,9 +1809,6 @@ void ArgsManager::AddHardWareMemArgs()
     llcProfiling.SetDetail("The llc profiling groups, include read, write. the default value is read.");
     argsList_.push_back(hardwareMem);
     argsList_.push_back(hardwareMemFreq);
-    if (Platform::instance()->CheckIfSupport(PLATFORM_SYS_MEM_SERVICEFLOW)) {
-        argsList_.push_back({"sys-mem-serviceflow", "The qos serviceflow group, based on user customized.", ""});
-    }
     argsList_.push_back(llcProfiling);
 }
 
@@ -2050,11 +2020,7 @@ void ArgsManager::AddL2Args()
         smmu = " and SMMU";
     }
     Args l2 = {"l2", "L2 Cache" + smmu + " acquisition switch. The default value is off.", OFF};
-    Args npuEvents = {"npu-events", "Customize soc pmu parameters for collection. "
-        "The input is hexadecimal number starting with 0x. Maximum of 8 parameters can be received for MATA and SMMU."
-        + noc};
     argsList_.push_back(l2);
-    argsList_.push_back(npuEvents);
 }
 }
 }

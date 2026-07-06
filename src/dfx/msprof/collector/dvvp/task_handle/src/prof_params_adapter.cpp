@@ -92,8 +92,8 @@ void ProfParamsAdapter::StartCfgTrfToInnerParam(const uint64_t dataTypeConfig,
     SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const
 {
     MSPROF_LOGI("Begin to transfer msprof StartCfg to inner params");
-    if ((dataTypeConfig & PROF_TASK_TSFW_MASK) != 0) {
-        params->taskTsfw = "on";
+    if ((dataTypeConfig & PROF_TASK_TSFW_MASK) != 0) { 
+        params->taskTsfw = "on"; 
     }
     if ((dataTypeConfig & PROF_TASK_TIME_MASK) != 0) {
         // ts_memcpy
@@ -144,8 +144,6 @@ bool ProfParamsAdapter::CheckJsonConfig(const std::string &switchName, const Nan
         return CheckHostSysValid(val.GetValue<std::string>());
     } else if (switchName == "host_sys_usage") {
         return CheckHostSysUsageValid(val.GetValue<std::string>());
-    } else if (switchName == "sys_mem_serviceflow") {
-        return ParamValidation::instance()->CheckMemServiceflowValid(switchName, val.GetValue<std::string>());
     } else if (switchName == "task_block") {
 #ifndef BUILD_OPEN_PROJECT
         return ParamValidation::instance()->CheckTaskBlockValid(switchName, val.GetValue<std::string>());
@@ -214,7 +212,6 @@ int32_t ProfParamsAdapter::CheckApiConfigSupport(aclprofConfigType type) const
         {ACL_PROF_HOST_SYS_USAGE,           {PLATFORM_SYS_HOST_ALL_PID_CPU, PLATFORM_SYS_HOST_ALL_PID_MEM}},
         {ACL_PROF_HOST_SYS_USAGE_FREQ,      {PLATFORM_SYS_HOST_ALL_PID_CPU, PLATFORM_SYS_HOST_ALL_PID_MEM}},
         {ACL_PROF_LOW_POWER_FREQ,           {PLATFORM_SYS_DEVICE_LOW_POWER}},
-        {ACL_PROF_SYS_MEM_SERVICEFLOW,      {PLATFORM_SYS_MEM_SERVICEFLOW}},
         {ACL_PROF_OPTYPE,                   {PLATFORM_TASK_SCALE}},
         {ACL_PROF_NTS_METRICS,              {PLATFORM_TASK_NTS}}
     };
@@ -291,12 +288,6 @@ int32_t ProfParamsAdapter::CheckApiConfigIsValid(SHARED_PTR_ALIA<analysis::dvvp:
             if (ParamValidation::instance()->CheckStorageLimit(params, "ACL_PROF_STORAGE_LIMIT")) {
                 return PROFILING_SUCCESS;
             }
-            break;
-        case ACL_PROF_SYS_MEM_SERVICEFLOW:
-            if (ParamValidation::instance()->CheckMemServiceflowValid("ACL_PROF_SYS_MEM_SERVICEFLOW", config)) {
-                params->memServiceflow = config;
-                return PROFILING_SUCCESS;
-            }    
             break;
         case ACL_PROF_LLC_MODE:
             if (ParamValidation::instance()->CheckLlcConfigValid(config)) {

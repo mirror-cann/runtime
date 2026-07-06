@@ -490,13 +490,6 @@ TEST_F(INPUT_PARSER_UTEST, CheckBaseInfo) {
     EXPECT_EQ(PROFILING_FAILED, parser.CheckAiCoreMetricsValid(cmdInfo, ARGS_AIV_METRICS));
 #endif
 
-#ifndef BUILD_OPEN_PROJECT
-    cmdInfo.args[ARGS_NPU_EVENTS] = "0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9";
-    EXPECT_EQ(PROFILING_FAILED, parser.CheckNpuEventsValid(cmdInfo, ARGS_NPU_EVENTS));
-    cmdInfo.args[ARGS_NPU_EVENTS] = "0x1,0x2,0x3";
-    EXPECT_EQ(PROFILING_SUCCESS, parser.CheckNpuEventsValid(cmdInfo, ARGS_NPU_EVENTS));
-#endif
-
     GlobalMockObject::verify();
 #ifndef BUILD_OPEN_PROJECT
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
@@ -625,7 +618,6 @@ TEST_F(INPUT_PARSER_UTEST, CheckBaseInfo) {
     cmdInfo.args[ARGS_IO_PROFILING] = "1";
     cmdInfo.args[ARGS_MODEL_EXECUTION] = "1";
     cmdInfo.args[ARGS_RUNTIME_API] = "1";
-    cmdInfo.args[ARGS_TASK_TSFW] = "1";
     cmdInfo.args[ARGS_AI_CORE] = "1";
     cmdInfo.args[ARGS_AIV] = "1";
     cmdInfo.args[ARGS_CPU_PROFILING] = "1";
@@ -656,7 +648,6 @@ TEST_F(INPUT_PARSER_UTEST, CheckBaseInfo) {
     parser.ParamsSwitchValid(cmdInfo, ARGS_IO_PROFILING);
     parser.ParamsSwitchValid(cmdInfo, ARGS_MODEL_EXECUTION);
     parser.ParamsSwitchValid(cmdInfo, ARGS_RUNTIME_API);
-    parser.ParamsSwitchValid(cmdInfo, ARGS_TASK_TSFW);
     parser.ParamsSwitchValid(cmdInfo, ARGS_AI_CORE);
     parser.ParamsSwitchValid(cmdInfo, ARGS_AIV);
     parser.ParamsSwitchValid(cmdInfo, ARGS_CPU_PROFILING);
@@ -717,7 +708,6 @@ TEST_F(INPUT_PARSER_UTEST, MsprofCmdCheckValid) {
     cmdInfo.args[ARGS_DYNAMIC_PROF_PID] = "123";
     cmdInfo.args[ARGS_DELAY_PROF] = "1";
     cmdInfo.args[ARGS_DURATION_PROF] = "1";
-    cmdInfo.args[ARGS_NPU_EVENTS] = "";
     MOCKER(mmGetOptInd)
         .stubs()
         .will(returnValue(1));
@@ -731,14 +721,6 @@ TEST_F(INPUT_PARSER_UTEST, MsprofCmdCheckValid) {
     EXPECT_EQ(MSPROF_DAEMON_OK, parser.MsprofCmdCheckValid(cmdInfo, ARGS_DYNAMIC_PROF_PID));
     EXPECT_EQ(MSPROF_DAEMON_OK, parser.MsprofCmdCheckValid(cmdInfo, ARGS_DELAY_PROF));
     EXPECT_EQ(MSPROF_DAEMON_OK, parser.MsprofCmdCheckValid(cmdInfo, ARGS_DURATION_PROF));
-    EXPECT_EQ(MSPROF_DAEMON_OK, parser.MsprofCmdCheckValid(cmdInfo, ARGS_NPU_EVENTS));
-    cmdInfo.args[ARGS_NPU_EVENTS] = "abcdefghijklmn";
-    EXPECT_EQ(MSPROF_DAEMON_ERROR, parser.MsprofCmdCheckValid(cmdInfo, ARGS_NPU_EVENTS));
-    EXPECT_EQ(MSPROF_DAEMON_ERROR, parser.MsprofCmdCheckValid(cmdInfo, ARGS_MEM_SERVICEFLOW));
-    cmdInfo.args[ARGS_MEM_SERVICEFLOW] = "";
-    EXPECT_EQ(MSPROF_DAEMON_ERROR, parser.MsprofCmdCheckValid(cmdInfo, ARGS_MEM_SERVICEFLOW));
-    cmdInfo.args[ARGS_MEM_SERVICEFLOW] = "aaa,bbb";
-    EXPECT_EQ(MSPROF_DAEMON_OK, parser.MsprofCmdCheckValid(cmdInfo, ARGS_MEM_SERVICEFLOW));
 }
 
 TEST_F(INPUT_PARSER_UTEST, MsprofFreqCheckValid) {

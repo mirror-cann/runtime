@@ -467,9 +467,6 @@ bool ParamValidation::CheckProfilingSwitchIsValid(SHARED_PTR_ALIA<analysis::dvvp
     if (params == nullptr) {
         return false;
     }
-    if (!CheckControlSwitchProfiling(params)) {
-        return false;
-    }
     if (!CheckTsSwitchProfiling(params)) {
         return false;
     }
@@ -503,11 +500,11 @@ bool ParamValidation::CheckParamL0L1Invalid(const std::string &switchName, const
             std::vector<std::string>({switchName}));
         return false;
     }
+    std::string errInfo = "Please input 'l0', 'l1' or 'off'.";
     if (switchStr.compare(MSVP_PROF_L3) == 0 && !Platform::instance()->CheckIfSupport(PLATFORM_TASK_TRACE_L3)) {
         MSPROF_LOGE("l3 is not supported on this platform.");
         return false;
     }
-    std::string errInfo = "Please input 'l0', 'l1' or 'off'.";
     if (switchName.compare("ge_api") == 0) {
         if (switchStr.compare(MSVP_PROF_L0) == 0 || switchStr.compare(MSVP_PROF_L1) == 0 ||
             switchStr.compare(MSVP_PROF_OFF) == 0) {
@@ -519,10 +516,10 @@ bool ParamValidation::CheckParamL0L1Invalid(const std::string &switchName, const
             IsValidSwitch(switchStr)) {
             return true;
         } else {
-            std::string task_trace_ranges = Platform::instance()->CheckIfSupport(PLATFORM_TASK_TRACE_L3)
-                        ? "'on', 'off', 'l0', 'l1', 'l2' or 'l3'." 
+            std::string taskTraceRanges = Platform::instance()->CheckIfSupport(PLATFORM_TASK_TRACE_L3)
+                        ? "'on', 'off', 'l0', 'l1', 'l2' or 'l3'."
                         : "'on', 'off', 'l0', 'l1' or 'l2'.";
-            errInfo = "Please input " + task_trace_ranges;
+            errInfo = "Please input " + taskTraceRanges;
         }
     }
     MSPROF_LOGE("Argument %s: invalid value: %s. %s", switchName.c_str(), switchStr.c_str(), errInfo.c_str());
@@ -548,14 +545,6 @@ bool ParamValidation::CheckParamEmptyInvalid(const std::string &switchName, cons
     MSPROF_LOGE("Argument %s: invalid value: %s. Please input 'on' or 'off'.", switchName.c_str(),
         switchStr.c_str());
     return false;
-}
-
-bool ParamValidation::CheckControlSwitchProfiling(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params)
-{
-    if (!IsValidSwitch(params->taskTsfw)) {
-        MSPROF_LOGE("Control switch taskTsfw is not valid.");
-    }
-    return true;
 }
 
 bool ParamValidation::CheckTsSwitchProfiling(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params)
@@ -1125,22 +1114,6 @@ bool ParamValidation::CheckFreqIsValid(const std::string &switchName, uint32_t f
     }
     return false;
 }
-
-/**
- * @brief  : Check mem serviceflow is valid
- * @param  : [in] switchName : the switch name
- * @param  : [in] config : sys mem serviceflow config
- * @return : true
- *           false
- */
-bool ParamValidation::CheckMemServiceflowValid(const std::string &switchName, const std::string &config) const
-{
-    FUNRET_CHECK_EXPR_ACTION(!Platform::instance()->CheckIfSupport(PLATFORM_SYS_MEM_SERVICEFLOW), return false,
-        "Argument %s is not supported", switchName.c_str());
-    FUNRET_CHECK_EXPR_ACTION(config.empty(), return false, "Argument %s is empty.", switchName.c_str());
-    return true;
-}
-
 bool ParamValidation::CheckAiCoreEventsIsValid(const std::vector<std::string> &events) const
 {
     if (events.size() > Platform::instance()->GetMaxMonitorNumber()) {
@@ -1197,29 +1170,11 @@ bool ParamValidation::CheckTaskBlockValid(const std::string &switchName, const s
     FUNRET_CHECK_EXPR_ACTION(!Platform::instance()->CheckIfSupport(PLATFORM_TASK_BLOCK), return false,
         "Argument %s is not supported", switchName.c_str());
     FUNRET_CHECK_EXPR_ACTION(config.empty(), return false, "Argument %s is empty.", switchName.c_str());
-    if (config.compare(MSVP_PROF_OFF) != 0 && config.compare(MSVP_PROF_ALL) != 0 && 
-        config.compare(MSVP_PROF_ON) != 0) {
-        std::string taskBlockRanges;
-        if (Platform::instance()->GetPlatformType() == CHIP_CLOUD_V3 ||
-            Platform::instance()->GetPlatformType() == CHIP_CLOUD_V4 ||
-            Platform::instance()->GetPlatformType() == CHIP_MDC_V2 ||
-            Platform::instance()->GetPlatformType() == CHIP_MDC_LITE_V2) {
-            taskBlockRanges = "'all', 'on', 'off'.";
-        } else {
-            taskBlockRanges = "'all', 'off'.";
-        }
-        MSPROF_LOGE("Argument %s: invalid value: %s. Please input %s", 
-            switchName.c_str(), config.c_str(), taskBlockRanges.c_str());
+    if (config.compare(MSVP_PROF_OFF) != 0 && config.compare(MSVP_PROF_ON) != 0) {
+        MSPROF_LOGE("Argument %s: invalid value: %s. Please input 'on' or 'off'.",
+            switchName.c_str(), config.c_str());
         return false;
-    }
-    if (config.compare(MSVP_PROF_ON) == 0 &&
-        Platform::instance()->GetPlatformType() != CHIP_CLOUD_V3 &&
-        Platform::instance()->GetPlatformType() != CHIP_CLOUD_V4 &&
-        Platform::instance()->GetPlatformType() != CHIP_MDC_V2 &&
-        Platform::instance()->GetPlatformType() != CHIP_MDC_LITE_V2) {
-        MSPROF_LOGE("The on option is not supported on this platform, please use all to collect block data.");
-        return false;
-    }  
+    } 
     return true;
 }
 #endif // BUILD_OPEN_PROJECT
