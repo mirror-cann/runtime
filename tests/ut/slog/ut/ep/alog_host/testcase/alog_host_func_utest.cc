@@ -15,6 +15,7 @@ using namespace testing;
 #include <dlfcn.h>
 #include "slog.h"
 #include "plog.h"
+#include "acl_log.h"
 #include "alog_pub.h"
 #include "slog_api.h"
 #include "plog_drv.h"
@@ -948,6 +949,46 @@ TEST_F(EP_ALOG_HOST_FUNC_UTEST, AlogCheckDebugLogLevelInterface)
     DlogDestructor();
     unsetenv("ASCEND_GLOBAL_LOG_LEVEL");
     unsetenv("ASCEND_MODULE_LOG_LEVEL");
+    unsetenv("ASCEND_PROCESS_LOG_PATH");
+}
+
+static void CallAcllogVaList(int32_t moduleId, int32_t level, const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+    acllogVaList(moduleId, level, fmt, list);
+    va_end(list);
+}
+
+TEST_F(EP_ALOG_HOST_FUNC_UTEST, AcllogCheckDebugLogLevelInterface)
+{
+    setenv("ASCEND_GLOBAL_LOG_LEVEL", "1", 1);
+    setenv("ASCEND_PROCESS_LOG_PATH", PATH_ROOT, 1);
+    DlogConstructor();
+
+    EXPECT_EQ(0, acllogCheckDebugLevel(0xff00, DLOG_DEBUG));
+    EXPECT_EQ(1, acllogCheckDebugLevel(0xff00, DLOG_INFO));
+    EXPECT_EQ(1, acllogCheckDebugLevel(0xffff, DLOG_WARN));
+    EXPECT_EQ(1, acllogCheckDebugLevel(0xffff, DLOG_ERROR));
+    EXPECT_EQ(0, acllogCheckDebugLevel(0xff00, DLOG_NULL + 1));
+
+    DlogDestructor();
+    unsetenv("ASCEND_GLOBAL_LOG_LEVEL");
+    unsetenv("ASCEND_PROCESS_LOG_PATH");
+}
+
+TEST_F(EP_ALOG_HOST_FUNC_UTEST, AcllogPrintUserModuleId)
+{
+    setenv("ASCEND_GLOBAL_LOG_LEVEL", "0", 1);
+    setenv("ASCEND_PROCESS_LOG_PATH", PATH_ROOT, 1);
+    DlogConstructor();
+
+    acllogRecord(0xff00, DLOG_INFO, "user module log %d", 1);
+    CallAcllogVaList(0xffff, DLOG_WARN, "user va log %d", 2);
+
+    DlogDestructor();
+    EXPECT_EQ(2, DlogCheckHostPrintNum(PATH_ROOT, "debug"));
+    unsetenv("ASCEND_GLOBAL_LOG_LEVEL");
     unsetenv("ASCEND_PROCESS_LOG_PATH");
 }
 

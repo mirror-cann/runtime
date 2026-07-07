@@ -11,6 +11,7 @@
 #ifndef ACL_LOG_H_
 #define ACL_LOG_H_
 
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "log_types.h"
@@ -35,6 +36,14 @@ LOG_FUNC_VISIBILITY int32_t acllogRegisterCallback(acllogRecordCallback callback
     uint32_t outputLogType, acllogCallbackHandle *callbackHandle);
 
 LOG_FUNC_VISIBILITY int32_t acllogUnregisterCallback(acllogCallbackHandle callback);
+
+LOG_FUNC_VISIBILITY int32_t acllogCheckDebugLevel(int32_t moduleId, int32_t logLevel) __attribute((weak));
+
+LOG_FUNC_VISIBILITY void acllogRecord(int32_t moduleId, int32_t level, const char *fmt, ...)
+    __attribute((weak)) __attribute__((format(printf, 3, 4)));
+
+LOG_FUNC_VISIBILITY void acllogVaList(int32_t moduleId, int32_t level, const char *fmt, va_list list)
+    __attribute((weak));
 
 #ifdef __cplusplus
 }

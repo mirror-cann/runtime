@@ -18,6 +18,7 @@ using namespace testing;
 #include <cstdlib>
 #include "slog.h"
 #include "plog.h"
+#include "acl_log.h"
 #include "alog_pub.h"
 #include "slog_api.h"
 #include "plog_drv.h"
@@ -240,6 +241,22 @@ TEST_F(EP_ALOG_HOST_EXCP_UTEST, AlogInterfaceError)
     AlogRecord(SLOG, DLOG_TYPE_DEBUG, DLOG_ERROR, nullptr);
     EXPECT_EQ(0, AlogCheckDebugLevel(0, 100));
     EXPECT_EQ(0, AlogCheckDebugLevel(0, -1));
+}
+
+static void CallInvalidAcllogVaList(int32_t moduleId, int32_t level, const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+    acllogVaList(moduleId, level, fmt, list);
+    va_end(list);
+}
+
+TEST_F(EP_ALOG_HOST_EXCP_UTEST, AcllogInterfaceError)
+{
+    acllogRecord(0xff00, DLOG_INFO, nullptr);
+    CallInvalidAcllogVaList(0xff00, DLOG_INFO, nullptr, 1);
+    EXPECT_EQ(0, acllogCheckDebugLevel(0xff00, DLOG_NULL + 1));
+    EXPECT_EQ(0, acllogCheckDebugLevel(-1, DLOG_INFO));
 }
 
 TEST_F(EP_ALOG_HOST_EXCP_UTEST, DlogInvalidModuleId)
