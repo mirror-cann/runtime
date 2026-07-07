@@ -9106,7 +9106,7 @@ rtError_t ApiImpl::ModelTaskDisable(rtTask_t task)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetAtomicDevProperties(uint32_t* capabilities, uint32_t count, DevProperties& prop)
+rtError_t ApiImpl::GetAtomicDevProperties(uint32_t* capabilities, uint32_t count, DevProperties& prop) const
 {
     for (uint32_t i = 0U; i < count; ++i) {
         capabilities[i] = 0U;

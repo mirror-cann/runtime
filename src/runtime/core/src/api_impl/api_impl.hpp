@@ -827,7 +827,7 @@ private:
                                    size_t *paramOffset, size_t *paramSize) override;
     rtError_t FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags,
                                               size_t *dynamicUbufSize) override;
-    rtError_t GetAtomicDevProperties(uint32_t* capabilities, uint32_t count, DevProperties& prop);
+    rtError_t GetAtomicDevProperties(uint32_t* capabilities, uint32_t count, DevProperties& prop) const;
     static void FillAtomicCapabilities(uint32_t* capabilities, const rtAtomicOperation* operations, uint32_t count,
                                 const uint32_t* sourceCapabilities);
     rtError_t CheckHostAtomicSupport(int32_t deviceId, bool &supported);
