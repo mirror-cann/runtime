@@ -30,7 +30,7 @@ namespace cce {
 namespace runtime {
 constexpr size_t DEVICE_FAST_RINGBUFFER_SIZE = 4 * 1024U; // 4k
 bool HasMteErr(const Device * const dev);
-bool HasMemUceErr(const uint32_t deviceId, const std::map<uint32_t, std::string>& eventIdBlkList = g_mulBitEccEventId);
+bool HasMemUceErr(const Device * const dev, const std::map<uint32_t, std::string>& eventIdBlkList = g_mulBitEccEventId);
 void SetTaskMteErr(TaskInfo *errTaskPtr, const Device * const dev,
     const std::map<uint32_t, std::string>& eventIdBlkList = g_mulBitEccEventId);
 void GetMteErrFromCqeStatus(TaskInfo *errTaskPtr, const Device * const dev, const uint32_t cqeStatus,

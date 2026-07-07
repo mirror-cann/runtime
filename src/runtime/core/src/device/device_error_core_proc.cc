@@ -838,12 +838,11 @@ bool HasBlacklistEventOnDevice(const uint32_t deviceId, const std::map<uint32_t,
 }
 
 /* 检查是否存在黑名单中的UCE错误 */
-bool HasMemUceErr(const uint32_t deviceId, const std::map<uint32_t, std::string>& eventIdBlkList)
+bool HasMemUceErr(const Device * const dev, const std::map<uint32_t, std::string>& eventIdBlkList)
 {
-    Context *curCtx = Runtime::Instance()->CurrentContext();
-    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, false);
-    NULL_PTR_RETURN(curCtx->Device_(), false);
-    if (curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
+    NULL_PTR_RETURN(dev, false);
+    const uint32_t deviceId = dev->Id_();
+    if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
         return HasBlacklistEventOnDevice(deviceId, eventIdBlkList);
     }
     return HasBlacklistEventOnDevice(deviceId, eventIdBlkList) || CheckSmmuFault(deviceId);
@@ -904,7 +903,7 @@ void ProcessSdmaError(TaskInfo *taskInfo)
     if (HasMteErr(stream->Device_())) {
         taskInfo->errorCode = TS_ERROR_SDMA_POISON_ERROR;
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
-    } else if (!HasMemUceErr(stream->Device_()->Id_())) {
+    } else if (!HasMemUceErr(stream->Device_())) {
         taskInfo->errorCode = TS_ERROR_SDMA_LINK_ERROR;
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
     } else {
@@ -946,7 +945,7 @@ void SetTaskMteErr(TaskInfo *errTaskPtr, const Device * const dev,
         if (errTaskPtr->mte_error == TS_ERROR_AICORE_MTE_ERROR) {
             MteErrorProc(errTaskPtr, dev, RT_ERROR_DEVICE_MEM_ERROR, isMteError);
             errTaskPtr->mte_error = (isMteError ? TS_ERROR_AICORE_MTE_ERROR : TS_SUCCESS);
-        } else if (HasMemUceErr(dev->Id_(), eventIdBlkList)) {
+        } else if (HasMemUceErr(dev, eventIdBlkList)) {
             errTaskPtr->mte_error = 0U;
         } else {
             (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
@@ -969,7 +968,7 @@ void GetMteErrFromCqeStatus(TaskInfo *errTaskPtr, const Device * const dev, cons
             if (errTaskPtr->mte_error == TS_ERROR_SDMA_POISON_ERROR) {
                 SetDeviceFaultTypeByErrorType(dev, SDMA_ERROR, isMteError);
                 errTaskPtr->mte_error = (isMteError ? TS_ERROR_SDMA_POISON_ERROR : TS_SUCCESS);
-            } else if (HasMemUceErr(dev->Id_(), eventIdBlkList)) {
+            } else if (HasMemUceErr(dev, eventIdBlkList)) {
                 errTaskPtr->mte_error = 0U;
             } else {
                 (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
@@ -1443,7 +1442,7 @@ rtError_t DeviceErrorProc::ProcessStarsCoreErrorInfo(const StarsDeviceErrorInfo 
     bool isLinkError = false;
     if (isMteErr && hasErrTask) {
         if (!HasMteErr(dev)) {
-            isLinkError = !HasMemUceErr(dev->Id_());
+            isLinkError = !HasMemUceErr(dev);
         }
     }
     if (isLinkError) {
