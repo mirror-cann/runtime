@@ -900,7 +900,7 @@ rtError_t StreamWriteValuePtr(const rtWriteValueInfo_t * const writeValueInfo, S
     constexpr uint64_t temp = 0ULL;
     const uint64_t size = static_cast<uint64_t>(writeValueInfo->size);
     if (((~((~temp) << (size - 1U))) & writeValueInfo->addr) == 1U) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "addr",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Writing data to the specified memory", "addr",
             "address is not aligned by awsize");
         return RT_ERROR_INVALID_VALUE;
     }

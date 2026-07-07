@@ -2330,8 +2330,8 @@ rtError_t Context::StartOnlineProf(Stream * const stm, const uint32_t sampleNum)
         (sampleNum == 0U) || (sampleNum > MAX_ONLINEPROF_NUM), RT_ERROR_INVALID_VALUE, sampleNum,
         "(0, " + std::to_string(MAX_ONLINEPROF_NUM) + "]");
     if ((stm->Device_())->DevGetOnlineProfStart()) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(
-            ErrorCode::EE1017, "stream",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1017, "Delivering a profiling request", "stream",
             "Stream " + std::to_string(stm->Id_()) + " online profiling has already been started on the device");
         return RT_ERROR_PROF_START;
     }

@@ -675,7 +675,7 @@ rtError_t Event::WaitSoftwareEvent(Stream* const stm)
             device_->Id_(), eventId_);
         return RT_ERROR_NONE;
     }
-    RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1018,
+    RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Waiting for an event",
         "The software event has not been recorded. Call rtRecordEvent first to record the event on a stream");
     return RT_ERROR_INVALID_VALUE;
 }
@@ -694,7 +694,7 @@ rtError_t Event::Wait(Stream * const stm, const uint32_t timeout)
     const uint32_t recDevId = device_->Id_();
     if ((!isNotify_) && ((eventFlag_ & (RT_EVENT_DDSYNC_NS | RT_EVENT_EXTERNAL)) == 0U) &&
         (!HasRecord() || (eventId == INVALID_EVENT_ID))) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1018, 
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Waiting for an event",
             "The event has not been recorded. "
             "Call rtRecordEvent first to record the event on a stream");
         EventIdCountSub(eventId);

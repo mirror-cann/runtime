@@ -70,7 +70,7 @@ rtError_t SnapshotCallbackManager::UnregisterCallback(rtSnapShotStage stage, rtS
     
     const std::unique_lock<std::mutex> lock(mutex_);
     if (callbackMap_.find(stage) == callbackMap_.end()) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "callback",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Deregistering the callback function related to snapshot operations", "callback",
                 "no callback was registered for stage " + std::string(GetStageString(stage)));
         return RT_ERROR_INVALID_VALUE;
     }

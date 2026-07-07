@@ -455,7 +455,7 @@ rtError_t ApiImpl::SetGroup(const int32_t groupId)
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
         RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Specifying the group used for the current operation");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     Context * const curCtx = CurrentContext();
@@ -469,7 +469,7 @@ rtError_t ApiImpl::GetGroupCount(uint32_t * const cnt)
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
         RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Obtaining the number of available computing power groups");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     Context * const curCtx = CurrentContext();
@@ -483,7 +483,7 @@ rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const gro
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP)) {
         RT_LOG(RT_LOG_ERROR, "Device groups are not supported on chipType=%d", chipType);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Querying the computing power information of a specified group");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     Context * const curCtx = CurrentContext();

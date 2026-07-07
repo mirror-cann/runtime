@@ -327,14 +327,14 @@ rtError_t GetKernelAttribute(const TaskInfo* const taskInfo, rtLaunchKernelAttrI
         case RT_LAUNCH_KERNEL_ATTR_ENGINE_TYPE:
         case RT_LAUNCH_KERNEL_ATTR_BLOCKDIM_OFFSET:
         case RT_LAUNCH_KERNEL_ATTR_BLOCK_TASK_PREFETCH:
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, attrId, "attrId",
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining kernel function attributes", attrId, "attrId",
                 "not equal (" + std::to_string(RT_LAUNCH_KERNEL_ATTR_ENGINE_TYPE) + ", " +
                 std::to_string(RT_LAUNCH_KERNEL_ATTR_BLOCKDIM_OFFSET) + ", " +
                 std::to_string(RT_LAUNCH_KERNEL_ATTR_BLOCK_TASK_PREFETCH) + ")");
             ret = RT_ERROR_INVALID_VALUE;
             break;
         default:
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, attrId, "attrId",
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining kernel function attributes", attrId, "attrId",
                 "[ " + std::to_string(RT_LAUNCH_KERNEL_ATTR_SCHEM_MODE) + ", " +
                 std::to_string(RT_LAUNCH_KERNEL_ATTR_MAX) + ")");
             ret = RT_ERROR_INVALID_VALUE;

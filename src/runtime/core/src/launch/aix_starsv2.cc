@@ -46,7 +46,7 @@ rtError_t CheckAndGetTotalShareMemorySize(const Kernel * const kernel, uint32_t 
     totalSmSize = simtFlag ? ((totalSmSize + RT_SIMT_SHARE_MEM_ALIGN_LEN - 1)/ RT_SIMT_SHARE_MEM_ALIGN_LEN * RT_SIMT_SHARE_MEM_ALIGN_LEN)
                   : totalSmSize;
     if (totalSmSize > maxSmSize) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "dynamicShareMemSize",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Checking whether the size of the dynamic shared memory exceeds the limit", "dynamicShareMemSize",
             "the sum of dynamic shared memory and kernel shared memory exceeds the maximum limit");
         RT_LOG(RT_LOG_ERROR, "kernelName=%s, kernelVfType=%u, dynamicShareMemSize=%u, shareMemSize=%u, maxSmSize=%u",
             kernel->Name_().c_str(), kernelVfType, dynamicShareMemSize, kernel->ShareMemSize_(), maxSmSize);

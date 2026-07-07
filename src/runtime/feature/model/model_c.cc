@@ -552,7 +552,7 @@ rtError_t ModelLoadCompleteByStream(Model * const mdl)
     GetAndSaveJettyInfo(mdl);
 
     if (isNeedStreamReuse && isContextContainAicpuModel) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1016, "AI CPU model streams and stream reuse cannot be used at the same time");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1016, "Ending the build of a model running instance", "AI CPU model streams and stream reuse cannot be used at the same time");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -737,14 +737,14 @@ rtError_t MdlAddEndGraph(Model * const mdl, Stream * const stm, const uint32_t f
     stm->SetLatestModlId(static_cast<int32_t>(mdl->Id_()));
     const uint32_t endGraphNum = mdl->EndGraphNum_();
     if (endGraphNum >= 1U) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "endGraphNum",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Adding an EndGraph flag to the stream bound to the model", "endGraphNum",
             RtFmtMsg("Model (model_id=%u) must have only one endgraph", mdl->Id_()));
         return RT_ERROR_MODEL_ENDGRAPH;
     }
     if ((modelExecuteType != EXECUTOR_AICPU)) {
         const bool isBindThisModel = ((stm->Model_() != nullptr) && (stm->Model_()->Id_() == mdl->Id_()));
         if ((stm->GetModelNum() == 0) || (!isBindThisModel)) {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "stm",
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Adding an EndGraph flag to the stream bound to the model", "stm",
                 RtFmtMsg("stream (stream_id=%d) is not bound to the model", stm->Id_()));
             return RT_ERROR_STREAM_INVALID;
         }

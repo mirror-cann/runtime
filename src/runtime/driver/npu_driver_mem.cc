@@ -1134,7 +1134,7 @@ rtError_t NpuDriver::DevMemAllocOffline(void **dptr, const uint64_t size,
            size, type, deviceId, chipType_);
 
     if (IsOfflineNotSupportMemType(type)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + MemTypeToString(type),
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Allocating device memory in offline mode", "Parameter type value " + MemTypeToString(type),
             "The current SoC does not support P2P memory allocation");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -1204,7 +1204,7 @@ rtError_t NpuDriver::DevMemAlloc(void ** const dptr, const uint64_t size, const 
         temptRet = DevMemAllocOnline(dptr, size, type, deviceId, moduleId, isLogError, readOnlyFlag, starsTillingFlag,
             isNewApi, cpOnlyFlag);
     } else if ((devRunMode == static_cast<uint32_t>(RT_RUN_MODE_OFFLINE)) && (IsOfflineNotSupportMemType(type))) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + MemTypeToString(type),
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Device memory allocation", "Parameter type value " + MemTypeToString(type),
             "The current SoC does not support P2P memory allocation");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     } else if ((devRunMode == static_cast<uint32_t>(RT_RUN_MODE_OFFLINE)) ||
@@ -1368,7 +1368,7 @@ rtError_t NpuDriver::DevContinuousMemFree(void * const dptr, const uint32_t devi
 rtError_t NpuDriver::DevMemAllocForPctrace(void ** const dptr, const uint64_t size, const uint32_t deviceId)
 {
     if (GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Memory allocation",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Allocating device-dedicated memory for the Pctrace function", "Memory allocation",
             "The current SoC does not support memory allocation for ptrace");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -1404,7 +1404,7 @@ rtError_t NpuDriver::DevMemAllocCached(void ** const dptr, const uint64_t size,
 {
     const uint32_t memPolicy = type & static_cast<uint32_t>(~MEM_ALLOC_TYPE_BIT);
     if (memPolicy == RT_MEMORY_POLICY_HUGE_PAGE_ONLY) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "The policy of allocating only huge page memory",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Allocating memory with the cache attribute on the device", "The policy of allocating only huge page memory",
             "The policy of allocating only huge page memory conflicts with the policy of allocating the underlying cache memory");
         return RT_ERROR_INVALID_VALUE;
     } else {

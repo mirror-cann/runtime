@@ -969,7 +969,7 @@ rtError_t ApiErrorDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t *
             const rtError_t error = CheckArgs(&(taskInfo->taskDesc[idx].u.aicpuTaskDescByHandle.argsInfo));
             ERROR_RETURN_MSG_CALL(ERR_MODULE_GE, error, "check argsInfo failed, retCode=%#x.", static_cast<uint32_t>(error));
         } else {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003,
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Delivering a DVPP Multiple task",
                 taskInfo->taskDesc[idx].type, "taskInfo->taskDesc[" + std::to_string(idx) +"].type",
                 "[0, " + std::to_string(RT_MULTIPLE_TASK_TYPE_MAX) + ")");
             return RT_ERROR_INVALID_VALUE;
@@ -2743,7 +2743,7 @@ rtError_t ApiErrorDecorator::SetDevice(const int32_t devId)
     error = rawDrv->GetDeviceCount(&deviceCnt);
     ERROR_RETURN_MSG_CALL(ERR_MODULE_DRV, error, "Get device cnt failed, retCode=%#x", static_cast<uint32_t>(error));
     if ((realDeviceId < 0) || (realDeviceId >= deviceCnt)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, realDeviceId, "drv devId", "[0, " +std::to_string(deviceCnt) + ")");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Specifying the device used for computation by the current thread", realDeviceId, "drv devId", "[0, " +std::to_string(deviceCnt) + ")");
         return RT_ERROR_DEVICE_ID;
     }
 
@@ -6526,7 +6526,7 @@ rtError_t ApiErrorDecorator::FunctionGetParamInfo(const Kernel *funcHandle, size
     COND_RETURN_AND_MSG_OUTER(!funcHandle->HasParamSummary(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
         __func__, "funcHandle", "Kernel does not have parameter information");
     if (paramIndex >= funcHandle->GetParamCount()) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, paramIndex, "paramIndex",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining parameter information from the kernel function handle", paramIndex, "paramIndex",
                 "[0, " + std::to_string(funcHandle->GetParamCount()) + ")");
         return RT_ERROR_INVALID_VALUE;
     }
