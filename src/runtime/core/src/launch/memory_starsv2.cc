@@ -49,7 +49,7 @@ rtError_t CheckReduceCapability(Stream * const stm, const rtRecudeKind_t kind, c
     const uint32_t offset = static_cast<uint32_t>(type);
     RT_LOG(RT_LOG_INFO, "ReduceAsync sdma_reduce_support=0x%x.", sdmaReduceSupport);
     if (((sdmaReduceSupport >> offset) & 0x1U) == 0U) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + DataTypeToString(type),
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Checking the availability of Reduce on the current device", "Parameter type value " + DataTypeToString(type),
             "The current SoC does not support the reduction operation of this data type");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }

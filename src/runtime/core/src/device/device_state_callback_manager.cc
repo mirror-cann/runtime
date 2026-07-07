@@ -45,7 +45,7 @@ rtError_t DeviceStateCallbackManager::RegDeviceStateCallback(const char_t *regNa
         callbackMap_[regName].args = args;
         callbackMap_[regName].notifyPos = DEV_CB_POS_END;
     } else {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, DeviceStateCallbackToString(type), "type",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Registering the device status callback function", DeviceStateCallbackToString(type), "type",
             "RT_DEVICE_STATE_CALLBACK(0) or RTS_DEVICE_STATE_CALLBACK(1)");
         return RT_ERROR_INVALID_VALUE;
     }

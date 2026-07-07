@@ -41,21 +41,21 @@ rtError_t CheckReduceCapability(Device * const dev, const rtRecudeKind_t kind, c
         RT_LOG(RT_LOG_INFO, "ReduceAsync sdma_reduce_kind=0x%x.", sdmaReduceKind);
         const uint32_t shift = static_cast<uint32_t>(kind) - static_cast<uint32_t>(RT_MEMCPY_SDMA_AUTOMATIC_ADD);
         if (((sdmaReduceKind >> shift) & 0x1U) == 0U) {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter kind value " + ReduceKindToString(kind),
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Checking the availability of Reduce on the current device", "Parameter kind value " + ReduceKindToString(kind),
                 "The current SoC does not support this kind of reduction operation");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
 
     if (((kind == RT_MEMCPY_SDMA_AUTOMATIC_EQUAL) && (!starsFlag))) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter kind value RT_MEMCPY_SDMA_AUTOMATIC_EQUAL(13)",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Checking the availability of Reduce on the current device", "Parameter kind value RT_MEMCPY_SDMA_AUTOMATIC_EQUAL(13)",
             "RT_MEMCPY_SDMA_AUTOMATIC_EQUAL(13) is only supported on STARS platform hardware");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
     const uint32_t kindShift = static_cast<uint32_t>(kind);
     if (((dev->GetDevProperties().sdmaReduceKind >> kindShift) & 0x1U) == 0U) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter kind value " + ReduceKindToString(kind),
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Checking the availability of Reduce on the current device", "Parameter kind value " + ReduceKindToString(kind),
             "The current SoC does not support this kind of reduction operation");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
@@ -63,7 +63,7 @@ rtError_t CheckReduceCapability(Device * const dev, const rtRecudeKind_t kind, c
     const uint32_t offset = static_cast<uint32_t>(type);
     RT_LOG(RT_LOG_INFO, "ReduceAsync sdma_reduce_support=0x%x.", capabilityInfo.sdma_reduce_support);
     if (((capabilityInfo.sdma_reduce_support >> offset) & 0x1U) == 0U) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "Parameter type value " + DataTypeToString(type),
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Checking the availability of Reduce on the current device", "Parameter type value " + DataTypeToString(type),
             "The current SoC does not support the reduction operation of this data type");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }

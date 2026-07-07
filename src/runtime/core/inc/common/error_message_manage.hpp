@@ -126,6 +126,12 @@
         return RET_CODE; \
     }
 
+#define NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(PTR, RET_CODE, FUNC_DESC)   \
+    if (unlikely((PTR) == nullptr)) { \
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1004, FUNC_DESC, #PTR); \
+        return RET_CODE; \
+    }
+
 #define ZERO_RETURN_MSG(PARAM)            \
     COND_RETURN_CALL_MSG_(CALL, (PARAM) == 0U, \
         RT_ERROR_INVALID_VALUE, "Check param failed, " #PARAM " can not be 0.");
@@ -234,6 +240,14 @@
 #define CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN(ctx) \
     do { \
         if (!cce::runtime::CheckCaptureModeSupport((ctx), __func__)) { \
+            return RT_ERROR_STREAM_CAPTURE_MODE_NOT_SUPPORT; \
+        } \
+    } while (false)
+
+// EE1016 capture mode检查使用（传递自定义函数名语义化描述）
+#define CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(ctx, funcDesc) \
+    do { \
+        if (!cce::runtime::CheckCaptureModeSupport((ctx), funcDesc)) { \
             return RT_ERROR_STREAM_CAPTURE_MODE_NOT_SUPPORT; \
         } \
     } while (false)

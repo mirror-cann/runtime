@@ -197,7 +197,7 @@ rtError_t NpuDriver::transMemAttribute(const uint32_t memPolicy, rtMemType_t * c
         case RT_MEMORY_POLICY_HUGE_PAGE_ONLY_P2P:
         case RT_MEMORY_POLICY_DEFAULT_PAGE_ONLY_P2P:
             if (!IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_P2P)) {
-                RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006, "P2P memory allocation",
+                RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Converting the P2P memory type based on the memory allocation policy", "P2P memory allocation",
                     "The current SoC does not support P2P memory allocation");
                 error = RT_ERROR_FEATURE_NOT_SUPPORT;
                 break;
@@ -272,7 +272,7 @@ rtError_t NpuDriver::MemConvertAddr(const uint64_t src, const uint64_t dst, cons
             static_cast<int32_t>(drvRet));
     }
     if (dmaAddress->fixed_size > len) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "len",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Converting the memory address", "len",
             "DMA transfer size exceeds the requested length, please check whether len is smaller than the actual "
             "transfer size, len=" + std::to_string(len) + ", actual transfer size=" +
                 std::to_string(dmaAddress->fixed_size));

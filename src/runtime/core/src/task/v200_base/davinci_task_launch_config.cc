@@ -78,19 +78,19 @@ static rtError_t CheckLaunchCfg(const LaunchTaskCfgInfo_t* const launchTaskCfg)
     }
 
     if (((groupDim != 0U) && (groupBlockDim == 0U)) || ((groupDim == 0U) && (groupBlockDim != 0U))) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "groupDim",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "groupDim",
             "groupDim and groupBlockDim must both be zero or both non-zero");
         return RT_ERROR_INVALID_VALUE;
     }
 
     if ((blockDim == 0) && (groupDim == 0)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1017, "blockDim",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "blockDim",
             "blockDim and groupDim cannot both be zero");
         return RT_ERROR_INVALID_VALUE;
     }
 
     if ((groupDim * groupBlockDim) > UINT16_MAX) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1011,
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1011, "Checking the parameter configuration before kernel delivery",
             std::to_string(groupDim), "groupDim",
             "the product of groupDim and groupBlockDim must not exceed 65535 (groupBlockDim=" + std::to_string(groupBlockDim) + ")");
         return RT_ERROR_INVALID_VALUE;

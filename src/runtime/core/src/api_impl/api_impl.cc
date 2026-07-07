@@ -388,7 +388,7 @@ rtError_t ApiImpl::MetadataRegister(Program * const prog, const char_t * const m
     const std::string strMetadata(metadata);
     const auto pos = strMetadata.find(',');
     if (pos == std::string::npos) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1011, metadata, "metadata",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1011, "Registering the binary metadata information of the operator", metadata, "metadata",
             "No ',' is found in the metadata");
         RT_LOG(RT_LOG_ERROR, "Register binary metadata failed.");
         return RT_ERROR_METADATA;
@@ -2592,7 +2592,7 @@ rtError_t ApiImpl::MemCopySync(void * const dst, const uint64_t destMax, const v
     const rtError_t error = device->GetDeviceStatus();
     COND_PROC((error == RT_ERROR_DEVICE_TASK_ABORT), return error);
 
-    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN(curCtx);
+    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Synchronous memory copy");
 
     Driver* driver = device->Driver_();
     NULL_PTR_RETURN_MSG_OUTER(driver, RT_ERROR_INVALID_VALUE);
@@ -2621,7 +2621,7 @@ rtError_t ApiImpl::MemCopySyncEx(void * const dst, const uint64_t destMax, const
     NULL_PTR_RETURN_MSG_OUTER(device, RT_ERROR_INVALID_VALUE);
     const rtError_t error = device->GetDeviceStatus();
     COND_PROC((error == RT_ERROR_DEVICE_TASK_ABORT), return error);
-    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN(curCtx);
+    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Synchronous memory copy");
 
     Driver* driver = device->Driver_();
     NULL_PTR_RETURN_MSG_OUTER(driver, RT_ERROR_INVALID_VALUE);
@@ -3002,7 +3002,7 @@ rtError_t ApiImpl::MemSetSync(const void * const devPtr, const uint64_t destMax,
     const rtError_t error = curCtx->Device_()->GetDeviceStatus();
     COND_PROC((error == RT_ERROR_DEVICE_TASK_ABORT), return error);
 
-    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN(curCtx);
+    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Memory setting synchronization");
 
     return curCtx->Device_()->Driver_()->MemSetSync(devPtr, destMax, val, cnt);
 }
@@ -4187,7 +4187,7 @@ rtError_t ApiImpl::ModelAbort(Model * const mdl)
             RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1015, __func__, "");
         if (!IS_SUPPORT_CHIP_FEATURE(dev->GetChipType(), RtOptionalFeatureType::RT_FEATURE_MODEL_ABORT)) {
             RT_LOG(RT_LOG_ERROR, "feature not supported. Ts model cannot be abort in current device");
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Aborting the model running instance");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
@@ -4275,7 +4275,7 @@ rtError_t ApiImpl::ModelSetSchGroupId(Model * const mdl, const int16_t schGrpId)
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_SCHED_GROUP)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Setting the scheduling group ID of a model");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -4439,7 +4439,7 @@ rtError_t ApiImpl::IpcCloseMemory(const void * const ptr)
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Closing the IPC shared memory");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -4470,7 +4470,7 @@ rtError_t ApiImpl::IpcDestroyMemoryName(const char_t * const name)
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Destroying the IPC shared memory");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -4484,7 +4484,7 @@ rtError_t ApiImpl::SetIpcNotifyPid(const char_t * const name, int32_t pid[], con
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Setting the trustlist of processes that can share a Notify object");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -4498,7 +4498,7 @@ rtError_t ApiImpl::SetIpcMemPid(const char_t * const name, int32_t pid[], const 
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Setting the trustlist of processes that can share memory through IPC");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -4579,13 +4579,13 @@ rtError_t ApiImpl::NotifyReset(Notify * const inNotify)
     Device * const dev = curCtx->Device_();
     if (!dev->IsStarsPlatform()) {
         RT_LOG(RT_LOG_ERROR, "feature support only in stars platform");
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Notify resetting");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
     if (!dev->CheckFeatureSupport(TS_FEATURE_MC2_ENHANCE)) {
         RT_LOG(RT_LOG_ERROR, "This feature is not supported because the tsch version is too low.");
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1015, "");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1015, "Notify resetting", "");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
@@ -5590,7 +5590,7 @@ rtError_t ApiImpl::GetDeviceCapability(const int32_t deviceId, const int32_t mod
         *val = GetTaskIdBitWidth();
         return RT_ERROR_NONE;
     } else {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1006,
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Querying features supported by the device",
             "The combination of featureType value " + InfoTypeToString(static_cast<uint32_t>(featureType)) +
             " and moduleType value " + ModuleTypeToString(moduleType),
             "Use a valid combination of featureType and moduleType");
@@ -6516,7 +6516,7 @@ rtError_t ApiImpl::MemCopy2DSync(void * const dst, const uint64_t dstPitch, cons
     Context * const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN(curCtx);
+    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Synchronous 2D memory copy");
 
     TIMESTAMP_BEGIN(MemCopy2D);
     const rtError_t ret = curCtx->Device_()->Driver_()->MemCopy2D(dst, dstPitch, src, srcPitch, width, height, kind,
@@ -6574,7 +6574,7 @@ rtError_t ApiImpl::MemcpyHostTask(void * const dst, const uint64_t destMax, cons
     RT_LOG(RT_LOG_INFO, "memCopy for host task, kind=%d.", kind);
     Context * const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN(curCtx);
+    CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Delivering a memory copy task on the host");
 
     if (Runtime::Instance()->ChipIsHaveStars()) {
         return curCtx->Device_()->Driver_()->MemCopySync(dst, destMax, src, cnt, kind);
@@ -7281,7 +7281,7 @@ rtError_t ApiImpl::StreamClear(Stream * const stm, rtClearStep_t step)
     Device * const dev = curCtx->Device_();
     if (!dev->IsStarsPlatform()) {
         RT_LOG(RT_LOG_ERROR, "Failed to clear stream because StreamClear is only supported on stars platform.");
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Clearing tasks in a stream");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 

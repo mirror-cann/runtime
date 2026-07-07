@@ -3325,7 +3325,7 @@ rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDe
         "profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 " , numsDev=%d", profConfig, profSwitchHi, numsDev);
 
     if (profileLogModeEnable_) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1018, "profiler is already enabled, cannot set repeatedly");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
         return RT_ERROR_PROF_STATUS;
     }
 
@@ -3340,12 +3340,12 @@ rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDe
 
         // status check:
         if ((apiProfilingType_ & PROF_RUNTIME_API_MASK) != 0ULL) {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1018, "profiler is already enabled, cannot set repeatedly");
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
             return RT_ERROR_PROF_STATUS;
         }
 
         if ((trackProfilingType_ & PROF_RUNTIME_TRACE_MASK) != 0ULL) {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1018, "profiler is already enabled, cannot set repeatedly");
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
             return RT_ERROR_PROF_STATUS;
         }
 
@@ -3363,7 +3363,7 @@ rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDe
 
         // status check:
         if ((profileLogType_ & PROF_RUNTIME_PROFILE_LOG_MASK) != 0ULL) {
-            RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1018, "profiler is already enabled, cannot set repeatedly");
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
             return RT_ERROR_PROF_STATUS;
         }
 
@@ -4304,7 +4304,7 @@ rtError_t Runtime::ChgUserDevIdToDeviceId(const uint32_t userDevId, uint32_t * c
         RT_LOG(RT_LOG_ERROR, "input userDevId:%u is err, userDeviceCnt:%u, real deviceCnt:%u isSetVisibleDev:%d "
             "ASCEND_RT_VISIBLE_DEVICES:[%s], available visible devices:[%s]",
             userDevId, userDeviceCnt, deviceCnt, isSetVisibleDev, inputDeviceStr, availableDeviceStr);
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, userDevId, "userDevId", "[0, " + std::to_string(userDeviceCnt) + ")");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining the logical device ID based on the user device ID", userDevId, "userDevId", "[0, " + std::to_string(userDeviceCnt) + ")");
         return RT_ERROR_DEVICE_ID;
     }
     (*deviceId) = deviceInfo[userDevId];
