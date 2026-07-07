@@ -212,7 +212,10 @@ set(event_process_kernel_test_src_file
     testcase/hwts_kernel/hwts_kernel_soma_memmng_test.cpp
 )
 
-set(LOCAL_SRC_FILES
+# ---- 共享源文件组（各 UT target 复用，避免重复定义）----
+
+# aicpu_schedule 生产源码
+set(AICPU_SCHEDULE_SRC
     ${SRC_PATH}/interface/aicpusd_interface.cpp
     ${SRC_PATH}/interface/aicpusd_sub_module_interface.cpp
     ${SRC_PATH}/common/aicpusd_args_parser.cpp
@@ -257,17 +260,43 @@ set(LOCAL_SRC_FILES
     ${SRC_PATH}/core/platform_info/aicpusd_send_platform_Info_to_custom.cpp
     ${SRC_PATH}/stub/proc_mgr/proc_mgr_sys_operator_agent.cpp
     ${SRC_PATH}/mc2_maintenance/aicpusd_mc2_maintenance_thread.cpp
+    ${operator_kernel_src_file}
+    ${hwts_kernel_src_file}
+)
+
+# aicpu_sharder 源码
+set(AICPU_SHARDER_SRC
     ${AICPU_SCHED_PATH}/aicpu_sharder/aicpu_pulse.cc
     ${AICPU_SCHED_PATH}/aicpu_sharder/aicpu_sharder.cc
     ${AICPU_SCHED_PATH}/aicpu_sharder/aicpu_context.cc
     ${AICPU_SCHED_PATH}/aicpu_sharder/aicpu_async_event.cc
     ${AICPU_SCHED_PATH}/aicpu_sharder/aicpu_timer.cpp
     ${AICPU_SCHED_PATH}/stub/stackcore_stub.cpp
+)
 
+# aicpu_processer 源码
+set(AICPU_PROCESSER_SRC
+    ${AICPU_SCHED_PATH}/aicpu_processer/aicpu_processer.cc
+    ${AICPU_SCHED_PATH}/aicpu_processer/ae_so_manager.cc
+    ${AICPU_SCHED_PATH}/aicpu_processer/ae_kernel_lib_manager.cc
+    ${AICPU_SCHED_PATH}/aicpu_processer/ae_kernel_lib_fwk.cc
+    ${AICPU_SCHED_PATH}/aicpu_processer/ae_kernel_lib_aicpu.cc
+    ${AICPU_SCHED_PATH}/aicpu_processer/ae_kernel_lib_aicpu_kfc.cpp
+    ${AICPU_SCHED_PATH}/aicpu_processer/ae_kernel_lib_base.cc
+)
+
+# UT 共享桩（不含 slog，各 target 按需替换为自己的日志桩）
+set(AICPU_SCHED_UT_STUB
     ${RUNTIME_DIR}/tests/ut/aicpu_sched/aicpu_schedule/stub/aicpusd_context.cpp
     ${RUNTIME_DIR}/tests/ut/aicpu_sched/aicpu_schedule/stub/stub_driver.cpp
-    ${RUNTIME_DIR}/tests/ut/aicpu_sched/aicpu_schedule/stub/slog_stub.cpp
     ${RUNTIME_DIR}/tests/ut/aicpu_sched/aicpu_schedule/stub/stub_profiling.cpp
+)
+
+set(LOCAL_SRC_FILES
+    ${AICPU_SCHEDULE_SRC}
+    ${AICPU_SHARDER_SRC}
+    ${AICPU_SCHED_UT_STUB}
+    ${RUNTIME_DIR}/tests/ut/aicpu_sched/aicpu_schedule/stub/slog_stub.cpp
 
     testcase/aicpu_context.cc
     testcase/aicpu_schedule_test.cc
@@ -306,9 +335,7 @@ set(LOCAL_SRC_FILES
 
 add_executable(aicpu_aicpuschedule_utest
     ${LOCAL_SRC_FILES}
-    ${operator_kernel_src_file}
     ${operator_kernel_test_src_file}
-    ${hwts_kernel_src_file}
     ${event_process_kernel_test_src_file}
 )
 add_dependencies(aicpu_aicpuschedule_utest aicpu_proto)
@@ -481,3 +508,58 @@ target_compile_definitions(aicpu_aicpuschedule_utest_lhisi PRIVATE
 target_link_libraries(aicpu_aicpuschedule_utest_lhisi PRIVATE
     ${COMMON_C_LINK}
 )
+
+# ===========================================================================================================
+# 基于"通用 esched 仿真测试平台"的 aicpu_sched UT（独立 target，通过共享变量组合构建）
+#   aicpu_sched_sim_utest = AICPU_SCHEDULE_SRC + AICPU_SHARDER_SRC + AICPU_PROCESSER_SRC
+#                           + AICPU_SCHED_UT_STUB + SIM_STUB_SRC + SIM_TEST_SRC + kernel + esched_sim
+#   详见 tests/ut/aicpu_sched/simulator/CMakeLists.txt（平台架构与接入说明）
+# ===========================================================================================================
+
+# 仿真桩（替换存量 c_stub / driver_interface / slog / tsd）
+set(SIM_STUB_SRC
+    testcase/sim/c_stub_sim.c
+    testcase/sim/sim_hal_device_stub.c
+    testcase/sim/sim_log_stub.cpp
+    testcase/sim/sim_tsd.cpp
+    testcase/sim/driver_interface_sim.cc
+    testcase/operator_kernel/operator_kernel_stub.cpp
+    testcase/hwts_kernel/hwts_kernel_stub.cpp
+)
+
+# 仿真用例
+set(SIM_TEST_SRC
+    testcase/sim/aicpu_sched_sim_test.cc
+)
+
+add_executable(aicpu_sched_sim_utest
+    ${AICPU_SCHEDULE_SRC}
+    ${AICPU_SHARDER_SRC}
+    ${AICPU_PROCESSER_SRC}
+    ${AICPU_SCHED_UT_STUB}
+    ${SIM_STUB_SRC}
+    ${SIM_TEST_SRC}
+    ${statistic_src_file}
+    ${PROTO_SRCS}
+    main_ut.cc
+    $<TARGET_OBJECTS:esched_sim>
+)
+add_dependencies(aicpu_sched_sim_utest aicpu_proto)
+
+target_include_directories(aicpu_sched_sim_utest PRIVATE
+    ${COMMON_C_INCLUDES}
+    ${SRC_PATH}/stub
+    ${RUNTIME_DIR}/tests/ut/aicpu_sched/aicpu_schedule
+    ${RUNTIME_DIR}/tests/ut/aicpu_sched/simulator/include   # 平台测试面公开头 sim/*.h
+)
+
+target_compile_definitions(aicpu_sched_sim_utest PRIVATE
+    ${COMMON_DEF}
+    RUN_ON_AICPU
+)
+
+target_link_libraries(aicpu_sched_sim_utest PRIVATE
+    ${COMMON_C_LINK}
+    json
+)
+

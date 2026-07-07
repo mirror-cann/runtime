@@ -35,6 +35,7 @@ target_link_libraries(intf_aicpu_llt_pub INTERFACE
     mockcpp
 )
 
+add_subdirectory(simulator)
 add_subdirectory(aicpu_cust_schedule/ut)
 add_subdirectory(aicpu_processer/ut)
 add_subdirectory(aicpu_prof/ut)
@@ -60,6 +61,7 @@ set(AICPU_SCHED_TARGET
   aicpu_aicpuschedule_utest_lhisi
   aicpu_sharder_utest
   aicpu_kernel_utest
+  aicpu_sched_sim_utest
 
   # aicpu_aicpuschedule_stest
   # aicpu_aicpuschedule_stest_host_cpu
