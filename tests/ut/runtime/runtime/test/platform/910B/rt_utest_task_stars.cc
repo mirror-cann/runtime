@@ -50,6 +50,9 @@
 #include "dvpp_c.hpp"
 #include "../../task_test_helper.h"
 #include "../../common/rt_utest_context_reset_helper.hpp"
+#include "memory_task.h"
+#include "stars_external_event_cond_isa_helper.hpp"
+
 using namespace testing;
 using namespace cce::runtime;
 
@@ -452,7 +455,7 @@ TEST_F(StarsTaskTest, ExternalWaitSlotFuncCallZeroSatisfiedBeforeDereference)
 
     ConstructExternalWaitFuncCall(fc, para);
 
-    const uint8_t waitSuccessOffset = static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, gotoNext) /
+    const uint8_t waitSuccessOffset = static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, gotoNextDynamic) /
         sizeof(uint32_t));
     EXPECT_LT(offsetof(RtStarsExternalWaitFuncCall, zeroSatisfied),
         offsetof(RtStarsExternalWaitFuncCall, loadActual));
@@ -470,12 +473,97 @@ TEST_F(StarsTaskTest, ExternalWaitSlotFuncCallZeroSatisfiedBeforeDereference)
     EXPECT_EQ(fc.maskLow8.immd, 0xFFU);
     EXPECT_EQ(fc.waitSatisfied.func3, RT_STARS_COND_ISA_BRANCH_FUNC3_BGEU);
     EXPECT_EQ(fc.waitSatisfied.jumpInstrOffset, waitSuccessOffset & 0xFU);
-    EXPECT_EQ(fc.gotoPre.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_I);
-    EXPECT_EQ(fc.gotoPre.sqId, para.sqId);
-    EXPECT_EQ(fc.gotoPre.sqHead, para.sqHeadPre);
-    EXPECT_EQ(fc.gotoNext.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_I);
-    EXPECT_EQ(fc.gotoNext.sqId, para.sqId);
-    EXPECT_EQ(fc.gotoNext.sqHead, para.sqHeadNext);
+    EXPECT_EQ(fc.gotoPreDynamic.gotoDynamic.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_R);
+    EXPECT_EQ(fc.gotoNextDynamic.gotoDynamic.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_R);
+}
+
+TEST_F(StarsTaskTest, ExternalWaitRebuildUsesOriginalTaskPosition)
+{
+    TaskInfo taskInfo = {};
+    uint8_t funcCallMem[sizeof(RtStarsExternalWaitFuncCall)] = {};
+    RtStarsMemWaitValueInstrFcPara fcPara = {};
+
+    InitByStream(&taskInfo, stream_);
+    taskInfo.type = TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL;
+    taskInfo.pos = 0U;
+    taskInfo.u.memWaitValueTask.funcCallSvmMem2 = funcCallMem;
+    stream_->SetBindFlag(true);
+    stream_->taskPersistentTail_.Set(6U);
+
+    InitFuncCallParaForMemWaitTask(&taskInfo, fcPara);
+
+    EXPECT_EQ(fcPara.sqHeadPre, 1U);
+    EXPECT_EQ(fcPara.sqHeadNext, MEM_WAIT_SQE_NUM);
+    EXPECT_EQ(fcPara.lastSqePos, MEM_WAIT_SQE_NUM - 1U);
+}
+
+TEST_F(StarsTaskTest, ExternalWaitPlaceholderSkipsFuncCallMemcpyWithoutMaterializedBuffer)
+{
+    TaskInfo taskInfo = {};
+    rtStarsSqe_t sqes[MEM_WAIT_SQE_NUM] = {};
+
+    InitByStream(&taskInfo, stream_);
+    taskInfo.type = TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL;
+    taskInfo.u.memWaitValueTask.devAddr = 0x12340000U;
+    taskInfo.u.memWaitValueTask.value = 1U;
+    taskInfo.u.memWaitValueTask.funcCallSvmMem2 = nullptr;
+    taskInfo.u.memWaitValueTask.funCallMemSize2 = 0U;
+    taskInfo.u.memWaitValueTask.awSize = RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT;
+
+    MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::MemCopySync).expects(never());
+
+    ToConstructSqe(&taskInfo, sqes);
+
+    constexpr uint8_t funcCallSqeIndex = 2U;
+    EXPECT_NE(sqes[funcCallSqeIndex].fuctionCallSqe.sqeHeader.type, RT_STARS_SQE_TYPE_INVALID);
+}
+
+TEST_F(StarsTaskTest, ExternalWaitFuncCallDynamicBindLoadsSqId)
+{
+    RtStarsExternalWaitFuncCall fc = {};
+    RtStarsExternalWaitFuncCallPara para = {};
+    para.waitRefreshAddr = 0x12340000U;
+    para.maxLoop = 15U;
+    para.sqIdMemAddr = 0x23450000U;
+    para.sqRegAddrArray = 0x34560000U;
+    para.sqTailOffset = 8U;
+    para.profSwitchAddr = 0x45670000U;
+    para.sqId = UINT32_MAX;
+    para.sqHeadPre = 7U;
+    para.sqHeadNext = 9U;
+    para.lastSqePos = 11U;
+
+    ConstructExternalWaitFuncCall(fc, para);
+
+    const uint8_t waitFailedOffset = static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, gotoPreDynamic) /
+        sizeof(uint32_t));
+    const uint8_t waitSuccessOffset = static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, gotoNextDynamic) /
+        sizeof(uint32_t));
+    EXPECT_EQ(fc.gotoPreDynamic.loadSqId.func3, RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LD);
+    EXPECT_EQ(fc.gotoPreDynamic.loadSqId.rd, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(fc.gotoPreDynamic.loadSqId.immdAddrHigh, (para.sqIdMemAddr >> 32U) & 0x1FFFFU);
+    EXPECT_EQ(fc.gotoPreDynamic.loadSqId.immdAddrLow, para.sqIdMemAddr & 0xFFFFFFFFU);
+    EXPECT_EQ(fc.gotoPreDynamic.lhwiSqHead.rd, RT_STARS_COND_ISA_REGISTER_R4);
+    EXPECT_EQ(fc.gotoPreDynamic.llwiSqHead.rd, RT_STARS_COND_ISA_REGISTER_R4);
+    EXPECT_EQ(fc.gotoPreDynamic.llwiSqHead.immdLow, para.sqHeadPre);
+    EXPECT_EQ(fc.gotoPreDynamic.slliSqHead.rs1, RT_STARS_COND_ISA_REGISTER_R4);
+    EXPECT_EQ(fc.gotoPreDynamic.slliSqHead.rd, RT_STARS_COND_ISA_REGISTER_R4);
+    EXPECT_EQ(fc.gotoPreDynamic.slliSqHead.shamt, 16U);
+    EXPECT_EQ(fc.gotoPreDynamic.opSqHead.rs1, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(fc.gotoPreDynamic.opSqHead.rs2, RT_STARS_COND_ISA_REGISTER_R4);
+    EXPECT_EQ(fc.gotoPreDynamic.opSqHead.rd, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(fc.gotoPreDynamic.gotoDynamic.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_R);
+    EXPECT_EQ(fc.gotoPreDynamic.gotoDynamic.rs1, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(fc.gotoNextDynamic.loadSqId.func3, RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LD);
+    EXPECT_EQ(fc.gotoNextDynamic.loadSqId.rd, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(fc.gotoNextDynamic.loadSqId.immdAddrHigh, (para.sqIdMemAddr >> 32U) & 0x1FFFFU);
+    EXPECT_EQ(fc.gotoNextDynamic.loadSqId.immdAddrLow, para.sqIdMemAddr & 0xFFFFFFFFU);
+    EXPECT_EQ(fc.gotoNextDynamic.llwiSqHead.immdLow, para.sqHeadNext);
+    EXPECT_EQ(fc.gotoNextDynamic.gotoDynamic.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_R);
+    EXPECT_EQ(fc.gotoNextDynamic.gotoDynamic.rs1, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(fc.jumpWaitFailed.csrrw.rs1, RT_STARS_COND_ISA_REGISTER_R1);
+    EXPECT_EQ(fc.loopLimit.jumpInstrOffset, waitFailedOffset & 0xFU);
+    EXPECT_EQ(fc.waitSatisfied.jumpInstrOffset, waitSuccessOffset & 0xFU);
 }
 
 TEST_F(StarsTaskTest, SoftwareSqDynamicProfMemWaitBuildsExtendedFuncCall)

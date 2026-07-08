@@ -56,6 +56,7 @@
 #include "api_impl_david.hpp"
 #include "api_error.hpp"
 #include "rt_unwrap.h"
+#include "stars_external_event_cond_isa_helper.hpp"
 
 using namespace testing;
 using namespace cce::runtime;

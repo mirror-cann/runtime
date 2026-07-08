@@ -17,6 +17,7 @@
 #include "stream_david.hpp"
 #include "stars_cond_isa_define.hpp"
 #include "stars_cond_isa_helper.hpp"
+#include "stars_external_event_cond_isa_helper.hpp"
 #include "error_message_manage.hpp"
 #include "task_execute_time.h"
 #include "stream_jetty_handler.h"
@@ -27,7 +28,7 @@ namespace cce {
 namespace runtime {
 
 namespace {
-void ConstructStarsv2ExternalWaitFuncCall(const uint64_t waitRefreshAddr, const uint32_t sqId,
+void ConstructStarsv2ExternalWaitFuncCall(const uint64_t waitRefreshAddr, const uint64_t sqIdMemAddr,
     const uint32_t sqHeadPre, const uint64_t maxLoop, RtStarsv2ExternalWaitFuncCall &fc)
 {
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
@@ -40,7 +41,7 @@ void ConstructStarsv2ExternalWaitFuncCall(const uint64_t waitRefreshAddr, const 
     constexpr uint8_t waitRefreshLoadOffset = static_cast<uint8_t>(
         offsetof(RtStarsv2ExternalWaitFuncCall, lhwiWaitRefreshAddr) / sizeof(uint32_t));
     constexpr uint8_t waitFailedOffset = static_cast<uint8_t>(
-        offsetof(RtStarsv2ExternalWaitFuncCall, gotoPre) / sizeof(uint32_t));
+        offsetof(RtStarsv2ExternalWaitFuncCall, gotoPreDynamic) / sizeof(uint32_t));
     constexpr uint8_t endOffset = static_cast<uint8_t>(offsetof(RtStarsv2ExternalWaitFuncCall, end) / sizeof(uint32_t));
 
     ConstructOpImmAndi(r0, r4, 0U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.initLoopIndex);
@@ -60,7 +61,7 @@ void ConstructStarsv2ExternalWaitFuncCall(const uint64_t waitRefreshAddr, const 
     ConstructBranch(r4, r5, RT_STARS_COND_ISA_BRANCH_FUNC3_BGEU, waitFailedOffset, fc.loopLimit);
     ConstructSetJumpPcFc(r1, waitRefreshLoadOffset, fc.jumpRetry);
     ConstructBranch(r0, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, waitRefreshLoadOffset, fc.retryBranch);
-    ConstructGotoI(r5, static_cast<uint16_t>(sqId), static_cast<uint16_t>(sqHeadPre), fc.gotoPre);
+    ConstructDynamicSqHeadGotoR(sqIdMemAddr, sqHeadPre, endOffset, fc.gotoPreDynamic);
     ConstructSetJumpPcFc(r1, endOffset, fc.jumpEnd);
     ConstructBranch(r0, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, endOffset, fc.endBranch);
     ConstructNop(fc.end);
@@ -544,7 +545,11 @@ void ConstructDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, void *const sqe, c
     Stream * const stream = taskInfo->stream;
     auto props = stream->Device_()->GetDevProperties();
 
-    const uint32_t taskPosTail = (stream->taskResMang_ == nullptr) ? (static_cast<Stream *>(stream))->GetCurSqPos() : taskInfo->id;
+    uint32_t taskPosTail = (stream->taskResMang_ == nullptr) ? (static_cast<Stream *>(stream))->GetCurSqPos() : taskInfo->id;
+    const bool isActualExternalWait = (taskInfo->type == TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL) &&
+        (memWaitValueTask->funcCallSvmMem2 != nullptr);
+    // external wait task的SQE构造在capture end阶段，其pos不能使用GetCurSqPos()，需要使用capture时已经占位的pos
+    taskPosTail = isActualExternalWait ? taskInfo->pos : taskPosTail;
     fcPara.devAddr = memWaitValueTask->devAddr;
     fcPara.value = memWaitValueTask->value;
     fcPara.flag = memWaitValueTask->flag;
@@ -643,12 +648,18 @@ void ConstructSecondDavidSqeForMemWaitValueTask(TaskInfo* taskInfo, rtDavidSqe_t
     rtError_t ret;
     uint64_t funcCallSize;
     if (taskInfo->type == TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL) {
-        RtStarsv2ExternalWaitFuncCall fcExternal = {};
-        funcCallSize = static_cast<uint64_t>(sizeof(RtStarsv2ExternalWaitFuncCall));
-        ConstructStarsv2ExternalWaitFuncCall(fcPara.devAddr, fcPara.sqId, fcPara.sqHeadPre,
-            fcPara.maxLoop, fcExternal);
-        ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(memWaitValueTask->funcCallSvmMem2,
-            memWaitValueTask->funCallMemSize2, &fcExternal, funcCallSize, RT_MEMCPY_HOST_TO_DEVICE);
+        if (memWaitValueTask->funcCallSvmMem2 == nullptr) {
+            // funcCallSvmMem2 == nullptr意味着此时还未进入capture end阶段，task还只是占位符，不必走到后面的MemCopySync
+            funcCallSize = 0U;
+            ret = RT_ERROR_NONE;
+        } else {
+            RtStarsv2ExternalWaitFuncCall fcExternal = {};
+            funcCallSize = static_cast<uint64_t>(sizeof(RtStarsv2ExternalWaitFuncCall));
+            ConstructStarsv2ExternalWaitFuncCall(fcPara.devAddr, fcPara.sqIdMemAddr, fcPara.sqHeadPre,
+                fcPara.maxLoop, fcExternal);
+            ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(memWaitValueTask->funcCallSvmMem2,
+                memWaitValueTask->funCallMemSize2, &fcExternal, funcCallSize, RT_MEMCPY_HOST_TO_DEVICE);
+        }
     } else if (taskInfo->stream->IsSoftwareSqEnable()) {
         RtStarsMemWaitValueLastInstrFcExWithDynamicProf fcEx = {};
         funcCallSize = static_cast<uint64_t>(sizeof(RtStarsMemWaitValueLastInstrFcExWithDynamicProf));

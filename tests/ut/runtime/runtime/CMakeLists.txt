@@ -134,6 +134,7 @@ set(runtimeut_david_series_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/common/common_task_v200_base.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/float_status_task_v200_base.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/timeout_set/timeout_set_task_v200_base.cc
+    ${TOP_DIR}/src/runtime/core/src/task/stars_external_event_cond_isa_helper.cc
 
 )
 

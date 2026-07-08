@@ -1719,6 +1719,13 @@ void DoCompleteSuccessForMemWaitValueTask(TaskInfo* taskInfo, const uint32_t dev
     }
 
     Event *event = memWaitValueTask->event;
+    // retainedEventId字段有值时代表当前task持有一个event id引用，任务结束对应的id计数-1即可。
+    if (memWaitValueTask->retainedEventId != INVALID_EVENT_ID) {
+        event->EventIdCountSub(memWaitValueTask->retainedEventId);
+        memWaitValueTask->retainedEventId = INVALID_EVENT_ID;
+        return;
+    }
+
     const int32_t eventId = event->EventId_();
     RT_LOG(RT_LOG_INFO, "Cross device event wait complete: device_id=%u, stream_id=%d, "
         "task_id=%hu, event_id=%d.", devId, stream->Id_(), taskInfo->id, eventId);

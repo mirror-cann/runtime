@@ -731,7 +731,19 @@ struct RtStarsExternalWaitFuncCallPara {
     uint32_t lastSqePos;
     uint32_t sqSwapShift;
     uint32_t swapBufferProfCfgOffset;
-    uint8_t bindFlag;
+};
+
+// 动态绑SQ场景下，capture阶段无法固化真实SQ ID，必须在模型执行时从stream->GetSqIdMemAddr()
+// 对应device内存读取BindSqCq写入的真实SQ ID。参考普通mem value wait software SQ路径中的goto_r指令块。
+struct RtStarsDynamicSqHeadGotoR {
+    RtStarsCondOpLoadImm loadSqId;
+    RtStarsCondOpLHWI lhwiSqHead;
+    RtStarsCondOpLLWI llwiSqHead;
+    RtStarsCondOpImmSLLI slliSqHead;
+    RtStarsCondOpOp opSqHead;
+    RtStarsCondOpStreamGotoR gotoDynamic;
+    RtStarsSetCsrJumpPc jumpEnd;
+    RtStarsCondOpBranch endBranch;
 };
 
 struct RtStarsExternalWaitFuncCall {
@@ -752,8 +764,13 @@ struct RtStarsExternalWaitFuncCall {
     RtStarsCondOpBranch loopLimit;
     RtStarsSetCsrJumpPc jumpRetry;
     RtStarsCondOpBranch retryBranch;
-    RtStarsCondOpStreamGotoI gotoPre;
-    RtStarsCondOpStreamGotoI gotoNext;
+
+    // 动态绑定SQ应从SqIdMemAddr读取SQ id
+    // 参考RtStarsMemWaitValueLastInstrFcEx::goto_pre
+    // 参考RtStarsMemWaitValueLastInstrFcEx::goto_next
+    RtStarsDynamicSqHeadGotoR gotoPreDynamic;
+    RtStarsDynamicSqHeadGotoR gotoNextDynamic;
+
     RtStarsSetCsrJumpPc jumpEnd;
     RtStarsCondOpBranch endBranch;
     RtStarsCondOpNop end;
@@ -777,7 +794,11 @@ struct RtStarsv2ExternalWaitFuncCall {
     RtStarsCondOpBranch loopLimit;
     RtStarsSetCsrJumpPc jumpRetry;
     RtStarsCondOpBranch retryBranch;
-    RtStarsCondOpStreamGotoI gotoPre;
+
+    // 动态绑定SQ应从SqIdMemAddr读取SQ id
+    // 参考RtStarsMemWaitValueLastInstrFcExWithDynamicProf::goto_pre
+    RtStarsDynamicSqHeadGotoR gotoPreDynamic;
+
     RtStarsSetCsrJumpPc jumpEnd;
     RtStarsCondOpBranch endBranch;
     RtStarsCondOpNop end;

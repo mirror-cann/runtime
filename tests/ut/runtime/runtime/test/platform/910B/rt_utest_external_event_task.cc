@@ -28,6 +28,7 @@
 #include "common_task.h"
 #include "memory_task.h"
 #include "rt_unwrap.h"
+#include "stars_external_event_cond_isa_helper.hpp"
 #undef protected
 #undef private
 
@@ -239,8 +240,35 @@ TEST_F(ExternalEventTaskTest910B, NormalWaitSoftwareEventUsesMemWaitValueTask)
     EXPECT_EQ(waitTask->u.memWaitValueTask.devAddr, RtPtrToValue(eventObj->GetEventAddr()));
     EXPECT_EQ(waitTask->u.memWaitValueTask.value, 1U);
     EXPECT_EQ(waitTask->u.memWaitValueTask.awSize, RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    EXPECT_EQ(waitTask->u.memWaitValueTask.retainedEventId, 7);
 
     EXPECT_EQ(rtEventDestroy(event), RT_ERROR_NONE);
+    EXPECT_EQ(rtStreamDestroy(stream), RT_ERROR_NONE);
+}
+
+TEST_F(ExternalEventTaskTest910B, ExternalWaitCompleteClearsRetainedEventIdBeforeUninit)
+{
+    TaskInfo taskInfo = {};
+    rtStream_t stream = nullptr;
+    Event event(nullptr, 0, nullptr);
+    constexpr int32_t retainedEventId = 65537;
+    ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
+    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    ASSERT_NE(streamObj, nullptr);
+
+    event.device_ = streamObj->Device_();
+    event.EventIdCountAdd(retainedEventId);
+    event.PublishSoftwareRecordResource(nullptr, retainedEventId);
+    InitByStream(&taskInfo, streamObj);
+    taskInfo.type = TS_TASK_TYPE_MEM_WAIT_VALUE;
+    taskInfo.u.memWaitValueTask.event = &event;
+    taskInfo.u.memWaitValueTask.retainedEventId = retainedEventId;
+
+    DoCompleteSuccessForMemWaitValueTask(&taskInfo, streamObj->Device_()->Id_());
+
+    EXPECT_EQ(taskInfo.u.memWaitValueTask.retainedEventId, INVALID_EVENT_ID);
+    MemWaitTaskUnInit(&taskInfo);
+    event.device_ = nullptr;
     EXPECT_EQ(rtStreamDestroy(stream), RT_ERROR_NONE);
 }
 

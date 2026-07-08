@@ -14,6 +14,7 @@
 #include "stream.hpp"
 #include "task_manager.h"
 #include "stars_cond_isa_helper.hpp"
+#include "stars_external_event_cond_isa_helper.hpp"
 
 namespace cce {
 namespace runtime {
@@ -30,6 +31,12 @@ void ConstructLastSqeForExternalWaitTask(TaskInfo* taskInfo, rtStarsSqe_t *const
     RtStarsFunctionCallSqe &sqe = command->fuctionCallSqe;
 
     (void)memset_s(&sqe, sizeof(rtStarsSqe_t), 0, sizeof(rtStarsSqe_t));
+    if (memWaitValueTask->funcCallSvmMem2 == nullptr) {
+        // funcCallSvmMem2 == nullptr意味着此时还未进入capture end阶段，task还只是占位符，不必走到后面的MemCopySync
+        FillMemWaitFunctionCallSqe(taskInfo, sqe, 0U);
+        PrintSqe(command, "CaptureWaitExternalTask placeholder last sqe");
+        return;
+    }
 
     RtStarsExternalWaitFuncCall fc = {};
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsExternalWaitFuncCall));
@@ -44,7 +51,6 @@ void ConstructLastSqeForExternalWaitTask(TaskInfo* taskInfo, rtStarsSqe_t *const
     externalPara.sqHeadPre = fcPara.sqHeadPre;
     externalPara.sqHeadNext = fcPara.sqHeadNext;
     externalPara.lastSqePos = fcPara.lastSqePos;
-    externalPara.bindFlag = fcPara.bindFlag;
     ConstructExternalWaitFuncCall(fc, externalPara);
     const rtError_t ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(memWaitValueTask->funcCallSvmMem2,
         memWaitValueTask->funCallMemSize2, &fc, funcCallSize, RT_MEMCPY_HOST_TO_DEVICE);

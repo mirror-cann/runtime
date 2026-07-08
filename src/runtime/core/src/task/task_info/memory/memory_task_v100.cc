@@ -610,7 +610,10 @@ void InitFuncCallParaForMemWaitTask(TaskInfo* taskInfo, RtStarsMemWaitValueInstr
     const uint32_t rtsqDepth = stream->GetSqDepth();
     const uint32_t taskPosTail = stream->GetBindFlag() ?
         stream->GetCurSqPos() : stream->GetTaskPosTail();
-    const uint32_t firstSqePos = taskPosTail;
+    const bool isActualExternalWait = (taskInfo->type == TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL) &&
+        (memWaitValueTask->funcCallSvmMem2 != nullptr);
+    // external wait task的SQE构造在capture end阶段，其pos不能使用GetCurSqPos()，需要使用capture时已经占位的pos
+    const uint32_t firstSqePos = isActualExternalWait ? taskInfo->pos : taskPosTail;
     const uint32_t sqDepth = stream->GetSqDepth();
 
     fcPara.devAddr = memWaitValueTask->devAddr;

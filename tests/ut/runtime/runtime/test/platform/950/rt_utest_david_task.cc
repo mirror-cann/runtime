@@ -82,6 +82,18 @@
 
 using namespace testing;
 using namespace cce::runtime;
+
+namespace {
+rtError_t MemCopySyncCopyStub(
+    Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+{
+    UNUSED(drv);
+    UNUSED(kind);
+    const errno_t ret = memcpy_s(dst, destMax, src, size);
+    return (ret == EOK) ? RT_ERROR_NONE : RT_ERROR_SEC_HANDLE;
+}
+} // namespace
+
 extern int64_t g_device_driver_version_stub;
 static rtChipType_t g_chipType;
 static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
@@ -2160,6 +2172,64 @@ TEST_F(TaskTestDavid, ConstructMemWaitValueInstr2ExWithDynamicProf_basic)
 
     RtStarsMemWaitValueLastInstrFcExWithDynamicProf fcEx = {};
     ConstructMemWaitValueInstr2ExWithDynamicProf(fcEx, fcPara);
+}
+
+TEST_F(TaskTestDavid, ExternalWaitRebuildUsesOriginalTaskPosition)
+{
+    TaskInfo taskInfo = {};
+    rtDavidSqe_t sqes[MEM_WAIT_V2_SQE_NUM] = {};
+    uint8_t funcCallMem[sizeof(RtStarsv2ExternalWaitFuncCall)] = {};
+    TaskResManage *oldTaskResMang = stream_->taskResMang_;
+
+    InitByStream(&taskInfo, stream_);
+    taskInfo.type = TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL;
+    taskInfo.pos = 0U;
+    taskInfo.id = 0U;
+    taskInfo.u.memWaitValueTask.devAddr = 0x12340000U;
+    taskInfo.u.memWaitValueTask.value = 1U;
+    taskInfo.u.memWaitValueTask.funcCallSvmMem2 = funcCallMem;
+    taskInfo.u.memWaitValueTask.funCallMemSize2 = sizeof(funcCallMem);
+
+    stream_->SetSoftWareSqEnable();
+    stream_->sqId_ = UINT32_MAX;
+    stream_->taskPersistentTail_.Set(6U);
+    stream_->taskResMang_ = nullptr;
+    MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::MemCopySync).stubs().will(invoke(MemCopySyncCopyStub));
+
+    ConstructDavidSqeForMemWaitValueTask(&taskInfo, sqes, {0ULL, 0ULL});
+    stream_->taskResMang_ = oldTaskResMang;
+
+    const auto *funcCall = reinterpret_cast<const RtStarsv2ExternalWaitFuncCall *>(funcCallMem);
+    EXPECT_EQ(funcCall->gotoPreDynamic.loadSqId.func3, RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LD);
+    EXPECT_EQ(funcCall->gotoPreDynamic.loadSqId.rd, RT_STARS_COND_ISA_REGISTER_R3);
+    EXPECT_EQ(funcCall->gotoPreDynamic.loadSqId.immdAddrHigh,
+        (stream_->GetSqIdMemAddr() >> 32U) & 0x1FFFFU);
+    EXPECT_EQ(funcCall->gotoPreDynamic.loadSqId.immdAddrLow, stream_->GetSqIdMemAddr() & 0xFFFFFFFFU);
+    EXPECT_EQ(funcCall->gotoPreDynamic.llwiSqHead.immdLow, 1U);
+    EXPECT_EQ(funcCall->gotoPreDynamic.gotoDynamic.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_R);
+    EXPECT_EQ(funcCall->gotoPreDynamic.gotoDynamic.rs1, RT_STARS_COND_ISA_REGISTER_R3);
+}
+
+TEST_F(TaskTestDavid, ExternalWaitPlaceholderSkipsFuncCallMemcpyWithoutMaterializedBuffer)
+{
+    TaskInfo taskInfo = {};
+    rtDavidSqe_t sqes[MEM_WAIT_V2_SQE_NUM] = {};
+
+    InitByStream(&taskInfo, stream_);
+    taskInfo.type = TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL;
+    taskInfo.u.memWaitValueTask.devAddr = 0x12340000U;
+    taskInfo.u.memWaitValueTask.value = 1U;
+    taskInfo.u.memWaitValueTask.funcCallSvmMem2 = nullptr;
+    taskInfo.u.memWaitValueTask.funCallMemSize2 = 0U;
+    taskInfo.u.memWaitValueTask.awSize = RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT;
+    stream_->SetSoftWareSqEnable();
+
+    MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::MemCopySync).expects(never());
+
+    ConstructDavidSqeForMemWaitValueTask(&taskInfo, sqes, {0ULL, 0ULL});
+
+    constexpr uint8_t funcCallSqeIndex = 2U;
+    EXPECT_NE(sqes[funcCallSqeIndex].fuctionCallSqe.header.type, RT_DAVID_SQE_TYPE_INVALID);
 }
 
 class DavidCondHandleTest : public testing::Test {
