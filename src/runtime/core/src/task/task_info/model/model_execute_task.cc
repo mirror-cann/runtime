@@ -24,6 +24,7 @@
 #include "model_execute_task.h"
 #include "stub_task.hpp"
 #include "capture_model_utils.hpp"
+#include "capture_model.hpp"
 
 namespace cce {
 namespace runtime {
@@ -527,8 +528,14 @@ void ReportErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_
                      "Can not find task_id=%u of stream_id=%u!",
                      modelExecuteTaskInfo->errorTaskId,
                      modelExecuteTaskInfo->errorStreamId);
-    RT_LOG(RT_LOG_ERROR, "Real fault task, device_id=%u, stream_id=%d, task_id=%hu, type=%d[%s].",
-        taskPtr->stream->Device_()->Id_(), taskPtr->stream->Id_(), taskPtr->id, taskPtr->type, taskPtr->typeName);
+    CaptureModel *captureModel = dynamic_cast<CaptureModel *>(taskPtr->stream->Model_());
+    uint32_t subModelId = MAX_UINT32_NUM;
+    if ((captureModel != nullptr) && captureModel->IsSubCaptureModel()) {
+        subModelId = captureModel->Id_();
+    }
+    RT_LOG(RT_LOG_ERROR, "Real fault task, device_id=%u, sub_model_id=%u, stream_id=%d, task_id=%hu, type=%d[%s].",
+        taskPtr->stream->Device_()->Id_(), subModelId, taskPtr->stream->Id_(), taskPtr->id, taskPtr->type,
+        taskPtr->typeName);
 
     if (unlikely(taskPtr->type == TS_TASK_TYPE_FFTS_PLUS)) {
         taskPtr->errorCode = errorCode;
