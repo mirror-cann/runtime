@@ -1329,15 +1329,18 @@ rtError_t Program::CopySoAndNameToCurrentDevice()
             ERROR_RETURN(ret, "load program to device_id=%d failed, retCode=%#x", device->Id_(), ret);
         }
         kernelMapLock_.Lock();
-        for (auto item : kernelNameMap_) {
+        for (auto iter = kernelNameMap_.begin(); iter != kernelNameMap_.end();) {
             // Aicpu算子注册时，把KernelName, soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName, soname
-            Kernel *kernel = item.second;
+            Kernel *kernel = iter->second;
             ret = StoreKernelLiteralNameToDevice(kernel);
             if (unlikely(ret != RT_ERROR_NONE)) {
-                RT_LOG(RT_LOG_ERROR, "Failed to store kernel %s literal name to device_id=%d, retCode=%#x", item.first.c_str(), device->Id_(), ret);
+                RT_LOG(RT_LOG_ERROR, "Failed to store kernel %s literal name to device_id=%d, retCode=%#x",
+                    iter->first.c_str(), device->Id_(), ret);
                 ResetEmbeddedInnerHandle<Kernel>(kernel);
                 delete kernel;
-                kernelNameMap_.erase(item.first);
+                iter = kernelNameMap_.erase(iter);
+            } else {
+                ++iter;
             }
         }
         kernelMapLock_.Unlock();
