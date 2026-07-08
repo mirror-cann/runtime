@@ -1801,19 +1801,20 @@ TEST_F(CloudV2StarsEngineTest, ReportRasProc_no_support)
 extern int32_t checkProcessStatusFlag;
 TEST_F(CloudV2StarsEngineTest, TestMemUceError)
 {
-    EXPECT_EQ(HasMemUceErr(0), true);
+    EXPECT_EQ(HasMemUceErr(nullptr), false);
+    EXPECT_EQ(HasMemUceErr(device_), true);
 
     faultEventFlag = 2;
-    EXPECT_EQ(HasMemUceErr(0), false);
+    EXPECT_EQ(HasMemUceErr(device_), false);
 
     checkProcessStatusFlag = 1;
-    EXPECT_EQ(HasMemUceErr(0), false);
+    EXPECT_EQ(HasMemUceErr(device_), false);
 
     checkProcessStatusFlag = 2;
-    EXPECT_EQ(HasMemUceErr(0), false);
+    EXPECT_EQ(HasMemUceErr(device_), false);
 
     faultEventFlag = 3;
-    EXPECT_EQ(HasMemUceErr(0), false);
+    EXPECT_EQ(HasMemUceErr(device_), false);
 
     checkProcessStatusFlag = 0;
     faultEventFlag = 0;

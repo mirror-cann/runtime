@@ -117,7 +117,7 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
     bool hasMteErr = HasMteErr(device);
     if ((status == CCU_TASK_LOCAL_MEM_ERROR) ||
         (status == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS)) {
-        if (hasMteErr && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
+        if (hasMteErr && !HasMemUceErr(device, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
             (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
             RT_LOG(RT_LOG_ERROR,
@@ -125,7 +125,7 @@ static void MapCcuErrorCodeForFastRecovery(const uint8_t status, const uint8_t s
                 devId, taskInfo->stream->Id_(), taskInfo->id, status, taskInfo->mte_error);
         }
     } else if (status == CCU_TASK_REMOTE_MEM_ERROR) {
-        if (!hasMteErr && !HasMemUceErr(devId, g_hcclRemoteMulBitEccEventIdBlkList)) {
+        if (!hasMteErr && !HasMemUceErr(device, g_hcclRemoteMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_REMOTE_MEM_ERROR;
             RT_LOG(RT_LOG_ERROR,
                 "CCU Launch remote HBM UCE fault occurred: device_id=%u, stream_id=%d, task_id=%hu, retCode=%u",
@@ -154,7 +154,7 @@ static void MapFusionCcuErrorCodeForFastRecovery(const uint8_t ccuStatus, const 
     bool hasMteErr = HasMteErr(device);
     if ((ccuStatus == CCU_TASK_LOCAL_MEM_ERROR) ||
  	    (ccuStatus == CCU_TASK_MEM_COPY_ERROR && subStatus == CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS)) {
-        if (hasMteErr && !HasMemUceErr(devId, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
+        if (hasMteErr && !HasMemUceErr(device, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_LOCAL_MEM_ERROR;
             (RtPtrToUnConstPtr<Device *>(device))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
             RT_LOG(RT_LOG_ERROR,
@@ -163,7 +163,7 @@ static void MapFusionCcuErrorCodeForFastRecovery(const uint8_t ccuStatus, const 
         }
     }
     else if (ccuStatus == CCU_TASK_REMOTE_MEM_ERROR) {
-        if (!hasMteErr && !HasMemUceErr(devId, g_hcclRemoteMulBitEccEventIdBlkList)) {
+        if (!hasMteErr && !HasMemUceErr(device, g_hcclRemoteMulBitEccEventIdBlkList)) {
             taskInfo->mte_error = TS_ERROR_REMOTE_MEM_ERROR;
             RT_LOG(RT_LOG_ERROR,
                 "fusion CCU Launch remote HBM UCE fault occurred: device_id=%u, stream_id=%d, task_id=%hu, retCode=%u",
