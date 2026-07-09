@@ -12,6 +12,8 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "driver/ascend_hal_base.h"   // process_sign
 #include "proto/tsd_message.pb.h"
@@ -87,6 +89,21 @@ struct MessageContext {
 
     // ---- Sub-process control (per-call) ----
     uint32_t closeSubProcPid;
+
+    // ---- Sub-process status / close lists (per-call) ----
+    // Parallel arrays describing the sub-process entries carried by
+    // TSD_GET_SUB_PROC_STATUS / TSD_CLOSE_SUB_PROC_LIST. subProcTypeList may be
+    // empty (e.g. GetSubProcStatus carries only pids).
+    std::vector<uint32_t> subProcPidList;
+    std::vector<uint32_t> subProcTypeList;
+
+    // ---- Common open sub-process (per-call, TSD_OPEN_SUB_PROC) ----
+    uint32_t subProcOpenType;                                          // helper_sub_proc.process_type
+    bool hasSubProcFilePath;
+    std::string subProcFilePath;
+    bool withSubProcLogLevel;                                          // include log_level (HCCP case)
+    std::vector<std::pair<std::string, std::string>> subProcEnvList;   // (env_name, env_value)
+    std::vector<std::string> subProcExtParamList;
 };
 
 // Pure HDC message assembler.
@@ -113,6 +130,48 @@ public:
     // Build TSD_CLOSE_PROC_MSG.
     // Byte-equivalent to the legacy ProcessModeManager::ConstructCloseMsg.
     static TSD_StatusT BuildClose(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_UPDATE_PROIFILING_MSG.
+    // Reads ctx.profilingMode / rankSize / logicDeviceId / procSign.
+    static TSD_StatusT BuildUpdateProfiling(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_OM_PKG_DECOMPRESS_STATUS.
+    // Reads ctx.omfileName / logicDeviceId / procSign.
+    static TSD_StatusT BuildOmFileDecompress(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build a generic package check-code message. The concrete proto type is
+    // carried by ctx.msgType (raw HDCMessage::MsgType), and the body uses
+    // ctx.checkCode / beforeSendPkg / logicDeviceId / procSign.
+    static TSD_StatusT BuildPackageCheckCode(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_CLOSE_SUB_PROC.
+    // Reads ctx.closeSubProcPid / logicDeviceId / procSign.
+    static TSD_StatusT BuildCloseSubProc(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_REMOVE_FILE.
+    // Reads ctx.removeFilePath / logicDeviceId / procSign.
+    static TSD_StatusT BuildRemoveFile(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_GET_DEVICE_CANN_HS_CHECKCODE.
+    // Reads ctx.packageMaxProcessTime / packageWorkerType / packageType /
+    // packageName / hashCode / logicDeviceId.
+    static TSD_StatusT BuildCannHsCheckCode(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_GET_SUB_PROC_STATUS.
+    // Reads ctx.subProcPidList (+ optional ctx.subProcTypeList) / logicDeviceId /
+    // procSign. Handles both GetSubProcStatus (pids only) and GetSubProcListStatus
+    // (pids + types).
+    static TSD_StatusT BuildGetSubProcStatus(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_CLOSE_SUB_PROC_LIST.
+    // Reads ctx.subProcPidList / subProcTypeList / logicDeviceId / procSign.
+    static TSD_StatusT BuildCloseSubProcList(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build TSD_OPEN_SUB_PROC (common open).
+    // Reads ctx.subProcOpenType / subProcFilePath / subProcEnvList /
+    // subProcExtParamList / ascendInstallPath / withSubProcLogLevel / logLevel /
+    // logicDeviceId / procSign.
+    static TSD_StatusT BuildCommonOpen(HDCMessage &msg, const MessageContext &ctx);
 };
 }  // namespace tsd
 #endif  // TSD_BASIC_COMPONENT_MESSAGE_BUILDER_HDC_MESSAGE_BUILDER_H

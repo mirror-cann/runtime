@@ -177,7 +177,7 @@ public:
 
     TSD_StatusT ConstructCommonOpenMsg(HDCMessage &hdcMsg, const ProcOpenArgs *procArgs) const;
 
-    bool SetCommonOpenParamList(HDCMessage &hdcMsg, const ProcOpenArgs *const procArgs) const;
+    bool SetCommonOpenParamList(MessageContext &ctx, const ProcOpenArgs *const procArgs) const;
 
     bool IsSupportHeterogeneousInterface();
 
@@ -212,8 +212,6 @@ public:
      * @return void
      */
     void SetTsdStartInfo(const bool cpStatus, const bool hccpStatus, const bool qsStatus);
-
-    void DestroyHdcClientConnectChannel();
 
     /**
      * @ingroup ProcessModeManager

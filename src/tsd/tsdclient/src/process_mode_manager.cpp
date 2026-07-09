@@ -658,17 +658,11 @@ TSD_StatusT ProcessModeManager::SendUpdateProfilingMsg(const uint32_t flag)
 {
     // TSDClient向TSDaemon发送更新profiling状态的消息
     HDCMessage msg;
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);  // 传递真实的deviceId在回调的时候做校验使用,替代reqId
-    msg.set_type(HDCMessage::TSD_UPDATE_PROIFILING_MSG);
-    msg.set_profiling_mode(flag);
-    msg.set_rank_size(rankSize_);
-    // method from protobuf, no need check null
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    if (signPid == nullptr) {
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.profilingMode = flag;
+    if (HdcMessageBuilder::BuildUpdateProfiling(msg, ctx) != TSD_OK) {
         return TSD_INTERNAL_ERROR;
     }
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
     const TSD_StatusT ret = commAgent_.SendMsg(msg);
     if (ret != TSD_OK) {
         TSD_ERROR("[TsdClient][deviceId=%u] tsdclient update profiling mode failed", logicDeviceId_);
@@ -1111,16 +1105,13 @@ TSD_StatusT ProcessModeManager::LoadOmFileToDevice(const char_t *const filePath,
     TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_FOUND, "devCommClient_ is null in send function");
     std::string curFile(fileName, fileNameLen);
     HDCMessage msg;
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_OM_PKG_DECOMPRESS_STATUS);
     const std::string curPid = std::to_string(commAgent_.GetProcSign().tgid);
     curFile = curPid + "_" + curFile;
     TSD_INFO("Load om file name:%s to device logic device id:%u", curFile.c_str(), logicDeviceId_);
-    msg.set_omfile_name(curFile);
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.omfileName = curFile;
+    ret = HdcMessageBuilder::BuildOmFileDecompress(msg, ctx);
+    TSD_CHECK(ret == TSD_OK, ret, "build TSD_OM_PKG_DECOMPRESS_STATUS msg failed.");
     ret = commAgent_.SendMsg(msg);
     TSD_CHECK(ret == TSD_OK, ret, "send TSD_OM_PKG_DECOMPRESS_STATUS msg failed.");
     ret = WaitRsp(OMFILE_LOAD_TIMEOUT);
@@ -1205,16 +1196,13 @@ TSD_StatusT ProcessModeManager::GetDeviceHsPkgCheckCode(const uint32_t checkCode
         return TSD_INTERNAL_ERROR;
     }
     HDCMessage msg;
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(msgType);
-    msg.set_check_code(checkCode);
-    msg.set_before_send_pkg(beforeSendFlag);
-    ProcessSignPid * const proSignPid = msg.mutable_proc_sign_pid();
-    if (proSignPid != nullptr) {
-        proSignPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
-        const std::string signStr(commAgent_.GetProcSign().sign);
-        proSignPid->set_proc_sign(signStr);
-        TSD_RUN_INFO("[TsdClient] tsd get process sign procpid[%u]", static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.msgType = static_cast<uint32_t>(msgType);
+    ctx.checkCode = checkCode;
+    ctx.beforeSendPkg = beforeSendFlag;
+    if (HdcMessageBuilder::BuildPackageCheckCode(msg, ctx) != TSD_OK) {
+        TSD_ERROR("build package check code msg failed");
+        return TSD_INTERNAL_ERROR;
     }
     ret = commAgent_.SendMsg(msg);
     if (ret != TSD_OK) {
@@ -1365,14 +1353,16 @@ TSD_StatusT ProcessModeManager::GetCannHsPkgCheckCode(const std::string &pkgPure
     }
 
     HDCMessage msg;
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_GET_DEVICE_CANN_HS_CHECKCODE);
-    msg.set_package_max_process_time(DRIVER_EXTEND_MAX_PROCESS_TIME);
-    msg.set_package_worker_type(static_cast<uint32_t>(PackageWorkerType::PACKAGE_WORKER_COMMON_SINK));
-    msg.set_package_type(static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_COMMON_SINK));
-    SinkPackageHashCodeInfo *pkgHostInfo = msg.add_package_hash_code_list();
-    pkgHostInfo->set_package_name(pkgPureName);
-    pkgHostInfo->set_hash_code(hostPkgHash);
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.packageMaxProcessTime = DRIVER_EXTEND_MAX_PROCESS_TIME;
+    ctx.packageWorkerType = static_cast<uint32_t>(PackageWorkerType::PACKAGE_WORKER_COMMON_SINK);
+    ctx.packageType = static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_COMMON_SINK);
+    ctx.packageName = pkgPureName;
+    ctx.hashCode = hostPkgHash;
+    if (HdcMessageBuilder::BuildCannHsCheckCode(msg, ctx) != TSD_OK) {
+        TSD_ERROR("build cann hs check code msg failed");
+        return TSD_INTERNAL_ERROR;
+    }
     ret = commAgent_.SendMsg(msg);
     if (ret != TSD_OK) {
         TSD_ERROR("Send cann hs check code failed");
@@ -1390,37 +1380,32 @@ TSD_StatusT ProcessModeManager::GetCannHsPkgCheckCode(const std::string &pkgPure
     return TSD_OK;
 }
 
-bool ProcessModeManager::SetCommonOpenParamList(HDCMessage &hdcMsg, const ProcOpenArgs *const procArgs) const
+bool ProcessModeManager::SetCommonOpenParamList(MessageContext &ctx, const ProcOpenArgs *const procArgs) const
 {
     if ((procArgs->envCnt > PROCESS_OPEN_MAX_ENV_CNT) || (procArgs->extParamCnt > PROCESS_OPEN_MAX_EXT_PARAM_CNT)) {
         TSD_ERROR("input param error envCnt:%llu, extParamCnt:%llu", procArgs->envCnt, procArgs->extParamCnt);
         return false;
     }
-    HelperSubProcess * const subProcessInfo = hdcMsg.mutable_helper_sub_proc();
     try {
-        subProcessInfo->set_process_type(static_cast<uint32_t>(procArgs->procType));
+        ctx.subProcOpenType = static_cast<uint32_t>(procArgs->procType);
         if ((procArgs->filePath != nullptr) && (procArgs->pathLen != 0)) {
             const std::string filePath(procArgs->filePath, procArgs->pathLen);
-            subProcessInfo->set_file_path(filePath);
+            ctx.hasSubProcFilePath = true;
+            ctx.subProcFilePath = filePath;
             TSD_INFO("filePath:%s", filePath.c_str());
         }
         if ((procArgs->procType == TSD_SUB_PROC_BUILTIN_UDF) || (procArgs->procType == TSD_SUB_PROC_UDF)) {
             for (uint64_t index = 0; index < procArgs->envCnt; index++) {
-                EnvPara *evnParam = subProcessInfo->add_env_list();
-                if (evnParam == nullptr) {
-                    return false;
-                }
                 const std::string envName(procArgs->envParaList[index].envName, procArgs->envParaList[index].nameLen);
                 const std::string envValue(procArgs->envParaList[index].envValue, procArgs->envParaList[index].valueLen);
                 TSD_INFO("input envName:%s, envValue:%s", envName.c_str(), envValue.c_str());
-                evnParam->set_env_name(envName);
-                evnParam->set_env_value(envValue);
+                ctx.subProcEnvList.emplace_back(envName, envValue);
             }
         }
         for (uint64_t cnt = 0; cnt < procArgs->extParamCnt; cnt++) {
             const std::string extParam(procArgs->extParamList[cnt].paramInfo, procArgs->extParamList[cnt].paramLen);
             TSD_INFO("cnt:%llu, extra parameters:%s, len:%llu", cnt, extParam.c_str(), procArgs->extParamList[cnt].paramLen);
-            subProcessInfo->add_ext_param_list(extParam);
+            ctx.subProcExtParamList.push_back(extParam);
         }
     } catch (std::exception &e) {
         TSD_ERROR("input str is invalid reason:%s", e.what());
@@ -1430,7 +1415,8 @@ bool ProcessModeManager::SetCommonOpenParamList(HDCMessage &hdcMsg, const ProcOp
 }
 TSD_StatusT ProcessModeManager::ConstructCommonOpenMsg(HDCMessage &hdcMsg, const ProcOpenArgs *procArgs) const
 {
-    if (!SetCommonOpenParamList(hdcMsg, procArgs)) {
+    MessageContext ctx = BuildBaseMessageContext();
+    if (!SetCommonOpenParamList(ctx, procArgs)) {
         TSD_ERROR("input param is error, SetCommonOpenParamList failed");
         return TSD_INTERNAL_ERROR;
     }
@@ -1438,25 +1424,14 @@ TSD_StatusT ProcessModeManager::ConstructCommonOpenMsg(HDCMessage &hdcMsg, const
     std::string runtimePkgPath;
     GetAscendLatestIntallPath(runtimePkgPath);
     if (!runtimePkgPath.empty()) {
-        hdcMsg.set_ascend_install_path(runtimePkgPath);
+        ctx.ascendInstallPath = runtimePkgPath;
         TSD_RUN_INFO("runtimePkgPath:%s", runtimePkgPath.c_str());
     }
 
     if (procArgs->procType == SubProcType::TSD_SUB_PROC_HCCP) {
-        LogLevel * const level = hdcMsg.mutable_log_level();
-        if (level != nullptr) {
-            level->set_log_level(logLevel_);
-        }
+        ctx.withSubProcLogLevel = true;
     }
-    hdcMsg.set_type(HDCMessage::TSD_OPEN_SUB_PROC);
-    hdcMsg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    hdcMsg.set_real_device_id(logicDeviceId_);
-    ProcessSignPid * const proSignPid = hdcMsg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(proSignPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    proSignPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
-    const std::string signStr(commAgent_.GetProcSign().sign);
-    proSignPid->set_proc_sign(signStr);
-    return TSD_OK;
+    return HdcMessageBuilder::BuildCommonOpen(hdcMsg, ctx);
 }
 
 TSD_StatusT ProcessModeManager::SendCommonOpenMsg(const ProcOpenArgs *procArgs)
@@ -1529,13 +1504,10 @@ TSD_StatusT ProcessModeManager::ProcessCloseSubProc(const pid_t closePid)
     TSD_RUN_INFO("enter into ProcessCloseSubProc subpid:%d", closePid);
     TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_INITIALED, "[TsdClient] devCommClient_ is null in Close function");
     HDCMessage msg;
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_CLOSE_SUB_PROC);
-    msg.set_close_sub_proc_pid(static_cast<uint32_t>(closePid));
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.closeSubProcPid = static_cast<uint32_t>(closePid);
+    const TSD_StatusT buildRet = HdcMessageBuilder::BuildCloseSubProc(msg, ctx);
+    TSD_CHECK(buildRet == TSD_OK, buildRet, "build TSD_CLOSE_SUB_PROC msg failed.");
 
     if (isStartedHccp_ && (static_cast<uint32_t>(closePid) == hccpPid_)) {
         isStartedHccp_ = false;
@@ -1563,16 +1535,13 @@ TSD_StatusT ProcessModeManager::GetSubProcStatus(ProcStatusInfo *pidInfo, const 
     TSD_DEBUG("enter into GetSubProcStatus");
     TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_INITIALED, "[TsdClient] devCommClient_ is null in Close function");
     HDCMessage msg;
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_GET_SUB_PROC_STATUS);
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.subProcPidList.reserve(arrayLen);
     for (uint32_t index = 0; index < arrayLen; index++) {
-        SubProcStatus *curStatus = msg.add_sub_proc_status_list();
-        curStatus->set_sub_proc_pid(static_cast<uint32_t>(pidInfo[index].pid));
+        ctx.subProcPidList.push_back(static_cast<uint32_t>(pidInfo[index].pid));
     }
+    const TSD_StatusT buildRet = HdcMessageBuilder::BuildGetSubProcStatus(msg, ctx);
+    TSD_CHECK(buildRet == TSD_OK, buildRet, "build TSD_GET_SUB_PROC_STATUS msg failed.");
     const ScopeGuard closeFileGuard([this]() {
         pidArry_ = nullptr;
         pidArryLen_ = 0U;
@@ -1615,14 +1584,11 @@ TSD_StatusT ProcessModeManager::RemoveFileOnDevice(const char_t *const filePath,
     TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_INITIALED, "[TsdClient] devCommClient_ is null in Close function");
     HDCMessage msg;
     const std::string remvePath(filePath, pathLen);
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_REMOVE_FILE);
-    msg.set_remove_file_path(remvePath);
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
-    TSD_StatusT ret = commAgent_.SendMsg(msg);
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.removeFilePath = remvePath;
+    TSD_StatusT ret = HdcMessageBuilder::BuildRemoveFile(msg, ctx);
+    TSD_CHECK(ret == TSD_OK, ret, "build TSD_REMOVE_FILE msg failed.");
+    ret = commAgent_.SendMsg(msg);
     if (ret != TSD_OK) {
         TSD_ERROR("[TsdClient][deviceId=%u] send remove msg to device error", logicDeviceId_);
         return TSD_INTERNAL_ERROR;
@@ -1785,25 +1751,24 @@ TSD_StatusT ProcessModeManager::ExecuteClosePidList(const ProcStatusParam *close
 
     TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_INITIALED, "[TsdClient] devCommClient_ is null");
     HDCMessage msg;
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_CLOSE_SUB_PROC_LIST);
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.subProcPidList.reserve(pidCnt);
+    ctx.subProcTypeList.reserve(pidCnt);
     for (uint32_t index = 0U; index < pidCnt; index++) {
-        SubProcStatus *curStatus = msg.add_close_sub_list();
-        msg.add_sub_proc_type_list(static_cast<uint32_t>(closeList[index + startIndex].procType));
-        curStatus->set_sub_proc_pid(static_cast<uint32_t>(closeList[index + startIndex].pid));
-        TSD_INFO("add close subproc:%d, proctype:%u", closeList[index + startIndex].pid,
-                 static_cast<uint32_t>(closeList[index + startIndex].procType));
+        const uint32_t curPid = static_cast<uint32_t>(closeList[index + startIndex].pid);
+        const uint32_t curType = static_cast<uint32_t>(closeList[index + startIndex].procType);
+        ctx.subProcPidList.push_back(curPid);
+        ctx.subProcTypeList.push_back(curType);
+        TSD_INFO("add close subproc:%d, proctype:%u", closeList[index + startIndex].pid, curType);
         if (isStartedHccp_ &&
             (closeList[index + startIndex].procType == SubProcType::TSD_SUB_PROC_HCCP) &&
-            (static_cast<uint32_t>(closeList[index + startIndex].pid) == hccpPid_)) {
+            (curPid == hccpPid_)) {
             isStartedHccp_ = false;
             hccpPid_ = 0;
         }
     }
+    const TSD_StatusT buildRet = HdcMessageBuilder::BuildCloseSubProcList(msg, ctx);
+    TSD_CHECK(buildRet == TSD_OK, buildRet, "build TSD_CLOSE_SUB_PROC_LIST msg failed.");
     TSD_StatusT ret = commAgent_.SendMsg(msg);
     if (ret != TSD_OK) {
         TSD_ERROR("[TsdClient][deviceId=%u] send close pid array msg to device error", logicDeviceId_);
@@ -1825,17 +1790,15 @@ TSD_StatusT ProcessModeManager::GetSubProcListStatus(ProcStatusParam *pidInfo, c
     TSD_INFO("enter into GetSubProcListStatus");
     TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_INITIALED, "[TsdClient] devCommClient_ is null");
     HDCMessage msg;
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    msg.set_type(HDCMessage::TSD_GET_SUB_PROC_STATUS);
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    TSD_CHECK_NULLPTR(signPid, TSD_INTERNAL_ERROR, "signPid is null.");
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
+    MessageContext ctx = BuildBaseMessageContext();
+    ctx.subProcPidList.reserve(arrayLen);
+    ctx.subProcTypeList.reserve(arrayLen);
     for (uint32_t index = 0; index < arrayLen; index++) {
-        SubProcStatus *curStatus = msg.add_sub_proc_status_list();
-        msg.add_sub_proc_type_list(static_cast<uint32_t>(pidInfo[index].procType));
-        curStatus->set_sub_proc_pid(static_cast<uint32_t>(pidInfo[index].pid));
+        ctx.subProcPidList.push_back(static_cast<uint32_t>(pidInfo[index].pid));
+        ctx.subProcTypeList.push_back(static_cast<uint32_t>(pidInfo[index].procType));
     }
+    const TSD_StatusT buildRet = HdcMessageBuilder::BuildGetSubProcStatus(msg, ctx);
+    TSD_CHECK(buildRet == TSD_OK, buildRet, "build TSD_GET_SUB_PROC_STATUS msg failed.");
     const ScopeGuard closeFileGuard([this]() {
         pidList_ = nullptr;
         pidArryLen_ = 0U;
@@ -1848,15 +1811,6 @@ TSD_StatusT ProcessModeManager::GetSubProcListStatus(ProcStatusParam *pidInfo, c
     TSD_CHECK(ret == TSD_OK, ret, "Wait GetSubProcListStatus response from device failed.");
     TSD_INFO("leave GetSubProcListStatus");
     return TSD_OK;
-}
-
-void ProcessModeManager::DestroyHdcClientConnectChannel()
-{
-    if (commAgent_.GetDeviceComm() != nullptr) {
-        commAgent_.ReleaseDeviceConnection();
-        TSD_RUN_INFO("hdcTsdClient destroy finish");
-    }
-    TSD_RUN_INFO("DestroyHdcClientConnectChannel finish");
 }
 
 TSD_StatusT ProcessModeManager::SendCommonPackage(const int32_t peerNode, const std::string &path, const uint32_t packageType)
