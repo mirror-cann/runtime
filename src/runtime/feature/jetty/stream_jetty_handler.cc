@@ -254,7 +254,7 @@ rtError_t StreamJettyHandler::FillWqeToDevice(
 
     AsyncWqeFillInfo fillInfo = {};
     fillInfo.jettyHandle.handle = jettyInfo.handle;
-    uint64_t offset = 0U;
+    uint32_t offset = 0U;
     for (size_t i = 0; i < jettyCtx->wqeBuffers.size(); ++i) {
         if (jettyCtx->wqeBuffers[i] == nullptr) {
             continue;
@@ -335,7 +335,7 @@ rtError_t StreamJettyHandler::BindJetty(
     NULL_PTR_RETURN(stream->Device_(), RT_ERROR_INVALID_VALUE);
     JettyManager *jettyMgr = stream->Device_()->GetJettyManager();
     NULL_PTR_RETURN(jettyMgr, RT_ERROR_INVALID_VALUE);
-    int32_t streamId = stream->Id_();
+    const int32_t streamId = stream->Id_();
     StreamJettyContext *jettyCtx = jettyMgr->GetStreamJettyContext(streamId, type);
     if (jettyCtx == nullptr || jettyCtx->filledWqeCount == 0) {
         RT_LOG(RT_LOG_DEBUG, "No ub dma task, stream_id=%d, jetty_type=%d.",
@@ -370,7 +370,7 @@ rtError_t StreamJettyHandler::ResetJettyCi(
     if (jettyMgr == nullptr || ctx == nullptr || stream == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
-    int32_t streamId = stream->Id_();
+    const int32_t streamId = stream->Id_();
     JettyInfo jettyInfo = {};
     rtError_t error = jettyMgr->GetJettyInfoForStream(streamId, type, jettyInfo);
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
@@ -379,10 +379,11 @@ rtError_t StreamJettyHandler::ResetJettyCi(
     rtUbDbInfo_t dbInfo = {};
     dbInfo.wrCqe = 0U;
     dbInfo.dbNum = static_cast<uint8_t>(UB_DOORBELL_NUM_MIN);
-    dbInfo.info[0].dieId = static_cast<uint16_t>(jettyInfo.dieId);
-    dbInfo.info[0].jettyId = jettyInfo.jettyId;
-    dbInfo.info[0].functionId = static_cast<uint16_t>(jettyInfo.functionId);
-    dbInfo.info[0].piValue = ctx->capacity - ctx->filledWqeCount;
+    dbInfo.info[0].dieId = static_cast<uint16_t>((jettyInfo.dieId > UINT16_MAX) ? UINT16_MAX : jettyInfo.dieId);
+    dbInfo.info[0].jettyId = static_cast<uint16_t>((jettyInfo.jettyId > UINT16_MAX) ? UINT16_MAX : jettyInfo.jettyId);
+    dbInfo.info[0].functionId = static_cast<uint16_t>((jettyInfo.functionId > UINT16_MAX) ? UINT16_MAX : jettyInfo.functionId);
+    const uint32_t piVal = ctx->capacity - ctx->filledWqeCount;
+    dbInfo.info[0].piValue = static_cast<uint16_t>((piVal > UINT16_MAX) ? UINT16_MAX : piVal);
     NULL_PTR_RETURN(stream->Context_(), RT_ERROR_INVALID_VALUE);
     Stream *ctrlStream = stream->Context_()->GetCtrlSQStream();
     NULL_PTR_RETURN(ctrlStream, RT_ERROR_INVALID_VALUE);
@@ -405,7 +406,7 @@ rtError_t StreamJettyHandler::RecycleJetty(Stream *stream, JettyType type, uint3
     NULL_PTR_RETURN(stream->Device_(), RT_ERROR_INVALID_VALUE);
     JettyManager *jettyMgr = stream->Device_()->GetJettyManager();
     NULL_PTR_RETURN(jettyMgr, RT_ERROR_INVALID_VALUE);
-    int32_t streamId = stream->Id_();
+    const int32_t streamId = stream->Id_();
     StreamJettyContext *jettyCtx = jettyMgr->GetStreamJettyContext(streamId, type);
     if (jettyCtx == nullptr || jettyCtx->jettyHandle == 0) {
         return RT_ERROR_NONE;
@@ -430,7 +431,7 @@ rtError_t StreamJettyHandler::ReleaseJetty(Stream *stream, JettyType type)
     NULL_PTR_RETURN(stream->Device_(), RT_ERROR_INVALID_VALUE);
     JettyManager *jettyMgr = stream->Device_()->GetJettyManager();
     NULL_PTR_RETURN(jettyMgr, RT_ERROR_INVALID_VALUE);
-    int32_t streamId = stream->Id_();
+    const int32_t streamId = stream->Id_();
     StreamJettyContext* jettyCtx = jettyMgr->GetStreamJettyContext(streamId, type);
     if (jettyCtx == nullptr) {
         return RT_ERROR_NONE;
@@ -450,6 +451,8 @@ rtError_t StreamJettyHandler::ReleaseJetty(Stream *stream, JettyType type)
             RT_LOG(RT_LOG_ERROR, "FreeJettyByHandle failed, stream_id=%d, handle=%lu, retCode=%#x.",
                 streamId, savedHandle, error);
         }
+    } else {
+        // do nothing
     }
     Driver *driver = stream->Device_()->Driver_();
     if (!jettyCtx->wqeBuffers.empty() && driver != nullptr) {

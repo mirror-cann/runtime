@@ -167,7 +167,7 @@ rtError_t JettyManager::GetJettyInfoForStream(int32_t streamId, JettyType type, 
 StreamJettyContext* JettyManager::GetOrCreateStreamJettyContext(const Stream *stream, JettyType type)
 {
     std::lock_guard<std::recursive_mutex> lock(managerLock_);
-    int32_t streamId = static_cast<int32_t>(stream->Id_());
+    const int32_t streamId = static_cast<int32_t>(stream->Id_());
     auto key = std::make_pair(static_cast<uint32_t>(streamId), type);
     auto it = streamJettyContexts_.find(key);
     if (it != streamJettyContexts_.end()) {
@@ -184,7 +184,7 @@ StreamJettyContext* JettyManager::GetOrCreateStreamJettyContext(const Stream *st
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "PreAllocJetty failed, stream_id=%d, type=%d, retCode=%#x.",
             streamId, static_cast<int32_t>(type), error);
-        streamJettyContexts_.erase(key);
+        (void)streamJettyContexts_.erase(key);
         return nullptr;
     }
     RT_LOG(RT_LOG_INFO, "Create context with reserved jetty (FREE), stream_id=%d.", streamId);
@@ -208,7 +208,7 @@ void JettyManager::DeleteStreamJettyContext(int32_t streamId, JettyType type)
     auto key = std::make_pair(static_cast<uint32_t>(streamId), type);
     auto it = streamJettyContexts_.find(key);
     if (it != streamJettyContexts_.end()) {
-        streamJettyContexts_.erase(it);
+        (void)streamJettyContexts_.erase(it);
     }
 }
 

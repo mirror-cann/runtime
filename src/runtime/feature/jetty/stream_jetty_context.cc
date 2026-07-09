@@ -67,7 +67,7 @@ rtError_t StreamJettyContext::ExpandCapacity(Driver *driver)
         return RT_ERROR_INVALID_VALUE;
     }
 
-    rtError_t error = AllocWqeBuffer(driver);
+    const rtError_t error = AllocWqeBuffer(driver);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     capacity += WQE_BUFFER_DEPTH;
     return RT_ERROR_NONE;

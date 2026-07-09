@@ -49,8 +49,8 @@ rtError_t CaptureModel::RefreshJettyInfoList()
     ClearH2dJettyInfoList();
     ClearD2dJettyInfoList();
     for (Stream *stm : StreamList_()) {
-        int32_t streamId = stm->Id_();
-        for (JettyType type : {JettyType::JETTY_TYPE_H2D, JettyType::JETTY_TYPE_D2D}) {
+        const int32_t streamId = stm->Id_();
+        for (const JettyType type : {JettyType::JETTY_TYPE_H2D, JettyType::JETTY_TYPE_D2D}) {
             StreamJettyContext *jettyCtx = jettyMgr->GetStreamJettyContext(streamId, type);
             if (jettyCtx == nullptr || jettyCtx->jettyHandle == 0 || jettyCtx->filledWqeCount == 0) {
                 continue;
@@ -61,9 +61,9 @@ rtError_t CaptureModel::RefreshJettyInfoList()
                 "GetJettyInfoForStream failed, stream_id=%d, type=%d, retCode=%#x.", streamId, static_cast<int32_t>(type), ret);
 
             UbAsyncJettyInfo info = {};
-            info.dieId = static_cast<uint16_t>(jettyInfo.dieId);
-            info.functionId = static_cast<uint16_t>(jettyInfo.functionId);
-            info.jettyId = static_cast<uint16_t>(jettyInfo.jettyId);
+            info.dieId = static_cast<uint16_t>((jettyInfo.dieId > UINT16_MAX) ? UINT16_MAX : jettyInfo.dieId);
+            info.functionId = static_cast<uint16_t>((jettyInfo.functionId > UINT16_MAX) ? UINT16_MAX : jettyInfo.functionId);
+            info.jettyId = static_cast<uint16_t>((jettyInfo.jettyId > UINT16_MAX) ? UINT16_MAX : jettyInfo.jettyId);
             info.piValue = static_cast<uint16_t>(jettyCtx->capacity - jettyCtx->filledWqeCount);
             info.sqId = stm->GetSqId();
             if (type == JettyType::JETTY_TYPE_H2D) {
@@ -130,7 +130,7 @@ rtError_t CaptureModel::ReleaseAllJetty()
     const std::unique_lock<std::mutex> lk(jettyMutex_);
     rtError_t finalError = RT_ERROR_NONE;
     for (Stream *stm : StreamList_()) {
-        int32_t streamId = stm->Id_();
+        const int32_t streamId = stm->Id_();
         rtError_t ret = StreamJettyHandler::ReleaseJetty(stm, JettyType::JETTY_TYPE_H2D);
         if (ret != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "ReleaseJetty H2D failed, stream_id=%d, retCode=%#x.", streamId, ret);

@@ -71,10 +71,10 @@ rtError_t JettyPool::PreAllocJetty(JettyType type)
 {
     std::lock_guard<std::mutex> lock(poolLock_);
     std::vector<JettyInfo> &pool = (type == JettyType::JETTY_TYPE_H2D) ? h2dJettyPool_ : d2dJettyPool_;
-    uint32_t maxSize = (type == JettyType::JETTY_TYPE_H2D) ? JETTY_POOL_H2D_MAX_SIZE : JETTY_POOL_D2D_MAX_SIZE;
+    const uint32_t maxSize = (type == JettyType::JETTY_TYPE_H2D) ? JETTY_POOL_H2D_MAX_SIZE : JETTY_POOL_D2D_MAX_SIZE;
     if (pool.size() < maxSize) {
         JettyInfo newJetty;
-        rtError_t error = CreateJetty(type, JETTY_DEPTH_STANDARD, newJetty);
+        const rtError_t error = CreateJetty(type, JETTY_DEPTH_STANDARD, newJetty);
         COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
         newJetty.state = JettyState::FREE;
         pool.push_back(newJetty);
@@ -108,7 +108,7 @@ rtError_t JettyPool::FreeJetty(uint64_t handle, JettyType type)
             }
             RT_LOG(RT_LOG_INFO, "Release jetty success, device_id=%u, type=%d, jetty_id=%u.",
                 deviceId_, static_cast<int32_t>(type), it->jettyId);
-            pool.erase(it);
+            (void)pool.erase(it);
             return RT_ERROR_NONE;
         }
     }
@@ -159,7 +159,7 @@ rtError_t JettyPool::AllocLargeDepthJetty(JettyType type, uint32_t depth, JettyI
     std::lock_guard<std::mutex> lock(poolLock_);
 
     JettyInfo newJetty;
-    rtError_t error = CreateJetty(type, depth, newJetty);
+    const rtError_t error = CreateJetty(type, depth, newJetty);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     newJetty.state = JettyState::BOUND;
     largeJettyPool_.push_back(newJetty);
@@ -189,7 +189,7 @@ rtError_t JettyPool::FreeLargeDepthJetty(uint64_t handle)
             }
             RT_LOG(RT_LOG_INFO, "Destroy large depth jetty success, device_id=%u, handle=%llu, jetty_id=%u.",
                 deviceId_, handle, it->jettyId);
-            largeJettyPool_.erase(it);
+            (void)largeJettyPool_.erase(it);
             return RT_ERROR_NONE;
         }
     }
