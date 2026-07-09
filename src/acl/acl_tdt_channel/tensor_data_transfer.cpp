@@ -660,7 +660,7 @@ namespace acl {
         return ACL_SUCCESS;
     }
 
-    size_t GetMallocSize(const size_t bufLen)
+    static size_t GetMallocSize(const size_t bufLen)
     {
         // 超出当前档位就是bufLen, 在档位内就是上限值，并保存当前申请的值
         for (const size_t& size : GEAR_SIZE) {
@@ -1011,7 +1011,7 @@ acltdtChannelHandle *acltdtCreateChannelWithCapacity(uint32_t deviceId, const ch
 {
     ACL_REQUIRES_NOT_NULL_RET_NULL_INPUT_REPORT(name);
     ACL_LOG_INFO("acltdtCreateChannelWithCapacity devId is %u, name is %s, capacity is %zu", deviceId, name, capacity);
-    if (strlen(name) + 1 > RT_MQ_MAX_NAME_LEN) {
+    if (strnlen(name, RT_MQ_MAX_NAME_LEN) + 1 > RT_MQ_MAX_NAME_LEN) {
         ACL_LOG_ERROR("name [%s] length %zu cannot be larger than %d", name, (strlen(name) + 1U), RT_MQ_MAX_NAME_LEN);
         std::string errMsg =
             acl::AclErrorLogManager::FormatStr("name [%s] length %zu cannot be larger than %d", name, (strlen(name) + 1U), RT_MQ_MAX_NAME_LEN);
@@ -1109,7 +1109,7 @@ aclError acltdtDestroyChannel(acltdtChannelHandle *handle)
         return ACL_SUCCESS;
     }
     std::unique_lock<std::mutex> lk(aclChannleMutex);
-    aclChannleMap.erase(handle->name);
+    (void)aclChannleMap.erase(handle->name);
     if (aclChannleMap.size() == 0) {
         static TdtHostDestroyFunc tdtHostDestroy = (TdtHostDestroyFunc)GetFunction("TdtHostDestroy");
         if (tdtHostDestroy == nullptr) {

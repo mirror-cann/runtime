@@ -35,7 +35,7 @@ constexpr uint32_t MAX_PADDING_SIZE_STR_LEN = 32U;
 constexpr int32_t STRTOUL_DECIMAL_BASE = 10;
 constexpr size_t DATA_MEMORY_ALIGN_SIZE = 32UL;
 constexpr size_t DATA_MEMORY_PADDING_SIZE = 32UL;
-constexpr unsigned int FLAG_START_DYNAMIC_ALLOC_MEM = 0x200U;
+constexpr uint32_t FLAG_START_DYNAMIC_ALLOC_MEM = 0x200U;
 constexpr uint32_t DRV_MEM_HOST_NUMA_SIDE = 2U;
 constexpr size_t ALIGNMENT_4BYTE = 4;
 constexpr size_t ALIGNMENT_4BYTE_MASK = ALIGNMENT_4BYTE - 1;  // 0x3
@@ -222,8 +222,8 @@ aclError GetAlignedAndPaddingSize(const size_t size, const bool isPadding, size_
     return ACL_SUCCESS;
 }
 
-aclError aclMallocMemInner(void **devPtr, const size_t size, bool isPadding,
-                           const aclrtMemMallocPolicy policy, const uint16_t moduleId)
+static aclError aclMallocMemInner(void **devPtr, const size_t size, bool isPadding,
+                                  const aclrtMemMallocPolicy policy, const uint16_t moduleId)
 {
     ACL_ADD_APPLY_TOTAL_COUNT(acl::ACL_STATISTICS_MALLOC_FREE);
     ACL_LOG_DEBUG("start to execute aclMallocMemInner, size = %zu", size);
