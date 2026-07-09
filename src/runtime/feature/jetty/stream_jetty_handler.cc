@@ -294,10 +294,7 @@ rtError_t StreamJettyHandler::UpdateUbdmaSqeWithJettyInfo(
     uint32_t deviceId = 0;
     rtError_t error = GetDriverAndDeviceId(stream, driver, deviceId);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    if (stream->Device_()->GetTaskFactory() == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "GetTaskFactory returned null, stream_id=%d.", stream->Id_());
-        return RT_ERROR_INVALID_VALUE;
-    }
+    NULL_PTR_RETURN(stream->Device_()->GetTaskFactory(), RT_ERROR_INVALID_VALUE);
     for (const auto& pos : jettyCtx->taskWqeCounts) {
         uint32_t taskId = pos.first;
         uint32_t wqeCount = pos.second;
@@ -312,24 +309,25 @@ rtError_t StreamJettyHandler::UpdateUbdmaSqeWithJettyInfo(
         memcpyAsyncTaskInfo->ubDma.pi = wqeCount;
         rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX] = {};
         rtDavidSqe_t* sqe = davidSqe;
-        ToConstructDavidSqe(taskInfo, sqe, 0UL);
-        errno_t rc = memcpy_s(
-            RtPtrToPtr<void*>(RtPtrToValue(stream->GetSqeBuffer()) + sizeof(rtStarsSqe_t) * taskInfo->pos),
-            sizeof(rtStarsSqe_t), sqe, sizeof(rtStarsSqe_t));
-        if (rc != EOK) {
-            RT_LOG(RT_LOG_ERROR, "memcpy_s failed for SQE update, stream_id=%d, task_id=%u, rc=%d.",
-                stream->Id_(), taskId, static_cast<int32_t>(rc));
-            return RT_ERROR_SEC_HANDLE;
+        ConstructDavidAsyncUbDbSqe(taskInfo, sqe);
+        sqe->phSqe.header.headUpdate = GetHeadUpdateFlag(taskId);
+        const errno_t rc = memcpy_s(RtPtrToPtr<void *>(RtPtrToValue(stream->GetSqeBuffer()) + sizeof(rtStarsSqe_t) * taskInfo->pos),
+            sizeof(rtStarsSqe_t), RtPtrToPtr<void*>(sqe), sizeof(rtStarsSqe_t));
+        COND_RETURN_ERROR(rc != EOK, RT_ERROR_SEC_HANDLE, "memcpy_s failed for SQE update, stream_id=%d, task_id=%u, rc=%d.",
+            stream->Id_(), taskId, static_cast<int32_t>(rc));
+
+        // sqe已经拷贝到device场景下,需要做同步拷贝
+        if (stream->Model_() != nullptr && stream->Model_()->IsSendSqe()) {
+            error = driver->MemCopySync(
+                RtValueToPtr<void*>(stream->GetSqBaseAddr() + (taskInfo->pos * sizeof(rtStarsSqe_t))), sizeof(rtStarsSqe_t),
+                RtPtrToPtr<void*>(sqe), sizeof(rtStarsSqe_t), RT_MEMCPY_HOST_TO_DEVICE);
+            COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Copy sqe to device failed, stream_id=%d, retCode=%#x.",
+                stream->Id_(), error);
         }
-        RT_LOG(RT_LOG_DEBUG,
-            "Update Ubdma sqe, stream_id=%d, task_id=%u, wqeCount=%u, "
-            "jetty_id=%u, die_id=%u, func_id=%u.",
+        RT_LOG(RT_LOG_DEBUG, "Update Ubdma sqe, stream_id=%d, task_id=%u, wqeCount=%u, jetty_id=%u, die_id=%u, func_id=%u.",
             stream->Id_(), taskId, wqeCount, jettyInfo.jettyId, jettyInfo.dieId, jettyInfo.functionId);
     }
-
-    RT_LOG(RT_LOG_DEBUG, "Update Ubdma sqe success, stream_id=%d, posCount=%zu.", stream->Id_(),
-        jettyCtx->taskWqeCounts.size());
-
+    RT_LOG(RT_LOG_DEBUG, "Update Ubdma sqe success, stream_id=%d, posCount=%zu.", stream->Id_(), jettyCtx->taskWqeCounts.size());
     return RT_ERROR_NONE;
 }
 
