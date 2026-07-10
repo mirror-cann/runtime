@@ -92,8 +92,8 @@ static int32_t AdxCommonGetFile(const CommHandle &handle, const std::string &src
     fd = -1;
 
     if (err == IDE_DAEMON_CHANNEL_ERROR) {
-        IDE_LOGE("send file receive response failed,\n" \
-            "maybe multiple msnpureports executed at the same time, which is not supported,\n" \
+        IDE_LOGE("send file receive response failed, " \
+            "maybe multiple msnpureports executed at the same time, which is not supported, " \
             "please execute msnpureport only once per time later if needed");
     }
     return IDE_DAEMON_OK;

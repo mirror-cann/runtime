@@ -944,7 +944,7 @@ static rtError_t AdxGetWorkspaceData(void *printData, const void *workSpaceAddr,
     if (enableSync) {
         auto rtRet = rtStreamSynchronizeWithTimeout(stream, timeout);
         if (rtRet != RT_ERROR_NONE) {
-            IDE_LOGE("Synchronize stream failed, error code is %d.\n", rtRet);
+            IDE_LOGE("Synchronize stream failed, error code is %d.", rtRet);
             printf("ERROR: Synchronize stream failed, error code is %d, please check plog for more information.\n", rtRet);
         }
     }
