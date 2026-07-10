@@ -415,6 +415,12 @@ public:
         return phyDieId_;
     }
 
+    int64_t GetBaseTime() const override
+    {
+        return baseTime_;
+    }
+    void SetBaseTime() override;
+
     Stream *GetNextRecycleStream() override;
     bool AddStreamToMessageQueue(Stream *stm) override;
     void DelStreamFromMessageQueue(Stream * const stm) override;
@@ -969,6 +975,7 @@ private:
     std::atomic<uint32_t> dmaCpyUsedNum_;
     int64_t phyChipId_;
     int64_t phyDieId_;
+    std::atomic<int64_t> baseTime_{0}; // device system time after host sync, unit ms
     uint16_t tsdQos_{0U};  // for aicpu task
     uint64_t *messageQueue_{nullptr};
     uint16_t messageQueueSize_{STREAM_MESSAGE_QUEUE_SIZE};

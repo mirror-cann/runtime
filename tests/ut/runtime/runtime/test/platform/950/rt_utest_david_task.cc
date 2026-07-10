@@ -1388,7 +1388,8 @@ TEST_F(TaskTestDavid, SetStarsResultForHcclUbDdrcDavinciTask)
     faultEventFlag = 9;
     StarsV2SetStarsResultForDavinciTask(&taskInfo, logicCq);
     EXPECT_EQ(taskInfo.errorCode, TS_ERROR_AICPU_EXCEPTION);
-    
+
+    taskInfo.stream->Device_()->SetDeviceRas(false);
     logicCq.errorCode = static_cast<uint32_t>(AICPU_HCCL_OP_UB_DDRC_FAILED) << RT_AICPU_ERROR_CODE_BIT_MOVE;
     faultEventFlag = 0;
     StarsV2SetStarsResultForDavinciTask(&taskInfo, logicCq);

@@ -116,6 +116,8 @@ drvError_t __attribute__((weak)) halShrIdSetAttribute(const char *name, enum shr
 drvError_t __attribute__((weak)) halShrIdInfoGet(const char *name, struct shrIdGetInfo *info);
 drvError_t __attribute__((weak)) halGetFaultEvent(uint32_t devId, struct halEventFilter *filter,
     struct halFaultEventInfo *eventInfo, uint32_t len, uint32_t *eventCount);
+drvError_t __attribute__((weak)) halGetNotifyEvent(uint32_t devId, struct halEventFilter *filter,
+    struct halFaultEventInfo *eventInfo, uint32_t len, uint32_t *eventCount);
 drvError_t __attribute__((weak)) halGetDeviceInfoByBuff(uint32_t devId, int moduleType,
     int infoType, void *buf, int32_t *size);
 drvError_t __attribute__((weak)) halSetDeviceInfoByBuff(uint32_t devId, int32_t moduleType,

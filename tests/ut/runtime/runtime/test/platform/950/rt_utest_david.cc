@@ -1192,8 +1192,10 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_common_task)
 }
 
 static rtError_t StubGetDeviceFaultEventsWithRasEvent(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, const uint32_t maxFaultNum)
+    uint32_t &eventCount, bool needLog)
 {
+    UNUSED(deviceId);
+    UNUSED(needLog);
     if (faultEventInfo == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
@@ -1207,8 +1209,10 @@ static rtError_t StubGetDeviceFaultEventsWithRasEvent(const uint32_t deviceId, r
 }
 
 static rtError_t StubGetDeviceFaultEventsWithoutRasEvent(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, const uint32_t maxFaultNum)
+    uint32_t &eventCount, bool needLog)
 {
+    UNUSED(deviceId);
+    UNUSED(needLog);
     if (faultEventInfo == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
@@ -1241,14 +1245,22 @@ TEST_F(DavidTaskTest, CheckAndPrintRasInfo_without_ras_event)
 }
 
 static rtError_t StubGetDeviceFaultEventsError(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, const uint32_t maxFaultNum)
+    uint32_t &eventCount, bool needLog)
 {
+    UNUSED(deviceId);
+    UNUSED(faultEventInfo);
+    UNUSED(eventCount);
+    UNUSED(needLog);
     return RT_ERROR_DRV_ERR;
 }
 
 static rtError_t StubGetDeviceFaultEventsFeatureNotSupported(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, const uint32_t maxFaultNum)
+    uint32_t &eventCount, bool needLog)
 {
+    UNUSED(deviceId);
+    UNUSED(faultEventInfo);
+    UNUSED(eventCount);
+    UNUSED(needLog);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
@@ -2232,7 +2244,6 @@ TEST_F(DavidTaskTest, aic_task_hw_r_error_proc_for_fusion)
     delete errorProc;
 }
 
-
 extern int32_t faultEventFlag;
 TEST_F(DavidTaskTest, aic_task_hw_l_error_proc_for_fusion)
 {
@@ -2685,7 +2696,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_not_support_get_fault_event)
     faultEventFlag = 0;
     EXPECT_EQ(ret, RT_ERROR_NONE);
     const DeviceFaultType faultType = dev_->GetDeviceFaultType();
-    EXPECT_EQ(faultType, DeviceFaultType::HBM_UCE_ERROR);
+    EXPECT_EQ(faultType, DeviceFaultType::AICORE_UNKNOWN_ERROR);
     GlobalMockObject::verify();
     delete errorProc;
 }
@@ -2716,7 +2727,6 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_mte_error_proc)
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
-    uint32_t val = 0x100U;
     task.type = TS_TASK_TYPE_KERNEL_AICORE;
     InitByStream(&task, stream_);
     MOCKER(GetTaskInfo).stubs().will(returnValue(&task));
@@ -2727,29 +2737,6 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_mte_error_proc)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     const DeviceFaultType faultType = dev_->GetDeviceFaultType();
     EXPECT_EQ(faultType, DeviceFaultType::HBM_UCE_ERROR);
-    dev_->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
-    GlobalMockObject::verify();
-    delete errorProc;
-}
-
-TEST_F(DavidTaskTest, aicore_task_hw_r_error_mte_error_proc_not_support_ras)
-{
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
-    StarsDeviceErrorInfo errorInfo = {};
-    errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
-    TaskInfo task = {};
-    task.type = TS_TASK_TYPE_KERNEL_AICORE;
-    InitByStream(&task, stream_);
-    MOCKER(GetTaskInfo).stubs().will(returnValue(&task));
-    Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_NOT_SUPPORT;
-    dev_->SetDeviceRas(true);
-    faultEventFlag = 1;
-    rtError_t ret = ProcessDavidStarsCoreErrorInfo(&errorInfo, 0, dev_, nullptr);
-    faultEventFlag = 0;
-    Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_WORKING;
-    EXPECT_EQ(ret, RT_ERROR_NONE);
-    const DeviceFaultType faultType = dev_->GetDeviceFaultType();
-    EXPECT_EQ(faultType, DeviceFaultType::AICORE_UNKNOWN_ERROR);
     dev_->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
     GlobalMockObject::verify();
     delete errorProc;
@@ -2774,7 +2761,8 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoNotSupportRas)
     Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_WORKING;
     EXPECT_EQ(ret, RT_ERROR_NONE);
     const DeviceFaultType faultType = dev_->GetDeviceFaultType();
-    EXPECT_EQ(faultType, DeviceFaultType::NO_ERROR);
+    EXPECT_EQ(faultType, DeviceFaultType::HBM_UCE_ERROR);
+    dev_->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
     GlobalMockObject::verify();
     delete errorProc;
 }
@@ -2841,7 +2829,7 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndNotSupportGetFaultEv
     faultEventFlag = 0;
     EXPECT_EQ(ret, RT_ERROR_NONE);
     const DeviceFaultType faultType = dev_->GetDeviceFaultType();
-    EXPECT_EQ(faultType, DeviceFaultType::HBM_UCE_ERROR);
+    EXPECT_EQ(faultType, DeviceFaultType::NO_ERROR);
     GlobalMockObject::verify();
     delete errorProc;
 }

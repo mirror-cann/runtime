@@ -20,50 +20,96 @@ namespace runtime {
 constexpr uint32_t GET_SQ_HEAD_MAX_RETRY_TIMES = 100U;
 constexpr uint32_t GET_SQ_HEAD_QUERY_FAIL_STAT_TIMES = 1000U;
 
-rtError_t NpuDriver::GetFaultEvent(const int32_t deviceId, const rtDmsEventFilter * const filter,
-                                   rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+static rtError_t GetFaultEvents(const uint32_t deviceId, const rtDmsEventFilter * const filter,
+                                rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
     COND_RETURN_WARN(&halGetFaultEvent == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetFaultEvent does not exist");
     struct halEventFilter dmsFilter = {};
-    dmsFilter.filter_flag = static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_PID);
-    dmsFilter.event_id = filter->eventId;
-    dmsFilter.severity = filter->severity;
-    dmsFilter.node_type = filter->nodeType;
-    RT_LOG(RT_LOG_INFO, "get fault event, drv devId=%d, filterFlag=%llu, outputLen=%u.",
-        deviceId, dmsFilter.filter_flag, len);
-    drvRet = halGetFaultEvent(static_cast<uint32_t>(deviceId), &dmsFilter,
-        RtPtrToPtr<halFaultEventInfo *>(dmsEvent), len, eventCount);
-
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halGetFaultEvent does not support.");
-    if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halGetFaultEvent failed, drvRetCode=%d, drvDevId=%d.",
-            static_cast<int32_t>(drvRet), deviceId);
+    if (filter != nullptr) {
+        dmsFilter.filter_flag = static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_PID);
+        dmsFilter.event_id = filter->eventId;
+        dmsFilter.severity = filter->severity;
+        dmsFilter.node_type = filter->nodeType;
+        RT_LOG(RT_LOG_INFO, "get fault event, drv devId=%u, eventId=%#x, filterFlag=%llu, outputLen=%u.",
+            deviceId, dmsFilter.event_id, dmsFilter.filter_flag, len);
+    } else {
+        dmsFilter.filter_flag = 0ULL;
     }
+    drvRet = halGetFaultEvent(deviceId, &dmsFilter, RtPtrToPtr<halFaultEventInfo *>(dmsEvent), len, eventCount);
 
-    return RT_GET_DRV_ERRCODE(drvRet);
-}
-
-rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent,
-    uint32_t len, uint32_t *eventCount)
-{
-    drvError_t drvRet = DRV_ERROR_NONE;
-
-    COND_RETURN_WARN(&halGetFaultEvent == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halGetFaultEvent does not exist");
-    struct halEventFilter dmsFilter = {};
-    dmsFilter.filter_flag = 0U;
-    drvRet = halGetFaultEvent(deviceId, &dmsFilter,
-        RtPtrToPtr<halFaultEventInfo *>(dmsEvent), len, eventCount);
     COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetFaultEvent does not support.");
     DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halGetFaultEvent failed, drvRetCode=%d, drvDevId=%u, len=%u, flag=%llu.",
-            static_cast<int32_t>(drvRet), deviceId, len, dmsFilter.filter_flag);
+        static_cast<int32_t>(drvRet), deviceId, len, dmsFilter.filter_flag);
 
     return RT_ERROR_NONE;
+}
+
+static rtError_t GetNotifyEvents(const uint32_t deviceId, const rtDmsEventFilter * const filter,
+                                rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+{
+    UNUSED(filter);
+    drvError_t drvRet = DRV_ERROR_NONE;
+    struct halEventFilter dmsFilter = {};
+    dmsFilter.filter_flag = 0ULL;
+    drvRet = halGetNotifyEvent(deviceId, &dmsFilter, RtPtrToPtr<halFaultEventInfo *>(dmsEvent), len, eventCount);
+
+    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "[drv api] halGetNotifyEvent does not support.");
+    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halGetNotifyEvent failed, drvRetCode=%d, drvDevId=%u, len=%u, flag=%llu.",
+        static_cast<int32_t>(drvRet), deviceId, len, dmsFilter.filter_flag);
+
+    return RT_ERROR_NONE;
+}
+
+static rtError_t GetEventsWithTimeCheck(const uint32_t deviceId, const rtDmsEventFilter * const filter,
+                                        rtDmsFaultEvent *dmsEvent, uint32_t *eventCount, bool needLog)
+{
+    rtError_t error = RT_ERROR_NONE;
+    uint32_t faultEvtCnt = 0U;
+    uint32_t notifyEvtCnt = 0U;
+    error = GetFaultEvents(deviceId, filter, dmsEvent, RAS_GET_MAX_NUM_SI, &faultEvtCnt);
+    COND_RETURN_ERROR((faultEvtCnt > RAS_GET_MAX_NUM_SI), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
+        "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.",
+        deviceId, faultEvtCnt, RAS_GET_MAX_NUM_SI, static_cast<uint32_t>(error));
+    COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    error = GetNotifyEvents(deviceId, filter, dmsEvent + faultEvtCnt, RAS_GET_MAX_NUM_SI, &notifyEvtCnt);
+    COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
+    *eventCount = faultEvtCnt + notifyEvtCnt;
+    int64_t devBaseTime = 0;
+    Device * const dev = Runtime::Instance()->GetDevice(deviceId, 0U, false);
+    if (dev != nullptr) {
+        devBaseTime = dev->GetBaseTime();
+    }
+    COND_RETURN_WITH_NOLOG(devBaseTime == 0, RT_ERROR_NONE);
+    for (uint32_t faultIndex = 0U; faultIndex < *eventCount; ++faultIndex) {
+        if (dmsEvent[faultIndex].alarmRaisedTime < static_cast<uint64_t>(devBaseTime)) {
+            if (needLog) {
+                RT_LOG(RT_LOG_DEBUG, "skip historical event_id=0x%x, event_time=%llu, base_time=%lld, device_id=%u.",
+                    dmsEvent[faultIndex].eventId, dmsEvent[faultIndex].alarmRaisedTime, devBaseTime, deviceId);
+            }
+            dmsEvent[faultIndex].eventId = 0U;
+        }
+    }
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::GetFaultEvent(const int32_t deviceId, const rtDmsEventFilter * const filter,
+                                   rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+{
+    return GetFaultEvents(static_cast<uint32_t>(deviceId), filter, dmsEvent, len, eventCount);
+}
+
+rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent, uint32_t *eventCount,
+                                      bool needLog)
+{
+    if (&halGetNotifyEvent != nullptr) {
+        return GetEventsWithTimeCheck(deviceId, nullptr, dmsEvent, eventCount, needLog);
+    }
+    return GetFaultEvents(deviceId, nullptr, dmsEvent, RAS_GET_MAX_NUM_SI, eventCount);
 }
 
 rtError_t NpuDriver::ReadFaultEvent(

@@ -121,6 +121,11 @@ extern const std::map<uint32_t, std::string> g_l2MulBitEccEventIdBlkList;
 
 extern const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList;
 
+struct EventBlkEntry {
+    uint32_t eventId;
+    const std::map<uint32_t, std::string> &blkList;
+};
+
 enum rtSdmaErrorType : std::uint32_t {
     // Submission Descriptor read response error
     // this is bit position

@@ -157,11 +157,20 @@ drvError_t halGetFaultEvent(uint32_t devId, struct halEventFilter* filter,
     }
     if (faultEventFlag == 9) { // UB Dispatch Input Error, in g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList
         *eventCount = 1;
-        eventInfo[0].event_id = 0x81B58002U; 
+        eventInfo[0].event_id = 0x81B58002U;
+        eventInfo[0].alarm_raised_time = 0x1000ULL;
         return DRV_ERROR_NONE;
     }
     *eventCount = 1;
     eventInfo[0].event_id = 0x80CD8008; // halGetFaultEventL2Buffer，在HBM UCE黑名单中
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halGetNotifyEvent(uint32_t devId, struct halEventFilter* filter,
+    struct halFaultEventInfo* eventInfo, uint32_t len, uint32_t *eventCount)
+{
+    *eventCount = 1;
+    eventInfo[0].event_id = 0x80E18400U; // HBM_ECC_NOTIFY_EVENT_ID
     return DRV_ERROR_NONE;
 }
 

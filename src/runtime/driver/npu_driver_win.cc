@@ -727,13 +727,13 @@ rtError_t NpuDriver::GetFaultEvent(const int32_t deviceId, const rtDmsEventFilte
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent,
-    uint32_t len, uint32_t *eventCount)
+rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent, uint32_t *eventCount,
+                                      bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(dmsEvent);
-    UNUSED(len);
     UNUSED(eventCount);
+    UNUSED(needLog);
     return RT_ERROR_NONE;
 }
 

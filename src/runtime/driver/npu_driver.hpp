@@ -640,8 +640,8 @@ public:
     static rtError_t MemQEventCrossDevSupported(int32_t * const isSupported);
     static rtError_t GetFaultEvent(const int32_t deviceId, const rtDmsEventFilter * const filter, rtDmsFaultEvent *dmsEvent,
         uint32_t len, uint32_t *eventCount);
-    static rtError_t GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent,
-        uint32_t len, uint32_t *eventCount);
+    static rtError_t GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent, uint32_t *eventCount,
+        bool needLog = true);
     static rtError_t ReadFaultEvent(
         const int32_t deviceId, uint32_t timeout, const rtDmsEventFilter * const filter, rtDmsFaultEvent *dmsEvent);
     static rtError_t GetRasSyscnt(const uint32_t deviceId, RtHbmRasInfo *hbmRasInfo);

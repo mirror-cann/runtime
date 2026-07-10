@@ -427,6 +427,8 @@ typedef enum {
     INFO_TYPE_CPU_TOPO,
     INFO_TYPE_SLOT_ID,
     INFO_TYPE_SWPLUGIN_UPGRADE_POLICY,
+    INFO_TYPE_SUPER_POD_INTERCON_TYPE,
+    INFO_TYPE_REAL_TIME,
 } DEV_INFO_TYPE;
 
 /**
@@ -5430,6 +5432,22 @@ DLLEXPORT drvError_t halGetDevIDsEx(uint32_t hw_type, uint32_t *devices, uint32_
 * @return   0 for success, others for fail
 */
 DLLEXPORT drvError_t halGetFaultEvent(uint32_t devId, struct halEventFilter* filter,
+    struct halFaultEventInfo* eventInfo, uint32_t len, uint32_t *eventCount);
+
+/**
+* @ingroup driver
+* @brief Support calling on host sides. Currently, not supported called in split mode.
+* If filter->filter_flag set to 0, it means do not filter events and get all events.
+* @attention If len equal to eventCount, some events may have been abandoned.
+* @param [in]  devId the device id, not support -1
+* @param [in]  filter  Filter conditions
+* filter->filter_flag; bit0: event_id; bit1: severity; bit2: node_type; bit3: current tgid
+* @param [in]  len  the number of eventInfo
+* @param [out] eventInfo  Notify event information
+* @param [out] eventCount  Number of events obtained. Max 128
+* @return   0 for success, others for fail
+*/
+DLLEXPORT drvError_t halGetNotifyEvent(uint32_t devId, struct halEventFilter* filter,
     struct halFaultEventInfo* eventInfo, uint32_t len, uint32_t *eventCount);
 
 /**

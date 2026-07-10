@@ -5444,33 +5444,28 @@ void Runtime::ReportHBMRasProc(void)
 
 void Runtime::ReportUBMemRasProc()
 {
-    constexpr uint32_t maxFaultNum = 128U;
-    rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
-    COND_RETURN_VOID((faultEventInfo == nullptr), "new rtDmsFaultEvent failed.");
-    const size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
-
-    const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
-    ScopeGuard faultEventInfoRelease(releaseFunc);
-
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     for (uint32_t devId = 0U; devId < RT_MAX_DEV_NUM; devId++) {
         Device *dev = GetDevice(devId, 0U, false);
         if (dev == nullptr || dev->IsDeviceRelease()) {
             continue;
         }
         uint32_t eventCount = 0U;
-        rtError_t error = GetDeviceFaultEvents(devId, faultEventInfo, eventCount, maxFaultNum);
+        rtError_t error = GetDeviceFaultEvents(devId, &faultEventInfo[0U], eventCount, false);
         if (error != RT_ERROR_NONE) {
             continue;
         }
-        ProcUBMemNetworkException(devId, faultEventInfo, eventCount);
+        ProcUBMemNetworkException(devId, &faultEventInfo[0U], eventCount);
     }
 }
 
-void Runtime::ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEvent *faultEventInfo, uint32_t eventCount) const
+void Runtime::ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEvent *faultEventInfo, uint32_t eventCount)
 {
+    static uint64_t lastReportTime[RT_MAX_DEV_NUM] = {0ULL};
     for (uint32_t faultIndex = 0U; faultIndex < eventCount; faultIndex++) {
-        if (faultEventInfo[faultIndex].eventId == UB_MEM_NETWORK_EXCEPTION_EVENT_ID) {
+        if ((faultEventInfo[faultIndex].eventId == UB_MEM_NETWORK_EXCEPTION_EVENT_ID) &&
+            (faultEventInfo[faultIndex].alarmRaisedTime > lastReportTime[devId])) {
+            lastReportTime[devId] = faultEventInfo[faultIndex].alarmRaisedTime;
             if (ContextManage::DeviceSetFaultTypeIfNoError(devId, DeviceFaultType::L3_PORT_ERROR)) {
                 ContextManage::SetGlobalFailureErr(devId, RT_ERROR_L3_PORT_ERROR);
                 RT_LOG(RT_LOG_INFO, "set fault type for ub mem, device id=%u, event id=0x%x.",
