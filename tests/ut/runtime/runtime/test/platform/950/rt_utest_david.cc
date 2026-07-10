@@ -63,6 +63,7 @@
 #include "task_execute_time.h"
 #include "stream_c.hpp"
 #include "fusion_c.hpp"
+#include "fusion_task.h"
 #include "driver.hpp"
 #include "kernel.hpp"
 #include "cmo_task.h"
@@ -5362,6 +5363,86 @@ TEST_F(DavidTaskTest, MapFusionTaskErrorCode_no_matching_sub_task)
     EXPECT_EQ(report.errorCode, TS_ERROR_TASK_EXCEPTION);
 
     delete errorProc;
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidTaskTest, SetStarsResultForFusionKernelTask_aicore_exception)
+{
+    TaskInfo taskInfo = {};
+    memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
+    InitByStream(&taskInfo, stream_);
+    taskInfo.errorCode = 0U;
+
+    rtLogicCqReport_t logicCq = {};
+    logicCq.errorType = 0x01U;
+    logicCq.errorCode = 0x00000400U;
+
+    SetStarsResultForFusionKernelTask(&taskInfo, logicCq);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_AICORE_EXCEPTION);
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidTaskTest, SetStarsResultForFusionKernelTask_aicpu_exception)
+{
+    TaskInfo taskInfo = {};
+    memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
+    InitByStream(&taskInfo, stream_);
+    taskInfo.errorCode = 0U;
+
+    rtLogicCqReport_t logicCq = {};
+    logicCq.errorType = 0x01U;
+    logicCq.errorCode = 0x00000044U;
+
+    SetStarsResultForFusionKernelTask(&taskInfo, logicCq);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_AICPU_EXCEPTION);
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidTaskTest, SetStarsResultForFusionKernelTask_ccu_exception)
+{
+    TaskInfo taskInfo = {};
+    memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
+    InitByStream(&taskInfo, stream_);
+    taskInfo.errorCode = 0U;
+
+    rtLogicCqReport_t logicCq = {};
+    logicCq.errorType = 0x01U;
+    logicCq.errorCode = 0x00044000U;
+
+    SetStarsResultForFusionKernelTask(&taskInfo, logicCq);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_CCU_EXCEPTION);
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidTaskTest, SetStarsResultForFusionKernelTask_no_matching_subsys)
+{
+    TaskInfo taskInfo = {};
+    memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
+    InitByStream(&taskInfo, stream_);
+    taskInfo.errorCode = 0U;
+
+    rtLogicCqReport_t logicCq = {};
+    logicCq.errorType = 0x01U;
+    logicCq.errorCode = 0U;
+
+    SetStarsResultForFusionKernelTask(&taskInfo, logicCq);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_TASK_EXCEPTION);
+    GlobalMockObject::verify();
+}
+
+TEST_F(DavidTaskTest, SetStarsResultForFusionKernelTask_timeout)
+{
+    TaskInfo taskInfo = {};
+    memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
+    InitByStream(&taskInfo, stream_);
+    taskInfo.errorCode = 0U;
+
+    rtLogicCqReport_t logicCq = {};
+    logicCq.errorType = 0x04U;
+    logicCq.errorCode = 0x00000400U;
+
+    SetStarsResultForFusionKernelTask(&taskInfo, logicCq);
+    EXPECT_EQ(taskInfo.errorCode, TS_ERROR_TASK_TIMEOUT);
     GlobalMockObject::verify();
 }
 
