@@ -100,7 +100,7 @@ rtError_t JettyPool::FreeJetty(uint64_t handle, JettyType type)
     std::vector<JettyInfo> &pool = (type == JettyType::JETTY_TYPE_H2D) ? h2dJettyPool_ : d2dJettyPool_;
     for (auto it = pool.begin(); it != pool.end(); ++it) {
         if (it->handle == handle) {
-            rtError_t ret = driver->AsyncDmaJettyDestroy(deviceId_, it->handle);
+            const rtError_t ret = driver->AsyncDmaJettyDestroy(deviceId_, it->handle);
             if (ret != RT_ERROR_NONE) {
                 RT_LOG(RT_LOG_ERROR, "Destroy jetty failed, device_id=%u, type=%d, jetty_id=%u, retCode=%#x.",
                     deviceId_, static_cast<int32_t>(type), it->jettyId, ret);
@@ -181,7 +181,7 @@ rtError_t JettyPool::FreeLargeDepthJetty(uint64_t handle)
 
     for (auto it = largeJettyPool_.begin(); it != largeJettyPool_.end(); ++it) {
         if (it->handle == handle) {
-            rtError_t ret = driver->AsyncDmaJettyDestroy(deviceId_, it->handle);
+            const rtError_t ret = driver->AsyncDmaJettyDestroy(deviceId_, it->handle);
             if (ret != RT_ERROR_NONE) {
                 RT_LOG(RT_LOG_ERROR, "Destroy large depth jetty failed, device_id=%u, handle=%llu, retCode=%#x.",
                     deviceId_, handle, ret);

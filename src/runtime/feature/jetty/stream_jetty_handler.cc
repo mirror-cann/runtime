@@ -294,7 +294,7 @@ rtError_t StreamJettyHandler::UpdateUbdmaSqeWithJettyInfo(
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     NULL_PTR_RETURN(stream->Device_()->GetTaskFactory(), RT_ERROR_INVALID_VALUE);
     for (const auto& pos : jettyCtx->taskWqeCounts) {
-        uint32_t taskId = pos.first;
+        const uint32_t taskId = pos.first;
         uint32_t wqeCount = pos.second;
         TaskInfo* taskInfo = stream->Device_()->GetTaskFactory()->GetTask(stream->Id_(), taskId);
         if (taskInfo == nullptr) {

@@ -1646,7 +1646,7 @@ rtError_t CaptureModel::RestoreForSoftwareSqForOneModels(Device * const dev)
 {
     RT_LOG(RT_LOG_INFO, "Begin restore capture model, modelId=%u, deviceId=%u.", Id_(), dev->Id_());
     for (auto &stream : StreamList_()) {
-        rtError_t error = stream->RestoreForSoftwareSq();
+        const rtError_t error = stream->RestoreForSoftwareSq();
         COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Restore capture stream failed, streamId=%d, deviceId=%u, retCode=%#x.",
             stream->Id_(), dev->Id_(), error);
     }

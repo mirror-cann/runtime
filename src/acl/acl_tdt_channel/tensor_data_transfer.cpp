@@ -429,7 +429,7 @@ namespace acl {
                     continue;
                 }
                 std::vector<int64_t> dims = itemVec[i].dims;
-                aclDataType dataType = static_cast<aclDataType>(itemVec[i].ctrlInfo.tensorType);
+                const aclDataType dataType = static_cast<aclDataType>(itemVec[i].ctrlInfo.tensorType);
                 acltdtDataItem *item = new(std::nothrow) acltdtDataItem(aclType,
                     &dims[0], dims.size(), "",
                     dataType, "",

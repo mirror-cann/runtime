@@ -112,7 +112,7 @@ rtError_t StreamJettyContext::RoundUpCapacity(Driver *driver, uint32_t deviceId)
         input.nop.nopCnt = WQE_BUFFER_DEPTH;
 
         AsyncWqeOutputPara output = {};
-        rtError_t error = driver->AsyncDmaWqeConvert(deviceId, &input, &output);
+        const rtError_t error = driver->AsyncDmaWqeConvert(deviceId, &input, &output);
         if (error != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "NOP WQE fill failed for buffer %u, retCode=%#x.", i, error);
             return error;
@@ -132,7 +132,7 @@ void StreamJettyContext::ReleaseBuffers(Driver *driver)
 
     for (size_t i = 0; i < wqeBuffers.size(); ++i) {
         if (wqeBuffers[i] != nullptr) {
-            rtError_t ret = driver->HostMemFree(wqeBuffers[i].release());
+            const rtError_t ret = driver->HostMemFree(wqeBuffers[i].release());
             if (ret != RT_ERROR_NONE) {
                 RT_LOG(RT_LOG_ERROR, "HostMemFree failed, buf_idx=%zu, retCode=%#x.", i, ret);
             }
