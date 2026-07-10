@@ -134,14 +134,14 @@ rtError_t ApiErrorDecorator::CCULaunch(rtCcuTaskInfo_t *taskInfo,  Stream * cons
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo, RT_ERROR_INVALID_VALUE, "CCU task delivery");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo->args, RT_ERROR_INVALID_VALUE, "CCU task delivery");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((taskInfo->instCnt == RT_CCU_INST_CNT_INVALID), RT_ERROR_INVALID_VALUE, 
-        taskInfo->instCnt, "not equal to 0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((taskInfo->instStartId >= RT_CCU_INST_START_MAX), RT_ERROR_INVALID_VALUE, 
-        taskInfo->instStartId, "[0, " + std::to_string(RT_CCU_INST_START_MAX) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((taskInfo->instCnt == RT_CCU_INST_CNT_INVALID), RT_ERROR_INVALID_VALUE,
+        "CCU task delivery", taskInfo->instCnt, "not equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((taskInfo->instStartId >= RT_CCU_INST_START_MAX), RT_ERROR_INVALID_VALUE,
+        "CCU task delivery", taskInfo->instStartId, "[0, " + std::to_string(RT_CCU_INST_START_MAX) + ")");
     // 1 or 13 to sqe ccu size
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
-        (taskInfo->argSize != RT_CCU_SQE_ARGS_LEN) && (taskInfo->argSize != RT_CCU_SQE_ARGS_LEN_32B), RT_ERROR_INVALID_VALUE, 
-        taskInfo->argSize, std::to_string(RT_CCU_SQE_ARGS_LEN) + " or " + std::to_string(RT_CCU_SQE_ARGS_LEN_32B));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        (taskInfo->argSize != RT_CCU_SQE_ARGS_LEN) && (taskInfo->argSize != RT_CCU_SQE_ARGS_LEN_32B), RT_ERROR_INVALID_VALUE,
+        "CCU task delivery", taskInfo->argSize, std::to_string(RT_CCU_SQE_ARGS_LEN) + " or " + std::to_string(RT_CCU_SQE_ARGS_LEN_32B));
     return impl_->CCULaunch(taskInfo, stm);
 }
 
@@ -179,8 +179,8 @@ rtError_t ApiErrorDecorator::ReleaseDevResAddress(rtDevResInfo * const resInfo)
 rtError_t ApiErrorDecorator::UbDbSend(rtUbDbInfo_t *const dbInfo, Stream *const stm)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dbInfo, RT_ERROR_INVALID_VALUE, "Delivering a UB doorbell task");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((dbInfo->dbNum != UB_DOORBELL_NUM_MIN) && (dbInfo->dbNum != UB_DOORBELL_NUM_MAX), 
-        RT_ERROR_INVALID_VALUE, dbInfo->dbNum, "1 or 2");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((dbInfo->dbNum != UB_DOORBELL_NUM_MIN) && (dbInfo->dbNum != UB_DOORBELL_NUM_MAX),
+        RT_ERROR_INVALID_VALUE, "Delivering a UB doorbell task", dbInfo->dbNum, "1 or 2");
     if (dbInfo->dbNum == UB_DOORBELL_NUM_MAX) {
         COND_RETURN_AND_MSG_OUTER((dbInfo->info[0].dieId == dbInfo->info[1].dieId) &&
                                 (dbInfo->info[0].jettyId == dbInfo->info[1].jettyId) &&
@@ -210,7 +210,8 @@ static rtError_t CheckArgsForFusionKernel(const rtFusionArgsEx_t * const argsInf
     ZERO_RETURN_AND_MSG_OUTER(argsInfo->argsSize);
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(argsInfo->args, RT_ERROR_INVALID_VALUE, "Checking the validity of fusion kernel startup parameters");
     const uint8_t aicpuTaskNum = argsInfo->aicpuNum;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(aicpuTaskNum > FUSION_SUB_TASK_MAX_CPU_NUM, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(aicpuTaskNum > FUSION_SUB_TASK_MAX_CPU_NUM, RT_ERROR_INVALID_VALUE,
+        "Checking the validity of fusion kernel startup parameters",
         aicpuTaskNum, "[0, " + std::to_string(FUSION_SUB_TASK_MAX_CPU_NUM) + "]");
     if (argsInfo->isNoNeedH2DCopy == 0U) {
         if (argsInfo->aicpuNum > 0) {
@@ -397,8 +398,8 @@ rtError_t ApiErrorDecorator::MemGetInfoByDeviceId(
     NULL_PTR_RETURN_MSG(npuDrv, RT_ERROR_DRV_NULL);
     error = npuDrv->GetDeviceCount(&cnt);
     ERROR_RETURN(error, "Get device info failed, get device count failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= static_cast<uint32_t>(cnt),
-        RT_ERROR_INVALID_VALUE, realDeviceId, "[0, " + std::to_string(cnt) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= static_cast<uint32_t>(cnt),
+        RT_ERROR_INVALID_VALUE, "Obtaining memory information by device ID", realDeviceId, "[0, " + std::to_string(cnt) + ")");
 
     error = impl_->MemGetInfoByDeviceId(realDeviceId, isHugeOnly, freeSize, totalSize);
     ERROR_RETURN(error, "Get memory info failed, deviceId=%u, isHugeOnly=%d, err=%#x.", 
@@ -421,7 +422,8 @@ rtError_t ApiErrorDecorator::MemsetD32(void * const dst, const uint64_t destMax,
     ZERO_RETURN_AND_MSG_OUTER(count);
 
     const uint64_t requiredBytes = static_cast<uint64_t>(count) * sizeof(uint32_t);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(requiredBytes > destMax, RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(requiredBytes > destMax, RT_ERROR_INVALID_VALUE,
+        "Setting the memory content to a specified 32-bit unsigned integer value synchronously",
                                          requiredBytes,
                                          "required bytes exceed destMax=" + std::to_string(destMax));
 
@@ -439,7 +441,8 @@ rtError_t ApiErrorDecorator::MemsetD32Async(void * const dst, const uint64_t des
     ZERO_RETURN_AND_MSG_OUTER(count);
 
     const uint64_t requiredBytes = count * sizeof(uint32_t);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(requiredBytes > destMax, RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(requiredBytes > destMax, RT_ERROR_INVALID_VALUE,
+        "Setting the memory content to a specified 32-bit unsigned integer value asynchronously",
                                          requiredBytes,
                                          "required bytes exceed destMax=" + std::to_string(destMax));
 

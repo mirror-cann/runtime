@@ -1087,8 +1087,8 @@ rtError_t ApiImpl::RegisterCpuFunc(rtBinHandle binHandle, const char_t *const fu
     *funcHandle = nullptr;
     Program * const prog = RtPtrToPtr<Program *>(binHandle);
     const KernelRegisterType kernelRegType = prog->GetKernelRegType();
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(kernelRegType != RT_KERNEL_REG_TYPE_CPU, RT_ERROR_INVALID_VALUE,
-        kernelRegType, std::to_string(RT_KERNEL_REG_TYPE_CPU));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(kernelRegType != RT_KERNEL_REG_TYPE_CPU, RT_ERROR_INVALID_VALUE,
+        "Registering AI CPU operator information", kernelRegType, std::to_string(RT_KERNEL_REG_TYPE_CPU));
     Kernel *kernel = nullptr;
     // 注册cpu kernel
     rtError_t error = prog->RegisterSingleCpuKernel(funcName, kernelName, &kernel);
@@ -1350,7 +1350,8 @@ rtError_t ApiImpl::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, cons
         }
         default:
             error = RT_ERROR_INVALID_VALUE;
-            RT_LOG_OUTER_MSG_INVALID_PARAM(argsWithType->type,
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Starting the compute task of the corresponding operator",
+                argsWithType->type,
                 "[" + std::to_string(RT_ARGS_NON_CPU_EX) + ", " + std::to_string(RT_ARGS_MAX) + ")");
             break;
     }
@@ -1415,9 +1416,9 @@ rtError_t ApiImpl::SetupArgument(const void * const setupArg, const uint32_t siz
     RT_LOG(RT_LOG_DEBUG, "size=%u, offset=%u.", size, offset);
     constexpr uint32_t argCountLimit = (ARG_ENTRY_SIZE / MIN_ARG_SIZE);
     LaunchArgment &launchArg = ThreadLocalContainer::GetLaunchArg();
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(offset >= sizeof(launchArg.args), RT_ERROR_INVALID_VALUE, offset,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(offset >= sizeof(launchArg.args), RT_ERROR_INVALID_VALUE, "Setting kernel launch parameters", offset,
         "(0, " + std::to_string(sizeof(launchArg.args)) + ")");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((sizeof(launchArg.args) - offset) < size, RT_ERROR_INVALID_VALUE, size,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((sizeof(launchArg.args) - offset) < size, RT_ERROR_INVALID_VALUE, "Setting kernel launch parameters", size,
         "(0, " + std::to_string(sizeof(launchArg.args) - offset) + "]");
     COND_RETURN_AND_MSG_INNER(launchArg.argCount >= argCountLimit, RT_ERROR_INVALID_VALUE,
         "SetupArgument failed because value %u for parameter launchArg.argCount is invalid. Expected value: (0, %u).",
@@ -2387,7 +2388,8 @@ rtError_t ApiImpl::GetMallocHostConfigAttr(rtMallocAttribute_t* attr, uint16_t *
     }
 
     // 申请内存的接口不支持传入其他类型cfg
-    RT_LOG_OUTER_MSG_INVALID_PARAM(attr->attr, RT_MEM_MALLOC_ATTR_MODULE_ID);
+    RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining the configuration attributes of the memory allocated on the host",
+        attr->attr, RT_MEM_MALLOC_ATTR_MODULE_ID);
     return RT_ERROR_INVALID_VALUE;
 }
 
@@ -2626,8 +2628,8 @@ rtError_t ApiImpl::DevMallocCached(void ** const devPtr, const uint64_t size, co
 {
     RT_LOG(RT_LOG_INFO, "dev cached memory alloc, size=%" PRIu64 ", type=%u.", size, type);
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(devPtr, RT_ERROR_INVALID_VALUE, "Allocating device memory with the cache attribute");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(size > MAX_ALLOC_SIZE, RT_ERROR_INVALID_VALUE, 
-        size, "(0, " + std::to_string(MAX_ALLOC_SIZE) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(size > MAX_ALLOC_SIZE, RT_ERROR_INVALID_VALUE, 
+        "Allocating device memory with the cache attribute", size, "(0, " + std::to_string(MAX_ALLOC_SIZE) + "]");
 
     Context * const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
@@ -3940,8 +3942,8 @@ rtError_t ApiImpl::ContextCreate(Context ** const inCtx, const int32_t devId)
     Driver* const curDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
     (void)curDrv->GetDeviceCount(&devCnt);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((devId < 0) || (devId >= devCnt), 
-        RT_ERROR_DEVICE_ID, devId, "[0, " + std::to_string(devCnt) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((devId < 0) || (devId >= devCnt), 
+        RT_ERROR_DEVICE_ID, "Context creation", devId, "[0, " + std::to_string(devCnt) + ")");
     tsId = InnerThreadLocalContainer::GetTsId();
 
     error = NewContext(static_cast<uint32_t>(devId), tsId, inCtx);
@@ -6819,7 +6821,8 @@ rtError_t ApiImpl::GetTaskBufferLen(const rtTaskBuffType_t type, uint32_t *const
             *bufferLen = PRELOAD_PARAM_BUFFER_MAX_N * 20U;
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(type, "[0, " + std::to_string(MAX_TASK) + ")");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining the task buffer length",
+                type, "[0, " + std::to_string(MAX_TASK) + ")");
             return RT_ERROR_INVALID_VALUE;
     }
     RT_LOG(RT_LOG_INFO, "Get Task Buffer Len success. bufferLen=%zu, task type=%d.", *bufferLen, type);
@@ -7251,8 +7254,8 @@ rtError_t ApiImpl::GetStackBuffer(const rtBinHandle binHandle, uint32_t deviceId
         RT_LOG(RT_LOG_WARNING, "stackType=%u is not supported.", stackType);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((stackType > RT_STACK_TYPE_SIMT)), RT_ERROR_INVALID_VALUE,
-        stackType, "[0, " + std::to_string(RT_STACK_TYPE_SIMT) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((stackType > RT_STACK_TYPE_SIMT)), RT_ERROR_INVALID_VALUE,
+        "Obtaining the stack buffer", stackType, "[0, " + std::to_string(RT_STACK_TYPE_SIMT) + "]");
     return curCtx->GetStackBuffer(binHandle, coreType, coreId, stack, stackSize);
 }
 
@@ -8571,7 +8574,8 @@ rtError_t ApiImpl::RepairError(const uint32_t deviceId, const rtErrorInfo * cons
             break;
         default:
             error = RT_ERROR_INVALID_VALUE;
-            RT_LOG_OUTER_MSG_INVALID_PARAM(errorInfo->errorType, 
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Rectifying the device faults",
+                errorInfo->errorType,
                 "{" + std::to_string(RT_NO_ERROR) + ", " + std::to_string(RT_ERROR_MEMORY) + ", " + std::to_string(RT_ERROR_LINK) + "}");
             break;
     }
@@ -8979,7 +8983,8 @@ rtError_t ApiImpl::TaskSetParams(rtTask_t task, rtTaskParams* const params)
         case RT_TASK_EVENT_RECORD:
         case RT_TASK_EVENT_WAIT:
         case RT_TASK_EVENT_RESET:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(params->type, "RT_TASK_KERNEL or RT_TASK_VALUE_WRITE or RT_TASK_VALUE_WAIT");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Setting task parameters",
+                params->type, "RT_TASK_KERNEL or RT_TASK_VALUE_WRITE or RT_TASK_VALUE_WAIT");
             error = RT_ERROR_INVALID_VALUE;
             break;
         case RT_TASK_VALUE_WRITE:
@@ -8989,7 +8994,8 @@ rtError_t ApiImpl::TaskSetParams(rtTask_t task, rtTaskParams* const params)
             error = UpdateWaitValueTaskParams(taskInfo, params);
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(params->type, "[1, " + std::to_string(RT_TASK_VALUE_WAIT) + "]");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Setting task parameters",
+                params->type, "[1, " + std::to_string(RT_TASK_VALUE_WAIT) + "]");
             error = RT_ERROR_INVALID_VALUE;
             break;
     }

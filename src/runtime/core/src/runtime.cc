@@ -2643,8 +2643,8 @@ rtError_t Runtime::GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int3
 {
     *flags = 0U; // 0 means SCHED_AUTO;
     *active = 0;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((static_cast<uint32_t>(devId) >= RT_MAX_DEV_NUM || devId < 0),
-        RT_ERROR_DEVICE_ID, devId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((static_cast<uint32_t>(devId) >= RT_MAX_DEV_NUM || devId < 0),
+        RT_ERROR_DEVICE_ID, "Obtaining the status of the default context", devId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
 
     COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_DEVICE_ID,
         "GetPrimaryCtxState failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);

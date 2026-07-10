@@ -90,7 +90,8 @@ rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const i
                 "Malloc host shared memory failed, ftruncate failed.");
             RT_LOG(RT_LOG_DEBUG, "ftruncate success");
         } else if (in->size != static_cast<uint64_t>(buf.st_size)) {
-            RT_LOG_OUTER_MSG_INVALID_PARAM(in->size, std::to_string(static_cast<uint64_t>(buf.st_size)));
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Shared memory allocation",
+                in->size, std::to_string(static_cast<uint64_t>(buf.st_size)));
             (void)close(out->fd);
             out->fd = -1;
             return RT_ERROR_INVALID_VALUE;
@@ -177,7 +178,8 @@ rtError_t NpuDriver::FreeHostSharedMemory(rtFreeHostSharedMemoryIn * const in, c
             COND_RETURN_WARN(ret != 0, RT_ERROR_NONE,
                              "shm_unlink failed, %s may not exist.", in->name);
         } else if ((ret == 0) && (in->size != static_cast<uint64_t>(buf.st_size))) {
-            RT_LOG_OUTER_MSG_INVALID_PARAM(in->size, buf.st_size);
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Releasing host shared memory",
+                in->size, buf.st_size);
             return RT_ERROR_INVALID_VALUE;
         } else {
             RT_LOG(RT_LOG_WARNING, "%s does not exist.", in->name);
@@ -1830,7 +1832,8 @@ rtError_t NpuDriver::MemGetInfoEx(const uint32_t deviceId, const rtMemInfoType_t
     }
     const rtError_t error = GetMemInfoType(curMemInfoType, &type);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(static_cast<int32_t>(curMemInfoType),
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining the memory information of the current device",
+            static_cast<int32_t>(curMemInfoType),
             "[" + std::to_string(RT_MEMORYINFO_DDR) + ", " + std::to_string(RT_MEMORYINFO_HBM_P2P_NORMAL) + "]");
         return error;
     }
@@ -2083,8 +2086,9 @@ rtError_t NpuDriver::MemCopySync(void * const dst, const uint64_t destMax, const
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(src, RT_ERROR_INVALID_VALUE, "Synchronous memory copy");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dst, RT_ERROR_INVALID_VALUE, "Synchronous memory copy");
     if (kind >= RT_MEMCPY_RESERVED) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(
-            kind, "[" + std::to_string(RT_MEMCPY_HOST_TO_HOST) + ", " + std::to_string(RT_MEMCPY_RESERVED) + ")");
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Synchronous memory copy",
+            kind,
+            "[" + std::to_string(RT_MEMCPY_HOST_TO_HOST) + ", " + std::to_string(RT_MEMCPY_RESERVED) + ")");
         return RT_ERROR_DRV_INPUT;
     }
 
@@ -2131,8 +2135,9 @@ rtError_t NpuDriver::MemCopyAsync(void * const dst, const uint64_t destMax, cons
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(src, RT_ERROR_INVALID_VALUE, "Asynchronous memory copy");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dst, RT_ERROR_INVALID_VALUE, "Asynchronous memory copy");
     if (kind >= RT_MEMCPY_RESERVED) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(
-            kind, "[" + std::to_string(RT_MEMCPY_HOST_TO_HOST) + ", " + std::to_string(RT_MEMCPY_RESERVED) + ")");
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Asynchronous memory copy",
+            kind,
+            "[" + std::to_string(RT_MEMCPY_HOST_TO_HOST) + ", " + std::to_string(RT_MEMCPY_RESERVED) + ")");
         return RT_ERROR_DRV_INPUT;
     }
 

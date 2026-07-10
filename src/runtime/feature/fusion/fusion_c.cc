@@ -197,8 +197,8 @@ static rtError_t PreProcCcuTaskForFusion(rtFusionSubTaskInfo_t *const fusionTask
     uint32_t &sqeLen, uint8_t &ccuArgSize, Stream * const stm)
 {
     rtCcuTaskGroup_t * const ccuInfo = &(fusionTask->task.ccuInfo);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(ccuInfo->taskNum == 0U || ccuInfo->taskNum > FUSION_SUB_TASK_MAX_CCU_NUM, 
-        RT_ERROR_INVALID_VALUE, ccuInfo->taskNum, "(0, " + std::to_string(FUSION_SUB_TASK_MAX_CCU_NUM) + "]");    
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(ccuInfo->taskNum == 0U || ccuInfo->taskNum > FUSION_SUB_TASK_MAX_CCU_NUM, 
+        RT_ERROR_INVALID_VALUE, "CCU subtask preprocessing", ccuInfo->taskNum, "(0, " + std::to_string(FUSION_SUB_TASK_MAX_CCU_NUM) + "]");    
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(ccuInfo->ccuTaskInfo, RT_ERROR_INVALID_VALUE, "CCU subtask preprocessing");
 
     uint8_t isHas128B = 0U;
@@ -211,20 +211,20 @@ static rtError_t PreProcCcuTaskForFusion(rtFusionSubTaskInfo_t *const fusionTask
     // get ccu subType
     for (uint32_t i = 0U; i < ccuInfo->taskNum; i++) {
         NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(ccuInfo->ccuTaskInfo[i].args, RT_ERROR_INVALID_VALUE, "CCU subtask preprocessing");
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
             ccuInfo->ccuTaskInfo[i].argSize != RT_CCU_SQE128B_ARGS_SIZE &&
             ccuInfo->ccuTaskInfo[i].argSize != RT_CCU_SQE32B_ARGS_SIZE, RT_ERROR_INVALID_VALUE,
-            ccuInfo->ccuTaskInfo[i].argSize,
+            "CCU subtask preprocessing", ccuInfo->ccuTaskInfo[i].argSize,
             std::to_string(RT_CCU_SQE32B_ARGS_SIZE) + " or " + std::to_string(RT_CCU_SQE128B_ARGS_SIZE));
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(ccuInfo->ccuTaskInfo[i].dieId >= dieNum, RT_ERROR_INVALID_VALUE,
-            static_cast<uint32_t>(ccuInfo->ccuTaskInfo[i].dieId), "[0, " + std::to_string(dieNum) + ")");
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(ccuInfo->ccuTaskInfo[i].missionId > RT_CCU_MISSION_ID_MAX,
-            RT_ERROR_INVALID_VALUE, ccuInfo->ccuTaskInfo[i].missionId,
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(ccuInfo->ccuTaskInfo[i].dieId >= dieNum, RT_ERROR_INVALID_VALUE,
+            "CCU subtask preprocessing", static_cast<uint32_t>(ccuInfo->ccuTaskInfo[i].dieId), "[0, " + std::to_string(dieNum) + ")");
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(ccuInfo->ccuTaskInfo[i].missionId > RT_CCU_MISSION_ID_MAX,
+            RT_ERROR_INVALID_VALUE, "CCU subtask preprocessing", ccuInfo->ccuTaskInfo[i].missionId,
             "[0, " + std::to_string(RT_CCU_MISSION_ID_MAX) + "]");
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(ccuInfo->ccuTaskInfo[i].instCnt == RT_CCU_INST_CNT_INVALID,
-            RT_ERROR_INVALID_VALUE, ccuInfo->ccuTaskInfo[i].instCnt, "not equal to 0");
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(ccuInfo->ccuTaskInfo[i].instStartId >= RT_CCU_INST_START_MAX,
-            RT_ERROR_INVALID_VALUE, ccuInfo->ccuTaskInfo[i].instStartId,
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(ccuInfo->ccuTaskInfo[i].instCnt == RT_CCU_INST_CNT_INVALID,
+            RT_ERROR_INVALID_VALUE, "CCU subtask preprocessing", ccuInfo->ccuTaskInfo[i].instCnt, "not equal to 0");
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(ccuInfo->ccuTaskInfo[i].instStartId >= RT_CCU_INST_START_MAX,
+            RT_ERROR_INVALID_VALUE, "CCU subtask preprocessing", ccuInfo->ccuTaskInfo[i].instStartId,
             "[0, " + std::to_string(RT_CCU_INST_START_MAX) + ")");
         sqeSubType |= (ccuInfo->ccuTaskInfo[i].dieId == 0U) ? (1U << RT_FUSION_CCU_DIE0_BIT_MOVE) :
             (1U << RT_FUSION_CCU_DIE1_BIT_MOVE);
@@ -254,8 +254,8 @@ static rtError_t PreProcCcuTaskForFusion(rtFusionSubTaskInfo_t *const fusionTask
     COND_RETURN_AND_MSG_OUTER((isHas32B == 1U) && (taskNum <= 1U), RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1011, "CCU subtask preprocessing", static_cast<uint32_t>(taskNum), "taskNum",
         "taskNum must be greater than 1 when argSize is 32B per die");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((isHas128B == 1U) && (taskNum > 1U), RT_ERROR_INVALID_VALUE,
-        taskNum, "1");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((isHas128B == 1U) && (taskNum > 1U), RT_ERROR_INVALID_VALUE,
+        "CCU subtask preprocessing", taskNum, "1");
     ccuArgSize = (isHas32B == 1U) ? RT_CCU_SQE32B_ARGS_SIZE : RT_CCU_SQE128B_ARGS_SIZE;
     // mission id的递增
     COND_RETURN_AND_MSG_OUTER(!CheckCcuMissionId(ccuInfo->ccuTaskInfo, ccuInfo->taskNum,
@@ -318,8 +318,8 @@ static rtError_t FusionKernelTaskPreProc(rtFunsionTaskInfo_t * const fusionKerne
                 sqeLen += 1U;
                 break;
             case RT_FUSION_HCOM_CPU:
-                COND_RETURN_AND_MSG_OUTER_WITH_PARAM(fusionKernel->subTask[idx].task.aicpuInfo.blockDim != 1U,
-                    RT_ERROR_INVALID_VALUE, fusionKernel->subTask[idx].task.aicpuInfo.blockDim, "1");
+                COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(fusionKernel->subTask[idx].task.aicpuInfo.blockDim != 1U,
+                    RT_ERROR_INVALID_VALUE, "Fusion kernel task preprocessing", fusionKernel->subTask[idx].task.aicpuInfo.blockDim, "1");
                 subKernelType += (stm->Device_()->IsSupportHcomcpu() == 1U) ? 0U : 1U;
                 sqeSubType |= (1U << fusionSubTaskMove[subKernelType]);
                 sqeLen += 1U;
@@ -339,8 +339,8 @@ static rtError_t FusionKernelTaskPreProc(rtFunsionTaskInfo_t * const fusionKerne
                     "CCU-only fusion task requires double die with 128B argSize");
                 break;
             default:
-                RT_LOG_OUTER_MSG_INVALID_PARAM(subKernelType,
-                    "[0, 3]");
+                RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Fusion kernel task preprocessing",
+                    subKernelType, "[0, 3]");
                 return RT_ERROR_INVALID_VALUE;
         }
     }

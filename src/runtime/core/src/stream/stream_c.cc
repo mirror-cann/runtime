@@ -893,7 +893,8 @@ rtError_t StreamWriteValuePtr(const rtWriteValueInfo_t * const writeValueInfo, S
 {
     if ((static_cast<uint32_t>(writeValueInfo->size) >= WRITE_VALUE_SIZE_TYPE_BUFF) ||
         (writeValueInfo->size == WRITE_VALUE_SIZE_TYPE_INVALID)) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(writeValueInfo->size,
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Writing data to the specified memory",
+            writeValueInfo->size,
             "[1, " + std::to_string(WRITE_VALUE_SIZE_TYPE_BUFF) + ")");
         return RT_ERROR_INVALID_VALUE;
     }

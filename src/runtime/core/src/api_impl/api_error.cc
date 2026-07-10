@@ -74,7 +74,7 @@ rtError_t ApiErrorDecorator::RegisterAllKernel(const rtDevBinary_t * const bin, 
     const uint32_t magic = bin->magic;
     const bool isElfProgram = ((magic == RT_DEV_BINARY_MAGIC_ELF) || (magic == RT_DEV_BINARY_MAGIC_ELF_AICUBE) ||
         (magic == RT_DEV_BINARY_MAGIC_ELF_AIVEC));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((!isElfProgram), RT_ERROR_INVALID_VALUE, magic, std::to_string(RT_DEV_BINARY_MAGIC_ELF) 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((!isElfProgram), RT_ERROR_INVALID_VALUE, "Registering all kernel functions", magic, std::to_string(RT_DEV_BINARY_MAGIC_ELF) 
         + " or " + std::to_string(RT_DEV_BINARY_MAGIC_ELF_AICUBE) + " or " + std::to_string(RT_DEV_BINARY_MAGIC_ELF_AIVEC));
 
     const rtError_t error = impl_->RegisterAllKernel(bin, prog);
@@ -130,7 +130,7 @@ rtError_t ApiErrorDecorator::RegisterVariable(void * const binHandle, const void
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(deviceVarName, RT_ERROR_INVALID_VALUE, "Registering the device variable mapping table");
     
     const auto len = strnlen(deviceVarName, static_cast<size_t>(NAME_MAX_LENGTH));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(len >= NAME_MAX_LENGTH, RT_ERROR_INVALID_VALUE, len, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(len >= NAME_MAX_LENGTH, RT_ERROR_INVALID_VALUE, "Registering the device variable mapping table", len, 
         "less than " + std::to_string(NAME_MAX_LENGTH));
 
     const rtError_t error = impl_->RegisterVariable(binHandle, hostVar, deviceVarName, size, flags);
@@ -177,7 +177,7 @@ rtError_t ApiErrorDecorator::GetAddrAndPrefCntWithHandle(void * const hdl, const
 
     const auto name = reinterpret_cast<const char_t *>(kernelInfoExt);
     const auto len = strnlen(name, static_cast<size_t>(NAME_MAX_LENGTH));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(len >= NAME_MAX_LENGTH, RT_ERROR_INVALID_VALUE, len, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(len >= NAME_MAX_LENGTH, RT_ERROR_INVALID_VALUE, "Obtaining the device address and prefetch count based on the kernel function handle", len, 
         "less than " + std::to_string(NAME_MAX_LENGTH));
 
     const rtError_t error = impl_->GetAddrAndPrefCntWithHandle(hdl, kernelInfoExt, addr, prefetchCnt);
@@ -407,7 +407,8 @@ rtError_t ApiErrorDecorator::GetMemcpyConfigAttr(rtMemcpyAttribute_t* attr, RtMe
             configInfo->checkBitmap = attr->value.checkBitmap;
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(attr->id, 1);
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining configuration attributes of memory copy",
+                attr->id, 1);
             error = RT_ERROR_INVALID_VALUE;
             break;
     }
@@ -420,7 +421,7 @@ rtError_t ApiErrorDecorator::KernelGetAddrAndPrefCnt(void * const hdl, const uin
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(addr, RT_ERROR_INVALID_VALUE, "Obtaining the on-device execution address and instruction prefetch count of the kernel function");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(prefetchCnt, RT_ERROR_INVALID_VALUE, "Obtaining the on-device execution address and instruction prefetch count of the kernel function");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag > RT_DYNAMIC_SHAPE_KERNEL), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag > RT_DYNAMIC_SHAPE_KERNEL), RT_ERROR_INVALID_VALUE, "Obtaining the on-device execution address and instruction prefetch count of the kernel function", 
         flag, "[0, " + std::to_string(RT_DYNAMIC_SHAPE_KERNEL) + "]");
 
     if (flag == RT_STATIC_SHAPE_KERNEL) {
@@ -450,8 +451,8 @@ rtError_t ApiErrorDecorator::KernelGetAddrAndPrefCntV2(void * const hdl, const u
     }
 
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(kernelInfo, RT_ERROR_INVALID_VALUE, "Obtaining the on-device execution address and instruction prefetch count of the kernel function");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag > RT_DYNAMIC_SHAPE_KERNEL), 
-        RT_ERROR_INVALID_VALUE, flag, "[0, " + std::to_string(RT_DYNAMIC_SHAPE_KERNEL) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag > RT_DYNAMIC_SHAPE_KERNEL), 
+        RT_ERROR_INVALID_VALUE, "Obtaining the on-device execution address and instruction prefetch count of the kernel function", flag, "[0, " + std::to_string(RT_DYNAMIC_SHAPE_KERNEL) + "]");
     COND_RETURN_AND_MSG_OUTER(invalidFlag == true, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
         "stubFunc or hdl", "If parameter flag is RT_STATIC_SHAPE_KERNEL(0x00U), stubFunc cannot be nullptr; "
         "If parameter flag is not equal to RT_STATIC_SHAPE_KERNEL(0x00U), parameter hdl cannot be nullptr");
@@ -518,7 +519,7 @@ rtError_t ApiErrorDecorator::CalcLaunchArgsSize(size_t const argsSize, size_t co
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(launchArgsSize, RT_ERROR_INVALID_VALUE, "Obtaining the actual memory size required by the parameter list during kernel launch");
     ZERO_RETURN_AND_MSG_OUTER(argsSize);
     ZERO_RETURN_AND_MSG_OUTER(hostInfoTotalSize);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((hostInfoNum == 0U || hostInfoNum > static_cast<size_t>(UINT16_MAX)), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((hostInfoNum == 0U || hostInfoNum > static_cast<size_t>(UINT16_MAX)), RT_ERROR_INVALID_VALUE, "Obtaining the actual memory size required by the parameter list during kernel launch", 
         hostInfoNum, "[1, " + std::to_string(static_cast<size_t>(UINT16_MAX)) + "]");
 
     return impl_->CalcLaunchArgsSize(argsSize, hostInfoTotalSize, hostInfoNum, launchArgsSize);
@@ -532,7 +533,7 @@ rtError_t ApiErrorDecorator::CreateLaunchArgs(size_t const argsSize, size_t cons
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(argsHandle, RT_ERROR_INVALID_VALUE, "Creating a parameter handle for kernel launch");
     ZERO_RETURN_AND_MSG_OUTER(argsSize);
     ZERO_RETURN_AND_MSG_OUTER(hostInfoTotalSize);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((hostInfoNum == 0U || hostInfoNum > static_cast<size_t>(UINT16_MAX)), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((hostInfoNum == 0U || hostInfoNum > static_cast<size_t>(UINT16_MAX)), RT_ERROR_INVALID_VALUE, "Creating a parameter handle for kernel launch", 
         hostInfoNum, "[1, " + std::to_string(static_cast<size_t>(UINT16_MAX)) + "]");
     const rtError_t error = impl_->CreateLaunchArgs(argsSize, hostInfoTotalSize, hostInfoNum, argsData, argsHandle);
     ERROR_RETURN(error, "CreateLaunchArgs, argsSize=%zu, hostInfoTotalSize=%zu, hostInfoNum=%zu, argsData=0x%x",
@@ -566,7 +567,7 @@ rtError_t ApiErrorDecorator::BinaryLoad(const rtDevBinary_t * const bin, Program
     const uint32_t magic = bin->magic;
     const bool isElfProgram = ((magic == RT_DEV_BINARY_MAGIC_ELF) || (magic == RT_DEV_BINARY_MAGIC_ELF_AICUBE) ||
         (magic == RT_DEV_BINARY_MAGIC_ELF_AIVEC));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((!isElfProgram), RT_ERROR_INVALID_VALUE, magic, std::to_string(RT_DEV_BINARY_MAGIC_ELF) 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((!isElfProgram), RT_ERROR_INVALID_VALUE, "Parsing and loading the operator binary file", magic, std::to_string(RT_DEV_BINARY_MAGIC_ELF) 
         + " or " + std::to_string(RT_DEV_BINARY_MAGIC_ELF_AICUBE) + " or " + std::to_string(RT_DEV_BINARY_MAGIC_ELF_AIVEC));
     const rtError_t error = impl_->BinaryLoad(bin, prog);
     ERROR_RETURN(error, "BinaryLoad failed.");
@@ -816,14 +817,14 @@ static rtError_t CheckKernelLaunchCfg(const rtKernelLaunchCfg_t * const cfg, con
         ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "cfg->attrs",
         "The RT_LAUNCH_KERNEL_ATTR_TIMEOUT(7) and RT_LAUNCH_KERNEL_ATTR_TIMEOUT_US(8) attributes cannot be carried at the same time");
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(schedMode >= static_cast<uint8_t>(RT_SCHEM_MODE_END),
-        RT_ERROR_INVALID_VALUE, schedMode, "[0, " + std::to_string(RT_SCHEM_MODE_END) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(schedMode >= static_cast<uint8_t>(RT_SCHEM_MODE_END),
+        RT_ERROR_INVALID_VALUE, "Checking the parameter configuration before kernel delivery", schedMode, "[0, " + std::to_string(RT_SCHEM_MODE_END) + ")");
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((isBlockPrefetch != BLOCK_PREFETCH_DISABLE) && (isBlockPrefetch != BLOCK_PREFETCH_ENABLE), 
-        RT_ERROR_INVALID_VALUE, isBlockPrefetch, "[0, 1]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((isBlockPrefetch != BLOCK_PREFETCH_DISABLE) && (isBlockPrefetch != BLOCK_PREFETCH_ENABLE), 
+        RT_ERROR_INVALID_VALUE, "Checking the parameter configuration before kernel delivery", isBlockPrefetch, "[0, 1]");
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((isDataDump != DATA_DUMP_ENABLE) && (isDataDump != DATA_DUMP_DISABLE), 
-        RT_ERROR_INVALID_VALUE, isDataDump, "[0, 1]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((isDataDump != DATA_DUMP_ENABLE) && (isDataDump != DATA_DUMP_DISABLE), 
+        RT_ERROR_INVALID_VALUE, "Checking the parameter configuration before kernel delivery", isDataDump, "[0, 1]");
 
     // 如果是CHIP_DC vector使能场景，需要校验如果有相应TV参数， 非CHIP_DC、CPU算子、非MIX场景不做校验
     COND_RETURN_WITH_NOLOG(!isVectorCoreEnable ||
@@ -858,8 +859,8 @@ rtError_t ApiErrorDecorator::KernelLaunch(const void * const stubFunc, const uin
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(stubFunc, RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator");
     ZERO_RETURN_AND_MSG_OUTER(coreDim);
     // coreDim is defined uint16_t by sqe
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(coreDim > static_cast<uint32_t>(UINT16_MAX), 
-        RT_ERROR_INVALID_VALUE, coreDim, "less than or equal to " + std::to_string(UINT16_MAX));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(coreDim > static_cast<uint32_t>(UINT16_MAX), 
+        RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator", coreDim, "less than or equal to " + std::to_string(UINT16_MAX));
     rtError_t error = CheckArgs(argsInfo);
     ERROR_RETURN(error, "check argsInfo failed, retCode=%#x.", error);
     error = CheckCfg(cfgInfo);
@@ -904,7 +905,7 @@ rtError_t ApiErrorDecorator::CpuKernelLaunch(const rtKernelLaunchNames_t * const
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(launchNames->opName, RT_ERROR_INVALID_VALUE, "Starting the compute task of an AI CPU operator");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(launchNames->kernelName, RT_ERROR_INVALID_VALUE, "Starting the compute task of an AI CPU operator");
     ZERO_RETURN_AND_MSG_OUTER(coreDim);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(coreDim >= 0x10000U, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(coreDim >= 0x10000U, RT_ERROR_INVALID_VALUE, "Starting the compute task of an AI CPU operator", 
         coreDim, "less than or equal to 0xffff");    
     rtError_t error = CheckArgs(argsInfo);
     ERROR_RETURN_MSG_CALL(ERR_MODULE_GE, error, "check argsInfo failed, retCode=%#x.", static_cast<uint32_t>(error));
@@ -923,7 +924,7 @@ rtError_t ApiErrorDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t *
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo, RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo->taskDesc, RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task");
     ZERO_RETURN_AND_MSG_OUTER(taskInfo->taskNum);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((taskInfo->taskNum > MULTIPLE_TASK_MAX_NUM), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((taskInfo->taskNum > MULTIPLE_TASK_MAX_NUM), RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task", 
         taskInfo->taskNum, "less than or equal to " + std::to_string(MULTIPLE_TASK_MAX_NUM));
     // MultipleTaskInfoLaunch only support RT_KERNEL_DEFAULT and RT_KERNEL_CMDLIST_NOT_FREE
     constexpr uint32_t permitFlag = (RT_KERNEL_DEFAULT | RT_KERNEL_CMDLIST_NOT_FREE);
@@ -946,8 +947,8 @@ rtError_t ApiErrorDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t *
             NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo->taskDesc[idx].u.aicpuTaskDesc.kernelLaunchNames.kernelName, RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task");
             const uint32_t coreDim = taskInfo->taskDesc[idx].u.aicpuTaskDesc.blockDim;
             ZERO_RETURN_AND_MSG_OUTER(coreDim);
-            COND_RETURN_AND_MSG_OUTER_WITH_PARAM(coreDim > static_cast<uint32_t>(UINT16_MAX), 
-                RT_ERROR_INVALID_VALUE, coreDim, "less than or equal to " + std::to_string(UINT16_MAX));
+            COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(coreDim > static_cast<uint32_t>(UINT16_MAX), 
+                RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task", coreDim, "less than or equal to " + std::to_string(UINT16_MAX));
             const rtError_t error = CheckArgs(&(taskInfo->taskDesc[idx].u.aicpuTaskDesc.argsInfo));
             ERROR_RETURN_MSG_CALL(ERR_MODULE_GE, error, "check argsInfo failed, retCode=%#x.", static_cast<uint32_t>(error));
         } else if (taskInfo->taskDesc[idx].type == RT_MULTIPLE_TASK_TYPE_AICPU_BY_HANDLE) {
@@ -961,8 +962,8 @@ rtError_t ApiErrorDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t *
             NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(hdl, RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task");
             const uint32_t coreDim = taskInfo->taskDesc[idx].u.aicpuTaskDescByHandle.blockDim;
             ZERO_RETURN_AND_MSG_OUTER(coreDim);
-            COND_RETURN_AND_MSG_OUTER_WITH_PARAM(coreDim > static_cast<uint32_t>(UINT16_MAX), 
-                RT_ERROR_INVALID_VALUE, coreDim, "less than or equal to " + std::to_string(UINT16_MAX));
+            COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(coreDim > static_cast<uint32_t>(UINT16_MAX), 
+                RT_ERROR_INVALID_VALUE, "Delivering a DVPP Multiple task", coreDim, "less than or equal to " + std::to_string(UINT16_MAX));
             const rtError_t error = CheckArgs(&(taskInfo->taskDesc[idx].u.aicpuTaskDescByHandle.argsInfo));
             ERROR_RETURN_MSG_CALL(ERR_MODULE_GE, error, "check argsInfo failed, retCode=%#x.", static_cast<uint32_t>(error));
         } else {
@@ -983,7 +984,7 @@ rtError_t ApiErrorDecorator::CpuKernelLaunchExWithArgs(const char_t * const opNa
     // So name of control task is null. No need to check.
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(opName, RT_ERROR_INVALID_VALUE, "Starting the compute task of an AI CPU operator");
     ZERO_RETURN_AND_MSG_OUTER(coreDim);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(coreDim >= 0x10000U, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(coreDim >= 0x10000U, RT_ERROR_INVALID_VALUE, "Starting the compute task of an AI CPU operator", 
         coreDim, "less than or equal to 0xffff");   
     COND_RETURN_AND_MSG_OUTER((stm != nullptr) && ((stm->Flags() & RT_STREAM_CP_PROCESS_USE) != 0U),
         RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, "Starting the compute task of an AI CPU operator", "Stream flags value " + std::to_string(stm->Flags()),
@@ -1114,7 +1115,7 @@ rtError_t ApiErrorDecorator::CheckStreamFlags(const uint32_t flags) const
         RT_STREAM_HUGE | RT_STREAM_AICPU | RT_STREAM_FORBIDDEN_DEFAULT | RT_STREAM_HEAD | RT_STREAM_OVERFLOW |
         RT_STREAM_FAST_LAUNCH | RT_STREAM_FAST_SYNC | RT_STREAM_CP_PROCESS_USE | RT_STREAM_VECTOR_CORE_USE|
         RT_STREAM_ACSQ_LOCK | RT_STREAM_DQS_CTRL | RT_STREAM_DQS_INTER_CHIP);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(flags > maxFlags, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(flags > maxFlags, RT_ERROR_INVALID_VALUE, "Checking stream flags", 
         flags, "[0, " + std::to_string(maxFlags) + "]");
 
     COND_RETURN_AND_MSG_OUTER(((flags & static_cast<uint32_t>(RT_STREAM_CP_PROCESS_USE)) != 0U) &&
@@ -1166,7 +1167,7 @@ rtError_t ApiErrorDecorator::StreamWaitEvent(Stream * const stm, Event * const e
 rtError_t ApiErrorDecorator::StreamSynchronize(Stream * const stm, const int32_t timeout)
 {
     // timeout >=-1, -1:no limited
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE, "Synchronizing a stream",
         timeout, "greater than or equal to -1 and not equal to 0");
     COND_RETURN_AND_MSG_OUTER((stm != nullptr) && ((stm->Flags() & RT_STREAM_AICPU) != 0U),
         RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, "Synchronizing a stream", "Stream flags value " + std::to_string(stm->Flags()),
@@ -1325,8 +1326,8 @@ rtError_t ApiErrorDecorator::EventCreate(Event ** const evt, const uint64_t flag
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(evt, RT_ERROR_INVALID_VALUE, "Event creation");
 
     constexpr uint32_t maxFlag = RT_EVENT_FLAG_MAX;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((flag & maxFlag) == 0U) || (flag > maxFlag),
-        RT_ERROR_INVALID_VALUE, flag,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((flag & maxFlag) == 0U) || (flag > maxFlag),
+        RT_ERROR_INVALID_VALUE, "Event creation", flag,
         "an OR combination of RT_EVENT_DDSYNC_NS(0x1U), RT_EVENT_STREAM_MARK(0x2U),"
         " RT_EVENT_DDSYNC(0x4U), and RT_EVENT_TIME_LINE(0x8U);"
         " or RT_EVENT_MC2(0x10U) or RT_EVENT_EXTERNAL(0x20U) used alone");
@@ -1360,8 +1361,8 @@ rtError_t ApiErrorDecorator::EventCreateEx(Event ** const evt, const uint64_t fl
     }
     constexpr uint32_t maxFlag = (RT_EVENT_DDSYNC_NS | RT_EVENT_STREAM_MARK | RT_EVENT_DDSYNC |
                                   RT_EVENT_TIME_LINE | RT_EVENT_IPC);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((flag & maxFlag) == 0U) || (flag > maxFlag),
-        RT_ERROR_INVALID_VALUE, flag,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((flag & maxFlag) == 0U) || (flag > maxFlag),
+        RT_ERROR_INVALID_VALUE, "Event creation", flag,
         "an OR combination of RT_EVENT_DDSYNC_NS(0x1U), RT_EVENT_STREAM_MARK(0x2U),"
         " RT_EVENT_DDSYNC(0x4U), and RT_EVENT_TIME_LINE(0x8U); or RT_EVENT_IPC(0x40U) used alone");
 
@@ -1444,7 +1445,7 @@ rtError_t ApiErrorDecorator::EventReset(Event * const evt, Stream * const stm)
 rtError_t ApiErrorDecorator::EventSynchronize(Event * const evt, const int32_t timeout)
 {
     // timeout >=-1, -1:no limited
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE, "Event synchronization",
         timeout, "greater than or equal to -1 and not equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(evt, RT_ERROR_INVALID_VALUE, "Event synchronization");
     COND_RETURN_WARN(evt->GetEventFlag() == RT_EVENT_EXTERNAL, RT_ERROR_FEATURE_NOT_SUPPORT,
@@ -1681,7 +1682,7 @@ rtError_t ApiErrorDecorator::HostGetDevicePointer(void *pHost, void **pDevice, u
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(pHost, RT_ERROR_INVALID_VALUE, "Obtaining the on-device memory pointer based on the on-host virtual address");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(pDevice, RT_ERROR_INVALID_VALUE, "Obtaining the on-device memory pointer based on the on-host virtual address");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag != 0), RT_ERROR_INVALID_VALUE, flag, "equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag != 0), RT_ERROR_INVALID_VALUE, "Obtaining the on-device memory pointer based on the on-host virtual address", flag, "equal to 0");
 
     const rtError_t error = impl_->HostGetDevicePointer(pHost, pDevice, flag);
     ERROR_RETURN(error, "Host get device memory failed.");
@@ -1699,7 +1700,7 @@ rtError_t ApiErrorDecorator::HostMemMapCapabilities(uint32_t deviceId, rtHacType
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Device ID is invalid, drv devId=%u, retCode=%#x",
         realDeviceId, static_cast<uint32_t>(error));
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(hacType >= RT_HAC_TYPE_MAX, RT_ERROR_INVALID_VALUE, hacType, "[0, " +
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(hacType >= RT_HAC_TYPE_MAX, RT_ERROR_INVALID_VALUE, "Querying the host memory mapping capability on a specified device", hacType, "[0, " +
         std::to_string(RT_HAC_TYPE_MAX) + ")");
     error = impl_->HostMemMapCapabilities(realDeviceId, hacType, capabilities);
     if (error == RT_ERROR_FEATURE_NOT_SUPPORT) {
@@ -1760,7 +1761,7 @@ rtError_t ApiErrorDecorator::MemCopySync(void * const dst, const uint64_t destMa
     ZERO_RETURN_AND_MSG_OUTER(destMax);
     ZERO_RETURN_AND_MSG_OUTER(cnt);
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(cnt > destMax, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(cnt > destMax, RT_ERROR_INVALID_VALUE, "Synchronous memory copy", 
         cnt, "(0, " + std::to_string(destMax) + "]");
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((kind >= RT_MEMCPY_RESERVED) ||
         (kind < RT_MEMCPY_HOST_TO_HOST), RT_ERROR_INVALID_VALUE,
@@ -1782,7 +1783,7 @@ rtError_t ApiErrorDecorator::MemCopySyncEx(void * const dst, const uint64_t dest
     ZERO_RETURN_AND_MSG_OUTER(destMax);
     ZERO_RETURN_AND_MSG_OUTER(cnt);
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(cnt > destMax, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(cnt > destMax, RT_ERROR_INVALID_VALUE, "Synchronous memory copy", 
         cnt, "(0, " + std::to_string(destMax) + "]");
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((kind >= RT_MEMCPY_RESERVED) ||
         (kind < RT_MEMCPY_HOST_TO_HOST), RT_ERROR_INVALID_VALUE,
@@ -1803,7 +1804,7 @@ rtError_t ApiErrorDecorator::MemcpyAsync(void *const dst, const uint64_t destMax
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dst, RT_ERROR_INVALID_VALUE, "Asynchronous memory copy");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(src, RT_ERROR_INVALID_VALUE, "Asynchronous memory copy");
     ZERO_RETURN_AND_MSG_OUTER(cnt);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(cnt > destMax, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(cnt > destMax, RT_ERROR_INVALID_VALUE, "Asynchronous memory copy", 
         cnt, "(0, " + std::to_string(destMax) + "]");
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((kind >= RT_MEMCPY_RESERVED) ||
         (kind < RT_MEMCPY_HOST_TO_HOST), RT_ERROR_INVALID_VALUE,
@@ -1907,7 +1908,7 @@ rtError_t ApiErrorDecorator::MemcpyAsyncPtr(void * const memcpyAddrInfo, const u
     ZERO_RETURN_AND_MSG_OUTER(count);
     COND_RETURN_AND_MSG_OUTER(count > destMax, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Performing asynchronous memory copy using the address description on the device", 
         count, "count", RtFmtMsg("The count cannot exceed the maximum value destMax %u", destMax));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((count > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((count > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, "Performing asynchronous memory copy using the address description on the device", 
         count, RtFmtMsg("(0, %u]", MAX_MEMCPY_SIZE_OF_D2D));
     COND_RETURN_AND_MSG_OUTER((RtPtrToValue(memcpyAddrInfo) % 64ULL) != 0ULL, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, 
         "Performing asynchronous memory copy using the address description on the device", memcpyAddrInfo, "memcpyAddrInfo", "memcpyAddrInfo is not 64-byte aligned");
@@ -1925,7 +1926,7 @@ rtError_t ApiErrorDecorator::MemcpyAsyncPtr(void * const memcpyAddrInfo, const u
             COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, error != RT_ERROR_NONE, error,
                 "Memory async ptr failed, get pointer attributes failed, retCode=%#x", static_cast<uint32_t>(error));
             const rtMemLocationType srcLocationType = attributes.location.type;
-            COND_RETURN_AND_MSG_OUTER_WITH_PARAM(srcLocationType != RT_MEMORY_LOC_DEVICE, RT_ERROR_INVALID_VALUE, 
+            COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(srcLocationType != RT_MEMORY_LOC_DEVICE, RT_ERROR_INVALID_VALUE, "Performing asynchronous memory copy using the address description on the device", 
                 srcLocationType, std::to_string(RT_MEMORY_LOC_DEVICE));
         }
     }
@@ -2043,7 +2044,7 @@ rtError_t ApiErrorDecorator::SetMemcpyDesc(rtMemcpyDesc_t desc, const void * con
     COND_RETURN_AND_MSG_RESERVED_PARAM((config != nullptr), RT_ERROR_INVALID_VALUE, "config",
         "config is reserved parameter and must be null");
     ZERO_RETURN_AND_MSG_OUTER(count);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((count > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((count > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, "Setting the memory copy descriptor", 
         count, RtFmtMsg("(0, %u]", MAX_MEMCPY_SIZE_OF_D2D));
     COND_RETURN_AND_MSG_OUTER((RtPtrToValue(desc) % 64ULL) != 0ULL, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, 
         "Setting the memory copy descriptor", desc, "desc", "desc is not 64-byte aligned");
@@ -2410,14 +2411,14 @@ rtError_t ApiErrorDecorator::ReduceAsync(void * const dst, const void * const sr
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dst, RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(src, RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation");
     ZERO_RETURN_AND_MSG_OUTER(cnt);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((kind >= RT_RECUDE_KIND_END) ||
-        (kind < RT_MEMCPY_SDMA_AUTOMATIC_ADD), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((kind >= RT_RECUDE_KIND_END) ||
+        (kind < RT_MEMCPY_SDMA_AUTOMATIC_ADD), RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation", 
         kind, RtFmtMsg("[%u, %u)", RT_MEMCPY_SDMA_AUTOMATIC_ADD, RT_RECUDE_KIND_END));
     COND_RETURN_AND_MSG_OUTER((kind == RT_MEMCPY_SDMA_AUTOMATIC_ADD) && (cnt > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
         "Asynchronously performing the Reduce operation", cnt, "cnt", RtFmtMsg("If parameter kind equals RT_MEMCPY_SDMA_AUTOMATIC_ADD(10), the range of parameter cnt should be (0, %u]",
             MAX_MEMCPY_SIZE_OF_D2D));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((type >= RT_DATA_TYPE_END) ||
-        (type < RT_DATA_TYPE_FP32), RT_ERROR_INVALID_VALUE, type, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((type >= RT_DATA_TYPE_END) ||
+        (type < RT_DATA_TYPE_FP32), RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation", type, 
         "[" + std::to_string(RT_DATA_TYPE_FP32) + ", " + std::to_string(RT_DATA_TYPE_END) + ")");
 
     const rtError_t error = impl_->ReduceAsync(dst, src, cnt, kind, type, stm, cfgInfo);
@@ -2432,12 +2433,12 @@ rtError_t ApiErrorDecorator::ReduceAsyncV2(void * const dst, const void * const 
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(src, RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(overflowAddr, RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation");
     ZERO_RETURN_AND_MSG_OUTER(cnt);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((kind != RT_MEMCPY_SDMA_AUTOMATIC_ADD), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((kind != RT_MEMCPY_SDMA_AUTOMATIC_ADD), RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation", 
         kind, std::to_string(RT_MEMCPY_SDMA_AUTOMATIC_ADD));
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((cnt > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((cnt > MAX_MEMCPY_SIZE_OF_D2D), RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation", 
         cnt, "(0, " + std::to_string(MAX_MEMCPY_SIZE_OF_D2D) + "]");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((type >= RT_DATA_TYPE_END) || (type < RT_DATA_TYPE_FP32), 
-        RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((type >= RT_DATA_TYPE_END) || (type < RT_DATA_TYPE_FP32), 
+        RT_ERROR_INVALID_VALUE, "Asynchronously performing the Reduce operation",
         type, "[" + std::to_string(RT_DATA_TYPE_FP32) + ", " + std::to_string(RT_DATA_TYPE_END) + ")");
 
     const rtError_t error = impl_->ReduceAsyncV2(dst, src, cnt, kind, type, stm, overflowAddr);
@@ -2476,17 +2477,17 @@ rtError_t ApiErrorDecorator::MemCopy2DCheckParam(const void * const dst, const u
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dst, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(src, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(height == 0U, RT_ERROR_INVALID_VALUE, height, "greater than 0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(dstPitch == 0U, RT_ERROR_INVALID_VALUE, dstPitch, "greater than 0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(srcPitch == 0U, RT_ERROR_INVALID_VALUE, srcPitch, "greater than 0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(width == 0U, RT_ERROR_INVALID_VALUE, width, "greater than 0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((width > dstPitch), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(height == 0U, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", height, "greater than 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(dstPitch == 0U, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", dstPitch, "greater than 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(srcPitch == 0U, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", srcPitch, "greater than 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(width == 0U, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", width, "greater than 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((width > dstPitch), RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", 
         width, "less than or equal to dstPitch");  
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((width > srcPitch), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((width > srcPitch), RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", 
         width, "less than or equal to srcPitch");  
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(height > RT_MAX_MEMCPY2D_HEIGHT, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(height > RT_MAX_MEMCPY2D_HEIGHT, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", 
         height, "less than or equal to " + std::to_string(RT_MAX_MEMCPY2D_HEIGHT));  
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(width > RT_MAX_MEMCPY2D_WIDTH, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(width > RT_MAX_MEMCPY2D_WIDTH, RT_ERROR_INVALID_VALUE, "Checking the validity of 2D memory copy parameters", 
         width, "less than or equal to " + std::to_string(RT_MAX_MEMCPY2D_WIDTH)); 
     COND_RETURN_WARN(((kind != RT_MEMCPY_DEFAULT) && (kind != RT_MEMCPY_HOST_TO_DEVICE) &&
         (kind != RT_MEMCPY_DEVICE_TO_HOST) && (kind != RT_MEMCPY_DEVICE_TO_DEVICE)), RT_ERROR_FEATURE_NOT_SUPPORT,
@@ -2594,7 +2595,7 @@ rtError_t ApiErrorDecorator::MemsetAsync(void * const ptr, const uint64_t destMa
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(ptr, RT_ERROR_INVALID_VALUE, "Asynchronously setting the memory content to a specified value");
     ZERO_RETURN_AND_MSG_OUTER(cnt);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(cnt > destMax, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(cnt > destMax, RT_ERROR_INVALID_VALUE, "Asynchronously setting the memory content to a specified value", 
         cnt, "(0, " + std::to_string(destMax) + "]");    
     
     const rtError_t error = impl_->MemsetAsync(ptr, destMax, val, cnt, stm);
@@ -2615,8 +2616,8 @@ rtError_t ApiErrorDecorator::MemGetInfo(size_t * const freeSize, size_t * const 
 
 rtError_t ApiErrorDecorator::MemGetInfoByType(const int32_t devId, const rtMemType_t type, rtMemInfo_t * const info)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((devId < 0), RT_ERROR_DEVICE_ID, devId, "greater than or equal to 0");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((type >= RT_MEM_INFO_TYPE_MAX), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((devId < 0), RT_ERROR_DEVICE_ID, "Querying information about different types of memory", devId, "greater than or equal to 0");
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((type >= RT_MEM_INFO_TYPE_MAX), RT_ERROR_INVALID_VALUE, "Querying information about different types of memory", 
         type, "[" + std::to_string(RT_MEM_INFO_TYPE_DDR_SIZE) + ", " + std::to_string(RT_MEM_INFO_TYPE_MAX) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(info, RT_ERROR_INVALID_VALUE, "Querying information about different types of memory");
     rtError_t error;
@@ -2704,8 +2705,8 @@ rtError_t ApiErrorDecorator::OpenNetService(const rtNetServiceOpenArgs *args)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(args, RT_ERROR_INVALID_VALUE, "Starting the HCCP process");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(args->extParamList, RT_ERROR_INVALID_VALUE, "Starting the HCCP process");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((args->extParamCnt <= 0U) || (args->extParamCnt > RT_EXT_PARAM_CNT_MAX), 
-        RT_ERROR_INVALID_VALUE, args->extParamCnt, "(0, " + std::to_string(RT_EXT_PARAM_CNT_MAX) + "]");    
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((args->extParamCnt <= 0U) || (args->extParamCnt > RT_EXT_PARAM_CNT_MAX), 
+        RT_ERROR_INVALID_VALUE, "Starting the HCCP process", args->extParamCnt, "(0, " + std::to_string(RT_EXT_PARAM_CNT_MAX) + "]");    
 
     return impl_->OpenNetService(args);
 }
@@ -2828,10 +2829,10 @@ rtError_t ApiErrorDecorator::DeviceCanAccessPeer(int32_t * const canAccessPeer, 
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(devId, &realDeviceId);
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error,
         "Failed to convert the user device ID %u to driver device ID.", devId);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, "Checking whether data exchange is supported between devices",
         realDeviceId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(canAccessPeer, RT_ERROR_INVALID_VALUE, "Checking whether data exchange is supported between devices");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(peerDevice >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(peerDevice >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, "Checking whether data exchange is supported between devices", 
         peerDevice, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
     error = impl_->DeviceCanAccessPeer(canAccessPeer, realDeviceId, peerDevice);
     ERROR_RETURN(error, "Device can access peer failed, devId=%u, peerDevice=%u.", devId, peerDevice);
@@ -2844,9 +2845,9 @@ rtError_t ApiErrorDecorator::GetP2PStatus(const uint32_t devIdDes, const uint32_
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(devIdDes, &realDeviceId);
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error,
         "Failed to convert the user device ID %u to driver device ID.", devIdDes);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, "Obtaining the P2P status",
         realDeviceId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(phyIdSrc >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(phyIdSrc >= RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, "Obtaining the P2P status", 
         phyIdSrc, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(status, RT_ERROR_INVALID_VALUE, "Obtaining the P2P status");
 
@@ -2983,7 +2984,7 @@ rtError_t ApiErrorDecorator::DeviceGetStreamPriorityRange(int32_t * const leastP
 rtError_t ApiErrorDecorator::GetDeviceInfo(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
     int64_t * const val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(moduleType == MODULE_TYPE_HOST_AICPU, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(moduleType == MODULE_TYPE_HOST_AICPU, RT_ERROR_INVALID_VALUE, "Obtaining information about a specified device", 
         moduleType, "not equal to " + std::to_string(MODULE_TYPE_HOST_AICPU));
     uint32_t realDeviceId;
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(deviceId, &realDeviceId);
@@ -2996,8 +2997,8 @@ rtError_t ApiErrorDecorator::GetDeviceInfo(const uint32_t deviceId, const int32_
     error = npuDrv->GetDeviceCount(&cnt);
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, error != RT_ERROR_NONE, error,
         "Get device info failed, get device count failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= static_cast<uint32_t>(cnt),
-        RT_ERROR_INVALID_VALUE, realDeviceId, "[0, " + std::to_string(cnt) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= static_cast<uint32_t>(cnt),
+        RT_ERROR_INVALID_VALUE, "Obtaining information about a specified device", realDeviceId, "[0, " + std::to_string(cnt) + ")");
 
     error = impl_->GetDeviceInfo(realDeviceId, moduleType, infoType, val);
     ERROR_RETURN(error, "Get device info failed, deviceId=%u.", deviceId);
@@ -3160,7 +3161,7 @@ rtError_t ApiErrorDecorator::IpcSetMemoryName(const void * const ptr, const uint
     ZERO_RETURN_AND_MSG_OUTER(len);
 
     constexpr uint64_t maxFlag = RT_IPC_MEM_EXPORT_FLAG_DISABLE_PID_VALIDATION;
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags > maxFlag), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flags > maxFlag), RT_ERROR_INVALID_VALUE, "Setting the memory to be shared between processes", 
         flags, "[0, " + std::to_string(maxFlag) + "]");    
 
     const rtError_t error = impl_->IpcSetMemoryName(ptr, byteCount, name, len, flags);
@@ -3172,9 +3173,9 @@ rtError_t ApiErrorDecorator::IpcSetMemoryName(const void * const ptr, const uint
 rtError_t ApiErrorDecorator::IpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Setting the attribute for IPC-based memory sharing");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((type >= RT_ATTR_TYPE_MAX), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((type >= RT_ATTR_TYPE_MAX), RT_ERROR_INVALID_VALUE, "Setting the attribute for IPC-based memory sharing", 
         type, "[0, " + std::to_string(RT_ATTR_TYPE_MAX) + ")");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((attr >= RT_IPC_MEM_ATTR_MAX), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((attr >= RT_IPC_MEM_ATTR_MAX), RT_ERROR_INVALID_VALUE, "Setting the attribute for IPC-based memory sharing", 
         attr, "[0, " + std::to_string(RT_IPC_MEM_ATTR_MAX) + ")");
     return impl_->IpcSetMemoryAttr(name, type, attr);
 }
@@ -3199,7 +3200,7 @@ rtError_t ApiErrorDecorator::SetIpcNotifyPid(const char_t * const name, int32_t 
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share a Notify object");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(pid, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share a Notify object");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(num <= 0, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(num <= 0, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share a Notify object", 
         num, "(0, " + std::to_string(MAX_INT32_NUM) + "]");
     return impl_->SetIpcNotifyPid(name, pid, num);
 }
@@ -3208,7 +3209,7 @@ rtError_t ApiErrorDecorator::SetIpcMemPid(const char_t * const name, int32_t pid
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share memory through IPC");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(pid, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share memory through IPC");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(num <= 0, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(num <= 0, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share memory through IPC", 
         num, "(0, " + std::to_string(MAX_INT32_NUM) + "]");
     return impl_->SetIpcMemPid(name, pid, num);
 }
@@ -3219,7 +3220,7 @@ rtError_t ApiErrorDecorator::IpcOpenMemory(void ** const ptr, const char_t * con
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Opening the shared memory between processes");
 
     constexpr uint64_t maxFlag = RT_IPC_MEM_IMPORT_FLAG_ENABLE_PEER_ACCESS;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags > maxFlag), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flags > maxFlag), RT_ERROR_INVALID_VALUE, "Opening the shared memory between processes", 
         flags, "[0, " + std::to_string(maxFlag) + "]");
 
     const rtError_t error = impl_->IpcOpenMemory(ptr, name, flags);
@@ -3352,7 +3353,7 @@ rtError_t ApiErrorDecorator::ModelLoadComplete(Model * const mdl)
 rtError_t ApiErrorDecorator::ModelExecute(Model * const mdl, Stream * const stm, const uint32_t flag, int32_t timeout)
 {
     // timeout >=-1, -1:no limited
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE, "Executing the model running instance",
         timeout, "greater than or equal to -1 and not equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_INVALID_VALUE, "Executing the model running instance");
     COND_RETURN_AND_MSG_OUTER((stm != nullptr) && (stm->GetModelNum() != 0),
@@ -3387,7 +3388,7 @@ rtError_t ApiErrorDecorator::ModelExecute(Model * const mdl, Stream * const stm,
 rtError_t ApiErrorDecorator::ModelExecuteSync(Model * const mdl, int32_t timeout)
 {
     // timeout >=-1, -1:no limited
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((timeout < -1) || (timeout == 0), RT_ERROR_INVALID_VALUE, "Synchronously executing the model running instance",
         timeout, "greater than or equal to -1 and not equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_INVALID_VALUE, "Synchronously executing the model running instance");
 
@@ -3499,7 +3500,8 @@ rtError_t ApiErrorDecorator::ModelSetSchGroupId(Model * const mdl, const int16_t
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_INVALID_VALUE, "Setting the scheduling group ID of a model");
     if ((schGrpId < MODEL_SCH_GROUP_ID_MIN) || (schGrpId > MODEL_SCH_GROUP_ID_MAX)) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(schGrpId,
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Setting the scheduling group ID of a model",
+            schGrpId,
             "[" + std::to_string(MODEL_SCH_GROUP_ID_MIN) + ", " + std::to_string(MODEL_SCH_GROUP_ID_MAX) + "]");
         return RT_ERROR_INVALID_VALUE;
     }
@@ -3564,7 +3566,7 @@ rtError_t ApiErrorDecorator::ModelExecutorSet(Model * const mdl, const uint8_t f
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_INVALID_VALUE, "Setting the executor type of a model");
     COND_RETURN_AND_MSG_OUTER(mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL, RT_ERROR_INVALID_VALUE, 
         ErrorCode::EE1016, "Setting the executor type of a model", "ACL Graph mode is not supported");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(!((flags == EXECUTOR_TS) || (flags == EXECUTOR_AICPU)), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(!((flags == EXECUTOR_TS) || (flags == EXECUTOR_AICPU)), RT_ERROR_INVALID_VALUE, "Setting the executor type of a model", 
         flags, std::to_string(EXECUTOR_TS) + " or " + std::to_string(EXECUTOR_AICPU));
     const rtError_t error = impl_->ModelExecutorSet(mdl, flags);
     ERROR_RETURN(error, "Set model executor failed flags=%hhu.", flags);
@@ -3647,8 +3649,8 @@ rtError_t ApiErrorDecorator::ModelBindQueue(Model * const mdl, const uint32_t qu
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_INVALID_VALUE, "Binding a queue to a model");
     COND_RETURN_AND_MSG_OUTER(mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL, RT_ERROR_INVALID_VALUE, 
         ErrorCode::EE1016, "Binding a queue to a model", "ACL Graph mode is not supported");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag != RT_MODEL_INPUT_QUEUE) && (flag != RT_MODEL_OUTPUT_QUEUE), 
-        RT_ERROR_INVALID_VALUE, flag, std::to_string(RT_MODEL_INPUT_QUEUE) + " or " + std::to_string(RT_MODEL_OUTPUT_QUEUE));    
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag != RT_MODEL_INPUT_QUEUE) && (flag != RT_MODEL_OUTPUT_QUEUE), 
+        RT_ERROR_INVALID_VALUE, "Binding a queue to a model", flag, std::to_string(RT_MODEL_INPUT_QUEUE) + " or " + std::to_string(RT_MODEL_OUTPUT_QUEUE));    
     const rtError_t error = impl_->ModelBindQueue(mdl, queueId, flag);
     ERROR_RETURN(error, "Model bind queue failed, queueId=%u, flag=%d.", queueId, static_cast<int32_t>(flag));
     return error;
@@ -3664,8 +3666,8 @@ rtError_t ApiErrorDecorator::NotifyCreate(const int32_t deviceId, Notify ** cons
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error,
         "Failed to convert the user device ID %d to driver device ID.", deviceId);
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag & static_cast<uint32_t>(~static_cast<uint32_t>(RT_NOTIFY_FLAG_MAX))) != 0U, 
-        RT_ERROR_INVALID_VALUE, flag, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag & static_cast<uint32_t>(~static_cast<uint32_t>(RT_NOTIFY_FLAG_MAX))) != 0U, 
+        RT_ERROR_INVALID_VALUE, "Notify creation", flag, 
         std::to_string(RT_NOTIFY_FLAG_DEFAULT) + " , " 
         + std::to_string(RT_NOTIFY_FLAG_DOWNLOAD_TO_DEV) + " , "
         + std::to_string(RT_NOTIFY_FLAG_SHR_ID_SHADOW) + " or "
@@ -3771,8 +3773,8 @@ rtError_t ApiErrorDecorator::IpcSetNotifyName(Notify * const inNotify, char_t * 
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
-        ((flag != RT_NOTIFY_EXPORT_FLAG_DISABLE_PID_VALIDATION) && (flag != RT_NOTIFY_FLAG_DEFAULT)), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        ((flag != RT_NOTIFY_EXPORT_FLAG_DISABLE_PID_VALIDATION) && (flag != RT_NOTIFY_FLAG_DEFAULT)), RT_ERROR_INVALID_VALUE, "Setting a Notify as an IPC Notify", 
         flag, std::to_string(RT_NOTIFY_FLAG_DEFAULT) + " or " + std::to_string(RT_NOTIFY_EXPORT_FLAG_DISABLE_PID_VALIDATION));
 
     const rtError_t error = impl_->IpcSetNotifyName(inNotify, name, len, flag);
@@ -3786,7 +3788,7 @@ rtError_t ApiErrorDecorator::IpcOpenNotify(Notify ** const retNotify, const char
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Enabling IPC Notify");
 
     constexpr uint32_t maxFlag = (RT_NOTIFY_FLAG_DOWNLOAD_TO_DEV | RT_NOTIFY_IMPORT_FLAG_ENABLE_PEER_ACCESS);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag > maxFlag), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag > maxFlag), RT_ERROR_INVALID_VALUE, "Enabling IPC Notify", 
         flag, "[0, " + std::to_string(maxFlag) + "]");
     const rtError_t error = impl_->IpcOpenNotify(retNotify, name, flag);
     ERROR_RETURN(error, "Ipc open notify failed, name=%s.", name);
@@ -3811,7 +3813,7 @@ rtError_t ApiErrorDecorator::StreamSwitchEx(void * const ptr, const rtCondition_
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(valuePtr, RT_ERROR_INVALID_VALUE, "Switching between streams based on conditions");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(trueStream, RT_ERROR_INVALID_VALUE, "Switching between streams based on conditions");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(curStm, RT_ERROR_INVALID_VALUE, "Switching between streams based on conditions");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((condition > RT_LESS_OR_EQUAL) || (condition < 0), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((condition > RT_LESS_OR_EQUAL) || (condition < 0), RT_ERROR_INVALID_VALUE, "Switching between streams based on conditions", 
         condition, "[0, " + std::to_string(RT_LESS_OR_EQUAL) + "]");
 	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((dataType > RT_SWITCH_INT64) || (dataType < 0), RT_ERROR_INVALID_VALUE, 
         SwitchDataTypeToString(dataType), "dataType", "[0, " + std::to_string(RT_SWITCH_INT64) + "]");
@@ -3830,8 +3832,8 @@ rtError_t ApiErrorDecorator::StreamSwitchN(void * const ptr, const uint32_t size
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(trueStreamPtr, RT_ERROR_INVALID_VALUE, "Switching between multi-dimensional streams based on conditional operators");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(curStm, RT_ERROR_INVALID_VALUE, "Switching between multi-dimensional streams based on conditional operators");
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((size == 0U), RT_ERROR_INVALID_VALUE, size, "not equal to 0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((elementSize == 0U), RT_ERROR_INVALID_VALUE, elementSize, "not equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((size == 0U), RT_ERROR_INVALID_VALUE, "Switching between multi-dimensional streams based on conditional operators", size, "not equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((elementSize == 0U), RT_ERROR_INVALID_VALUE, "Switching between multi-dimensional streams based on conditional operators", elementSize, "not equal to 0");
     COND_RETURN_AND_MSG_OUTER(((UINT32_MAX / size) <= elementSize), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
         "Switching between multi-dimensional streams based on conditional operators", elementSize, "elementSize",
         RtFmtMsg("Parameter elementSize should be less than the quotient of %u and parameter size %u", UINT32_MAX, size));
@@ -4095,7 +4097,7 @@ rtError_t ApiErrorDecorator::GetPairPhyDevicesInfo(const uint32_t devId, const u
 rtError_t ApiErrorDecorator::GetRtCapability(const rtFeatureType_t featureType, const int32_t featureInfo,
     int64_t * const val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(featureInfo < 0, RT_ERROR_INVALID_VALUE, featureInfo, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(featureInfo < 0, RT_ERROR_INVALID_VALUE, "Querying device features and capabilities", featureInfo, "greater than or equal to 0");
 
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(val, RT_ERROR_INVALID_VALUE, "Querying device features and capabilities");
 
@@ -4342,7 +4344,7 @@ rtError_t ApiErrorDecorator::NpuGetFloatStatus(void * const outputAddrPtr, const
     const uint32_t checkMode, Stream * const stm)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(outputAddrPtr, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception status of the NPU");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(outputSize != OVERFLOW_OUTPUT_SIZE, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(outputSize != OVERFLOW_OUTPUT_SIZE, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception status of the NPU", 
         outputSize, std::to_string(OVERFLOW_OUTPUT_SIZE));
     COND_RETURN_AND_MSG_OUTER((stm != nullptr) && (stm->IsCapturing()), RT_ERROR_STREAM_CAPTURED, 
         ErrorCode::EE1016, "Obtaining the Float exception status of the NPU", RtFmtMsg("Stream (stream_id=%d) during the capture stage is not supported", stm->Id_()));
@@ -4366,7 +4368,7 @@ rtError_t ApiErrorDecorator::NpuGetFloatDebugStatus(void * const outputAddrPtr, 
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(outputAddrPtr, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception debugging status of the NPU");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(curStm, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception debugging status of the NPU");
 
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(outputSize != OVERFLOW_OUTPUT_SIZE, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(outputSize != OVERFLOW_OUTPUT_SIZE, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception debugging status of the NPU", 
         outputSize, std::to_string(OVERFLOW_OUTPUT_SIZE));
     COND_RETURN_AND_MSG_OUTER(curStm->IsCapturing(), RT_ERROR_STREAM_CAPTURED, 
         ErrorCode::EE1016, "Obtaining the Float exception debugging status of the NPU", RtFmtMsg("Stream (stream_id=%d) during the capture stage is not supported", curStm->Id_()));
@@ -4444,11 +4446,11 @@ rtError_t ApiErrorDecorator::MemQueueExport(const int32_t devId, const uint32_t 
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareName, RT_ERROR_INVALID_VALUE, "Memory queue export");
     const auto len = strnlen(shareName, SHARE_QUEUE_NAME_LEN);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, "Memory queue export", 
         len, "less than " + std::to_string(SHARE_QUEUE_NAME_LEN));
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, "Memory queue export", 
         devId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, "Memory queue export", 
         peerDevId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));
     COND_RETURN_AND_MSG_OUTER(devId == peerDevId, RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1017, "Memory queue export", "devId or peerDevId",
@@ -4471,11 +4473,11 @@ rtError_t ApiErrorDecorator::MemQueueUnExport(const int32_t devId, const uint32_
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareName, RT_ERROR_INVALID_VALUE, "Canceling the export of a specified memory queue");
     const auto len = strnlen(shareName, SHARE_QUEUE_NAME_LEN);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, "Canceling the export of a specified memory queue", 
         len, "less than " + std::to_string(SHARE_QUEUE_NAME_LEN));
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, "Canceling the export of a specified memory queue", 
         devId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, "Canceling the export of a specified memory queue", 
         peerDevId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));
     COND_RETURN_AND_MSG_OUTER(devId == peerDevId, RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1017, "Canceling the export of a specified memory queue", "devId or peerDevId",
@@ -4498,12 +4500,12 @@ rtError_t ApiErrorDecorator::MemQueueImport(const int32_t devId, const int32_t p
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareName, RT_ERROR_INVALID_VALUE, "Importing a memory queue");
     const auto len = strnlen(shareName, SHARE_QUEUE_NAME_LEN);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, "Importing a memory queue", 
         len, "less than " + std::to_string(SHARE_QUEUE_NAME_LEN));   
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(qid, RT_ERROR_INVALID_VALUE, "Importing a memory queue");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, "Importing a memory queue", 
         devId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, "Importing a memory queue", 
         peerDevId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));  
     COND_RETURN_AND_MSG_OUTER(devId == peerDevId, RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1017, "Importing a memory queue", "devId or peerDevId",
@@ -4526,11 +4528,11 @@ rtError_t ApiErrorDecorator::MemQueueUnImport(const int32_t devId, const uint32_
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareName, RT_ERROR_INVALID_VALUE, "Canceling the import of a specified memory queue");
     const auto len = strnlen(shareName, SHARE_QUEUE_NAME_LEN);
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(len >= SHARE_QUEUE_NAME_LEN, RT_ERROR_INVALID_VALUE, "Canceling the import of a specified memory queue", 
         len, "less than " + std::to_string(SHARE_QUEUE_NAME_LEN));
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(devId), RT_ERROR_INVALID_VALUE, "Canceling the import of a specified memory queue", 
         devId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(IsHostCpuDevId(peerDevId), RT_ERROR_INVALID_VALUE, "Canceling the import of a specified memory queue", 
         peerDevId, "not equal to " + std::to_string(DEFAULT_HOSTCPU_USER_DEVICE_ID));    
     COND_RETURN_AND_MSG_OUTER(devId == peerDevId, RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1017, "Canceling the import of a specified memory queue", "devId or peerDevId",
@@ -4721,9 +4723,9 @@ rtError_t ApiErrorDecorator::EschedSubmitEventSync(const int32_t devId, rtEsched
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(evt, RT_ERROR_INVALID_VALUE, "Synchronous event submission");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(ack, RT_ERROR_INVALID_VALUE, "Synchronous event submission");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
         ((evt->eventId != RT_MQ_SCHED_EVENT_QS_MSG) && (evt->eventId != RT_MQ_SCHED_EVENT_DRV_CUSTOM_MSG)),
-        RT_ERROR_FEATURE_NOT_SUPPORT, evt->eventId, std::to_string(RT_MQ_SCHED_EVENT_QS_MSG) 
+        RT_ERROR_FEATURE_NOT_SUPPORT, "Synchronous event submission", evt->eventId, std::to_string(RT_MQ_SCHED_EVENT_QS_MSG) 
         + " or " + std::to_string(RT_MQ_SCHED_EVENT_DRV_CUSTOM_MSG));    
     int32_t realDeviceId = 0;
     if (IsHostCpuDevId(devId)) {
@@ -4900,8 +4902,8 @@ rtError_t ApiErrorDecorator::MemGrpQuery(rtMemGrpQueryInput_t * const input, rtM
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(input, RT_ERROR_INVALID_VALUE, "Memory group information query");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(output, RT_ERROR_INVALID_VALUE, "Memory group information query");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
-        ((input->cmd <= RT_MEM_GRP_QUERY_GROUP) || (input->cmd >= RT_MEM_GRP_QUERY_CMD_MAX)), RT_ERROR_FEATURE_NOT_SUPPORT, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        ((input->cmd <= RT_MEM_GRP_QUERY_GROUP) || (input->cmd >= RT_MEM_GRP_QUERY_CMD_MAX)), RT_ERROR_FEATURE_NOT_SUPPORT, "Memory group information query", 
         input->cmd, "(" + std::to_string(RT_MEM_GRP_QUERY_GROUP) + ", " + std::to_string(RT_MEM_GRP_QUERY_CMD_MAX) + ")");
     if (input->cmd == GRP_QUERY_GROUP_ADDR_INFO) {
         uint32_t realDeviceId = 0U;
@@ -5065,8 +5067,8 @@ rtError_t ApiErrorDecorator::CmoTaskLaunch(const rtCmoTaskInfo_t * const taskInf
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     const rtCmoOpCode_t opCode = static_cast<rtCmoOpCode_t>(taskInfo->opCode);
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_CMO)) {
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM((opCode < RT_CMO_PREFETCH) || (opCode >= RT_CMO_RESERVED), 
-            RT_ERROR_INVALID_VALUE, taskInfo->opCode, "[" + std::to_string(RT_CMO_PREFETCH) + ", " + std::to_string(RT_CMO_RESERVED) + ")");
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((opCode < RT_CMO_PREFETCH) || (opCode >= RT_CMO_RESERVED), 
+            RT_ERROR_INVALID_VALUE, "Operating the cache memory on the device", taskInfo->opCode, "[" + std::to_string(RT_CMO_PREFETCH) + ", " + std::to_string(RT_CMO_RESERVED) + ")");
     }
     const rtError_t error = impl_->CmoTaskLaunch(taskInfo, stm, flag);
     COND_RETURN_ERROR(((error != RT_ERROR_NONE) && (error != RT_ERROR_FEATURE_NOT_SUPPORT)),
@@ -5078,8 +5080,8 @@ rtError_t ApiErrorDecorator::CmoAddrTaskLaunch(void *cmoAddrInfo, const uint64_t
     const rtCmoOpCode_t cmoOpCode, Stream * const stm, const uint32_t flag)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(cmoAddrInfo, RT_ERROR_INVALID_VALUE, "Using the memory descriptor to operate the cache memory on the device");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((cmoOpCode < RT_CMO_PREFETCH) || (cmoOpCode >= RT_CMO_RESERVED)), 
-        RT_ERROR_INVALID_VALUE, cmoOpCode, "[" + std::to_string(RT_CMO_PREFETCH) + ", " + std::to_string(RT_CMO_RESERVED) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((cmoOpCode < RT_CMO_PREFETCH) || (cmoOpCode >= RT_CMO_RESERVED)), 
+        RT_ERROR_INVALID_VALUE, "Using the memory descriptor to operate the cache memory on the device", cmoOpCode, "[" + std::to_string(RT_CMO_PREFETCH) + ", " + std::to_string(RT_CMO_RESERVED) + ")");
     rtChipType_t chipType = Runtime::Instance()->GetChipType();
     DevProperties devProperty {};
     rtError_t error = GET_DEV_PROPERTIES(chipType, devProperty);
@@ -5087,8 +5089,8 @@ rtError_t ApiErrorDecorator::CmoAddrTaskLaunch(void *cmoAddrInfo, const uint64_t
         "Failed to get dev properties, chipType = %u", chipType);
     const uint64_t sizeMax = (devProperty.cmoAddrInfoType == CmoAddrInfoType::CMO_ADDR_INFO_TYPE_DAVID) ?
         sizeof(rtDavidCmoAddrInfo) : sizeof(rtCmoAddrInfo);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((destMax == 0) || (destMax > sizeMax)), 
-        RT_ERROR_INVALID_VALUE, destMax, "(0, " + std::to_string(sizeMax) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((destMax == 0) || (destMax > sizeMax)), 
+        RT_ERROR_INVALID_VALUE, "Using the memory descriptor to operate the cache memory on the device", destMax, "(0, " + std::to_string(sizeMax) + "]");
 
     error = impl_->CmoAddrTaskLaunch(cmoAddrInfo, destMax, cmoOpCode, stm, flag);
     ERROR_RETURN(error, "CmoAddr Task launch failed.");
@@ -5100,8 +5102,8 @@ rtError_t ApiErrorDecorator::BarrierTaskLaunch(const rtBarrierTaskInfo_t * const
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo, RT_ERROR_INVALID_VALUE, "Barrier task delivery");
     ZERO_RETURN_AND_MSG_OUTER(taskInfo->logicIdNum);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(taskInfo->logicIdNum > RT_CMO_MAX_BARRIER_NUM, 
-        RT_ERROR_INVALID_VALUE, taskInfo->logicIdNum, "[1, " + std::to_string(RT_CMO_MAX_BARRIER_NUM) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(taskInfo->logicIdNum > RT_CMO_MAX_BARRIER_NUM, 
+        RT_ERROR_INVALID_VALUE, "Barrier task delivery", taskInfo->logicIdNum, "[1, " + std::to_string(RT_CMO_MAX_BARRIER_NUM) + "]");
 
     const rtError_t error = impl_->BarrierTaskLaunch(taskInfo, stm, flag);
     ERROR_RETURN(error, "Barrier Task failed.");
@@ -5153,8 +5155,8 @@ rtError_t ApiErrorDecorator::GetDeviceSatModeForStream(Stream * const stm,
 
 rtError_t ApiErrorDecorator::SetStreamOverflowSwitch(Stream * const stm, const uint32_t flags)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(flags >= static_cast<uint32_t>(RT_OVERFLOW_MODE_UNDEF), 
-        RT_ERROR_INVALID_VALUE, flags, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(flags >= static_cast<uint32_t>(RT_OVERFLOW_MODE_UNDEF), 
+        RT_ERROR_INVALID_VALUE, "Setting the stream overflow/underflow detection switch", flags, 
         "[" + std::to_string(RT_OVERFLOW_MODE_SATURATION) + ", " + std::to_string(RT_OVERFLOW_MODE_UNDEF) + ")");
     COND_RETURN_AND_MSG_OUTER((stm != nullptr) && (stm->IsCapturing()), RT_ERROR_STREAM_CAPTURED, 
         ErrorCode::EE1016, "Setting the stream overflow/underflow detection switch", RtFmtMsg("Stream (stream_id=%d) during the capture stage is not supported", stm->Id_()));
@@ -5231,7 +5233,7 @@ rtError_t ApiErrorDecorator::DvppWaitGroupReport(DvppGrp * const grp, const  rtD
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(grp, RT_ERROR_INVALID_VALUE, "Waiting for reporting of the DVPP group task");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(callBackFunc, RT_ERROR_INVALID_VALUE, "Waiting for reporting of the DVPP group task");
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(timeout < -1, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(timeout < -1, RT_ERROR_INVALID_VALUE, "Waiting for reporting of the DVPP group task", 
         timeout, "[0, " + std::to_string(MAX_INT32_NUM) + "] or -1");
     const rtError_t err = impl_->DvppWaitGroupReport(grp, callBackFunc, timeout);
     if (err != RT_ERROR_NONE) {
@@ -5269,7 +5271,8 @@ rtError_t ApiErrorDecorator::GetVisibleDeviceIdByLogicDeviceId(const int32_t log
     const rtError_t error = npuDrv->GetDeviceCount(&deviceCnt);
     ERROR_RETURN_MSG_CALL(ERR_MODULE_DRV, error, "Get device cnt failed, retCode=%#x", static_cast<uint32_t>(error));
     if ((logicDeviceId >= deviceCnt) || (logicDeviceId < 0)) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(logicDeviceId, "[0, " + std::to_string(deviceCnt) + ')');
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining the visible device ID based on the user device ID",
+            logicDeviceId, "[0, " + std::to_string(deviceCnt) + ')');
         return RT_ERROR_DEVICE_ID;
     }
 
@@ -5288,7 +5291,7 @@ rtError_t ApiErrorDecorator::CtxSetSysParamOpt(const rtSysParamOpt configOpt, co
 
 rtError_t ApiErrorDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((configOpt >= SYS_OPT_RESERVED) || (configOpt < 0), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((configOpt >= SYS_OPT_RESERVED) || (configOpt < 0), RT_ERROR_INVALID_VALUE, "Obtaining the default stream of the current context", 
         configOpt, "[0, " + std::to_string(SYS_OPT_RESERVED) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(configVal, RT_ERROR_INVALID_VALUE, "Obtaining the default stream of the current context");
     return impl_->CtxGetSysParamOpt(configOpt, configVal);
@@ -5323,7 +5326,7 @@ rtError_t ApiErrorDecorator::CleanDeviceSatStatus(Stream * const stm)
 
 rtError_t ApiErrorDecorator::GetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t * const util)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((kind >= RT_UTIL_TYPE_MAX) || (kind < 0), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((kind >= RT_UTIL_TYPE_MAX) || (kind < 0), RT_ERROR_INVALID_VALUE, "Querying the usage of Cube, Vector, and AI CPU on the device", 
         kind, "[0, " + std::to_string(RT_UTIL_TYPE_MAX) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(util, RT_ERROR_INVALID_VALUE, "Querying the usage of Cube, Vector, and AI CPU on the device");
     int32_t realDeviceId;
@@ -5509,12 +5512,12 @@ rtError_t ApiErrorDecorator::ExportToShareableHandleV2(
     rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void *shareableHandle)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareableHandle, RT_ERROR_INVALID_VALUE, "Exporting the shared handle of the AI server");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
         (handleType != RT_MEM_SHARE_HANDLE_TYPE_DEFAULT && handleType != RT_MEM_SHARE_HANDLE_TYPE_FABRIC), 
-        RT_ERROR_INVALID_VALUE, handleType, std::to_string(RT_MEM_SHARE_HANDLE_TYPE_DEFAULT) 
+        RT_ERROR_INVALID_VALUE, "Exporting the shared handle of the AI server", handleType, std::to_string(RT_MEM_SHARE_HANDLE_TYPE_DEFAULT) 
         + " or " + std::to_string(RT_MEM_SHARE_HANDLE_TYPE_FABRIC));
     constexpr uint64_t maxFlag = RT_VMM_EXPORT_FLAG_DISABLE_PID_VALIDATION;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags > maxFlag), RT_ERROR_INVALID_VALUE, flags, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flags > maxFlag), RT_ERROR_INVALID_VALUE, "Exporting the shared handle of the AI server", flags, 
         "[0, " + std::to_string(maxFlag) + "]");
     /* handle在上下文中作为一个整体使用, 内部的devid不用进行转换 */
     return impl_->ExportToShareableHandleV2(handle, handleType, flags, shareableHandle);
@@ -5540,11 +5543,11 @@ rtError_t ApiErrorDecorator::ImportFromShareableHandleV2(const void *shareableHa
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareableHandle, RT_ERROR_INVALID_VALUE, "Obtaining shareableHandle information and returning the handle in the current process");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(handle, RT_ERROR_INVALID_VALUE, "Obtaining shareableHandle information and returning the handle in the current process");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
         (handleType != RT_MEM_SHARE_HANDLE_TYPE_DEFAULT && handleType != RT_MEM_SHARE_HANDLE_TYPE_FABRIC), 
-        RT_ERROR_INVALID_VALUE, handleType, std::to_string(RT_MEM_SHARE_HANDLE_TYPE_DEFAULT) 
+        RT_ERROR_INVALID_VALUE, "Obtaining shareableHandle information and returning the handle in the current process", handleType, std::to_string(RT_MEM_SHARE_HANDLE_TYPE_DEFAULT) 
         + " or " + std::to_string(RT_MEM_SHARE_HANDLE_TYPE_FABRIC));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags != 0U), RT_ERROR_INVALID_VALUE, flags, "0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flags != 0U), RT_ERROR_INVALID_VALUE, "Obtaining shareableHandle information and returning the handle in the current process", flags, "0");
     int32_t realDeviceId = 0;
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(
         static_cast<uint32_t>(devId), RtPtrToPtr<uint32_t *>(&realDeviceId));
@@ -5567,9 +5570,9 @@ rtError_t ApiErrorDecorator::SetPidToShareableHandleV2(
     const void *shareableHandle, rtMemSharedHandleType handleType, int32_t pid[], uint32_t pidNum)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(shareableHandle, RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share memory");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
         (handleType != RT_MEM_SHARE_HANDLE_TYPE_DEFAULT && handleType != RT_MEM_SHARE_HANDLE_TYPE_FABRIC), 
-        RT_ERROR_INVALID_VALUE, handleType, std::to_string(RT_MEM_SHARE_HANDLE_TYPE_DEFAULT) 
+        RT_ERROR_INVALID_VALUE, "Setting the trustlist of processes that can share memory", handleType, std::to_string(RT_MEM_SHARE_HANDLE_TYPE_DEFAULT) 
         + " or " + std::to_string(RT_MEM_SHARE_HANDLE_TYPE_FABRIC));    
     return impl_->SetPidToShareableHandleV2(shareableHandle, handleType, pid, pidNum);
 }
@@ -5767,8 +5770,8 @@ rtError_t ApiErrorDecorator::GetPrimaryCtxState(const int32_t devId, uint32_t *f
     error = rtInstance->ChgUserDevIdToDeviceId(static_cast<uint32_t>(devId),
         RtPtrToPtr<uint32_t *>(&realDeviceId), true);
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "input error deviceId:%d is err:%#x", devId, error);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((realDeviceId < 0) || (realDeviceId >= deviceCnt)),
-        RT_ERROR_DEVICE_ID, realDeviceId, "[0, " + std::to_string(deviceCnt) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((realDeviceId < 0) || (realDeviceId >= deviceCnt)),
+        RT_ERROR_DEVICE_ID, "Obtaining the status of the default context", realDeviceId, "[0, " + std::to_string(deviceCnt) + ")");
 
     return impl_->GetPrimaryCtxState(realDeviceId, flags, active);
 }
@@ -5795,7 +5798,7 @@ rtError_t ApiErrorDecorator::DeviceResetForce(const int32_t devId)
 
 rtError_t ApiErrorDecorator::GetDeviceStatus(const int32_t devId, rtDevStatus_t * const status)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((devId < 0), RT_ERROR_DEVICE_ID, devId, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((devId < 0), RT_ERROR_DEVICE_ID, "Obtaining device status", devId, "greater than or equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(status, RT_ERROR_INVALID_VALUE, "Obtaining device status");
     rtError_t error;
     int32_t realDeviceId;
@@ -5810,7 +5813,7 @@ rtError_t ApiErrorDecorator::GetDeviceStatus(const int32_t devId, rtDevStatus_t 
 
 rtError_t ApiErrorDecorator::SetDeviceResLimit(const uint32_t devId, const rtDevResLimitType_t type, uint32_t value)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, "Setting the device resource limit", 
         type, "[0, " + std::to_string(RT_DEV_RES_TYPE_MAX) + ")");
     uint32_t drvDevId = 0;
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(devId, &drvDevId);
@@ -5842,7 +5845,7 @@ rtError_t ApiErrorDecorator::ResetDeviceResLimit(const uint32_t devId)
 
 rtError_t ApiErrorDecorator::GetDeviceResLimit(const uint32_t devId, const rtDevResLimitType_t type, uint32_t *value)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, "Obtaining the device resource limits of the current process", 
         type, "[0, " + std::to_string(RT_DEV_RES_TYPE_MAX) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(value, RT_ERROR_INVALID_VALUE, "Obtaining the device resource limits of the current process");
     uint32_t drvDevId = 0;
@@ -5872,7 +5875,7 @@ rtError_t ApiErrorDecorator::ResetStreamResLimit(Stream *const stm)
 
 rtError_t ApiErrorDecorator::GetStreamResLimit(const Stream *const stm, const rtDevResLimitType_t type, uint32_t *const value)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, "Obtaining the device resource limits of a specified stream", 
         type, "[0, " + std::to_string(RT_DEV_RES_TYPE_MAX) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(value, RT_ERROR_INVALID_VALUE, "Obtaining the device resource limits of a specified stream");
     return impl_->GetStreamResLimit(stm, type, value);
@@ -5890,7 +5893,7 @@ rtError_t ApiErrorDecorator::NotUseStreamResInCurrentThread(const Stream *const 
 
 rtError_t ApiErrorDecorator::GetResInCurrentThread(const rtDevResLimitType_t type, uint32_t *const value)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(static_cast<uint32_t>(type) >= RT_DEV_RES_TYPE_MAX, RT_ERROR_INVALID_VALUE, "Obtaining the device resources that can be used by the current thread", 
         type, "[0, " + std::to_string(RT_DEV_RES_TYPE_MAX) + ")");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(value, RT_ERROR_INVALID_VALUE, "Obtaining the device resources that can be used by the current thread");
     return impl_->GetResInCurrentThread(type, value);
@@ -5898,7 +5901,7 @@ rtError_t ApiErrorDecorator::GetResInCurrentThread(const rtDevResLimitType_t typ
 
 rtError_t ApiErrorDecorator::HdcServerCreate(const int32_t devId, const rtHdcServiceType_t type, rtHdcServer_t * const server)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((devId < 0), RT_ERROR_DEVICE_ID, devId, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((devId < 0), RT_ERROR_DEVICE_ID, "HDC server creation", devId, "greater than or equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(server, RT_ERROR_INVALID_VALUE, "HDC server creation");
     rtError_t error;
     int32_t realDeviceId;
@@ -5921,7 +5924,7 @@ rtError_t ApiErrorDecorator::HdcServerDestroy(rtHdcServer_t const server)
 rtError_t ApiErrorDecorator::HdcSessionConnect(const int32_t peerNode, const int32_t peerDevId, rtHdcClient_t const client,
     rtHdcSession_t * const session)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((peerDevId < 0), RT_ERROR_DEVICE_ID, peerDevId, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((peerDevId < 0), RT_ERROR_DEVICE_ID, "HDC session connection", peerDevId, "greater than or equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(client, RT_ERROR_INVALID_VALUE, "HDC session connection");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(session, RT_ERROR_INVALID_VALUE, "HDC session connection");
     rtError_t error;
@@ -5950,7 +5953,7 @@ rtError_t ApiErrorDecorator::GetHostCpuDevId(int32_t * const devId)
 
 rtError_t ApiErrorDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t * const logicDevId)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((userDevId < 0), RT_ERROR_DEVICE_ID, userDevId, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((userDevId < 0), RT_ERROR_DEVICE_ID, "Obtaining the logical device ID based on the user device ID", userDevId, "greater than or equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(logicDevId, RT_ERROR_INVALID_VALUE, "Obtaining the logical device ID based on the user device ID");
     int32_t realDeviceId = 0;
     rtError_t error = impl_->GetLogicDevIdByUserDevId(userDevId, &realDeviceId);
@@ -5964,7 +5967,7 @@ rtError_t ApiErrorDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId, i
 
 rtError_t ApiErrorDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t * const userDevId)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((logicDevId < 0), RT_ERROR_DEVICE_ID, logicDevId, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((logicDevId < 0), RT_ERROR_DEVICE_ID, "Obtaining the user device ID based on the logical device ID", logicDevId, "greater than or equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(userDevId, RT_ERROR_INVALID_VALUE, "Obtaining the user device ID based on the logical device ID");
     const rtError_t error = CheckDeviceIdIsValid(logicDevId);
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "logicDevId is invalid, devId=%d, retCode=%#x",
@@ -5974,7 +5977,7 @@ rtError_t ApiErrorDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId, 
 
 rtError_t ApiErrorDecorator::GetDeviceUuid(const int32_t devId, rtUuid_t *uuid)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((devId < 0), RT_ERROR_DEVICE_ID, devId, "greater than or equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((devId < 0), RT_ERROR_DEVICE_ID, "Obtaining the device UUID", devId, "greater than or equal to 0");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(uuid, RT_ERROR_INVALID_VALUE, "Obtaining the device UUID");
 
     int32_t drvDeviceId;
@@ -6124,7 +6127,7 @@ rtError_t ApiErrorDecorator::LaunchDvppTask(const void * const sqe, const uint32
 rtError_t ApiErrorDecorator::LaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, Stream * const stm, void *reserve)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(taskInfo, RT_ERROR_INVALID_VALUE, "Starting the random number generation task");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(reserve != nullptr, RT_ERROR_INVALID_VALUE, reserve, "nullptr");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(reserve != nullptr, RT_ERROR_INVALID_VALUE, "Starting the random number generation task", reserve, "nullptr");
 
     const rtError_t error = impl_->LaunchRandomNumTask(taskInfo, stm, reserve);
     ERROR_RETURN(error, "Stars launch dsa task failed.");
@@ -6231,7 +6234,7 @@ rtError_t ApiErrorDecorator::KernelArgsAppend(RtArgsHandle *argsHandle, void *pa
 rtError_t ApiErrorDecorator::MemWriteValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(devAddr, RT_ERROR_INVALID_VALUE, "Writing data to the specified memory");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag != 0U), RT_ERROR_INVALID_VALUE, flag, "0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag != 0U), RT_ERROR_INVALID_VALUE, "Writing data to the specified memory", flag, "0");
 
     rtError_t error = RT_ERROR_NONE;
     rtPtrAttributes_t attributes;
@@ -6239,7 +6242,7 @@ rtError_t ApiErrorDecorator::MemWriteValue(const void * const devAddr, const uin
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, error != RT_ERROR_NONE, error,
         "mem write value failed, get devAddr attributes failed, retCode=%#x", static_cast<uint32_t>(error));
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((attributes.location.type != RT_MEMORY_LOC_DEVICE), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((attributes.location.type != RT_MEMORY_LOC_DEVICE), RT_ERROR_INVALID_VALUE, "Writing data to the specified memory", 
         attributes.location.type, std::to_string(RT_MEMORY_LOC_DEVICE));
 
     return impl_->MemWriteValue(devAddr, value, flag, stm);
@@ -6248,7 +6251,7 @@ rtError_t ApiErrorDecorator::MemWriteValue(const void * const devAddr, const uin
 rtError_t ApiErrorDecorator::MemWaitValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(devAddr, RT_ERROR_INVALID_VALUE, "Unblocking the data in the specified memory when the data meets certain conditions");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag >= static_cast<uint32_t>(MEM_WAIT_VALUE_TYPE_MAX)), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flag >= static_cast<uint32_t>(MEM_WAIT_VALUE_TYPE_MAX)), RT_ERROR_INVALID_VALUE, "Unblocking the data in the specified memory when the data meets certain conditions", 
         flag, "[0, " + std::to_string(static_cast<uint32_t>(MEM_WAIT_VALUE_TYPE_MAX)) + ")");    
 
     rtError_t error = RT_ERROR_NONE;
@@ -6257,7 +6260,7 @@ rtError_t ApiErrorDecorator::MemWaitValue(const void * const devAddr, const uint
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, error != RT_ERROR_NONE, error,
         "mem wait value failed, get devAddr attributes failed, retCode=%#x", static_cast<uint32_t>(error));
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((attributes.location.type != RT_MEMORY_LOC_DEVICE), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((attributes.location.type != RT_MEMORY_LOC_DEVICE), RT_ERROR_INVALID_VALUE, "Unblocking the data in the specified memory when the data meets certain conditions", 
         attributes.location.type, std::to_string(RT_MEMORY_LOC_DEVICE));
 
     return impl_->MemWaitValue(devAddr, value, flag, stm);
@@ -6276,9 +6279,9 @@ rtError_t ApiErrorDecorator::MemcpyBatch(void **dsts, void **srcs, size_t *sizes
     ZERO_RETURN_AND_MSG_OUTER(numAttrs);
     COND_RETURN_AND_MSG_OUTER((numAttrs > count), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Batch synchronous memory copy", "numAttrs or count",
         RtFmtMsg("Parameter numAttrs %zu should be less than or equal to parameter count %zu", numAttrs, count));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((count > static_cast<size_t>(DEVMM_MEMCPY_BATCH_MAX_COUNT)), 
-        RT_ERROR_INVALID_VALUE, count, "less than or equal to " + std::to_string(static_cast<size_t>(DEVMM_MEMCPY_BATCH_MAX_COUNT)));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((attrsIdxs[0] != 0U), RT_ERROR_INVALID_VALUE, attrsIdxs[0], "0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((count > static_cast<size_t>(DEVMM_MEMCPY_BATCH_MAX_COUNT)), 
+        RT_ERROR_INVALID_VALUE, "Batch synchronous memory copy", count, "less than or equal to " + std::to_string(static_cast<size_t>(DEVMM_MEMCPY_BATCH_MAX_COUNT)));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((attrsIdxs[0] != 0U), RT_ERROR_INVALID_VALUE, "Batch synchronous memory copy", attrsIdxs[0], "0");
     for (size_t i = 1U; i < numAttrs; i++) {
         COND_RETURN_AND_MSG_OUTER((attrsIdxs[i] <= attrsIdxs[i - 1U]), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Batch synchronous memory copy",
             RtFmtMsg("attrsIdxs[%zu] or attrsIdxs[%zu]", i, i - 1U),
@@ -6313,7 +6316,7 @@ rtError_t ApiErrorDecorator::MemcpyBatchAsync(void** const dsts, const size_t* c
     COND_RETURN_AND_MSG_OUTER((numAttrs > count), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Batch asynchronous memory copy", "numAttrs or count",
         RtFmtMsg("Parameter numAttrs %zu should be less than or equal to parameter count %zu", numAttrs, count));
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((attrsIdxs[0] != 0U), RT_ERROR_INVALID_VALUE, attrsIdxs[0], "0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((attrsIdxs[0] != 0U), RT_ERROR_INVALID_VALUE, "Batch asynchronous memory copy", attrsIdxs[0], "0");
     for (size_t i = 1U; i < numAttrs; i++) {
         COND_RETURN_AND_MSG_OUTER((attrsIdxs[i] <= attrsIdxs[i - 1U]), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Batch asynchronous memory copy",
             RtFmtMsg("attrsIdxs[%zu] or attrsIdxs[%zu]", i, i - 1U),
@@ -6359,8 +6362,8 @@ rtError_t ApiErrorDecorator::FuncGetName(const Kernel * const kernel, const uint
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(kernel, RT_ERROR_INVALID_VALUE, "Obtaining the kernel function name");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Obtaining the kernel function name");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(maxLen < (kernel->Name_().length() + 1U), 
-        RT_ERROR_INVALID_VALUE, maxLen, "greater than or equal to " + std::to_string(kernel->Name_().length() + 1U));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(maxLen < (kernel->Name_().length() + 1U), 
+        RT_ERROR_INVALID_VALUE, "Obtaining the kernel function name", maxLen, "greater than or equal to " + std::to_string(kernel->Name_().length() + 1U));
     const rtError_t error = impl_->FuncGetName(kernel, maxLen, name);
     ERROR_RETURN(error, "get func name failed");
     return error;
@@ -6380,7 +6383,7 @@ rtError_t ApiErrorDecorator::GetErrorVerbose(const uint32_t deviceId, rtErrorInf
     Driver * const rawDrv = Runtime::Instance()->driverFactory_.GetDriver(rawDrvType);
     error = rawDrv->GetDeviceCount(&deviceCnt);
     ERROR_RETURN_MSG_CALL(ERR_MODULE_DRV, error, "Get device cnt failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= static_cast<uint32_t>(deviceCnt), RT_ERROR_DEVICE_ID,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= static_cast<uint32_t>(deviceCnt), RT_ERROR_DEVICE_ID, "Obtaining detailed error information",
         realDeviceId, "[0," + std::to_string(deviceCnt) + ")");
 
     return impl_->GetErrorVerbose(realDeviceId, errorInfo);
@@ -6404,7 +6407,7 @@ rtError_t ApiErrorDecorator::RepairError(const uint32_t deviceId, const rtErrorI
     Driver * const rawDrv = Runtime::Instance()->driverFactory_.GetDriver(rawDrvType);
     error = rawDrv->GetDeviceCount(&deviceCnt);
     ERROR_RETURN_MSG_CALL(ERR_MODULE_DRV, error, "Get device cnt failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= static_cast<uint32_t>(deviceCnt), RT_ERROR_DEVICE_ID,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= static_cast<uint32_t>(deviceCnt), RT_ERROR_DEVICE_ID, "Rectifying the device faults",
         realDeviceId, "[0," + std::to_string(deviceCnt) + ")");
 
     return impl_->RepairError(realDeviceId, errorInfo);
@@ -6415,8 +6418,8 @@ rtError_t ApiErrorDecorator::CheckMemType(void **addrs, uint32_t size, uint32_t 
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(checkResult, RT_ERROR_INVALID_VALUE, "Device memory type check");
     *checkResult = 0U;
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(addrs, RT_ERROR_INVALID_VALUE, "Device memory type check");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(reserve != 0U, RT_ERROR_INVALID_VALUE, reserve, "0");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(size <= 0U, RT_ERROR_INVALID_VALUE, size, "greater than 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(reserve != 0U, RT_ERROR_INVALID_VALUE, "Device memory type check", reserve, "0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(size <= 0U, RT_ERROR_INVALID_VALUE, "Device memory type check", size, "greater than 0");
     constexpr  uint32_t tmpMemType = RT_MEM_MASK_DEV_TYPE | RT_MEM_MASK_RSVD_TYPE | RT_MEM_MASK_DVPP_TYPE;
     COND_RETURN_AND_MSG_OUTER((memType & ~tmpMemType) != 0U, RT_ERROR_INVALID_VALUE, ErrorCode::EE1006,
         "Device memory type check", RtFmtMsg("Parameter memType value %u", memType),
@@ -6455,7 +6458,7 @@ rtError_t ApiErrorDecorator::LaunchHostFunc(Stream * const stm, const rtCallback
 rtError_t ApiErrorDecorator::CacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(infoPtr, RT_ERROR_INVALID_VALUE, "Caching the operator information of the latest task");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM((infoSize == 0U || infoSize > MAX_SHAPE_INFO_SIZE), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((infoSize == 0U || infoSize > MAX_SHAPE_INFO_SIZE), RT_ERROR_INVALID_VALUE, "Caching the operator information of the latest task", 
         infoSize, "(0, " + std::to_string(MAX_SHAPE_INFO_SIZE) + "]");
     return impl_->CacheLastTaskOpInfo(infoPtr, infoSize);
 }
@@ -6463,7 +6466,7 @@ rtError_t ApiErrorDecorator::CacheLastTaskOpInfo(const void * const infoPtr, con
 rtError_t ApiErrorDecorator::CacheLastTaskExtendInfo(const char* const extendInfoPtr, const size_t infoSize)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(extendInfoPtr, RT_ERROR_INVALID_VALUE, "Caching the extended information of the latest task");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((infoSize == 0U), RT_ERROR_INVALID_VALUE, infoSize, "not equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((infoSize == 0U), RT_ERROR_INVALID_VALUE, "Caching the extended information of the latest task", infoSize, "not equal to 0");
     constexpr size_t maxExtendInfoSize = 4096U;
     if (infoSize > maxExtendInfoSize) {
         RT_LOG(
@@ -6478,8 +6481,8 @@ rtError_t ApiErrorDecorator::FunctionGetAttribute(rtFuncHandle funcHandle, rtFun
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(funcHandle, RT_ERROR_INVALID_VALUE, "Obtaining kernel function attributes");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(attrValue, RT_ERROR_INVALID_VALUE, "Obtaining kernel function attributes");
-	COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((static_cast<uint32_t>(attrType) < RT_FUNCTION_ATTR_KERNEL_TYPE) ||
-        (static_cast<uint32_t>(attrType) >= RT_FUNCTION_ATTR_MAX)), RT_ERROR_INVALID_VALUE, 
+	COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((static_cast<uint32_t>(attrType) < RT_FUNCTION_ATTR_KERNEL_TYPE) ||
+        (static_cast<uint32_t>(attrType) >= RT_FUNCTION_ATTR_MAX)), RT_ERROR_INVALID_VALUE, "Obtaining kernel function attributes", 
         attrType, "[" + std::to_string(RT_FUNCTION_ATTR_KERNEL_TYPE) + ", " + std::to_string(RT_FUNCTION_ATTR_MAX) + ")");
 
     if (attrType == RT_FUNCTION_ATTR_KERNEL_RATIO) {
@@ -6535,7 +6538,7 @@ rtError_t ApiErrorDecorator::FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle,
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(funcHandle, RT_ERROR_INVALID_VALUE, "Querying the maximum size of the dynamic UB buffer that can be set for a kernel function");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dynamicUbufSize, RT_ERROR_INVALID_VALUE, "Querying the maximum size of the dynamic UB buffer that can be set for a kernel function");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags != 0U), RT_ERROR_INVALID_VALUE, flags, "0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((flags != 0U), RT_ERROR_INVALID_VALUE, "Querying the maximum size of the dynamic UB buffer that can be set for a kernel function", flags, "0");
 
     Program * const prog = funcHandle->Program_();
     NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
@@ -6569,7 +6572,7 @@ rtError_t ApiErrorDecorator::MemMapSelectedLink(void *virPtrDst, size_t size, vo
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(virPtrDst, RT_ERROR_INVALID_VALUE, "Mapping the target virtual address to the physical address corresponding to the source virtual address");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(virPtrSrc, RT_ERROR_INVALID_VALUE, "Mapping the target virtual address to the physical address corresponding to the source virtual address");
     ZERO_RETURN_AND_MSG_OUTER(size);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(linkIdx > RT_MEM_LINK_IDX_1, RT_ERROR_INVALID_VALUE, linkIdx,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(linkIdx > RT_MEM_LINK_IDX_1, RT_ERROR_INVALID_VALUE, "Mapping the target virtual address to the physical address corresponding to the source virtual address", linkIdx,
         "[" + std::to_string(RT_MEM_LINK_IDX_0) + ", " + std::to_string(RT_MEM_LINK_IDX_1) + "]");
     return impl_->MemMapSelectedLink(virPtrDst, size, virPtrSrc, linkIdx);
 }
@@ -6611,8 +6614,8 @@ rtError_t ApiErrorDecorator::KernelTaskGetAttribute(rtTask_t task, rtLaunchKerne
 
 rtError_t ApiErrorDecorator::SetKernelDfxInfoCallback(rtKernelDfxInfoType type, rtKernelDfxInfoProFunc func)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((type < RT_KERNEL_DFX_INFO_DEFAULT || type > RT_KERNEL_DFX_INFO_BLOCK_INFO),
-        RT_ERROR_INVALID_VALUE, type, "[" + std::to_string(RT_KERNEL_DFX_INFO_DEFAULT) + ", " + std::to_string(RT_KERNEL_DFX_INFO_BLOCK_INFO) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((type < RT_KERNEL_DFX_INFO_DEFAULT || type > RT_KERNEL_DFX_INFO_BLOCK_INFO),
+        RT_ERROR_INVALID_VALUE, "Registering the dump callback function", type, "[" + std::to_string(RT_KERNEL_DFX_INFO_DEFAULT) + ", " + std::to_string(RT_KERNEL_DFX_INFO_BLOCK_INFO) + "]");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(func, RT_ERROR_INVALID_VALUE, "Registering the dump callback function");
     return impl_->SetKernelDfxInfoCallback(type, func);
 }
@@ -6704,8 +6707,8 @@ rtError_t ApiErrorDecorator::GetP2PAtomicCapabilities(
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(capabilities, RT_ERROR_INVALID_VALUE, "Querying details about the atomic operations supported between devices");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(operations, RT_ERROR_INVALID_VALUE, "Querying details about the atomic operations supported between devices");
     ZERO_RETURN_AND_MSG_OUTER(count);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
-        (srcDeviceId == dstDeviceId), RT_ERROR_DEVICE_ID, srcDeviceId, "srcDeviceId must be different from dstDeviceId");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        (srcDeviceId == dstDeviceId), RT_ERROR_DEVICE_ID, "Querying details about the atomic operations supported between devices", srcDeviceId, "srcDeviceId must be different from dstDeviceId");
 
     int32_t realSrcDeviceId;
     rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(
@@ -6745,8 +6748,8 @@ rtError_t ApiErrorDecorator::GetDeviceInfoByAttr(uint32_t deviceId, rtDevAttr at
     error = npuDrv->GetDeviceCount(&cnt);
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, error != RT_ERROR_NONE, error,
         "Get device info failed, get device count failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(realDeviceId >= static_cast<uint32_t>(cnt),
-        RT_ERROR_INVALID_VALUE, realDeviceId, "[0, " + std::to_string(cnt) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(realDeviceId >= static_cast<uint32_t>(cnt),
+        RT_ERROR_INVALID_VALUE, "Querying device information based on the specified attribute", realDeviceId, "[0, " + std::to_string(cnt) + ")");
 
     return impl_->GetDeviceInfoByAttr(realDeviceId, attr, val);
 }

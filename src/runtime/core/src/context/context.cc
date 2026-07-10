@@ -2326,8 +2326,8 @@ rtError_t Context::StartOnlineProf(Stream * const stm, const uint32_t sampleNum)
     rtError_t freeErr;
     const void *deviceMem = nullptr;
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
-        (sampleNum == 0U) || (sampleNum > MAX_ONLINEPROF_NUM), RT_ERROR_INVALID_VALUE, sampleNum,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        (sampleNum == 0U) || (sampleNum > MAX_ONLINEPROF_NUM), RT_ERROR_INVALID_VALUE, "Delivering a profiling request", sampleNum,
         "(0, " + std::to_string(MAX_ONLINEPROF_NUM) + "]");
     if ((stm->Device_())->DevGetOnlineProfStart()) {
         RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
@@ -2407,8 +2407,8 @@ FREE_MEM:
 rtError_t Context::GetOnlineProfData(const Stream * const stm, rtProfDataInfo_t * const pProfData,
                                      const uint32_t profDataNum) const
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((profDataNum == 0U) || (profDataNum > MAX_ONLINEPROF_NUM), 
-        RT_ERROR_INVALID_VALUE, profDataNum, "(0, " + std::to_string(MAX_ONLINEPROF_NUM) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((profDataNum == 0U) || (profDataNum > MAX_ONLINEPROF_NUM), 
+        RT_ERROR_INVALID_VALUE, "Obtaining online profile data from a specified stream", profDataNum, "(0, " + std::to_string(MAX_ONLINEPROF_NUM) + "]");
     const rtError_t error = OnlineProf::GetOnlineProfilingData(stm, pProfData, profDataNum);
     ERROR_RETURN_MSG_INNER(error, "Failed to get online profiling data, retCode=%#x.", error);
 

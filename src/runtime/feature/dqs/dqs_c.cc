@@ -360,15 +360,15 @@ static rtError_t DqsSchedConfigCheck(const rtDqsSchedCfg_t *const cfg)
 static rtError_t DqsZeroCopyTaskCfgCheck(const rtDqsZeroCopyCfg_t *const cfg)
 {
     const rtDqsZeroCopyType copyType = cfg->copyType;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
         (copyType != RT_DQS_ZERO_COPY_INPUT) && (copyType != RT_DQS_ZERO_COPY_OUTPUT),
-        RT_ERROR_INVALID_VALUE, copyType, "[0, 1]");
+        RT_ERROR_INVALID_VALUE, "Checking the configuration validity of the DQS zero-copy task", copyType, "[0, 1]");
 
     const rtDqsZeroCopyAddrOrderType copyOrderType = cfg->cpyAddrOrder;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
         (copyOrderType != RT_DQS_ZERO_COPY_ADDR_ORDER_LOW32_FIRST) &&
         (copyOrderType != RT_DQS_ZERO_COPY_ADDR_ORDER_HIGH32_FIRST),
-        RT_ERROR_INVALID_VALUE, copyOrderType, "[0, 1]");
+        RT_ERROR_INVALID_VALUE, "Checking the configuration validity of the DQS zero-copy task", copyOrderType, "[0, 1]");
     
     ZERO_RETURN_AND_MSG_OUTER(cfg->count)
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(cfg->dest, RT_ERROR_INVALID_VALUE, "Checking the configuration validity of the DQS zero-copy task");
@@ -380,11 +380,11 @@ static rtError_t DqsZeroCopyTaskCfgCheck(const rtDqsZeroCopyCfg_t *const cfg)
 static rtError_t DqsAdspcTaskCfgCheck(const rtDqsAdspcTaskCfg_t *const cfg)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(cfg, RT_ERROR_INVALID_VALUE, "Checking the configuration validity of the DQS cross-chip solver (ADSPC) task.");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(cfg->cqeSize != ADSPC_CQE_SIZE, RT_ERROR_INVALID_VALUE, 
-        cfg->cqeSize, std::to_string(ADSPC_CQE_SIZE));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(cfg->cqeSize != ADSPC_CQE_SIZE, RT_ERROR_INVALID_VALUE, 
+        "Checking the configuration validity of the DQS cross-chip solver (ADSPC) task.", cfg->cqeSize, std::to_string(ADSPC_CQE_SIZE));
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(cfg->cqDepth != ADSPC_CQ_DEPTH, RT_ERROR_INVALID_VALUE, 
-        cfg->cqDepth, std::to_string(ADSPC_CQ_DEPTH));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(cfg->cqDepth != ADSPC_CQ_DEPTH, RT_ERROR_INVALID_VALUE, 
+        "Checking the configuration validity of the DQS cross-chip solver (ADSPC) task.", cfg->cqDepth, std::to_string(ADSPC_CQ_DEPTH));
 
     ZERO_RETURN_AND_MSG_OUTER(cfg->cqeBaseAddr);
     ZERO_RETURN_AND_MSG_OUTER(cfg->cqeCopyAddr);

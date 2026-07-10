@@ -111,6 +111,7 @@ namespace runtime {
 #define RT_LOG_OUTER_MSG_WITH_FUNC(error_code, ...)
 #define RT_LOG_OUTER_MSG_WITH_FUNC_DESC(error_code, funcDesc, ...)
 #define RT_LOG_OUTER_MSG_INVALID_PARAM(parm, ...)
+#define RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(funcDesc, parm, ...)
 #define RT_LOG_FLUSH()
 #define REPORT_INPUT_ERROR(error_code, key, value)
 
@@ -125,6 +126,7 @@ namespace runtime {
 #define RT_LOG_OUTER_MSG_WITH_FUNC(error_code, ...)
 #define RT_LOG_OUTER_MSG_WITH_FUNC_DESC(error_code, funcDesc, ...)
 #define RT_LOG_OUTER_MSG_INVALID_PARAM(parm, ...)
+#define RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(funcDesc, parm, ...)
 #define RT_LOG_FLUSH()
 #else
 #define RT_LOG(level, format, ...) RT_LOG_##level(format, ##__VA_ARGS__)
@@ -281,6 +283,10 @@ inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
 // EE1003错误码上报
 #define RT_LOG_OUTER_MSG_INVALID_PARAM(parm, ...) \
     RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, (parm), #parm, ##__VA_ARGS__)
+
+// EE1003错误码上报，带语义化函数描述
+#define RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(funcDesc, parm, ...) \
+    RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, funcDesc, (parm), #parm, ##__VA_ARGS__)
  
 #define RT_LOG_OUTER_MSG_WITH_FUNC(error_code, ...) \
     RT_LOG_OUTER_MSG_IMPL((error_code), __func__, ##__VA_ARGS__)

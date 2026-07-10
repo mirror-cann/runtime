@@ -189,7 +189,7 @@ rtError_t ApiErrorDecorator::StreamAddCondTask(rtCondTaskParams params, Stream *
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM_NAME((static_cast<uint32_t>(params.type) > RT_COND_TASK_TYPE_SWITCH),
         RT_ERROR_INVALID_VALUE, CondTaskTypeToString(params.type), "params.type",
         "[0, " + std::to_string(RT_COND_TASK_TYPE_SWITCH) + "]");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((params.size == 0), RT_ERROR_INVALID_VALUE, params.size, "(0, UINT32_MAX]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((params.size == 0), RT_ERROR_INVALID_VALUE, "Adding a conditional task to a stream", params.size, "(0, UINT32_MAX]");
     COND_RETURN_AND_MSG_RESERVED_PARAM((flags != 0), RT_ERROR_INVALID_VALUE, "flags",
         "flags is reserved parameter and must be 0");
 

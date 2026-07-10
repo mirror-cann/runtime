@@ -41,8 +41,9 @@ const char_t* SnapshotCallbackManager::GetStageString(rtSnapShotStage stage)
 
 rtError_t SnapshotCallbackManager::RegisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((stage < RT_SNAPSHOT_LOCK_PRE || stage > RT_SNAPSHOT_UNLOCK_POST),
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((stage < RT_SNAPSHOT_LOCK_PRE || stage > RT_SNAPSHOT_UNLOCK_POST),
         RT_ERROR_INVALID_VALUE,
+        "Registering the callback function related to snapshot operations",
         stage,
         "[0, " + std::to_string(RT_SNAPSHOT_UNLOCK_POST) + "]");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(callback, RT_ERROR_INVALID_VALUE, "Registering the callback function related to snapshot operations");
@@ -62,8 +63,9 @@ rtError_t SnapshotCallbackManager::RegisterCallback(rtSnapShotStage stage, rtSna
 
 rtError_t SnapshotCallbackManager::UnregisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((stage < RT_SNAPSHOT_LOCK_PRE || stage > RT_SNAPSHOT_UNLOCK_POST),
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((stage < RT_SNAPSHOT_LOCK_PRE || stage > RT_SNAPSHOT_UNLOCK_POST),
         RT_ERROR_INVALID_VALUE,
+        "Deregistering the callback function related to snapshot operations",
         stage,
         "[0, " + std::to_string(RT_SNAPSHOT_UNLOCK_POST) + "]");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(callback, RT_ERROR_INVALID_VALUE, "Deregistering the callback function related to snapshot operations");

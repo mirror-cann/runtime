@@ -457,7 +457,8 @@ rtError_t CheckRandomNumTaskInfo(const rtRandomNumTaskInfo_t *taskInfo)
             error = CheckNorDisTaskInfo(taskInfo, dataSize);
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(taskInfo->randomNumFuncParaInfo.funcType,
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Checking the validity of random number generation task parameters",
+                taskInfo->randomNumFuncParaInfo.funcType,
                 "[" + std::to_string(RT_RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK) + ", " + std::to_string(RT_RANDOM_NUM_FUNC_TYPE_MAX) +")");
             error = RT_ERROR_INVALID_VALUE;
             break;
