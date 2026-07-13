@@ -19,7 +19,7 @@
 #include "aicpusd_status.h"
 #include "common/aicpusd_util.h"
 #include "securec.h"
-#include "external/graph/types.h"
+#include "metadef_types.h"
 
 namespace AicpuSchedule {
 // slice size for dump file, 128MByes

@@ -81,7 +81,6 @@ set(LOCAL_C_INCLUDES
     ${RUNTIME_DIR}/pkg_inc
     ${RUNTIME_DIR}/src/dfx/msprof/inc/toolchain
     ${RUNTIME_DIR}/src/dfx/adump/inc
-    ${RUNTIME_DIR}/src/dfx/adump/inc/metadef
     ${RUNTIME_DIR}/src/inc
     ${RUNTIME_DIR}/include
     ${RUNTIME_DIR}/include/driver

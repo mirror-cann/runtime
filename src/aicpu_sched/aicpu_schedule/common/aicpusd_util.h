@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include "external/graph/types.h"
+#include "metadef_types.h"
 #include "aicpu_context.h"
 #include "aicpusd_feature_ctrl.h"
 #include "aicpusd_status.h"

@@ -72,7 +72,6 @@ set(AICPU_TS_C_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${RUNTIME_DIR}/src/dfx/msprof/inc/toolchain
     ${RUNTIME_DIR}/src/dfx/adump/inc
-    ${RUNTIME_DIR}/src/dfx/adump/inc/metadef
     ${RUNTIME_DIR}/include
     ${RUNTIME_DIR}/include/driver
     ${CMAKE_CURRENT_SOURCE_DIR}/stub/proc_mgr
