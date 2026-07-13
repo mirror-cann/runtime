@@ -12,6 +12,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include "runtime/rt_external_mem.h"
 #include "base.hpp"
 #include "stars.hpp"
 #include "hwts.hpp"
