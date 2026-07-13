@@ -795,15 +795,9 @@ bool IsSmmuFault(const uint32_t deviceId)
 
 bool IsHitBlacklist(const uint32_t deviceId, const std::map<uint32_t, std::string>& eventIdBlkList)
 {
-    constexpr uint32_t maxFaultNum = 128U;
-    std::vector<rtDmsFaultEvent> faultEventInfo(maxFaultNum);
-
-    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    const auto eRet = memset_s(&faultEventInfo[0U], totalSize, 0, totalSize);
-    COND_RETURN_WARN(eRet != EOK, false, "Mem set error, ret=%d", eRet);
-
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
-    rtError_t error = GetDeviceFaultEvents(deviceId, &faultEventInfo[0U], eventCount, maxFaultNum);
+    const rtError_t error = GetDeviceFaultEvents(deviceId, &faultEventInfo[0U], eventCount);
     COND_PROC((error != RT_ERROR_NONE), return false);
     for (uint32_t faultIndex = 0U; faultIndex < eventCount; faultIndex++) {
         if (eventIdBlkList.find(faultEventInfo[faultIndex].eventId) != eventIdBlkList.end()) {
@@ -820,21 +814,13 @@ bool IsHitBlacklist(const uint32_t deviceId, const std::map<uint32_t, std::strin
 
 bool HasBlacklistEventOnDevice(const uint32_t deviceId, const std::map<uint32_t, std::string>& eventIdBlkList)
 {
-    constexpr uint32_t maxFaultNum = 128U;
-    rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
-    COND_RETURN_AND_MSG_OUTER(faultEventInfo == nullptr, false, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
-    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
-
-    const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
-    ScopeGuard faultEventInfoRelease(releaseFunc);
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
-    rtError_t error = GetDeviceFaultEvents(deviceId, faultEventInfo, eventCount, maxFaultNum);
+    const rtError_t error = GetDeviceFaultEvents(deviceId, &faultEventInfo[0U], eventCount);
     if (error != RT_ERROR_NONE) {
         return false;
     }
-    return IsHitBlacklist(faultEventInfo, eventCount, eventIdBlkList);
+    return IsHitBlacklist(&faultEventInfo[0U], eventCount, eventIdBlkList);
 }
 
 /* 检查是否存在黑名单中的UCE错误 */
@@ -860,7 +846,7 @@ bool IsHitBlacklist(const rtDmsFaultEvent *faultEventInfo, const uint32_t eventC
             std::ostringstream oss;
             oss << std::hex << faultEventInfo[faultIndex].eventId;
             faultInfo = faultInfo + "[0x" + oss.str() + "]" + faultEventInfo[faultIndex].eventName;
-            RT_LOG(RT_LOG_INFO, "Fault message is: [%s].", faultInfo.c_str());
+            RT_LOG(RT_LOG_ERROR, "Fault message is: [%s].", faultInfo.c_str());
             return true;
         }
     }
@@ -881,16 +867,16 @@ bool IsFaultEventOccur(const uint32_t faultEventId, const rtDmsFaultEvent * cons
     return false;
 }
 
-rtError_t GetDeviceFaultEvents(const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo,
-    uint32_t &eventCount, const uint32_t maxFaultNum)
+rtError_t GetDeviceFaultEvents(const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t &eventCount,
+                               bool needLog)
 {
     rtError_t error = RT_ERROR_NONE;
-    error = NpuDriver::GetAllFaultEvent(deviceId, faultEventInfo, maxFaultNum, &eventCount);
+    error = NpuDriver::GetAllFaultEvent(deviceId, faultEventInfo, &eventCount, needLog);
     COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "Getting fault events is not supported.");
-    COND_RETURN_ERROR((error != RT_ERROR_NONE) || (eventCount > maxFaultNum), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
+    COND_RETURN_ERROR((error != RT_ERROR_NONE) || (eventCount > RAS_GET_MAX_NUM), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
         "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.", deviceId,
-            eventCount, maxFaultNum, static_cast<uint32_t>(error));
+            eventCount, RAS_GET_MAX_NUM, static_cast<uint32_t>(error));
     return error;
 }
 
@@ -990,17 +976,9 @@ bool IsEventRasMatch(const rtDmsFaultEvent &event, const EventRasFilter &filter)
 
 bool IsEventIdAndRasCodeMatch( const uint32_t deviceId, const std::vector<EventRasFilter>& ubNonMemPoisonRasList)
 {
-    constexpr uint32_t maxFaultNum = 128U;
-    rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
-    COND_RETURN_AND_MSG_OUTER(faultEventInfo == nullptr, false, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
-    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
-
-    const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
-    ScopeGuard faultEventInfoRelease(releaseFunc);
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
-    rtError_t error = GetDeviceFaultEvents(deviceId, faultEventInfo, eventCount, maxFaultNum);
+    const rtError_t error = GetDeviceFaultEvents(deviceId, &faultEventInfo[0U], eventCount);
     if (error != RT_ERROR_NONE) {
         return false;
     }

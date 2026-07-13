@@ -380,20 +380,13 @@ void CheckAndPrintRasInfo(const Device * const dev)
     if (dev == nullptr) {
         return;
     }
-    
-    constexpr uint32_t maxFaultNum = 128U;
-    rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
-    COND_RETURN_VOID_AND_MSG_OUTER(faultEventInfo == nullptr, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
-    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
-    ScopeGuard faultEventInfoRelease(releaseFunc);
-
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
+    constexpr size_t totalSize = RAS_GET_MAX_NUM * sizeof(rtDmsFaultEvent);
     for (uint32_t queryCount = 0U; queryCount < RAS_QUERY_MAX_COUNT; ++queryCount) {
-        (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
+        (void)memset_s(&faultEventInfo[0U], totalSize, 0, totalSize);
         uint32_t eventCount = 0U;
-        rtError_t error = GetDeviceFaultEvents(dev->Id_(), faultEventInfo, eventCount, maxFaultNum);
-        if ((error == RT_ERROR_NONE) && PrintRasEvents(dev, faultEventInfo, eventCount)) {
+        const rtError_t error = GetDeviceFaultEvents(dev->Id_(), &faultEventInfo[0U], eventCount);
+        if ((error == RT_ERROR_NONE) && PrintRasEvents(dev, &faultEventInfo[0U], eventCount)) {
             return;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(RAS_QUERY_INTERVAL));
@@ -470,21 +463,15 @@ static void AiCoreUnknownErrProc(const Device * const dev, const StarsDeviceErro
 
 static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo * const info, TaskInfo *errTaskPtr)
 {
-    constexpr uint32_t maxFaultNum = 128U;
-    rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
-    COND_RETURN_VOID_AND_MSG_OUTER(faultEventInfo == nullptr, ErrorCode::EE1013,
-        maxFaultNum * sizeof(rtDmsFaultEvent), "new");
-
-    const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
-    ScopeGuard faultEventInfoRelease(releaseFunc);
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
-    rtError_t error = GetDeviceFaultEvents(dev->Id_(), faultEventInfo, eventCount, maxFaultNum);
+    const rtError_t error = GetDeviceFaultEvents(dev->Id_(), &faultEventInfo[0U], eventCount);
     if (error != RT_ERROR_NONE) {
         AiCoreUnknownErrProc(dev, info);
         return;
     }
 
-    if (!IsHitBlacklist(faultEventInfo, eventCount, g_ccuTimeoutEventIdBlkList)) {
+    if (!IsHitBlacklist(&faultEventInfo[0U], eventCount, g_ccuTimeoutEventIdBlkList)) {
         for (uint32_t faultIndex = 0; faultIndex < eventCount; faultIndex++) {
             if (faultEventInfo[faultIndex].eventId == UB_REMOTE_MEM_TIMEOUT_EVENT_ID) {
                 errTaskPtr->mte_error = TS_ERROR_LINK_ERROR;
@@ -503,36 +490,27 @@ static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo 
     AiCoreUnknownErrProc(dev, info);
 }
 
-static void GetMteDeviceFaultEvent(
-    const Device* const dev, uint32_t& faultEventId, bool& isHitBlklist, bool& isHitRemoteBlklist, bool& isHitWhitelist)
+static void GetMteDeviceFaultEvent(const Device* const dev, uint32_t& faultEventId)
 {
-    constexpr uint32_t maxFaultNum = 128U;
-    rtDmsFaultEvent *faultEventInfo = new (std::nothrow)rtDmsFaultEvent[maxFaultNum];
-    COND_RETURN_VOID((faultEventInfo == nullptr), "new rtDmsFaultEvent failed.");
-    constexpr size_t totalSize = maxFaultNum * sizeof(rtDmsFaultEvent);
-    (void)memset_s(faultEventInfo, totalSize, 0, totalSize);
-
-    const std::function<void()> releaseFunc = [&faultEventInfo]() { DELETE_A(faultEventInfo); };
-    ScopeGuard faultEventInfoRelease(releaseFunc);
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
-    const rtError_t error = GetDeviceFaultEvents(dev->Id_(), faultEventInfo, eventCount, maxFaultNum);
+    const rtError_t error = GetDeviceFaultEvents(dev->Id_(), &faultEventInfo[0U], eventCount);
     if (error != RT_ERROR_NONE) {
         return;
     }
 
-    if (IsFaultEventOccur(L2_BUFFER_ECC_EVENT_ID, faultEventInfo, eventCount)) {
-        isHitBlklist = IsHitBlacklist(faultEventInfo, eventCount, g_l2MulBitEccEventIdBlkList);
-        if (!isHitBlklist) {
-            faultEventId = L2_BUFFER_ECC_EVENT_ID;
+    static const EventBlkEntry eventId2BlkList[] = {
+        {L2_BUFFER_ECC_EVENT_ID, g_l2MulBitEccEventIdBlkList},
+        {HBM_ECC_NOTIFY_EVENT_ID, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList},
+        {HBM_ECC_EVENT_ID, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList},
+        {UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID, g_hcclRemoteMulBitEccEventIdBlkList}
+    };
+    for (const auto &entry : eventId2BlkList) {
+        if (IsFaultEventOccur(entry.eventId, &faultEventInfo[0U], eventCount) &&
+            !IsHitBlacklist(&faultEventInfo[0U], eventCount, entry.blkList)) {
+            faultEventId = entry.eventId;
             return;
         }
-    }
-
-    isHitBlklist = IsHitBlacklist(faultEventInfo, eventCount, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList);
-    isHitRemoteBlklist = IsHitBlacklist(faultEventInfo, eventCount, g_hcclRemoteMulBitEccEventIdBlkList);
-    isHitWhitelist = IsFaultEventOccur(UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID, faultEventInfo, eventCount);
-    if (IsFaultEventOccur(HBM_ECC_EVENT_ID, faultEventInfo, eventCount) && !isHitBlklist) {
-        faultEventId = HBM_ECC_EVENT_ID;
     }
 }
 
@@ -546,35 +524,29 @@ static void SetTaskMteErrByType(const rtErrorType errType, const Device * const 
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_UNKNOWN_ERROR);
     }
 
-    const bool suppHbmRas = (Runtime::Instance()->GetHbmRasProcFlag() != HBM_RAS_NOT_SUPPORT);
-    bool hasMteHbmErr = suppHbmRas ? HasMteErr(dev) : false;
-
+    const bool hasHbmEccNotify = HasMteErr(dev);
     uint32_t faultEventId = 0U;
-    bool isHitBlklist = false;
-    bool isHitRemoteBlklist = false;
-    bool isHitWhitelist = false;
-    GetMteDeviceFaultEvent(dev, faultEventId, isHitBlklist, isHitRemoteBlklist, isHitWhitelist);
+    GetMteDeviceFaultEvent(dev, faultEventId);
     const bool hasL2BuffEcc = (faultEventId == L2_BUFFER_ECC_EVENT_ID);
-    const bool hasHbmEcc = (faultEventId == HBM_ECC_EVENT_ID);
-    const bool isHitHbmBlkList = !hasL2BuffEcc && isHitBlklist;
-    RT_LOG(RT_LOG_ERROR, "support_hbm_ras_report=%d, has_l2_buffer_ecc_event=%d, has_hbm_ecc_notify_event=%d, "
-        "has_hbm_ecc_event=%d, hit_black_list=%d, hit_remote_blk_list=%d, hit_white_list=%d.", suppHbmRas, hasL2BuffEcc, hasMteHbmErr,
-        hasHbmEcc, isHitBlklist, isHitRemoteBlklist, isHitWhitelist);
+    const bool hasHbmEcc = hasHbmEccNotify &&
+        ((faultEventId == HBM_ECC_NOTIFY_EVENT_ID) || (faultEventId == HBM_ECC_EVENT_ID));
+    const bool hasRemoteErr = (faultEventId == UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID);
+    RT_LOG(RT_LOG_ERROR, "has_hbm_ecc_notify_event=%d, event_id=0x%x, device_id=%u",
+        hasHbmEccNotify, faultEventId, dev->Id_());
 
     const uint16_t local_error = (errType == AICORE_ERROR) ? TS_ERROR_AICORE_MTE_ERROR : TS_ERROR_SDMA_POISON_ERROR;
-    constexpr uint16_t remote_error = TS_ERROR_SDMA_LINK_ERROR;
     if (hasL2BuffEcc) {
         errTaskPtr->mte_error = local_error;
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::L2_BUFFER_ERROR);
         return;
     }
-    if ((!suppHbmRas && hasHbmEcc) || (hasMteHbmErr && !isHitHbmBlkList)) {
+    if (hasHbmEcc) {
         errTaskPtr->mte_error = local_error;
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
         return;
     }
-    if (suppHbmRas && !hasMteHbmErr && !isHitRemoteBlklist && isHitWhitelist) {
-        errTaskPtr->mte_error = remote_error;
+    if ((errType == AICORE_ERROR) && hasRemoteErr) {
+        errTaskPtr->mte_error = TS_ERROR_REMOTE_MEM_ERROR;
         (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
         return;
     }

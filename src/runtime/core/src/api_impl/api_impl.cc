@@ -5617,13 +5617,12 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
     RT_LOG(RT_LOG_EVENT, "Get MemUce Info.");
     rtError_t error;
     string faultInfo;
-    constexpr uint32_t maxFaultNum = 128U;
     bool isSmmuFault;
-    rtDmsFaultEvent faultEventInfo[maxFaultNum] = {};
-    uint32_t eventCount = 0UL;
+    std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
+    uint32_t eventCount = 0U;
     COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(deviceId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
                       "Current Context is null, drv devId[%u].", deviceId);
-    error = NpuDriver::GetAllFaultEvent(deviceId, faultEventInfo, maxFaultNum, &eventCount);
+    error = NpuDriver::GetAllFaultEvent(deviceId, &faultEventInfo[0U], &eventCount);
     COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
                      "Getting fault events is not supported");
     if (error != RT_ERROR_NONE) {
@@ -5693,6 +5692,10 @@ rtError_t ApiImpl::MemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInf
     RT_LOG(RT_LOG_EVENT, "drv devId %u: time cost: %llu us", deviceId,
         (static_cast<uint64_t>(tv[1U].tv_sec) - static_cast<uint64_t>(tv[0U].tv_sec)) * 1000000ULL +
         static_cast<uint64_t>(tv[1U].tv_usec) - static_cast<uint64_t>(tv[0U].tv_usec));
+    Device * const dev = Runtime::Instance()->GetDevice(deviceId, 0U, false);
+    if (dev != nullptr) {
+        dev->SetBaseTime();
+    }
     return error;
 }
 
@@ -8621,7 +8624,6 @@ rtError_t ApiImpl::RepairError(const uint32_t deviceId, const rtErrorInfo * cons
     Runtime * const rtInstance = Runtime::Instance();
     Device * const dev = rtInstance->GetDevice(static_cast<uint32_t>(deviceId), static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
-
     switch (errorInfo->errorType) {
         case RT_NO_ERROR:
             RT_LOG(RT_LOG_DEBUG ,"No device fault error exists.");
@@ -8637,6 +8639,7 @@ rtError_t ApiImpl::RepairError(const uint32_t deviceId, const rtErrorInfo * cons
                 "{" + std::to_string(RT_NO_ERROR) + ", " + std::to_string(RT_ERROR_MEMORY) + ", " + std::to_string(RT_ERROR_LINK) + "}");
             break;
     }
+    dev->SetBaseTime();
     return error;
 }
 

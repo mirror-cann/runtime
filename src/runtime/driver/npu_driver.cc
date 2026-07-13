@@ -489,6 +489,8 @@ rtError_t NpuDriver::GetDevInfo(const uint32_t deviceId, const int32_t moduleTyp
     if (drvRet != DRV_ERROR_NONE) {
         if (moduleType == MODULE_TYPE_VECTOR_CORE) {
             (*val) = 0;
+        } else if (infoType == INFO_TYPE_REAL_TIME) {
+            return RT_GET_DRV_ERRCODE(drvRet);
         } else {
             COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
  	            "[drv api] halGetDeviceInfo does not support.");

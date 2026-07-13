@@ -1992,6 +1992,7 @@ rtError_t ApiImplDavid::RepairError(const uint32_t deviceId, const rtErrorInfo *
             RT_LOG(RT_LOG_ERROR, "Does not support current error type [%d]", errorInfo->errorType);
             break;
     }
+    dev->SetBaseTime();
     return error;
 }
 

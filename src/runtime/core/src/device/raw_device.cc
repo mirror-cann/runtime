@@ -610,6 +610,7 @@ rtError_t RawDevice::Init()
         if (error != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "Get phy die id failed!, device_id=%u", deviceId_);
         }
+        SetBaseTime();
         RT_LOG(RT_LOG_INFO, "Get phy info, phy chip id %" PRId64 ", phy die id %" PRId64, phyChipId_, phyDieId_);
         (void)InitTsdQos();
         Runtime::Instance()->SetDisableThread(true);
@@ -2580,6 +2581,19 @@ void RawDevice::FreeFftsPlusArgHandleCache()
         (void)ArgLoader_()->Release(handle);
     }
     fftsPlusArgHandleCache_.clear();
+}
+
+void RawDevice::SetBaseTime()
+{
+    int64_t currTime = 0;
+    const rtError_t error = driver_->GetDevInfo(deviceId_, MODULE_TYPE_SYSTEM, INFO_TYPE_REAL_TIME, &currTime);
+    COND_RETURN_VOID((error != RT_ERROR_NONE) && (error != RT_ERROR_FEATURE_NOT_SUPPORT) && (error != RT_ERROR_DRV_INPUT),
+        "get device time failed, deviceId=%u, retCode=%#x.", deviceId_, static_cast<uint32_t>(error));
+    if (error != RT_ERROR_NONE) {
+        return;
+    }
+    baseTime_ = currTime;
+    RT_LOG(RT_LOG_DEBUG, "set device base time %" PRId64, baseTime_.load());
 }
 
 }  // namespace runtime

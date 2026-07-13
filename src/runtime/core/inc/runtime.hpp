@@ -68,6 +68,8 @@ constexpr uint32_t RAS_QUERY_INTERVAL = 10U;
 constexpr uint16_t RAS_QUERY_MAX_COUNT = 50U;
 constexpr uint16_t RT_DSM_EVENT_FILTER_FLAG_EVENT_ID = 1U;
 constexpr uint16_t READ_FAULT_EVENT_TIMEOUT = 1000U; // 1s
+constexpr uint32_t RAS_GET_MAX_NUM_SI = 128U; // single interface max event count
+constexpr uint32_t RAS_GET_MAX_NUM = 256U;    // halGetFaultEvent max 128, halGetNotifyEvent max 128
 
 constexpr size_t NON_CPU_KERNEL_ARGS_ALIGN_SIZE = sizeof(uint64_t);
 constexpr size_t CPU_KERNEL_ARGS_ALIGN_SIZE = 1U;
@@ -936,7 +938,7 @@ private:
     rtError_t GetDcacheLockMixOpPath(std::string &dcacheLockMixOpPath) const;
     void ReportHBMRasProc();
     void ReportUBMemRasProc();
-    void ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEvent *faultEventInfo, uint32_t eventCount) const;
+    static void ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEvent *faultEventInfo, uint32_t eventCount);
     void ProcHBMRas(const uint32_t devId);
     void ReportPageFaultProc();
     void ProcPageFault(Device * const device, const uint32_t value);

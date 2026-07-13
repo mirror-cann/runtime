@@ -32,7 +32,9 @@ namespace {
 const std::set<int32_t> MEM_ERROR_CODE = {TS_ERROR_AICORE_MTE_ERROR,
                                           TS_ERROR_SDMA_LINK_ERROR,
                                           TS_ERROR_SDMA_POISON_ERROR,
-                                          TS_ERROR_LINK_ERROR};
+                                          TS_ERROR_LINK_ERROR,
+                                          TS_ERROR_LOCAL_MEM_ERROR,
+                                          TS_ERROR_REMOTE_MEM_ERROR};
 } // namespace 
 #if F_DESC("ModelExecuteTask")
 
