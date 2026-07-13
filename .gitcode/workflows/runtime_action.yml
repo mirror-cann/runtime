@@ -1,12 +1,12 @@
 name: runtime_action
 
-concurrency: 
-  max: 5 
-  exceed-action: QUEUE 
-  enable: true 
+concurrency:
+  max: 5
+  exceed-action: QUEUE
+  enable: true
   preemption:
-    enable: true 
-    events: [mr_id] 
+    enable: true
+    events: [mr_id]
 
 on:
   workflow_dispatch:
@@ -24,8 +24,8 @@ env:
   MERGE_ID: ${{atomgit.event.pull_request.number}}
   TARGET_BRANCH: ${{atomgit.base_ref}}
   SOURCE_BRANCH: ${{atomgit.head_ref}}
-  obs_path: "${{ vars.OBS_PATH}}/${{ env.MERGE_ID }}"
-  obs_smoke_path: "presmoke/runtime/a2/${{ env.MERGE_ID }}"
+  obs_path: "${{ vars.OBS_PATH }}/${{ env.MERGE_ID }}"
+  obs_smoke_path: "${{ env.obs_path }}/presmoke/2"
 
 stages:
   stage1:
@@ -41,13 +41,13 @@ stages:
             identifier: revise_image
             uses: cann/.gitcode/actions/revise-img@master
             with:
-              repo_name: ${{ env.repo_name }}
+              repo_name: 'runtime'
               target_branch: ${{ env.TARGET_BRANCH }}
               repo_url: ${{ vars.CI_PATH }}
           -
             name: show_output
             run: |
-              echo "image: ${{ steps.revise_image.outputs.Compile_Ascend_X86 }}"
+              echo "image: ${{ steps.revise_image.outputs.Compile_Ascend_X86  }}"
         if: "${{ default() }}"
         runs-on: ["codearts-hosted", "ubuntu-latest", "x64", "large"]
       JOB_pr:
@@ -55,7 +55,7 @@ stages:
         select: selected_by_default
         needs: []
         steps:
-          - 
+          -
             name: Checkout
             identifier: process_checkout
             uses: checkout
@@ -70,7 +70,7 @@ stages:
               workspace: ${{ steps.process_checkout.outputs.path }}
               target_branch: ${{ env.TARGET_BRANCH }}
               git_token: ${{secrets.GIT_TOKEN}}
-          - 
+          -
             name: upload
             uses: obs-upload
             with:
@@ -85,7 +85,33 @@ stages:
                 ${{ steps.process_checkout.outputs.path }}/update_file_detail.txt
               object-prefix: ${{ env.obs_path }}/
         if: "${{ default() }}"
-        runs-on: 
+        runs-on:
+        - default
+      JOB_shell:
+        name: get_shell_files
+        select: selected_by_default
+        needs: []
+        steps:
+          -
+            name: Checkout
+            identifier: process_checkout
+            uses: checkout
+            with:
+              ref: master
+              token: ${{secrets.GIT_TOKEN}}
+          -
+            name: upload
+            uses: obs-upload
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{secrets.AK}}
+              secret-key: ${{secrets.SK}}
+              artifact-path: |
+                ${{ steps.process_checkout.outputs.path }}/.gitcode/scripts/*
+              object-prefix: ${{ env.obs_path }}/
+        if: "${{ default() }}"
+        runs-on:
         - default
     pre:
     - type: auto
@@ -333,7 +359,7 @@ stages:
         select: selected_by_default
         needs: []
         steps:
-          - 
+          -
             name: Checkout
             identifier: process_checkout
             uses: checkout
@@ -373,7 +399,7 @@ stages:
               secret-key: ${{secrets.SK}}
               artifact-path: |
                 ${{ steps.process_checkout.outputs.path }}/ut_cov_*.tar.gz
-              object-prefix: ${{ env.obs_path }}/             
+              object-prefix: ${{ env.obs_path }}/
         if: env.TARGET_BRANCH == 'master'
         runs-on: [dedicate-hosted, x64, large]
         container:
@@ -383,7 +409,7 @@ stages:
         select: selected_by_default
         needs: []
         steps:
-          - 
+          -
             name: Checkout
             identifier: process_checkout
             uses: checkout
@@ -423,7 +449,7 @@ stages:
               secret-key: ${{secrets.SK}}
               artifact-path: |
                 ${{ steps.process_checkout.outputs.path }}/ut_cov_*.tar.gz
-              object-prefix: ${{ env.obs_path }}/             
+              object-prefix: ${{ env.obs_path }}/
         if: env.TARGET_BRANCH == 'master'
         runs-on: [dedicate-hosted, x64, large]
         container:
@@ -437,13 +463,14 @@ stages:
       A2_smoke:
         name: A2_pre_smoke
         steps:
-          - 
+          -
             name: Checkout
             identifier: process_checkout
             uses: checkout
             with:
+              token: ${{secrets.GIT_TOKEN}}
               path: "./runner"
-          - 
+          -
             name: Checkout gitcode
             identifier: process_checkout_gitcode
             uses: checkout
@@ -460,12 +487,26 @@ stages:
               key: "${{jobs.JOB_arm_compile_ubuntu24.outputs.arm_run_key}}"
               path: ${{ steps.process_checkout.outputs.path }}
           -
+            name: download
+            uses: obs-download
+            with:
+              endpoint: "https://obs.cn-north-4.myhuaweicloud.com"
+              bucket: "ascend-ci"
+              access-key: ${{ secrets.AK }}
+              secret-key: ${{ secrets.SK }}
+              key: |
+                ${{ env.obs_path }}/pr_filelist.txt
+                ${{ env.obs_path }}/pr_filelist_mod.txt
+                ${{ env.obs_path }}/update_file_detail.txt
+                ${{ env.obs_path }}/pre_smoke.sh
+              path: ${{ steps.process_checkout.outputs.path }}
+          -
             name: tar businesscode
             run: |
-              cd ${{ steps.process_checkout.outputs.path }}           
+              cd ${{ steps.process_checkout.outputs.path }}
               tar -zcf ../smoke_data.tar.gz .
               mv ../smoke_data.tar.gz ./
-          - 
+          -
             name: upload
             identifier: process_upload
             uses: obs-upload
@@ -477,7 +518,7 @@ stages:
               artifact-path: |
                 ${{ steps.process_checkout.outputs.path }}/smoke_data.tar.gz
               object-prefix: ${{ env.obs_smoke_path }}/
-          - 
+          -
             name: smoke executor
             uses: manifest-management-plugin
             with:
@@ -486,41 +527,18 @@ stages:
               file_path: ${{ steps.process_checkout.outputs.path }}/ci/smoke-conf/smoke-A2.yaml
               manifest_image: swr.cn-south-1.myhuaweicloud.com/pre_smoke/${{ jobs.JOB_image.outputs.Smoke_A900_npupool }}
               custom_shell_script: |-
+                set -e
+                # set env
+                export download_path=${{ steps.process_download.outputs.download-path }}
+                export repo_name=${{env.repo_name}}
+                export pr_id=${{ env.MERGE_ID }}
+                export AK=${{secrets.AK}}
+                export SK=${{secrets.SK}}
                 mkdir -p /home/taskspace && cd /home/taskspace
-                echo "start run test case, please wait ..."
-                export ASCEND_GLOBAL_LOG_LEVEL=2
-                export ASCEND_SLOG_PRINT_TO_STDOUT=0
-                source /usr/local/Ascend/cann/set_env.sh
-                echo "1. downaload rttest_data.zip"
-                wget -nv https://opencann-obs.obs.cn-north-4.myhuaweicloud.com/ci/rttest_data.zip && unzip -q rttest_data.zip
-                echo "2. download businesscode"
                 wget -nv ${{ steps.process_upload.outputs.primary-url }}
                 tar -zxf $(basename "${{ steps.process_upload.outputs.primary-url }}")
-                # 安装 runtime 包到 /usr/local/Ascend
-                filename=$(basename "${{ steps.process_download.outputs.download-path }}")
-                yes "y" | bash ${filename} --full --install-path=/usr/local/Ascend --quiet
-                path=$(pwd)
-                source /usr/local/Ascend/cann/set_env.sh
-                bash scripts/pre-smoking.sh ${path}/rtstest_host 2>&1 | tee -a ./run_test.log
-                echo "Run all examples success" >> ./run_test.log
-                # 打包plog
-                mkdir -p /root/ascend
-                slog_name="slog.tar.gz"
-                tar -zcf slog.tar.gz -C /root/ascend log
-                # upload plog
-                if python3 /home/upload.py --bucket-name "ascend-ci" --action upload  --local-file "slog.tar.gz" --obs-object-key "${{env.repo_name}}/package/${{ env.MERGE_ID }}/${slog_name}" --ak "${{secrets.AK}}" --sk "${{secrets.SK}}"; then
-                  echo "::set-output var=plog_url:https://ascend-ci.obs.cn-north-4.myhuaweicloud.com/${{env.repo_name}}/package/${{ env.MERGE_ID }}/slog.tar.gz"
-                fi
-                npu-smi info
-                echo "4. checking test results ..."
-                date_time=`date +%Y%m%d`"."`date +%H%M%S`
-                if grep -w -e "Run all examples success" "./run_test.log"; then
-                  echo "$date_time : run test case success"
-                else
-                  echo "$date_time : run test case failed"
-                  exit 1
-                fi
-          - 
+                bash /home/taskspace/pre_smoke.sh
+          -
             name: smoke resource clean
             uses: manifest-management-plugin
             with:

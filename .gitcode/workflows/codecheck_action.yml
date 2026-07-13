@@ -10,7 +10,7 @@ jobs:
     select: selected_by_default
     needs: []
     steps:
-      - 
+      -
         name: Checkout
         identifier: process_checkout
         uses: checkout
@@ -33,7 +33,7 @@ jobs:
           merge_id: ${{ env.MERGE_ID }}
           repo_name: ${{ env.repo_name }}
           workspace: ${{ steps.process_checkout.outputs.path }}
-      - 
+      -
         name: upload
         uses: obs-upload
         with:
@@ -52,7 +52,7 @@ jobs:
     select: selected_by_default
     needs: []
     steps:
-      - 
+      -
         name: Checkout
         identifier: process_checkout
         uses: checkout
@@ -84,7 +84,7 @@ jobs:
     select: selected_by_default
     needs: []
     steps:
-      - 
+      -
         name: Checkout
         identifier: process_checkout
         uses: checkout
@@ -92,7 +92,7 @@ jobs:
           ref: ${{ atomgit.event.pull_request.merge_commit_sha }}
           token: ${{secrets.GIT_TOKEN}}
           path: "./runner"
-      - 
+      -
         name: Checkout
         uses: checkout
         with:
@@ -114,7 +114,7 @@ jobs:
     select: selected_by_default
     needs: []
     steps:
-      - 
+      -
         name: Checkout
         identifier: process_checkout
         uses: checkout
@@ -122,7 +122,7 @@ jobs:
           ref: ${{ atomgit.event.pull_request.merge_commit_sha }}
           token: ${{secrets.GIT_TOKEN}}
           path: "./runner"
-      - 
+      -
         name: Checkout
         uses: checkout
         with:
@@ -144,7 +144,7 @@ jobs:
     select: selected_by_default
     needs: []
     steps:
-      - 
+      -
         name: Checkout
         identifier: process_checkout
         uses: checkout
@@ -152,7 +152,7 @@ jobs:
           ref: ${{ atomgit.event.pull_request.merge_commit_sha }}
           token: ${{secrets.GIT_TOKEN}}
           path: "./runner"
-      - 
+      -
         name: Checkout
         uses: checkout
         with:

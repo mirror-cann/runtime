@@ -19,7 +19,7 @@ jobs:
     select: selected_by_default
     needs: []
     steps:
-      - 
+      -
         name: Checkout
         identifier: process_checkout
         uses: checkout
@@ -35,18 +35,16 @@ jobs:
           key: |
             ${{ env.obs_path }}/pr_filelist.txt
             ${{ env.obs_path }}/pr_filelist_mod.txt
+            ${{ env.obs_path }}/ut.sh
           path: ${{ steps.process_checkout.outputs.path }}
       -
         name: ut_acc
         identifier: ut
-        uses: build-accelerate
-        with:
-          command: |
-            export WORKSPACE=${{ steps.process_checkout.outputs.path }}
-            cd ${{ steps.process_checkout.outputs.path }}
-            export ut_type=${{ inputs.ut_type }}
-            BuildAccelerate bash .gitcode/workflows/ut.sh ${ut_type}
-          AC_SERVER_IP: ${{ vars.AC_SERVER_IP }}
+        run: |
+          export WORKSPACE=${{ steps.process_checkout.outputs.path }}
+          cd ${{ steps.process_checkout.outputs.path }}
+          export ut_type=${{ inputs.ut_type }}
+          bash ut.sh 
       -
         name: ut_cov
         identifier: ut_cov
@@ -67,7 +65,7 @@ jobs:
           secret-key: ${{secrets.SK}}
           artifact-path: |
             ${{ steps.process_checkout.outputs.path }}/${{ inputs.ut_package }}
-          object-prefix: ${{ env.obs_path }}/            
+          object-prefix: ${{ env.obs_path }}/
     if: "${{ default() }}"
     runs-on: [dedicate-hosted, x64, xlarge]
     container:
