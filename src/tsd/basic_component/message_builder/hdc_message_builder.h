@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
  * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
  * CANN Open Software License Agreement Version 2.0 (the "License").
  * Please refer to the License for details. You may not use this file except in compliance with the License.
@@ -83,6 +83,11 @@ struct MessageContext {
     std::string packageName;
     std::string hashCode;
 
+    // ---- Capability query (per-call) ----
+    // Raw TsdCapabilityType (cast from the caller's enum) used to derive the
+    // HDCMessage::MsgType for capability-query messages.
+    int32_t capabilityType = 0;
+
     // ---- File operations (per-call) ----
     std::string omfileName;
     std::string removeFilePath;
@@ -143,6 +148,11 @@ public:
     // carried by ctx.msgType (raw HDCMessage::MsgType), and the body uses
     // ctx.checkCode / beforeSendPkg / logicDeviceId / procSign.
     static TSD_StatusT BuildPackageCheckCode(HDCMessage &msg, const MessageContext &ctx);
+
+    // Build a capability-query message.
+    // Reads ctx.capabilityType (raw TsdCapabilityType) to derive the proto
+    // message type, plus ctx.logicDeviceId / ctx.procSign.
+    static TSD_StatusT BuildCapability(HDCMessage &msg, const MessageContext &ctx);
 
     // Build TSD_CLOSE_SUB_PROC.
     // Reads ctx.closeSubProcPid / logicDeviceId / procSign.

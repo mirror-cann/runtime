@@ -109,29 +109,15 @@ void ProcessModeManager::DeviceMsgProcess(const HDCMessage &msg)
     errorLog_ = msg.error_info().error_log();
     const HDCMessage::MsgType msgType = msg.type();
     startOrStopFailCode_ = msg.error_info().error_code();
-    if (msgType == HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL_RSP){
-        // 兼容c15版本
-        if ((msg.capability_level() != 0) && (msg.tsd_rsp_code() == 0U)) {
-            tsdSupportLevel_ = msg.capability_level();
-        }
-    } else {
-        if (msg.capability_level() != 0) {
-            tsdSupportLevel_ = msg.capability_level();
-        }
-    }
+
+    capabilityMgr_.UpdateStateFromMsg(msg);
 
     if (msgType == HDCMessage::TSD_OPEN_SUB_PROC_RSP) {
         openSubPid_ = msg.helper_sub_pid();
     }
-    if (msgType == HDCMessage::TSD_GET_SUPPORT_ADPROF_RSP) {
-        adprofSupport_ = msg.support_adprof();
-    }
     StoreProcListStatus(msg);
     if (!startOrStopFailCode_.empty()) {
         TSD_ERROR("[TsdClient] DeviceMsgProc failed errcode[%s]", startOrStopFailCode_.c_str());
-    }
-    if (msgType == HDCMessage::TSD_SUPPORT_OM_INNER_DEC_RSP) {
-        supportOmInnerDec_ = ((msg.tsd_rsp_code() == 0U) ? true : false);
     }
     StoreAllPkgHashValue(msg);
     if (msgType == HDCMessage::TSD_UPDATE_PACKAGE_PROCESS_CONFIG_RSP) {
@@ -139,7 +125,7 @@ void ProcessModeManager::DeviceMsgProcess(const HDCMessage &msg)
     }
     TSD_INFO("[TsdClient] DeviceMsgProc recvMsg realDeviceId[%u] msgType[%u] localDevId[%u] rspCode[%u]"
              "heterogeneousSubPid[%u], tsdSupportLevel_[%u]", realDeviceId, static_cast<uint32_t>(msgType), deviceId,
-             msg.tsd_rsp_code(), openSubPid_, tsdSupportLevel_);
+             msg.tsd_rsp_code(), openSubPid_, capabilityMgr_.GetTsdSupportLevel());
 }
 
 void ProcessModeManager::ServerToClientMsgProc(const uint32_t sessionID, const HDCMessage &msg)
@@ -223,9 +209,7 @@ void ProcessModeManager::SaveDeviceCheckCode(const HDCMessage &msg)
             msg.extendpkg_check_code();
         packagePeerCheckCode_[static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_ASCENDCPP)] =
             msg.ascendcpppkg_check_code();
-        if ((msg.capability_level() != 0)) {
-            tsdSupportLevel_ = msg.capability_level();
-        }
+        capabilityMgr_.UpdateStateFromMsg(msg);
     } else if (msgType == HDCMessage::TSD_GET_DEVICE_PACKAGE_CHECKCODE_NORMAL_RSP) {
         HandleNormalPackageCheckCodeRsp(msg);
     } else if (msgType == HDCMessage::TSD_GET_DEVICE_CANN_HS_CHECKCODE_RSP) {
@@ -249,17 +233,11 @@ void ProcessModeManager::PackageInfoMsgProc(const uint32_t sessionID, const HDCM
 
 void ProcessModeManager::PidQosMsgProc(const HDCMessage &msg)
 {
-    const uint32_t realDeviceId = msg.real_device_id();
-    const uint32_t deviceId = msg.device_id();
     rspCode_ = ((msg.tsd_rsp_code() == 0U) ? ResponseCode::SUCCESS : ResponseCode::FAIL);
     if (rspCode_ == ResponseCode::FAIL) {
         return;
     }
-    const HDCMessage::MsgType msgType = msg.type();
-    pidQos_ = msg.pid_of_qos();
-    TSD_RUN_INFO(
-        "[TsdClient] PidQosMsgProc recvMsg realDeviceId[%u] msgType[%u] localDevId[%u] rspCode[%u],pidqos[%lld]",
-        realDeviceId, static_cast<uint32_t>(msgType), deviceId, msg.tsd_rsp_code(), pidQos_);
+    capabilityMgr_.HandlePidQosRsp(msg);
 }
 
 void ProcessModeManager::CapabilityResMsgProc(const uint32_t sessionID, const HDCMessage &msg)

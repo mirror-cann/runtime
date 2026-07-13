@@ -12,6 +12,7 @@
 #define INNER_INC_PROCESS_MODE_MANAGER_H
 
 #include "inc/client_manager.h"
+#include "capability_manager.h"
 #include "inc/package_process_config.h"
 #include "inc/plugin_pkg_version.h"
 #include "device_comm.h"
@@ -83,31 +84,6 @@ public:
 
      /**
      * @ingroup ProcessModeManager
-     * @brief is meet the capability get condition
-     * @return true when success
-     */
-    bool IsOkToGetCapability(const int32_t type) const;
-    /**
-     * @ingroup ProcessModeManager
-     * @brief construct capability msg
-     * @return TSD_OK when success
-     */
-    void ConstructCapabilityMsg(HDCMessage &msg, const int32_t type);
-    /**
-     * @ingroup ProcessModeManager
-     * @brief set capability proto msgtype by capability type
-     * @return TSD_OK when success
-     */
-    void SetCapabilityMsgType(HDCMessage &msg, const int32_t type) const;
-
-    /**
-     * @ingroup ProcessModeManager
-     * @brief send capability message to device
-     * @return TSD_OK when success
-     */
-    TSD_StatusT SendCapabilityMsg(const int32_t type);
-    /**
-     * @ingroup ProcessModeManager
      * @brief handle open/close/updatefrom response from device
      * @param [in] sessionID : message from sessionId
      * @param [in] msg
@@ -158,7 +134,6 @@ public:
                                  const uint64_t fileNameLen) override;
     TSD_StatusT SendFileToDevice(const char_t *const filePath, const uint64_t pathLen, const char_t *const fileName,
                                  const uint64_t fileNameLen, const bool addPreFix = false);
-    TSD_StatusT SaveCapabilityResult(const int32_t type, const uint64_t ptr) const;
 
     TSD_StatusT LoadRuntimePkgToDevice();
 
@@ -178,14 +153,6 @@ public:
     TSD_StatusT ConstructCommonOpenMsg(HDCMessage &hdcMsg, const ProcOpenArgs *procArgs) const;
 
     bool SetCommonOpenParamList(MessageContext &ctx, const ProcOpenArgs *const procArgs) const;
-
-    bool IsSupportHeterogeneousInterface();
-
-    bool IsSupportCommonInterface(const uint32_t level);
-
-    bool IsSupportBuiltinUdfInterface();
-
-    bool IsSupportAdprofInterface();
 
     TSD_StatusT LoadDShapePkgToDevice();
 
@@ -340,8 +307,6 @@ private:
                                       const std::function<bool(void)> &compareCallBack,
                                       bool useCannPath);
 
-    std::string GetHostSoPath() const;
-
     /**
      * @ingroup ProcessModeManager
      * @brief send close to device
@@ -424,10 +389,6 @@ private:
     void HandleCannHsCheckCodeRsp(const HDCMessage &msg);
     void HandleDevicePluginVersionRsp(const HDCMessage &msg);
 
-    TSD_StatusT WaitCapabilityRsp(const int32_t type, const uint64_t ptr);
-
-    bool UseStoredCapabityInfo(const int32_t type, const uint64_t ptr);
-
     /**
      * @ingroup ProcessModeManager
      * @brief Parse tsd close flag and update tsdCloseFlag
@@ -505,12 +466,12 @@ private:
     TSD_StatusT LoadFileAndWaitRsp(const std::string &pkgPureName, const std::string &hostPkgHash,
                                    const int32_t peerNode, const std::string &orgFile, const std::string &dstFile);
     TSD_StatusT GetCannHsPkgCheckCode(const std::string &pkgPureName, const std::string &hostPkgHash);
-    bool IsSupportCommonSink();
     bool GetShortSocVersion(std::string &shortSocVersion) const;
 
     std::string logLevel_;
     DeviceCommAgent commAgent_;
     ResponseCode rspCode_ = ResponseCode::FAIL;
+    CapabilityManager capabilityMgr_;
     std::string errMsg_;
     std::string errorLog_;
     std::string startOrStopFailCode_;
@@ -520,16 +481,10 @@ private:
     uint32_t aicpuDeviceMode_;
     std::string qsInitGrpName_;
     uint64_t schedPolicy_;
-    int64_t pidQos_;
-    uint32_t tsdSupportLevel_;
     uint32_t openSubPid_;
     ProcStatusInfo *pidArry_;
     uint32_t pidArryLen_;
-    bool supportOmInnerDec_;
     ProcStatusParam *pidList_;
-    bool adprofSupport_;
-    using VersionCheckFunc = bool (ProcessModeManager::*)();
-    std::map<SubProcType, VersionCheckFunc> versionCheckMap_;
     bool getCheckCodeRetrySupport_;
     uint32_t hccpPid_;
     bool isStartedHccp_;

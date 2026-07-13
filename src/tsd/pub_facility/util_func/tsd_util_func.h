@@ -75,26 +75,6 @@
 
 namespace tsd {
 
-    constexpr uint32_t TSD_SUPPORT_HS_AISERVER_FEATURE_BIT = 0U;
-
-    constexpr uint32_t TSD_SUPPORT_BUILTIN_UDF_BIT = 1U;
-
-    constexpr uint32_t TSD_SUPPORT_CLOSE_LIST_BIT = 2U;
-
-    constexpr uint32_t TSD_SUPPORT_ADPROF_BIT = 3U;
-
-    constexpr uint32_t TSD_SUPPORT_EXTEND_PKG = 4U;
-
-    constexpr uint32_t TSD_SUPPORT_MUL_HCCP = 5U;
-
-    constexpr uint32_t TSD_SUPPORT_DRIVER_EXTEND_BIT = 6U;
-
-    constexpr uint32_t TSD_SUPPORT_ASCENDCPP_PKG = 7U;
-
-    constexpr uint32_t TSD_SUPPORT_COMMON_SINK_PKG_CONFIG = 8U;
-
-    constexpr uint32_t TSD_SUPPORT_CANN_HCOMM_COMPAT_910B = 9U;
-
     constexpr uint32_t MAX_DEVNUM_PER_OS = 64U;  // 当前单OS上芯片最大数是64个
 
     constexpr uint32_t TSDCLIENT_SUPPORT_NEW_ERRORCODE= 1U;
@@ -173,5 +153,10 @@ namespace tsd {
     bool IsDirEmpty(const std::string &dirPath);
 
     bool GetFlagFromEnv(const char_t * const envStr, const char_t * const envValue);
+
+    // Locate the directory of the host-side HAL shared library (the .so that
+    // exports drvHdcSendFile) by inspecting the address of that symbol with
+    // dladdr(3).  Returns an empty string on failure.
+    std::string GetHostSoPath();
 }
 #endif  // TSD_PUB_FACILITY_UTIL_FUNC_TSD_UTIL_FUNC_H

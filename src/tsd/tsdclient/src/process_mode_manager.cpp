@@ -39,16 +39,12 @@ const std::string DSHAPE_PKG_NAME = "Ascend-opp_rt-minios.aarch64.tar.gz";
 const std::string UDF_PKG_NAME = "cann-udf-compat.tar.gz";
 const std::string HCCD_PKG_NAME = "cann-hccd-compat.tar.gz";
 const std::string HIXL_PKG_NAME = "cann-hixl-compat.tar.gz";
-constexpr uint32_t COMMON_SUPPORT_TIMEOUT = 10000U;
 constexpr uint32_t OMFILE_LOAD_TIMEOUT = 200000U;
 constexpr uint32_t HELPER_PKG_LOAD_TIMEOUT = 10000U;
 constexpr uint64_t HELPER_INPUT_MAX_FILE_PATH_LEN = 4096UL;
 constexpr uint64_t HELPER_INPUT_MAX_FILE_NAME_LEN = 256UL;
 constexpr uint64_t PROCESS_OPEN_MAX_ENV_CNT = 128UL;
 constexpr uint64_t PROCESS_OPEN_MAX_EXT_PARAM_CNT = 128UL;
-constexpr uint64_t TSD_SUPPORT_OM_INNER_DEC = 1UL;
-constexpr uint64_t TSD_NOT_SUPPORT_OM_INNER_DEC = 0UL;
-constexpr uint32_t SUPPORT_OM_INNER_DEC_MSG_TIMEOUT = 10000U;
 constexpr uint32_t ASAN_OPEN_TIMEOUT = 3600000U; // 1hour
 constexpr uint32_t MAX_PROCESS_PID_CNT = 1024U;
 constexpr uint32_t CLOSE_PID_PER_LOOP = 50U;
@@ -68,7 +64,6 @@ const std::map<std::string, std::vector<tsd::ChipType_t>> PKG_CHIP_SUPPORT_MAP =
     {HIXL_PKG_NAME, {tsd::CHIP_ASCEND_910B, tsd::CHIP_ASCEND_950, tsd::CHIP_ASCEND_350, tsd::CHIP_CLOUD_V5}}
 };
 const int64_t SUPPORT_MAX_DEVICE_PER_HOST = 8;
-const std::string MUTEX_FILE_PREFIX = "sink_file_mutex_";
 using TimePoint = std::chrono::high_resolution_clock::time_point;
 std::string ExtractSubString(const std::string& input, const std::string& begin, const std::string& end)
 {
@@ -236,29 +231,10 @@ TSD_StatusT ProcessModeManager::Close(const uint32_t flag)
     return TSD_OK;
 }
 
-bool ProcessModeManager::IsSupportCommonSink()
-{
-    if (!hasGetHostSoPath_) {
-        hostSoPath_ = GetHostSoPath();
-        hasGetHostSoPath_ = true;
-    }
-
-    if (!hostSoPath_.empty()) {
-        const std::string mutexFile = hostSoPath_ + MUTEX_FILE_PREFIX + "0.cfg";
-        if (CheckRealPath(mutexFile)) {
-            TSD_RUN_INFO("mutexFile[%s] found means supporting common sink", mutexFile.c_str());
-            return true;
-        }
-    }
-
-    TSD_INFO("hostSoPath is %s.", hostSoPath_.c_str());
-    return IsSupportCommonInterface(TSD_SUPPORT_COMMON_SINK_PKG_CONFIG);
-}
-
 TSD_StatusT ProcessModeManager::LoadSysOpKernel()
 {
     bool loadAicpuKernelFlag = true;
-    if (IsSupportCommonSink()) {
+    if (capabilityMgr_.IsSupportCommonSink()) {
         std::string packageTitle;
         (void)GetPackageTitle(packageTitle);
         std::string pkgName = packageTitle + "-aicpu_legacy.tar.gz";
@@ -451,7 +427,7 @@ TSD_StatusT ProcessModeManager::SendHostPackageComplex(const int32_t peerNode, c
                                                        bool useCannPath)
 {
     if (!hasGetHostSoPath_) {
-        hostSoPath_ = GetHostSoPath();
+        hostSoPath_ = tsd::GetHostSoPath();
         hasGetHostSoPath_ = true;
     }
 
@@ -816,253 +792,11 @@ TSD_StatusT ProcessModeManager::InitQs(const InitFlowGwInfo * const initInfo)
     return TSD_OK;
 }
 
-void ProcessModeManager::SetCapabilityMsgType(HDCMessage &msg, const int32_t type) const
-{
-    switch (type) {
-        case TSD_CAPABILITY_PIDQOS: {
-            msg.set_type(HDCMessage::TSD_GET_PID_QOS);
-            break;
-        }
-        case TSD_CAPABILITY_LEVEL:
-        case TSD_CAPABILITY_BUILTIN_UDF: 
-        case TSD_CAPABILITY_MUTIPLE_HCCP: {
-            msg.set_type(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL);
-            break;
-        }
-        case TSD_CAPABILITY_OM_INNER_DEC: {
-            msg.set_type(HDCMessage::TSD_SUPPORT_OM_INNER_DEC);
-            break;
-        }
-        case TSD_CAPABILITY_ADPROF: {
-            msg.set_type(HDCMessage::TSD_GET_SUPPORT_ADPROF);
-            break;
-        }
-        default: {
-            break;
-        }
-    }
-}
-
-void ProcessModeManager::ConstructCapabilityMsg(HDCMessage &msg, const int32_t type)
-{
-    SetCapabilityMsgType(msg, type);
-    msg.set_device_id(logicDeviceId_ % PER_OS_CHIP_NUM);
-    msg.set_real_device_id(logicDeviceId_);
-    ProcessSignPid * const signPid = msg.mutable_proc_sign_pid();
-    if (signPid == nullptr) {
-        return;
-    }
-    signPid->set_proc_pid(static_cast<uint32_t>(commAgent_.GetProcSign().tgid));
-}
-
-bool ProcessModeManager::IsOkToGetCapability(const int32_t type) const
-{
-    bool ret = false;
-    switch (type) {
-        case TSD_CAPABILITY_PIDQOS: {
-            if ((tsdStartStatus_.startCp_) && (commAgent_.GetDeviceComm() != nullptr)) {
-                ret = true;
-            }
-            break;
-        }
-        case TSD_CAPABILITY_LEVEL:
-        case TSD_CAPABILITY_OM_INNER_DEC:
-        case TSD_CAPABILITY_BUILTIN_UDF:
-        case TSD_CAPABILITY_DRIVER_VERSION:
-        case TSD_CAPABILITY_ADPROF: 
-        case TSD_CAPABILITY_MUTIPLE_HCCP: {
-            ret = true;
-            break;
-        }
-        default: {
-            break;
-        }
-    }
-    return ret;
-}
-
-TSD_StatusT ProcessModeManager::SendCapabilityMsg(const int32_t type)
-{
-    if (!commAgent_.IsInit()) {
-        TSD_WARN("[TsdClient] tsd client need open first");
-        return TSD_OK;
-    }
-    HDCMessage msg;
-    ConstructCapabilityMsg(msg, type);
-    const TSD_StatusT ret = commAgent_.SendMsg(msg);
-    return ret;
-}
-
-bool ProcessModeManager::UseStoredCapabityInfo(const int32_t type, const uint64_t ptr)
-{
-    if ((type == TSD_CAPABILITY_LEVEL) && (TSD_BITMAP_GET(tsdSupportLevel_, TSD_SUPPORT_HS_AISERVER_FEATURE_BIT) != 0U)) {
-        uint32_t * const resultPtr = PtrToPtr<void, uint32_t>(ValueToPtr(static_cast<uintptr_t>(ptr)));
-        *resultPtr = tsdSupportLevel_;
-        return true;
-    }
-    if ((type == TSD_CAPABILITY_OM_INNER_DEC) && (supportOmInnerDec_)) {
-        uint64_t * const resultPtr = reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(ptr));
-        *resultPtr = TSD_SUPPORT_OM_INNER_DEC;
-        return true;
-    }
-
-    if ((type == TSD_CAPABILITY_BUILTIN_UDF) && (TSD_BITMAP_GET(tsdSupportLevel_, TSD_SUPPORT_BUILTIN_UDF_BIT))) {
-        bool * const resultPtr = reinterpret_cast<bool *>(static_cast<uintptr_t>(ptr));
-        *resultPtr = true;
-        return true;
-    }
-
-    if (type == TSD_CAPABILITY_DRIVER_VERSION) {
-         uint64_t * const resultPtr = PtrToPtr<void, uint64_t>(ValueToPtr(static_cast<uintptr_t>(ptr)));
-         *resultPtr = 0UL;
-         return true;
-     }
-
-    if (type == TSD_CAPABILITY_ADPROF) {
-        if (adprofSupport_) {
-            return true;
-        }
-    }
-
-    if ((type == TSD_CAPABILITY_MUTIPLE_HCCP) && (TSD_BITMAP_GET(tsdSupportLevel_, TSD_SUPPORT_MUL_HCCP) != 0U)) {
-        bool * const resultPtr = reinterpret_cast<bool *>(static_cast<uintptr_t>(ptr));
-        *resultPtr = true;
-        return true;
-    }
-    return false;
-}
-
-TSD_StatusT ProcessModeManager::WaitCapabilityRsp(const int32_t type, const uint64_t ptr)
-{
-    TSD_StatusT ret = TSD_OK;
-    bool ignorFail = false;
-    switch (type) {
-        case TSD_CAPABILITY_LEVEL:
-        case TSD_CAPABILITY_ADPROF:
-        case TSD_CAPABILITY_BUILTIN_UDF: 
-        case TSD_CAPABILITY_MUTIPLE_HCCP: {
-            ret = WaitRsp(COMMON_SUPPORT_TIMEOUT, true, false);
-            ignorFail = true;
-            break;
-        }
-        case TSD_CAPABILITY_OM_INNER_DEC: {
-            ret = WaitRsp(SUPPORT_OM_INNER_DEC_MSG_TIMEOUT, true, false);
-            ignorFail = true;
-            break;
-        }
-        default: {
-            ret = WaitRsp(0U);
-            break;
-        }
-    }
-    if ((ignorFail) && (ret != TSD_OK)) {
-        TSD_RUN_INFO("not recv capability:%d rsp", type);
-        if (type == TSD_CAPABILITY_OM_INNER_DEC) {
-            uint64_t * const resultPtr = reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(ptr));
-            *resultPtr = TSD_NOT_SUPPORT_OM_INNER_DEC;
-        }
-        return TSD_OK;
-    }
-    TSD_CHECK(ret == TSD_OK, ret, "Wait capability response from device failed.");
-    ret = SaveCapabilityResult(type, ptr);
-    TSD_CHECK(ret == TSD_OK, ret, "SaveCapabilityResult failed.");
-    return TSD_OK;
-}
-
 TSD_StatusT ProcessModeManager::CapabilityGet(const int32_t type, const uint64_t ptr)
 {
-    if ((!commAgent_.IsInit()) && (type == TSD_CAPABILITY_PIDQOS)) {
-        TSD_WARN("[TsdClient] tsd client need open first");
-        return TSD_OK;
-    }
-
-    TSD_RUN_INFO("[ProcessModeManager] enter into CapabilityGet process deviceId[%u] type[%d].", logicDeviceId_, type);
-    if (ptr == 0UL) {
-        TSD_ERROR("input ptr is null");
-        return TSD_CLT_OPEN_FAILED;
-    }
-    if (!IsOkToGetCapability(type)) {
-        TSD_ERROR("[TsdClient] startCp[%u],type[%d],sessionid[%u]",
-                  static_cast<uint32_t>(tsdStartStatus_.startCp_), type, commAgent_.GetSessionId());
-        return TSD_CLT_OPEN_FAILED;
-    }
-    if (UseStoredCapabityInfo(type, ptr)) {
-        return TSD_OK;
-    }
-    TSD_StatusT ret = InitTsdClient();
-    TSD_CHECK(ret == TSD_OK, ret, "Init hdc client failed.");
-
-    TSD_CHECK_NULLPTR(commAgent_.GetDeviceComm(), TSD_INSTANCE_NOT_INITIALED,
-                      "[TsdClient] devCommClient_ is null in Close function.");
-    ret = SendCapabilityMsg(type);
-    TSD_CHECK(ret == TSD_OK, ret, "SendCapabilityMsg failed.");
-
-    TSD_RUN_INFO(
-        "[TsdClient][deviceId=%u] [sessionId=%u] [type=%d]send capability successfully.",
-        logicDeviceId_, commAgent_.GetSessionId(), type);
-
-    ret = WaitCapabilityRsp(type, ptr);
-
-    TSD_RUN_INFO("[TsdClient][logicDeviceId_=%u][type=%d][pidQos=%lld][ret=%u]recv capability response finished.",
-                 logicDeviceId_, type, pidQos_, ret);
-    return TSD_OK;
+    return capabilityMgr_.CapabilityGet(type, ptr);
 }
 
-TSD_StatusT ProcessModeManager::SaveCapabilityResult(const int32_t type, const uint64_t ptr) const
-{
-    TSD_StatusT ret = TSD_OK;
-    switch (type) {
-        case TSD_CAPABILITY_PIDQOS: {
-            uint64_t * const resultPtr = reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(ptr));
-            if (resultPtr == nullptr) {
-                TSD_ERROR("input ptr is null");
-                return TSD_CLT_OPEN_FAILED;
-            }
-            if (pidQos_ != -1) {
-                *resultPtr = static_cast<uint64_t>(pidQos_);
-            }
-            break;
-        }
-        case TSD_CAPABILITY_LEVEL: {
-            uint32_t * const resultPtr = PtrToPtr<void, uint32_t>(ValueToPtr(static_cast<uintptr_t>(ptr)));
-            if (resultPtr == nullptr) {
-                TSD_ERROR("input ptr is null");
-                return TSD_CLT_OPEN_FAILED;
-            }
-            *resultPtr = static_cast<uint32_t>(tsdSupportLevel_);
-            break;
-        }
-        case TSD_CAPABILITY_OM_INNER_DEC: {
-            uint64_t * const resultPtr = reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(ptr));
-            *resultPtr = supportOmInnerDec_ ? TSD_SUPPORT_OM_INNER_DEC : TSD_NOT_SUPPORT_OM_INNER_DEC;
-            break;
-        }
-        case TSD_CAPABILITY_BUILTIN_UDF: {
-            bool * const resultPtr = reinterpret_cast<bool *>(static_cast<uintptr_t>(ptr));
-            *resultPtr = TSD_BITMAP_GET(tsdSupportLevel_, TSD_SUPPORT_BUILTIN_UDF_BIT) ? true : false;
-            break;
-        }
-        case TSD_CAPABILITY_ADPROF: {
-            bool * const resultPtr = reinterpret_cast<bool *>(static_cast<uintptr_t>(ptr));
-            if (resultPtr == nullptr) {
-                TSD_ERROR("input ptr is null");
-                return TSD_CLT_OPEN_FAILED;
-            }
-            *resultPtr = adprofSupport_;
-            break;
-        }
-        case TSD_CAPABILITY_MUTIPLE_HCCP: {
-            bool * const resultPtr = reinterpret_cast<bool *>(static_cast<uintptr_t>(ptr));
-            *resultPtr = TSD_BITMAP_GET(tsdSupportLevel_, TSD_SUPPORT_MUL_HCCP) != 0U ? true : false;
-            break;
-        }
-        default: {
-            ret = TSD_CLT_OPEN_FAILED;
-            break;
-        }
-    }
-    return ret;
-}
 
 bool ProcessModeManager::IsOkToLoadFileToDevice(const char_t *const fileName, const uint64_t fileNameLen)
 {
@@ -1070,7 +804,7 @@ bool ProcessModeManager::IsOkToLoadFileToDevice(const char_t *const fileName, co
         TSD_ERROR("input param is error");
         return false;
     }
-    if (!IsSupportHeterogeneousInterface()) {
+    if (!capabilityMgr_.IsSupportCommonInterface(TSD_SUPPORT_HS_AISERVER_FEATURE_BIT)) {
         TSD_ERROR("cur device does not support heterogeneous AIServer");
         return false;
     }
@@ -1227,7 +961,7 @@ TSD_StatusT ProcessModeManager::GetDeviceHsPkgCheckCode(const uint32_t checkCode
 
 TSD_StatusT ProcessModeManager::LoadRuntimePkgToDevice()
 {
-    if (IsSupportCommonSink() &&
+    if (capabilityMgr_.IsSupportCommonSink() &&
         (&drvHdcSendFileV2 != nullptr) &&
         (&drvHdcGetTrustedBasePathV2 != nullptr)) {
         (void)LoadPackageConfigInfoToDevice(false);
@@ -1461,15 +1195,10 @@ TSD_StatusT ProcessModeManager::ProcessOpenSubProc(ProcOpenArgs *openArgs)
     }
 
     TSD_RUN_INFO("enter into ProcessOpenSubProc subtype:%u", static_cast<uint32_t>(openArgs->procType));
-    bool retCheck = false;
-    const auto iter = versionCheckMap_.find(static_cast<SubProcType>(openArgs->procType));
-    if (iter != versionCheckMap_.end()) {
-        retCheck = (this->*(iter->second))();
-        if (!retCheck) {
-            TSD_ERROR("ProcessOpenSubProc versionCheck failed, subtype[%u], ret[%u]",
-                      static_cast<uint32_t>(openArgs->procType), retCheck);
-            return TSD_INTERNAL_ERROR;
-        }
+    if (!capabilityMgr_.CheckSubProcSupported(static_cast<SubProcType>(openArgs->procType))) {
+        TSD_ERROR("ProcessOpenSubProc versionCheck failed, subtype[%u]",
+                  static_cast<uint32_t>(openArgs->procType));
+        return TSD_INTERNAL_ERROR;
     }
 
     auto ret = InitTsdClient();
@@ -1497,7 +1226,7 @@ TSD_StatusT ProcessModeManager::ProcessCloseSubProc(const pid_t closePid)
         TSD_ERROR("input param is error");
         return TSD_INTERNAL_ERROR;
     }
-    if (!IsSupportHeterogeneousInterface()) {
+    if (!capabilityMgr_.IsSupportCommonInterface(TSD_SUPPORT_HS_AISERVER_FEATURE_BIT)) {
         TSD_ERROR("cur device does not support heterogeneous AIServer");
         return TSD_INTERNAL_ERROR;
     }
@@ -1577,7 +1306,7 @@ TSD_StatusT ProcessModeManager::RemoveFileOnDevice(const char_t *const filePath,
         TSD_ERROR("input fileName is invalid reason:%s", e.what());
         return TSD_INTERNAL_ERROR;
     }
-    if (!IsSupportHeterogeneousInterface()) {
+    if (!capabilityMgr_.IsSupportCommonInterface(TSD_SUPPORT_HS_AISERVER_FEATURE_BIT)) {
         TSD_ERROR("cur device does not support heterogeneous AIServer");
         return TSD_INTERNAL_ERROR;
     }
@@ -1596,55 +1325,6 @@ TSD_StatusT ProcessModeManager::RemoveFileOnDevice(const char_t *const filePath,
     ret = WaitRsp(0U);
     TSD_CHECK(ret == TSD_OK, ret, "Wait open response from device failed.");
     return TSD_OK;
-}
-
-bool ProcessModeManager::IsSupportCommonInterface(const uint32_t level)
-{
-    if (tsdSupportLevel_ != 0) {
-        if (TSD_BITMAP_GET(tsdSupportLevel_, level)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    TSD_StatusT ret = InitTsdClient();
-    if ((ret != TSD_OK) || (commAgent_.GetDeviceComm() == nullptr)) {
-        TSD_ERROR("Init hdc client failed.");
-        return false;
-    }
-    ret = SendCapabilityMsg(TSD_CAPABILITY_LEVEL);
-    if (ret != TSD_OK) {
-        TSD_ERROR("SendCapabilityMsg failed");
-        return false;
-    }
-    ret = commAgent_.RecvData(true, COMMON_SUPPORT_TIMEOUT);
-    if (ret != TSD_OK) {
-        TSD_RUN_INFO("TSD_CAPABILITY_LEVEL is not supported");
-        return false;
-    }
-    if (TSD_BITMAP_GET(tsdSupportLevel_, level)) {
-        return true;
-    }
-
-    TSD_RUN_INFO("IsSupportCommonInterface check was not successful, level[%u], tsd support level[%u]",
-                 level, tsdSupportLevel_);
-    return false;
-}
-
-bool ProcessModeManager::IsSupportHeterogeneousInterface()
-{
-    return IsSupportCommonInterface(TSD_SUPPORT_HS_AISERVER_FEATURE_BIT);
-}
-
-bool ProcessModeManager::IsSupportBuiltinUdfInterface()
-{
-    return IsSupportCommonInterface(TSD_SUPPORT_BUILTIN_UDF_BIT);
-}
-
-bool ProcessModeManager::IsSupportAdprofInterface()
-{
-    return IsSupportCommonInterface(TSD_SUPPORT_ADPROF_BIT);
 }
 
 TSD_StatusT ProcessModeManager::LoadDShapePkgToDevice()
@@ -1703,7 +1383,7 @@ void ProcessModeManager::GetAscendLatestIntallPath(std::string &pkgBasePath) con
 
 TSD_StatusT ProcessModeManager::ProcessCloseSubProcList(const ProcStatusParam *closeList, const uint32_t listSize)
 {
-    TSD_RUN_INFO("enter ExecuteClosePidList cnt:%u, tsdSupportLevel_:%u", listSize, tsdSupportLevel_);
+    TSD_RUN_INFO("enter ExecuteClosePidList cnt:%u, tsdSupportLevel_:%u", listSize, capabilityMgr_.GetTsdSupportLevel());
     if ((listSize > MAX_PROCESS_PID_CNT) || (listSize == 0U) || (closeList == nullptr)) {
         TSD_ERROR("pid list size invalid:%u", listSize);
         return TSD_INTERNAL_ERROR;
@@ -1712,7 +1392,7 @@ TSD_StatusT ProcessModeManager::ProcessCloseSubProcList(const ProcStatusParam *c
         TSD_RUN_INFO("device comm client is null, skip close sub proc list");
         return TSD_HDC_CLIENT_CLOSED_EXTERNAL;
     }
-    if (!TSD_BITMAP_GET(tsdSupportLevel_, TSD_SUPPORT_CLOSE_LIST_BIT)) {
+    if (!TSD_BITMAP_GET(capabilityMgr_.GetTsdSupportLevel(), TSD_SUPPORT_CLOSE_LIST_BIT)) {
         TSD_StatusT singleCloseRet = TSD_OK;
         for (uint32_t index = 0U; index < listSize; index++) {
             if (ProcessCloseSubProc(closeList[index].pid) != TSD_OK) {
@@ -1826,7 +1506,7 @@ TSD_StatusT ProcessModeManager::SendCommonPackage(const int32_t peerNode, const 
     } else if (packageType == static_cast<uint32_t>(TsdLoadPackageType::TSD_PKG_TYPE_ASCENDCPP)) {
         supportLevelName = TSD_SUPPORT_ASCENDCPP_PKG;
     }
-    if (TSD_BITMAP_GET(tsdSupportLevel_, supportLevelName) == 0U) {
+    if (TSD_BITMAP_GET(capabilityMgr_.GetTsdSupportLevel(), supportLevelName) == 0U) {
         packageHostCheckCode_[packageType] = 0U;
         TSD_RUN_INFO("[TsdClient][deviceId_=%u] device does not support, skip send, packageType[%u]", logicDeviceId_, packageType);
         return TSD_OK;
@@ -1896,7 +1576,7 @@ void ProcessModeManager::ParseTsdCloseFlag(const uint32_t flag, TsdCloseFlag &ts
 
 TSD_StatusT ProcessModeManager::OpenNetService(const NetServiceOpenArgs *args)
 {
-    if(!IsSupportCommonInterface(TSD_SUPPORT_MUL_HCCP)) {
+    if(!capabilityMgr_.IsSupportCommonInterface(TSD_SUPPORT_MUL_HCCP)) {
         TSD_RUN_INFO("current package does not support opening net service with args");
         if (Open(DEFUALT_NET_SERVICE) != TSD_OK) {
             TSD_ERROR("open default net service failed");
@@ -1925,7 +1605,7 @@ TSD_StatusT ProcessModeManager::OpenNetService(const NetServiceOpenArgs *args)
 
 TSD_StatusT ProcessModeManager::CloseNetService()
 {
-    if(!IsSupportCommonInterface(TSD_SUPPORT_MUL_HCCP)) {
+    if(!capabilityMgr_.IsSupportCommonInterface(TSD_SUPPORT_MUL_HCCP)) {
         TSD_RUN_INFO("current package does not support closing net service with args");
         return TsdClose(0U);
     } else {
@@ -1939,7 +1619,7 @@ TSD_StatusT ProcessModeManager::CloseNetService()
 
 TSD_StatusT ProcessModeManager::LoadPackageConfigInfoToDevice(const bool hasPluginVersion)
 {
-    if ((IsSupportCommonSink() == false) ||
+    if ((capabilityMgr_.IsSupportCommonSink() == false) ||
         (&drvHdcSendFileV2 == nullptr) ||
         (&drvHdcGetTrustedBasePathV2 == nullptr) ||
         IsAdcEnv() ||
@@ -2089,7 +1769,7 @@ TSD_StatusT ProcessModeManager::LoadSinglePackageToDevice(const std::string &pkg
     }
     const uint32_t currentChipType = GetPlatInfoChipType();
     if ((pkgPureName == "cann-hcomm-compat.tar.gz") && (currentChipType == tsd::CHIP_ASCEND_910B) &&
-        (!IsSupportCommonInterface(TSD_SUPPORT_CANN_HCOMM_COMPAT_910B))) {
+        (!capabilityMgr_.IsSupportCommonInterface(TSD_SUPPORT_CANN_HCOMM_COMPAT_910B))) {
         TSD_RUN_INFO("device does not support cann-hcomm-compat package, skip load to device:%u", logicDeviceId_);
         return TSD_OK;
     }
@@ -2148,7 +1828,7 @@ void ProcessModeManager::ReportSinkPkgRspError(const std::string &pkgPureName)
 
 TSD_StatusT ProcessModeManager::LoadPackageToDeviceByConfig()
 {
-    if ((IsSupportCommonSink() == false) ||
+    if ((capabilityMgr_.IsSupportCommonSink() == false) ||
         (&drvHdcSendFileV2 == nullptr) ||
         (&drvHdcGetTrustedBasePathV2 == nullptr) ||
         IsAdcEnv()) {

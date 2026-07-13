@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
  * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
  * CANN Open Software License Agreement Version 2.0 (the "License").
  * Please refer to the License for details. You may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "capability_manager.h"
 #include "env_internal_api.h"
 #include "tsd_log.h"
 #include "tsd_util_func.h"
@@ -146,6 +147,16 @@ TSD_StatusT HdcMessageBuilder::BuildPackageCheckCode(HDCMessage &msg, const Mess
     msg.set_check_code(ctx.checkCode);
     msg.set_before_send_pkg(ctx.beforeSendPkg);
     return SetProcSignPid(msg, ctx, true);
+}
+
+TSD_StatusT HdcMessageBuilder::BuildCapability(HDCMessage &msg, const MessageContext &ctx)
+{
+    const CapabilitySpec *spec = FindCapabilitySpec(ctx.capabilityType);
+    if (spec != nullptr) {
+        msg.set_type(spec->msgType);
+    }
+    SetDeviceIds(msg, ctx);
+    return SetProcSignPid(msg, ctx);
 }
 
 TSD_StatusT HdcMessageBuilder::BuildCloseSubProc(HDCMessage &msg, const MessageContext &ctx)

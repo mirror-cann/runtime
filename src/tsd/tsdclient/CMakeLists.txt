@@ -25,6 +25,7 @@ set(tdt_common_files
     ${BASE_DIR}/basic_component/device_comm/device_comm_agent.cpp
     ${BASE_DIR}/basic_component/device_comm/hdc_client.cpp
     ${BASE_DIR}/basic_component/message_builder/hdc_message_builder.cpp
+    ${BASE_DIR}/basic_component/capability/capability_manager.cpp
     ${BASE_DIR}/common/src/message_parse_client.cpp
     ${BASE_DIR}/common/src/version_verify.cpp
 )
@@ -77,6 +78,7 @@ target_include_directories(tsdclient PRIVATE
     ${RUNTIME_DIR}/src/tsd/pub_facility/env_manager/
     ${RUNTIME_DIR}/src/tsd/basic_component/device_comm/
     ${RUNTIME_DIR}/src/tsd/basic_component/message_builder/
+    ${RUNTIME_DIR}/src/tsd/basic_component/capability/
     ${RUNTIME_DIR}/src/tsd/client/common/inc/
     ${RUNTIME_DIR}/src/tsd/client/common/inc/stub/
     ${RUNTIME_DIR}/src/inc/

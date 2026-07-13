@@ -10,6 +10,7 @@
 #include "stub_server_msg_impl.h"
 #include "inc/tsd_version_verify.h"
 #include "tsd_util_func.h"
+#include "capability_manager.h"
 
 namespace tsd {
 void StubServerMsgImpl::DefaultVersionNegotiateMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,

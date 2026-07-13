@@ -22,22 +22,15 @@ ProcessModeManager::ProcessModeManager(const uint32_t deviceId, const uint32_t d
     : ClientManager(deviceId),
       logLevel_("003"),  // error level
       commAgent_(deviceId),
+      capabilityMgr_(deviceId, commAgent_, IsAdcEnv()),
       rankSize_(0U),
       aicpuPackageExistInDevice_(false),
       aicpuDeviceMode_(deviceMode),
       schedPolicy_(0U),
-      pidQos_(-1),
-      tsdSupportLevel_(0U),
       openSubPid_(0U),
       pidArry_(nullptr),
       pidArryLen_(0U),
-      supportOmInnerDec_(false),
       pidList_(nullptr),
-      adprofSupport_(false),
-      versionCheckMap_({{TSD_SUB_PROC_UDF, &ProcessModeManager::IsSupportHeterogeneousInterface},
-          {TSD_SUB_PROC_NPU, &ProcessModeManager::IsSupportHeterogeneousInterface},
-          {TSD_SUB_PROC_BUILTIN_UDF, &ProcessModeManager::IsSupportBuiltinUdfInterface},
-          {TSD_SUB_PROC_ADPROF, &ProcessModeManager::IsSupportAdprofInterface}}),
       getCheckCodeRetrySupport_(false),
       hccpPid_(0U),
       isStartedHccp_(false),
@@ -153,6 +146,7 @@ void ProcessModeManager::SetTsdStartInfo(const bool cpStatus, const bool hccpSta
     tsdStartStatus_.startCp_ = cpStatus;
     tsdStartStatus_.startHccp_ = hccpStatus;
     tsdStartStatus_.startQs_ = qsStatus;
+    capabilityMgr_.SetStartCpStatus(cpStatus);
 }
 
 bool ProcessModeManager::CheckNeedToOpen(const uint32_t rankSize, TsdStartStatusInfo &startInfo)
@@ -176,28 +170,5 @@ bool ProcessModeManager::CheckNeedToOpen(const uint32_t rankSize, TsdStartStatus
     TSD_INFO("[TsdClient] get open para startCp[%u] startHccp[%u] (0:false 1:true)",
              static_cast<uint32_t>(startInfo.startCp_), static_cast<uint32_t>(startInfo.startHccp_));
     return true;
-}
-
-std::string ProcessModeManager::GetHostSoPath() const
-{
-    Dl_info info = { };
-    if (dladdr(reinterpret_cast<void *>(drvHdcSendFile), &info) == 0) {
-        TSD_INFO("Getting the host so path was not successful, reason[%s], errno[%d]", SafeStrerror().c_str(), errno);
-        return "";
-    }
-    TSD_INFO("dli_fname[%s]", info.dli_fname);
-    if (info.dli_fname == nullptr) {
-        return "";
-    }
-    std::string path(info.dli_fname);
-    const size_t pos = path.find_last_of('/');
-    std::string hostSoPath;
-    if (pos != std::string::npos) {
-        hostSoPath = path.substr (0, pos + static_cast<size_t>(1));
-    } else {
-        hostSoPath = "./";
-    }
-    TSD_INFO("host so path[%s]", hostSoPath.c_str());
-    return hostSoPath;
 }
 }

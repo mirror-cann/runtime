@@ -16,8 +16,7 @@
 #include <csignal>
 #include <cstring>
 #include <dirent.h>
-#include "tsd_sha256.h"
-#include "tsd_log.h"
+#include <dlfcn.h>
 #include <semaphore.h>
 #include <thread>
 #include <cerrno>
@@ -29,6 +28,8 @@
 #include <iomanip>
 #include "inc/basic_define.h"
 #include "inc/weak_ascend_hal.h"
+#include "tsd_sha256.h"
+#include "tsd_log.h"
 
 namespace {
     constexpr int32_t SYSTE_EXECUTE_CMD_ERROR = 127; // 与system实现保持一致
@@ -400,5 +401,29 @@ namespace tsd {
         } else {
             return false;
         }
+    }
+
+    std::string GetHostSoPath()
+    {
+        Dl_info info = {};
+        if (dladdr(reinterpret_cast<void *>(drvHdcSendFile), &info) == 0) {
+            TSD_INFO("Getting the host so path was not successful, reason[%s], errno[%d]",
+                     SafeStrerror().c_str(), errno);
+            return "";
+        }
+        TSD_INFO("dli_fname[%s]", info.dli_fname);
+        if (info.dli_fname == nullptr) {
+            return "";
+        }
+        std::string path(info.dli_fname);
+        const size_t pos = path.find_last_of('/');
+        std::string hostSoPath;
+        if (pos != std::string::npos) {
+            hostSoPath = path.substr(0, pos + static_cast<size_t>(1));
+        } else {
+            hostSoPath = "./";
+        }
+        TSD_INFO("host so path[%s]", hostSoPath.c_str());
+        return hostSoPath;
     }
 }
