@@ -120,8 +120,7 @@ STATIC CONSTRUCTOR void AwatchdogInit(void)
         (void)AdiagListInit(&g_awdWatchdogMgr.awd[i].runList);
         (void)AdiagListInit(&g_awdWatchdogMgr.awd[i].newList);
     }
-    g_awdWatchdogMgr.monitorStarted = true;
-    AwdMonitorInit();
+    g_awdWatchdogMgr.monitorStarted = false;
     AwdPrepareForFork();
 }
 
@@ -158,7 +157,12 @@ AwdThreadWatchdog* AwdWatchdogCreate(uint32_t dogId, uint32_t timeout, Awatchdog
             /* Prevent duplicate initialization.
                Dog create may finished before monitor thread start, but timeout must be more than 1s.
                When watchdog timeout, monitor thread must have been started, so ignored. */
-            AwdMonitorInit();
+            AwdStatus ret = AwdMonitorInit();
+            if (ret != AWD_SUCCESS) {
+                /* Conditionally reset: only if we still hold the init right (monitorStarted == true).
+                   This avoids overwriting a concurrent thread's successful init. */
+                (void)AWD_ATOMIC_CMP_AND_SWAP(&g_awdWatchdogMgr.monitorStarted, true, false);
+            }
         }
     }
     AwdThreadWatchdog *dog = (AwdThreadWatchdog *)AdiagMalloc(sizeof(AwdThreadWatchdog));

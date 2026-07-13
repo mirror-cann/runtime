@@ -209,7 +209,7 @@ void AwdMonitorReset(void)
     g_awdMonitorThreadStatus = THREAD_STATUS_WAIT_EXIT;
 }
 
-void AwdMonitorInit(void)
+AwdStatus AwdMonitorInit(void)
 {
     g_awdMonitorInfo[AWD_WATCHDOG_TYPE_THREAD].watchdogPeriod = AWD_DEFAULT_MONITOR_PERIOD;
     g_awdMonitorInfo[AWD_WATCHDOG_TYPE_THREAD].watchdogCount = 0;
@@ -219,10 +219,12 @@ void AwdMonitorInit(void)
     AwdStatus ret = AwdCreateMonitorThread();
     if (ret != AWD_SUCCESS) {
         g_awdMonitorThreadId = 0;
+        g_awdMonitorThreadStatus = THREAD_STATUS_INIT;
         ADIAG_ERR("Create monitor thread failed");
-        return;
+        return AWD_FAILURE;
     }
     ADIAG_INF("AwdMonitorInit");
+    return AWD_SUCCESS;
 }
 
 void AwdMonitorExit(void)

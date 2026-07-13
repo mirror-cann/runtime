@@ -31,6 +31,7 @@ extern "C" {
 #define PLOG_SYNC_SAVE  1
 
 STATIC ToolThread g_alogFlushTid = 0;
+STATIC bool g_alogFlushStarting = false;
 STATIC bool g_threadExit = false;
 STATIC bool g_threadSleepFlag = true; // true, sleep; false, skip sleep
 STATIC ToolMutex g_plogMutex = TOOL_MUTEX_INITIALIZER;
@@ -68,6 +69,7 @@ STATIC void PlogUnlock(void)
 STATIC void PlogChildUnlock(void)
 {
     g_alogFlushTid = 0;
+    (void)__sync_lock_test_and_set(&g_alogFlushStarting, false);
     PlogUnlock();
     /* Fix: reinitialize file heads with the child's own PID so the child's
      * logs land in a file named after the child PID, not the parent PID. */
@@ -196,6 +198,24 @@ STATIC void PlogStartFlushThread(void)
                     strerror(ToolGetErrorCode()), ToolGetPid());
 }
 
+STATIC void PlogStartFlushThreadOnce(void)
+{
+    if (g_alogFlushTid != 0) {
+        return;
+    }
+    if (!__sync_bool_compare_and_swap(&g_alogFlushStarting, false, true)) {
+        return;
+    }
+    /* Double-check: another thread may have completed initialization between
+     * our first check and the CAS. This closes the TOCTOU window. */
+    if (g_alogFlushTid != 0) {
+        (void)__sync_lock_test_and_set(&g_alogFlushStarting, false);
+        return;
+    }
+    PlogStartFlushThread();
+    (void)__sync_lock_test_and_set(&g_alogFlushStarting, false);
+}
+
 /**
  * @brief       : stop thread to flush log
  * @return      : NA
@@ -221,9 +241,7 @@ STATIC int32_t PlogWriteCallback(const char *data, uint32_t dataLen, LogType typ
 {
     ONE_ACT_NO_LOG((data == NULL) || (dataLen == 0), return -1);
     ONE_ACT_NO_LOG(type >= LOG_TYPE_NUM, return -1);
-    if (g_alogFlushTid == 0) {
-        PlogStartFlushThread();
-    }
+    PlogStartFlushThreadOnce();
     PlogLock();
 
     if (PlogBuffCheckFull(type, dataLen) && (g_plogSyncMode == PLOG_SYNC_SAVE)) {
@@ -259,6 +277,7 @@ STATIC void PlogForkCallback(void)
     PlogUnlock();
     PlogCleanUpBuff(BUFFER_TYPE_SEND);
     g_alogFlushTid = 0;
+    (void)__sync_lock_test_and_set(&g_alogFlushStarting, false);
     /* Fix: also reinitialize file heads here for the LOG_FORK path so that
      * any caller going through alog.so's fork callback also gets the correct
      * child PID in its log filenames. */
@@ -322,6 +341,7 @@ LogStatus PlogHostMgrInit(void)
     ONE_ACT_ERR_LOG(ret != LOG_SUCCESS, return LOG_FAILURE, "register atFork callback failed, ret=%d.", ret);
 
     (void)ToolMutexInit(&g_forkMutex);
+    (void)__sync_lock_test_and_set(&g_alogFlushStarting, false);
     return LOG_SUCCESS;
 }
 
@@ -337,10 +357,10 @@ void PlogHostMgrExit(void)
 
     PlogBuffExit();
     PlogMutexDestory();
+    (void)__sync_lock_test_and_set(&g_alogFlushStarting, false);
     (void)ToolMutexDestroy(&g_forkMutex);
 }
 
 #ifdef __cplusplus
 }
 #endif
-

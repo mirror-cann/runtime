@@ -24,7 +24,7 @@
 extern "C" {
     void AwatchdogInit(void);
     void AwatchdogExit(void);
-    void AwdMonitorInit(void);
+    AwdStatus AwdMonitorInit(void);
     void AwdProcessUnInit(void);
     void AwdProcessInit(void);
     void AwdSubProcessInit(void);
@@ -61,8 +61,35 @@ protected:
 
 DEFINE_THREAD_WATCHDOG(threadHandle);
 
+static void CreateAndDestroyTwoWatchdogs()
+{
+    auto firstHandle = AwdCreateThreadWatchdog(0, 0, NULL);
+    auto secondHandle = AwdCreateThreadWatchdog(1, 0, NULL);
+
+    EXPECT_NE(firstHandle, AWD_INVALID_HANDLE);
+    EXPECT_NE(secondHandle, AWD_INVALID_HANDLE);
+    AwdDestroyThreadWatchdog(firstHandle);
+    AwdDestroyThreadWatchdog(secondHandle);
+    free((void*)firstHandle);
+    free((void*)secondHandle);
+}
+
+TEST(AwatchdogInitLazyStartUtest, ConstructorDoesNotStartMonitorThread)
+{
+    system("mkdir -p " LLT_TEST_DIR);
+    MOCKER(pthread_atfork).stubs().will(returnValue(0));
+    MOCKER(AwdMonitorInit).expects(never());
+
+    AwatchdogInit();
+    AwatchdogExit();
+
+    GlobalMockObject::verify();
+    system("rm -rf " LLT_TEST_DIR "/*");
+}
+
 TEST_F(AwatchdogUtest, TestWatchDogCreate)
 {
+    MOCKER(AwdMonitorInit).stubs().will(returnValue(AWD_SUCCESS));
     MOCKER(AdiagListInsert).expects(once()).will(returnValue(ADIAG_SUCCESS));
     auto handle = AwdCreateThreadWatchdog(0, 0, NULL);
     EXPECT_NE(handle, AWD_INVALID_HANDLE);
@@ -72,6 +99,7 @@ TEST_F(AwatchdogUtest, TestWatchDogCreate)
 
 TEST_F(AwatchdogUtest, TestWatchDogCreateFailed)
 {
+    MOCKER(AwdMonitorInit).stubs().will(returnValue(AWD_SUCCESS));
     MOCKER(AdiagListInsert).expects(never()).will(returnValue(ADIAG_SUCCESS));
     MOCKER(AdiagMalloc).stubs().will(returnValue((void*)NULL));
     auto handle = AwdCreateThreadWatchdog(0, 0, NULL);
@@ -80,6 +108,7 @@ TEST_F(AwatchdogUtest, TestWatchDogCreateFailed)
 
 TEST_F(AwatchdogUtest, TestWatchDogCreateAddtoListFailed)
 {
+    MOCKER(AwdMonitorInit).stubs().will(returnValue(AWD_SUCCESS));
     MOCKER(AdiagListInsert).stubs().will(returnValue(ADIAG_FAILURE));
     auto handle = AwdCreateThreadWatchdog(0, 0, NULL);
     EXPECT_EQ(handle, AWD_INVALID_HANDLE);
@@ -87,6 +116,7 @@ TEST_F(AwatchdogUtest, TestWatchDogCreateAddtoListFailed)
 
 TEST_F(AwatchdogUtest, TestWatchDogCreateBeforeFork)
 {
+    MOCKER(AwdMonitorInit).stubs().will(returnValue(AWD_SUCCESS));
     int status = fork();
     if (status == -1) {
         return;
@@ -103,6 +133,7 @@ TEST_F(AwatchdogUtest, TestWatchDogCreateBeforeFork)
 
 TEST_F(AwatchdogUtest, TestWatchDogCreateAfterFork)
 {
+    MOCKER(AwdMonitorInit).stubs().will(returnValue(AWD_SUCCESS));
     MOCKER(AdiagListInsert).expects(once()).will(returnValue(ADIAG_SUCCESS));
     auto handle = AwdCreateThreadWatchdog(0, 0, NULL);
     EXPECT_NE(handle, AWD_INVALID_HANDLE);
@@ -116,6 +147,22 @@ TEST_F(AwatchdogUtest, TestWatchDogCreateAfterFork)
     }
     AwdDestroyThreadWatchdog(handle);
     free((void*)handle);
+}
+
+TEST_F(AwatchdogUtest, MonitorStartsOnFirstWatchdogCreateOnly)
+{
+    MOCKER(AwdMonitorInit).expects(once()).will(returnValue(AWD_SUCCESS));
+    MOCKER(AdiagListInsert).stubs().will(returnValue(ADIAG_SUCCESS));
+
+    CreateAndDestroyTwoWatchdogs();
+}
+
+TEST_F(AwatchdogUtest, MonitorStartFailureCanRetry)
+{
+    MOCKER(AwdMonitorInit).expects(exactly(2)).will(returnValue(AWD_FAILURE)).then(returnValue(AWD_SUCCESS));
+    MOCKER(AdiagListInsert).stubs().will(returnValue(ADIAG_SUCCESS));
+
+    CreateAndDestroyTwoWatchdogs();
 }
 
 // TEST_F(AwatchdogUtest, TestDlopenFailed)

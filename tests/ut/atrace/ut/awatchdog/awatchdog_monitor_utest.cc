@@ -25,12 +25,21 @@ extern "C" {
         struct AdiagList runList;
         struct AdiagList newList;
     } AwdWatchDog;
-    void AwdMonitorInit(void);
+    AwdStatus AwdMonitorInit(void);
     void AwdMonitorExit(void);
     struct AwdWatchDog* AwdGetWatchDog(enum AwdWatchdogType type);
     AwdThreadWatchdog *AwdWatchdogCreate(uint32_t moduleId, uint32_t timeout, AwatchdogCallbackFunc callback,
     enum AwdWatchdogType type);
     void AwdWatchdogDestroy(AwdThreadWatchdog *node);
+}
+
+static int32_t CreateMonitorTaskStub(mmThread *threadHandle, const mmUserBlock_t *funcBlock,
+    const mmThreadAttr *threadAttr)
+{
+    (void)funcBlock;
+    (void)threadAttr;
+    *threadHandle = static_cast<mmThread>(1);
+    return 0;
 }
 
 class AwatchdogMonitorUtest: public testing::Test {
@@ -79,6 +88,24 @@ protected:
 //     AwdMonitorInit();
 //     AwdMonitorExit();
 // }
+
+TEST_F(AwatchdogMonitorUtest, MonitorInitReturnsFailureWhenCreateThreadFails)
+{
+    MOCKER(mmCreateTaskWithThreadAttr).expects(once()).will(returnValue(-1));
+    MOCKER(mmJoinTask).expects(never()).will(returnValue(0));
+
+    EXPECT_EQ(AWD_FAILURE, AwdMonitorInit());
+    AwdMonitorExit();
+}
+
+TEST_F(AwatchdogMonitorUtest, MonitorInitReturnsSuccessWhenCreateThreadSucceeds)
+{
+    MOCKER(mmCreateTaskWithThreadAttr).expects(once()).will(invoke(CreateMonitorTaskStub));
+    MOCKER(mmJoinTask).expects(once()).will(returnValue(0));
+
+    EXPECT_EQ(AWD_SUCCESS, AwdMonitorInit());
+    AwdMonitorExit();
+}
 
 void AwatchdogCallback(void *args)
 {
@@ -157,7 +184,7 @@ void AwatchdogCallback(void *args)
 // {
 //     EXPECT_CheckNoErrorLog();
 //     AwdMonitorInit();
-//     std::vector<std::future<int>> thread; 
+//     std::vector<std::future<int>> thread;
 //     thread.push_back(std::move(std::async([]{
 //         int timeout = 1;
 //         auto dog = AwdWatchdogCreate(ASCENDCL, timeout, AwatchdogCallback, AWD_WATCHDOG_TYPE_THREAD);

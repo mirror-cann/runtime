@@ -11,7 +11,9 @@
 #ifndef AWATCHDOG_MONITOR_H
 #define AWATCHDOG_MONITOR_H
 
-void AwdMonitorInit(void);
+#include "awatchdog_types.h"
+
+AwdStatus AwdMonitorInit(void);
 void AwdMonitorExit(void);
 void AwdMonitorReset(void);
 #endif
