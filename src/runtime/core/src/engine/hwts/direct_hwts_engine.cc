@@ -269,7 +269,7 @@ void DirectHwtsEngine::WakeUpRecycleThread(void)
         return;
     }
     (void)mmSemPost(&recycleThreadSem_);
-    inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
+    (void)inFlightWakeUps_.fetch_sub(1, std::memory_order_release);
 }
 
 void DirectHwtsEngine::SendingWait(Stream * const stm, uint8_t &failCount)

@@ -1315,7 +1315,7 @@ static rtError_t GetDcacheLockMixPath(std::string& binaryPath, string binaryName
     Dl_info info;
     if (dladdr(RtPtrToPtr<void*>(&GetDcacheLockMixPath), &info) != 0 && info.dli_fname != nullptr) {
         std::string soPath = info.dli_fname;
-        auto pos = soPath.find_last_of('/');
+        const auto pos = soPath.find_last_of('/');
         if (pos != std::string::npos) {
             binaryPath = soPath.substr(0, pos) + binaryName;
             std::ifstream file(binaryPath);
@@ -4776,7 +4776,7 @@ rtError_t Runtime::BinaryLoad(const Device *const device, Program * const prog)
     if (isPoolMem) {
         error = Program::BinaryPoolMemCopySync(devMem, size, data, device, readonly);
     } else {
-        uint32_t adviseSize = static_cast<uint32_t>(devSize + INSTR_ALIGN_SIZE);
+        const uint32_t adviseSize = static_cast<uint32_t>(devSize + INSTR_ALIGN_SIZE);
         error = Program::BinaryMemCopySync(devMem, adviseSize, size, data, device, readonly);
     }
     prog->SetBinBaseAddr(baseAddr, device->Id_());
@@ -5371,14 +5371,14 @@ void Runtime::ProcHBMRas(const uint32_t devId)
     }
 }
 
-static const char_t* GetEventAssertDesc(const unsigned char assertion)
+static const char_t* GetEventAssertDesc(const uint8_t assertion)
 {
     struct AssertDesInfo {
-        unsigned char assert;
+        uint8_t assert;
         const char_t* name;
     };
 
-    enum RtAssertType : unsigned char {
+    enum RtAssertType : uint8_t {
         EVENT_RESUME = 0U,
         EVENT_OCCUR = 1U,
         ONE_TIME_EVENT = 2U,
@@ -5708,7 +5708,7 @@ rtError_t Runtime::RestoreModule(void) const
             COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
                 "BinaryPoolMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.", node->devId, hostAddr, devAddr, memSize);
         } else {
-            uint32_t adviseSize = static_cast<uint32_t>(node->memSize + INSTR_ALIGN_SIZE);
+            const uint32_t adviseSize = static_cast<uint32_t>(node->memSize + INSTR_ALIGN_SIZE);
             error = Program::BinaryMemCopySync(devAddr, adviseSize, static_cast<uint32_t>(memSize), hostAddr, device, node->readonly);
             COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
                 "BinaryMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.", node->devId, hostAddr, devAddr, memSize);
