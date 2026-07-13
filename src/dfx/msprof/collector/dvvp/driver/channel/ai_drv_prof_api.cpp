@@ -13,6 +13,7 @@
 #include "errno/error_code.h"
 #include "securec.h"
 #include "ai_drv_dev_api.h"
+#include "msprof_drv_api.h"
 #include "ascend_inpackage_hal.h"
 #include "json_parser.h"
 #include "validation/nts_metrics_validation.h"
@@ -42,7 +43,7 @@ int32_t DrvGetChannels(struct DrvProfChannelsInfo &channels)
 
     channel_list_t channelList;
     (void)memset_s(&channelList, sizeof(channel_list_t), 0, sizeof(channel_list_t));
-    int32_t ret = prof_drv_get_channels(static_cast<uint32_t>(channels.deviceId), &channelList);
+    int32_t ret = MsprofDrvApi::instance()->ProfDrvGetChannels(static_cast<uint32_t>(channels.deviceId), &channelList);
     if (ret != PROF_OK) {
         MSPROF_LOGE("DrvGetChannels get channels failed, deviceId=%d", channels.deviceId);
         return PROFILING_FAILED;
@@ -940,7 +941,7 @@ int32_t DrvAdprofStart(int32_t profDeviceId, AI_DRV_CHANNEL profChannel)
 
 int32_t DrvStart(uint32_t profDeviceId, AI_DRV_CHANNEL profChannel, prof_start_para *data)
 {
-    const int32_t ret = prof_drv_start(profDeviceId, static_cast<uint32_t>(profChannel), data);
+    const int32_t ret = MsprofDrvApi::instance()->ProfDrvStart(profDeviceId, static_cast<uint32_t>(profChannel), data);
     if (ret == PROF_OK) {
         return PROF_OK;
     }
@@ -963,7 +964,7 @@ int32_t DrvStop(int32_t profDeviceId, AI_DRV_CHANNEL profChannel)
 {
     MSPROF_EVENT("Begin to stop profiling prof_stop DrvStop, profDeviceId=%d, profChannel=%d", profDeviceId,
                  static_cast<int32_t>(profChannel));
-    int ret = prof_stop((uint32_t)profDeviceId, profChannel);
+    int ret = MsprofDrvApi::instance()->ProfStop((uint32_t)profDeviceId, profChannel);
     if (ret != PROF_OK) {
         MSPROF_LOGE("Failed to stop profiling prof_stop DrvStop, profDeviceId=%d, profChannel=%d, ret=%d", profDeviceId,
                     static_cast<int32_t>(profChannel), ret);
@@ -981,7 +982,8 @@ int32_t DrvChannelRead(int32_t profDeviceId, AI_DRV_CHANNEL profChannel, UNSIGNE
         MSPROF_LOGE("outBuf is nullptr");
         return PROFILING_FAILED;
     }
-    int ret = prof_channel_read((uint32_t)profDeviceId, profChannel, reinterpret_cast<CHAR_PTR>(outBuf), bufSize);
+    int ret = MsprofDrvApi::instance()->ProfChannelRead((uint32_t)profDeviceId, profChannel,
+        reinterpret_cast<CHAR_PTR>(outBuf), bufSize);
     if (ret < 0) {
         if (ret == PROF_STOPPED_ALREADY) {
             MSPROF_LOGW("profChannel has stopped already, profDeviceId=%d, profChannel=%d, bufSize=%dbytes",
@@ -1002,7 +1004,7 @@ int32_t DrvChannelPoll(PROF_POLL_INFO_PTR outBuf, int32_t num, int32_t timeout)
         MSPROF_LOGE("outBuf is nullptr");
         return PROFILING_FAILED;
     }
-    const int32_t ret = prof_channel_poll(outBuf, num, timeout);
+    const int32_t ret = MsprofDrvApi::instance()->ProfChannelPoll(outBuf, num, timeout);
     if (ret == PROF_ERROR || ret > num) {
         MSPROF_LOGE("Failed to prof_channel_poll, num=%d, timeout=%ds, ret=%d", num, timeout, ret);
         return PROFILING_FAILED;
@@ -1015,7 +1017,7 @@ int32_t DrvProfFlush(uint32_t deviceId, uint32_t channelId, uint32_t &bufSize)
 {
 #if (defined(linux) || defined(__linux__))
     MSPROF_LOGI("Begin to flush drv buff. deviceId=%u, channelId=%u", deviceId, channelId);
-    int32_t ret = halProfDataFlush(deviceId, channelId, &bufSize);
+    int32_t ret = MsprofDrvApi::instance()->halProfDataFlush(deviceId, channelId, &bufSize);
     // The ret value should be consistent with the interface return of halProfDataFlush.
     if (ret == DRV_ERROR_NONE) {
         MSPROF_LOGI("End to flush drv buff. deviceId=%u, channelId=%u, bufSize=%ubytes", deviceId, channelId, bufSize);

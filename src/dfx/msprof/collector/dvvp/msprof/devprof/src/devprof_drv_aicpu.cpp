@@ -17,11 +17,7 @@
 #include "devprof_common.h"
 #include "hash_data.h"
 #include "platform_interface.h"
-
-#ifndef RC_MODE
-int __attribute__((weak)) halProfQueryAvailBufLen(unsigned int dev_id, unsigned int chan_id, unsigned int *buff_avail_len);
-#endif
-int __attribute__((weak)) halProfSampleRegisterEx(unsigned int dev_id, unsigned int chan_id, struct prof_sample_register_para *para);
+#include "msprof_drv_api.h"
 
 using namespace analysis::dvvp::common::error;
 using namespace analysis::dvvp::common::config;
@@ -250,7 +246,7 @@ int32_t DevprofDrvAicpu::SendAddtionalInfo() {
     while(aicpuAdditionalBuffer_.GetUsedSize() != 0) {
         uint64_t allStartTime = analysis::dvvp::common::utils::Utils::GetClockMonotonicRaw();
         uint32_t bufLen = 0;
-        int32_t ret = halProfQueryAvailBufLen(devId_, channelId_, &bufLen);
+        int32_t ret = MsprofDrvApi::instance()->halProfQueryAvailBufLen(devId_, channelId_, &bufLen);
         if (ret != DRV_ERROR_NONE) {
             MSPROF_LOGE("get driver buffer len failed, device id:%u, channel id:%u, ret:%d", devId_, channelId_, ret);
             return PROFILING_FAILED;
@@ -269,7 +265,7 @@ int32_t DevprofDrvAicpu::SendAddtionalInfo() {
         }
         uint64_t reportStartTime = analysis::dvvp::common::utils::Utils::GetClockMonotonicRaw();
         struct prof_data_report_para profDataReportPara = {outPtr, static_cast<uint32_t>(outSize)};
-        ret = halProfSampleDataReport(devId_, channelId_, 0, &profDataReportPara);
+        ret = MsprofDrvApi::instance()->halProfSampleDataReport(devId_, channelId_, 0, &profDataReportPara);
         if (ret != DRV_ERROR_NONE) {
             MSPROF_LOGE("report str2id data failed, ret: %d, data size: %zu", ret, outSize);
             return PROFILING_FAILED;
@@ -484,7 +480,7 @@ void DevprofDrvAicpu::RunHostMoveMode()
 void DevprofDrvAicpu::RunNormalMode()
 {
     uint32_t bufLen = 0;
-    int32_t ret = halProfQueryAvailBufLen(devId_, channelId_, &bufLen);
+    int32_t ret = MsprofDrvApi::instance()->halProfQueryAvailBufLen(devId_, channelId_, &bufLen);
     if (ret != DRV_ERROR_NONE) {
         MSPROF_LOGE("get driver buffer len failed, device id:%u, channel id:%u, ret:%d", devId_, channelId_, ret);
         return;
@@ -496,7 +492,7 @@ void DevprofDrvAicpu::RunNormalMode()
             continue;
         }
         uint64_t allStartTime = analysis::dvvp::common::utils::Utils::GetClockMonotonicRaw();
-        ret = halProfQueryAvailBufLen(devId_, channelId_, &bufLen);
+        ret = MsprofDrvApi::instance()->halProfQueryAvailBufLen(devId_, channelId_, &bufLen);
         if (ret != DRV_ERROR_NONE) {
             MSPROF_LOGE("get driver buffer len failed, device id:%u, channel id:%u, ret:%d", devId_, channelId_, ret);
             break;
@@ -510,7 +506,7 @@ void DevprofDrvAicpu::RunNormalMode()
         }
         uint64_t reportStartTime = analysis::dvvp::common::utils::Utils::GetClockMonotonicRaw();
         struct prof_data_report_para profDataReportPara = {outPtr, static_cast<uint32_t>(outSize)};
-        ret = halProfSampleDataReport(devId_, channelId_, 0, &profDataReportPara);
+        ret = MsprofDrvApi::instance()->halProfSampleDataReport(devId_, channelId_, 0, &profDataReportPara);
         if (ret != DRV_ERROR_NONE) {
             MSPROF_LOGE("report data failed, ret: %d, data size: %zu", ret, outSize);
         }
@@ -671,13 +667,13 @@ int32_t DevprofDrvAicpu::WriteBatchToHostMoveBuffer(const MsprofAdditionalInfo *
 int32_t DevprofDrvAicpu::RegisterDrvChannel(uint32_t devId, uint32_t channelId)
 {
     ProfSampleRegisterPara registerPara = {1, {ProfStartAicpu, ProfSampleAicpu, nullptr, ProfStopAicpu}};
-    int32_t ret = halProfSampleRegister(devId, channelId, &registerPara);
+    int32_t ret = MsprofDrvApi::instance()->halProfSampleRegister(devId, channelId, &registerPara);
     if (ret != DRV_ERROR_NONE) {
         MSPROF_LOGE("Failed to regist aicpu sample ops, ret = %d.", ret);
         return PROFILING_FAILED;
     }
 
-    ret = halProfSampleRegisterEx(devId, channelId, &registerPara);
+    ret = MsprofDrvApi::instance()->halProfSampleRegisterEx(devId, channelId, &registerPara);
     if (ret != DRV_ERROR_NONE) {
         // If the driver does not support halProfSampleRegisterEx, run to the old process.
         if (ret == DRV_ERROR_NOT_SUPPORT) {

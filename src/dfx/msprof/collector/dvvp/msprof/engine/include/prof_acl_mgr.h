@@ -343,6 +343,12 @@ private:
                                  const MsprofConfig *config);
     std::string MsprofResultDirAdapter(const std::string &dir) const;
     void ProfDataTypeConfigHandle(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
+    // 通用服务器场景采集选项白名单校验：只允许 acl/task-time/runtime-api/hccl/ge-api/model-execution
+    // 及 host-sys/host-sys-pid，其余已开启的采集选项报错并停止。非通用服务器场景直接放行。
+    int32_t CheckGeneralServerOptionWhitelist(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params)
+        const;
+    // acl json / ge option / acl env 三入口共用：通用服务器白名单校验通过后展开 dataTypeConfig 并置命令行模式。
+    int32_t CheckWhitelistAndBuildConfig();
     void UpdateDataTypeConfigByMetrics(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
     void UpdateDataTypeConfigByTimelineTrace(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
     void UpdateDataTypeConfigByProfLevel(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);

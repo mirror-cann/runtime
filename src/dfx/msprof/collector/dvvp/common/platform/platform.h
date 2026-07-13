@@ -85,6 +85,8 @@ public:
     void SetPlatformSoc();
     uint32_t GetPlatform(void) const;
     int32_t PlatformInitByDriver();
+    // 通用服务器场景：libascend_hal.so dlopen 失败时置位，表示当前环境未安装驱动包。
+    bool PlatformIsGeneralServer() const;
     std::string PlatformGetHostOscFreq() const;
     std::string PlatformGetDeviceOscFreq(uint32_t deviceId, const std::string &freq) const;
     bool PlatformHostFreqIsEnable() const;
@@ -126,6 +128,7 @@ private:
     SHARED_PTR_ALIA<PlatformInterface> platform_;
     bool isHelperHostSide_;
     bool isRpcHelper_;
+    bool isGeneralServer_{false};
     AscendHalAdaptor ascendHalAdaptor_;
     std::mutex mtx_;
 };

@@ -338,6 +338,13 @@ int32_t ProfInitIfCommandLine()
 
 int32_t ProfNotifySetDevice(uint32_t chipId, uint32_t devId, bool isOpenDevice)
 {
+    // 通用服务器场景约定：devId 最高位为 1 时直接返回，不启动 device 侧采集 task。
+    constexpr uint32_t kGeneralServerScenarioMask = 0x80000000U;
+    if ((devId & kGeneralServerScenarioMask) != 0) {
+        MSPROF_LOGI("ProfNotifySetDevice, general server scenario (devId high bit set), skip device task, devId=%u.",
+            devId);
+        return MSPROF_ERROR_NONE;
+    }
     if (Utils::IsDynProfMode()) {
         DynProfMgr::instance()->SaveDevicesInfo(chipId, devId, isOpenDevice);
     } else {

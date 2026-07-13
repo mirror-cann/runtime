@@ -53,7 +53,10 @@ int32_t Platform::Init()
         return PROFILING_SUCCESS;
     }
     if (ascendHalAdaptor_.Init() != PROFILING_SUCCESS) {
-        return PROFILING_FAILED;
+        // 通用服务器场景：未安装驱动包，libascend_hal.so 加载失败。
+        // 此时不返回失败，置通用服务器标记，仅打印 INFO，保证 host 侧采集初始化可以继续。
+        isGeneralServer_ = true;
+        MSPROF_LOGI("Ascend hal library is unavailable, running as general server scenario.");
     }
     if (DrvGetApiVersion() >= SUPPORT_OSC_FREQ_API_VERSION) {
 #ifndef CPU_CYCLE_NO_SUPPORT
@@ -117,6 +120,11 @@ bool Platform::PlatformIsNeedHelperServer() const
         return true;
     }
     return false;
+}
+
+bool Platform::PlatformIsGeneralServer() const
+{
+    return isGeneralServer_;
 }
 
 bool Platform::CheckIfRpcHelper() const
@@ -446,7 +454,12 @@ int32_t AscendHalAdaptor::Init()
 {
     ascendHalLibHandle_ = OsalDlopen(ASCEND_HAL_LIB.c_str(), RTLD_LAZY | RTLD_NODELETE);
     if (ascendHalLibHandle_ == nullptr) {
-        MSPROF_LOGE("Open ascend_hal api failed, dlopen error: %s", OsalDlerror());
+        // 通用服务器场景：未安装驱动包时 dlopen 失败，不报 ERROR/WARN，仅打印 INFO，
+        // 由上层 Platform::Init() 置通用服务器标记并继续初始化，不导致初始化失败。
+        // OsalDlerror() 在无错误记录时可能返回 nullptr（POSIX dlerror 语义），对 %s 做空指针保护。
+        const char *dlErrMsg = OsalDlerror();
+        MSPROF_LOGI("Unable to open %s, running as general server scenario. dlopen info: %s",
+            ASCEND_HAL_LIB.c_str(), (dlErrMsg != nullptr) ? dlErrMsg : "unknown");
         return PROFILING_FAILED;
     }
     LoadApi();

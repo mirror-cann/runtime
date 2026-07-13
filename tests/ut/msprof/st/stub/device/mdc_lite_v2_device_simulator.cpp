@@ -97,7 +97,11 @@ int32_t MdcLiteV2DeviceSimulator::GetDeviceInfo(int32_t moduleType, int32_t info
 
 int32_t MdcLiteV2DeviceSimulator::ProfDrvStart(uint32_t channelId, const ProfStartPara &para)
 {
-    prof_sample_start_para profPara;
+    // 零初始化：is_support_host_move/out_data 等字段此前未赋值，为栈上未定义值。
+    // MsprofDrvApi 注册 prof_drv_start 后该路径首次被真实调用，
+    // 未初始化的 is_support_host_move 恰好非零、out_data 恰好非零指针，
+    // 会误触发 AICPU host-move 分支并对垃圾地址解引用崩溃。
+    prof_sample_start_para profPara = {};
     profPara.dev_id = 0;
     profPara.user_data = para.user_data;
     profPara.user_data_len = para.user_data_size;

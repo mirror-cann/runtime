@@ -30,6 +30,7 @@ set(profilerSrcFiles
     ${MSPROF_SOURCE_DIR}/dvvp/common/thread/thread.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/common/thread/thread_pool.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/driver/devmgmt/ai_drv_dev_api.cpp
+    ${MSPROF_SOURCE_DIR}/dvvp/driver/devmgmt/msprof_drv_api.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/driver/devmgmt/ai_drv_dsmi_api.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/driver/channel/ai_drv_prof_api.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/transport/file_slice.cpp
@@ -85,6 +86,7 @@ set(localSrcFiles
     ../stub/hdc-api-stub.cpp
     ../stub/hdc-log-stub.cpp
     ../stub/drv_stub.cpp
+    ../stub/devdrv_runtime_api_stub.cpp
     ../stub/mmpa_stub.cpp
     ../stub/prof_api_stub.cpp
 )

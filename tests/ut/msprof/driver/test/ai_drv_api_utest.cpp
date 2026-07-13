@@ -17,6 +17,8 @@
 #include "errno/error_code.h"
 #include "ai_drv_dev_api.h"
 #include "ai_drv_prof_api.h"
+#include "ai_drv_dsmi_api.h"
+#include "msprof_drv_api.h"
 #include "config_manager.h"
 #include "validation/param_validation.h"
 #include "utils.h"
@@ -650,6 +652,9 @@ TEST_F(DRIVER_AI_DRV_API_TEST, DrvGetPlatformInfo) {
 
     EXPECT_EQ(PROFILING_SUCCESS, analysis::dvvp::driver::DrvGetPlatformInfo(platformInfo));
     EXPECT_EQ(PROFILING_SUCCESS, analysis::dvvp::driver::DrvGetPlatformInfo(platformInfo));
+    // ret==MSPROF_HELPER_HOST(通用服务器/Helper场景)时驱动未写入platformInfo，
+    // DrvGetPlatformInfo 需显式回填为 HOST，避免遗留调用方旧值。
+    EXPECT_EQ(analysis::dvvp::driver::PLATFORM_INFO_HOST_FALLBACK, platformInfo);
     EXPECT_EQ(PROFILING_FAILED, analysis::dvvp::driver::DrvGetPlatformInfo(platformInfo));
 }
 
@@ -931,4 +936,87 @@ TEST_F(DRIVER_AI_DRV_API_TEST, DrvGetDeviceFreq) {
     EXPECT_EQ(false, analysis::dvvp::driver::DrvGetDeviceFreq(0, freq));
     EXPECT_EQ(true, analysis::dvvp::driver::DrvGetDeviceFreq(0, freq));
     EXPECT_FLOAT_EQ(1.0, std::stof(freq));   // 返回1000Khz在处理完成之后返回1Mhz
+}
+
+// 通用服务器场景：libascend_hal.so dlopen 失败，所有驱动接口降级返回，不崩溃。
+// 覆盖 MsprofDrvApi 的 EnsureInit dlopen 失败 INFO 分支、LoadDrvApi 句柄为空分支、
+// 以及 11 个包装方法的空指针降级分支和 IsDrvLibLoaded。
+TEST_F(DRIVER_AI_DRV_API_TEST, MsprofDrvApiGeneralServerNoLib) {
+    GlobalMockObject::verify();
+    MOCKER(OsalDlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(OsalDlerror).stubs().will(returnValue(static_cast<char *>(nullptr)));
+
+    analysis::dvvp::driver::MsprofDrvApi api;
+    EXPECT_EQ(false, api.IsDrvLibLoaded());
+
+    uint32_t num = 0;
+    EXPECT_EQ(DRV_ERROR_NOT_SUPPORT, api.drvGetDevNum(&num));
+    uint32_t ids[4] = {0};
+    EXPECT_EQ(DRV_ERROR_NOT_SUPPORT, api.drvGetDevIDs(ids, 4));
+    uint32_t info = 0;
+    EXPECT_EQ(DRV_ERROR_NOT_SUPPORT, api.drvGetPlatformInfo(&info));
+    drvStatus_t st = DRV_STATUS_INITING;
+    EXPECT_EQ(DRV_ERROR_NOT_SUPPORT, api.drvDeviceStatus(0, &st));
+    int64_t val = 0;
+    EXPECT_EQ(DRV_ERROR_NOT_SUPPORT, api.halGetDeviceInfo(0, 0, 0, &val));
+
+    channel_list_t chs;
+    (void)memset_s(&chs, sizeof(chs), 0, sizeof(chs));
+    EXPECT_EQ(PROF_ERROR, api.ProfDrvGetChannels(0, &chs));
+    struct prof_start_para para;
+    (void)memset_s(&para, sizeof(para), 0, sizeof(para));
+    EXPECT_EQ(PROF_ERROR, api.ProfDrvStart(0, 0, &para));
+    EXPECT_EQ(PROF_ERROR, api.ProfStop(0, 0));
+    char buf[16] = {0};
+    EXPECT_EQ(PROF_ERROR, api.ProfChannelRead(0, 0, buf, sizeof(buf)));
+    struct prof_poll_info poll;
+    (void)memset_s(&poll, sizeof(poll), 0, sizeof(poll));
+    EXPECT_EQ(PROF_ERROR, api.ProfChannelPoll(&poll, 1, 0));
+    unsigned int len = 0;
+    EXPECT_EQ(DRV_ERROR_NOT_SUPPORT, api.halProfDataFlush(0, 0, &len));
+}
+
+// NPU 场景：libascend_hal.so 加载成功，符号解析命中，包装方法调用到底层实现。
+// 覆盖 EnsureInit dlopen 成功分支、LoadApi 全部 dlsym、IsDrvLibLoaded true、
+// 各包装方法直通分支，以及析构时 OsalDlclose 分支。
+TEST_F(DRIVER_AI_DRV_API_TEST, MsprofDrvApiLibLoadedPath) {
+    GlobalMockObject::verify();
+
+    {
+        analysis::dvvp::driver::MsprofDrvApi api;
+        EXPECT_EQ(true, api.IsDrvLibLoaded());  // 桩 mmDlopen 对 libascend_hal.so 返回非空句柄
+
+        uint32_t num = 0;
+        EXPECT_EQ(DRV_ERROR_NONE, api.drvGetDevNum(&num));  // 桩 drvGetDevNum 置 *num=1 返回 0
+        EXPECT_EQ(1U, num);
+
+        // 覆盖 prof channel 包装方法直通分支（桩已注册对应符号）
+        channel_list_t chs;
+        (void)memset_s(&chs, sizeof(chs), 0, sizeof(chs));
+        (void)api.ProfDrvGetChannels(0, &chs);
+    }  // api 析构，句柄非空 -> OsalDlclose 分支
+}
+
+// 覆盖 ai_drv_dsmi_api.cpp：DrvGeAicFrq / DrvGeAivFrq 经 MsprofDrvApi::halGetDeviceInfo 取频率。
+TEST_F(DRIVER_AI_DRV_API_TEST, DrvDsmiFrequency) {
+    GlobalMockObject::verify();
+#ifndef BUILD_OPEN_PROJECT
+    MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
+        .stubs()
+        .will(returnValue(PlatformType::CLOUD_TYPE));
+#endif
+    int64_t outFreq = 1500;
+    MOCKER(halGetDeviceInfo)
+        .stubs()
+        .with(any(), any(), any(), outBoundP(&outFreq, sizeof(int64_t)))
+        .will(returnValue(DRV_ERROR_NONE));
+
+    EXPECT_EQ("1500", Analysis::Dvvp::Driver::DrvGeAicFrq(0));
+    EXPECT_EQ("1500", Analysis::Dvvp::Driver::DrvGeAivFrq(0));
+
+    // deviceId < 0 走默认频率分支
+    (void)Analysis::Dvvp::Driver::DrvGeAicFrq(-1);
+    (void)Analysis::Dvvp::Driver::DrvGeAivFrq(-1);
+    int64_t f = 0;
+    EXPECT_EQ(PROFILING_FAILED, Analysis::Dvvp::Driver::DrvGetAicoreInfo(-1, f));
 }

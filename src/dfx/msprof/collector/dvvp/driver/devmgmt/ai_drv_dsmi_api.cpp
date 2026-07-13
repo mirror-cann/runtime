@@ -10,6 +10,7 @@
 #include "ai_drv_dsmi_api.h"
 #include "errno/error_code.h"
 #include "msprof_dlog.h"
+#include "msprof_drv_api.h"
 #include "config_manager.h"
 namespace Analysis {
 namespace Dvvp {
@@ -22,7 +23,8 @@ int32_t DrvGetAicoreInfo(int32_t deviceId, int64_t &freq)
     if (deviceId < 0) {
         return PROFILING_FAILED;
     }
-    return static_cast<int32_t>(halGetDeviceInfo(static_cast<uint32_t>(deviceId),
+    return static_cast<int32_t>(analysis::dvvp::driver::MsprofDrvApi::instance()->halGetDeviceInfo(
+        static_cast<uint32_t>(deviceId),
         static_cast<int32_t>(MODULE_TYPE_AICORE), static_cast<int32_t>(INFO_TYPE_FREQUE), &freq));
 }
 
@@ -61,7 +63,8 @@ std::string DrvGeAivFrq(int32_t deviceId)
     }
 #endif // BUILD_OPEN_PROJECT
     int64_t freq = 0;
-    const int32_t ret = static_cast<int32_t>(halGetDeviceInfo(static_cast<uint32_t>(deviceId),
+    const int32_t ret = static_cast<int32_t>(analysis::dvvp::driver::MsprofDrvApi::instance()->halGetDeviceInfo(
+        static_cast<uint32_t>(deviceId),
         static_cast<int32_t>(MODULE_TYPE_VECTOR_CORE), static_cast<int32_t>(INFO_TYPE_FREQUE), &freq));
     if (ret != DRV_ERROR_NONE || freq == 0) {
         MSPROF_LOGW("Failed to get aiv frequency, deviceId=%d, ret=%d", deviceId, ret);

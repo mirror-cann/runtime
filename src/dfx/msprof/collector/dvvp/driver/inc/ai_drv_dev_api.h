@@ -21,6 +21,9 @@ namespace dvvp {
 namespace driver {
 constexpr char NOT_SUPPORT_FREQUENCY[] = "";
 constexpr uint32_t FREQUENCY_KHZ_TO_MHZ = 1000; // KHz to MHz
+// 与 Analysis::Dvvp::Common::Platform::SysPlatformType::HOST 取值一致(=1)。
+// driver 层不引入 platform.h（避免 Platform<->driver 反向依赖），故在此复制该数值常量。
+constexpr uint32_t PLATFORM_INFO_HOST_FALLBACK = 1U;
 int32_t DrvGetDevNum();
 int32_t DrvGetDevIds(int32_t numDevices, std::vector<int32_t> &devIds);
 int32_t DrvGetEnvType(uint32_t deviceId, int64_t &envType);

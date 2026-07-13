@@ -55,6 +55,7 @@ set(msprofCpp
     ../common/platform/platform.cpp
     ../depend/stub/error_manager/msprof_error_manager_stub.cpp
     ../driver/devmgmt/ai_drv_dev_api.cpp
+    ../driver/devmgmt/msprof_drv_api.cpp
     ../message/codec.cpp
     ../common/json/json.cpp
     ../streamio/client/src/sender.cpp

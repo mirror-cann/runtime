@@ -263,6 +263,7 @@ set(proftransportCpp
     ../dvvp/transport/file_manager.cpp
     ../dvvp/transport/file_interface.cpp
     ../dvvp/driver/devmgmt/ai_drv_dev_api.cpp
+    ../dvvp/driver/devmgmt/msprof_drv_api.cpp
     ${CppPath}
 )
 

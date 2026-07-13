@@ -95,6 +95,7 @@ set(msprofbinCpp
     ../driver/devmgmt/ai_drv_dev_api.cpp
     ../driver/devmgmt/ai_drv_dsmi_api.cpp
     ../driver/channel/ai_drv_prof_api.cpp
+    ../driver/devmgmt/msprof_drv_api.cpp
     ../profimpl/collect/job_wrapper/src/collection_job.cpp
     ../profimpl/collect/job_wrapper/src/collection_register.cpp
     ../profimpl/collect/job_wrapper/src/job_factory.cpp
@@ -240,12 +241,14 @@ install(TARGETS msprofbin OPTIONAL
 
 add_library(msprofbinOnetrack_pub INTERFACE)
 
+# msprof 通用服务器场景：msprofbin 源码不直接引用任何驱动符号（driver 调用均经
+# MsprofDrvApi 间接 dlopen/dlsym），链接期不需要 ascend_hal_stub，避免 NEEDED 表
+# 带上 libascend_hal.so（无驱动包环境下会导致 msprof 命令行工具加载期失败）。
 target_link_libraries(msprofbinOnetrack_pub INTERFACE
     $<BUILD_INTERFACE:intf_pub>
     c_sec
     unified_dlog
     mmpa
-    $<IF:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,ascend_hal,ascend_hal_stub>
     ascend_protobuf_static
     -lpthread
     -ldl

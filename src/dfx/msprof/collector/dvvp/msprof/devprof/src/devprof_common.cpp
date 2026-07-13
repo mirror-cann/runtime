@@ -14,9 +14,11 @@
 #include "msprof_dlog.h"
 #include "error_code.h"
 #include "osal.h"
+#include "msprof_drv_api.h"
 
 namespace Devprof {
 using namespace analysis::dvvp::common::error;
+using analysis::dvvp::driver::MsprofDrvApi;
 
 int32_t ProfSendEvent(uint32_t devId, int32_t hostPid, const char *grpName)
 {
@@ -40,7 +42,7 @@ int32_t ProfSendEvent(uint32_t devId, int32_t hostPid, const char *grpName)
     drvError_t ret;
     MSPROF_LOGI("devId:%u, type:%d, hostPid:%d", devId, type, hostPid);
     for (int32_t i = 0; i < WAIT_COUNT; i++) {
-        ret = halEschedQueryInfo(devId, type, &inPut, &outPut);
+        ret = MsprofDrvApi::instance()->halEschedQueryInfo(devId, type, &inPut, &outPut);
         if (ret == DRV_ERROR_NONE) {
             break;
         }
@@ -54,7 +56,7 @@ int32_t ProfSendEvent(uint32_t devId, int32_t hostPid, const char *grpName)
 
     char msg[] = "1";
     struct event_summary event = {hostPid, gidOut.grp_id, EVENT_USR_START, 0, 1, msg, CCPU_HOST, ONLY, 0, {0}};
-    ret = halEschedSubmitEvent(devId, &event);
+    ret = MsprofDrvApi::instance()->halEschedSubmitEvent(devId, &event);
     if (ret != DRV_ERROR_NONE) {
         MSPROF_LOGE("send Event failed, err:%d", ret);
         return PROFILING_FAILED;

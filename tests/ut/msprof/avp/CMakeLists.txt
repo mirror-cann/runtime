@@ -161,6 +161,7 @@ set(proftransportCpp
     ${MSPROF_SOURCE_DIR}/dvvp/transport/file_manager.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/transport/file_interface.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/driver/devmgmt/ai_drv_dev_api.cpp
+    ${MSPROF_SOURCE_DIR}/dvvp/driver/devmgmt/msprof_drv_api.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/depend/stub/error_manager/msprof_error_manager_stub.cpp
     ../stub/error_manager_stub.cpp
 )

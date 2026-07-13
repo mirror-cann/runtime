@@ -51,6 +51,7 @@ set(profimplCpp
     driver/channel/ai_drv_prof_api.cpp
     driver/devmgmt/ai_drv_dev_api.cpp
     driver/devmgmt/ai_drv_dsmi_api.cpp
+    driver/devmgmt/msprof_drv_api.cpp
     profimpl/collect/job_wrapper/src/collection_job.cpp
     profimpl/collect/job_wrapper/src/collection_register.cpp
     profimpl/collect/job_wrapper/src/job_device_soc.cpp
@@ -254,17 +255,9 @@ target_link_options(profimpl_fwk_share PRIVATE
     -Wl,--exclude-libs=ALL
 )
 
-if (PRODUCT)
-    if (${TARGET_SYSTEM_NAME} STREQUAL "Windows")
-        target_link_libraries(profimpl_fwk_share PRIVATE
-            ascend_hal
-        )
-    else()
-        target_link_libraries(profimpl_fwk_share PRIVATE
-            ascend_hal_stub
-        )
-    endif()
-endif()
+# msprof 通用服务器场景：libprofimpl.so(host) 内所有驱动符号调用均已改为通过 MsprofDrvApi
+# 运行期 dlopen("libascend_hal.so")/dlsym 加载，链接期不再需要 ascend_hal_stub，
+# 避免 NEEDED 表带上 libascend_hal.so（无驱动包环境下会导致本 so 加载期失败）。
 
 target_link_libraries(profimpl_fwk_share PRIVATE
     $<BUILD_INTERFACE:intf_pub>
@@ -273,13 +266,10 @@ target_link_libraries(profimpl_fwk_share PRIVATE
     $<BUILD_INTERFACE:adump_headers>
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:npu_runtime_headers>
-    -Wl,--no-as-needed
     c_sec
     alog
     mmpa
-    ascend_hal_stub
     error_manager
-    -Wl,--as-needed
 )
 
 install(TARGETS profimpl_fwk_share OPTIONAL
@@ -311,6 +301,7 @@ set(devprofimplCpp
     common/platform/platform.cpp
     depend/stub/error_manager/msprof_error_manager_stub.cpp
     driver/devmgmt/ai_drv_dev_api.cpp
+    driver/devmgmt/msprof_drv_api.cpp
     message/codec.cpp
     common/json/json.cpp
     transport/hdc/helper_transport.cpp

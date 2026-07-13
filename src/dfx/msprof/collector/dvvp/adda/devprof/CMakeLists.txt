@@ -50,6 +50,7 @@ set(devProfCppList
     ./device/src/task_manager.cpp
     ../../driver/channel/ai_drv_prof_api.cpp
     ../../driver/devmgmt/ai_drv_dev_api.cpp
+    ../../driver/devmgmt/msprof_drv_api.cpp
     ../../profimpl/collect/job_wrapper/src/collection_job.cpp
     ../../profimpl/collect/job_wrapper/src/collection_register.cpp
     ../../profimpl/collect/job_wrapper/src/prof_channel_manager.cpp

@@ -91,24 +91,19 @@ target_link_options(ascendprof_fwk_share PRIVATE
     -Wl,--exclude-libs=ALL
 )
 
-if (PRODUCT)
-    target_link_libraries(ascendprof_fwk_share PRIVATE
-        ascend_hal_stub
-    )
-endif()
+# msprof 通用服务器场景：ascendprof_fwk_share 源码不直接引用任何驱动符号（driver 调用
+# 均经 MsprofDrvApi 间接 dlopen/dlsym），链接期不需要 ascend_hal_stub，避免 NEEDED 表
+# 带上 libascend_hal.so（无驱动包环境下会导致本 so 加载期失败）。
 
 target_link_libraries(ascendprof_fwk_share PRIVATE
     $<BUILD_INTERFACE:intf_pub>
     $<BUILD_INTERFACE:mmpa_headers>
     $<BUILD_INTERFACE:adump_headers>
     $<BUILD_INTERFACE:slog_headers>
-    -Wl,--no-as-needed
     c_sec
     alog
     mmpa
-    ascend_hal_stub
     error_manager
-    -Wl,--as-needed
 )
 
 install(TARGETS ascendprof_fwk_share OPTIONAL

@@ -1658,6 +1658,60 @@ void ProfAclMgr::ProfDataTypeConfigHandle(SHARED_PTR_ALIA<analysis::dvvp::messag
     MSPROF_EVENT("ProfDataTypeConfigHandle dataTypeConfig:0x%llx", dataTypeConfig_);
 }
 
+int32_t ProfAclMgr::CheckGeneralServerOptionWhitelist(
+    const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params) const
+{
+    // 仅在通用服务器场景（未安装驱动包）下校验。NPU 服务器场景行为保持不变。
+    if (params == nullptr || !Platform::instance()->PlatformIsGeneralServer()) {
+        return MSPROF_ERROR_NONE;
+    }
+    // 通用服务器场景白名单：AI 任务采集允许 acl、task-time、runtime-api、hccl、ge-api、model-execution；
+    // Host 侧允许 host-sys、host-sys-pid。以下为不在白名单内的采集开关，若开启则报错停止。
+    const std::vector<std::pair<std::string, std::string>> notAllowedSwitches = {
+        {"ai-core", params->ai_core_profiling},
+        {"aic-metrics", params->ai_core_metrics},
+        {"ai-vector-core", params->aiv_profiling},
+        {"aiv-metrics", params->aiv_metrics},
+        {"aicpu", params->aicpuTrace},
+        {"task-memory", params->taskMemory},
+        {"task-tsfw", params->taskTsfw},
+        {"l2", params->l2CacheTaskProfiling},
+        {"instr-profiling", params->instrProfiling},
+        {"sys-hardware-mem", params->hardware_mem},
+        {"sys-profiling", params->sys_profiling},
+        {"sys-pid-profiling", params->pid_profiling},
+        {"llc-profiling", params->llc_profiling},
+        {"dvpp-profiling", params->dvpp_profiling},
+        {"sys-io-profiling", params->io_profiling},
+        {"sys-interconnection-profiling", params->interconnection_profiling},
+        {"sys-cpu-profiling", params->cpu_profiling},
+    };
+    for (const auto &item : notAllowedSwitches) {
+        if (item.second == MSVP_PROF_ON) {
+            MSPROF_LOGE("Option [%s] is not supported in general server scenario. Only acl, task-time, runtime-api, "
+                "hccl, ge-api, model-execution and host-sys/host-sys-pid are allowed.", item.first.c_str());
+            MSPROF_INPUT_ERROR("EK0005", std::vector<std::string>({"param"}),
+                std::vector<std::string>({item.first.c_str()}));
+            return MSPROF_ERROR;
+        }
+    }
+    MSPROF_LOGI("General server scenario option whitelist check passed.");
+    return MSPROF_ERROR_NONE;
+}
+
+int32_t ProfAclMgr::CheckWhitelistAndBuildConfig()
+{
+    // acl json / ge option / acl env 三入口共用：先做通用服务器采集选项白名单校验，
+    // 通过后展开 dataTypeConfig 并置命令行模式。
+    int32_t ret = CheckGeneralServerOptionWhitelist(params_);
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
+    }
+    ProfDataTypeConfigHandle(params_);
+    SetModeToCmd();
+    return MSPROF_ERROR_NONE;
+}
+
 void ProfAclMgr::UpdateDataTypeConfigByMetrics(const SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params)
 {
     if (!params->ai_core_metrics.empty()) {
@@ -1925,8 +1979,11 @@ int32_t ProfAclMgr::MsprofInitAclJson(VOID_PTR data, uint32_t len)
     if (ret != MSPROF_ERROR_NONE) {
         return ret;
     }
-    ProfDataTypeConfigHandle(params_);
-    SetModeToCmd();
+    // 【acl json 使能方式】通用服务器白名单校验 + 展开配置（与 ge option、acl env 共用）。
+    ret = CheckWhitelistAndBuildConfig();
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
+    }
     return MSPROF_ERROR_NONE;
 }
 
@@ -2172,8 +2229,11 @@ int32_t ProfAclMgr::MsprofInitGeOptions(VOID_PTR data, uint32_t len)
     if (ret != MSPROF_ERROR_NONE) {
         return ret;
     }
-    ProfDataTypeConfigHandle(params_);
-    SetModeToCmd();
+    // 【ge option 使能方式】通用服务器白名单校验 + 展开配置（与 acl json、acl env 共用）。
+    ret = CheckWhitelistAndBuildConfig();
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
+    }
     return MSPROF_ERROR_NONE;
 }
 
@@ -2218,8 +2278,12 @@ int32_t ProfAclMgr::MsprofInitAclEnv(const std::string &envValue)
         return MSPROF_ERROR_CONFIG_INVALID;
     }
     storageLimit_ = params_->storageLimit;
-    ProfDataTypeConfigHandle(params_);
-    SetModeToCmd();
+    // 【acl env 使能方式】通用服务器白名单校验 + 展开配置（与 acl json、ge option 共用；
+    // acl env / PROFILER_SAMPLECONFIG 环境变量入口，也是命令行 msprofbin 经 ACL env 拉起采集的归一入口）。
+    ret = CheckWhitelistAndBuildConfig();
+    if (ret != MSPROF_ERROR_NONE) {
+        return ret;
+    }
     MSPROF_LOGI("MsprofInitAclEnv, mode:%d, dataTypeConfig:0x%llx, baseDir:%s",
                 mode_, dataTypeConfig_, Utils::BaseName(baseDir_).c_str());
     return MSPROF_ERROR_NONE;

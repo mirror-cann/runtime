@@ -16,6 +16,7 @@
 #include "errno/error_code.h"
 #include "config/config.h"
 #include "validation/param_validation.h"
+#include "msprof_drv_api.h"
 #include "ascend_hal.h"
 #include "ai_drv_dev_api.h"
 
@@ -69,7 +70,8 @@ int32_t ConfigManager::Init()
         if (!DrvGetDeviceStatus(devId)) {
             continue;
         }
-        ret = halGetDeviceInfo(devId, static_cast<int32_t>(MODULE_TYPE_SYSTEM),
+        ret = analysis::dvvp::driver::MsprofDrvApi::instance()->halGetDeviceInfo(devId,
+            static_cast<int32_t>(MODULE_TYPE_SYSTEM),
             static_cast<int32_t>(INFO_TYPE_VERSION), &versionInfo);
         if (ret == DRV_ERROR_NONE) {
             chipId = ((static_cast<uint64_t>(versionInfo) >> 8) & 0xff);

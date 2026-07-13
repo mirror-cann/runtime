@@ -56,6 +56,7 @@ set(acpBinCpp
     ../common/statistics/perf_count.cpp
     ../driver/devmgmt/ai_drv_dev_api.cpp
     ../driver/channel/ai_drv_prof_api.cpp
+    ../driver/devmgmt/msprof_drv_api.cpp
     ../depend/stub/error_manager/msprof_error_manager_stub.cpp
     ../msprof/dynamic_profiling/src/dyn_prof_client.cpp
     ../task_handle/src/task_relationship_mgr.cpp
@@ -125,16 +126,17 @@ target_link_options(acp PRIVATE
     -ldl
 )
 
+# msprof 通用服务器场景：acp 源码不直接引用任何驱动符号（driver 调用均经 MsprofDrvApi
+# 间接 dlopen/dlsym），链接期不需要 ascend_hal_stub，避免 NEEDED 表带上 libascend_hal.so
+# （无驱动包环境下会导致本可执行文件加载期失败）。
 target_link_libraries(acp PRIVATE
     $<BUILD_INTERFACE:intf_pub>
     $<BUILD_INTERFACE:mmpa_headers>
     $<BUILD_INTERFACE:adump_headers>
     $<BUILD_INTERFACE:slog_headers>
-    $<IF:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,ascend_hal,ascend_hal_stub>
     c_sec
     slog
     mmpa
-    ascend_hal_stub
 )
 
 set_target_properties(acp
@@ -193,6 +195,7 @@ set(profinjCpp
     ../driver/devmgmt/ai_drv_dev_api.cpp
     ../driver/channel/ai_drv_prof_api.cpp
     ../driver/devmgmt/ai_drv_dsmi_api.cpp
+    ../driver/devmgmt/msprof_drv_api.cpp
     ${PROF_BASIC_DIR}/osal/osal.c
     ../app/application.cpp
     ../app/env_manager.cpp
@@ -296,16 +299,17 @@ target_link_options(profinj PRIVATE
     -Wl,--exclude-libs=ALL
 )
 
+# msprof 通用服务器场景：profinj 源码不直接引用任何驱动符号（driver 调用均经 MsprofDrvApi
+# 间接 dlopen/dlsym），链接期不需要 ascend_hal_stub，避免 NEEDED 表带上 libascend_hal.so
+# （无驱动包环境下会导致本 so 加载期失败）。
 target_link_libraries(profinj PRIVATE
     $<BUILD_INTERFACE:msprof_headers>
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:mmpa_headers>
     $<BUILD_INTERFACE:adump_headers>
-    $<IF:$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>,ascend_hal,ascend_hal_stub>
     c_sec
     mmpa
     slog
-    ascend_hal_stub
 )
 
 install(TARGETS profinj OPTIONAL

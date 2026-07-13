@@ -17,6 +17,8 @@
 #include "platform/platform.h"
 #include "prof_acl_mgr.h"
 #include "prof_params_adapter.h"
+#include "msprofiler_impl.h"
+#include "osal.h"
 #include "validation/param_validation.h"
 #include "cloud_v2_platform.h"
 #include "david_platform.h"
@@ -324,6 +326,72 @@ TEST_F(PLATFORM_UTEST, ApiStatsFeatureSupportedOnCloudAndDavidPlatforms)
     EXPECT_TRUE(cloudV2Platform.FeatureIsSupport(PLATFORM_API_STATS));
     EXPECT_TRUE(davidPlatform.FeatureIsSupport(PLATFORM_API_STATS));
     EXPECT_TRUE(davidV121Platform.FeatureIsSupport(PLATFORM_API_STATS));
+}
+
+// 通用服务器场景：libascend_hal.so dlopen 失败时，Platform::Init 不返回失败，
+// 置通用服务器标记。覆盖 platform.cpp 的 dlopen 失败分支与 PlatformIsGeneralServer。
+TEST_F(PLATFORM_UTEST, InitAsGeneralServerWhenHalLibUnavailable) {
+    GlobalMockObject::verify();
+    MOCKER(OsalDlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(OsalDlerror).stubs().will(returnValue(static_cast<char *>(nullptr)));
+
+    auto platform = std::make_shared<Platform>();
+    EXPECT_EQ(PROFILING_SUCCESS, platform->Init());       // dlopen 失败不导致 Init 失败
+    EXPECT_EQ(true, platform->PlatformIsGeneralServer());  // 置通用服务器标记
+}
+
+TEST_F(PLATFORM_UTEST, PlatformIsGeneralServerDefaultFalse) {
+    GlobalMockObject::verify();
+    auto platform = std::make_shared<Platform>();
+    EXPECT_EQ(false, platform->PlatformIsGeneralServer());  // 默认非通用服务器
+}
+
+// 通用服务器场景采集选项白名单：非白名单采集开关（如 ai_core_profiling）开启时报错停止。
+TEST_F(PLATFORM_UTEST, GeneralServerWhitelistRejectsDeviceOption) {
+    GlobalMockObject::verify();
+    MOCKER(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsGeneralServer)
+        .stubs()
+        .will(returnValue(true));
+    auto params = std::make_shared<analysis::dvvp::message::ProfileParams>();
+    params->ai_core_profiling = analysis::dvvp::common::config::MSVP_PROF_ON;  // device 侧采集，非白名单
+    EXPECT_EQ(MSPROF_ERROR,
+        Msprofiler::Api::ProfAclMgr::instance()->CheckGeneralServerOptionWhitelist(params));
+}
+
+// 通用服务器场景采集选项白名单：仅白名单选项（acl）开启时放行。
+TEST_F(PLATFORM_UTEST, GeneralServerWhitelistAllowsHostOption) {
+    GlobalMockObject::verify();
+    MOCKER(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsGeneralServer)
+        .stubs()
+        .will(returnValue(true));
+    auto params = std::make_shared<analysis::dvvp::message::ProfileParams>();
+    params->acl = analysis::dvvp::common::config::MSVP_PROF_ON;  // host 侧 trace，白名单允许
+    EXPECT_EQ(MSPROF_ERROR_NONE,
+        Msprofiler::Api::ProfAclMgr::instance()->CheckGeneralServerOptionWhitelist(params));
+}
+
+// 非通用服务器场景：白名单校验直接放行（NPU 行为不变）。
+TEST_F(PLATFORM_UTEST, WhitelistPassthroughWhenNotGeneralServer) {
+    GlobalMockObject::verify();
+    MOCKER(&Analysis::Dvvp::Common::Platform::Platform::PlatformIsGeneralServer)
+        .stubs()
+        .will(returnValue(false));
+    auto params = std::make_shared<analysis::dvvp::message::ProfileParams>();
+    params->ai_core_profiling = analysis::dvvp::common::config::MSVP_PROF_ON;  // 非白名单，但非通用服务器 -> 放行
+    EXPECT_EQ(MSPROF_ERROR_NONE,
+        Msprofiler::Api::ProfAclMgr::instance()->CheckGeneralServerOptionWhitelist(params));
+    // params 为空指针时也应放行
+    EXPECT_EQ(MSPROF_ERROR_NONE,
+        Msprofiler::Api::ProfAclMgr::instance()->CheckGeneralServerOptionWhitelist(nullptr));
+}
+
+// ProfNotifySetDevice：devId 最高位为 1（通用服务器约定）时直接返回，不启动 device 采集 task。
+TEST_F(PLATFORM_UTEST, ProfNotifySetDeviceSkipsWhenDevIdHighBitSet) {
+    GlobalMockObject::verify();
+    EXPECT_EQ(MSPROF_ERROR_NONE,
+        Analysis::Dvvp::ProfilerCommon::ProfNotifySetDevice(0, 0x80000000U, true));
+    EXPECT_EQ(MSPROF_ERROR_NONE,
+        Analysis::Dvvp::ProfilerCommon::ProfNotifySetDevice(0, 0x80000001U, false));
 }
 
 #ifndef BUILD_OPEN_PROJECT

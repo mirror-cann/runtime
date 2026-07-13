@@ -11,6 +11,7 @@
 #include <string>
 #include <cstring>
 #include "ascend_hal.h"
+#include "ascend_inpackage_hal.h"
 #include "mmpa_api.h"
 
 extern "C" {
@@ -31,6 +32,25 @@ std::map<std::string, void*> g_map = {
     {"drvGetDeviceSplitMode", (void *)drvGetDeviceSplitMode},
     {"halEschedQueryInfo", (void *)halEschedQueryInfo},
     {"halEschedCreateGrpEx", (void *)halEschedCreateGrpEx},
+    // MsprofDrvApi 通过 dlopen/dlsym 动态加载以下驱动符号；注册到桩表后，
+    // dlsym 返回已链接的 stub 符号地址，既有 MOCKER(驱动符号) 用例即可命中，无需修改测试用例。
+    {"drvGetDevNum", (void *)drvGetDevNum},
+    {"drvGetDevIDs", (void *)drvGetDevIDs},
+    {"drvGetPlatformInfo", (void *)drvGetPlatformInfo},
+    {"drvDeviceStatus", (void *)drvDeviceStatus},
+    {"halGetDeviceInfo", (void *)halGetDeviceInfo},
+    {"prof_drv_get_channels", (void *)prof_drv_get_channels},
+    {"prof_drv_start", (void *)prof_drv_start},
+    {"prof_stop", (void *)prof_stop},
+    {"prof_channel_read", (void *)prof_channel_read},
+    {"prof_channel_poll", (void *)prof_channel_poll},
+    {"halProfDataFlush", (void *)halProfDataFlush},
+    {"drvDeviceGetPhyIdByIndex", (void *)drvDeviceGetPhyIdByIndex},
+    {"halEschedSubmitEvent", (void *)halEschedSubmitEvent},
+    {"halProfSampleRegister", (void *)halProfSampleRegister},
+    {"halProfSampleRegisterEx", (void *)halProfSampleRegisterEx},
+    {"halProfQueryAvailBufLen", (void *)halProfQueryAvailBufLen},
+    {"halProfSampleDataReport", (void *)halProfSampleDataReport},
 };
 
 void *mmDlsym(void *handle, const char* funcName)

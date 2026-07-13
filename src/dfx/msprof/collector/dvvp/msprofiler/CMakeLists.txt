@@ -85,17 +85,9 @@ target_link_options(msprofiler_fwk_share PRIVATE
     -Wl,--exclude-libs=ALL
 )
 
-if (PRODUCT)
-    if (${TARGET_SYSTEM_NAME} STREQUAL "Windows")
-        target_link_libraries(msprofiler_fwk_share PRIVATE
-            ascend_hal
-        )
-    else()
-        target_link_libraries(msprofiler_fwk_share PRIVATE
-            ascend_hal_stub
-        )
-    endif()
-endif()
+# msprof 通用服务器场景：msprofiler_fwk_share 源码不直接引用任何驱动符号（driver 调用均经
+# profimpl 层的 MsprofDrvApi 间接 dlopen/dlsym），链接期不需要 ascend_hal_stub，避免 NEEDED
+# 表带上 libascend_hal.so（无驱动包环境下会导致本 so 加载期失败）。
 
 target_link_libraries(msprofiler_fwk_share
     PRIVATE
@@ -104,13 +96,11 @@ target_link_libraries(msprofiler_fwk_share
         mmpa_headers
         adump_headers
         npu_runtime_headers
-        -Wl,--no-as-needed
         c_sec
         alog
         mmpa
         profapi_share
         error_manager
-        -Wl,--as-needed
     PUBLIC
         msprof_headers
 )

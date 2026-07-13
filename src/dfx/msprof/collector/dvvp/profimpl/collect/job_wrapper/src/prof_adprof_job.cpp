@@ -11,6 +11,7 @@
 #include "collection_job.h"
 #include "platform/platform.h"
 #include "osal.h"
+#include "msprof_drv_api.h"
 
 namespace Analysis {
 namespace Dvvp {
@@ -246,7 +247,8 @@ int32_t ProfAdprofJob::Init(const SHARED_PTR_ALIA<CollectionJobCfg> cfg)
         return PROFILING_FAILED;
     }
 
-    drvError_t err = drvDeviceGetPhyIdByIndex(static_cast<uint32_t>(cfg->comParams->devId), &phyId_);
+    drvError_t err = analysis::dvvp::driver::MsprofDrvApi::instance()->drvDeviceGetPhyIdByIndex(
+        static_cast<uint32_t>(cfg->comParams->devId), &phyId_);
     if (err != DRV_ERROR_NONE) {
         if (err == DRV_ERROR_NOT_SUPPORT) {
             MSPROF_LOGW("[ProfAdprofJob]Driver not support drvDeviceGetPhyIdByIndex interface.");

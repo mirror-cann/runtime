@@ -13,6 +13,7 @@
 #include "config.h"
 #include "ai_drv_prof_api.h"
 #include "devprof_common.h"
+#include "msprof_drv_api.h"
 
 using namespace analysis::dvvp::common::error;
 using namespace analysis::dvvp::common::config;
@@ -136,7 +137,7 @@ STATIC int32_t ProfReportAdprofData(uint32_t devId, uint32_t channelId)
     while (DevprofDrvAdprof::instance()->adprofFileChunkBuffer.GetUsedSize() != 0) {
         totalReportLen = 0;
         ProfTlv *tlvBuff = static_cast<ProfTlv *>(buff);
-        ret = halProfQueryAvailBufLen(devId, channelId, &bufLen);
+        ret = MsprofDrvApi::instance()->halProfQueryAvailBufLen(devId, channelId, &bufLen);
         if (ret != DRV_ERROR_NONE) {
             MSPROF_LOGE("get driver buffer len failed, device id:%u, channel id:%u, ret:%d", devId, channelId, ret);
             break;
@@ -161,7 +162,7 @@ STATIC int32_t ProfReportAdprofData(uint32_t devId, uint32_t channelId)
             break;
         }
         struct prof_data_report_para profDataReportPara = {buff, totalReportLen};
-        ret = halProfSampleDataReport(devId, channelId, 0, &profDataReportPara);
+        ret = MsprofDrvApi::instance()->halProfSampleDataReport(devId, channelId, 0, &profDataReportPara);
         if (ret != DRV_ERROR_NONE) {
             MSPROF_LOGE("report data failed, ret:%d, data size:%u", ret, totalReportLen);
         } else {
@@ -192,7 +193,7 @@ int32_t AdprofStartRegister(struct AdprofCallBack &adprofCallBack, uint32_t devI
     MSPROF_EVENT("adprof start register");
     DevprofDrvAdprof::instance()->adprofCallBack_ = adprofCallBack;
     ProfSampleRegisterPara registerPara = {1, {ProfStartAdprof, ProfSampleAdprof, nullptr, ProfStopAdprof}};
-    int32_t ret = halProfSampleRegister(devId, PROF_CHANNEL_ADPROF, &registerPara);
+    int32_t ret = MsprofDrvApi::instance()->halProfSampleRegister(devId, PROF_CHANNEL_ADPROF, &registerPara);
     if (ret != DRV_ERROR_NONE) {
         MSPROF_LOGE("Failed to regist adprof sample ops, ret = %d.", ret);
         return PROFILING_FAILED;
