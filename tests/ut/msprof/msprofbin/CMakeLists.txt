@@ -89,7 +89,7 @@ set(common_file
     ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/base_analyzer.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/profimpl/collect/job_wrapper/src/prof_hardware_mem_job.cpp
 )
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND common_file
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/nano_platform.cpp
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/mini_platform.cpp
@@ -219,8 +219,8 @@ target_compile_definitions(msprof_bin_utest PRIVATE
     __PROF_LLT
     google=ascend_private
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(msprof_bin_utest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(msprof_bin_utest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_libraries(msprof_bin_utest PRIVATE

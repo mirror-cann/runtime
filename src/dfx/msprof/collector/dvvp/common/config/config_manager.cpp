@@ -79,11 +79,11 @@ int32_t ConfigManager::Init()
         } else if (ret == DRV_ERROR_NOT_SUPPORT) {
             MSPROF_LOGW("Driver doesn't support device type version by halGetDeviceInfo interface, ret=%d"
                 ", set default PlatformType", static_cast<int32_t>(ret));
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
             chipId = static_cast<uint32_t>(PlatformType::MDC_TYPE);
 #else
             chipId = static_cast<uint32_t>(PlatformType::CLOUD_TYPE);
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
             break;
         }
     }
@@ -159,11 +159,11 @@ std::string ConfigManager::GetChipIdStr()
     if (iter != configMap_.end()) {
         return iter->second;
     }
-#ifdef BUILD_OPEN_PROJECT
+#ifdef BUILD_PROFILING_OPEN_PROJECT
     return std::to_string(static_cast<uint32_t>(PlatformType::CLOUD_TYPE));
 #else
     return std::to_string(static_cast<uint32_t>(PlatformType::MINI_TYPE));
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 }
 
 PlatformType ConfigManager::GetPlatformType() const
@@ -171,21 +171,21 @@ PlatformType ConfigManager::GetPlatformType() const
     auto iter =  configMap_.find(TYPE_CONFIG);
     if (iter != configMap_.end()) {
         int32_t typeInt = 0;
-#ifdef BUILD_OPEN_PROJECT
+#ifdef BUILD_PROFILING_OPEN_PROJECT
         FUNRET_CHECK_EXPR_ACTION(!Utils::StrToInt32(typeInt, iter->second), return PlatformType::CLOUD_TYPE, 
             "iter->second %s is invalid", iter->second.c_str());
 #else
         FUNRET_CHECK_EXPR_ACTION(!Utils::StrToInt32(typeInt, iter->second), return PlatformType::MINI_TYPE, 
             "iter->second %s is invalid", iter->second.c_str());
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         auto type = static_cast<PlatformType>(typeInt);
         return type;
     }
-#ifdef BUILD_OPEN_PROJECT
+#ifdef BUILD_PROFILING_OPEN_PROJECT
     return PlatformType::CLOUD_TYPE;
 #else
     return PlatformType::MINI_TYPE;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 }
 
 bool ConfigManager::IsDriverSupportLlc() const
@@ -193,12 +193,12 @@ bool ConfigManager::IsDriverSupportLlc() const
     PlatformType type = GetPlatformType();
     if (type == PlatformType::CLOUD_TYPE || type == PlatformType::DC_TYPE || 
         type == PlatformType::CHIP_V4_1_0 || type == PlatformType::MINI_V3_TYPE
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         || type == PlatformType::MDC_TYPE || type == PlatformType::CHIP_TINY_V1 ||
         type == PlatformType::CHIP_MDC_MINI_V3 || type == PlatformType::CHIP_MDC_LITE || type == PlatformType::CHIP_MDC_V2 ||
         type == PlatformType::CHIP_CLOUD_V3 || type == PlatformType::CHIP_CLOUD_V4 ||
         type == PlatformType::CHIP_MDC_LITE_V2
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ) {
         return true;
     }

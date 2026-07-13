@@ -1467,9 +1467,9 @@ AppMode::AppMode(std::string preCheckParams, SHARED_PTR_ALIA<ProfileParams> para
         ARGS_CPU_PROFILING, ARGS_SYS_PROFILING, ARGS_PID_PROFILING, ARGS_HARDWARE_MEM, ARGS_IO_PROFILING,
         ARGS_INTERCONNECTION_PROFILING, ARGS_DVPP_PROFILING, ARGS_TASK_BLOCK, ARGS_L2_PROFILING, ARGS_AIC_FREQ,
         ARGS_AIV_FREQ, ARGS_INSTR_PROFILING_FREQ, ARGS_INSTR_PROFILING, ARGS_HCCL,
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ARGS_SYS_SAMPLING_FREQ, ARGS_PID_SAMPLING_FREQ, ARGS_HARDWARE_MEM_SAMPLING_FREQ, ARGS_MEM_SERVICEFLOW,
         ARGS_IO_SAMPLING_FREQ, ARGS_DVPP_FREQ,  ARGS_CPU_SAMPLING_FREQ, ARGS_INTERCONNECTION_FREQ,
         ARGS_HOST_SYS, ARGS_PYTHON_PATH, ARGS_MSPROFTX, ARGS_DELAY_PROF, ARGS_DURATION_PROF, ARGS_OPTYPE,
@@ -1489,17 +1489,17 @@ int32_t RunningMode::HandleProfilingParams() const
     std::string aiCoreMetrics;
     std::string aiVectMetrics;
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_V3_TYPE
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_MINI_V3
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_TINY_V1
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_LITE
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ) {
         aiCoreMetrics = params_->ai_core_metrics.empty() ? PIPE_EXECUTION_UTILIZATION : params_->ai_core_metrics;
     } else {
         aiCoreMetrics = params_->ai_core_metrics.empty() ? PIPE_UTILIZATION : params_->ai_core_metrics;
     }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE) {
         aiVectMetrics = params_->aiv_metrics.empty() ? PIPE_UTILIZATION : params_->aiv_metrics;
     } else {
@@ -1507,7 +1507,7 @@ int32_t RunningMode::HandleProfilingParams() const
     }
 #else
     aiVectMetrics = aiCoreMetrics;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     ConfigManager::instance()->GetVersionSpecificMetrics(aiCoreMetrics);
     int32_t ret = Platform::instance()->GetAicoreEvents(aiCoreMetrics, params_->ai_core_profiling_events);
     if (ret != PROFILING_SUCCESS) {
@@ -1527,13 +1527,13 @@ int32_t RunningMode::HandleProfilingParams() const
 void AppMode::SetDefaultParamsByPlatformType() const
 {
     auto platformType = ConfigManager::instance()->GetPlatformType();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (platformType == PlatformType::MDC_TYPE) {
         if (params_->aiv_profiling.empty()) {
             params_->aiv_profiling = "on";
         }
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if (params_->taskTrace == "off" || params_->taskTime == "off") {
         return;
     }
@@ -1563,9 +1563,9 @@ SystemMode::SystemMode(std::string preCheckParams, SHARED_PTR_ALIA<ProfileParams
         ARGS_AI_CORE, ARGS_AIV, ARGS_CPU_PROFILING, ARGS_SYS_PROFILING,
         ARGS_PID_PROFILING, ARGS_HARDWARE_MEM, ARGS_IO_PROFILING, ARGS_INTERCONNECTION_PROFILING,
         ARGS_DVPP_PROFILING, ARGS_AIC_FREQ, ARGS_AIV_FREQ,
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ARGS_INSTR_PROFILING_FREQ, ARGS_INSTR_PROFILING, ARGS_SYS_SAMPLING_FREQ, ARGS_PID_SAMPLING_FREQ,
         ARGS_HARDWARE_MEM_SAMPLING_FREQ, ARGS_IO_SAMPLING_FREQ, ARGS_DVPP_FREQ,
         ARGS_CPU_SAMPLING_FREQ, ARGS_INTERCONNECTION_FREQ, ARGS_HOST_SYS, ARGS_SYS_PERIOD,
@@ -1580,12 +1580,12 @@ bool SystemMode::IsDeviceJob() const
     if (params_ == nullptr) {
         return false;
     }
-    #ifndef BUILD_OPEN_PROJECT
+    #ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE &&
         params_->hardware_mem.compare("on") == 0) {
         return true;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if (params_->cpu_profiling.compare("on") == 0 || params_->sys_profiling.compare("on") == 0 ||
         params_->pid_profiling.compare("on") == 0) {
         return true;
@@ -1613,13 +1613,13 @@ SHARED_PTR_ALIA<ProfileParams> SystemMode::GenerateDeviceParam(SHARED_PTR_ALIA<P
     dstParams->profiling_period = params->profiling_period;
     uintptr_t addr = reinterpret_cast<uintptr_t>(dstParams.get());
     dstParams->job_id = Utils::ProfCreateId(static_cast<uint64_t>(addr));
-    #ifndef BUILD_OPEN_PROJECT
+    #ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         dstParams->llc_profiling_events = params->llc_profiling_events;
         dstParams->llc_profiling = params->llc_profiling;
         dstParams->msprof_llc_profiling = params->msprof_llc_profiling;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_V4_1_0) {
         dstParams->instrProfiling = params->instrProfiling;
         dstParams->instrProfilingFreq = params->instrProfilingFreq;

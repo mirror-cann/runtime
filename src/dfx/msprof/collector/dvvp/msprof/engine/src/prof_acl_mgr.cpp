@@ -3452,14 +3452,14 @@ void ProfAclMgr::TaskBasedCfgTrfToReq(const uint64_t dataTypeConfig, ProfAicoreM
 {
     MSPROF_LOGI("Begin to transfer task-based msprof StartCfg to api StartReq");
     feature->featureName = PROF_FEATURE_TASK;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         if ((dataTypeConfig & PROF_SCHEDULE_TIMELINE_MASK) != 0 ||
             (dataTypeConfig & PROF_TASK_TIME_MASK) != 0) {
             feature->tsTimeline = "on";
         }
     } else
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if ((dataTypeConfig & PROF_TASK_TIME_MASK) != 0) {
         feature->hwtsLog = "on";
     }
@@ -3521,10 +3521,10 @@ void ProfAclMgr::AicoreMetricsEnumToNameTwo(ProfAicoreMetrics aicMetrics, std::s
     switch (aicMetrics) {
         case PROF_AICORE_L2_CACHE:
             if (
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
                 ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE ||
                 ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE ||
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
                 ConfigManager::instance()->GetPlatformType() == PlatformType::CLOUD_TYPE ||
                 ConfigManager::instance()->GetPlatformType() == PlatformType::DC_TYPE) {
                 value = L2_CACHE_ENUM;
@@ -3556,11 +3556,11 @@ int32_t ProfAclMgr::MsprofAclJsonMetricsConstruct(NanoJson::Json &acljsonCfg)
 {
     std::string aiCoreMetrics;
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_V3_TYPE
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_MINI_V3
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_TINY_V1
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_LITE
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ) {
         aiCoreMetrics = GetJsonMetricsParam(acljsonCfg, "aic_metrics", PIPE_EXECUTION_UTILIZATION,
             PIPE_EXECUTION_UTILIZATION);

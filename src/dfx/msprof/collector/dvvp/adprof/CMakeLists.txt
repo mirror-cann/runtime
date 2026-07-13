@@ -57,7 +57,7 @@ target_compile_definitions(adprof PRIVATE
     google=ascend_private
     $<$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>:NOMINMAX>
 )
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(adprof PRIVATE
         $<$<STREQUAL:${PRODUCT},ascend310rc>:ASCEND310>
         $<$<STREQUAL:${PRODUCT},ascend310>:ASCEND310>
@@ -78,7 +78,7 @@ target_link_libraries(adprof PRIVATE
     $<BUILD_INTERFACE:slog_headers>
     $<BUILD_INTERFACE:adprofbinOnetrack_pub>
 )
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_link_libraries(adprof PRIVATE stackcore_stub)
 else()
     target_link_libraries(adprof PRIVATE

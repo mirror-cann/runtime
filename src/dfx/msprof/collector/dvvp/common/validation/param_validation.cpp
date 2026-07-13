@@ -1150,7 +1150,7 @@ bool ParamValidation::CheckAiCoreEventsIsValid(const std::vector<std::string> &e
     }
     int32_t minEvent = 1;
     int32_t maxEvent = MAX_PMU_EVENT;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (Platform::instance()->GetPlatformType() == CHIP_MDC_LITE) {
         maxEvent = LITE_MAX_PMU_EVENT;
     }
@@ -1161,7 +1161,7 @@ bool ParamValidation::CheckAiCoreEventsIsValid(const std::vector<std::string> &e
         minEvent = 0;
         maxEvent = ACC_MAX_PMU_EVENT;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     for (uint32_t i = 0; i < events.size(); ++i) {
         const int32_t eventVal = strtol(events[i].c_str(), nullptr, BASE_HEX);
         if (eventVal < minEvent || eventVal > maxEvent) {
@@ -1176,12 +1176,12 @@ bool ParamValidation::CheckAiCoreEventsIsValid(const std::vector<std::string> &e
 bool ParamValidation::CheckLlcConfigValid(const std::string &config) const
 {
     std::vector<std::string> llcProfilingWhiteList = {LLC_PROFILING_READ, LLC_PROFILING_WRITE};
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (Platform::instance()->GetPlatformType() == PlatformTypeEnum::CHIP_MINI) {
         MSPROF_LOGE("1910 llc is supported only in the msprof command line tool");
         return false;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     for (size_t i = 0; i < llcProfilingWhiteList.size(); i++) {
         if (config.compare(llcProfilingWhiteList[i]) == 0) {
             return true;
@@ -1191,7 +1191,7 @@ bool ParamValidation::CheckLlcConfigValid(const std::string &config) const
     return false;
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 bool ParamValidation::CheckTaskBlockValid(const std::string &switchName, const std::string &config) const
 {
     FUNRET_CHECK_EXPR_ACTION(!Platform::instance()->CheckIfSupport(PLATFORM_TASK_BLOCK), return false,
@@ -1222,7 +1222,7 @@ bool ParamValidation::CheckTaskBlockValid(const std::string &switchName, const s
     }  
     return true;
 }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 }
 }
 }

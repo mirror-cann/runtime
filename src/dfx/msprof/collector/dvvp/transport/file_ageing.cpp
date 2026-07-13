@@ -337,12 +337,12 @@ void FileAgeing::PrintAgeingFile() const
 
 int32_t FileAgeing::Init()
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         MSPROF_LOGW("platform type is MINI_TYPE, not support file ageing");
         return PROFILING_SUCCESS;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     return Init2();
 }
 }  // namespace transport

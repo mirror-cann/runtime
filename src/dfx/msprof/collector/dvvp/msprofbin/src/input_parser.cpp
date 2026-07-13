@@ -111,11 +111,11 @@ SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> InputParser::MsprofGetOp
         return nullptr;
     }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (CheckMstxValid() != MSPROF_DAEMON_OK) {
         return nullptr;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 
     return ParamsCheck() == MSPROF_DAEMON_OK ? params_ : nullptr;
 }
@@ -1114,9 +1114,9 @@ void ArgsManager::PrintHelp()
 {
     std::cout << std::endl << "Usage:" << std::endl;
     std::cout << "      ./msprof [--options]" << std::endl << std::endl;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     PrintMsopprofHelp();
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     std::cout << "Options:" << std::endl;
     for (auto args : argsList_) {
         args.PrintHelp();
@@ -1187,11 +1187,11 @@ int32_t InputParser::PreCheckPlatform(int32_t opt, CONST_CHAR_PTR argv[])
         ARGS_HOST_SYS_USAGE_FREQ, ARGS_PARSE, ARGS_QUERY, ARGS_EXPORT, ARGS_EXPORT_ITERATION_ID, ARGS_EXPORT_MODEL_ID,
         ARGS_SUMMARY_FORMAT, ARGS_PYTHON_PATH, ARGS_ANALYZE, ARGS_RULE, ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
     Analysis::Dvvp::Common::Config::PlatformType platformType = ConfigManager::instance()->GetPlatformType();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (platformType < PlatformType::MINI_TYPE || platformType >= PlatformType::END_TYPE) {
 #else
     if (platformType >= PlatformType::END_TYPE) {
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         return PROFILING_FAILED;
     }
     std::vector<MsprofArgsType> platSwithList = GeneratePlatSwithList();
@@ -1210,13 +1210,13 @@ int32_t InputParser::PreCheckPlatform(int32_t opt, CONST_CHAR_PTR argv[])
 
 void InputParser::InitOpenBlackLists(std::map<PlatformType, std::vector<MsprofArgsType>> &platformArgsType) const
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     std::vector<MsprofArgsType> miniBlackSwith = {ARGS_INTERCONNECTION_PROFILING, ARGS_INTERCONNECTION_FREQ,
         ARGS_L2_PROFILING, ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS, ARGS_STORAGE_LIMIT,
         ARGS_TASK_BLOCK, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ, ARGS_DYNAMIC_PROF, ARGS_DYNAMIC_PROF_PID,
         ARGS_NPU_EVENTS, ARGS_DELAY_PROF, ARGS_DURATION_PROF, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ,
         ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     std::vector<MsprofArgsType> cloudBlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
         ARGS_TASK_BLOCK, ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ,
         ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
@@ -1228,16 +1228,16 @@ void InputParser::InitOpenBlackLists(std::map<PlatformType, std::vector<MsprofAr
     std::vector<MsprofArgsType> miniV3BlackSwith = {ARGS_AIV, ARGS_AIV_FREQ, ARGS_AIV_MODE, ARGS_AIV_METRICS,
         ARGS_INTERCONNECTION_PROFILING, ARGS_INTERCONNECTION_FREQ, ARGS_INSTR_PROFILING, ARGS_INSTR_PROFILING_FREQ,
         ARGS_SYS_LOW_POWER, ARGS_SYS_LOW_POWER_FREQ, ARGS_MEM_SERVICEFLOW, ARGS_OPTYPE};
-    #ifndef BUILD_OPEN_PROJECT
+    #ifndef BUILD_PROFILING_OPEN_PROJECT
     platformArgsType[PlatformType::MINI_TYPE] = miniBlackSwith;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     platformArgsType[PlatformType::CLOUD_TYPE] = cloudBlackSwith;
     platformArgsType[PlatformType::DC_TYPE] = dcBlackSwith;
     platformArgsType[PlatformType::CHIP_V4_1_0] = cloudBlackSwithV2;
     platformArgsType[PlatformType::MINI_V3_TYPE] = miniV3BlackSwith;
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 void InputParser::InitClosedBlackLists(std::map<PlatformType, std::vector<MsprofArgsType>> &platformArgsType) const
 {
     std::vector<MsprofArgsType> mdcBlackSwith = {ARGS_IO_PROFILING, ARGS_IO_SAMPLING_FREQ, ARGS_INTERCONNECTION_FREQ,
@@ -1272,16 +1272,16 @@ void InputParser::InitClosedBlackLists(std::map<PlatformType, std::vector<Msprof
     platformArgsType[PlatformType::CHIP_MDC_V2] = mdcV2BlackSwith;
     platformArgsType[PlatformType::CHIP_MDC_LITE_V2] = mdcLiteV2BlackSwith;
 }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 
 std::vector<MsprofArgsType> InputParser::GeneratePlatSwithList() const
 {
     PlatformType platformType = ConfigManager::instance()->GetPlatformType();
     std::map<PlatformType, std::vector<MsprofArgsType>> platformArgsType;
     InitOpenBlackLists(platformArgsType);
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     InitClosedBlackLists(platformArgsType);
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     return platformArgsType[platformType];
 }
 
@@ -1304,7 +1304,7 @@ int32_t InputParser::CheckSampleModeValid(const struct MsprofCmdInfo &cmdInfo, i
         return MSPROF_DAEMON_ERROR;
     }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE) {
         params_->aiv_profiling_mode = (opt == ARGS_AIV_MODE) ?
             cmdInfo.args[ARGS_AIV_MODE] : params_->aiv_profiling_mode;
@@ -1315,7 +1315,7 @@ int32_t InputParser::CheckSampleModeValid(const struct MsprofCmdInfo &cmdInfo, i
 #else
     params_->aiv_profiling_mode = (opt == ARGS_AIC_MODE) ?
         cmdInfo.args[ARGS_AIC_MODE] : params_->aiv_profiling_mode;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     params_->ai_core_profiling_mode = (opt == ARGS_AIC_MODE) ?
         cmdInfo.args[ARGS_AIC_MODE] : params_->ai_core_profiling_mode;
     return MSPROF_DAEMON_OK;
@@ -1345,7 +1345,7 @@ int32_t InputParser::CheckAiCoreMetricsValid(const struct MsprofCmdInfo &cmdInfo
         return MSPROF_DAEMON_ERROR;
     }
     params_->ai_core_metrics = (opt == ARGS_AIC_METRICS) ? cmdInfo.args[opt] : params_->ai_core_metrics;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE) {
         params_->aiv_metrics = (opt == ARGS_AIV_METRICS) ? cmdInfo.args[opt] : params_->aiv_metrics;
     } else {
@@ -1353,7 +1353,7 @@ int32_t InputParser::CheckAiCoreMetricsValid(const struct MsprofCmdInfo &cmdInfo
     }
 #else
     params_->aiv_metrics = (opt == ARGS_AIC_METRICS) ? cmdInfo.args[opt] : params_->aiv_metrics;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     return MSPROF_DAEMON_OK;
 }
 
@@ -1363,11 +1363,11 @@ int32_t InputParser::CheckLlcProfilingIsValid(const std::string &llcProfiling) c
         LLC_READ,
         LLC_WRITE
     };
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         llcProfilingWhiteList = {LLC_CAPACITY, LLC_BANDWIDTH};
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if (llcProfiling.empty()) {
         CmdLog::CmdErrorLog("Argument --llc-profiling is empty."
             "Please input in the range of '%s|%s'",
@@ -1389,7 +1389,7 @@ int32_t InputParser::CheckLlcProfilingIsValid(const std::string &llcProfiling) c
 
 void InputParser::AiCoreFreqCheckValid(const int32_t intervalTransfer)
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE) {
         params_->aicore_sampling_interval = intervalTransfer;
     } else {
@@ -1399,7 +1399,7 @@ void InputParser::AiCoreFreqCheckValid(const int32_t intervalTransfer)
 #else
     params_->aicore_sampling_interval = intervalTransfer;
     params_->aiv_sampling_interval = intervalTransfer;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 }
 
 int32_t InputParser::CheckArgOnOff(const struct MsprofCmdInfo &cmdInfo, int32_t opt) const
@@ -1440,7 +1440,7 @@ int32_t InputParser::CheckGeApiArgValid(const std::string &switchStr,
 int32_t InputParser::CheckTaskBlockArgValid(const std::string &switchStr,
     const struct MsprofCmdInfo &cmdInfo, int32_t opt) const
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (!ParamValidation::instance()->CheckTaskBlockValid("--task-block", switchStr)) {
         CmdLog::CmdErrorLog("Argument --%s: invalid value: %s. ", LONG_OPTIONS[opt].name, cmdInfo.args[opt]);
         return MSPROF_DAEMON_ERROR;
@@ -1449,7 +1449,7 @@ int32_t InputParser::CheckTaskBlockArgValid(const std::string &switchStr,
     (void)switchStr;
     (void)cmdInfo;
     (void)opt;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     return MSPROF_DAEMON_OK;
 }
 
@@ -1564,12 +1564,12 @@ int32_t InputParser::MsprofCmdCheckValid(const struct MsprofCmdInfo &cmdInfo, in
             ret = CheckAiCoreMetricsValid(cmdInfo, opt);
             break;
         case ARGS_NPU_EVENTS:
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
             ret = CheckNpuEventsValid(cmdInfo, opt);
 #else
             params_->npuEvents = cmdInfo.args[opt];
             ret = MSPROF_DAEMON_OK;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
             break;
         case ARGS_SYS_DEVICES:
             ret = CheckSysDevicesValid(cmdInfo);
@@ -1692,14 +1692,14 @@ int32_t InputParser::MsprofCmdCheckValid2(const struct MsprofCmdInfo &cmdInfo, i
             ret = CheckReports(cmdInfo);
             break;
         case ARGS_MEM_SERVICEFLOW:
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
             ret = CheckMemServiceflow(cmdInfo);
 #else
             if (cmdInfo.args[ARGS_MEM_SERVICEFLOW] != nullptr) {
                 params_->memServiceflow = cmdInfo.args[ARGS_MEM_SERVICEFLOW];
             }
             ret = MSPROF_DAEMON_OK;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
             break;
         case ARGS_RULE:
             ret = CheckAnalyzeRuleSwitch(cmdInfo);
@@ -1809,10 +1809,10 @@ void ArgsManager::AddArgs()
     AddDvvpArgs();
     AddL2Args();
     AddHostArgs();
-    #ifndef BUILD_OPEN_PROJECT
+    #ifndef BUILD_PROFILING_OPEN_PROJECT
     AddStarsArgs();
     AddLowPowerArgs();
-    #endif // BUILD_OPEN_PROJECT
+    #endif // BUILD_PROFILING_OPEN_PROJECT
     AddDynProfArgs();
     AddDelayDurationArgs();
     AddScaleArgs();
@@ -1898,23 +1898,23 @@ ArgsManager::ArgsManager()
 
 void ArgsManager::AddStorageLimitArgs()
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         return;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     Args storageLimitArgs = {"storage-limit", "Specify the output directory volume. range 200MB ~ 4294967295MB."};
     argsList_.push_back(storageLimitArgs);
 }
 
 void ArgsManager::AddModelExecutionArgs()
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_MINI_V3 ||
     ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_TINY_V1) {
         return;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     Args modelExecutionArgs = {"model-execution", "Show ge model execution profiling data, the default value is off. "
         "[Note] This option will be discarded in later versions.", OFF};
     argsList_.push_back(modelExecutionArgs);
@@ -1922,21 +1922,21 @@ void ArgsManager::AddModelExecutionArgs()
 
 void ArgsManager::AddAicpuArgs()
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE ||
         ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_LITE ||
         ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_MINI_V3 ||
         ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_TINY_V1) {
         return;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     Args aicpu = {"aicpu", "Show aicpu profiling data, the default value is off.", OFF};
     argsList_.push_back(aicpu);
 }
 
 void ArgsManager::AddAivArgs()
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     PlatformType type = ConfigManager::instance()->GetPlatformType();
     if (type != PlatformType::MDC_TYPE) {
         return;
@@ -1959,18 +1959,18 @@ void ArgsManager::AddAivArgs()
     argsList_.push_back(aivMode);
     argsList_.push_back(aivFreq);
     argsList_.push_back(aivMetrics);
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 }
 
 void ArgsManager::AddIoArgs()
 {
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::DC_TYPE
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         || ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_MINI_V3
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_LITE
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_TINY_V1
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ) {
         return;
     }
@@ -1986,13 +1986,13 @@ void ArgsManager::AddIoArgs()
         ioFreqArgs.SetDetail("NIC, ROCE acquisition frequency, range 1 ~ 100, "
                                "the default value is 100, unit Hz.");
     }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_CLOUD_V3) {
         ioArgs.SetDetail("UB acquisition switch, the default value is off.");
         ioFreqArgs.SetDetail("UB acquisition frequency, range 1 ~ 100, "
                                "the default value is 100, unit Hz.");
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     argsList_.push_back(ioArgs);
     argsList_.push_back(ioFreqArgs);
 }
@@ -2000,12 +2000,12 @@ void ArgsManager::AddIoArgs()
 void ArgsManager::AddInterArgs()
 {
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_V3_TYPE
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         || ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE
         || ConfigManager::instance()->GetPlatformType() == PlatformType::MDC_TYPE
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_MDC_MINI_V3
         || ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_TINY_V1
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ) {
         return;
     }
@@ -2023,24 +2023,24 @@ void ArgsManager::AddInterArgs()
         interFreq = {"sys-interconnection-freq", "PCIE acquisition frequency, range 1 ~ 50, "
             "the default value is 50, unit Hz.", "50"};
     }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_CLOUD_V3) {
         interArgs.SetDetail("PCIE, CCU, SIO and UB acquisition switch, the default value is off.");
         interFreq.SetDetail("PCIE, CCU, SIO and UB acquisition frequency, range 1 ~ 50, "
             "the default value is 50, unit Hz.");
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     argsList_.push_back(interArgs);
     argsList_.push_back(interFreq);
 }
 
 void ArgsManager::AddL2Args()
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         return;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     std::string noc = "";
     std::string smmu = "";
     if (Platform::instance()->CheckIfSupport(PLATFORM_TASK_SOC_PMU_NOC)) {

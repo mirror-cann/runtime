@@ -122,7 +122,7 @@ set(profilerSrcFiles
     ${MSPROF_SOURCE_DIR}/dvvp/profimpl/collect/channel/channel_job.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/base_analyzer.cpp
 )
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND profilerSrcFiles
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/nano_platform.cpp
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/david_platform.cpp
@@ -278,8 +278,8 @@ target_compile_definitions(job_wrapper PRIVATE
     MSPROF_DEBUG
     google=ascend_private
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(job_wrapper PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(job_wrapper PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_libraries(job_wrapper PRIVATE

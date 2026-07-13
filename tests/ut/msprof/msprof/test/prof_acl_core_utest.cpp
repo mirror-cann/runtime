@@ -1864,7 +1864,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, DISABLED_MsprofInitAclJson) {
     EXPECT_EQ(3, ProfAclMgr::instance()->MsprofInitAclJson((void *)aclJson.c_str(), aclJson.size()));
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitAclJsonNano) {
     GlobalMockObject::verify();
     using namespace Msprofiler::Api;
@@ -3525,7 +3525,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, AicoreMetricsEnumToName) {
     Msprofiler::Api::ProfAclMgr::instance()->AicoreMetricsEnumToName(PROF_AICORE_PIPE_EXECUTE_UTILIZATION, metrics);
     EXPECT_EQ("PipelineExecuteUtilization", metrics);
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
         .stubs()
         .will(returnValue(Analysis::Dvvp::Common::Config::PlatformType::MDC_TYPE));
@@ -4469,7 +4469,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfSetConfigWillCheckConfigWhenPlatformSupported)
     configType = ACL_PROF_HOST_SYS_USAGE_FREQ;
     EXPECT_EQ(ACL_SUCCESS, Msprofiler::AclApi::ProfSetConfig(configType, config.c_str(), config.size()));
     int expectRet = ACL_ERROR_INVALID_PROFILING_CONFIG;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MOCKER_CPP(&Platform::GetPlatformType)
         .stubs()
         .will(repeat(PlatformTypeEnum::CHIP_MINI, 3))
@@ -6189,7 +6189,7 @@ TEST_F(MSPROF_ACL_CORE_UTEST, ProfParamsAdapter_CheckJsonConfig_AllSwitchNames)
     MOCKER_CPP(&ParamValidation::CheckMemServiceflowValid).stubs().will(returnValue(true));
     EXPECT_TRUE(a->CheckJsonConfig("sys_mem_serviceflow", v));
     GlobalMockObject::verify();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MOCKER_CPP(&ParamValidation::CheckTaskBlockValid).stubs().will(returnValue(true));
     EXPECT_TRUE(a->CheckJsonConfig("task_block", v));
     GlobalMockObject::verify();

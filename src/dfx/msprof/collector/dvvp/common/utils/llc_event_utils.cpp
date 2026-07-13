@@ -62,7 +62,7 @@ void LlcEventUtils::GenerateLlcEvents(SHARED_PTR_ALIA<analysis::dvvp::message::P
         GenerateLlcDefEvents(params);
         return;
     }
-    #ifndef BUILD_OPEN_PROJECT
+    #ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         if (params->llc_profiling.compare(LLC_PROFILING_CAPACITY) == 0) {
             params->llc_profiling_events = GenerateCapacityEvents();
@@ -70,7 +70,7 @@ void LlcEventUtils::GenerateLlcEvents(SHARED_PTR_ALIA<analysis::dvvp::message::P
             params->llc_profiling_events = GenerateBandwidthEvents();
         }
     } else
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->IsDriverSupportLlc()) {
         if (params->llc_profiling.compare(LLC_PROFILING_READ) == 0) {
             params->llc_profiling_events = LLC_PROFILING_READ;
@@ -86,12 +86,12 @@ void LlcEventUtils::GenerateLlcEvents(SHARED_PTR_ALIA<analysis::dvvp::message::P
 
 void LlcEventUtils::GenerateLlcDefEvents(SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params)
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         params->llc_profiling = LLC_PROFILING_CAPACITY;
         params->llc_profiling_events = GenerateCapacityEvents();
     } else
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->IsDriverSupportLlc()) {
         params->llc_profiling = LLC_PROFILING_READ;
         params->llc_profiling_events = LLC_PROFILING_READ;

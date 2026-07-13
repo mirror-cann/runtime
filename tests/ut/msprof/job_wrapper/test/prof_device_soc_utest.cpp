@@ -207,7 +207,7 @@ TEST_F(PROF_DEVICE_SOC_UTEST, GenerateFileName) {
     EXPECT_EQ(genName, "/tmp/PROF_DEVICE_SOC_UTEST/GenerateFileName.0");
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(PROF_DEVICE_SOC_UTEST, ParseAiCoreConfig) {
     GlobalMockObject::verify();
 

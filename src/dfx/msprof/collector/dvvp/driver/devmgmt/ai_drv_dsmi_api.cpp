@@ -35,11 +35,11 @@ std::string DrvGeAicFrq(int32_t deviceId)
         return defAicFrq;
     }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         return defAicFrq;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     int64_t freq = 0;
     int32_t ret = DrvGetAicoreInfo(deviceId, freq);
     if (ret != PROFILING_SUCCESS || freq == 0) {
@@ -57,11 +57,11 @@ std::string DrvGeAivFrq(int32_t deviceId)
     if (deviceId < 0) {
         return defAivFrq;
     }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         return defAivFrq;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     int64_t freq = 0;
     const int32_t ret = static_cast<int32_t>(analysis::dvvp::driver::MsprofDrvApi::instance()->halGetDeviceInfo(
         static_cast<uint32_t>(deviceId),

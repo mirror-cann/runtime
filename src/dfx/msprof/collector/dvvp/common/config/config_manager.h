@@ -26,13 +26,13 @@ constexpr uint32_t VER_310M = 5;
 enum class PlatformType {
     MINI_TYPE = 0,
     CLOUD_TYPE = 1,
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MDC_TYPE,
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     DC_TYPE = 4,
     CHIP_V4_1_0,
     MINI_V3_TYPE = 7,
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     CHIP_TINY_V1 = 8,
     CHIP_NANO_V1 = 9,
     CHIP_MDC_MINI_V3 = 11,
@@ -41,26 +41,26 @@ enum class PlatformType {
     CHIP_CLOUD_V4 = 16,
     CHIP_MDC_V2 = 17,
     CHIP_MDC_LITE_V2 = 18,
-#endif // BUILD_OPEN_PROJECT
-#ifdef BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
+#ifdef BUILD_PROFILING_OPEN_PROJECT
     END_TYPE = 17
 #else
     END_TYPE
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 };
 
 const std::map<PlatformType, std::string> FREQUENCY_TYPE = {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::MINI_TYPE, "19.2"},
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::CLOUD_TYPE, "100"},
     {PlatformType::DC_TYPE, "38.4"},
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::MDC_TYPE, "38.4"},
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::CHIP_V4_1_0, "50"},
     {PlatformType::MINI_V3_TYPE, "48"},
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::CHIP_MDC_MINI_V3, "48"},
     {PlatformType::CHIP_TINY_V1, "48"},
     {PlatformType::CHIP_MDC_LITE, "38.4"},
@@ -68,21 +68,21 @@ const std::map<PlatformType, std::string> FREQUENCY_TYPE = {
     {PlatformType::CHIP_CLOUD_V4, "1000"},
     {PlatformType::CHIP_MDC_V2, "38.4"},
     {PlatformType::CHIP_MDC_LITE_V2, "38.4"}
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 };
 
 const std::map<PlatformType, std::string> AIC_TYPE = {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::MINI_TYPE, "680"},
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::CLOUD_TYPE, "800"},
     {PlatformType::DC_TYPE, "1150"},
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::MDC_TYPE, "960"},
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::CHIP_V4_1_0, "800"},
     {PlatformType::MINI_V3_TYPE, "1250"},
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     {PlatformType::CHIP_MDC_MINI_V3, "1250"},
     {PlatformType::CHIP_TINY_V1, "1250"},
     {PlatformType::CHIP_MDC_LITE, "1250"},
@@ -90,7 +90,7 @@ const std::map<PlatformType, std::string> AIC_TYPE = {
     {PlatformType::CHIP_CLOUD_V4, "1650"},
     {PlatformType::CHIP_MDC_V2, "1400"},
     {PlatformType::CHIP_MDC_LITE_V2, "1500"}
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 };
 
 class ConfigManager : public analysis::dvvp::common::singleton::Singleton<ConfigManager> {

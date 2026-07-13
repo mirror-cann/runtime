@@ -52,7 +52,7 @@ protected:
     }
 };
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(INFO_JSON_TEST, GetHwtsFreq) {
     GlobalMockObject::verify();
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)

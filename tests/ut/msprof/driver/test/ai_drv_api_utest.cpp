@@ -1000,7 +1000,7 @@ TEST_F(DRIVER_AI_DRV_API_TEST, MsprofDrvApiLibLoadedPath) {
 // 覆盖 ai_drv_dsmi_api.cpp：DrvGeAicFrq / DrvGeAivFrq 经 MsprofDrvApi::halGetDeviceInfo 取频率。
 TEST_F(DRIVER_AI_DRV_API_TEST, DrvDsmiFrequency) {
     GlobalMockObject::verify();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
         .stubs()
         .will(returnValue(PlatformType::CLOUD_TYPE));

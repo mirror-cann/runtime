@@ -147,11 +147,11 @@ bool ProfParamsAdapter::CheckJsonConfig(const std::string &switchName, const Nan
     } else if (switchName == "sys_mem_serviceflow") {
         return ParamValidation::instance()->CheckMemServiceflowValid(switchName, val.GetValue<std::string>());
     } else if (switchName == "task_block") {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         return ParamValidation::instance()->CheckTaskBlockValid(switchName, val.GetValue<std::string>());
 #else
         return true;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     } else {
         return ParamValidation::instance()->CheckParamEmptyInvalid(switchName, val.GetValue<std::string>());
     }
@@ -751,7 +751,7 @@ void ProfParamsAdapter::UpdateHardwareMemParams(SHARED_PTR_ALIA<analysis::dvvp::
         dstParams->ddr_master_id = srcParams->ddr_master_id;
         dstParams->memProfiling = "on";
         dstParams->memInterval = periodMs;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         if (Analysis::Dvvp::Common::Config::ConfigManager::instance()->GetPlatformType() != PlatformType::MINI_TYPE) {
             dstParams->hbmProfiling = "on";
             dstParams->hbm_profiling_events = srcParams->hbm_profiling_events;
@@ -761,7 +761,7 @@ void ProfParamsAdapter::UpdateHardwareMemParams(SHARED_PTR_ALIA<analysis::dvvp::
         dstParams->hbmProfiling = "on";
         dstParams->hbm_profiling_events = srcParams->hbm_profiling_events;
         dstParams->hbmInterval = periodMs;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     }
 }
 

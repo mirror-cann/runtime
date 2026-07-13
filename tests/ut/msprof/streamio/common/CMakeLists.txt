@@ -37,7 +37,7 @@ set(profilerSrcFiles
     ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/base_analyzer.cpp
     ${CppPath}
 )
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND profilerSrcFiles
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/nano_platform.cpp
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/mini_platform.cpp
@@ -135,8 +135,8 @@ target_compile_definitions(streamio_common_utest PRIVATE
     MSPROF_DEBUG
     google=ascend_private
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(streamio_common_utest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(streamio_common_utest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_libraries(streamio_common_utest PRIVATE

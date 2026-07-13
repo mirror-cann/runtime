@@ -125,14 +125,14 @@ std::string InfoJson::EncodeInfoMainJson(SHARED_PTR_ALIA<InfoMain> infoMain) con
 std::string InfoJson::GetHwtsFreq(std::string freq) const
 {
     std::string hwtsFrequency = freq;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     double errorFrqValue = std::fabs(std::stod(freq) - DAVID_BASE_HWTS_FREQ);
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::CHIP_CLOUD_V3 &&
         errorFrqValue > ERROR_THRESHOLD) {
         MSPROF_LOGW("The original hwtsFrequency is %s", freq.c_str());
         hwtsFrequency = std::to_string(static_cast<int>(DAVID_BASE_HWTS_FREQ));
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     return hwtsFrequency;
 }
 

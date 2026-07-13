@@ -542,9 +542,9 @@ bool Platform::CheckIfSupportAdprof(uint32_t deviceId) const
     }
 
     if (DrvGetApiVersion() < SUPPORT_ADPROF_VERSION
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         || GetPlatformType() == CHIP_MINI
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
         ) {
         MSPROF_LOGI("Current version not support driver channel.");
         return false;

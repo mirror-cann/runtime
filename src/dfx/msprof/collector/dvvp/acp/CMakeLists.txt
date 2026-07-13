@@ -76,7 +76,7 @@ set(acpBinCpp
     ${PROF_BASIC_DIR}/osal/osal.c
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND acpBinCpp
         ../profimpl/platform/david_platform.cpp
         ../profimpl/platform/david_v121_platform.cpp
@@ -113,9 +113,9 @@ target_compile_definitions(acp PRIVATE
     $<$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>:NOMINMAX>
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(acp PRIVATE
-        BUILD_OPEN_PROJECT
+        BUILD_PROFILING_OPEN_PROJECT
     )
 endif()
 
@@ -204,7 +204,7 @@ set(profinjCpp
     ../task_handle/src/task_relationship_mgr.cpp
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND profinjCpp
         ../profimpl/platform/david_platform.cpp
         ../profimpl/platform/david_v121_platform.cpp
@@ -287,9 +287,9 @@ target_compile_definitions(profinj PRIVATE
     MSPROF_LIB
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(profinj PRIVATE
-        BUILD_OPEN_PROJECT
+        BUILD_PROFILING_OPEN_PROJECT
     )
 endif()
 

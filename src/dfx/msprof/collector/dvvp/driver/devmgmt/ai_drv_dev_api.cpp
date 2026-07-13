@@ -383,9 +383,9 @@ bool DrvGetDeviceStatus(const uint32_t deviceId)
 int32_t DrvGetAivNum(uint32_t deviceId, int64_t &aivNum)
 {
     std::set<PlatformType> unsupportTypeSet{PlatformType::CLOUD_TYPE, PlatformType::DC_TYPE};
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     unsupportTypeSet.insert(PlatformType::MINI_TYPE);
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     auto type = ConfigManager::instance()->GetPlatformType();
     if (unsupportTypeSet.find(type) != unsupportTypeSet.cend()) {
         aivNum = 0;

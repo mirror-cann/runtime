@@ -132,7 +132,7 @@ set(profimplCpp
     ${CppPath}
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND profimplCpp
         profimpl/platform/nano_platform.cpp
         profimpl/platform/mdc_mini_v3_platform.cpp
@@ -228,9 +228,9 @@ target_compile_definitions(profimpl_fwk_share PRIVATE
     $<$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>:WIN32>
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(profimpl_fwk_share PRIVATE
-        BUILD_OPEN_PROJECT
+        BUILD_PROFILING_OPEN_PROJECT
     )
 endif()
 
@@ -378,9 +378,9 @@ target_compile_definitions(profimpl_share_device PRIVATE
     EP_MODE
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(profimpl_share_device PRIVATE
-        BUILD_OPEN_PROJECT
+        BUILD_PROFILING_OPEN_PROJECT
     )
 endif()
 

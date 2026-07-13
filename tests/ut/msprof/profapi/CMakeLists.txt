@@ -32,7 +32,7 @@ set(src_file
     ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/base_analyzer.cpp
     ${MSPROF_SOURCE_DIR}/dvvp/profapi/src/prof_mstx_plugin.cpp
 )
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND src_file
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/nano_platform.cpp
     )
@@ -101,8 +101,8 @@ target_compile_definitions(prof_api_utest PRIVATE
     google=ascend_private
     PROF_API_STUB
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(prof_api_utest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(prof_api_utest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_libraries(prof_api_utest PRIVATE

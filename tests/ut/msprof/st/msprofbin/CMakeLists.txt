@@ -99,7 +99,7 @@ set(common_file
     ${MSPROF_SOURCE_DIR}/dvvp/msprof/dynamic_profiling/src/dyn_prof_client.cpp
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND common_file ${MSPROF_SOURCE_DIR}/dvvp/msprofbin/src/input_parser_commercial.cpp)
 endif()
 

@@ -68,7 +68,7 @@ set(profilerSrcFiles
     ${MSPROF_SOURCE_DIR}/basic/osal/osal_linux.c
     ${MSPROF_SOURCE_DIR}/basic/osal/osal_linux_mem.c
 )
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND profilerSrcFiles
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/nano_platform.cpp
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/david_platform.cpp
@@ -176,8 +176,8 @@ target_compile_definitions(transport PRIVATE
     google=ascend_private
 )
 
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(transport PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(transport PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 set_target_properties(transport PROPERTIES

@@ -54,7 +54,7 @@ set(msprofBinHeader
     ../transport
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND msprofBinHeader
         ${RUNTIME_DIR}/pkg_inc/aicpu_sched
         ${RUNTIME_DIR}/src/queue_schedule/dgwclient/inc
@@ -154,7 +154,7 @@ set(msprofbinCpp
     ${CppPath}
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND msprofbinCpp
         ../profimpl/platform/mini_platform.cpp
         ../profimpl/platform/david_platform.cpp
@@ -202,9 +202,9 @@ target_compile_definitions(msprofbin PRIVATE
     $<$<STREQUAL:${TARGET_SYSTEM_NAME},Windows>:NOMINMAX>
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(msprofbin PRIVATE
-        BUILD_OPEN_PROJECT
+        BUILD_PROFILING_OPEN_PROJECT
     )
 endif()
 
@@ -221,7 +221,7 @@ target_link_libraries(msprofbin PRIVATE
     $<BUILD_INTERFACE:msprofbinOnetrack_pub>
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     target_link_libraries(msprofbin PRIVATE
         $<BUILD_INTERFACE:msprof_headers>
     )

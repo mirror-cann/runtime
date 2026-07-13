@@ -412,7 +412,7 @@ TEST_F(INPUT_PARSER_STEST, CheckBaseInfo) {
     configManger->Init();
 
     GlobalMockObject::verify();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
         .stubs()
         .will(returnValue(Analysis::Dvvp::Common::Config::PlatformType::MDC_TYPE));
@@ -434,7 +434,7 @@ TEST_F(INPUT_PARSER_STEST, CheckBaseInfo) {
     EXPECT_EQ(PROFILING_SUCCESS, parser.CheckAiCoreMetricsValid(cmdInfo, ARGS_AIC_METRICS));
 
     GlobalMockObject::verify();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
         .stubs()
         .will(returnValue(Analysis::Dvvp::Common::Config::PlatformType::CHIP_MDC_MINI_V3));

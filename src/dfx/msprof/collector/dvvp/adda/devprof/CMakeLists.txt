@@ -129,7 +129,7 @@ set(devprofHeader
     ${CMAKE_BINARY_DIR}/proto/devprof_proto
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND devprofHeader ${PROTOBUF_STATIC_PKG_DIR}/include)
 else()
     list(APPEND devprofHeader ${ASCEND_PROTOBUF_STATIC_INCLUDE_DIR})
@@ -163,8 +163,8 @@ target_compile_definitions(devprof PRIVATE
     google=ascend_private
 )
 
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(devprof PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(devprof PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_include_directories(devprof PRIVATE

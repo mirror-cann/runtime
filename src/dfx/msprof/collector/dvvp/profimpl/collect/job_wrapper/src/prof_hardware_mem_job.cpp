@@ -474,12 +474,12 @@ int32_t ProfLlcJob::Init(const SHARED_PTR_ALIA<CollectionJobCfg> cfg)
     if (cfg->comParams->params->hostProfiling) {
         return PROFILING_FAILED;
     }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (ConfigManager::instance()->GetPlatformType() == PlatformType::MINI_TYPE) {
         MSPROF_LOGI("Mini LLC Profiling not transport by driver channel");
         return PROFILING_FAILED;
     }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 
     collectionJobCfg_ = cfg;
 

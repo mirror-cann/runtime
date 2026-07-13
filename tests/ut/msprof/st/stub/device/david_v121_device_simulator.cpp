@@ -83,7 +83,7 @@ int32_t DavidV121DeviceSimulator::GetDeviceInfo(int32_t moduleType, int32_t info
 {
     if (moduleType == MODULE_TYPE_SYSTEM &&
         infoType == INFO_TYPE_VERSION) {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         *value = (int64_t)StPlatformType::CHIP_CLOUD_V4 << 8;
 #else
         *value = (int64_t)0 << 8;

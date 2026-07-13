@@ -153,9 +153,9 @@ target_compile_definitions(ascend_devprof PRIVATE
     RC_MODE
 )
 
-if(BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
     target_compile_definitions(ascend_devprof PRIVATE
-        BUILD_OPEN_PROJECT
+        BUILD_PROFILING_OPEN_PROJECT
     )
 endif()
 
@@ -205,9 +205,9 @@ else()
         EP_MODE
     )
 
-    if(BUILD_OPEN_PROJECT)
+    if(BUILD_PROFILING_OPEN_PROJECT)
         target_compile_definitions(ascend_devprof PRIVATE
-            BUILD_OPEN_PROJECT
+            BUILD_PROFILING_OPEN_PROJECT
         )
     endif()
 

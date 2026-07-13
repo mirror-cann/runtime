@@ -73,7 +73,7 @@ TEST_F(PLATFORM_UTEST, GetPlatform) {
     EXPECT_EQ(SysPlatformType::INVALID, platform->GetPlatform());
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(PLATFORM_UTEST, NtsFeatureSupportedOnMdcV2) {
     auto platform = Platform::instance();
     EXPECT_EQ(PROFILING_SUCCESS, platform->Uninit());
@@ -97,7 +97,7 @@ TEST_F(PLATFORM_UTEST, NtsFeatureNotSupportedOnNonMdcV2) {
     EXPECT_EQ(false, platform->CheckIfSupport(PLATFORM_TASK_NTS));
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(PLATFORM_UTEST, NtsMetricsParamValidationExpandsDefaultEvents) {
     auto platform = Platform::instance();
     EXPECT_EQ(PROFILING_SUCCESS, platform->Uninit());
@@ -394,7 +394,7 @@ TEST_F(PLATFORM_UTEST, ProfNotifySetDeviceSkipsWhenDevIdHighBitSet) {
         Analysis::Dvvp::ProfilerCommon::ProfNotifySetDevice(0, 0x80000001U, false));
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(PLATFORM_UTEST, MdcLiteV2PlatformMetrics) {
     GlobalMockObject::verify();
     MdcLiteV2Platform platform;
@@ -462,5 +462,5 @@ TEST_F(PLATFORM_UTEST, MdcLiteV2PlatformReflection) {
     EXPECT_EQ(PROFILING_SUCCESS, platform->GetAiPmuMetrics("L2Cache", aicEvent));
     EXPECT_EQ("0x424,0x425,0x426,0x42a,0x42b,0x42c", aicEvent);
 }
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 }

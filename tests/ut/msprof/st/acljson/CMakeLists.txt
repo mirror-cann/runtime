@@ -227,7 +227,7 @@ set(src_file
     ${adprof_src}
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND src_file
         ${MSPROF_SOURCE_DIR}/dvvp/msprofbin/src/input_parser_commercial.cpp
     )

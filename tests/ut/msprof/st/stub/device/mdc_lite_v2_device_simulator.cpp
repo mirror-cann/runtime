@@ -81,7 +81,7 @@ int32_t MdcLiteV2DeviceSimulator::ProfDrvGetChannels(ChannelList &channels)
 
 int32_t MdcLiteV2DeviceSimulator::GetDeviceInfo(int32_t moduleType, int32_t infoType, int64_t *value)
 {
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     if (moduleType == MODULE_TYPE_SYSTEM &&
         infoType == INFO_TYPE_VERSION) {
         *value = (int64_t)StPlatformType::CHIP_MDC_LITE_V2 << 8;

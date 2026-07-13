@@ -128,7 +128,7 @@ TEST_F(COMMON_PLATFORM_TEST, PlatformInterfaceTest) {
     EXPECT_EQ(EMPTY_FREQUENCY, platformInterface->GetMetricsValue(PlatformFeature::PLATFORM_COLLECTOR_TYPES_MAX));
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, NanoPlatformTest) {
     GlobalMockObject::verify();
     MOCKER(halGetDeviceInfo)
@@ -191,7 +191,7 @@ TEST_F(COMMON_PLATFORM_TEST, NanoPlatformTest) {
 }
 #endif
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, MdcMiniV3PlatformTest) {
     GlobalMockObject::verify();
     MOCKER(halGetDeviceInfo)
@@ -419,7 +419,7 @@ TEST_F(COMMON_PLATFORM_TEST, DcPlatformTest) {
     EXPECT_EQ("0x78,0x79,0x77,0x71,0x6a,0x6c,0x74,0x62", platform.GetL2CacheEvents());
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, MiniPlatformTest) {
 
     Dvvp::Collect::Platform::MiniPlatform platform;
@@ -455,7 +455,7 @@ TEST_F(COMMON_PLATFORM_TEST, MiniPlatformTest) {
 }
 #endif
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, MdcPlatformTest) {
 
     Dvvp::Collect::Platform::MdcPlatform platform;
@@ -515,7 +515,7 @@ TEST_F(COMMON_PLATFORM_TEST, MdcPlatformTest) {
 }
 #endif
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, TinyV1PlatformTest) {
 
     Dvvp::Collect::Platform::TinyV1Platform platform;
@@ -594,7 +594,7 @@ TEST_F(COMMON_PLATFORM_TEST, TinyV1PlatformTest) {
 }
 #endif
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, MdcLitePlatformTest) {
     GlobalMockObject::verify();
     MOCKER(halGetDeviceInfo)
@@ -807,7 +807,7 @@ TEST_F(COMMON_PLATFORM_TEST, MiniV3PlatformTest) {
     EXPECT_EQ("0xF6,0xFB,0xFC,0xBF,0x90,0x91,0x9C,0x9D", l2Events);
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, DavidPlatformTest) {
     GlobalMockObject::verify();
     MOCKER(halGetDeviceInfo)
@@ -905,7 +905,7 @@ TEST_F(COMMON_PLATFORM_TEST, DavidPlatformTest) {
 }
 #endif
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, DavidV121PlatformTest) {
     GlobalMockObject::verify();
     MOCKER(halGetDeviceInfo)
@@ -1055,7 +1055,7 @@ TEST_F(COMMON_PLATFORM_TEST, PlatformAnalyzerBase) {
     Platform::instance()->Uninit();
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(COMMON_PLATFORM_TEST, PlatformAnalyzerDavid) {
     GlobalMockObject::verify();
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)

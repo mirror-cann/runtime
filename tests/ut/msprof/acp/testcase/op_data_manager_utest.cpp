@@ -116,7 +116,7 @@ drvError_t halGetDeviceInfoTransOpStub(uint32_t devId, int32_t moduleType, int32
     return DRV_ERROR_NONE;
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(OP_DATA_MANAGER_UTEST, OpAnalyzerDavidBase)
 {
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)
@@ -354,7 +354,7 @@ TEST_F(OP_DATA_MANAGER_UTEST, OpAnalyzer_BlockAndSubTaskAssociation_Empty)
     analyzer->StoreAssociation();
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(OP_DATA_MANAGER_UTEST, OpAnalyzer_OnOpData_EndInfo_ConvertFail)
 {
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)

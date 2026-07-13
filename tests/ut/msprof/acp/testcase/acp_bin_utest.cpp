@@ -71,7 +71,7 @@ void EXPECT_TestAcp(std::vector<std::string> args, const int expectedRet, std::v
     EXPECT_EQ(expectedRet, LltAcpMain(argc, (const char**)argv.data(), envp));
 }
 
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(ACP_BIN_UTEST, AcpBin) 
 {
     MOCKER_CPP(&Analysis::Dvvp::Common::Config::ConfigManager::GetPlatformType)

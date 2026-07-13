@@ -47,7 +47,7 @@ uint32_t DeviceSimulatorManager::CreateDeviceSimulator(uint32_t num, StPlatformT
             }
             devices_.emplace_back(std::move(simulator));
         }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         if (platformType == StPlatformType::CHIP_CLOUD_V3) {
             simulator = std::unique_ptr<DeviceSimulator>(new(std::nothrow) DavidDeviceSimulator(static_cast<uint32_t>(platformType)));
             if (simulator == nullptr) {
@@ -84,7 +84,7 @@ uint32_t DeviceSimulatorManager::CreateDeviceSimulator(uint32_t num, StPlatformT
             }
             devices_.emplace_back(std::move(simulator));
         }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         if (platformType == StPlatformType::MDC_TYPE) {
             simulator = std::unique_ptr<DeviceSimulator>(new(std::nothrow) MdcDeviceSimulator(static_cast<uint32_t>(platformType)));
             if (simulator == nullptr) {
@@ -100,7 +100,7 @@ uint32_t DeviceSimulatorManager::CreateDeviceSimulator(uint32_t num, StPlatformT
             }
             devices_.emplace_back(std::move(simulator));
         }
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         if (platformType == StPlatformType::CHIP_TINY_V1) {
             simulator = std::unique_ptr<DeviceSimulator>(new(std::nothrow) TinyDeviceSimulator());
             if (simulator == nullptr) {
@@ -109,7 +109,7 @@ uint32_t DeviceSimulatorManager::CreateDeviceSimulator(uint32_t num, StPlatformT
             devices_.emplace_back(std::move(simulator));
         }
 #endif
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         if (platformType == StPlatformType::CHIP_NANO_V1) {
             simulator = std::unique_ptr<DeviceSimulator>(new(std::nothrow) NanoDeviceSimulator(static_cast<uint32_t>(platformType)));
             if (simulator == nullptr) {
@@ -118,7 +118,7 @@ uint32_t DeviceSimulatorManager::CreateDeviceSimulator(uint32_t num, StPlatformT
             devices_.emplace_back(std::move(simulator));
         }
 #endif
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
         if (platformType == StPlatformType::CHIP_MDC_MINI_V3) {
             simulator = std::unique_ptr<DeviceSimulator>(new(std::nothrow) MdcMiniV3DeviceSimulator(static_cast<uint32_t>(platformType)));
             if (simulator == nullptr) {

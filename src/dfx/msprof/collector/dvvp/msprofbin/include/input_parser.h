@@ -26,11 +26,11 @@ namespace Msprof {
 using namespace analysis::dvvp::common::validation;
 using namespace analysis::dvvp::common::utils;
 
-#ifdef BUILD_OPEN_PROJECT
+#ifdef BUILD_PROFILING_OPEN_PROJECT
 using MsprofStringBuffer = const char *;
 #else
 using MsprofStringBuffer = char *;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 using MsprofString = const char *;
 using MsprofStrBufAddrT = char **;
 
@@ -235,9 +235,9 @@ private:
     void SetSwitchParam(int32_t opt, const char *value);
     bool IsSwitchValid2Handled(int32_t opt) const;
     int32_t CheckArgRange(const struct MsprofCmdInfo &cmdInfo, int32_t opt, uint32_t min, uint32_t max) const;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     int32_t CheckNpuEventsValid(const struct MsprofCmdInfo &cmdInfo, int32_t opt) const;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     int32_t CheckCmdScaleIsValid(const struct MsprofCmdInfo &cmdInfo) const;
     int32_t CheckAiCoreMetricsValid(const struct MsprofCmdInfo &cmdInfo, int32_t opt) const;
     std::string GeneratePrompts() const;
@@ -245,9 +245,9 @@ private:
     int32_t CheckExportSummaryFormat(const struct MsprofCmdInfo &cmdInfo) const;
     int32_t CheckExportType(const struct MsprofCmdInfo &cmdInfo) const;
     int32_t CheckReports(const struct MsprofCmdInfo &cmdInfo) const;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     int32_t CheckMemServiceflow(const struct MsprofCmdInfo &cmdInfo) const;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     int32_t CheckAnalyzeRuleSwitch(const struct MsprofCmdInfo &cmdInfo) const;
     int32_t CheckLlcProfilingValid(const struct MsprofCmdInfo &cmdInfo);
     int32_t CheckSysPeriodValid(const struct MsprofCmdInfo &cmdInfo) const;
@@ -269,9 +269,9 @@ private:
     int32_t MsprofDynamicCheckValid(const struct MsprofCmdInfo &cmdInfo, int32_t opt);
     void MsprofDynamicUpdateParams(const struct MsprofCmdInfo &cmdInfo, int32_t opt);
     int32_t CheckSysCpu();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     int32_t CheckMstxValid();
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     void ParamsSwitchValid(const struct MsprofCmdInfo &cmdInfo, int32_t opt);
     void ParamsSwitchValid2(const struct MsprofCmdInfo &cmdInfo, int32_t opt);
     void ParamsSwitchValid3(const struct MsprofCmdInfo &cmdInfo, int32_t opt);
@@ -291,9 +291,9 @@ private:
     int32_t PreCheckPlatform(int32_t opt, CONST_CHAR_PTR argv[]);
     std::vector<MsprofArgsType> GeneratePlatSwithList() const;
     void InitOpenBlackLists(std::map<Analysis::Dvvp::Common::Config::PlatformType, std::vector<MsprofArgsType>> &platformArgsType) const;
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     void InitClosedBlackLists(std::map<Analysis::Dvvp::Common::Config::PlatformType, std::vector<MsprofArgsType>> &platformArgsType) const;
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 private:
     SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params_;
 };
@@ -340,17 +340,17 @@ private:
     void AddAivArgs();
     void AddAicpuArgs();
     void AddHostArgs();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     void AddStarsArgs();
     void AddLowPowerArgs();
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
     void AddAnalysisArgs();
     void AddDynProfArgs();
     void AddDelayDurationArgs();
     void AddScaleArgs();
-#ifndef BUILD_OPEN_PROJECT
+#ifndef BUILD_PROFILING_OPEN_PROJECT
     void PrintMsopprofHelp();
-#endif // BUILD_OPEN_PROJECT
+#endif // BUILD_PROFILING_OPEN_PROJECT
 private:
     std::vector<Args> argsList_;
 };

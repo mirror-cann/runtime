@@ -190,7 +190,7 @@ set(PROFIMPL_SRC_FILE
     ${HDC_SRC_FILE}
 )
 
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
     list(APPEND PROFIMPL_SRC_FILE
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/david_platform.cpp
         ${MSPROF_SOURCE_DIR}/dvvp/profimpl/platform/david_v121_platform.cpp
@@ -368,8 +368,8 @@ target_compile_definitions(api_dc_stest PRIVATE
     PLATFORM_TYPE=4
     SOC_TYPE="dc"
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(api_dc_stest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(api_dc_stest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_options(api_dc_stest PRIVATE
@@ -395,7 +395,7 @@ set_target_properties(api_dc_stest
 )
 
 ####################### api_david_stest ###########################
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
 add_executable(api_david_stest
     ${TEST_STUB_SRC}
     ${TEST_SRC}
@@ -480,8 +480,8 @@ target_compile_definitions(api_mini_v3_stest PRIVATE
     PLATFORM_TYPE=7
     SOC_TYPE="mini_v3"
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(api_mini_v3_stest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(api_mini_v3_stest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_options(api_mini_v3_stest PRIVATE
@@ -507,7 +507,7 @@ set_target_properties(api_mini_v3_stest
 )
 
 ####################### api_mdc_mini_v3_stest ###########################
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
 add_executable(api_mdc_mini_v3_stest
     ${TEST_STUB_SRC}
     ${TEST_SRC}
@@ -592,8 +592,8 @@ target_compile_definitions(api_cloud_stest PRIVATE
     PLATFORM_TYPE=1
     SOC_TYPE="cloud"
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(api_cloud_stest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(api_cloud_stest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_options(api_cloud_stest PRIVATE
@@ -619,7 +619,7 @@ set_target_properties(api_cloud_stest
 )
 
 ####################### api_mdc_stest ###########################
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
 add_executable(api_mdc_stest
     ${TEST_STUB_SRC}
     ${TEST_SRC}
@@ -710,8 +710,8 @@ target_compile_definitions(acl_api_stest PRIVATE
     PLATFORM_TYPE=5
     SOC_TYPE="milan"
 )
-if(BUILD_OPEN_PROJECT)
-    target_compile_definitions(acl_api_stest PRIVATE BUILD_OPEN_PROJECT)
+if(BUILD_PROFILING_OPEN_PROJECT)
+    target_compile_definitions(acl_api_stest PRIVATE BUILD_PROFILING_OPEN_PROJECT)
 endif()
 
 target_link_options(acl_api_stest PRIVATE
@@ -791,7 +791,7 @@ set_target_properties(api_david_v121_stest
 )
 
 ####################### api_tiny_stest ###########################
-if(NOT BUILD_OPEN_PROJECT)
+if(NOT BUILD_PROFILING_OPEN_PROJECT)
 add_executable(api_tiny_stest
     ${TEST_STUB_SRC}
     ${TEST_SRC}
