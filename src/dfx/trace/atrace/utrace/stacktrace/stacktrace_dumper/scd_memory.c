@@ -19,11 +19,7 @@ typedef struct {
 } ScdMemoryHandler;
 
 static const ScdMemoryHandler SCD_MEMORY_HANDLE = {
-#ifdef ENABLE_SCD
     ScdMemoryRemoteRead
-#else
-    ScdMemoryLocalRead
-#endif
 };
 
 void ScdMemoryInitLocal(ScdMemory *memory)

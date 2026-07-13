@@ -120,16 +120,18 @@ STATIC void TraceSignalHandler(int32_t signo, siginfo_t *siginfo, void *ucontext
             g_sigMgr.sigAct[i].callbackFunc(&info);
         }
         if (signo == SIG_ATRACE) {
-#ifdef ENABLE_SCD
             if (ScdSignalIsBinDump(info.signo, info.siginfo)) {
+                // StackcoreLogSave is safe here: g_stackLogMgr is initialized in
+                // TraceDumperInit() which runs before TraceSignalInit() registers
+                // signal handlers. StackcoreLogSave() also has NULL check protection.
                 StackcoreLogSave();
             }
-#endif
             return;
         }
-#ifdef ENABLE_SCD
-        StackcoreLogSave(); // SIG_ATRACE bin dump is saved above; save crash signals here.
-#endif
+        // Save crash signals here (SIG_ATRACE bin dump is saved above).
+        // StackcoreLogSave is safe: g_stackLogMgr is initialized before signal
+        // handlers are registered, and StackcoreLogSave() has NULL check protection.
+        StackcoreLogSave();
         // recover the signal handler
         if (sigaction(g_sigMgr.sigAct[i].signo, &g_sigMgr.sigAct[i].oldSigAct, NULL) < 0) {
             g_sigMgr.sigAct[i].registerFlag = false;

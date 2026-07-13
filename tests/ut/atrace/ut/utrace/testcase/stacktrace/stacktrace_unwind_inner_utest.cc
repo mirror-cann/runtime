@@ -13,12 +13,14 @@
 
 #include "stacktrace_unwind_inner.h"
 #include "stacktrace_unwind_instr.h"
+#include "stacktrace_ut_common.h"
 
 class StackTraceUnwindInnerUtest: public testing::Test {
 protected:
     virtual void SetUp()
     {
         dwarf.memory = NULL;
+        RedirectScdMemoryReadToLocal();
     }
 
     virtual void TearDown()
@@ -26,13 +28,6 @@ protected:
         GlobalMockObject::verify();
     }
 
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-    }
     ScdDwarf dwarf;
 };
 
@@ -138,6 +133,10 @@ TEST_F(StackTraceUnwindInnerUtest, TestTraceReadEncodeValue)
         }
         value = 0;
         expectValue = 0;
+        // Mocker_TraceEncDataLowbitParse below installs new mock expectations
+        // each iteration, which affects global mock state. Re-install the
+        // remote->local read redirect before every TraceReadEncodeValue call.
+        MOCKER(ScdMemoryRemoteRead).stubs().will(invoke(ScdMemoryLocalRead));
         expectRet = Mocker_TraceEncDataLowbitParse(enCode, byteAddr, &expectValue);
         ret = TraceReadEncodeValue(&dwarf, enCode, byteAddr, &value);
         LOG_EXPECT_EQ(expectRet, ret, "test TestTraceReadEncodeValue failed, enCode=0x%02hhx.", enCode);

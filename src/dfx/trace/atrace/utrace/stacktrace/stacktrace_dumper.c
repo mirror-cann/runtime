@@ -18,14 +18,11 @@
 #include "stacktrace_logger.h"
 #include "trace_system_api.h"
 #include "trace_recorder.h"
-#include "dumper_core.h"
 #include "adiag_print.h"
 #include "adiag_utils.h"
 #include "stacktrace_unwind_reg.h"
 #include "stacktrace_safe_recorder.h"
-#ifdef ENABLE_SCD
 #include "stacktrace_exec.h"
-#endif
 
 #define SCD_CRASH_CHILD_STACK_LEN (16U * 1024U)
 #ifndef SCD_EXE_RELATIVE_PATH
@@ -104,6 +101,34 @@ STATIC TraStatus DumperSignalSetArgs(const TraceSignalInfo* info)
     return TRACE_SUCCESS;
 }
 
+// run dumper sub process, execute tracer callback once, and fall back to fp
+// unwind when the sub process cannot handle the signal.
+STATIC TraStatus DumperRunAndFallback(const TraceSignalInfo *info)
+{
+    pid_t child = -1;
+    TraStatus ret = ScExecStart((void *)(g_dumperMgr.stack + g_dumperMgr.stackSize), &g_dumperMgr.args, &child);
+    if (ret == TRACE_SUCCESS) {
+        LOGI("dumper start successfully, pc=0x%lx, sp=0x%lx, fp=0x%lx.",
+            GET_PCREG_FROM_CONTEXT(&(g_dumperMgr.args.ucontext.uc_mcontext)),
+            GET_SPREG_FROM_CONTEXT(&(g_dumperMgr.args.ucontext.uc_mcontext)),
+            GET_FPREG_FROM_CONTEXT(&(g_dumperMgr.args.ucontext.uc_mcontext)));
+        ret = ScExecEnd(child);
+    }
+
+    // tracer process, only once
+    if (atomic_flag_test_and_set(&g_dumperMgr.done)) {
+        LOGI("signal handler has been executed.");
+    } else {
+        (void)DumperExecuteCallback(info->timeStamp);
+    }
+    // fp process
+    if (ret != TRACE_SUCCESS) {
+        LOGW("dumper process can not handle signal, directly derivation stack.");
+        ret = TraceStackSigHandler(&g_dumperMgr.args);
+    }
+    return ret;
+}
+
 STATIC TraStatus DumperSignalHandler(const TraceSignalInfo *arg)
 {
     LOGR("pid[%d] tid[%ld] start to handle signal.", getpid(), syscall(__NR_gettid));
@@ -149,35 +174,7 @@ STATIC TraStatus DumperSignalHandler(const TraceSignalInfo *arg)
         return TRACE_FAILURE;
     }
 
-    pid_t child = -1;
-#ifdef ENABLE_SCD
-    TraStatus ret = ScExecStart((void *)(g_dumperMgr.stack + g_dumperMgr.stackSize), &g_dumperMgr.args, &child);
-#else
-    TraStatus ret = ScdCoreStart((void *)(g_dumperMgr.stack + g_dumperMgr.stackSize), &g_dumperMgr.args, &child);    
-#endif
-    if (ret == TRACE_SUCCESS) {
-        LOGI("dumper start successfully, pc=0x%lx, sp=0x%lx, fp=0x%lx.",
-            GET_PCREG_FROM_CONTEXT(&(g_dumperMgr.args.ucontext.uc_mcontext)),
-            GET_SPREG_FROM_CONTEXT(&(g_dumperMgr.args.ucontext.uc_mcontext)),
-            GET_FPREG_FROM_CONTEXT(&(g_dumperMgr.args.ucontext.uc_mcontext)));
-#ifdef ENABLE_SCD
-        ret = ScExecEnd(child);
-#else
-        ret = ScdCoreEnd(child);
-#endif
-    }
-
-    // tracer process, only once
-    if (atomic_flag_test_and_set(&g_dumperMgr.done)) {
-        LOGI("signal handler has been executed.");
-    } else {
-        (void)DumperExecuteCallback(info->timeStamp);
-    }
-    // fp process
-    if (ret != TRACE_SUCCESS) {
-        LOGW("dumper process can not handle signal, directly derivation stack.");
-        ret = TraceStackSigHandler(&g_dumperMgr.args);
-    }
+    TraStatus ret = DumperRunAndFallback(info);
     TraceSignalSetHandleFlag(false);
     (void)pthread_mutex_unlock(&g_dumperMgr.mutex);
     g_dumperMgr.args.tid = 0;

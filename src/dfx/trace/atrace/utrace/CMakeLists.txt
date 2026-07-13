@@ -23,9 +23,6 @@ set(libtraceSrcFiles
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_fp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_dumper.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_safe_recorder.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/dumper_process/dumper_core.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/dumper_process/dumper_process.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/dumper_process/dumper_thread.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_unwind.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_unwind_inner.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_unwind_instr.c
@@ -52,7 +49,6 @@ set(libtraceHeaderDir
     ${CMAKE_CURRENT_SOURCE_DIR}/ringbuffer
     ${CMAKE_CURRENT_SOURCE_DIR}/tracer
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace
-    ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/dumper_process
     ${CMAKE_CURRENT_SOURCE_DIR}/stacktrace/stacktrace_dumper
     ${CMAKE_CURRENT_SOURCE_DIR}/util
     ${CMAKE_CURRENT_SOURCE_DIR}/../utils
@@ -115,7 +111,6 @@ target_compile_definitions(atrace_share
     PUBLIC
         ADX_LIB_C
         ATRACE_API
-        ENABLE_SCD
 )
 
 target_compile_options(atrace_share

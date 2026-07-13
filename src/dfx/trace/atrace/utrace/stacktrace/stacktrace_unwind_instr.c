@@ -343,6 +343,9 @@ STATIC const uint8_t *TraceOpStackOneDataParse(ScdDwarf *dwarf, uint8_t opType, 
             if (TRACE_STACK_ADDR_INVALID_CHECK(args, tmpRes)) {
                 return NULL;
             }
+            /* ScdMemoryRead(NULL, ...) uses global handler (ScdMemoryRemoteRead via ptrace).
+             * Safe here: this function is only called from dumper subprocess context
+             * (ScdProcessDump -> ScdDwarfStep -> TraceStackOpExc), where ptrace is available. */
             size_t size = ScdMemoryRead(NULL, tmpRes, &res, sizeof(uintptr_t));
             SCD_CHK_EXPR_ACTION(size == 0, return NULL, "scd read memory failed 0x%llx", tmpRes);
             break;

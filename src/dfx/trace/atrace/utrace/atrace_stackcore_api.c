@@ -9,17 +9,8 @@
  */
 
 #include "atrace_stackcore_api.h"
-#ifdef ENABLE_SCD
 #include "scd_process.h"
 TraStatus AtraceStackcoreParse(const char *filePath, uint32_t len)
 {
     return ScdProcessParseCore(filePath, len);
 }
-
-#else
-#include "stacktrace_parse.h"
-TraStatus AtraceStackcoreParse(const char *filePath, uint32_t len)
-{
-    return TraceStackParse(filePath, len);
-}
-#endif

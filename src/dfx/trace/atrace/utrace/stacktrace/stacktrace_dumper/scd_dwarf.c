@@ -333,7 +333,10 @@ STATIC TraStatus CallStackRegUpdate(ScdDwarf *dwarf, uint32_t idx, ScdRegs *pstC
             regAddr = GetAddrByOffset(cfaAddr, pstRegInfo->regLoc.offset);
             SCD_CHK_EXPR_ACTION(regAddr == 0, return TRACE_FAILURE,
                 "invalid offset %llx", pstRegInfo->regLoc.offset);
-            /* 当前使用eh_frame进行unwind推栈的有x86_64、arm64和ilp32，寄存器大小都为64位，因此使用VOS_UINT64取内容 */
+            /* 当前使用eh_frame进行unwind推栈的有x86_64、arm64和ilp32，寄存器大小都为64位，因此使用VOS_UINT64取内容
+             * ScdMemoryRead(NULL, ...) uses global handler (ScdMemoryRemoteRead via ptrace).
+             * Safe here: this function is only called from dumper subprocess context
+             * (ScdProcessDump -> ScdDwarfStep), where ptrace is available. */
             size = ScdMemoryRead(NULL, regAddr, &coreRegs->r[idx & REG_VAILD_MASK], sizeof(uint64_t));
             SCD_CHK_EXPR_ACTION(size == 0, return TRACE_FAILURE, "scd read memory failed 0x%llx", regAddr);
             SCD_DLOG_INF("REG_SAVED_OFFSET reg %u addr:%lx value:%lx offset : %ld",
@@ -359,7 +362,10 @@ STATIC TraStatus CallStackRegUpdate(ScdDwarf *dwarf, uint32_t idx, ScdRegs *pstC
                                   &expResult, cfaAddr, args);
             SCD_CHK_EXPR_ACTION(ret != TRACE_SUCCESS, return ret, "stack op exec for add %p failed", expOpAddr);
             /* 异常到正常中间转接函数的unwind指令，由本层SP求出上层所有寄存器(包括SP)
-             * 当求sp时不要覆盖，以免无法求8-16号寄存器 最后SP可有CFA求得 */
+             * 当求sp时不要覆盖，以免无法求8-16号寄存器 最后SP可有CFA求得
+             * ScdMemoryRead(NULL, ...) uses global handler (ScdMemoryRemoteRead via ptrace).
+             * Safe here: this function is only called from dumper subprocess context
+             * (ScdProcessDump -> ScdDwarfStep), where ptrace is available. */
             if ((idx != VOS_R_SP) && (expResult != 0)) {
                 size = ScdMemoryRead(NULL, expResult, &coreRegs->r[idx & REG_VAILD_MASK], sizeof(uint64_t));
                 SCD_CHK_EXPR_ACTION(size == 0, return TRACE_FAILURE, "scd read memory failed 0x%llx", expResult);

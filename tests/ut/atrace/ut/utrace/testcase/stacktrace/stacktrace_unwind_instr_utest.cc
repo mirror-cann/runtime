@@ -14,6 +14,7 @@
 #include "stacktrace_unwind_instr.h"
 #include "stacktrace_unwind_inner.h"
 #include "atrace_types.h"
+#include "stacktrace_ut_common.h"
 
 #define VOS_ERRNO_URC_FAILURE (-1)
 extern "C" {
@@ -42,32 +43,7 @@ extern "C" {
         TraceFrameStateInfo *pstStoreFrameRegState, TraceFrameRegStateInfo *pstFrameRInfo);
 }
 
-class StackTraceUnwindInstrUtest: public testing::Test {
-protected:
-    virtual void SetUp()
-    {
-        ScdMemoryInitRemote(&memory);
-        ScdMemoryInitLocal(&memory);
-        dwarf.memory = &memory;
-        memory.size = UINT32_MAX;
-        dwarf.ehFrameHdrOffset = 0;
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
-
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-    }
-    ScdMemory memory;
-    ScdDwarf dwarf;
-};
+using StackTraceUnwindInstrUtest = DwarfLocalMemoryTest;
 
 #define LOG_EXPECT_EQ(X, Y, msg, ...) do {  \
     if ((X) != (Y)) {                       \

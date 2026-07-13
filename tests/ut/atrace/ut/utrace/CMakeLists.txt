@@ -59,9 +59,6 @@ set(SRC_FILE
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_monitor.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_exec.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_logger.c
-    ${ATRACE_SOURCE_DIR}/utrace/stacktrace/dumper_process/dumper_core.c
-    ${ATRACE_SOURCE_DIR}/utrace/stacktrace/dumper_process/dumper_process.c
-    ${ATRACE_SOURCE_DIR}/utrace/stacktrace/dumper_process/dumper_thread.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_parse.c
     ${ATRACE_SOURCE_DIR}/utrace/recorder/trace_recorder.c
     ${ATRACE_SOURCE_DIR}/utrace/ringbuffer/trace_rb_log.c
@@ -87,7 +84,6 @@ set(INCLUDE_DIR
     ${ATRACE_SOURCE_DIR}/utrace/ringbuffer
     ${ATRACE_SOURCE_DIR}/utrace/trace_client
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace
-    ${ATRACE_SOURCE_DIR}/utrace/stacktrace/dumper_process
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper
     ${ATRACE_SOURCE_DIR}/utrace/tracer
     ${ATRACE_SOURCE_DIR}/utrace/util
@@ -112,7 +108,6 @@ set(TEST_SRC
     testcase/trace_util_utest.cc
 
     testcase/stacktrace/stacktrace_utest.cc
-    testcase/stacktrace/dumper_process_utest.cc
     testcase/stacktrace/stacktrace_exec_utest.cc
     testcase/stacktrace/stacktrace_unwind_utest.cc
     testcase/stacktrace/stacktrace_unwind_instr_utest.cc

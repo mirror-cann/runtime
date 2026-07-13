@@ -71,7 +71,6 @@ target_compile_options(asc_dumper PRIVATE
 target_compile_definitions(asc_dumper PRIVATE
     OS_TYPE=0
     _GNU_SOURCE
-    ENABLE_SCD
 )
 
 target_link_options(asc_dumper PRIVATE

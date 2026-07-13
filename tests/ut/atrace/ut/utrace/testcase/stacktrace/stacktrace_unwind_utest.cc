@@ -19,6 +19,7 @@
 #include "stacktrace_unwind_inner.h"
 #include "stacktrace_safe_recorder.h"
 #include "scd_dwarf.h"
+#include "stacktrace_ut_common.h"
 typedef struct TraceUnwindEhFrameHdrInfo {
     uint8_t ucVersion;       /* the version of eh_frame_hdr always 1 */
     uint8_t ucEhframeptrEnc; /* the encode type of eh_frame_hdr */
@@ -60,32 +61,7 @@ extern "C" {
     FdeEntry *TraceSearchFdeOffsetTable(uintptr_t enFrameAddr, uintptr_t uvTblStatAddr, uintptr_t pc);
 }
 
-class TraceUnwindUtest: public testing::Test {
-protected:
-    virtual void SetUp()
-    {
-        ScdMemoryInitLocal(&memory);
-        dwarf.memory = &memory;
-        memory.data = NULL;
-        memory.size = UINT32_MAX;
-        dwarf.ehFrameHdrOffset = 0;
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
-
-    static void SetUpTestCase()
-    {
-    }
-
-    static void TearDownTestCase()
-    {
-    }
-    ScdMemory memory;
-    ScdDwarf dwarf;
-};
+using TraceUnwindUtest = DwarfLocalMemoryTest;
 
 TEST_F(TraceUnwindUtest, TestTraceStackUnwind_failed)
 {

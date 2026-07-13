@@ -18,7 +18,7 @@
 #include <sys/ptrace.h>
 #include <sys/prctl.h>
 #include <sys/wait.h>
-#include "dumper_core.h"
+#include "stacktrace_exec.h"
 #include "tracer_core.h"
 #include "adiag_utils.h"
 #include "stacktrace_dumper.h"
@@ -27,17 +27,14 @@
 #include "stacktrace_unwind.h"
 #include "stacktrace_safe_recorder.h"
 #include "trace_recorder.h"
-#include "dumper_process.h"
 #include "trace_system_api.h"
 #include "ascend_hal_stub.h"
 #include "slog_stub.h"
+#include "stacktrace_ut_common.h"
 
 extern "C" {
-    void TraceInit(void);
-    void TraceExit(void);
     TraStatus TraceGetSelfMap(uintptr_t pc, char *data, uint32_t len);
     void TraceSignalHandler(int32_t signo, siginfo_t *siginfo, void *ucontext);
-    int32_t ScdCoreEntry(void *args);
     bool TraceCheckRegister(uintptr_t rbp, uintptr_t rsp);
     TraStatus TraceSafeWrite(int32_t fd, const char *data, size_t len);
     TraStatus DumperSignalHandler(const TraceSignalInfo *arg);
@@ -58,12 +55,7 @@ class TraceStackcoreUtest: public testing::Test {
 protected:
     virtual void SetUp()
     {
-        system("mkdir -p " LLT_TEST_DIR );
-        system("rm -rf " LLT_TEST_DIR "/*");
-        struct passwd *pwd = getpwuid(getuid());
-        pwd->pw_dir = LLT_TEST_DIR;
-        MOCKER(getpwuid).stubs().will(returnValue(pwd));
-        TraceInit();
+        SetupTraceUtestEnv();
     }
 
     virtual void TearDown()
@@ -125,7 +117,7 @@ TEST_F(TraceStackcoreUtest, TestTraceStackSigHandler)
     ucontext_t ucontext;
     TraceSignalInfo info = { 2, &siginfo, (void *)&ucontext, std::time(0) };
 
-    MOCKER(ScdCoreStart).stubs().will(returnValue(TRACE_FAILURE));
+    MOCKER(ScExecStart).stubs().will(returnValue(TRACE_FAILURE));
     MOCKER(TraceStackSigHandler).expects(once()).will(returnValue(TRACE_SUCCESS));
     auto ret = DumperSignalHandler(&info);
     EXPECT_EQ(TRACE_SUCCESS, ret);
@@ -164,19 +156,6 @@ TEST_F(TraceStackcoreUtest, TestDumperSignalSetArgs)
     GlobalMockObject::verify();
 }
 
-TEST_F(TraceStackcoreUtest, TestSignal_WriteInfoFailed)
-{
-    ThreadArgument info = { 0 };
-    int32_t ret = 0;
-
-    ret = ScdCoreEntry(NULL);
-    EXPECT_EQ(1, ret);
-
-    // ptrace attach failed
-    ret = ScdCoreEntry((void *)&info);
-    EXPECT_EQ(1, ret);
-}
-
 TEST_F(TraceStackcoreUtest, TestSignal_TracerExit)
 {
     TracerExit(); // TracerExit before receive signal
@@ -185,7 +164,7 @@ TEST_F(TraceStackcoreUtest, TestSignal_TracerExit)
     TraceSignalInfo info = { 2, &siginfo, (void *)&ucontext, std::time(0) };
 
     MOCKER(TraceRecorderWrite).expects(never());
-    MOCKER(ScdCoreStart).stubs().will(returnValue(TRACE_FAILURE));
+    MOCKER(ScExecStart).stubs().will(returnValue(TRACE_FAILURE));
     auto ret = DumperSignalHandler(&info);
     EXPECT_EQ(TRACE_SUCCESS, ret); // execute success and no core dump occurs.
 }
@@ -196,73 +175,6 @@ TEST_F(TraceStackcoreUtest, TestDumpSetCallback_Null)
     EXPECT_EQ(TRACE_INVALID_PARAM, ret);
 }
 
-static int32_t g_waitpid_status = 0;
-static void waitpid_set(int32_t status)
-{
-    g_waitpid_status = status;
-}
-
-static pid_t waitpid_stub(pid_t pid, int *wstatus, int options)
-{
-    if (pid == -1) {
-        errno = 0;
-        return -1;
-    }
-    if (pid > 0) {
-        errno = 0;
-        *wstatus = g_waitpid_status;
-        return 0;
-    }
-    return 0;
-}
-
-TEST_F(TraceStackcoreUtest, TestWaitpid_Timeout)
-{
-    TraStatus ret = TRACE_FAILURE;
-    pid_t child = 123;
-    MOCKER(waitpid).stubs().will(returnValue(0));
- 
-    ret = ScdCoreEnd(child);
-    EXPECT_EQ(TRACE_SUCCESS, ret);
-}
- 
-TEST_F(TraceStackcoreUtest, TestWaitpid_Failed)
-{
-    TraStatus ret = TRACE_FAILURE;
-    pid_t child = -1;
-    MOCKER(waitpid).stubs().will(invoke(waitpid_stub));
-
-    ret = ScdCoreEnd(child);
-    EXPECT_EQ(TRACE_FAILURE, ret);
-}
-
-TEST_F(TraceStackcoreUtest, TestScdCoreEnd_Failed)
-{
-    TraStatus ret = TRACE_FAILURE;
-    pid_t child = 123;
-    MOCKER(waitpid).stubs().will(invoke(waitpid_stub));
-
-    // child terminated normally with non-zero exit status(1)
-    waitpid_set(0x0100);
-    ret = ScdCoreEnd(child);
-    EXPECT_EQ(TRACE_FAILURE, ret);
-
-    // child terminated by a signal(3)
-    waitpid_set(0x0083);
-    ret = ScdCoreEnd(child);
-    EXPECT_EQ(TRACE_FAILURE, ret);
-
-    // child terminated with other error status(255)
-    waitpid_set(0x00FF);
-    ret = ScdCoreEnd(child);
-    EXPECT_EQ(TRACE_FAILURE, ret);
-}
-
-TEST_F(TraceStackcoreUtest, TestScdCoreStart_Failed)
-{
-    auto ret = ScdCoreStart(NULL, NULL, NULL);
-    EXPECT_EQ(TRACE_FAILURE, ret);
-}
 
 TEST_F(TraceStackcoreUtest, TestTraceDumperInit_Failed)
 {
@@ -313,7 +225,7 @@ TEST_F(TraceStackcoreUtest, TestSignal_CheckPid)
     int32_t parent = 123;
     int32_t child = 134;
     MOCKER(getpid).stubs().will(returnValue(parent)).then(returnValue(parent)).then(returnValue(child));
-    MOCKER(ScdCoreStart).stubs().will(returnValue(TRACE_FAILURE));
+    MOCKER(ScExecStart).stubs().will(returnValue(TRACE_FAILURE));
 
     siginfo_t siginfo;
     ucontext_t ucontext;

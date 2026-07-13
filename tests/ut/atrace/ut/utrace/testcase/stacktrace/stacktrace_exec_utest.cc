@@ -12,27 +12,17 @@
 #include "mockcpp/mockcpp.hpp"
 
 #include <fstream>
-#include <pwd.h>
 #include <signal.h>
 #include <string>
 #include "stacktrace_exec.h"
 #include "stacktrace_safe_recorder.h"
 #include "stacktrace_err_code.h"
-#include "dumper_core.h"
 #include "scd_process.h"
 #include "stacktrace_logger.h"
+#include "stacktrace_ut_common.h"
 
 extern "C" {
-    void TraceInit(void);
-    void TraceExit(void);
     int32_t ScExecEntry(void *args);
-}
-
-void Mocker_Subprocess(void)
-{
-    // 通过mocker使st执行走到新的父进程框架
-    MOCKER(ScdCoreStart).stubs().will(invoke(ScExecStart));
-    MOCKER(ScdCoreEnd).stubs().will(invoke(ScExecEnd));
 }
 
 static void CheckFileContains(const char *filePath, const char *content)
@@ -59,13 +49,7 @@ class TraceExecUtest: public testing::Test {
 protected:
     virtual void SetUp()
     {
-        system("mkdir -p " LLT_TEST_DIR );
-        system("rm -rf " LLT_TEST_DIR "/*");
-        struct passwd *pwd = getpwuid(getuid());
-        pwd->pw_dir = LLT_TEST_DIR;
-        MOCKER(getpwuid).stubs().will(returnValue(pwd));
-        Mocker_Subprocess();
-        TraceInit();
+        SetupTraceUtestEnv();
     }
 
     virtual void TearDown()

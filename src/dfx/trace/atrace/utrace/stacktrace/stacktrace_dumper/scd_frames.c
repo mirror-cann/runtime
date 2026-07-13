@@ -23,6 +23,9 @@ STATIC TraStatus ScdFramesFpStep(ScdFrame *frame, ScdRegs *regs)
     SCD_CHK_EXPR_ACTION(fp == 0, return TRACE_FAILURE, "invalid fp 0, frame pointer is not supported");
     uintptr_t lr = fp + 8U;  // LR_OFFSET
     uintptr_t nextPc;
+    /* ScdMemoryRead(NULL, ...) uses global handler (ScdMemoryRemoteRead via ptrace).
+     * Safe here: this function is only called from dumper subprocess context
+     * (ScdProcessDump -> ScdFramesLoad), where ptrace is available. */
     size_t size = ScdMemoryRead(NULL, lr, &nextPc, sizeof(uintptr_t));
     SCD_CHK_EXPR_ACTION(size == 0, return TRACE_FAILURE, "scd read memory from 0x%llx, failed ", lr);
     ScdRegsSetPc(regs, nextPc);
