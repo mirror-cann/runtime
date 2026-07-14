@@ -72,6 +72,7 @@ typedef enum aclplatformNpuArch {
     DAV_3505 = 3505,
     DAV_3510 = 3510,
     DAV_5102 = 5102,
+    DAV_5162 = 5162,
     DAV_RESV = 0xFFFF
 } aclplatformNpuArch;
 

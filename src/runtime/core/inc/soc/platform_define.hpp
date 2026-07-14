@@ -12,6 +12,7 @@
 #define CCE_RUNTIME_PLATFORM_DEFINE_HPP
 
 #include <cstdint>
+// This file will be deprecated and should no longer be used.
 
 namespace cce {
 namespace runtime {
