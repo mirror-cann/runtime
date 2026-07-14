@@ -1134,7 +1134,7 @@ rtError_t CaptureModel::BuildSqCq(Stream * const exeStream)
         RtFmtMsg("The current aclgraph model (model_id=%u) running instance neither contains any executable task nor contains any executable stream", Id_()));
 
     uint32_t totalSqcqNum = 0;
-    uint32_t sqcqPoolResNum = Context_()->Device_()->GetDeviceSqCqManage()->GetSqCqPoolTotalResNum();
+    const uint32_t sqcqPoolResNum = Context_()->Device_()->GetDeviceSqCqManage()->GetSqCqPoolTotalResNum();
     GetSqCqTotalNum(totalSqcqNum);
     COND_PROC_RETURN_AND_MSG_OUTER((totalSqcqNum > RT_DEVICE_SQCQ_RES_MAX_NUM), RT_ERROR_DRV_NO_RESOURCES,
         ErrorCode::EE1023,

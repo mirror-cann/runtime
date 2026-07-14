@@ -4650,7 +4650,7 @@ rtError_t ApiImpl::NotifyCreate(const int32_t deviceId, Notify ** const retNotif
         sizeof(Notify), "new");
 
     (*retNotify)->SetNotifyFlag(static_cast<uint32_t>(flag));
-    rtError_t error = (*retNotify)->Setup();
+    const rtError_t error = (*retNotify)->Setup();
     if ((error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES) || (error == RT_ERROR_DRV_NO_RESOURCES)) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Notify resource",
             "Too many Notify objects are created");
