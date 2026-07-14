@@ -37,6 +37,14 @@ set(adumpTinySrcList
     ${SRC_CODE_ROOT_PATH}/adump/common/json_parser.cpp
 
     ${SRC_CODE_ROOT_PATH}/adump/adump_ascend031/manage/dump_manager.cpp
+    ${SRC_CODE_ROOT_PATH}/adump/adump_ascend031/manage/adump_api_platform.cpp
+    ${SRC_CODE_ROOT_PATH}/adump/adump_ascend031/printf/dump_printf.cpp
+
+    ${SRC_CODE_ROOT_PATH}/adcore/common/thread_mdc.cpp
+    ${SRC_CODE_ROOT_PATH}/adcore/hdc/hdc_api_stub.cpp
+
+    ${SRC_CODE_ROOT_PATH}/adump/common/adump_platform_api/adump_platform_api_device.cpp
+    ${SRC_CODE_ROOT_PATH}/adump/operator/operator_preliminary/operator_preliminary_device.cpp
 
     ${SRC_CODE_ROOT_PATH}/adump/impl/dump_datatype.cpp
     ${SRC_CODE_ROOT_PATH}/adump/impl/dump_memory.cpp
@@ -52,6 +60,12 @@ set(adumpTinySrcList
 
 set(adumpTinyUtestSrcList
     ${ADUMP_TINY_UT_ROOT_PATH}/testcase/dump_manager_utest.cpp
+    ${ADUMP_TINY_UT_ROOT_PATH}/testcase/thread_mdc_utest.cpp
+    ${ADUMP_TINY_UT_ROOT_PATH}/testcase/hdc_api_stub_utest.cpp
+    ${ADUMP_TINY_UT_ROOT_PATH}/testcase/adump_api_platform_utest.cpp
+    ${ADUMP_TINY_UT_ROOT_PATH}/testcase/dump_printf_utest.cpp
+    ${ADUMP_TINY_UT_ROOT_PATH}/testcase/adump_platform_api_device_utest.cpp
+    ${ADUMP_TINY_UT_ROOT_PATH}/testcase/operator_preliminary_device_utest.cpp
     ${ADUMP_TINY_UT_ROOT_PATH}/testcase/main.cpp
 )
 
@@ -68,6 +82,7 @@ set(adumpTinyHeaders
     ${SRC_CODE_ROOT_PATH}/inc/adump
     ${SRC_CODE_ROOT_PATH}/adcore
     ${SRC_CODE_ROOT_PATH}/adcore/common
+    ${SRC_CODE_ROOT_PATH}/adcore/hdc
     ${SRC_CODE_ROOT_PATH}/adcore/log
 
     ${SRC_CODE_ROOT_PATH}/adump/adump_ascend031/
@@ -77,10 +92,14 @@ set(adumpTinyHeaders
 
     ${SRC_CODE_ROOT_PATH}/adump/
     ${SRC_CODE_ROOT_PATH}/adump/common/
+    ${SRC_CODE_ROOT_PATH}/adump/common/adump_platform_api/
     ${SRC_CODE_ROOT_PATH}/adump/impl/
     ${SRC_CODE_ROOT_PATH}/adump/exception/
     ${SRC_CODE_ROOT_PATH}/adump/manage/
+    ${SRC_CODE_ROOT_PATH}/adump/operator/
+    ${SRC_CODE_ROOT_PATH}/adump/operator/operator_preliminary/
     ${SRC_CODE_ROOT_PATH}/adump/printf/
+    ${SRC_CODE_ROOT_PATH}/adump/printf/dump_printf/
     ${SRC_CODE_ROOT_PATH}/adump/proto/
     ${SRC_CODE_ROOT_PATH}/external/
     ${TOP_DIR}/include/driver
@@ -90,6 +109,7 @@ set(adumpTinyHeaders
     ${TOP_DIR}/pkg_inc/dump/
 
     ${ADUMP_TINY_UT_ROOT_PATH}/
+    ${ADUMP_TINY_UT_ROOT_PATH}/stub/
     ${ADUMP_BASE_UT_ROOT_PATH}/
     ${ADUMP_BASE_UT_ROOT_PATH}/stub/
 

@@ -15,7 +15,6 @@
 #include "mockcpp/mockcpp.hpp"
 
 #include "dump_printf.h"
-#include "toolchain/prof_common.h"
 #include "adump_api.h"
 
 using namespace Adx;
