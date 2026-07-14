@@ -25,10 +25,6 @@ constexpr uint8_t COND_TASK_WHILE_SQE_NUM = 3U;
 
 rtError_t CaptureConditionTaskInit(TaskInfo *taskInfo, CondHandle *condHandle);
 void CaptureConditionTaskUnInit(TaskInfo * const taskInfo);
-void ConstructSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void Construct1stSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sqe);
-void Construct2ndSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sqe);
-void Construct3rdSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sqe);
 void ConstructCaptureConditionJumpBackFc(TaskInfo * const taskInfo, RtStarsCaptureWhileCondJumpBackFc &fc);
 rtError_t ReConstructCaptureConditionTaskFc(TaskInfo *taskInfo, CondHandle *condHandle);
 rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm, const uint16_t taskId);

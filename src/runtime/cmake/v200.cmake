@@ -228,9 +228,7 @@ set(libruntime_v200_src_files_exclude_for_tiny
     ${RUNTIME_CORE_DIR}/src/profiler/api_profile_log_decoratoc_standard_soc.cc
     ${RUNTIME_CORE_DIR}/src/task/task_to_sqe.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task_v100.cc
     ${RUNTIME_FEATURE_DIR}/ffts/rdma_task.cc
-    ${RUNTIME_FEATURE_DIR}/ffts/rdma_task_v100.cc
     ${RUNTIME_FEATURE_DIR}/ffts/ffts_task.cc
     ${RUNTIME_FEATURE_DIR}/ffts/ffts_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/event/ipc_event.cc

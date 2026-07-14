@@ -15,25 +15,22 @@ set(runtimeut_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/stars_cond_isa_helper.cc
     ${TOP_DIR}/src/runtime/core/src/task/task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_execute_time.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/task_manager.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/barrier/barrier_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cmo/cmo_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/common/common_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/common/common_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_label_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_stream_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_multiple_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/dump/dump_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/dump/dump_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task_arch5162.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/notify_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/notify_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/float_status_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/maintenance_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/maintenance/maintenance_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_arch5162.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/kernel_fusion_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_execute_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_graph_task.cc
@@ -43,20 +40,15 @@ set(runtimeut_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/profiling/profiling_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/random_num_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/reduce/reduce_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/reduce/reduce_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/ringbuffer_maintain/ringbuffer_maintain_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/ringbuffer_maintain/ringbuffer_maintain_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/stream/stream_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/task_manager.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/timeout_set/timeout_set_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/timeout_set/timeout_set_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/task_res.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_submit/v100/task_submit.cc
-    ${TOP_DIR}/src/runtime/core/src/task/tiny/memory_task_v100_external_event_tiny_stub.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/memory_corruption_checker.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/stub_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/v100/task_adpter.cc
     ${TOP_DIR}/src/runtime/core/src/task/v100/task_checker.cc
+    ${TOP_DIR}/src/runtime/core/src/task/arch5162/task_adpter.cc
 )
 
 set(libruntime_src_files_include_for_arch5162
@@ -202,7 +194,7 @@ set(runtime_raw_device_adpt_common_list
 
 
 set(runtimeut_src_aclgraph_list
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/aclgraph_cond_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_arch5162.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/api_decorator_aclgraph.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/capture_model_utils.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/cond_handle.cc
@@ -350,6 +342,7 @@ add_executable(runtime_utest_arch5162
     ${TOP_DIR}/src/runtime/driver/v100/npu_driver.cc
     stub/hal_stub.cc
     main.cc
+    rt_utest_task_arch5162.cc
 )
 
 target_compile_definitions(runtime_utest_arch5162 PUBLIC
@@ -399,7 +392,6 @@ set(RUNTIME_TEST_INC_DIR_COMMON
     ${TOP_DIR}/src/runtime/core/inc/cond_handle
     ${TOP_DIR}/src/runtime/inc/device
     ${TOP_DIR}/src/runtime/inc/sqe
-    ${TOP_DIR}/src/runtime/core/inc/sqe/v200_base
     ${TOP_DIR}/src/runtime/core/inc/runtime
     ${TOP_DIR}/src/runtime/core/inc/device
     ${TOP_DIR}/src/runtime/core/inc/drv
@@ -482,6 +474,7 @@ set(RUNTIME_TEST_INC_DIR_COMMON
 set(RUNTIME_TEST_INC_DIR
     ${RUNTIME_TEST_INC_DIR_COMMON}
     ${TOP_DIR}/src/runtime/core/inc/sqe/v200
+    ${TOP_DIR}/src/runtime/core/inc/sqe/v200_base
     ${TOP_DIR}/src/runtime/core/inc/cond_isa/v100
 )
 

@@ -36,5 +36,22 @@ uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
     }
 }
 
+void ConstructSqeBase(TaskInfo *const taskInfo, rtStarsSqe_t *const command)
+{
+    command->phSqe.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    command->phSqe.l2_lock = 0;
+    command->phSqe.ie = 0;
+    command->phSqe.pre_p = 0;
+    command->phSqe.post_p = 0;
+    command->phSqe.wr_cqe = 1;
+    command->phSqe.res0 = 0;
+
+    command->phSqe.task_id = taskInfo->id;
+    command->phSqe.rt_streamID = static_cast<uint16_t>(taskInfo->stream->Id_());
+    command->phSqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
+
+    RT_LOG(RT_LOG_WARNING, "No need to construct sqe. type:%u, task_id:%u, stream_id:%u",
+        taskInfo->type, static_cast<uint32_t>(taskInfo->id), taskInfo->stream->Id_());
+}
 }  // namespace runtime
 }  // namespace cce

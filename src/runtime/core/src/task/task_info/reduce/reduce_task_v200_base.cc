@@ -9,7 +9,7 @@
  */
 
 #include "reduce_task.h"
-#include "task_info_v100.h"
+#include "task_info.hpp"
 #include "task_manager.h"
 #include "stars_david.hpp"
 

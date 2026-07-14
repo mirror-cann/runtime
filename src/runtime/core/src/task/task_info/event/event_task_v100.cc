@@ -21,6 +21,10 @@
 
 namespace cce {
 namespace runtime {
+uint16_t GetSqeEventId(const rtStarsSqe_t *sqe)
+{
+    return sqe->eventSqe.eventId;
+}
 
 #if F_DESC("EventRecordTask")
 static void SetResultForEventRecordTask(TaskInfo * const taskInfo, const void *const data, const uint32_t dataSize)

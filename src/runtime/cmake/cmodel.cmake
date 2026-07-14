@@ -68,6 +68,9 @@ set(libruntime_cmodel_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/model/kernel_fusion_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/float_status_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/maintenance/float_status_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task_v100.cc
+    ${RUNTIME_FEATURE_DIR}/ffts/rdma_task_v100.cc
+    ${RUNTIME_FEATURE_DIR}/ffts/ffts_task_v100.cc
 
     ${RUNTIME_CORE_DIR}/src/task/v100/task_checker.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/memory_corruption_checker.cc
@@ -335,11 +338,8 @@ set(libruntime_cmodel_src_files_optional
     ${RUNTIME_CORE_DIR}/src/profiler/api_profile_log_decoratoc_standard_soc.cc
     ${RUNTIME_CORE_DIR}/src/task/task_to_sqe.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/dma/rdma_task_v100.cc
     ${RUNTIME_FEATURE_DIR}/ffts/rdma_task.cc
-    ${RUNTIME_FEATURE_DIR}/ffts/rdma_task_v100.cc
     ${RUNTIME_FEATURE_DIR}/ffts/ffts_task.cc
-    ${RUNTIME_FEATURE_DIR}/ffts/ffts_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/event/ipc_event.cc
     ${RUNTIME_CORE_DIR}/src/pool/event_expanding.cc
     ${RUNTIME_CORE_DIR}/src/pool/event_pool.cc

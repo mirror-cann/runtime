@@ -14,6 +14,7 @@
 
 namespace cce {
 namespace runtime {
+void ConstructSqeBase(TaskInfo *const taskInfo, rtStarsSqe_t *const command);
 
 void ConstructSqeForStarsCommonTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
 void ConstructSqeForBarrierTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
@@ -35,6 +36,7 @@ void ConstructSqeForStreamSwitchTask(TaskInfo* taskInfo, rtStarsSqe_t *const com
 void ConstructSqeForStreamLabelSwitchByIndexTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
 void ConstructSqeForLabelSetTask(TaskInfo* taskInfo, rtStarsSqe_t * const command);
 
+void FillMemWaitFunctionCallSqe(TaskInfo* taskInfo, RtStarsFunctionCallSqe &sqe, const uint64_t funcCallSize);
 void ConstructSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 
 void ConstructSqeForNopTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
@@ -67,6 +69,7 @@ rtError_t WaitAsyncCopyCompleteForUpdateTask(TaskInfo* taskInfo);
 void ConstructSqeForWriteValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
 void ConstructSqeForCommonCmdTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 
+void Construct2ndSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sqe);
 }  // namespace runtime
 }  // namespace cce
 #endif  // TASK_INFO_V100_H

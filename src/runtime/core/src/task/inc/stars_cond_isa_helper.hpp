@@ -18,7 +18,6 @@
 namespace cce {
 namespace runtime {
 
-void ConstrucStreamResetInstr(const uint32_t sqId, const uint64_t sqEnReg, RtStarsStreamResetHeadSqe &sqe);
 void ConstrucModelExeScanSq(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeScanSq &scanSq);
 void ConstrucModelExeCheckSqFsm(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqFsm &checkSqFsm);
 void ConstrucModelExeCheckSqDisable(

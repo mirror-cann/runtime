@@ -54,6 +54,8 @@ uint64_t CalculateCrossDeviceEventAddr(const Device *srcDevice, const int32_t ev
 void TryToFreeEventIdAndDestroyEvent(Event **eventPtr, int32_t freeId, bool isNeedDestroy,
                                      bool isCaptureDestroy = false);
 rtError_t DestroyEventSync(Event *evt);
+
+uint16_t GetSqeEventId(const rtStarsSqe_t *sqe);
 }  // namespace runtime
 }  // namespace cce
 #endif

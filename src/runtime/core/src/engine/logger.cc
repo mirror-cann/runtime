@@ -12,6 +12,7 @@
 #include "program.hpp"
 #include "stream.hpp"
 #include "event.hpp"
+#include "event_task.h"
 #include "error_message_manage.hpp"
 
 namespace cce {
@@ -85,7 +86,7 @@ void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo * const ts
 
     switch (tsk->type) {
         case TS_TASK_TYPE_EVENT_RECORD: {
-            tsCmdEventId = isStarsCqe ? command->cmdBuf.u.starsSqe[0].eventSqe.eventId :
+            tsCmdEventId = isStarsCqe ? GetSqeEventId(command->cmdBuf.u.starsSqe):
                 command->cmdBuf.cmd.u.eventRecordTask.eventID;
             RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, event_id=%hu,"
                 "task_type=EventRecord, task_launched_num=%" PRIu64,
@@ -94,7 +95,7 @@ void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo * const ts
         }
 
         case TS_TASK_TYPE_STREAM_WAIT_EVENT: {
-            tsCmdEventId = isStarsCqe ? command->cmdBuf.u.starsSqe[0].eventSqe.eventId :
+            tsCmdEventId = isStarsCqe ? GetSqeEventId(command->cmdBuf.u.starsSqe):
                 command->cmdBuf.cmd.u.streamWaitEventTask.eventID;
             RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, event_id=%hu,"
                 "task_type=StreamWaitEvent, task_launched_num=%" PRIu64,

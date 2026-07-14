@@ -1207,8 +1207,6 @@ TEST_F(TaskTestDavid, Test_CondIsaHelper)
     RtStarsCondOpStreamGotoR opGotoR = {};
     ConstructGotoR(rs1Reg, dstReg, opGotoR);
     EXPECT_EQ(opGotoR.func3, RT_STARS_COND_ISA_STREAM_FUNC3_GOTO_R);
-    RtStarsStreamResetHeadSqe sqe = {};
-    ConstrucStreamResetInstr(0, 0, sqe);
 
     rtStarsModelExeFuncCallPara_t funcCallPara = {};
     RtStarsModelExeScanSq scanSq = {};

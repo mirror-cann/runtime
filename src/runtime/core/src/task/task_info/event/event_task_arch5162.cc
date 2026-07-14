@@ -8,35 +8,23 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include "kernel_fusion_task.h"
-#include "task_manager.h"
+#include "event_task.h"
 #include "task_info_v100.h"
 
 namespace cce {
 namespace runtime {
 
-static bool KernelFusionTaskRegister()
+uint16_t GetSqeEventId(const rtStarsSqe_t *sqe)
 {
-    TaskFuncSingle funcs = {
-        .toCommandFunc = &ToCommandBodyForKernelFusionTask,
-        .toSqeFunc = &ConstructSqeBase,
-        .doCompleteSuccFunc = &DoCompleteSuccess,
-        .taskUnInitFunc = nullptr,
-        .waitAsyncCpCompleteFunc = nullptr,
-        .printErrorInfoFunc = &PrintErrorInfoCommon,
-        .setResultFunc = &SetResultCommon,
-        .setStarsResultFunc = &SetStarsResultCommon,
-    };
-
-    const auto &chips = GetV100Chips();
-    for (const auto chip : chips) {
-        RegTaskFunc(chip, TS_TASK_TYPE_FUSION_ISSUE, funcs);
-    }
-
-    return true;
+    UNUSED(sqe);
+    return 0;
 }
 
-static bool g_kernelFusionTaskRegister = KernelFusionTaskRegister();
+void ConstructSqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+{
+    UNUSED(taskInfo);
+    UNUSED(command);
+}
 
 }  // namespace runtime
 }  // namespace cce

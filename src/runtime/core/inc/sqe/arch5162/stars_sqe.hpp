@@ -29,6 +29,15 @@ enum rtStarsSqeType {
     RT_STARS_SQE_TYPE_WRITE_VALUE       = 9, // WRITE_VALUE
     RT_STARS_SQE_TYPE_LP_AIC            = 10, // LP_AIC
     RT_STARS_SQE_TYPE_INVALID           = 63, // invalid type
+
+    RT_STARS_SQE_TYPE_FFTS              = 0, // FFTS
+    RT_STARS_SQE_TYPE_SDMA              = 11, // SDMA
+    RT_STARS_SQE_TYPE_VPC               = 12, // VPC
+    RT_STARS_SQE_TYPE_JPEGE             = 13, // JPEGE
+    RT_STARS_SQE_TYPE_JPEGD             = 14, // JPEGD
+    RT_STARS_SQE_TYPE_DSA               = 15, // DSA
+    RT_STARS_SQE_TYPE_CDQM              = 19, // CDQM
+    RT_STARS_SQE_TYPE_VIR_TYPE          = 0xFF, // DVPP virtual SQE TYPE
 };
 
 enum rtStarsSqeSubType {
@@ -146,7 +155,7 @@ struct RtStarsNotifySqe {
     uint32_t swapoutCredit : 8;
     uint32_t res2 : 23;
     uint32_t timeoutEn : 1;
-    uint16_t notifyId : 10;
+    uint16_t notify_id : 10;
     uint16_t dstId : 6;
     uint16_t uId : 12;
     uint16_t res3 : 4;
@@ -306,8 +315,37 @@ struct RtStarsPhSqe {
         RtLabelSetSqe labelSetInfo;
         RtStreamActiveSqe streamActiveInfo;
         RtStreamSwitchExSqe streamSwitchExInfo;
-        uint32_t resv[12];
+        uint32_t res[12];
     } u;
+};
+
+struct RtFftsPlusKernelSqe {
+    rtStarsSqeHeader_t header;
+    uint16_t fftsType : 3;
+    uint16_t res1 : 9;
+    uint16_t wrr_ratio : 4;
+    uint16_t res2;
+    uint16_t sqe_index;
+    uint16_t kernel_credit : 8;
+    uint16_t schem : 2;
+    uint16_t res3 : 1;
+    uint16_t icache_prefetch_cnt : 5;
+    uint32_t stackPhyBaseLow;
+    uint32_t stackPhyBaseHigh;
+    uint32_t res4;
+    uint32_t pmg : 2;
+    uint32_t ns : 1;
+    uint32_t part_id : 8;
+    uint32_t res5 : 1;
+    uint32_t qos : 4;
+    uint32_t res6 : 16;
+    uint32_t pc_addr_low;
+    uint32_t pcAddrHigh : 16;
+    uint32_t res7 : 16;
+    uint32_t paramAddrLow;
+    uint32_t param_addr_high;
+    // use res8[1] bit 4 for l2cache
+    uint32_t res8[4];
 };
 
 union rtStarsSqe_t final {
@@ -315,10 +353,36 @@ union rtStarsSqe_t final {
     RtStarsNotifySqe notifySqe;
     RtStarsWriteValueSqe writeValueSqe;
     RtStarsPhSqe phSqe;
+
+    RtFftsPlusKernelSqe fftsPlusKernelSqe;
 };
 
 struct RtStarsFunctionCallSqe {
-    uint32_t resv[16];
+    uint32_t res[16];
+};
+
+struct rtStarsSdmaSqe_t {
+    uint32_t opcode : 8;
+    uint32_t ie2 : 1;
+    uint32_t sssv : 1;
+    uint32_t dssv : 1;
+    uint32_t sns : 1;
+    uint32_t dns : 1;
+    uint32_t qos : 4;
+    uint32_t sro : 1;
+    uint32_t dro : 1;
+    uint32_t partid : 8;
+    uint32_t mpam : 1;
+    uint32_t pmg : 2;
+    uint32_t format : 1;
+    uint32_t res6 : 1;
+
+    uint16_t srcStreamId;
+    uint16_t src_sub_streamid;
+    uint16_t dst_streamid;
+    uint16_t dstSubStreamId;
+
+    uint32_t length;
 };
 
 #pragma pack(pop)

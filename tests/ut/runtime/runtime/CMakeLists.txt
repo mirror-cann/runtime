@@ -22,7 +22,6 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_multiple_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_execute_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/dma/rdma_task.cc
     ${TOP_DIR}/src/runtime/feature/ffts/rdma_task.cc
@@ -38,7 +37,6 @@ set(runtimeut_common_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cmo/cmo_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_maintaince_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/event/notify_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/notify_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/timeout_set/timeout_set_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/ringbuffer_maintain/ringbuffer_maintain_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_update_task.cc
@@ -62,6 +60,8 @@ set(runtimeut_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_stream_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_label_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/aclgraph_cond_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/event_task_v100.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/event/notify_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_v100.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_v100_external_event.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/model/model_execute_task_v100.cc
@@ -426,6 +426,7 @@ set(runtimeut_src_tiny_exclude_list
     ${TOP_DIR}/src/runtime/core/src/memory/simd_memsetd32.cpp
     ${TOP_DIR}/src/runtime/core/src/kernel/symbol_table.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/aclgraph_cond_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/aclgraph_cond_task_v100.cc
     ${TOP_DIR}/src/runtime/feature/xpu/xpu_task_fail_callback_data_manager.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/memory/memory_task_v100_external_event.cc
     ${TOP_DIR}/src/runtime/core/src/task/stars_external_event_cond_isa_helper.cc
@@ -1889,6 +1890,7 @@ set(RUNTIME_TARGET
     runtime_utest_cloud
     runtime_utest_adc
     runtime_utest_mini_v3
+    runtime_utest_arch5162
 )
 
 set(RUNTIME_TARGET_COMMON ${RUNTIME_TARGET})

@@ -298,22 +298,12 @@ drvError_t halSqMsgSend(uint32_t devId, struct halSqMsgInfo* info)
 
     if (Runtime::Instance()->GetDisableThread()) {
         recvCount[devId]++;
-        if (Runtime::Instance()->GetChipType() == CHIP_910_B_93) {
-            rtStarsSqe_t *starsSqe = reinterpret_cast<rtStarsSqe_t *>(cmd);
-            if (starsSqe->phSqe.rt_streamID < 1024) {
-                vCqShmInfo[starsSqe->phSqe.rt_streamID].taskId = starsSqe->phSqe.task_id;
-                vCqShmInfo[starsSqe->phSqe.rt_streamID].valid = 0x5A5A5A5A;
-            } else {
-                printf("halSqMsgSend: illegal stream_id=%u, chip_type is cloud_v2", starsSqe->phSqe.rt_streamID);
-            }
+        if (cmd->streamID < 1024) {
+            vCqShmInfo[cmd->streamID].taskId = cmd->taskID;
+            vCqShmInfo[cmd->streamID].valid = 0x5A5A5A5A;
         } else {
-            if (cmd->streamID < 1024) {
-                vCqShmInfo[cmd->streamID].taskId = cmd->taskID;
-                vCqShmInfo[cmd->streamID].valid = 0x5A5A5A5A;
-            } else {
-                printf("halSqMsgSend: illegal stream_id=%u, chip_type=%u", cmd->streamID,
-                    Runtime::Instance()->GetChipType());
-            }
+            printf("halSqMsgSend: illegal stream_id=%u, chip_type=%u", cmd->streamID,
+                Runtime::Instance()->GetChipType());
         }
     }
 

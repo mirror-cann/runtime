@@ -81,7 +81,6 @@ void IpcEventDestroy(IpcEvent **eventPtr, int32_t freeId, bool isNeedDestroy);
 void DoCompleteSuccessForIpcRecordTask(TaskInfo* taskInfo, const uint32_t devId);
 void DoCompleteSuccessForIpcWaitTask(TaskInfo* taskInfo, const uint32_t devId);
 void DoCompleteSuccessForMemWaitValueTask(TaskInfo* taskInfo, const uint32_t devId);
-void FillMemWaitFunctionCallSqe(TaskInfo* taskInfo, RtStarsFunctionCallSqe &sqe, const uint64_t funcCallSize);
 void ConstructSecondSqeForMemWaitValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
 void ConstructPhSqeForMemWaitValueTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 void InitFuncCallParaForMemWaitTask(TaskInfo* taskInfo, RtStarsMemWaitValueInstrFcPara &fcPara);

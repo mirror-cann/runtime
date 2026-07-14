@@ -243,6 +243,9 @@ TEST_F(StarsTaskTest, RdmaNoSink)
     EXPECT_EQ(sqe.va, 0U);
     EXPECT_EQ(sqe.write_value_part0, dbInfo & MASK_32_BIT);
     EXPECT_EQ(sqe.write_value_part1, dbInfo >> UINT32_BIT_NUM);
+
+    ConstructSqeBase(&rdmaNoSinkTask, &command);
+    EXPECT_EQ(command.phSqe.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
 }
 
 TEST_F(StarsTaskTest, RdmaSink)

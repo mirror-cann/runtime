@@ -395,39 +395,6 @@ void ConstructRdmaPiValueModifyInstr(
     }
 }
 
-void ConstrucStreamResetInstr(const uint32_t sqId, const uint64_t sqEnReg,
-                                                  RtStarsStreamResetHeadSqe &sqe)
-{
-    constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
-    constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
-    constexpr rtStarsCondIsaRegister_t r2 = RT_STARS_COND_ISA_REGISTER_R2;
-    constexpr rtStarsCondIsaRegister_t r3 = RT_STARS_COND_ISA_REGISTER_R3;
-    constexpr uint64_t axiUserVaCfgMask = 0x100000001ULL;
-
-    // read immd STARS_P0_SQ_CFG5[63:0]
-    ConstructLHWI(r1, sqEnReg, sqe.lhwi1);
-    ConstructLLWI(r1, sqEnReg, sqe.llwi1);
-
-    // read immd reg va cfg mask
-    ConstructLLWI(r2, axiUserVaCfgMask, sqe.llwi2);
-    // cfg use PA
-    ConstructSystemCsr(r2, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRC, sqe.csrrc);
-
-    // write_value 0 to STARS_P0_SQ_CFG5
-    ConstructStore(r1, r0, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, sqe.sw);
-
-    // restore to use VA
-    ConstructSystemCsr(r2, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRS, sqe.csrrs);
-
-    // reset rtsq head
-    ConstructGotoI(r3, static_cast<uint16_t>(sqId), 0U, sqe.goto_i);
-
-    // NOP
-    for (RtStarsCondOpNop &nop : sqe.nop) {
-        ConstructNop(nop);
-    }
-}
-
 void ConstrucModelExeScanSqAdapt(rtStarsModelExeFuncCallPara_t &funcCallPara,
     RtStarsModelExeScanSq &scanSq)
 {

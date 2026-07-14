@@ -16,21 +16,26 @@ set(libruntime_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/stars_cond_isa_helper.cc
     ${RUNTIME_CORE_DIR}/src/task/task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/task_manager.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/barrier/barrier_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cmo/cmo_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_label_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_kernel_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/dump/dump_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/memory/memory_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/memory/memory_task_arch5162.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/random_num_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/ringbuffer_maintain/ringbuffer_maintain_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/event/event_task_arch5162.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/timeout_set/timeout_set_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_res_manage/task_res.cc
     ${RUNTIME_CORE_DIR}/src/task/task_submit/v100/task_submit.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/stub_task.cc
     ${RUNTIME_CORE_DIR}/src/task/v100/task_checker.cc
+    ${RUNTIME_CORE_DIR}/src/task/arch5162/task_adpter.cc
 )
 
 set(libruntime_api_src_files
@@ -150,7 +155,7 @@ set(runtime_raw_device_adpt_common_list
 )
 
 set(runtime_src_aclgraph_list
-    ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/aclgraph_cond_task.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_arch5162.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/api_decorator_aclgraph.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/capture_model_utils.cc
     ${RUNTIME_FEATURE_DIR}/aclgraph/cond_handle.cc
