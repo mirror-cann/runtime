@@ -70,10 +70,10 @@ void AixKernelTaskInitForFusion(TaskInfo * const taskInfo, const rtAicAivFusionI
         aicPart->inputArgsSize.infoAddr = nullptr;
         aicPart->inputArgsSize.atomicIndex = 0U;
     }
+    const uint32_t taskRation = (aicPart->kernel != nullptr) ? aicPart->kernel->GetTaskRation() : 0U;
     RT_LOG(RT_LOG_INFO, "aicAivType=%hhu, taskRation=%u, kernelFlag=0x%x, qos=%u,"
-        " partId=%u, schemMode=%u.", fusionTaskInfo->aicAivType, aicPart->kernel->GetTaskRation(),
-        aicPart->kernelFlag, aicPart->qos, aicPart->partId,
-        aicPart->schemMode);
+        " partId=%u, schemMode=%u.", fusionTaskInfo->aicAivType, taskRation,
+        aicPart->kernelFlag, aicPart->qos, aicPart->partId, aicPart->schemMode);
 }
 
 void FusionKernelTaskInit(TaskInfo *taskInfo)
