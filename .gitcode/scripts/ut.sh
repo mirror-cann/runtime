@@ -40,22 +40,22 @@ if [ "${TARGET_BRANCH}" = "master" ];then
             ret=$?
             ;;
         rts_v201)
-            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_v201 -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource"
+            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_v201 -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource" --ut_timeout=900
             ret=$?
             coverage_save="true"
             ;;
         rts_david)
-            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_david -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource"
+            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_david -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource" --ut_timeout=900
             ret=$?
             coverage_save="true"
             ;;
         rts_910b)
-            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_910b -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource"
+            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_910b -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource" --ut_timeout=900
             ret=$?
             coverage_save="true"
             ;;
         rts_common)
-            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_common -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource"
+            bash tests/build_ut.sh --ut=runtime --target=runtime_ut_common -c -f "pr_filelist.txt" --cann_3rd_lib_path="/home/jenkins/opensource" --ut_timeout=900
             ret=$?
             coverage_save="true"
             ;;
