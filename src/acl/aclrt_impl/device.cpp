@@ -600,10 +600,10 @@ aclError aclrtDeviceSetLimitImpl(aclrtDeviceLimit limit, size_t value)
     }
     const rtError_t rtSetErr = rtDeviceSetLimit(0, rtType, static_cast<uint32_t>(value));
     if (rtSetErr != RT_ERROR_NONE) {
-        if (ACL_GET_ERRCODE_RTS(rtSetErr) == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
+        if (rtSetErr == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
             ACL_LOG_WARN("aclrtDeviceSetLimit not supported, limit is [%d], value is [%zu].",
                 static_cast<int32_t>(limit), value);
-            return ACL_GET_ERRCODE_RTS(rtSetErr);
+            return rtSetErr;
         }
         ACL_LOG_CALL_ERROR("rtDeviceSetLimit failed, runtime result = %d.", static_cast<int32_t>(rtSetErr));
         return ACL_GET_ERRCODE_RTS(rtSetErr);
@@ -630,9 +630,9 @@ aclError aclrtDeviceGetLimitImpl(aclrtDeviceLimit limit, size_t *value)
     uint32_t rtValue = 0U;
     const rtError_t rtGetErr = rtDeviceGetLimit(rtType, &rtValue);
     if (rtGetErr != RT_ERROR_NONE) {
-        if (ACL_GET_ERRCODE_RTS(rtGetErr) == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
+        if (rtGetErr == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
             ACL_LOG_WARN("aclrtDeviceGetLimit not supported, limit is [%d].", static_cast<int32_t>(limit));
-            return ACL_GET_ERRCODE_RTS(rtGetErr);
+            return rtGetErr;
         }
         ACL_LOG_CALL_ERROR("rtDeviceGetLimit failed, runtime result = %d.", static_cast<int32_t>(rtGetErr));
         return ACL_GET_ERRCODE_RTS(rtGetErr);

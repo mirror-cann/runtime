@@ -3671,6 +3671,7 @@ rtError_t ApiImpl::DeviceGetLimit(const rtLimitType_t type, uint32_t *val)
             static_cast<uint32_t>(type));
         *val = 0U;
     }
+    RT_LOG(RT_LOG_INFO, "DeviceGetLimit success, type=%d, val=%u.", static_cast<int32_t>(type), *val);
     return ret;
 }
 

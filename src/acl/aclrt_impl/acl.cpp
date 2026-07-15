@@ -150,7 +150,7 @@ namespace {
         // always returned SUCCESS even on platforms that do not support the limit type.
         const rtError_t rtErr = rtDeviceSetLimit(0, limitType, static_cast<uint32_t>(stackSize));
         if (rtErr != RT_ERROR_NONE) {
-            if (ACL_GET_ERRCODE_RTS(rtErr) == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
+            if (rtErr == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
                 ACL_LOG_WARN("set limit (%s %zu) not supported on this platform, skip.",
                     typeName.c_str(), stackSize);
                 return ACL_SUCCESS;
@@ -196,7 +196,7 @@ namespace {
         // always returned SUCCESS even on platforms that do not support the limit type.
         const rtError_t rtErr = rtDeviceSetLimit(0, limitType, static_cast<uint32_t>(fifoSize));
         if (rtErr != RT_ERROR_NONE) {
-            if (ACL_GET_ERRCODE_RTS(rtErr) == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
+            if (rtErr == ACL_ERROR_RT_FEATURE_NOT_SUPPORT) {
                 ACL_LOG_WARN("set limit (%s %zu) not supported on this platform, skip.",
                     typeName.c_str(), fifoSize);
                 return ACL_SUCCESS;
