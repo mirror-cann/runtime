@@ -77,6 +77,16 @@ drvError_t drvGetDevIDByLocalDevID(uint32_t localDevId, uint32_t *devId)
     return DRV_ERROR_NONE;
 }
 
+int32_t log_get_device_id(int32_t *devices, int32_t *devNum, int32_t len)
+{
+    if (devices == NULL || devNum == NULL || len <= 0) {
+        return -1;
+    }
+    devices[0] = 0;
+    *devNum = 1;
+    return 0;
+}
+
 drvError_t halGetDevNumEx(uint32_t hw_type, uint32_t *devNum)
 {
     if (hw_type == 0) {

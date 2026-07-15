@@ -29,7 +29,6 @@ set(STACKTRACE_DUMPER_SRC
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_process.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_ptrace.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_regs_arm_64.c
-    ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_regs_x86_64.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_thread.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_threads.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_util.c
@@ -47,6 +46,7 @@ set(SRC_FILE
     ${ATRACE_SOURCE_DIR}/utrace/tracer/tracer_schedule.c
     ${ATRACE_SOURCE_DIR}/utrace/tracer/tracer_mgr_operate.c
     ${ATRACE_SOURCE_DIR}/utrace/tracer/tracer_mgr_operate_atrace.c
+    ${ATRACE_SOURCE_DIR}/utrace/utrace_client/utrace_socket.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_fp.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_safe_recorder.c
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper.c
@@ -83,6 +83,7 @@ set(INCLUDE_DIR
     ${ATRACE_SOURCE_DIR}/utrace/recorder
     ${ATRACE_SOURCE_DIR}/utrace/ringbuffer
     ${ATRACE_SOURCE_DIR}/utrace/trace_client
+    ${ATRACE_SOURCE_DIR}/utrace/utrace_client
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace
     ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper
     ${ATRACE_SOURCE_DIR}/utrace/tracer
@@ -163,6 +164,11 @@ target_link_libraries(utrace_utest PRIVATE
     $<BUILD_INTERFACE:adump_headers>
     dl
 )
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    target_sources(utrace_utest PRIVATE
+        ${ATRACE_SOURCE_DIR}/utrace/stacktrace/stacktrace_dumper/scd_regs_x86_64.c)
+endif()
 
 set_target_properties(utrace_utest
     PROPERTIES

@@ -75,13 +75,15 @@ TEST_F(TraceServerUtest, TraceServerInitPfServiceFailed)
 
 TEST_F(TraceServerUtest, TraceServerInitPfDevIdFailed)
 {
-    MOCKER(halGetDevIDsEx).stubs().will(returnValue(1));
+    // 场景1：log_get_device_id 返回失败（对应原来的 halGetDevIDsEx 失败）
+    MOCKER(log_get_device_id).stubs().will(returnValue(-1));
     TraceServerInit(-1);
     EXPECT_EQ(-1, TraceServerGetDevId());
     EXPECT_EQ(TRACE_FAILURE, TraceServerProcess());
     TraceServerExit();
 
-    MOCKER(halGetDevNumEx).stubs().will(returnValue(1));
+    // 场景2：log_get_device_id 返回失败（对应原来的 halGetDevNumEx 失败）
+    MOCKER(log_get_device_id).stubs().will(returnValue(-1));
     TraceServerInit(-1);
     EXPECT_EQ(-1, TraceServerGetDevId());
     EXPECT_EQ(TRACE_FAILURE, TraceServerProcess());

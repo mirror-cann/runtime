@@ -22,6 +22,8 @@ int32_t log_read_by_type_stub_null(int device_id, char *buf, unsigned int *size,
 int32_t log_read_by_type_stub_size_over(int device_id, char *buf, unsigned int *size, int timeout, enum log_channel_type channel_type);
 int32_t log_read_by_type_stub_invalid(int device_id, char *buf, unsigned int *size, int timeout, enum log_channel_type channel_type);
 
+int32_t log_get_device_id(int32_t *devices, int32_t *devNum, int32_t len);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

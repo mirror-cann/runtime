@@ -1,5 +1,5 @@
-set(CPU_DETECT_SOURCE_DIR 
-    ${TOP_DIR}/abl/atrace/cpu_detect
+set(CPU_DETECT_SOURCE_DIR
+    ${TOP_DIR}/src/dfx/trace/cpu_detect
 )
 
 set(SRC_FILE
@@ -10,12 +10,15 @@ set(SRC_FILE
 
 set(INCLUDE_DIR
     ${CPU_DETECT_SOURCE_DIR}/
-    ${CPU_DETECT_SOURCE_DIR}/../stub/
-    ${TOP_DIR}/abl/atrace/inc/cpu_detect
-    ${TOP_DIR}/inc/driver
+    ${CMAKE_CURRENT_SOURCE_DIR}/stub/
+    ${CMAKE_CURRENT_SOURCE_DIR}/../stub/
+    ${ADIAG_DIR}/common
+    ${TOP_DIR}/src/dfx/trace/inc/toolchain
+    ${TOP_DIR}/include/driver
 )
 
 set(TEST_SRC
+    main.cc
     cpu_detect_utest.cc
     cpu_detect_core_utest.cc
     cpu_detect_test_utest.cc
@@ -60,12 +63,14 @@ target_link_options(cpu_detect_utest
         -lpthread
 )
 
-target_link_libraries(cpu_detect_utest 
+target_link_libraries(cpu_detect_utest
     PRIVATE
         $<BUILD_INTERFACE:intf_llt_pub>
         $<BUILD_INTERFACE:slog_headers>
         $<BUILD_INTERFACE:mmpa_headers>
+        $<BUILD_INTERFACE:atrace_headers>
         c_sec
+        dl
         pthread
 )
 
@@ -75,7 +80,9 @@ set_target_properties(cpu_detect_utest
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-run_llt_test(
-    TARGET cpu_detect_utest
-    TASK_NUM 1
-)
+if(COMMAND run_llt_test)
+    run_llt_test(
+        TARGET cpu_detect_utest
+        TASK_NUM 1
+    )
+endif()
