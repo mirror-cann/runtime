@@ -42,7 +42,7 @@ extern "C" {
 #define ACL_PROF_API_STATS              0x400000000ULL
 
 /**
- * @deprecated please use aclprofGetOpTypeLen and aclprofGetOpTNameLen instead
+ * @deprecated please use aclprofGetOpTypeLen and aclprofGetOpNameLen instead
  */
 #define ACL_PROF_MAX_OP_NAME_LEN        257
 #define ACL_PROF_MAX_OP_TYPE_LEN        65
@@ -489,13 +489,14 @@ MSVP_PROF_API aclError aclprofGetStepTimestamp(aclprofStepInfo* stepInfo, aclpro
  */
 MSVP_PROF_API aclprofStepInfo* aclprofCreateStepInfo();
 
- /**
- * @ingroup AscendCL
- * @brief destroy aclprofStepInfo pointer
- *
- *
- * @retval void
- */
+/**
+* @ingroup AscendCL
+* @brief destroy aclprofStepInfo pointer
+*
+* @param stepinfo [IN] pointer to aclprofStepInfo data
+*
+* @retval void
+*/
 MSVP_PROF_API void aclprofDestroyStepInfo(aclprofStepInfo* stepinfo);
 
 /**
@@ -511,6 +512,7 @@ MSVP_PROF_API void *aclprofCreateStamp();
 * @ingroup AscendCL
 * @brief destroy stamp pointer
 *
+* @param stamp [IN] pointer to aclprofStamp data
 *
 * @retval void
 */
@@ -519,6 +521,8 @@ MSVP_PROF_API void aclprofDestroyStamp(void *stamp);
 /**
 * @ingroup AscendCL
 * @brief Record push timestamp
+*
+* @param stamp [IN] pointer to aclprofStamp data
 *
 * @retval ACL_SUCCESS The function is successfully executed.
 * @retval OtherValues Failure
@@ -539,6 +543,9 @@ MSVP_PROF_API aclError aclprofPop();
 * @ingroup AscendCL
 * @brief Record range start timestamp
 *
+* @param stamp [IN] pointer to aclprofStamp data
+* @param rangeId [OUT] pointer to range id
+*
 * @retval ACL_SUCCESS The function is successfully executed.
 * @retval OtherValues Failure
 */
@@ -547,6 +554,8 @@ MSVP_PROF_API aclError aclprofRangeStart(void *stamp, uint32_t *rangeId);
 /**
 * @ingroup AscendCL
 * @brief Record range end timestamp
+*
+* @param rangeId [IN] range id returned by aclprofRangeStart
 *
 * @retval ACL_SUCCESS The function is successfully executed.
 * @retval OtherValues Failure
@@ -557,14 +566,20 @@ MSVP_PROF_API aclError aclprofRangeStop(uint32_t rangeId);
 * @ingroup AscendCL
 * @brief set message to stamp
 *
+* @param stamp [IN] pointer to aclprofStamp data
+* @param msg [IN] pointer to message string
+* @param msgLen [IN] length of message
 *
-* @retval void
+* @retval ACL_SUCCESS The function is successfully executed.
+* @retval OtherValues Failure
 */
 MSVP_PROF_API aclError aclprofSetStampTraceMessage(void *stamp, const char *msg, uint32_t msgLen);
 
 /**
 * @ingroup AscendCL
 * @brief Record mark timestamp
+*
+* @param stamp [IN] pointer to aclprofStamp data
 *
 * @retval ACL_SUCCESS The function is successfully executed.
 * @retval OtherValues Failure
@@ -593,8 +608,10 @@ MSVP_PROF_API uint64_t aclprofStr2Id(const char *message);
 
 /**
 * @ingroup AscendCL
-* @brief 
-* @param [in] attr: event attributes, include tensor info
+* @brief Push a range with event attributes
+*
+* @param attr [IN] pointer to event attributes, including tensor information
+*
 * @retval ACL_SUCCESS The function is successfully executed.
 * @retval OtherValues Failure
 */
@@ -602,7 +619,8 @@ MSVP_PROF_API aclError aclprofRangePushEx(aclprofEventAttributes *attr);
 
 /**
 * @ingroup AscendCL
-* @brief 
+* @brief Pop the latest range started by aclprofRangePushEx
+*
 * @retval ACL_SUCCESS The function is successfully executed.
 * @retval OtherValues Failure
 */
