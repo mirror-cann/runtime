@@ -97,6 +97,10 @@ Program::~Program()
         if (programItem != nullptr) {
             Program *programInst = programItem->GetVal(false);
             if (programInst != nullptr) {
+                if (programInst->IsNewBinaryLoadFlow()) {
+                    bool needReset = false;
+                    (void)programItem->TryDecRef(needReset);
+                }
                 programInst = nullptr;
                 programItem->ResetVal();
             }
