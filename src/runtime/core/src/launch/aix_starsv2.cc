@@ -475,7 +475,7 @@ rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *s
     error = CheckDynSizeValid(kernelTask, kernel);
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
         stm->Id_(), static_cast<uint32_t>(error));
-    if (extendAgrs->argsArray != nullptr) {
+    if (extendAgrs->argsType == RT_ARGS_ARRAY) {
         uint64_t paramTotalSize = kernel->GetParamTotalSize();
         useArgPool = useArgPool && (paramTotalSize <= STM_ARG_POOL_COPY_SIZE);
         error = static_cast<DavidStream *>(dstStm)->LoadArgsFromArray(

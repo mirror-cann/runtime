@@ -20,6 +20,7 @@ namespace runtime {
         const rtArgsEx_t *argsInfo;
         const TaskCfg *taskCfg;
         void **argsArray;
+        ArgsType argsType;
     };
 
     rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreDim,

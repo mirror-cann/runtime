@@ -550,6 +550,7 @@ rtError_t ApiImplDavid::LaunchKernelByArgsWithType(Kernel * const kernel, const 
             launchKernelExtendArgs.argsInfo = &nonCpuArgsInfo;
             launchKernelExtendArgs.taskCfg = &taskCfg;
             launchKernelExtendArgs.argsArray = argsWithType->args.argsArrayInfo;
+            launchKernelExtendArgs.argsType = RT_ARGS_ARRAY;
             error = StreamLaunchKernelV2(kernel, coreDim, stm, &launchKernelExtendArgs);
             break;
         }
