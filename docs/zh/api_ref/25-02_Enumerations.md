@@ -893,6 +893,7 @@ typedef enum {
     ACL_DEV_ATTR_CUST_OP_PRIVILEGE = 406U,
     ACL_DEV_ATTR_MAINBOARD_ID = 407U,
     ACL_DEV_ATTR_HD_CONNECT_TYPE = 408U,
+    ACL_DEV_ATTR_DEVICE_FORM_FACTOR = 409U,
     ACL_DEV_ATTR_IS_VIRTUAL = 501U,
 
     ACL_DEV_ATTR_NPU_ARCH = 601U,
@@ -1083,6 +1084,23 @@ typedef enum {
     <!-- npu="950" id27 -->
     仅Ascend 950PR/Ascend 950DT支持该选项。
     <!-- end id27 -->
+
+    对于不支持该选项的产品型号，返回报错。
+
+- ACL\_DEV\_ATTR\_DEVICE\_FORM\_FACTOR
+
+    设备形态。
+
+    取值如下：
+
+    - 0：PoD形态，算力机柜形态
+    - 1：A+K Server形态，昇腾（Ascend）+鲲鹏（Kunpeng）架构。
+    - 2：A+X Server形态，昇腾（Ascend）+非鲲鹏架构（如X86架构）。
+    - 3：PCIe标卡形态。
+
+    <!-- npu="950" id87 -->
+    仅Ascend 950PR/Ascend 950DT支持该选项。
+    <!-- end id87 -->
 
     对于不支持该选项的产品型号，返回报错。
 

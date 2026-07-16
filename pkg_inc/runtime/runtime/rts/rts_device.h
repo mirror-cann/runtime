@@ -59,6 +59,7 @@ typedef enum {
     RT_DEV_ATTR_CUST_OP_PRIVILEGE = 406U,       // indicates whether the custom operator privilege is enabled
     RT_DEV_ATTR_MAINBOARD_ID = 407U,            // mainboard id
     RT_DEV_ATTR_HD_CONNECT_TYPE = 408U,         // host-device connect type
+    RT_DEV_ATTR_DEVICE_FORM_FACTOR = 409U,       // device form factor (pod/server/pcie card)
 
     RT_DEV_ATTR_IS_VIRTUAL = 501U,              // is_virtual
 

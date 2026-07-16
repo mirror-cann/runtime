@@ -674,11 +674,18 @@ typedef enum {
     ACL_DEV_ATTR_CUST_OP_PRIVILEGE = 406U,      // indicates whether the custom operator privilege is enabled
     ACL_DEV_ATTR_MAINBOARD_ID = 407U,           // mainborad id
     ACL_DEV_ATTR_HD_CONNECT_TYPE = 408U,        // host-device connect type
+    ACL_DEV_ATTR_DEVICE_FORM_FACTOR = 409U,     // device form factor (pod/server/pcie card)
 
     ACL_DEV_ATTR_IS_VIRTUAL = 501U,             // whether it is in compute power splitting mode
 
     ACL_DEV_ATTR_NPU_ARCH = 601U,               // npu arch
 } aclrtDevAttr;
+
+// Device form factor returned by aclrtGetDeviceInfo with ACL_DEV_ATTR_DEVICE_FORM_FACTOR.
+#define ACL_DEVICE_FORM_FACTOR_POD       0  // pod form factor
+#define ACL_DEVICE_FORM_FACTOR_A_K       1  // A.K (server-like) form factor
+#define ACL_DEVICE_FORM_FACTOR_A_X       2  // A.X (server-like) form factor
+#define ACL_DEVICE_FORM_FACTOR_PCIE_CARD 3  // PCIe card form factor
 
 typedef enum {
     ACL_FEATURE_TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV = 1,
