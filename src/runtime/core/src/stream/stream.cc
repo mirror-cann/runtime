@@ -3009,7 +3009,7 @@ rtError_t Stream::WaitForTask(const uint32_t taskId, const bool isNeedWaitSyncCq
 
         if (tryCount >= maxTryCount) {
             if (timeout > 0) {
-                uint64_t count = GetTimeInterval(beginTimeSpec);
+                const uint64_t count = GetTimeInterval(beginTimeSpec);
                 COND_RETURN_ERROR_MSG_INNER((count >= static_cast<uint64_t>(timeout)), RT_ERROR_STREAM_SYNC_TIMEOUT,
                     "Stream synchronize timeout, device_id=%u, stream_id=%d, time=%" PRIu64 "ms, timeout=%dms, tryCount=%u.",
                     deviceId, streamId_, count, timeout, tryCount);
