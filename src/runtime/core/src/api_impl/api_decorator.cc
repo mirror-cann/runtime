@@ -2515,6 +2515,11 @@ rtError_t ApiDecorator::LaunchHostFunc(Stream * const stm, const rtCallback_t ca
     return impl_->LaunchHostFunc(stm, callBackFunc, fnData);
 }
 
+rtError_t ApiDecorator::LaunchHostFuncV2(Stream * const stm, const rtHostCpuFunc callBackFunc, void * const fnData)
+{
+    return impl_->LaunchHostFuncV2(stm, callBackFunc, fnData);
+}
+
 rtError_t ApiDecorator::EventWorkModeSet(uint8_t mode) 
 {
     return impl_->EventWorkModeSet(mode);

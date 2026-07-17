@@ -844,6 +844,8 @@ public:
     virtual rtError_t CacheLastTaskExtendInfo(const char* const extendInfoPtr, const size_t infoSize) = 0;
 
     virtual rtError_t LaunchHostFunc(Stream * const stm, rtCallback_t const callBackFunc, void * const fnData) = 0;
+    virtual rtError_t LaunchHostFuncV2(Stream * const stm, rtHostCpuFunc const callBackFunc,
+        void * const fnData) = 0;
 
     // event mode
     virtual rtError_t EventWorkModeSet(uint8_t mode) = 0;

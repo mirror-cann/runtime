@@ -1895,6 +1895,15 @@ TEST_F(StreamTest, GetErrorForAbortOnFailure)
     delete device;
 }
 
+TEST_F(StreamTest, GetHostFuncExecuteError)
+{
+    Stream stream(static_cast<Device*>(nullptr), 0U);
+    stream.SetErrCode(static_cast<uint32_t>(RT_ERROR_HOST_FUNC_EXE_FAILED));
+
+    EXPECT_EQ(stream.GetError(), RT_ERROR_HOST_FUNC_EXE_FAILED);
+    EXPECT_EQ(stream.GetErrCode(), static_cast<uint32_t>(RT_ERROR_NONE));
+}
+
 TEST_F(StreamTest, return_if_devstatus_not_normal_and_bindflag_true)
 {
     RawDevice *device = new RawDevice(0);

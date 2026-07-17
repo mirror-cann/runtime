@@ -308,6 +308,7 @@ constexpr int32_t RT_ERROR_NOT_SET_SYSPARAMOPT      = 0x07110014;
 constexpr int32_t RT_ERROR_INSUFFICIENT_INPUT_ARRAY = 0x07110015;
 constexpr int32_t RT_ERROR_INVALID_HANDLE           = 0x07110016;
 constexpr int32_t RT_ERROR_JETTY_POOL_NO_RESOURCES  = 0x07110017;
+constexpr int32_t RT_ERROR_HOST_FUNC_EXE_FAILED     = 0x07110018;
 
 constexpr int32_t RT_ERROR_DEBUG_BASE               = 0x07120000;
 constexpr int32_t RT_ERROR_DEBUG_NULL               = 0x07120001;

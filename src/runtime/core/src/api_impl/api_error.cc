@@ -6473,6 +6473,18 @@ rtError_t ApiErrorDecorator::LaunchHostFunc(Stream * const stm, const rtCallback
     return impl_->LaunchHostFunc(stm, callBackFunc, fnData);
 }
 
+rtError_t ApiErrorDecorator::LaunchHostFuncV2(Stream * const stm, const rtHostCpuFunc callBackFunc,
+    void * const fnData)
+{
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(callBackFunc, RT_ERROR_INVALID_VALUE,
+        "Adding a host callback function to the stream task queue");
+    COND_RETURN_AND_MSG_OUTER((stm != nullptr) && (stm->GetSubscribeFlag() == StreamSubscribeFlag::SUBSCRIBE_USER),
+        RT_ERROR_SUBSCRIBE_STREAM, ErrorCode::EE1016, "Adding a host callback function to the stream task queue",
+        RtFmtMsg("The stream (stream_id=%d) is in the host callback process and cannot call LaunchHostFuncV2",
+            stm->Id_()));
+    return impl_->LaunchHostFuncV2(stm, callBackFunc, fnData);
+}
+
 rtError_t ApiErrorDecorator::CacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(infoPtr, RT_ERROR_INVALID_VALUE, "Caching the operator information of the latest task");

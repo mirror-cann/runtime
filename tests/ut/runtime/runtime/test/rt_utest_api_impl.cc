@@ -54,6 +54,7 @@
 #include "rts.h"
 #include "rts_snapshot.h"
 #include "ipc_event.hpp"
+#include "errcode_manage.hpp"
 #include "common/rt_utest_context_reset_helper.hpp"
 using namespace testing;
 using namespace cce::runtime;
@@ -98,6 +99,137 @@ private:
 
 static void ApiImplTest_Stream_Cb(void *arg)
 {
+}
+
+namespace {
+struct HostFuncTestData {
+    uint32_t callCount = 0U;
+    void* lastArg = nullptr;
+    int32_t callbackRet = 0;
+};
+
+void LegacyHostFuncForTest(void* arg)
+{
+    auto* const data = static_cast<HostFuncTestData*>(arg);
+    ++data->callCount;
+    data->lastArg = arg;
+}
+
+int32_t HostCpuFuncForTest(void* arg)
+{
+    auto* const data = static_cast<HostFuncTestData*>(arg);
+    ++data->callCount;
+    data->lastArg = arg;
+    return data->callbackRet;
+}
+
+int32_t HostCpuSubmitFailureFuncForTest(void*) { return -1; }
+
+class HostFuncApiImplForTest : public ApiImpl {
+public:
+    using ApiImpl::ProcessHostFunc;
+
+    rtError_t LaunchHostFunc(Stream* const stm, const rtCallback_t callBackFunc, void* const fnData) override
+    {
+        submittedStream = stm;
+        submittedCallback = callBackFunc;
+        submittedData = fnData;
+        return submitRet;
+    }
+
+    Stream* submittedStream = nullptr;
+    rtCallback_t submittedCallback = nullptr;
+    void* submittedData = nullptr;
+    rtError_t submitRet = RT_ERROR_NONE;
+};
+} // namespace
+
+TEST_F(ApiImplTest, RegisterHostCpuFunc)
+{
+    const uint64_t funcAddr = RtPtrToValue(HostCpuFuncForTest);
+
+    EXPECT_EQ(GlobalContainer::RegisterHostCpuFunc(0U), RT_ERROR_INVALID_VALUE);
+    EXPECT_FALSE(GlobalContainer::IsHostCpuFunc(0U));
+    EXPECT_EQ(GlobalContainer::RegisterHostCpuFunc(funcAddr), RT_ERROR_NONE);
+    EXPECT_EQ(GlobalContainer::RegisterHostCpuFunc(funcAddr), RT_ERROR_NONE);
+    EXPECT_TRUE(GlobalContainer::IsHostCpuFunc(funcAddr));
+}
+
+TEST_F(ApiImplTest, LaunchHostFuncV2RegistersBeforeVirtualSubmit)
+{
+    HostFuncApiImplForTest apiImpl;
+    HostFuncTestData data;
+
+    EXPECT_EQ(apiImpl.LaunchHostFuncV2(nullptr, nullptr, &data), RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(apiImpl.LaunchHostFuncV2(nullptr, HostCpuFuncForTest, &data), RT_ERROR_NONE);
+    EXPECT_EQ(apiImpl.submittedStream, nullptr);
+    EXPECT_EQ(apiImpl.submittedData, &data);
+    EXPECT_EQ(RtPtrToValue(apiImpl.submittedCallback), RtPtrToValue(HostCpuFuncForTest));
+    EXPECT_TRUE(GlobalContainer::IsHostCpuFunc(RtPtrToValue(HostCpuFuncForTest)));
+}
+
+TEST_F(ApiImplTest, LaunchHostFuncV2DecoratorForwarding)
+{
+    HostFuncApiImplForTest apiImpl;
+    ApiDecorator apiDecorator(&apiImpl);
+    ApiErrorDecorator apiErrorDecorator(&apiDecorator);
+    HostFuncTestData data;
+
+    EXPECT_EQ(apiErrorDecorator.LaunchHostFuncV2(nullptr, nullptr, &data), RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(apiErrorDecorator.LaunchHostFuncV2(nullptr, HostCpuFuncForTest, &data), RT_ERROR_NONE);
+    EXPECT_EQ(apiImpl.submittedData, &data);
+    EXPECT_EQ(RtPtrToValue(apiImpl.submittedCallback), RtPtrToValue(HostCpuFuncForTest));
+}
+
+TEST_F(ApiImplTest, LaunchHostFuncV2SubmitFailureKeepsRegistration)
+{
+    HostFuncApiImplForTest apiImpl;
+    apiImpl.submitRet = RT_ERROR_INVALID_VALUE;
+
+    EXPECT_EQ(apiImpl.LaunchHostFuncV2(nullptr, HostCpuSubmitFailureFuncForTest, nullptr), RT_ERROR_INVALID_VALUE);
+    EXPECT_TRUE(GlobalContainer::IsHostCpuFunc(RtPtrToValue(HostCpuSubmitFailureFuncForTest)));
+}
+
+TEST_F(ApiImplTest, ProcessHostFuncDispatchesLegacyAndV2Callbacks)
+{
+    HostFuncApiImplForTest apiImpl;
+    HostFuncTestData legacyData;
+    HostFuncTestData hostCpuData;
+
+    ASSERT_FALSE(GlobalContainer::IsHostCpuFunc(RtPtrToValue(LegacyHostFuncForTest)));
+    apiImpl.ProcessHostFunc(RtPtrToValue(LegacyHostFuncForTest), RtPtrToValue(&legacyData), nullptr, 0U);
+    EXPECT_EQ(legacyData.callCount, 1U);
+    EXPECT_EQ(legacyData.lastArg, &legacyData);
+
+    ASSERT_EQ(GlobalContainer::RegisterHostCpuFunc(RtPtrToValue(HostCpuFuncForTest)), RT_ERROR_NONE);
+    apiImpl.ProcessHostFunc(RtPtrToValue(HostCpuFuncForTest), RtPtrToValue(&hostCpuData), nullptr, 0U);
+    EXPECT_EQ(hostCpuData.callCount, 1U);
+    EXPECT_EQ(hostCpuData.lastArg, &hostCpuData);
+}
+
+TEST_F(ApiImplTest, ProcessHostFuncSetsStreamErrorForNonzeroReturn)
+{
+    HostFuncApiImplForTest apiImpl;
+    HostFuncTestData data;
+    data.callbackRet = -1;
+    rtStream_t streamHandle = nullptr;
+    ASSERT_EQ(rtStreamCreate(&streamHandle, 0), RT_ERROR_NONE);
+    Stream* const stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    ASSERT_NE(stream, nullptr);
+    ASSERT_EQ(GlobalContainer::RegisterHostCpuFunc(RtPtrToValue(HostCpuFuncForTest)), RT_ERROR_NONE);
+
+    apiImpl.ProcessHostFunc(
+        RtPtrToValue(HostCpuFuncForTest), RtPtrToValue(&data), stream->Device_(), static_cast<uint16_t>(stream->Id_()));
+
+    EXPECT_EQ(data.callCount, 1U);
+    EXPECT_EQ(stream->GetErrCode(), static_cast<uint32_t>(RT_ERROR_HOST_FUNC_EXE_FAILED));
+    stream->SetErrCode(static_cast<uint32_t>(RT_ERROR_NONE));
+    EXPECT_EQ(rtStreamDestroy(streamHandle), RT_ERROR_NONE);
+}
+
+TEST_F(ApiImplTest, HostFuncExecuteErrorMapsToAclInternalError)
+{
+    EXPECT_EQ(ErrorcodeManage::Instance().GetRtExtErrCode(RT_ERROR_HOST_FUNC_EXE_FAILED), ACL_ERROR_RT_INTERNAL_ERROR);
 }
 
 TEST_F(ApiImplTest, ContextSetCurrentNullClearsCurrentContext)

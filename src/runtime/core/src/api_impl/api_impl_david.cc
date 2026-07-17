@@ -1426,7 +1426,7 @@ rtError_t ApiImplDavid::ProcessReport(const int32_t timeout, const bool noLog)
                 RT_LOG(RT_LOG_INFO, "report[%u], streamId=%hu, taskId=%hu, eventNotifyId=%hu, isBlock=%hhu",
                     idx, report[idx].streamId, report[idx].taskId, report[idx].eventId, report[idx].isBlock);
 
-                (hostFunc)(RtValueToPtr<void *>(report[idx].fnDataPtr));
+                ProcessHostFunc(report[idx].hostFuncCbPtr, report[idx].fnDataPtr, dev, report[idx].streamId);
                 ret = ProcessReportForBlockCqe(dev, &report[idx], deviceId, tsId);
                 ERROR_RETURN(ret, "process block cqe fail, ret=%#x.", ret);
                 ret = curDrv->CqReportRelease(&report[idx], deviceId, cqidValue, tsId, noLog);

@@ -32,6 +32,7 @@
 #include "notify.hpp"
 #include "group_device.hpp"
 #include "task.hpp"
+#include "task_manager.h"
 #include "host_task.hpp"
 #include "osal.hpp"
 #include "profiler.hpp"
@@ -5232,7 +5233,7 @@ rtError_t ApiImpl::ProcessReport(const int32_t timeout, const bool noLog)
                     idx, report[idx].sqId, report[idx].streamId, report[idx].taskId,
                     report[idx].eventId, report[idx].isBlock);
 
-                (hostFunc)(reinterpret_cast<void *>(static_cast<uintptr_t>(report[idx].fnDataPtr)));
+                ProcessHostFunc(report[idx].hostFuncCbPtr, report[idx].fnDataPtr, dev, report[idx].streamId);
                 if (report[idx].isBlock != 0) {
                     uint32_t sqId = 0U;
                     rtHostFuncCommand_t *command = nullptr;
@@ -8690,6 +8691,64 @@ rtError_t ApiImpl::LaunchHostFunc(Stream * const stm, const rtCallback_t callBac
         }
         return CallbackLaunchWithoutEvent(callBackFunc, fnData, curStm, true);
     }
+}
+
+rtError_t ApiImpl::LaunchHostFuncV2(Stream * const stm, const rtHostCpuFunc callBackFunc, void * const fnData)
+{
+    NULL_PTR_RETURN_MSG_OUTER(callBackFunc, RT_ERROR_INVALID_VALUE);
+
+    const uint64_t funcAddr = RtPtrToValue(callBackFunc);
+    const rtCallback_t legacyView = RtValueToPtr<rtCallback_t>(funcAddr);
+    const rtError_t ret = GlobalContainer::RegisterHostCpuFunc(funcAddr);
+    ERROR_RETURN(ret, "Register host cpu function failed, retCode=%#x.", ret);
+
+    return LaunchHostFunc(stm, legacyView, fnData);
+}
+
+void ApiImpl::ProcessHostFunc(const uint64_t funcAddr, const uint64_t fnDataAddr, Device * const dev,
+    const uint16_t streamId) const
+{
+    void * const fnData = RtValueToPtr<void *>(fnDataAddr);
+    if (!GlobalContainer::IsHostCpuFunc(funcAddr)) {
+        const rtCallback_t hostFunc = RtValueToPtr<rtCallback_t>(funcAddr);
+        hostFunc(fnData);
+        return;
+    }
+
+    const rtHostCpuFunc hostCpuFunc = RtValueToPtr<rtHostCpuFunc>(funcAddr);
+    const int32_t callbackRet = hostCpuFunc(fnData);
+    if (callbackRet != 0) {
+        SetHostFuncStreamError(dev, streamId, callbackRet);
+    }
+}
+
+void ApiImpl::SetHostFuncStreamError(Device * const dev, const uint16_t streamId, const int32_t callbackRet)
+{
+    StreamSqCqManage * const streamManage = dev->GetStreamSqCqManage();
+    if (streamManage == nullptr) {
+        RT_LOG(RT_LOG_ERROR, "Set host function stream error failed, stream manager is null, "
+            "report_stream_id=%hu, callback retCode=%#x.", streamId, static_cast<uint32_t>(callbackRet));
+        return;
+    }
+
+    Stream *reportStream = nullptr;
+    const rtError_t ret = streamManage->GetStreamById(static_cast<uint32_t>(streamId), &reportStream);
+    if ((ret != RT_ERROR_NONE) || (reportStream == nullptr)) {
+        RT_LOG(RT_LOG_ERROR, "Get report stream failed, report_stream_id=%hu, retCode=%#x, "
+            "callback retCode=%#x.", streamId, static_cast<uint32_t>(ret), static_cast<uint32_t>(callbackRet));
+        return;
+    }
+
+    Stream * const errorStream = GetReportStream(reportStream);
+    if (errorStream == nullptr) {
+        RT_LOG(RT_LOG_ERROR, "Get error stream failed, report_stream_id=%hu, callback retCode=%#x.",
+            streamId, static_cast<uint32_t>(callbackRet));
+        return;
+    }
+
+    RT_LOG(RT_LOG_ERROR, "Host function execute failed, report_stream_id=%hu, error_stream_id=%d, "
+        "callback retCode=%#x.", streamId, errorStream->Id_(), static_cast<uint32_t>(callbackRet));
+    errorStream->SetErrCode(static_cast<uint32_t>(RT_ERROR_HOST_FUNC_EXE_FAILED));
 }
 
 rtError_t ApiImpl::CacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)

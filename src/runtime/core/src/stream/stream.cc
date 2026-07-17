@@ -1840,6 +1840,8 @@ rtError_t Stream::GetError(void)
             error = RT_ERROR_MODEL_ABORT_NORMAL;
         } else if (tmpErrCode == static_cast<uint32_t>(TS_ERROR_AICPU_TIMEOUT)) {
             error = RT_ERROR_TSFW_AICPU_TIMEOUT;
+        } else if (tmpErrCode == static_cast<uint32_t>(RT_ERROR_HOST_FUNC_EXE_FAILED)) {
+            error = RT_ERROR_HOST_FUNC_EXE_FAILED;
         } else {
             RT_LOG(RT_LOG_ERROR, "Stream Synchronize failed, stream_id=%d, retCode=%#x, [%s].",
                 streamId_, tmpErrCode, GetTsErrCodeMap(tmpErrCode, &error));

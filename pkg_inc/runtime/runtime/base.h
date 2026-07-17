@@ -648,6 +648,7 @@ typedef struct rtExceptionErrRegInfo {
 typedef void *rtTask_t;
 
 typedef void (*rtCallback_t)(void *fnData);
+typedef int32_t (*rtHostCpuFunc)(void *args);
 
 typedef enum {
     RT_UTIL_TYPE_AICORE = 0,

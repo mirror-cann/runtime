@@ -98,6 +98,8 @@ std::mutex GlobalContainer::socVersionMutex_;
 std::mutex GlobalContainer::uceMutex_;
 std::mutex GlobalContainer::eventWorkMutex;
 std::unordered_map<uint32_t, rtMemUceInfo> GlobalContainer::memUceInfoMap_;
+std::mutex GlobalContainer::hostCpuFuncMutex_;
+std::unordered_set<uint64_t> GlobalContainer::hostCpuFuncs_;
 
 rtChipType_t GlobalContainer::GetRtChipType(void)
 {
@@ -141,6 +143,23 @@ void GlobalContainer::SetUserSocVersion(const std::string &inSocVersion)
 {
     const std::lock_guard<std::mutex> lock(socVersionMutex_);
     userSocVersion_ = inSocVersion;
+}
+
+// Registered V2 addresses are never erased. The function code must remain loaded,
+// and one address must not be used as both rtCallback_t and rtHostCpuFunc.
+rtError_t GlobalContainer::RegisterHostCpuFunc(const uint64_t funcAddr)
+{
+    COND_RETURN_ERROR(funcAddr == 0UL, RT_ERROR_INVALID_VALUE, "Host cpu function address is null.");
+
+    const std::lock_guard<std::mutex> lock(hostCpuFuncMutex_);
+    (void)hostCpuFuncs_.insert(funcAddr);
+    return RT_ERROR_NONE;
+}
+
+bool GlobalContainer::IsHostCpuFunc(const uint64_t funcAddr)
+{
+    const std::lock_guard<std::mutex> lock(hostCpuFuncMutex_);
+    return hostCpuFuncs_.find(funcAddr) != hostCpuFuncs_.end();
 }
 
 void GlobalContainer::UceMutexLock(void)
