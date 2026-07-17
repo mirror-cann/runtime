@@ -3398,8 +3398,8 @@ TEST_F(ProfilerTest, FillKernelLaunchExtInfo_GridDimTruncate)
     EXPECT_EQ(runtimeTrack.extInfo.simtKernelInfo.gridDim.x, static_cast<uint16_t>(70000U));
 }
 
-// 测试 FillKernelLaunchExtInfo 函数 - MIX 任务 ratio 截断
-TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixTaskRatioTruncate)
+// 测试 FillKernelLaunchExtInfo 函数 - MIX_AIC 伪混合不采集 ratio
+TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixAicNoRatio)
 {
     TaskInfo taskInfo = {};
     taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
@@ -3410,6 +3410,94 @@ TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixTaskRatioTruncate)
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
     Kernel kernel("", 0ULL, &stubProg, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel.SetMixType(MIX_AIC);
+    kernel.SetTaskRation(100U);
+    taskInfo.u.aicTaskInfo.kernel = &kernel;
+    
+    MsprofRuntimeTrack runtimeTrack = {};
+    FillKernelLaunchExtInfo(runtimeTrack, &taskInfo);
+    
+    // MIX_AIC 伪混合不采集 ratio，期望 0
+    EXPECT_EQ(runtimeTrack.extInfo.kernelInfo.ratio, 0U);
+}
+
+// 测试 FillKernelLaunchExtInfo 函数 - MIX_AIV 伪混合不采集 ratio
+TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixAivNoRatio)
+{
+    TaskInfo taskInfo = {};
+    taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
+    taskInfo.u.aicTaskInfo.comm.dim = 100U;
+    taskInfo.u.aicTaskInfo.comm.argsSize = 256U;
+    taskInfo.u.aicTaskInfo.simtParamOffset = 0U;
+    
+    PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel kernel("", 0ULL, &stubProg, RT_KERNEL_ATTR_TYPE_AICORE, 0);
+    kernel.SetMixType(MIX_AIV);
+    kernel.SetTaskRation(100U);
+    taskInfo.u.aicTaskInfo.kernel = &kernel;
+    
+    MsprofRuntimeTrack runtimeTrack = {};
+    FillKernelLaunchExtInfo(runtimeTrack, &taskInfo);
+    
+    // MIX_AIV 伪混合不采集 ratio，期望 0
+    EXPECT_EQ(runtimeTrack.extInfo.kernelInfo.ratio, 0U);
+}
+
+// 测试 FillKernelLaunchExtInfo 函数 - MIX_AIC_AIV_MAIN_AIC 采集 ratio
+TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixAicAivMainAicRatio)
+{
+    TaskInfo taskInfo = {};
+    taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
+    taskInfo.u.aicTaskInfo.comm.dim = 100U;
+    taskInfo.u.aicTaskInfo.comm.argsSize = 256U;
+    taskInfo.u.aicTaskInfo.simtParamOffset = 0U;
+    
+    PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel kernel("", 0ULL, &stubProg, RT_KERNEL_ATTR_TYPE_AICORE, 0);
+    kernel.SetMixType(MIX_AIC_AIV_MAIN_AIC);
+    kernel.SetTaskRation(2U);
+    taskInfo.u.aicTaskInfo.kernel = &kernel;
+    
+    MsprofRuntimeTrack runtimeTrack = {};
+    FillKernelLaunchExtInfo(runtimeTrack, &taskInfo);
+    
+    // MIX_AIC_AIV_MAIN_AIC 采集 ratio = taskRation & 0x7 = 2
+    EXPECT_EQ(runtimeTrack.extInfo.kernelInfo.ratio, static_cast<uint8_t>(2U & 0x7U));
+}
+
+// 测试 FillKernelLaunchExtInfo 函数 - MIX_AIC_AIV_MAIN_AIV 采集 ratio
+TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixAicAivMainAivRatio)
+{
+    TaskInfo taskInfo = {};
+    taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
+    taskInfo.u.aicTaskInfo.comm.dim = 100U;
+    taskInfo.u.aicTaskInfo.comm.argsSize = 256U;
+    taskInfo.u.aicTaskInfo.simtParamOffset = 0U;
+    
+    PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel kernel("", 0ULL, &stubProg, RT_KERNEL_ATTR_TYPE_AICORE, 0);
+    kernel.SetMixType(MIX_AIC_AIV_MAIN_AIV);
+    kernel.SetTaskRation(2U);
+    taskInfo.u.aicTaskInfo.kernel = &kernel;
+    
+    MsprofRuntimeTrack runtimeTrack = {};
+    FillKernelLaunchExtInfo(runtimeTrack, &taskInfo);
+    
+    // MIX_AIC_AIV_MAIN_AIV 采集 ratio = taskRation & 0x7 = 2
+    EXPECT_EQ(runtimeTrack.extInfo.kernelInfo.ratio, static_cast<uint8_t>(2U & 0x7U));
+}
+
+// 测试 FillKernelLaunchExtInfo 函数 - MIX_AIC_AIV_MAIN_AIC ratio 截断
+TEST_F(ProfilerTest, FillKernelLaunchExtInfo_MixAicAivMainAicRatioTruncate)
+{
+    TaskInfo taskInfo = {};
+    taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
+    taskInfo.u.aicTaskInfo.comm.dim = 100U;
+    taskInfo.u.aicTaskInfo.comm.argsSize = 256U;
+    taskInfo.u.aicTaskInfo.simtParamOffset = 0U;
+    
+    PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel kernel("", 0ULL, &stubProg, RT_KERNEL_ATTR_TYPE_AICORE, 0);
+    kernel.SetMixType(MIX_AIC_AIV_MAIN_AIC);
     kernel.SetTaskRation(100U); // 超出 3位范围
     taskInfo.u.aicTaskInfo.kernel = &kernel;
     

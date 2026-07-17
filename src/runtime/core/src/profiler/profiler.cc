@@ -202,7 +202,7 @@ void FillKernelLaunchExtInfo(struct MsprofRuntimeTrack &runtimeTrack, const Task
         runtimeTrack.extInfo.kernelInfo.numBlocks = aicTaskInfo.comm.dim;
         runtimeTrack.extInfo.kernelInfo.argsSize = argsSizeU16;
         uint8_t ratio = 0U;
-        if (mixType != NO_MIX) {
+        if ((mixType == MIX_AIC_AIV_MAIN_AIC) || (mixType == MIX_AIC_AIV_MAIN_AIV)) {
             const uint32_t taskRation = aicTaskInfo.kernel->GetTaskRation();
             ratio = static_cast<uint8_t>(taskRation & 0x7U);
         }
