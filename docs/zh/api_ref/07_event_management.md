@@ -168,13 +168,14 @@ aclError aclrtCreateEventWithFlag(aclrtEvent *event, uint32_t flag)
   对于Ascend 950PR/Ascend 950DT、Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持该flag。
   <!-- end id23 -->
 
-  <!-- npu="310b" id24 -->
-  对于Atlas 200I/500 A2 推理产品，不支持该flag。
-  <!-- end id24 -->
-
   <!-- npu="310p" id25 -->
   对于Atlas 推理系列产品，支持该flag。
   <!-- end id25 -->
+
+  <!-- npu="310b" id24 -->
+  对于Atlas 200I/500 A2 推理产品、Atlas 训练系列产品，不支持该flag。
+  <!-- end id24 -->
+
 <!-- end id22 -->
 
 - 若flag参数值**不包含**ACL\_EVENT\_SYNC宏，则不支持在以下API中使用本接口创建的Event：[aclrtResetEvent](#aclrtResetEvent)、[aclrtStreamWaitEvent](#aclrtStreamWaitEvent)、[aclrtQueryEventWaitStatus](#aclrtQueryEventWaitStatus)。若flag参数值**包含**ACL\_EVENT\_SYNC宏或者flag设置为ACL\_EVENT\_EXTERNAL时，则创建出来的Event数量受限。
@@ -1128,7 +1129,7 @@ aclError aclrtEventGetTimestamp(aclrtEvent event, uint64_t *timestamp)
 
 获取Event的执行结束时间点（表示从AI处理器系统启动以来的时间）。
 
-本接口需与其它关键接口配合使用，接口调用顺序：调用[aclrtCreateEvent](#aclrtCreateEvent)/[aclrtCreateEventWithFlag](#aclrtCreateEventWithFlag)接口创建Event**--\>**调用[aclrtRecordEvent](#aclrtRecordEvent)接口在Stream中记录Event**\>**调用[aclrtSynchronizeStream](06_stream_management.md#aclrtSynchronizeStream)接口阻塞应用程序运行，直到指定Stream中的所有任务都完成**--\>**调用aclrtEventGetTimestamp接口获取Event的执行时间。
+本接口需与其它关键接口配合使用，接口调用顺序：调用[aclrtCreateEvent](#aclrtCreateEvent)/[aclrtCreateEventWithFlag](#aclrtCreateEventWithFlag)接口创建Event --\> 调用[aclrtRecordEvent](#aclrtRecordEvent)接口在Stream中记录Event --\> 调用[aclrtSynchronizeStream](06_stream_management.md#aclrtSynchronizeStream)接口阻塞应用程序运行，直到指定Stream中的所有任务都完成 --\> 调用aclrtEventGetTimestamp接口获取Event的执行时间。
 
 ### 参数说明
 

@@ -65,7 +65,7 @@ aclError aclrtCreateContext(aclrtContext *context, int32_t deviceId)
 ### 约束说明
 
 - 在某一进程中指定Device，该进程内的多个线程可共用在此Device上显式创建的Context。
-- 若在某一进程内创建多个Context，Context的数量与Stream相关，Stream数量有限制，请参见显式创建Stream的接口。当前线程在同一时刻内只能使用其中一个Context，建议通过[aclrtSetCurrentContext](#aclrtSetCurrentContext)接口明确指定当前线程的Context，增加程序的可维护性**。**
+- 若在某一进程内创建多个Context，Context的数量与Stream相关，Stream数量有限制，请参见显式创建Stream的接口。当前线程在同一时刻内只能使用其中一个Context，建议通过[aclrtSetCurrentContext](#aclrtSetCurrentContext)接口明确指定当前线程的Context，增加程序的可维护性。
 - 调用本接口创建的Context中包含一个默认Stream。
 
     <!-- npu="310p" id1 -->

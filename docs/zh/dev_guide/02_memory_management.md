@@ -7,7 +7,7 @@
 内存管理中要做好的两件事是：
 
 1.  **可以访问内存：** Runtime提供了一套内存管理API，使开发者能够高效便捷地编写应用程序中的内存管理代码。由于Host和Device的内存相互独立，Runtime提供了专门的接口来分别申请和释放Host内存及Device内存。例如，申请和释放Host内存的接口为aclrtMallocHost和aclrtFreeHost，而申请和释放Device内存的接口为aclrtMalloc和aclrtFree。
-2.  **高效访问内存：** 为了实现最佳的内存访问性能，需要将数据存储在对应的内存中，例如算子在Device上执行过程中，访问Device上的数据性能要远高于访问Host侧的。Host与Device、Device与Device之间的数据搬运请参见[数据复制](02-01_数据复制.md)。
+2.  **高效访问内存：** 为了实现最佳的内存访问性能，需要将数据存储在对应的内存中，例如算子在Device上执行过程中，访问Device上的数据性能要远高于访问Host侧的。Host与Device、Device与Device之间的数据搬运请参见[数据复制](02-01_data_copy.md)。
 
 ## Device内存使用
 

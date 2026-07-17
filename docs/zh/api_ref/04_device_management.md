@@ -96,7 +96,7 @@ aclError aclrtSetDevice(int32_t deviceId)
 ### 约束说明
 
 <!-- npu="IPV350" id2 -->
-IPV350上不支持默认Comtext和默认Stream。
+IPV350上不支持默认Context和默认Stream。
 <!-- end id2 -->
 
 调用aclrtSetDevice接口指定运算的Device后，若不使用Device上的资源时，可调用[aclrtResetDevice](#aclrtResetDevice)或[aclrtResetDeviceForce](#aclrtResetDeviceForce)接口及时释放本进程使用的Device资源（若不调用Reset接口，进程退出时也会释放本进程使用的Device资源）：
@@ -167,7 +167,7 @@ aclrtResetDevice接口内部涉及引用计数的实现，建议aclrtResetDevice
 ### 约束说明
 
 <!-- npu="IPV350" id3 -->
-IPV350上不支持默认Comtext和默认Stream。
+IPV350上不支持默认Context和默认Stream。
 <!-- end id3 -->
 
 若要复位的Device上存在显式创建的Context、Stream、Event，在复位前，建议遵循如下接口调用顺序，否则可能会导致业务异常。
@@ -238,7 +238,7 @@ aclrtSetDevice(1) -> aclrtSetDevice(1) -> aclrtResetDeviceForce(1)
 ### 约束说明
 
 <!-- npu="IPV350" id4 -->
-- IPV350上不支持默认Comtext和默认Stream。
+- IPV350上不支持默认Context和默认Stream。
 <!-- end id4 -->
 
 - 多线程场景下，针对同一个Device，如果每个线程中都调用[aclrtSetDevice](#aclrtSetDevice)接口、aclrtResetDeviceForce接口，如下所示，线程2中的aclrtResetDeviceForce接口会返回报错，因为线程1中aclrtResetDeviceForce接口已经释放了Device 1的资源：

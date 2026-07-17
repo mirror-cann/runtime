@@ -14,8 +14,8 @@
 
 | 文档 | 定位与内容 | 入口 |
 |------|-----------|------|
-| **⚡ 快速入门** | 零基础起步，第一次接触 Runtime 的开发者。Runtime 简介 + 编程模型讲解，建议顺序阅读 | [Runtime 简介](quick_start/Runtime简介.md) · [编程模型](quick_start/Runtime编程模型.md) |
-| **📖 编程指南** | 深度开发手册，已跑通入门阶段 Hello CANN 后需要深入理解原理的开发者。原理解析 + 示例代码 | [编程指南](dev_guide/00_dev_guide.md) |
+| **⚡ 快速入门** | 零基础起步，第一次接触 Runtime 的开发者。Runtime 简介 + 编程模型讲解，建议顺序阅读 | [Runtime 简介](quick_start/Runtime_overview.md) · [编程模型](quick_start/Runtime_programming_model.md) |
+| **📖 编程指南** | 深度开发手册，已跑通入门阶段 Hello CANN 后需要深入理解原理的开发者。原理解析 + 示例代码 | [编程指南](dev_guide/README.md) |
 | **📋 API 参考** | 接口字典，开发过程中随时查阅函数定义。函数签名 + 参数说明 + 返回值 | [头文件说明](api_ref/01_overview.md) · [API 参考](api_ref/README.md) |
 | **🏗️ 架构指南** | 面向贡献者的架构文档。Runtime 整体架构、模块设计、核心组件解析 | [架构指南](design/README.md) |
 | **📝 研发规范** | 面向贡献者的规范指南，包括设计文档模板、编码规范、测试规范、代码检视规则 | [研发规范与贡献指南](guidelines/README.md) |
@@ -32,7 +32,7 @@
 | 学习步骤 | 内容说明 | 入口 |
 |---------|---------|------|
 | **环境准备** | CANN 一键安装 | [CANN 一键安装](https://www.hiascend.com/cann/download) |
-| **概念原理** | Runtime 核心概念与编程模型：Host-Device 架构、Context、Stream、同步异步、典型执行流程 | [Runtime 简介](quick_start/Runtime简介.md) · [编程模型](quick_start/Runtime编程模型.md) |
+| **概念原理** | Runtime 核心概念与编程模型：Host-Device 架构、Context、Stream、同步异步、典型执行流程 | [Runtime 简介](quick_start/Runtime_overview.md) · [编程模型](quick_start/Runtime_programming_model.md) |
 | **Hello CANN** | 第一个可运行的 Runtime 程序，完成最小计算闭环 | [Hello CANN](../../example/0_quickstart/0_hello_cann/README.md) |
 
 ---

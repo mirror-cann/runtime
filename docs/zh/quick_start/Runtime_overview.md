@@ -119,4 +119,4 @@ Runtime采用**主机-设备异步并行**的编程模式：
 
 本章介绍了Runtime的基本概念和算子调用的典型流程。要深入理解Runtime编程，建议继续阅读：
 
-- [Runtime编程模型](Runtime编程模型.md)：主机-设备架构、异步执行机制、Stream与Task关系
+- [Runtime编程模型](Runtime_programming_model.md)：主机-设备架构、异步执行机制、Stream与Task关系

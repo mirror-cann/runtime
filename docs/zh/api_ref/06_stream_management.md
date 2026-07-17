@@ -92,11 +92,7 @@ aclError aclrtCreateStream(aclrtStream *stream)
 <!-- npu="910" id4 -->
 - Atlas 训练系列产品，Stream最大数为2048。
 
-    多进程场景下，若一次性创建的Stream数量总和接近2048，可能会出现创建Stream失败的情况，此时，建议：
-
-    （1）清理冗余Stream，减少不必要的Stream；
-
-    （2）调整代码逻辑，分批创建Stream，例如第一批创建部分Stream，然后第二批再创建部分Stream，以此类推，直到Stream总数接近2048。
+    多进程场景下，若一次性创建的Stream数量总和接近2048，可能会出现创建Stream失败的情况，此时，建议：（1）清理冗余Stream，减少不必要的Stream；（2）调整代码逻辑，分批创建Stream，例如第一批创建部分Stream，然后第二批再创建部分Stream，以此类推，直到Stream总数接近2048。
 <!-- end id4 -->
 <!-- @ref: runtime/res/docs/zh/api_ref/06_stream_management_res.md#id23 -->
 
@@ -482,7 +478,7 @@ aclError aclrtSetStreamFailureMode(aclrtStream stream, uint64_t mode)
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
 
-## 约束说明
+### 约束说明
 
 - 针对指定Stream只能调用一次本接口设置任务调度模式。
 <!-- npu="950,A3,910b,910,310p,310b" id13 -->
@@ -548,6 +544,10 @@ aclError aclrtStreamQuery(aclrtStream stream, aclrtStreamStatus *status)
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
 
+### 约束说明
+
+如下方式创建的Stream，通过本接口查询到的status无实际业务语义：调用aclrtCreateStreamWithConfig，将flag设置为ACL_STREAM_PERSISTENT或ACL_STREAM_DEVICE_USE_ONLY或ACL_STREAM_CPU_SCHEDULE。
+
 <br>
 <br>
 <br>
@@ -598,6 +598,10 @@ aclError aclrtSynchronizeStream(aclrtStream stream)
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
+
+### 约束说明
+
+如下方式创建的Stream不会触发任何业务处理逻辑，接口直接返回成功：调用aclrtCreateStreamWithConfig，将flag设置为ACL_STREAM_PERSISTENT或ACL_STREAM_DEVICE_USE_ONLY或ACL_STREAM_CPU_SCHEDULE。
 
 <br>
 <br>
@@ -650,6 +654,10 @@ aclError aclrtSynchronizeStreamWithTimeout(aclrtStream stream, int32_t timeout)
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
+
+### 约束说明
+
+如下方式创建的Stream不会触发任何业务处理逻辑，接口直接返回成功：调用aclrtCreateStreamWithConfig，将flag设置为ACL_STREAM_PERSISTENT或ACL_STREAM_DEVICE_USE_ONLY或ACL_STREAM_CPU_SCHEDULE。
 
 <br>
 <br>

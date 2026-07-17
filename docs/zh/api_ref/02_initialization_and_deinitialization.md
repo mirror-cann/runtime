@@ -170,7 +170,7 @@ aclError aclInit(const char *configPath)
 ```
 
 <!-- npu="IPV350" id3 -->
-IPV350只支持模型Dump配置，不支持单算子Dump配置。若开启模型Dump配置、且在模型加载时加载exeom文件时，则dbg文件要存放在json配置文件中dump\_path参数指定的路径下，才可以生成dump数据文件，用于后续的精度问题定位及分析。exeom文件以及dbg文件是在模型转换时生成，请参见《ATC离线模型编译工具》中的“参数说明 \> 基础功能参数 \> 总体选项 \> --mode”。
+IPV350只支持模型Dump配置，不支持单算子Dump配置。若开启模型Dump配置、且在模型加载时加载exeom文件时，则dbg文件要存放在json配置文件中dump\_path参数指定的路径下，才可以生成dump数据文件，用于后续的精度问题定位及分析。exeom文件以及dbg文件是在模型转换时生成，请参见[《ATC离线模型编译工具》](https://hiascend.com/document/redirect/CannCommunityATC)中的“参数说明 \> 基础功能参数 \> 总体选项 \> --mode”。
 <!-- end id3 -->
 
 ### 异常算子Dump配置
@@ -491,9 +491,9 @@ aicore\_stack\_size参数处设置栈空间大小，单位Byte，取值有以下
 仅Ascend 950PR/Ascend 950DT支持该配置。
 <!-- end id24 -->
 
-simt\_stack\_size参数处设置SIMT算子每个线程的栈空间大小，单位Byte。
+simt\_stack\_size参数处设置SIMT算子每个线程的栈空间大小，单位Byte。默认值为1152Byte。
 
-simt\_divergence\_stack\_size参数处设置SIMT算子的分支（Divergence）栈空间大小，单位Byte。
+simt\_divergence\_stack\_size参数处设置SIMT算子的分支（Divergence）栈空间大小，单位Byte。默认值为1024Byte。
 
 simt\_stack\_size和simt\_divergence\_stack\_size的取值都必须是128的整数倍，如果传入的不是128的整数倍，则接口内部会自动向上取整，确保其为128的整数倍。
 

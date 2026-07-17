@@ -70,8 +70,8 @@
 | 问题描述：尝试使用 <<<>>> 内核调用符调用核函数，                        |
 |          但文档中未完整说明三个参数（blockDim, l2ctrl, stream）的含义   |
 | 查找过程：                                                            |
-|   - docs/02_dev_guide/Kernel加载与执行.md — 有简单示例但参数说明不完整  |
-|   - docs/01_quick_start/Runtime编程模型.md — 有使用但无详细解释        |
+|   - docs/zh/02_dev_guide/Kernel加载与执行.md — 有简单示例但参数说明不完整  |
+|   - docs/zh/01_quick_start/Runtime_programming_model.md — 有使用但无详细解释        |
 |   - example/kernel/0_launch_kernel/main.cpp — 有使用但参数是硬编码的   |
 | Runtime 文档中的相关内容：有语法示例，但参数含义不清晰                   |
 | 示例代码中的相关内容：有使用，可反推参数顺序                            |
@@ -79,7 +79,7 @@
 | 影响程度：优化点（可从示例代码反推，但不确定是否正确）                   |
 | [推测]：类似 CUDA 的 <<<gridDim, blockDim, sharedMem, stream>>>       |
 | 期望补充：                                                            |
-|   1. 在 docs/02_dev_guide/ 中补充 <<<>>> 语法的完整说明               |
+|   1. 在 docs/zh/02_dev_guide/ 中补充 <<<>>> 语法的完整说明               |
 |   2. 包含每个参数的含义、取值范围、示例                                 |
 +---------------------------------------------------------------------+
 ```

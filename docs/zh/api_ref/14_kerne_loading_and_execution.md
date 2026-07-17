@@ -399,8 +399,8 @@ aclError aclrtBinaryGetGlobal(aclrtBinHandle binHandle, const char *name, void *
 
 ### 参数说明
 
-| 参数名 | 输入/输出 | 说明                                                                                                                                                                                                        |
-| --- | :---: |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 参数名 | 输入/输出 | 说明 |
+| --- | :---: | --- |
 | binHandle | 输入 | 算子二进制句柄。类型定义请参见[aclrtBinHandle](25-05_Typedefs.md#aclrtBinHandle)。<br>调用[aclrtBinaryLoadFromFile](#aclrtBinaryLoadFromFile)接口或[aclrtBinaryLoadFromData](#aclrtBinaryLoadFromData)接口获取算子二进制句柄，再将其作为入参传入本接口。 |
 | name | 输入 | 全局变量名称。需与算子二进制中定义的全局变量名称一致。                                                                                                                                                                               |
 | dptr | 输出 | Device侧全局变量的地址指针。<br/>若此处传nullptr，表示不需要获取地址。                                                                                                                                                              |
@@ -408,14 +408,7 @@ aclError aclrtBinaryGetGlobal(aclrtBinHandle binHandle, const char *name, void *
 
 ### 返回值说明
 
-返回0表示成功，返回其他值表示失败。
-
-| 错误码 | 说明                                                            |
-| --- |---------------------------------------------------------------|
-| ACL_SUCCESS | 接口调用成功。                                                       |
-| ACL_ERROR_INVALID_PARAM | 参数校验失败，请检查入参binHandle、name是否为nullptr，或者dptr和size是否同时为nullptr。 |
-| ACL_ERROR_RT_FEATURE_NOT_SUPPORT | 当前设备不支持此特性。                                                   |
-| ACL_ERROR_RT_SYMBOL_NOT_FOUND | 全局符号未找到，请检查name参数是否与算子二进制中的全局变量名称一致。                          |
+返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
 
 <br>
 <br>
@@ -1702,8 +1695,8 @@ aclError aclrtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, aclrtStr
 
 ### 参数说明
 
-| 参数名 | 输入/输出 | 说明                                                                                                  |
-| --- | :---: |-----------------------------------------------------------------------------------------------------|
+| 参数名 | 输入/输出 | 说明 |
+| --- | :---: | --- |
 | func | 输入 | 内核函数指针（可以是符号或[aclrtFuncHandle](25-05_Typedefs.md#aclrtFuncHandle)）。                                  |
 | numBlocks | 输入 | 指定核函数将会在几个核上执行。                                                                                     |
 | stream | 输入 | 指定执行任务的Stream。类型定义请参见[aclrtStream](25-05_Typedefs.md#aclrtStream)。                                   |
@@ -2109,8 +2102,8 @@ aclError aclrtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *
 
 ### 参数说明
 
-| 参数名 | 输入/输出 | 说明                                                                                                                   |
-| --- | :---: |----------------------------------------------------------------------------------------------------------------------|
+| 参数名 | 输入/输出 | 说明 |
+| --- | :---: | --- |
 | func | 输入 | 核函数句柄。类型定义请参见[aclrtFuncHandle](25-05_Typedefs.md#aclrtFuncHandle)。                                                    |
 | paramIndex | 输入 | 参数索引。<br/> 可先调用[aclrtFunctionGetParamCount](#aclrtFunctionGetParamCount)接口获取可用的参数数量后，这个paramIndex的取值范围：[0，(参数数量-1)]. |
 | paramOffset | 输出 | 参数在参数数据区中的偏移，单位为Byte。                                                                                                |

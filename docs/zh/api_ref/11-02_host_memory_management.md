@@ -116,9 +116,7 @@ aclError aclrtMallocHostWithCfg(void **ptr, uint64_t size, aclrtMallocConfig *cf
 
 ### 功能说明
 
-申请Host内存（该内存是锁页内存），由系统保证内存首地址64字节对齐。
-
-与aclrtMallocHost接口相比，本接口在申请内存时，还可以指定内存相关的配置信息。
+申请Host内存（该内存是锁页内存），由系统保证内存首地址64字节对齐。与aclrtMallocHost接口相比，本接口在申请内存时，还可以指定内存相关的配置信息。
 
 通过本接口申请的内存，需要通过[aclrtFreeHost](#aclrtFreeHost)接口或[aclrtFreeHostWithDevSync](#aclrtFreeHostWithDevSync)接口释放内存。
 

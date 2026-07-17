@@ -78,7 +78,7 @@ if (canAccess != 0) {
 }
 ```
 
-用于跨Device复制的Device内存，建议结合[内存管理](02_内存管理.md#device内存页策略)中带P2P后缀的内存分配策略申请，例如ACL_MEM_MALLOC_HUGE_FIRST_P2P。更多多Device资源管理和复制示例，请参见[多设备编程](05_多设备编程.md)。
+用于跨Device复制的Device内存，建议结合[内存管理](02_memory_management.md#device内存页策略)中带P2P后缀的内存分配策略申请，例如ACL_MEM_MALLOC_HUGE_FIRST_P2P。更多多Device资源管理和复制示例，请参见[多设备编程](05_multi_device_programming.md)。
 
 ## 二维和批量复制
 
