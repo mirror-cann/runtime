@@ -23,25 +23,56 @@ using namespace cce::runtime;
 namespace {
 static const std::string UNKNOWN_SOC_TYPE("UnknowSocType");
 
+std::string GetSocVersionByDeviceId(const uint32_t devId)
+{
+    char_t socVersion[SOC_VERSION_LEN] = {0};
+    const drvError_t drvRet = halGetSocVersion(devId, socVersion, SOC_VERSION_LEN);
+    const std::string socVer(socVersion, strnlen(socVersion, SOC_VERSION_LEN));
+    RT_LOG(RT_LOG_DEBUG, "[drv api]halGetSocVersion deviceId=%u, drv ret=%#x", devId, drvRet);
+    if ((drvRet == DRV_ERROR_NONE) && (!socVer.empty())) {
+        return socVer;
+    }
+
+    return "";
+}
+
 const std::string GetSocVersionStr(const int32_t isHeterogenous)
 {
-    if ((isHeterogenous == 0) && (halGetSocVersion != nullptr)) {
-        char_t socVersion[SOC_VERSION_LEN] = {0};
-        uint32_t deviceCnt = 1U;
-        drvError_t drvRet = drvGetDevNum(&deviceCnt);
-        RT_LOG(RT_LOG_DEBUG, "[drv api] drvGetDevNum=%u ret=%#x", deviceCnt, drvRet);
-        for (uint32_t i = 0U; i < deviceCnt; i++) {
-            drvRet = halGetSocVersion(i, socVersion, SOC_VERSION_LEN);
-            RT_LOG(RT_LOG_DEBUG, "[drv api] halGetSocVersion device_id=%u drv ret=%#x", i, drvRet);
-            std::string socVer(socVersion);
-            if ((drvRet == DRV_ERROR_NONE) && (!socVer.empty())) {
-                return socVer;
-            }
-        }
+    if (isHeterogenous == 1) {
+        return GlobalContainer::GetSocVersion();
     }
 
     const Runtime * const rtInstance = Runtime::Instance();
-    return (isHeterogenous == 1) ? GlobalContainer::GetSocVersion() : rtInstance->GetSocVersion();
+    if (rtInstance->GetIsUserSetSocVersion()) {
+        return GlobalContainer::GetUserSocVersion();
+    }
+
+    if (halGetSocVersion != nullptr) {
+        const Context * const curCtx = rtInstance->CurrentContext();
+        if (curCtx != nullptr) {
+            const Device * const device = curCtx->Device_();
+            if (device != nullptr) {
+                const std::string socVersion = GetSocVersionByDeviceId(device->Id_());
+                if (!socVersion.empty()) {
+                    return socVersion;
+                }
+                RT_LOG(RT_LOG_WARNING, "The soc version obtained by deviceId=%u is empty", device->Id_());
+            }
+        }
+
+        uint32_t deviceCnt = 1U;
+        const drvError_t drvRet = drvGetDevNum(&deviceCnt);
+        RT_LOG(RT_LOG_DEBUG, "[drv api] drvGetDevNum=%u ret=%#x", deviceCnt, drvRet);
+        for (uint32_t i = 0U; i < deviceCnt; i++) {
+            const std::string socVersion = GetSocVersionByDeviceId(i);
+            if (!socVersion.empty()) {
+                return socVersion;
+            }
+        }
+        RT_LOG(RT_LOG_WARNING, "The soc version obtained by traverse device is empty");
+    }
+
+    return rtInstance->GetSocVersion();
 }
 }
 

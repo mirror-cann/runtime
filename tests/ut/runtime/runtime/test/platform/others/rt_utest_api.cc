@@ -8287,3 +8287,48 @@ TEST_F(ApiTest, rtMemQueueUnImport_normal_path)
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
 }
+
+TEST_F(ApiTest, rtGetSocVersionWithSetDevice)
+{
+    rtError_t error;
+    char version[SOC_VERSION_LEN] = {0};
+ 
+    MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(DRV_ERROR_NONE));
+ 
+    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    std::string bakSoc = rtInstance->GetSocVersion();
+    bool bakIsUserSetSocVersion = rtInstance->GetIsUserSetSocVersion();
+    std::string bakUserSocVer = GlobalContainer::GetUserSocVersion();
+    
+    error = rtSetDevice(0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    // 不调用rtSetSocVersion, 直接获取socVersion
+    error = rtGetSocVersion(version, sizeof(version));
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(strcmp(bakSoc.c_str(), version), 0);
+
+    // 不调用rtSetSocVersion, 直接获取socVersion
+    error = rtGetSocVersion(version, sizeof(version));
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(strcmp(bakSoc.c_str(), version), 0);
+
+    error = rtSetSocVersion("Ascend950PR_9599");
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    
+    // 调用rtSetSocVersion后, 获取rtSetSocVersion设置的socVersion
+    error = rtGetSocVersion(version, sizeof(version));
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(strcmp("Ascend950PR_9599", version), 0);
+
+    // restore
+    error = rtSetSocVersion(bakSoc.c_str());
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    rtInstance->SetIsUserSetSocVersion(bakIsUserSetSocVersion);
+    GlobalContainer::SetUserSocVersion(bakUserSocVer);
+
+    error = rtDeviceReset(0);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
