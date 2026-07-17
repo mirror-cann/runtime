@@ -806,12 +806,13 @@ rtError_t Model::BuildSqCqForAutoSplit()
     COND_RETURN_ERROR_MSG_INNER(static_cast<uint32_t>(StreamList_().size()) == 0U, RT_ERROR_MODEL_STREAM, "The model does not contain any stream.");
     Device * const dev = Context_()->Device_();
     uint32_t streamNum = 0U;
+    rtError_t error;
     for (auto stm : StreamList_()) {
         COND_PROC((((stm->Flags() & RT_STREAM_AICPU) != 0U) || (stm->isModelComplete)), continue);
         streamNum++;
-        rtError_t ret = stm->AllocAutoSplitSqAddr();
-        COND_RETURN_ERROR((ret != RT_ERROR_NONE), ret, "AllocAutoSplitSqAddr failed. device_id=%u, stream_id=%d, "
-            "model_id=%u, retCode=%#x.", dev->Id_(), stm->Id_(), Id_(), static_cast<uint32_t>(ret));
+        error = stm->AllocAutoSplitSqAddr();
+        COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "AllocAutoSplitSqAddr failed. device_id=%u, stream_id=%d, "
+            "model_id=%u, retCode=%#x.", dev->Id_(), stm->Id_(), Id_(), static_cast<uint32_t>(error));
     }
     if (streamNum == 0U) {
         return RT_ERROR_NONE;
@@ -837,7 +838,7 @@ rtError_t Model::BuildSqCqForAutoSplit()
     }
 
     /* switch stream to sq */
-    rtError_t error = dev->Driver_()->SqSwitchStreamBatch(dev->Id_(), modelSwitchInfo_, streamNum);
+    error = dev->Driver_()->SqSwitchStreamBatch(dev->Id_(), modelSwitchInfo_, streamNum);
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
         "stream bind sq failed, device_id=%u, model_id=%u, auto_split_sq=%d, sq_num=%u, retCode=%#x.",
         dev->Id_(), Id_(), IsAutoSplitSq(), streamNum, static_cast<uint32_t>(error));

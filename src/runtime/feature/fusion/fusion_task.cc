@@ -28,6 +28,9 @@
 
 namespace cce {
 namespace runtime {
+constexpr uint32_t MASK_AICORE = 0x00000400U;
+constexpr uint32_t MASK_AICPU = 0x00000044U;
+constexpr uint32_t MASK_CCU = 0x00044000U;
 
 static void ConstructAicpuSubSqeResField(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, const Stream * const stm,
     const uint32_t kernelFlag, uint32_t aicpuIndex)
@@ -440,9 +443,6 @@ void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport
         taskInfo->errorCode = errMap[errorIndex];
 
         const uint32_t logicCqErrorCode = logicCq.errorCode;
-        const uint32_t MASK_AICORE = 0x00000400U;
-        const uint32_t MASK_AICPU = 0x00000044U;
-        const uint32_t MASK_CCU = 0x00044000U;
         if (taskInfo->errorCode != TS_ERROR_TASK_TIMEOUT) {
             if ((logicCqErrorCode & MASK_AICORE) != 0U) {
                 taskInfo->errorCode = TS_ERROR_AICORE_EXCEPTION;
@@ -450,7 +450,9 @@ void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport
                 taskInfo->errorCode = TS_ERROR_AICPU_EXCEPTION;
             } else if ((logicCqErrorCode & MASK_CCU) != 0U) {
                 taskInfo->errorCode = TS_ERROR_CCU_EXCEPTION;
-            } else {}
+            } else {
+                // no operation
+            }
         }
 
         RT_LOG(RT_LOG_ERROR, "FusionKernelTask errorCode=%u, logicCq:errType=%u, errCode=%u, "
