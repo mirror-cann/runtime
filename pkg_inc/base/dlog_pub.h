@@ -8,6 +8,10 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
+/*
+ * 本文件中的接口为非SDK接口，仅用于系统内部交互，其内容更改不会发布预告或记录，非CANN内部模块请勿直接引用
+ */
+
 #ifndef DLOG_PUB_H_
 #define DLOG_PUB_H_
 
