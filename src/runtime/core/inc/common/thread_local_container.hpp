@@ -75,8 +75,8 @@ public:
     static void SetEventWorkMode(const uint8_t mode);
     static uint64_t GetEventModeRefCount();
     static void SetEventModeRefCount(uint8_t value);
-    static rtError_t RegisterHostCpuFunc(uint64_t funcAddr);
-    static bool IsHostCpuFunc(uint64_t funcAddr);
+    static rtError_t RegisterHostCpuFunc(const uint64_t funcAddr);
+    static bool IsHostCpuFunc(const uint64_t funcAddr);
     static std::mutex uceMutex_;
     static std::mutex eventWorkMutex;
     static std::unordered_map<uint32_t, rtMemUceInfo> memUceInfoMap_;

@@ -8722,7 +8722,7 @@ void ApiImpl::ProcessHostFunc(const uint64_t funcAddr, const uint64_t fnDataAddr
     }
 }
 
-void ApiImpl::SetHostFuncStreamError(Device * const dev, const uint16_t streamId, const int32_t callbackRet)
+void ApiImpl::SetHostFuncStreamError(const Device * const dev, const uint16_t streamId, const int32_t callbackRet)
 {
     StreamSqCqManage * const streamManage = dev->GetStreamSqCqManage();
     if (streamManage == nullptr) {
