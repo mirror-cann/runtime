@@ -127,10 +127,12 @@ TEST_F(PROF_TX_UTTEST, RuntimePluginBase)
     plugin->runtimeApiInfoMap_.clear();
 }
 
-TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_Success)
+TEST_F(PROF_TX_UTTEST, ReportCustomTensorInfo_Success)
 {
-    ProfTensor tensors[5];
-    for (int i = 0; i < 5; i++) {
+    // 12个tensor需要分3次上报(5 + 5 + 2)，验证单次上报不超过MSPROF_GE_TENSOR_DATA_NUM(5)个
+    const int kTensorNum = 12;
+    ProfTensor tensors[kTensorNum];
+    for (int i = 0; i < kTensorNum; i++) {
         tensors[i].type = i;
         tensors[i].format = i + 1;
         tensors[i].dataType = i + 2;
@@ -139,23 +141,23 @@ TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_Success)
             tensors[i].shape[j] = j + 1;
         }
     }
-    
+
     ProfTensorInfo tensorInfo;
     tensorInfo.opNameId = 12345;
-    tensorInfo.tensorNum = 5;
+    tensorInfo.tensorNum = kTensorNum;
     tensorInfo.tensors = tensors;
-    
+
     uint64_t timeStampPush = 1000;
     uint64_t timeStampPop = 2000;
-    
+
     MOCKER(MsprofReportAdditionalInfo)
-        .stubs()
+        .expects(exactly(3))
         .will(returnValue(PROFILING_SUCCESS));
-    
-    EXPECT_EQ(PROFILING_SUCCESS, ProfTxPlugin::GetProftxInstance().ReportAdditionalInfo(&tensorInfo, timeStampPush, timeStampPop));
+
+    EXPECT_EQ(PROFILING_SUCCESS, ProfTxPlugin::GetProftxInstance().ReportCustomTensorInfo(&tensorInfo, timeStampPush, timeStampPop));
 }
 
-TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_ZeroTensorNum)
+TEST_F(PROF_TX_UTTEST, ReportCustomTensorInfo_ZeroTensorNum)
 {
     ProfTensorInfo tensorInfo;
     tensorInfo.opNameId = 12345;
@@ -169,10 +171,10 @@ TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_ZeroTensorNum)
         .stubs()
         .will(returnValue(PROFILING_SUCCESS));
     
-    EXPECT_EQ(PROFILING_SUCCESS, ProfTxPlugin::GetProftxInstance().ReportAdditionalInfo(&tensorInfo, timeStampPush, timeStampPop));
+    EXPECT_EQ(PROFILING_SUCCESS, ProfTxPlugin::GetProftxInstance().ReportCustomTensorInfo(&tensorInfo, timeStampPush, timeStampPop));
 }
 
-TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_SingleTensor)
+TEST_F(PROF_TX_UTTEST, ReportCustomTensorInfo_SingleTensor)
 {
     ProfTensor tensor;
     tensor.type = 0;
@@ -195,10 +197,10 @@ TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_SingleTensor)
         .stubs()
         .will(returnValue(PROFILING_SUCCESS));
     
-    EXPECT_EQ(PROFILING_SUCCESS, ProfTxPlugin::GetProftxInstance().ReportAdditionalInfo(&tensorInfo, timeStampPush, timeStampPop));
+    EXPECT_EQ(PROFILING_SUCCESS, ProfTxPlugin::GetProftxInstance().ReportCustomTensorInfo(&tensorInfo, timeStampPush, timeStampPop));
 }
 
-TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_ReportFailed)
+TEST_F(PROF_TX_UTTEST, ReportCustomTensorInfo_ReportFailed)
 {
     ProfTensor tensor;
     tensor.type = 0;
@@ -220,7 +222,7 @@ TEST_F(PROF_TX_UTTEST, ReportAdditionalInfo_ReportFailed)
         .stubs()
         .will(returnValue(PROFILING_FAILED));
 
-    EXPECT_EQ(PROFILING_FAILED, ProfTxPlugin::GetProftxInstance().ReportAdditionalInfo(&tensorInfo, timeStampPush, timeStampPop));
+    EXPECT_EQ(PROFILING_FAILED, ProfTxPlugin::GetProftxInstance().ReportCustomTensorInfo(&tensorInfo, timeStampPush, timeStampPop));
 }
 
 TEST_F(PROF_TX_UTTEST, ProftxRangePushEx_NullAttr)
