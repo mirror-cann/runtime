@@ -26,10 +26,6 @@
 
 namespace cce {
 namespace runtime {
-namespace {
-constexpr const uint32_t ASYNC_MEMORY_NUM = 2U;
-constexpr uint8_t DSA_SQE_UPDATE_OFFSET = 16U;
-} // namespace
 
 TIMESTAMP_EXTERN(rtMemcpyAsync_drvDeviceGetTransWay);
 TIMESTAMP_EXTERN(rtMemcpyAsync_drvMemConvertAddr);
