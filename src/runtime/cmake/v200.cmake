@@ -50,6 +50,7 @@ set(david_series_common_task_src_file
     ${RUNTIME_CORE_DIR}/src/task/task_info/davinci/davinci_multiple_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/event/event_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/event/david_event_task_v200_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/memory/memory_memcpy_async_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/memory/memory_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/memory/memory_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/reduce/reduce_task.cc

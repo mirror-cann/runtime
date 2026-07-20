@@ -28,14 +28,11 @@ rtError_t MemcpyAsyncTaskInitV2(TaskInfo * const taskInfo, void *const dst, cons
     const uint64_t height, const uint32_t kind, const uint64_t fixedSize);
 rtError_t MemcpyAsyncTaskInitV3(TaskInfo * const taskInfo, uint32_t cpyType, const void *srcAddr,
     void *desAddr, const uint64_t cpySize, const rtTaskCfgInfo_t *cfgInfo, const rtD2DAddrCfgInfo_t * const addrCfg);
-void MemsetAsyncTaskInit(TaskInfo * const taskInfo, void * const ptr,
-    const uint64_t destMax, const uint32_t val, const uint64_t cnt);
 
 rtError_t MemcpyAsyncBatchTaskInit(TaskInfo * const taskInfo, AsyncDmaBatchInfo &batchInfo);
 rtError_t MemcpyAsyncD2HTaskInit(TaskInfo * const taskInfo, const void *srcAddr, const uint64_t cpySize,
     uint32_t sqId, uint32_t pos);
 rtError_t ConvertAsyncDma(TaskInfo * const taskInfo);
-rtError_t ConvertAsyncDmaForTaskUpdate(TaskInfo * const taskInfo, TaskInfo * const updateTaskInfo);
 rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const uint64_t dstPitch,
     const void *const src, const uint64_t srcPitch, const uint64_t width, const uint64_t height,
     const uint64_t fixedSize);
@@ -67,7 +64,6 @@ rtError_t MemWaitValueTaskInit(TaskInfo *taskInfo, const void * const devAddr,
                                const uint64_t value, const uint32_t flag);
 rtError_t CaptureWaitExternalTaskInit(TaskInfo* taskInfo, const void* const waitRefreshAddr);
 void MemWaitTaskUnInit(TaskInfo *taskInfo);
-uint32_t GetSendSqeNumForMemWaitTask(const TaskInfo * const taskInfo);
 rtError_t GetWaitValueTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 rtError_t UpdateWaitValueTaskParams(TaskInfo* const taskInfo, rtTaskParams* const params);
 
@@ -76,13 +72,6 @@ rtError_t GetCaptureRecordTaskParams(const TaskInfo* const taskInfo, rtTaskParam
 rtError_t GetCaptureWaitTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 rtError_t GetCaptureResetTaskParams(const TaskInfo* const taskInfo, rtTaskParams* const params);
 void IpcEventDestroy(IpcEvent **eventPtr, int32_t freeId, bool isNeedDestroy);
-void DoCompleteSuccessForIpcRecordTask(TaskInfo* taskInfo, const uint32_t devId);
-void DoCompleteSuccessForIpcWaitTask(TaskInfo* taskInfo, const uint32_t devId);
-void DoCompleteSuccessForMemWaitValueTask(TaskInfo* taskInfo, const uint32_t devId);
-void ConstructSecondSqeForMemWaitValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void ConstructPhSqeForMemWaitValueTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void InitFuncCallParaForMemWaitTask(TaskInfo* taskInfo, RtStarsMemWaitValueInstrFcPara &fcPara);
-void RegisterCaptureExternalTaskFuncForV100(rtChipType_t chip);
 
 rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrAddr);
 void ToCommandBodyForCreateL2AddrTask(TaskInfo * const taskInfo, rtCommand_t *const command);
@@ -94,7 +83,6 @@ void RecycleTaskResourceForMemcpyAsyncTask(TaskInfo * const taskInfo);
 
 bool IsPcieDma(const uint32_t copyTypeFlag);
 bool IsDavidUbDma(const uint32_t copyTypeFlag);
-uint32_t GetSendSqeNumForAsyncDmaTask(const TaskInfo * const taskInfo);
 
 uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo);
 uint8_t ReduceOpcodeLow(TaskInfo * const taskInfo);

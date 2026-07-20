@@ -13,6 +13,7 @@
 #include "stream.hpp"
 #include "runtime.hpp"
 #include "context.hpp"
+#include "task_info.hpp"
 #include "task_manager.h"
 #include "error_code.h"
 #include "task_execute_time.h"
@@ -21,6 +22,7 @@
 #include "inner_thread_local.hpp"
 #include "model_update_task.h"
 #include "event.hpp"
+#include "event_task.h"
 #include "kernel_utils.hpp"
 
 namespace cce {
@@ -34,6 +36,12 @@ constexpr uint8_t MEM_WAIT_SQE_INDEX_3 = 3U;
 
 #if F_DESC("MemcpyAsyncTask")
 TIMESTAMP_EXTERN(rtMemcpyAsync_drvMemDestroyAddr);
+
+rtError_t ConvertAsyncDma(TaskInfo * const taskInfo)
+{
+    UNUSED(taskInfo);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 
 #ifdef __RT_CFG_HOST_CHIP_HI3559A__
 static void ReleaseCpyTmpMem(TaskInfo * const taskInfo)
@@ -649,6 +657,12 @@ void InitFuncCallParaForMemWaitTask(TaskInfo* taskInfo, RtStarsMemWaitValueInstr
     return;
 }
 
+uint32_t GetSendSqeNumForMemWaitTask(const TaskInfo * const taskInfo)
+{
+    UNUSED(taskInfo);
+    return MEM_WAIT_SQE_NUM;
+}
+
 void ConstructSqeForMemWaitValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
 {
     RtStarsMemWaitValueInstrFcPara fcPara = {};
@@ -661,6 +675,35 @@ void ConstructSqeForMemWaitValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const com
     return;
 }
 
+void DoCompleteSuccessForMemWaitValueTask(TaskInfo* taskInfo, const uint32_t devId)
+{
+    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    Stream * const stream = taskInfo->stream;
+    if (memWaitValueTask->event == nullptr) {
+        DoCompleteSuccess(taskInfo, devId);
+        return;
+    }
+
+    Event *event = memWaitValueTask->event;
+    // retainedEventId字段有值时代表当前task持有一个event id引用，任务结束对应的id计数-1即可。
+    if (memWaitValueTask->retainedEventId != INVALID_EVENT_ID) {
+        event->EventIdCountSub(memWaitValueTask->retainedEventId);
+        memWaitValueTask->retainedEventId = INVALID_EVENT_ID;
+        return;
+    }
+
+    const int32_t eventId = event->EventId_();
+    RT_LOG(RT_LOG_INFO, "Cross device event wait complete: device_id=%u, stream_id=%d, "
+        "task_id=%hu, event_id=%d.", devId, stream->Id_(), taskInfo->id, eventId);
+
+    if (unlikely(taskInfo->errorCode != static_cast<uint32_t>(RT_ERROR_NONE))) {
+        stream->SetErrCode(taskInfo->errorCode);
+        RT_LOG(RT_LOG_ERROR, "Cross device event wait error, device_id=%u, retCode=%#x.",
+            devId, taskInfo->errorCode);
+        PrintErrorInfo(taskInfo, devId);
+    }
+    TryToFreeEventIdAndDestroyEvent(&event, eventId, false);
+}
 #endif
 
 #if F_DESC("UpdateAddressTask")
@@ -777,6 +820,42 @@ rtError_t NormalKernelUpdatePrepare(TaskInfo * const updateTask, void ** const h
         "MemCopySync failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     return RT_ERROR_NONE;
+}
+#endif
+
+#if F_DESC("IpcTask")
+static void DoCompleteSuccessForIpcRecordTask(TaskInfo* taskInfo, const uint32_t devId)
+{
+    MemWriteValueTaskInfo *memWriteValueTask = &taskInfo->u.memWriteValueTask;
+    Stream * const stream = taskInfo->stream;
+    COND_RETURN_VOID(memWriteValueTask->event == nullptr, "event is nullptr");
+    IpcEvent *event = dynamic_cast<IpcEvent *>(memWriteValueTask->event);
+    COND_RETURN_VOID(event == nullptr, "dynamic_cast failed: event is not IpcEvent");
+    IpcHandleVa *vaHandle = event->GetIpcHandleVa();
+    COND_RETURN_VOID(event->GetIpcHandleVa() == nullptr, "ipcHandleVa is nullptr");
+    uint16_t curIndex = memWriteValueTask->curIndex;
+    event->IpcVaLock();
+    if (vaHandle->currentIndex == curIndex) {
+        event->SetIpcFinished();
+    }
+    event->IpcVaUnLock();
+    IpcEventDestroy(&event, curIndex, false);
+    RT_LOG(RT_LOG_INFO, "ipc record complete device_id=%u, stream_id=%d, task_id=%hu, event_id=%u",
+        devId, stream->Id_(), taskInfo->id, curIndex);
+}
+
+static void DoCompleteSuccessForIpcWaitTask(TaskInfo* taskInfo, const uint32_t devId)
+{
+    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    Stream * const stream = taskInfo->stream;
+    COND_RETURN_VOID(memWaitValueTask->event == nullptr, "event is nullptr");
+    IpcEvent *event = dynamic_cast<IpcEvent *>(memWaitValueTask->event);
+    COND_RETURN_VOID(event == nullptr, "dynamic_cast failed: event is not IpcEvent");
+    uint16_t curIndex = memWaitValueTask->curIndex;
+
+    IpcEventDestroy(&event, curIndex, false);
+    RT_LOG(RT_LOG_INFO, "Ipc wait complete device_id=%u, stream_id=%d, task_id=%hu, event_id=%u",
+        devId, stream->Id_(), taskInfo->id, curIndex);
 }
 #endif
 

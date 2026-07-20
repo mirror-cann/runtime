@@ -28,6 +28,7 @@
 #include "drv/driver_types.hpp"
 #include "thread_local_container.hpp"
 #include "memory_task.h"
+#include "stars_david.hpp"
 #include "stream_c.hpp"
 #include "../../rt_utest_config_define.hpp"
 

@@ -38,6 +38,12 @@ void ConstructSqeForLabelSetTask(TaskInfo* taskInfo, rtStarsSqe_t * const comman
 
 void FillMemWaitFunctionCallSqe(TaskInfo* taskInfo, RtStarsFunctionCallSqe &sqe, const uint64_t funcCallSize);
 void ConstructSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
+void DoCompleteSuccessForMemWaitValueTask(TaskInfo* taskInfo, const uint32_t devId);
+uint32_t GetSendSqeNumForMemWaitTask(const TaskInfo * const taskInfo);
+void ConstructSecondSqeForMemWaitValueTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+void ConstructPhSqeForMemWaitValueTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
+void InitFuncCallParaForMemWaitTask(TaskInfo* taskInfo, RtStarsMemWaitValueInstrFcPara &fcPara);
+void RegisterCaptureExternalTaskFuncForV100(rtChipType_t chip);
 
 void ConstructSqeForNopTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 
@@ -58,7 +64,6 @@ void ShowDavinciTaskMixDebug(const rtFftsPlusMixAicAivCtx_t * const fftsCtx);
 
 rtError_t MixKernelUpdatePrepare(TaskInfo * const updateTask, void ** const hostAddr, const uint64_t allocSize);
 rtError_t NormalKernelUpdatePrepare(TaskInfo * const updateTask, void ** const hostAddr, const uint64_t allocSize);
-
 
 void ConstructSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
 

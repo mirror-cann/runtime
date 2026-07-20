@@ -615,7 +615,7 @@ static QosMasterType GetQosMasterTypeForCtx(const rtFftsPlusMixAicAivCtx_t *ffts
     return masterType;
 }
 
-static void UpdateQosCfgInFftsCtx(rtFftsPlusMixAicAivCtx_t *fftsCtx, TaskInfo* const taskInfo)
+static void UpdateQosCfgInFftsCtx(rtFftsPlusMixAicAivCtx_t *fftsCtx, const TaskInfo* const taskInfo)
 {
     RawDevice * const dev = RtPtrToPtr<RawDevice*>(taskInfo->stream->Device_());
     if (!dev->GetQosCfg().isAicoreQosConfiged) {
@@ -786,7 +786,7 @@ static QosMasterType GetQosMasterTypeForSqe(const RtFftsPlusKernelSqe *sqe)
     return masterType;
 }
 
-static void UpdateQosCfgInAicoreSqe(RtFftsPlusKernelSqe *sqe, TaskInfo* const taskInfo)
+static void UpdateQosCfgInAicoreSqe(RtFftsPlusKernelSqe *sqe, const TaskInfo* const taskInfo)
 {
     RawDevice * const dev = RtPtrToPtr<RawDevice*>(taskInfo->stream->Device_());
     if (!dev->GetQosCfg().isAicoreQosConfiged) {

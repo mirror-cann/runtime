@@ -27,6 +27,7 @@
 #include "task.hpp"
 #include "common_task.h"
 #include "memory_task.h"
+#include "task_info_v100.h"
 #include "rt_unwrap.h"
 #include "stars_external_event_cond_isa_helper.hpp"
 #undef protected

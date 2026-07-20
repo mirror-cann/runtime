@@ -11,7 +11,6 @@
 #include "aclgraph_cond_task.h"
 #include "task_manager.h"
 #include "stars_cond_isa_helper.hpp"
-#include <cstring>
 
 namespace cce {
 namespace runtime {

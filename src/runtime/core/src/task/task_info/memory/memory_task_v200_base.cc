@@ -22,6 +22,7 @@
 #include "error_message_manage.hpp"
 #include "task_execute_time.h"
 #include "stream_jetty_handler.h"
+#include "ipc_event.hpp"
 
 #include <cstdint>
 
@@ -531,6 +532,29 @@ void PrintAsyncPtrProc(Driver * const driver, char_t * const errStr, void *memcp
     }
 }
 
+uint32_t GetSendSqeNumForAsyncDmaTask(const TaskInfo * const taskInfo)
+{
+    const MemcpyAsyncTaskInfo *const memcpyAsyncTask = &(taskInfo->u.memcpyAsyncTaskInfo);
+    /* Ascned950装备场景下的配置是pcie互联 */
+    if (IsDavidUbDma(memcpyAsyncTask->copyType)) {
+        // ub图下沉场景使用ub db
+        if ((taskInfo->stream->Flags() & RT_STREAM_PERSISTENT) != 0U) {
+            return 1U;
+        }
+
+        // UB 2D异步拷贝和批量异步拷贝需要1个sqe ub db
+        const uint32_t copyMethod = memcpyAsyncTask->copyMethod;
+        if (copyMethod == static_cast<uint32_t>(rtAsyncCpyMethod::RT_ASYNC_CPY_BATCH) || 
+            copyMethod == static_cast<uint32_t>(rtAsyncCpyMethod::RT_ASYNC_CPY_2D)) {
+            return 1U;
+        }
+        return 2U;
+    }
+    return 1U;
+}
+#endif
+
+#if F_DESC("MemsetAsyncTask")
 void ConstructDavidSqeForMemsetAsyncTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
 {
     UNUSED(sqeInfo);
@@ -564,6 +588,21 @@ void ConstructDavidSqeForMemsetAsyncTask(TaskInfo * const taskInfo, void *const 
     PrintDavidSqe(davidSqe, "SdmaMemsetTask");
     RT_LOG(RT_LOG_INFO, "SdmaMemsetTask, stream_id=%d, task_id=%hu, destAddr=%#" PRIx64 ", value=0x%x, size=%" PRIu64 ",",
         stream->Id_(), taskInfo->id, destAddr, memsetTask->fillValue, memsetTask->fillCount);
+}
+
+void MemsetAsyncTaskInit(TaskInfo * const taskInfo, void * const ptr,
+    const uint64_t destMax, const uint32_t val, const uint64_t cnt)
+{
+    TaskCommonInfoInit(taskInfo);
+
+    taskInfo->type = TS_TASK_TYPE_MEMSET;
+    taskInfo->typeName = const_cast<char_t*>("MEMSET_ASYNC");
+
+    MemsetAsyncTaskInfo *memsetAsyncTaskInfo = &(taskInfo->u.memsetAsyncTaskInfo);
+    memsetAsyncTaskInfo->targetPtr = ptr;
+    memsetAsyncTaskInfo->targetSize = destMax;
+    memsetAsyncTaskInfo->fillValue = val;
+    memsetAsyncTaskInfo->fillCount = cnt;
 }
 #endif
 
@@ -764,6 +803,225 @@ void ConstructDavidSqeForMemWriteValueTask(TaskInfo *const taskInfo, void *const
     PrintDavidSqe(davidSqe, "MemWriteValueTask");
     RT_LOG(RT_LOG_INFO, "MemWriteValueTask stream_id=%d, awsize=%d ,task_id=%hu, devAddr=%#" PRIx64
         ", value:%#" PRIx64, taskInfo->stream->Id_(), writeValueSqe->awsize, taskInfo->id, devAddr, value);
+}
+#endif
+
+static rtError_t HandleUbModeDmaResult(TaskInfo * const taskInfo, const AsyncDmaWqeOutputInfo &output)
+{
+    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    
+    memcpyAsyncTaskInfo->ubDma.jettyId = output.jettyId;
+    memcpyAsyncTaskInfo->ubDma.functionId = output.functionId;
+    memcpyAsyncTaskInfo->ubDma.dieId = output.dieId;
+    memcpyAsyncTaskInfo->ubDma.wqeLen = output.wqeLen;
+    memcpyAsyncTaskInfo->ubDma.wqePtr = output.wqe;
+    memcpyAsyncTaskInfo->ubDma.pi = 1U;
+    if (output.wqeLen != 0) {
+        const errno_t ret = memcpy_s(memcpyAsyncTaskInfo->ubDma.wqe.data(), sizeof(rtDavidSqe_t),
+            output.wqe, static_cast<size_t>(output.wqeLen));
+        if (ret != EOK) {
+            RT_LOG(RT_LOG_ERROR, "Failed to call memcpy_s to copy output.wqe, src=%p, dest=%p, dest_max=%zu, count=%zu,"
+                " retCode=%#x.", output.wqe, memcpyAsyncTaskInfo->ubDma.wqe.data(), sizeof(rtDavidSqe_t), static_cast<size_t>(output.wqeLen), ret);
+            return RT_ERROR_INVALID_VALUE;
+        }
+    }
+    return RT_ERROR_NONE;
+}
+
+static rtError_t ConvertAsyncDmaForSoftWareSqUb(TaskInfo * const taskInfo, TaskInfo * const updateTask, bool isSqeUpdate)
+{
+    Stream * const stream = taskInfo->stream;
+    const uint32_t devId = stream->Device_()->Id_();
+    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    
+    // for task update, external event场景, 只会在单算子流上下memcpy
+    if (isSqeUpdate) {
+        COND_RETURN_ERROR(updateTask == nullptr, RT_ERROR_INVALID_VALUE,
+            "updateTask is null when isSqeUpdate is true.");
+    }
+    if (isSqeUpdate && ((stream->Flags() & RT_STREAM_PERSISTENT) == 0)) {
+        AsyncDmaWqeInputInfo input = {};
+        input.tsId = stream->Device_()->DevGetTsId();
+        input.sqId = stream->GetSqId();
+        input.src = memcpyAsyncTaskInfo->src;
+        input.size = memcpyAsyncTaskInfo->size;
+        input.cpyType = memcpyAsyncTaskInfo->copyType;
+        input.destPtr = RtValueToPtr<void *>(updateTask->stream->GetSqBaseAddr() + (updateTask->pos) * sizeof(rtDavidSqe_t));
+        AsyncDmaWqeOutputInfo output = {};
+        Driver * const driver = stream->Device_()->Driver_();
+        const rtError_t error = driver->CreateAsyncDmaWqe(devId, input, &output, true, false);
+        COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
+            "Failed to call drv interface to create asyncDmaWqe, retCode=%#x.", static_cast<uint32_t>(error));
+        return HandleUbModeDmaResult(taskInfo, output);
+    }
+
+    const JettyType jettyType = StreamJettyHandler::GetJettyTypeFromTask(taskInfo);
+    AsyncWqeInputPara input = {};
+    AsyncWqeOutputPara output = {};
+    input.wqeType = static_cast<uint32_t>(DRV_ASYNC_DMA_TYPE_NORMAL);
+    input.normal.dst = RtPtrToPtr<uint8_t *>(memcpyAsyncTaskInfo->destPtr);
+    input.normal.src = RtPtrToPtr<uint8_t *>(memcpyAsyncTaskInfo->src);
+    rtError_t error = RT_ERROR_NONE;
+    if (isSqeUpdate) {
+        void* sqeDeviceAddr =
+            RtValueToPtr<void*>(updateTask->stream->GetSqBaseAddr() + (updateTask->pos) * sizeof(rtDavidSqe_t));
+        input.normal.dst = RtPtrToPtr<uint8_t*>(sqeDeviceAddr);
+    }
+    input.normal.len = memcpyAsyncTaskInfo->size;
+    error = StreamJettyHandler::HandleUbDmaTask(
+        taskInfo, jettyType, &input, &output);
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, retCode=%#x.",
+        devId, stream->Id_(), error);
+    return error;
+}
+
+static rtError_t ConvertAsyncDmaForSoftWareSqPcie(MemcpyAsyncTaskInfo * const cpyAsyncTask, TaskInfo * const updateTask)
+{
+    rtError_t error = RT_ERROR_NONE;
+    Stream *updateStm = updateTask->stream;
+    Driver * const curDrv = updateStm->Device_()->Driver_();
+    cpyAsyncTask->dmaAddr.offsetAddr.devid = static_cast<uint32_t>(updateStm->Device_()->Id_());
+    void *sqeDeviceAddr = RtValueToPtr<void *>(updateStm->GetSqBaseAddr() + (updateTask->pos) * sizeof(rtDavidSqe_t));
+    error = curDrv->MemConvertAddr(RtPtrToValue(cpyAsyncTask->src), RtPtrToValue(sqeDeviceAddr),
+        cpyAsyncTask->size, &(cpyAsyncTask->dmaAddr));
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to convert memory address, device_id=%d, stream_id=%d, retCode=%#x.",
+            updateStm->Device_()->Id_(), updateStm->Id_(), static_cast<uint32_t>(error));
+    cpyAsyncTask->destPtr = sqeDeviceAddr;
+    cpyAsyncTask->size = cpyAsyncTask->dmaAddr.fixed_size;
+    return RT_ERROR_NONE;
+}
+
+/*
+    only for UB
+    非扩流场景下, UB通过驱动获取DWQE,扩流场景:走jetty manager
+    taskInfo: 下ubdma的流
+*/
+rtError_t ConvertAsyncDma(TaskInfo * const taskInfo)
+{
+    Stream * const stream = taskInfo->stream;
+    Driver * const driver = stream->Device_()->Driver_();
+    const uint32_t devId = stream->Device_()->Id_();
+    bool isUbMode = Runtime::Instance()->GetConnectUbFlag() ? true : false;
+    if (!isUbMode) {
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "pcie is not supported.");
+        return RT_ERROR_INVALID_VALUE;
+    }
+    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    if (stream->IsSoftwareSqEnable()) {
+        return ConvertAsyncDmaForSoftWareSqUb(taskInfo, nullptr, false);
+    }
+    
+    AsyncDmaWqeInputInfo input;
+    (void)memset_s(&input, sizeof(AsyncDmaWqeInputInfo), 0, sizeof(AsyncDmaWqeInputInfo));
+    input.destPtr = memcpyAsyncTaskInfo->destPtr;
+    input.tsId = stream->Device_()->DevGetTsId();
+    input.sqId = stream->GetSqId();
+    input.src = memcpyAsyncTaskInfo->src;
+    input.size = memcpyAsyncTaskInfo->size;
+    input.cpyType = memcpyAsyncTaskInfo->copyType;
+    AsyncDmaWqeOutputInfo output;
+    (void)memset_s(&output, sizeof(AsyncDmaWqeOutputInfo), 0, sizeof(AsyncDmaWqeOutputInfo));
+    const rtError_t error = driver->CreateAsyncDmaWqe(devId, input, &output, true, false);
+    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
+        "Failed to call drv interface to create asyncDmaWqe, retCode=%#x.", static_cast<uint32_t>(error));
+    
+    return HandleUbModeDmaResult(taskInfo, output);
+}
+
+/* 
+    for task update 
+    非扩流场景下, PCIE通过驱动将目标更新的sqe addr转成dmaAddr，UB通过驱动获取DWQE 
+    扩流场景:1.pcie通过目的地址转换描述符 2.ub走jetty manager 
+    taskInfo: 下dma任务的stm,可能是模型里的stm,也可能是单算子流 
+    updateTaskInfo:  task update目标, 要被更新的task 
+*/
+rtError_t ConvertAsyncDmaForTaskUpdate(TaskInfo * const taskInfo, TaskInfo * const updateTaskInfo)
+{
+    Stream * const stream = taskInfo->stream;
+    bool isUbMode = Runtime::Instance()->GetConnectUbFlag() ? true : false;
+    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    // task update目标流为扩流的流
+    if (updateTaskInfo->stream->IsSoftwareSqEnable()) {
+        Stream *updateStm = updateTaskInfo->stream;
+        if (updateStm->GetSqBaseAddr() == 0ULL) {
+            const rtError_t err = updateStm->AllocSoftwareSqAddr(
+                CAPTURE_TASK_RESERVED_NUM + updateStm->Device_()->GetDevProperties().expandStreamRsvTaskNum);
+            COND_RETURN_ERROR(err != RT_ERROR_NONE, err, "Failed to allocate software SQ address, device_id=%d, stream_id=%d, retCode=%#x.",
+                updateStm->Device_()->Id_(), updateStm->Id_(), static_cast<uint32_t>(err));
+        }
+        if (isUbMode) {
+            return ConvertAsyncDmaForSoftWareSqUb(taskInfo, updateTaskInfo, true);
+        } else {
+            return ConvertAsyncDmaForSoftWareSqPcie(memcpyAsyncTaskInfo, updateTaskInfo);
+        }
+    }
+
+    AsyncDmaWqeInputInfo input;
+    (void)memset_s(&input, sizeof(AsyncDmaWqeInputInfo), 0, sizeof(AsyncDmaWqeInputInfo));
+    input.info.sqe_pos = updateTaskInfo->id;
+    input.info.sqId = updateTaskInfo->stream->GetSqId();
+    input.tsId = updateTaskInfo->stream->Device_()->DevGetTsId();
+    input.sqId = stream->GetSqId();
+    input.src = memcpyAsyncTaskInfo->src;
+    input.size = memcpyAsyncTaskInfo->size;
+    input.cpyType = memcpyAsyncTaskInfo->copyType;
+    AsyncDmaWqeOutputInfo output;
+    (void)memset_s(&output, sizeof(AsyncDmaWqeOutputInfo), 0, sizeof(AsyncDmaWqeOutputInfo));
+    const uint32_t devId = stream->Device_()->Id_();
+    Driver * const driver = stream->Device_()->Driver_();
+    const rtError_t error = driver->CreateAsyncDmaWqe(devId, input, &output, isUbMode, true);
+    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
+        "Failed to call drv interface to create asyncDmaWqe, retCode=%#x.", static_cast<uint32_t>(error));
+    
+    if (isUbMode) {
+        return HandleUbModeDmaResult(taskInfo, output);
+    }
+    memcpyAsyncTaskInfo->dmaAddr = output.dmaAddr;
+    return RT_ERROR_NONE;
+}
+
+#if F_DESC("IpcEventTask")
+void StarsV2IpcEventWaitTaskUnInit(TaskInfo* taskInfo)
+{
+    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    Stream * const stream = taskInfo->stream;
+    COND_RETURN_VOID(memWaitValueTask->event == nullptr, "event is nullptr");
+    IpcEvent *event = dynamic_cast<IpcEvent *>(memWaitValueTask->event);
+    COND_RETURN_VOID(event == nullptr, "dynamic_cast failed: event is not IpcEvent");
+    const uint16_t curIndex = memWaitValueTask->curIndex;
+    IpcEventDestroy(&event, curIndex, false);
+ 
+    if (memWaitValueTask->baseFuncCallSvmMem != nullptr) {
+        const auto dev = taskInfo->stream->Device_();
+        (void)dev->Driver_()->DevMemFree(memWaitValueTask->baseFuncCallSvmMem, dev->Id_());
+        memWaitValueTask->baseFuncCallSvmMem = nullptr;
+        memWaitValueTask->funcCallSvmMem2 = nullptr;
+        memWaitValueTask->writeValueAddr = nullptr;
+    }
+    memWaitValueTask->funCallMemSize2 = 0UL;
+    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, task_id=%hu, event_id=%u",
+        stream->Device_()->Id_(), stream->Id_(), taskInfo->id, curIndex);
+}
+ 
+void StarsV2IpcEventRecordTaskUnInit(TaskInfo* taskInfo)
+{
+    MemWriteValueTaskInfo *memWriteValueTask = &taskInfo->u.memWriteValueTask;
+    Stream * const stream = taskInfo->stream;
+    COND_RETURN_VOID(memWriteValueTask->event == nullptr, "event is nullptr");
+    IpcEvent *event = dynamic_cast<IpcEvent *>(memWriteValueTask->event);
+    COND_RETURN_VOID(event == nullptr, "dynamic_cast failed: event is not IpcEvent");
+    IpcHandleVa *vaHandle = event->GetIpcHandleVa();
+    COND_RETURN_VOID(event->GetIpcHandleVa() == nullptr, "ipcHandleVa is nullptr");
+    uint16_t curIndex = memWriteValueTask->curIndex;
+    event->IpcVaLock();
+    if (vaHandle->currentIndex == curIndex) {
+        event->SetIpcFinished();
+    }
+    event->IpcVaUnLock();
+
+    IpcEventDestroy(&event, curIndex, false);
+    RT_LOG(RT_LOG_INFO, "ipc wait complete, device_id=%u, stream_id=%d, task_id=%hu, event_id=%u",
+        stream->Device_()->Id_(), stream->Id_(), taskInfo->id, curIndex);
 }
 #endif
 

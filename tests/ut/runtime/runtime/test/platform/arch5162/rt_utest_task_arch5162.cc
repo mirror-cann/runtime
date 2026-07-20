@@ -76,6 +76,61 @@ TEST_F(Arch5162TaskTest, StubTask)
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     ConstructAICpuSqeForDavinciTask(nullptr, nullptr);
+
+    ret = ConvertAsyncDma(nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = ConvertAsyncDma2D(nullptr, nullptr, 0, nullptr, 0, 0, 0, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = SqeUpdateH2DTaskInit(nullptr, nullptr, nullptr, 0, nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = UpdateD2HTaskInit(nullptr, nullptr, 0, 0, 0, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = MemWriteValueTaskInit(nullptr, nullptr, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    MemWaitTaskUnInit(nullptr);
+
+    ret = MemWaitValueTaskInit(nullptr, nullptr, 0, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = UpdateTaskD2HSubmit(nullptr, nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = UpdateTaskH2DSubmit(nullptr, nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    IpcEventDestroy(nullptr, 0, 0);
+
+    ret = GetCaptureRecordTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = GetCaptureWaitTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = GetCaptureResetTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = GetWriteValueTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = GetWaitValueTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = UpdateWriteValueTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = UpdateWaitValueTaskParams(nullptr, nullptr);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = CreateL2AddrTaskInit(nullptr, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
+
+    ret = UpdateAddressTaskInit(nullptr, 0, 0);
+    EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(Arch5162TaskTest, ConstructAICoreSqeForDavinciTask)
@@ -235,4 +290,46 @@ TEST_F(Arch5162TaskTest, DavinciKernelTaskRegister)
 
     EXPECT_NE(g_taskFuncArrays[CHIP_5162A].toSqeFunc[TS_TASK_TYPE_KERNEL_AIVEC], nullptr);
     EXPECT_NE(g_taskFuncArrays[CHIP_5162A].toSqeFunc[TS_TASK_TYPE_KERNEL_AICPU], nullptr);
+}
+
+TEST_F(Arch5162TaskTest, ConstructSqeForMemcpyAsyncTask)
+{
+    MOCKER(PrintSqe).stubs();
+    RawDevice *device = new RawDevice(0);
+    Stream *stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo taskInfo = {};
+    taskInfo.stream = stream;
+    rtStarsSqe_t sqe = {};
+    memset_s(&sqe, sizeof(sqe), 0, sizeof(sqe));
+    ConstructSqeForMemcpyAsyncTask(&taskInfo, &sqe);
+    EXPECT_EQ(sqe.phSqe.header.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, MemcpyAsyncTaskUnInitAndDoComplete)
+{
+    MOCKER(TaskFailCallBack).stubs();
+    MOCKER(RecycleTaskResourceForMemcpyAsyncTask).stubs();
+    MOCKER(PrintErrorInfoForMemcpyAsyncTask).stubs();
+    RawDevice *device = new RawDevice(0);
+    Stream *stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo task = {};
+    task.stream = stream;
+    task.type = TS_TASK_TYPE_MEMCPY;
+    task.u.memcpyAsyncTaskInfo.src = nullptr;
+    task.u.memcpyAsyncTaskInfo.releaseArgHandle = nullptr;
+    task.u.memcpyAsyncTaskInfo.guardMemVec = nullptr;
+    task.u.memcpyAsyncTaskInfo.srcPtr = nullptr;
+    task.u.memcpyAsyncTaskInfo.desPtr = nullptr;
+    PfnTaskUnInit taskUnInitFunc = g_taskFuncArrays[CHIP_5162A].taskUnInitFunc[task.type];
+    taskUnInitFunc(&task);
+
+    task.errorCode = TS_ERROR_TASK_TIMEOUT;
+    PfnDoCompleteSucc doCompleteSuccFunc = g_taskFuncArrays[CHIP_5162A].doCompleteSuccFunc[task.type];
+    doCompleteSuccFunc(&task, 0);
+    delete stream;
+    delete device;
 }
