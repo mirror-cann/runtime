@@ -22,4 +22,4 @@
 #include "rt_external_stream.h"
 #include "rt_external_dqs.h"
 
-#endif  // CCE_RUNTIME_RT_EXTERNAL_H
+#endif // CCE_RUNTIME_RT_EXTERNAL_H

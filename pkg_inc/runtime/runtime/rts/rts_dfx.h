@@ -30,11 +30,12 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
  * @return RT_ERROR_NONE for ok.
  * @return other for error.
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsProfTrace(void *userdata,  int32_t length , rtStream_t stream);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsProfTrace(void* userdata, int32_t length, rtStream_t stream);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RTS_DFX_H
+#endif // CCE_RUNTIME_RTS_DFX_H

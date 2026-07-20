@@ -17,17 +17,17 @@
 #ifndef RT_DEPRECATED
 #if defined(RT_RUNTIME_DISABLE_DEPRECATED_WARNINGS) || \
     (defined(CFG_BUILD_NDEBUG) && !defined(RT_RUNTIME_ENABLE_DEPRECATED_WARNINGS))
-    #define RT_DEPRECATED
-    #define RT_DEPRECATED_MESSAGE(message)
+#define RT_DEPRECATED
+#define RT_DEPRECATED_MESSAGE(message)
 #elif defined(__GNUC__) && (__GNUC__ >= 6)
-    #define RT_DEPRECATED __attribute__((deprecated))
-    #define RT_DEPRECATED_MESSAGE(message) __attribute__((deprecated(message)))
+#define RT_DEPRECATED __attribute__((deprecated))
+#define RT_DEPRECATED_MESSAGE(message) __attribute__((deprecated(message)))
 #elif defined(_MSC_VER)
-    #define RT_DEPRECATED __declspec(deprecated)
-    #define RT_DEPRECATED_MESSAGE(message) __declspec(deprecated(message))
+#define RT_DEPRECATED __declspec(deprecated)
+#define RT_DEPRECATED_MESSAGE(message) __declspec(deprecated(message))
 #else
-    #define RT_DEPRECATED
-    #define RT_DEPRECATED_MESSAGE(message)
+#define RT_DEPRECATED
+#define RT_DEPRECATED_MESSAGE(message)
 #endif
 #endif
 
@@ -37,18 +37,15 @@
 
 #ifndef RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 #if defined(__GNUC__) && (__GNUC__ >= 6)
-    #define RT_RUNTIME_DEPRECATED_DECLS_BEGIN \
-        _Pragma("GCC diagnostic push") \
-        _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
-    #define RT_RUNTIME_DEPRECATED_DECLS_END _Pragma("GCC diagnostic pop")
+#define RT_RUNTIME_DEPRECATED_DECLS_BEGIN \
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define RT_RUNTIME_DEPRECATED_DECLS_END _Pragma("GCC diagnostic pop")
 #elif defined(_MSC_VER)
-    #define RT_RUNTIME_DEPRECATED_DECLS_BEGIN \
-        __pragma(warning(push)) \
-        __pragma(warning(disable: 4996))
-    #define RT_RUNTIME_DEPRECATED_DECLS_END __pragma(warning(pop))
+#define RT_RUNTIME_DEPRECATED_DECLS_BEGIN __pragma(warning(push)) __pragma(warning(disable : 4996))
+#define RT_RUNTIME_DEPRECATED_DECLS_END __pragma(warning(pop))
 #else
-    #define RT_RUNTIME_DEPRECATED_DECLS_BEGIN
-    #define RT_RUNTIME_DEPRECATED_DECLS_END
+#define RT_RUNTIME_DEPRECATED_DECLS_BEGIN
+#define RT_RUNTIME_DEPRECATED_DECLS_END
 #endif
 #endif
 
@@ -72,17 +69,17 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 #define STARS_SCH_RDMA 0x10
 #define STARS_SCH_SDMA 0xb
 
-#define STARS_DEVICE_NAME_LENGTH_MAX    32
-#define CHIP_NUM                        4
-#define CPU_DIE_NUM                     2
-#define STARS_DEV_NUM                   (CHIP_NUM * CPU_DIE_NUM)
-#define STARS_WR_VAL_LEN_MAX            8
+#define STARS_DEVICE_NAME_LENGTH_MAX 32
+#define CHIP_NUM 4
+#define CPU_DIE_NUM 2
+#define STARS_DEV_NUM (CHIP_NUM * CPU_DIE_NUM)
+#define STARS_WR_VAL_LEN_MAX 8
 
 /* MPI 下发的数据结构 */
 typedef struct stars_trans_parm {
     unsigned int opcode; /* event record/event wait/rdma/sdma opcode */
     unsigned int wr_cqe_flag;
-    void *trans_parms;
+    void* trans_parms;
     uint32_t parms_len; /* trans_parms结构的长度 */
 } stars_trans_parm_t;
 
@@ -105,15 +102,15 @@ typedef enum {
 } STARS_EVENT_TYPE;
 
 typedef struct event_id_type {
-    unsigned int event_id;          /* first event index of all obtained eventids */
-    uint64_t offset;                /* phys addr offset */
+    unsigned int event_id; /* first event index of all obtained eventids */
+    uint64_t offset;       /* phys addr offset */
 } event_id_type_t;
 
 /* EVENT SQE的数据结构 */
 typedef struct event_trans_parm {
-    STARS_EVENT_TYPE    type; /* in-node：use id; between nodes：use event addr */
-    unsigned int        event_id;
-    uint64_t            event_addr;
+    STARS_EVENT_TYPE type; /* in-node：use id; between nodes：use event addr */
+    unsigned int event_id;
+    uint64_t event_addr;
 } event_trans_parm_t;
 
 typedef enum {
@@ -125,22 +122,19 @@ typedef enum {
 } STARS_QP_CMD_TYPE;
 
 /* 标识RDMA参数的真实PARM类型 */
-typedef enum {
-    STARS_RDMA_PARM_REAL_RDMA,
-    STARS_RDMA_PARM_REAL_UB
-} STARS_PARM_REAL_TYPE;
+typedef enum { STARS_RDMA_PARM_REAL_RDMA, STARS_RDMA_PARM_REAL_UB } STARS_PARM_REAL_TYPE;
 
 typedef struct rdma_trans_parm {
-    unsigned int            task_count;     /* number of wr */
-    unsigned int            qp_num;         /* qp->qp_num */
-    unsigned int            db_value;
-    STARS_QP_CMD_TYPE       cmd;            /* only STARS_QP_CMD_TYPE_SQ_DB is supported */
-    unsigned short          streamid;       /* sva is not support, streamid can be ignored */
-    unsigned short          substreamid;    /* sva is not support, substreamid can be ignored */
-    unsigned char           hac_functionId;
-    unsigned char           sl;             /* service level */
-    unsigned long           rdma_addr;
-    STARS_PARM_REAL_TYPE    real_sqe_type;  /* identify the real type of the sqe. rdma or ub */
+    unsigned int task_count;            /* number of wr */
+    unsigned int qp_num;                /* qp->qp_num */
+    unsigned int db_value;
+    STARS_QP_CMD_TYPE cmd;              /* only STARS_QP_CMD_TYPE_SQ_DB is supported */
+    unsigned short streamid;            /* sva is not support, streamid can be ignored */
+    unsigned short substreamid;         /* sva is not support, substreamid can be ignored */
+    unsigned char hac_functionId;
+    unsigned char sl;                   /* service level */
+    unsigned long rdma_addr;
+    STARS_PARM_REAL_TYPE real_sqe_type; /* identify the real type of the sqe. rdma or ub */
 } rdma_trans_parm_t;
 
 typedef struct rdma_output_status {
@@ -153,27 +147,27 @@ typedef struct rdma_output_status {
     unsigned int cmpl_cnt;
 } rdma_output_status_t;
 typedef struct wr_val_trans_parm {
-    unsigned int        va_enable;                      /* destination address type, VA:1 or PA:0 */
-    uintptr_t           d_addr;                         /* destination address */
-    unsigned int        length;                         /* data length to be written, in bytes, max 32 */
-    unsigned int        event_id;                       /* if used for event flag write, use this instead of d_addr */
-    unsigned int        wr_data[STARS_WR_VAL_LEN_MAX];  /* input data */
+    unsigned int va_enable;                     /* destination address type, VA:1 or PA:0 */
+    uintptr_t d_addr;                           /* destination address */
+    unsigned int length;                        /* data length to be written, in bytes, max 32 */
+    unsigned int event_id;                      /* if used for event flag write, use this instead of d_addr */
+    unsigned int wr_data[STARS_WR_VAL_LEN_MAX]; /* input data */
 } wr_val_trans_parm_t;
 
 typedef struct stars_cqe_output {
-    bool                    is_rdma_task;
-    rdma_output_status_t    rdma_cqe;
+    bool is_rdma_task;
+    rdma_output_status_t rdma_cqe;
 } stars_cqe_output_t;
 
 typedef struct stars_wait_output {
-    unsigned int        out_pos;
-    unsigned int        out_num; /* 数组长度 */
-    stars_cqe_output_t  *cqe_output;
+    unsigned int out_pos;
+    unsigned int out_num; /* 数组长度 */
+    stars_cqe_output_t* cqe_output;
 } stars_wait_output_t;
 
 typedef enum {
-    STARS_EVENT_TYPE_RAS_ERROR                  = 0x1,
-    STARS_EVENT_TYPE_EXIT_EVENTFD_HANDLE        = 0xffff,
+    STARS_EVENT_TYPE_RAS_ERROR = 0x1,
+    STARS_EVENT_TYPE_EXIT_EVENTFD_HANDLE = 0xffff,
 } STARS_EVENTFD_TYPE;
 
 #ifndef CCE_RUNTIME_BASE_H
@@ -186,20 +180,21 @@ typedef struct rtExceptionInfo {
     uint32_t reserved[2];
 } rtExceptionInfo_t;
 
-typedef void (*rtTaskFailCallback)(rtExceptionInfo_t *exceptionInfo) RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE);
+typedef void (*rtTaskFailCallback)(rtExceptionInfo_t* exceptionInfo)
+    RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE);
 #endif
 
 /* 用户态获取Stars设备信息的数据结构 */
 typedef struct device_info {
-    char                name[STARS_DEVICE_NAME_LENGTH_MAX];
-    unsigned int        chip_index;
-    unsigned int        die_index;
-    unsigned int        io_mode;   /* rdma die */
+    char name[STARS_DEVICE_NAME_LENGTH_MAX];
+    unsigned int chip_index;
+    unsigned int die_index;
+    unsigned int io_mode; /* rdma die */
 } device_info_t;
 
 typedef struct stars_info {
-    struct device_info  dev_info[STARS_DEV_NUM];
-    unsigned int        dev_num;
+    struct device_info dev_info[STARS_DEV_NUM];
+    unsigned int dev_num;
 } stars_info_t;
 
 /**
@@ -228,7 +223,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_dev_deini
  * @return ACL_RT_SUCCESS         成功
  * @return 其他错误码              失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_info(stars_info_t *info);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_info(stars_info_t* info);
 
 /**
  * @ingroup rt_stars
@@ -238,7 +233,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_info(
  * @param [out]  stars handle
  * @return stars handle             stars句柄
  */
-RTS_API void *stars_get_handle(int dev_id, unsigned int pool_id);
+RTS_API void* stars_get_handle(int dev_id, unsigned int pool_id);
 
 /**
  * @ingroup rt_stars
@@ -247,7 +242,7 @@ RTS_API void *stars_get_handle(int dev_id, unsigned int pool_id);
  * @return ACL_RT_SUCCESS         成功
  * @return 其他错误码              失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_handle(void *phandle);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_handle(void* phandle);
 
 /**
  * @ingroup rt_stars
@@ -258,7 +253,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_h
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_send_task(void *phandle, stars_trans_parm_t *trans_parm, unsigned int task_count);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_send_task(
+    void* phandle, stars_trans_parm_t* trans_parm, unsigned int task_count);
 
 /**
  * @ingroup rt_stars
@@ -270,7 +266,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_send_task
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_wait_cqe(void *phandle, unsigned int task_count, unsigned int *task_cmpl_count, void *output);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_wait_cqe(
+    void* phandle, unsigned int task_count, unsigned int* task_cmpl_count, void* output);
 
 /**
  * @ingroup rt_ucx
@@ -283,7 +280,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_wait_cqe(
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_event_id(int dev_id, unsigned int count, event_id_type_t *event_id, unsigned int pool_id);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_event_id(
+    int dev_id, unsigned int count, event_id_type_t* event_id, unsigned int pool_id);
 
 /**
  * @ingroup rt_ucx
@@ -295,7 +293,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_event
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_event_id(int dev_id, unsigned int count, event_id_type_t *event_id);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_event_id(
+    int dev_id, unsigned int count, event_id_type_t* event_id);
 
 /**
  * @ingroup rt_stars
@@ -305,7 +304,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_e
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_event_table_addr(int dev_id, uint64_t *addr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_event_table_addr(int dev_id, uint64_t* addr);
 
 /**
  * @ingroup rt_stars
@@ -315,7 +314,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_event
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_pasid(int dev_id, unsigned int *pasid);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_pasid(int dev_id, unsigned int* pasid);
 
 /**
  * @ingroup rt_stars
@@ -326,7 +325,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_pasid
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_rdma_cq_addr(int dev_id, unsigned int die_id, uint64_t *addr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_rdma_cq_addr(
+    int dev_id, unsigned int die_id, uint64_t* addr);
 
 /**
  * @ingroup rt_stars
@@ -335,7 +335,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_get_rdma_
  * @return ACL_RT_SUCCESS         成功
  * @return 其他错误码              失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_set_rtsq_profiling(void *phandle);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_set_rtsq_profiling(void* phandle);
 
 /**
  * @ingroup rt_stars
@@ -344,7 +344,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_set_rtsq_
  * @return ACL_RT_SUCCESS         成功
  * @return 其他错误码              失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_print_profiling_log(void *phandle);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_print_profiling_log(void* phandle);
 
 /**
  * @ingroup rt_stars
@@ -353,7 +353,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_print_pro
  * @return ACL_RT_SUCCESS         成功
  * @return 其他错误码              失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_profiling_buffer(void *phandle);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_profiling_buffer(void* phandle);
 
 /**
  * @ingroup rt_stars
@@ -365,7 +365,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_release_p
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_pin_umem(int dev_id, void *vma, unsigned int size, uint64_t *cookie);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_pin_umem(
+    int dev_id, void* vma, unsigned int size, uint64_t* cookie);
 
 /**
  * @ingroup rt_stars
@@ -386,7 +387,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_unpin_ume
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_sdma_authorize(int dev_id, int *pid_list, unsigned int pid_num);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_sdma_authorize(
+    int dev_id, int* pid_list, unsigned int pid_num);
 
 /**
  * @ingroup rt_stars
@@ -396,11 +398,12 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_sdma_auth
  * @return ACL_RT_SUCCESS            成功
  * @return 其他错误码                 失败
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_register_task_cb(int dev_id, const rtTaskFailCallback callback);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) int stars_register_task_cb(
+    int dev_id, const rtTaskFailCallback callback);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 
 #if defined(__cplusplus)
 }
 #endif
-#endif  // CCE_RUNTIME_STARS_INTERFACE_H
+#endif // CCE_RUNTIME_STARS_INTERFACE_H

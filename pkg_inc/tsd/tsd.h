@@ -7,7 +7,7 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
- 
+
 #ifndef INC_TDT_TSD_H
 #define INC_TDT_TSD_H
 #include <sys/types.h>
@@ -16,22 +16,22 @@
 #include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
-#endif  // __cplusplus
- 
+#endif // __cplusplus
+
 /**
-* @ingroup  Tsdaemon.
-*
-* Identifies that HCCP or Compute_process is waiting for
-* Tsdaemon to issue a shutdown command.
-*/
+ * @ingroup  Tsdaemon.
+ *
+ * Identifies that HCCP or Compute_process is waiting for
+ * Tsdaemon to issue a shutdown command.
+ */
 typedef enum {
-    TSD_HCCP = 0,    /**< HCCP*/
-    TSD_COMPUTE, /**< Compute_process*/
+    TSD_HCCP = 0,       /**< HCCP*/
+    TSD_COMPUTE,        /**< Compute_process*/
     TSD_CUSTOM_COMPUTE, /**< Custom Compute_process*/
     TSD_QS,
-    TSD_WAITTYPE_MAX /**< Max*/
+    TSD_WAITTYPE_MAX    /**< Max*/
 } TsdWaitType;
- 
+
 typedef enum {
     TSD_EVENT_START_RSP = 0,                  // 0 start response: client -> server tsd
     TSD_EVENT_SHUTDOWN_RSP = 1,               // 1 shutdown response: client -> server tsd
@@ -46,7 +46,7 @@ typedef enum {
     TSD_EVENT_START_AICPU_SD_MODULE_RSP = 31, // 31 start aicpu module msg rsp
     TSD_EVENT_START_QS_MODULE = 32,           // 32 send start qs module msg
     TSD_EVENT_START_QS_MODULE_RSP = 33,       // 33 start qs module msg rsp
-    TSD_EVENT_STOP_AICPU_SD_MODULE = 34,      // 34 send stop aicpu module msg 
+    TSD_EVENT_STOP_AICPU_SD_MODULE = 34,      // 34 send stop aicpu module msg
     TSD_EVENT_STOP_AICPU_SD_MODULE_RSP = 35,  // 35 stop aicpu module msg rsp
     TSD_EVENT_STOP_QS_MODULE = 36,            // 36 send stop qs module msg
     TSD_EVENT_STOP_QS_MODULE_RSP = 37,        // 37 stop qs module msg rsp
@@ -59,48 +59,48 @@ typedef enum {
     TSD_EVENT_LOAD_PLATFORM_TO_CUST = 44,     // 44 send load platform info to custom scheduler
     TSD_EVENT_TYPE_MAX
 } TsdSubEventType;
- 
+
 struct TsdCapabilityMsgInfo {
     uint32_t subCapabityType;
     uint32_t resultInfo;
 };
- 
+
 #define MAX_THREAD_ID_CNT (23)
 struct SubProcScheduleModeInfo {
     uint32_t totalNum;
     pid_t threadIdList[MAX_THREAD_ID_CNT];
 };
- 
+
 #define MAX_EVENT_PRI_MSG_LENGTH (96U)
 struct TsdSubEventInfo {
-    uint32_t deviceId;                    // device id
-    uint32_t srcPid;                      // send process pid
-    uint32_t dstPid;                      // receive process pid
-    uint32_t hostPid;                     // host pid
-    uint8_t  vfId;                        // vf id
-    uint8_t  rsv;                         // reserve
-    uint16_t reqId;                       // req Id
-    uint32_t procType;                    // process type
-    uint32_t eventType;                   // event type
-    uint32_t startProcPid;                // startup process pid
+    uint32_t deviceId;                     // device id
+    uint32_t srcPid;                       // send process pid
+    uint32_t dstPid;                       // receive process pid
+    uint32_t hostPid;                      // host pid
+    uint8_t vfId;                          // vf id
+    uint8_t rsv;                           // reserve
+    uint16_t reqId;                        // req Id
+    uint32_t procType;                     // process type
+    uint32_t eventType;                    // event type
+    uint32_t startProcPid;                 // startup process pid
     char priMsg[MAX_EVENT_PRI_MSG_LENGTH]; // so name
 };
- 
-typedef int32_t (* SubProcEventCallBackFuncInfo)(const struct TsdSubEventInfo * const msg);
- 
+
+typedef int32_t (*SubProcEventCallBackFuncInfo)(const struct TsdSubEventInfo* const msg);
+
 struct SubProcEventCallBackInfo {
     uint32_t eventType;
     SubProcEventCallBackFuncInfo callBackFunc;
 };
 
 struct CustAicpuStartInfo {
-    uint32_t    deviceId;
-    uint32_t    hostPid;
-    uint32_t     vfId;
-    const char *groupNameList;
-    uint32_t    groupNameNum;
-    int32_t    *custProcPid;
-    bool       *firstStart;
+    uint32_t deviceId;
+    uint32_t hostPid;
+    uint32_t vfId;
+    const char* groupNameList;
+    uint32_t groupNameNum;
+    int32_t* custProcPid;
+    bool* firstStart;
 };
 
 struct CustAicpuPara {
@@ -110,316 +110,309 @@ struct CustAicpuPara {
     } infoPara;
 };
 
-typedef enum {
-    CUST_AICPU_PARA_WITHOUT_SO_INFO,
-    CUST_AICPU_PARA_MAX
-} CustAicpuParaVersion;
+typedef enum { CUST_AICPU_PARA_WITHOUT_SO_INFO, CUST_AICPU_PARA_MAX } CustAicpuParaVersion;
 
 /**
-* @ingroup TsdWaitForShutdown
-* @brief Wait for the TSD process to issue the shutdown command
-*
-* @par Function
-* Wait for the TSD process to issue the shutdown command
-*
-* @param NA
-* @param deviceId [IN] type #unsigned int. Physical device ID
-* @param waitType [IN] type #TsdWaitType. HCCP or CP
-* @param hostPid [IN] type #unsigned int. Host pid
-* @param vfId [IN] type #unsigned int. Virtual force Id
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
-int32_t TsdWaitForShutdown(const uint32_t deviceId, const TsdWaitType waitType,
-                           const uint32_t hostPid, const uint32_t vfId);
- 
+ * @ingroup TsdWaitForShutdown
+ * @brief Wait for the TSD process to issue the shutdown command
+ *
+ * @par Function
+ * Wait for the TSD process to issue the shutdown command
+ *
+ * @param NA
+ * @param deviceId [IN] type #unsigned int. Physical device ID
+ * @param waitType [IN] type #TsdWaitType. HCCP or CP
+ * @param hostPid [IN] type #unsigned int. Host pid
+ * @param vfId [IN] type #unsigned int. Virtual force Id
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
+int32_t TsdWaitForShutdown(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId);
+
 /**
-* @ingroup TsdDestroy
-* @brief tsd event client send abnormal msg to tsd event server
-*
-* @par Function
-* tsd event client send abnormal msg to tsd event server
-*
-* @param NA
-* @param deviceID [IN] type #unsigned int. Physical device ID
-* @param waitType [IN] type #TsdWaitType. HCCP or CP
-* @param hostPid [IN] type #unsigned int. Host pid
-* @param vfId [IN] type #unsigned int. Virtual force id
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
-int32_t TsdDestroy(const uint32_t deviceId, const TsdWaitType waitType,
-                   const uint32_t hostPid, const uint32_t vfId);
- 
+ * @ingroup TsdDestroy
+ * @brief tsd event client send abnormal msg to tsd event server
+ *
+ * @par Function
+ * tsd event client send abnormal msg to tsd event server
+ *
+ * @param NA
+ * @param deviceID [IN] type #unsigned int. Physical device ID
+ * @param waitType [IN] type #TsdWaitType. HCCP or CP
+ * @param hostPid [IN] type #unsigned int. Host pid
+ * @param vfId [IN] type #unsigned int. Virtual force id
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
+int32_t TsdDestroy(const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId);
+
 /**
-* @ingroup CreateOrFindCustPid
-* @brief inform tsdaemon start aicpu_cust_schedule
-*
-* @par Function
-* inform tsdaemon start aicpu_cust_schedule
-*
-* @param NA
-* @param deviceID [IN] type #unsigned int. Physical device ID
-* @param loadLibNum [IN] type #unsigned int. Load so nums
-* @param loadLibName [IN] type #char *. Load so names
-* @param hostPid [IN] type #unsigned int. Host pid
-* @param vfId [IN] vf id
-* @param groupNameList [IN] group name list which cust aicpu need to attach
-* @param groupNameNum [IN] group name number which cust aicpu need to attach
-* @param custProcPid [OUT] cust aicpu pid
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
-int32_t CreateOrFindCustPid(const uint32_t deviceId, const uint32_t loadLibNum, const char * const loadLibName[],
-                            const uint32_t hostPid, const uint32_t vfId, const char * const groupNameList,
-                            const uint32_t groupNameNum, int32_t * const custProcPid, bool * const firstStart);
- 
+ * @ingroup CreateOrFindCustPid
+ * @brief inform tsdaemon start aicpu_cust_schedule
+ *
+ * @par Function
+ * inform tsdaemon start aicpu_cust_schedule
+ *
+ * @param NA
+ * @param deviceID [IN] type #unsigned int. Physical device ID
+ * @param loadLibNum [IN] type #unsigned int. Load so nums
+ * @param loadLibName [IN] type #char *. Load so names
+ * @param hostPid [IN] type #unsigned int. Host pid
+ * @param vfId [IN] vf id
+ * @param groupNameList [IN] group name list which cust aicpu need to attach
+ * @param groupNameNum [IN] group name number which cust aicpu need to attach
+ * @param custProcPid [OUT] cust aicpu pid
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
+int32_t CreateOrFindCustPid(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* const groupNameList, const uint32_t groupNameNum, int32_t* const custProcPid,
+    bool* const firstStart);
+
 /**
-* @ingroup CreateOrFindCustPidEx
-* @brief inform tsdaemon start aicpu_cust_schedule, Its functionality depends on the paraVersion in para.
-*
-* @par Function
-* inform tsdaemon start aicpu_cust_schedule, Its functionality depends on the paraVersion in para.
-*
-* @param NA
-* @param deviceID[IN] para type #CreatCustFuncPara.
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
-__attribute__((weak)) int32_t CreateOrFindCustPidEx(struct CustAicpuPara *args);
+ * @ingroup CreateOrFindCustPidEx
+ * @brief inform tsdaemon start aicpu_cust_schedule, Its functionality depends on the paraVersion in para.
+ *
+ * @par Function
+ * inform tsdaemon start aicpu_cust_schedule, Its functionality depends on the paraVersion in para.
+ *
+ * @param NA
+ * @param deviceID[IN] para type #CreatCustFuncPara.
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
+__attribute__((weak)) int32_t CreateOrFindCustPidEx(struct CustAicpuPara* args);
 /**
-* @ingroup TsdStartupResponse
-* @brief Wait for the TSD process to issue the shutdown command
-*
-* @par Function
-* Wait for the TSD process to issue the shutdown command
-*
-* @param NA
-* @param deviceId [IN] type #unsigned int. Physical device ID
-* @param waitType [IN] type #TsdWaitType. HCCP or CP
-* @param hostPid [IN] type #unsigned int. Host pid
-* @param vfId [IN] type #unsigned int. Virtual force Id
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
-int32_t StartupResponse(const uint32_t deviceId, const TsdWaitType waitType,
-                        const uint32_t hostPid, const uint32_t vfId);
- 
- 
+ * @ingroup TsdStartupResponse
+ * @brief Wait for the TSD process to issue the shutdown command
+ *
+ * @par Function
+ * Wait for the TSD process to issue the shutdown command
+ *
+ * @param NA
+ * @param deviceId [IN] type #unsigned int. Physical device ID
+ * @param waitType [IN] type #TsdWaitType. HCCP or CP
+ * @param hostPid [IN] type #unsigned int. Host pid
+ * @param vfId [IN] type #unsigned int. Virtual force Id
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
+int32_t StartupResponse(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId);
+
 /**
-* @ingroup TsdDoLoopProcessEvent
-* @brief loop to keep process main thread running
-*
-* @par Function
-* loop to keep process main thread running
-*
-* @param NA
-* @param deviceId [IN] type #unsigned int. Physical device ID
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
+ * @ingroup TsdDoLoopProcessEvent
+ * @brief loop to keep process main thread running
+ *
+ * @par Function
+ * loop to keep process main thread running
+ *
+ * @param NA
+ * @param deviceId [IN] type #unsigned int. Physical device ID
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
 int32_t WaitForShutDown(const uint32_t deviceId);
- 
+
 /**
-* @ingroup tsd_event_client
-* @brief sub process send error code while start/stop period
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @param [in] errCode : errCode: errMsg code produced by host
-* @param [in] errLen : errLen: errMsg code length
-* @return TSD_OK: success, other: error code
-*/
-int32_t TsdReportStartOrStopErrCode(const uint32_t deviceId, const TsdWaitType waitType,
-                                    const uint32_t hostPid, const uint32_t vfId,
-                                    const char *errCode, const uint32_t errLen);
- 
- 
+ * @ingroup tsd_event_client
+ * @brief sub process send error code while start/stop period
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @param [in] errCode : errCode: errMsg code produced by host
+ * @param [in] errLen : errLen: errMsg code length
+ * @return TSD_OK: success, other: error code
+ */
+int32_t TsdReportStartOrStopErrCode(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId,
+    const char* errCode, const uint32_t errLen);
+
 /**
-* @ingroup tsd_event_client
-* @brief sub process send capability msg to tsd
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @param [in] msgInfo : capability
-* @return TSD_OK: success, other: error code
-*/
-int32_t ReportMsgToTsd(const uint32_t deviceId, const TsdWaitType waitType,
-                       const uint32_t hostPid, const uint32_t vfId,
-                       const char * const msgInfo);
- 
+ * @ingroup tsd_event_client
+ * @brief sub process send capability msg to tsd
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @param [in] msgInfo : capability
+ * @return TSD_OK: success, other: error code
+ */
+int32_t ReportMsgToTsd(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId,
+    const char* const msgInfo);
+
 /**
-* @ingroup tsd_event_client
-* @brief reg event call back func to tsdclient
-* @param [in] SubProcEventCallBackInfo : event id, callbackfunc
-* @return TSD_OK: success, other: error code
-*/
-int32_t RegEventMsgCallBackFunc(const struct SubProcEventCallBackInfo *regInfo);
- 
+ * @ingroup tsd_event_client
+ * @brief reg event call back func to tsdclient
+ * @param [in] SubProcEventCallBackInfo : event id, callbackfunc
+ * @return TSD_OK: success, other: error code
+ */
+int32_t RegEventMsgCallBackFunc(const struct SubProcEventCallBackInfo* regInfo);
+
 /**
-* @ingroup tsd_event_client
-* @brief unreg event call back func to tsdclient
-* @param [in]  : event id
-* @return void
-*/
+ * @ingroup tsd_event_client
+ * @brief unreg event call back func to tsdclient
+ * @param [in]  : event id
+ * @return void
+ */
 void UnRegEventMsgCallBackFunc(const uint32_t eventType);
- 
+
 /**
-* @ingroup tsd_event_client
-* @brief reg event call back func to tsdclient
-* @param [in] SubProcEventCallBackInfo : event id, callbackfunc
-* @return TSD_OK: success, other: error code
-*/
- 
+ * @ingroup tsd_event_client
+ * @brief reg event call back func to tsdclient
+ * @param [in] SubProcEventCallBackInfo : event id, callbackfunc
+ * @return TSD_OK: success, other: error code
+ */
+
 /**
-* @ingroup tsd_event_client
-* @brief sub module send start success message to tsd
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @param [in] eventType : eventType
-* @return TSD_OK: success, other: error code
-*/
-int32_t SubModuleProcessResponse(const uint32_t deviceId, const TsdWaitType waitType,
-                                 const uint32_t hostPid, const uint32_t vfId,
-                                 const uint32_t eventType);
- 
+ * @ingroup tsd_event_client
+ * @brief sub module send start success message to tsd
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @param [in] eventType : eventType
+ * @return TSD_OK: success, other: error code
+ */
+int32_t SubModuleProcessResponse(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId,
+    const uint32_t eventType);
+
 /**
-* @ingroup tsd_event_client
-* @brief send start up msg to tsd and wait process
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @return TSD_OK: success, other: error code
-*/
-int32_t StartUpRspAndWaitProcess(const uint32_t deviceId, const TsdWaitType waitType,
-                                 const uint32_t hostPid, const uint32_t vfId);
- 
+ * @ingroup tsd_event_client
+ * @brief send start up msg to tsd and wait process
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @return TSD_OK: success, other: error code
+ */
+int32_t StartUpRspAndWaitProcess(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId);
+
 /**
-* @ingroup StopWaitForCustAicpu
-* @brief aicpu wait aicpu_cust_schedule attatch grp success
-* @return TSD_OK: success, other: error code
-*/
+ * @ingroup StopWaitForCustAicpu
+ * @brief aicpu wait aicpu_cust_schedule attatch grp success
+ * @return TSD_OK: success, other: error code
+ */
 int32_t StopWaitForCustAicpu();
- 
+
 /**
-* @ingroup tsd_event_client
-* @brief set tsd event dst pid
-* @return TSD_OK: success, other: error code
-*/
+ * @ingroup tsd_event_client
+ * @brief set tsd event dst pid
+ * @return TSD_OK: success, other: error code
+ */
 int32_t SetDstTsdEventPid(const uint32_t dstPid);
- 
+
 /**
-* @ingroup tsd_event_client
-* @brief send profiling response msg to tsd and wait process
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @return TSD_OK: success, other: error code
-*/
-int32_t SendUpdateProfilingRspToTsd(const uint32_t deviceId, const uint32_t waitType,
-                                    const uint32_t hostPid, const uint32_t vfId);
- 
- 
+ * @ingroup tsd_event_client
+ * @brief send profiling response msg to tsd and wait process
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @return TSD_OK: success, other: error code
+ */
+int32_t SendUpdateProfilingRspToTsd(
+    const uint32_t deviceId, const uint32_t waitType, const uint32_t hostPid, const uint32_t vfId);
+
 /**
-* @ingroup tsd_event_client
-* @brief send schedule mode to tsd
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @param [in] vfId : vf id
-* @return TSD_OK: success, other: error code
-*/
-int32_t SetSubProcScheduleMode(const uint32_t deviceId, const uint32_t waitType,
-                               const uint32_t hostPid, const uint32_t vfId,
-                               const struct SubProcScheduleModeInfo *scheInfo);
- 
+ * @ingroup tsd_event_client
+ * @brief send schedule mode to tsd
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @param [in] vfId : vf id
+ * @return TSD_OK: success, other: error code
+ */
+int32_t SetSubProcScheduleMode(
+    const uint32_t deviceId, const uint32_t waitType, const uint32_t hostPid, const uint32_t vfId,
+    const struct SubProcScheduleModeInfo* scheInfo);
+
 /**
-* @ingroup SendStartUpFinishMsg
-* @brief sub process start finisn and Wait for the TSD process to issue the shutdown command
-*
-* @par Function
-* Wait for the TSD process to issue the shutdown command
-*
-* @param NA
-* @param deviceId [IN] type #unsigned int. Physical device ID
-* @param waitType [IN] type #TsdWaitType. HCCP or CP
-* @param hostPid [IN] type #unsigned int. Host pid
-* @param vfId [IN] type #unsigned int. Virtual force Id
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*
-* @par Dependency
-* @li libtsdppc.so: Library to which the interface belongs.
-* @li tsd.h: Header file where the interface declaration is located.
-*/
-int32_t SendStartUpFinishMsg(const uint32_t deviceId, const TsdWaitType waitType,
-                             const uint32_t hostPid, const uint32_t vfId);
- 
- 
+ * @ingroup SendStartUpFinishMsg
+ * @brief sub process start finisn and Wait for the TSD process to issue the shutdown command
+ *
+ * @par Function
+ * Wait for the TSD process to issue the shutdown command
+ *
+ * @param NA
+ * @param deviceId [IN] type #unsigned int. Physical device ID
+ * @param waitType [IN] type #TsdWaitType. HCCP or CP
+ * @param hostPid [IN] type #unsigned int. Host pid
+ * @param vfId [IN] type #unsigned int. Virtual force Id
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ *
+ * @par Dependency
+ * @li libtsdppc.so: Library to which the interface belongs.
+ * @li tsd.h: Header file where the interface declaration is located.
+ */
+int32_t SendStartUpFinishMsg(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId);
+
 /**
-* @ingroup tsd_event_client
-* @brief sub process send error code while start/stop period
-* @param [in] deviceId : device id
-* @param [in] waitType : process type
-* @param [in] hostPid :  host pid
-* @param [in] vfId : vf id
-* @param [in] errCode : errCode: errMsg code produced by host
-* @param [in] errLen : errLen: errMsg code length
-* @return TSD_OK: success, other: error code
-*/
-int32_t ReportProcessStartUpErrorCode(const uint32_t deviceId, const TsdWaitType waitType,
-                                      const uint32_t hostPid, const uint32_t vfId,
-                                      const char *errCode, const uint32_t errLen);
- 
+ * @ingroup tsd_event_client
+ * @brief sub process send error code while start/stop period
+ * @param [in] deviceId : device id
+ * @param [in] waitType : process type
+ * @param [in] hostPid :  host pid
+ * @param [in] vfId : vf id
+ * @param [in] errCode : errCode: errMsg code produced by host
+ * @param [in] errLen : errLen: errMsg code length
+ * @return TSD_OK: success, other: error code
+ */
+int32_t ReportProcessStartUpErrorCode(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId,
+    const char* errCode, const uint32_t errLen);
+
 /**
-* @ingroup DestroySubProcess
-* @brief tsd event client send abnormal msg to tsd event server
-*
-* @par Function
-* tsd event client send abnormal msg to tsd event server
-*
-* @param NA
-* @param deviceID [IN] type #unsigned int. Physical device ID
-* @param waitType [IN] type #TsdWaitType. HCCP or CP
-* @param hostPid [IN] type #unsigned int. Host pid
-* @param vfId [IN] type #unsigned int. Virtual force id
-* @retval 0 Success
-* @retval OtherValues 0 Fail
-*/
-int32_t DestroySubProcess(const uint32_t deviceId, const TsdWaitType waitType,
-                          const uint32_t hostPid, const uint32_t vfId);
+ * @ingroup DestroySubProcess
+ * @brief tsd event client send abnormal msg to tsd event server
+ *
+ * @par Function
+ * tsd event client send abnormal msg to tsd event server
+ *
+ * @param NA
+ * @param deviceID [IN] type #unsigned int. Physical device ID
+ * @param waitType [IN] type #TsdWaitType. HCCP or CP
+ * @param hostPid [IN] type #unsigned int. Host pid
+ * @param vfId [IN] type #unsigned int. Virtual force id
+ * @retval 0 Success
+ * @retval OtherValues 0 Fail
+ */
+int32_t DestroySubProcess(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId);
 #ifdef __cplusplus
 }
-#endif  // __cplusplus
-#endif  // INC_TDT_TSD_H
+#endif // __cplusplus
+#endif // INC_TDT_TSD_H

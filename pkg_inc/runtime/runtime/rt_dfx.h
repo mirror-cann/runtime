@@ -21,7 +21,7 @@ extern "C" {
 RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 
 // max task tag buffer is 1024(include '\0')
-#define TASK_TAG_MAX_LEN    1024U
+#define TASK_TAG_MAX_LEN 1024U
 
 /**
  * @brief set aicpu device attribute.
@@ -31,7 +31,8 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
  * @return RT_ERROR_NONE for ok
  * @return other failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetAicpuAttr(const char_t *key, const char_t *val);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetAicpuAttr(const char_t* key, const char_t* val);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)

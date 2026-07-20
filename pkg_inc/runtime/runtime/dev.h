@@ -20,16 +20,16 @@ extern "C" {
 
 RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 
-#define RT_CAPABILITY_SUPPORT     (0x1U)
+#define RT_CAPABILITY_SUPPORT (0x1U)
 #define RT_CAPABILITY_NOT_SUPPORT (0x0U)
 #define MEMORY_INFO_TS_4G_LIMITED (0x0U) // for compatibility
 
 #define INFO_TYPE_CUBE_NUM (0x775A5A5AU) // for cube core num
 
-#define RT_NPU_UUID_LENGTH  (16)
+#define RT_NPU_UUID_LENGTH (16)
 
 typedef struct tagRTDeviceInfo {
-    uint8_t env_type;  // 0: FPGA  1: EMU 2: ESL
+    uint8_t env_type; // 0: FPGA  1: EMU 2: ESL
     uint32_t ctrl_cpu_ip;
     uint32_t ctrl_cpu_id;
     uint32_t ctrl_cpu_core_num;
@@ -59,7 +59,6 @@ typedef enum tagRtAicpuDeployType {
     AICPU_DEPLOY_RESERVED
 } rtAicpuDeployType_t;
 
-
 typedef enum tagRtPhyDeviceInfoType {
     RT_PHY_INFO_TYPE_CHIPTYPE = 0,
     RT_PHY_INFO_TYPE_MASTER_ID,
@@ -74,43 +73,38 @@ typedef struct {
     uint32_t tokenValue;
 } rtMemUbTokenInfo;
 
-
-typedef void *rtHdcServer_t;
-typedef void *rtHdcClient_t;
-typedef void *rtHdcSession_t;
+typedef void* rtHdcServer_t;
+typedef void* rtHdcClient_t;
+typedef void* rtHdcSession_t;
 
 /* consistent with drvHdcServiceType in inc/driver/ascend_hal.h */
 typedef enum {
-    RT_HDC_SERVICE_TYPE_DMP                 = 0,
-    RT_HDC_SERVICE_TYPE_PROFILING           = 1,
-    RT_HDC_SERVICE_TYPE_IDE1                = 2,
-    RT_HDC_SERVICE_TYPE_FILE_TRANS          = 3,
-    RT_HDC_SERVICE_TYPE_IDE2                = 4,
-    RT_HDC_SERVICE_TYPE_LOG                 = 5,
-    RT_HDC_SERVICE_TYPE_RDMA                = 6,
-    RT_HDC_SERVICE_TYPE_BBOX                = 7,
-    RT_HDC_SERVICE_TYPE_FRAMEWORK           = 8,
-    RT_HDC_SERVICE_TYPE_TSD                 = 9,
-    RT_HDC_SERVICE_TYPE_TDT                 = 10,
-    RT_HDC_SERVICE_TYPE_PROF                = 11,
-    RT_HDC_SERVICE_TYPE_IDE_FILE_TRANS      = 12,
-    RT_HDC_SERVICE_TYPE_DUMP                = 13,
-    RT_HDC_SERVICE_TYPE_USER3               = 14,
-    RT_HDC_SERVICE_TYPE_DVPP                = 15,
-    RT_HDC_SERVICE_TYPE_QUEUE               = 16,
-    RT_HDC_SERVICE_TYPE_UPGRADE             = 17,
-    RT_HDC_SERVICE_TYPE_RDMA_V2             = 18,
-    RT_HDC_SERVICE_TYPE_TEST                = 19,
-    RT_HDC_SERVICE_TYPE_USER_START          = 64,
-    RT_HDC_SERVICE_TYPE_USER_END            = 127,
+    RT_HDC_SERVICE_TYPE_DMP = 0,
+    RT_HDC_SERVICE_TYPE_PROFILING = 1,
+    RT_HDC_SERVICE_TYPE_IDE1 = 2,
+    RT_HDC_SERVICE_TYPE_FILE_TRANS = 3,
+    RT_HDC_SERVICE_TYPE_IDE2 = 4,
+    RT_HDC_SERVICE_TYPE_LOG = 5,
+    RT_HDC_SERVICE_TYPE_RDMA = 6,
+    RT_HDC_SERVICE_TYPE_BBOX = 7,
+    RT_HDC_SERVICE_TYPE_FRAMEWORK = 8,
+    RT_HDC_SERVICE_TYPE_TSD = 9,
+    RT_HDC_SERVICE_TYPE_TDT = 10,
+    RT_HDC_SERVICE_TYPE_PROF = 11,
+    RT_HDC_SERVICE_TYPE_IDE_FILE_TRANS = 12,
+    RT_HDC_SERVICE_TYPE_DUMP = 13,
+    RT_HDC_SERVICE_TYPE_USER3 = 14,
+    RT_HDC_SERVICE_TYPE_DVPP = 15,
+    RT_HDC_SERVICE_TYPE_QUEUE = 16,
+    RT_HDC_SERVICE_TYPE_UPGRADE = 17,
+    RT_HDC_SERVICE_TYPE_RDMA_V2 = 18,
+    RT_HDC_SERVICE_TYPE_TEST = 19,
+    RT_HDC_SERVICE_TYPE_USER_START = 64,
+    RT_HDC_SERVICE_TYPE_USER_END = 127,
     RT_HDC_SERVICE_TYPE_MAX
 } rtHdcServiceType_t;
 
-
-typedef enum tagRtDumpMode {
-    RT_DEBUG_DUMP_ON_EXCEPTION = 1,
-    RT_DEBUG_DUMP_MAX
-} rtDumpMode_t;
+typedef enum tagRtDumpMode { RT_DEBUG_DUMP_ON_EXCEPTION = 1, RT_DEBUG_DUMP_MAX } rtDumpMode_t;
 
 typedef struct tagRtUuid {
     char bytes[RT_NPU_UUID_LENGTH];
@@ -123,7 +117,7 @@ typedef struct tagRtUuid {
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceCount(int32_t *cnt);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceCount(int32_t* cnt);
 /**
  * @ingroup dvrt_dev
  * @brief get device ids
@@ -131,7 +125,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_DRV_ERR for error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceIDs(uint32_t *devices, uint32_t len);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceIDs(uint32_t* devices, uint32_t len);
 
 /**
  * @ingroup dvrt_dev
@@ -159,7 +153,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetDevi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceIndexByPhyId(uint32_t phyId, uint32_t *devIndex);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDeviceIndexByPhyId(uint32_t phyId, uint32_t* devIndex);
 
 /**
  * @ingroup dvrt_dev
@@ -169,7 +164,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t *phyId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t* phyId);
 
 /**
  * @ingroup dvrt_dev
@@ -180,7 +176,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceCanAccessPeer(int32_t *canAccessPeer, uint32_t devId, uint32_t peerDevice);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDeviceCanAccessPeer(int32_t* canAccessPeer, uint32_t devId, uint32_t peerDevice);
 
 /**
  * @ingroup dvrt_dev
@@ -188,7 +185,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceC
  * @param [in|out] pid   value of pid
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceGetBareTgid(uint32_t *pid);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceGetBareTgid(uint32_t* pid);
 
 /**
  * @ingroup dvrt_dev
@@ -197,7 +194,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceG
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevice(int32_t *devId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevice(int32_t* devId);
 
 /**
  * @ingroup dvrt_dev
@@ -225,7 +222,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceR
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceSetLimit(int32_t devId, rtLimitType_t type, uint32_t val);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDeviceSetLimit(int32_t devId, rtLimitType_t type, uint32_t val);
 
 /**
  * @ingroup dvrt_dev
@@ -252,7 +250,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceS
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceTaskAbort(int32_t devId, uint32_t timeout);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDeviceTaskAbort(int32_t devId, uint32_t timeout);
 
 /**
  * @ingroup dvrt_dev
@@ -262,7 +261,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceT
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceGetStreamPriorityRange(int32_t *leastPriority, int32_t *greatestPriority);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDeviceGetStreamPriorityRange(int32_t* leastPriority, int32_t* greatestPriority);
 
 /**
  * @ingroup dvrt_dev
@@ -280,7 +280,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetTSDe
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_DRV_ERR for can not get run mode
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetRunMode(rtRunMode *runMode);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetRunMode(rtRunMode* runMode);
 
 /**
  * @ingroup dvrt_dev
@@ -289,14 +289,16 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetRunM
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_DRV_ERR for can not get aicpu deploy
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAicpuDeploy(rtAicpuDeployType_t *deployType);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetAicpuDeploy(rtAicpuDeployType_t* deployType);
 
 /**
  * @ingroup dvrt_dev
  * @brief get chipType
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetSocVersion(char_t *ver, const uint32_t maxLen);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetSocVersion(char_t* ver, const uint32_t maxLen);
 
 /**
  * @ingroup dvrt_dev
@@ -305,7 +307,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetSocV
  * @param [in] omArchVersion   OM ArchVersion
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtModelCheckCompatibility(const char_t *omSocVersion, const char_t *omArchVersion);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtModelCheckCompatibility(const char_t* omSocVersion, const char_t* omArchVersion);
 
 /**
  * @ingroup dvrt_dev
@@ -314,7 +317,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtModelCh
  * @param [out] canCompatible Check compatibility: return 1 for compatible, 0 for incompatible
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCheckArchCompatibility(const char_t *omSocVersion, int32_t *canCompatible);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtCheckArchCompatibility(const char_t* omSocVersion, int32_t* canCompatible);
 
 /**
  * @ingroup dvrt_dev
@@ -323,7 +327,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCheckAr
  * @param [out] deviceStatus the device statue
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus *deviceStatus);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus* deviceStatus);
 
 /**
  * @ingroup dvrt_dev
@@ -339,7 +344,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceR
  * @param [in] saturation mode.
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetDeviceSatMode(rtFloatOverflowMode_t floatOverflowMode);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetDeviceSatMode(rtFloatOverflowMode_t floatOverflowMode);
 
 /**
  * @ingroup
@@ -347,7 +353,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetDevi
  * @param [out] saturation mode.
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceSatMode(rtFloatOverflowMode_t *floatOverflowMode);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDeviceSatMode(rtFloatOverflowMode_t* floatOverflowMode);
 
 /**
  * @ingroup
@@ -356,7 +363,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevi
  * @param [out] saturation mode.
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceSatModeForStream(rtStream_t stm, rtFloatOverflowMode_t *floatOverflowMode);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDeviceSatModeForStream(rtStream_t stm, rtFloatOverflowMode_t* floatOverflowMode);
 
 /**
  * @ingroup
@@ -366,7 +374,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceId, int32_t * const visibleDeviceId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceId, int32_t* const visibleDeviceId);
 /**
  * @ingroup
  * @brief get aicore/aivectoe/aicpu utilizations
@@ -376,7 +385,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetVisi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t * const util);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t* const util);
 
 /**
  * @ingroup dvrt_dev
@@ -403,22 +413,24 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDeviceR
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetDeviceFailureMode(uint64_t failureMode);
 
 /**
- * @ingroup 
+ * @ingroup
  * @brief get system param option's value
  * @param [in] configOpt system option to be get value
  * @param [out] configVal system option's value to be get
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal);
 
 /**
- * @ingroup 
+ * @ingroup
  * @brief set system param option
  * @param [in] configOpt system option to be set
  * @param [in] configVal system option's value to be set
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal);
 
 /**
  * @ingroup
@@ -428,7 +440,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetSysP
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceStatus(const int32_t devId, rtDevStatus_t * const status);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDeviceStatus(const int32_t devId, rtDevStatus_t* const status);
 
 /**
  * @ingroup
@@ -439,7 +452,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDevi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHdcServerCreate(const int32_t devId, const rtHdcServiceType_t type, rtHdcServer_t * const server);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtHdcServerCreate(const int32_t devId, const rtHdcServiceType_t type, rtHdcServer_t* const server);
 
 /**
  * @ingroup
@@ -451,70 +465,73 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHdcServ
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHdcServerDestroy(rtHdcServer_t const server);
 
 /**
-* @ingroup
-* @brief create HDC session for host and device communication
-* @param [in]  peerNode : the node number of the node where the device is located. currently only 1 node is supported.
-* remote nodes are not supported. you need to pass a fixed value of 0
-* @param [in]  peerDevId: device's uniform ID in the host (number in each node)
-* @param [in]  client   : HDC client handle corresponding to the newly created session
-* @param [out] session  : created session
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHdcSessionConnect(const int32_t peerNode, const int32_t peerDevId, rtHdcClient_t const client,
-    rtHdcSession_t * const session);
+ * @ingroup
+ * @brief create HDC session for host and device communication
+ * @param [in]  peerNode : the node number of the node where the device is located. currently only 1 node is supported.
+ * remote nodes are not supported. you need to pass a fixed value of 0
+ * @param [in]  peerDevId: device's uniform ID in the host (number in each node)
+ * @param [in]  client   : HDC client handle corresponding to the newly created session
+ * @param [out] session  : created session
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHdcSessionConnect(
+    const int32_t peerNode, const int32_t peerDevId, rtHdcClient_t const client, rtHdcSession_t* const session);
 
 /**
-* @ingroup
-* @brief close HDC session for communication between host and device
-* @param [in] session  : specify in which session to receive data
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
+ * @ingroup
+ * @brief close HDC session for communication between host and device
+ * @param [in] session  : specify in which session to receive data
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHdcSessionClose(rtHdcSession_t const session);
 
 /**
-* @ingroup
-* @brief get the device ID in the host CPU scenario
-* @param [out] devId  : assigned device ID
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetHostCpuDevId(int32_t * const devId);
+ * @ingroup
+ * @brief get the device ID in the host CPU scenario
+ * @param [out] devId  : assigned device ID
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetHostCpuDevId(int32_t* const devId);
 
 /**
-* @ingroup
-* @brief convert user device ID to logic device ID
-* @param [in] userDevId     : user device ID
-* @param [out] logicDevId   : logic device ID
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetLogicDevIdByUserDevId(const int32_t userDevId, int32_t * const logicDevId);
+ * @ingroup
+ * @brief convert user device ID to logic device ID
+ * @param [in] userDevId     : user device ID
+ * @param [out] logicDevId   : logic device ID
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetLogicDevIdByUserDevId(const int32_t userDevId, int32_t* const logicDevId);
 
 /**
-* @ingroup
-* @brief convert logic device ID to user device ID
-* @param [in] logicDevId    : logic device ID
-* @param [out] userDevId    : user device ID
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t * const userDevId);
+ * @ingroup
+ * @brief convert logic device ID to user device ID
+ * @param [in] logicDevId    : logic device ID
+ * @param [out] userDevId    : user device ID
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t* const userDevId);
 
 /**
-* @ingroup dvrt_dev
-* @brief Get device uuid
-* @param [in] devId user device ID
-* @param [out] uuid rtUuid struct
-* @return ACL_RT_SUCCESS for get uuid successfully
-* @return ACL_ERROR_RT_FEATURE_NOT_SUPPORT for driver or device not support uuid feature
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceUuid(const int32_t devId, rtUuid_t *uuid);
+ * @ingroup dvrt_dev
+ * @brief Get device uuid
+ * @param [in] devId user device ID
+ * @param [out] uuid rtUuid struct
+ * @return ACL_RT_SUCCESS for get uuid successfully
+ * @return ACL_ERROR_RT_FEATURE_NOT_SUPPORT for driver or device not support uuid feature
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDeviceUuid(const int32_t devId, rtUuid_t* uuid);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_DEVICE_H
+#endif // CCE_RUNTIME_DEVICE_H

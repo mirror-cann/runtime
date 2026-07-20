@@ -14,7 +14,9 @@ import os
 import re
 import sys
 
-PATTERN_FUNCTION = re.compile(r'ACL_FUNC_VISIBILITY\s+\n+.+\w+\([^();]*\);|.+\w+\([^();]*\);')
+PATTERN_FUNCTION = re.compile(
+    r'[A-Z][A-Z0-9_]*(?:_API|_VISIBILITY)\s+[^;{}]*?\w+\([^();]*\);|.+\w+\([^();]*\);'
+)
 PATTERN_RETURN = re.compile(r'([^ ]+[ *])\w+\([^;]+;')
 
 RETURN_STATEMENTS = {
@@ -91,7 +93,8 @@ def implement_function(func):
     function_def = func[:len(func) - 1]
     function_def += '\n'
     function_def += '{\n'
-    m = PATTERN_RETURN.search(func)
+    normalized_func = re.sub(r'\s+', ' ', func)
+    m = PATTERN_RETURN.search(normalized_func)
     if m:
         ret_type = m.group(1).strip()
         if RETURN_STATEMENTS.__contains__(ret_type):

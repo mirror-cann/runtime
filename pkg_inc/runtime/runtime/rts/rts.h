@@ -24,4 +24,4 @@
 #include "rts_dfx.h"
 #include "rts_snapshot.h"
 
-#endif  // CCE_RUNTIME_RTS_H
+#endif // CCE_RUNTIME_RTS_H

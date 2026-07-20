@@ -27,4 +27,4 @@
 #include "rt_mem_queue.h"
 #include "rt_ras.h"
 
-#endif  // CCE_RUNTIME_RT_H
+#endif // CCE_RUNTIME_RT_H

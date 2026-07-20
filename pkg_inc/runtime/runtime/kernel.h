@@ -24,21 +24,20 @@ extern "C" {
 
 RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 
-
 typedef rtSmDesc_t rtL2Ctrl_t;
 
 /**
-  * @ingroup rt_kernel
-  * @brief function mode type
-  */
+ * @ingroup rt_kernel
+ * @brief function mode type
+ */
 #define ONLINE_PROF_MAX_PMU_NUM (8)
 
 typedef struct ProfilefDataInfo {
-    const void *stubFunc;
+    const void* stubFunc;
     uint32_t blockDim;
-    const void *args;
+    const void* args;
     uint32_t argsSize;
-    rtSmDesc_t *smDesc;
+    rtSmDesc_t* smDesc;
     rtStream_t stream;
     uint64_t totalcycle;
     uint64_t ovcycle;
@@ -63,19 +62,19 @@ typedef enum {
  * @brief kernel info
  */
 typedef struct rtKernelInfo {
-    uint64_t task_offset;  // kernel offset in module
+    uint64_t task_offset; // kernel offset in module
     /* flowtable */
-    void *arg;  // launch kernel arg
+    void* arg; // launch kernel arg
     uint32_t arg_size;
     /* module */
-    void *module_addr;  // module::baseaddr_
+    void* module_addr; // module::baseaddr_
     uint32_t module_size;
-} *rtKernelInfo_t;
+}* rtKernelInfo_t;
 
 typedef struct rtFunctionInfo {
-    void *pcAddr;
+    void* pcAddr;
     uint32_t prefetchCnt;
-    uint8_t mixType;                  // 0:NO_MIX; 1:MIX_AIC; 2:MIX_AIV; 3:MIX_AIC_AIV
+    uint8_t mixType; // 0:NO_MIX; 1:MIX_AIC; 2:MIX_AIV; 3:MIX_AIC_AIV
     uint8_t reserved[3];
 } rtFunctionInfo_t;
 
@@ -90,7 +89,7 @@ typedef struct tagRtKernelInfo {
  * @brief args struct
  */
 typedef struct tagRtArgsWithTiling {
-    void *args;                     // args host mem addr
+    void* args;                     // args host mem addr
     uint32_t argsSize;              // input + output + tiling addr size + tiling data size
     uint32_t argsSizeWithoutTiling; // input + output + tiling addr size
     uint16_t tilingAddrOffset;      // tiling addr offset
@@ -174,7 +173,8 @@ typedef enum {
  * @ingroup rt_kernel
  * @brief report callback
  */
-typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kernelInfo) RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE);
+typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kernelInfo)
+    RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE);
 
 /**
  * @ingroup rt_kernel
@@ -203,7 +203,7 @@ typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kerne
 /**
  * @ingroup rt_kernel
  * @brief kernel mode
-**/
+ **/
 #define RT_DEFAULT_KERNEL_MODE (0x00U)
 #define RT_NORMAL_KERNEL_MODE (0x01U)
 #define RT_ALL_KERNEL_MODE (0x02U)
@@ -211,7 +211,7 @@ typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kerne
 /**
  * @ingroup rt_kernel
  * @brief SHAPE kernel type
-**/
+ **/
 #define RT_STATIC_SHAPE_KERNEL (0x00U)
 #define RT_DYNAMIC_SHAPE_KERNEL (0x01U)
 
@@ -229,7 +229,8 @@ typedef rtError_t (*rtKernelReportCallback)(rtStream_t stm, rtKernelInfo_t kerne
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDevBinaryRegister(const rtDevBinary_t *bin, void **hdl);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDevBinaryRegister(const rtDevBinary_t* bin, void** hdl);
 
 /**
  * @ingroup rt_kernel
@@ -238,7 +239,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDevBina
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryRegisterToFastMemory(void *hdl);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryRegisterToFastMemory(void* hdl);
 
 /**
  * @ingroup rt_kernel
@@ -247,7 +248,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryR
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDevBinaryUnRegister(void *hdl);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDevBinaryUnRegister(void* hdl);
 
 /**
  * @ingroup rt_kernel
@@ -257,7 +258,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDevBina
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDependencyRegister(void *mHandle, void *sHandle);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDependencyRegister(void* mHandle, void* sHandle);
 
 /**
  * @ingroup rt_kernel
@@ -270,8 +272,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDepende
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFunctionRegister(void *binHandle, const void *stubFunc, const char_t *stubName,
-                                     const void *kernelInfoExt, uint32_t funcMode);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFunctionRegister(
+    void* binHandle, const void* stubFunc, const char_t* stubName, const void* kernelInfoExt, uint32_t funcMode);
 
 /**
  * @ingroup rt_kernel
@@ -281,7 +283,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFunctio
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetFunctionByName(const char_t *stubName, void **stubFunc);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetFunctionByName(const char_t* stubName, void** stubFunc);
 
 /**
  * @ingroup rt_kernel
@@ -291,7 +294,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetFunc
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAddrByFun(const void *stubFunc, void **addr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetAddrByFun(const void* stubFunc, void** addr);
 /**
  * @ingroup rt_kernel
  * @brief query registered or not by stubName
@@ -299,7 +303,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAddr
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtQueryFunctionRegistered(const char_t *stubName);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtQueryFunctionRegistered(const char_t* stubName);
 
 /**
  * @ingroup rt_kernel
@@ -310,37 +315,39 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtQueryFu
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelConfigDump(uint32_t kind, uint32_t dumpSizePerBlock, uint32_t blockDim, void **dumpBaseAddr,
-                                     rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelConfigDump(
+    uint32_t kind, uint32_t dumpSizePerBlock, uint32_t blockDim, void** dumpBaseAddr, rtStream_t stm);
 
 /**
-* @ingroup rt_kernel
-* @brief get kernel address and prefetchCnt
-* @param [in] hdl           program for dynamic shape
-* @param [in] tilingKey     tilingKey for dynamic shape
-* @param [in] stubFunc      stubFunc for static shape
-* @param [in] flag          flag for distinguishing between dynamic shape and static shape
-* @param [out] addr         address of kernel function
-* @param [out] prefetchCnt  prefetchCnt of kernel function
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelGetAddrAndPrefCnt(void *hdl, const uint64_t tilingKey, const void * const stubFunc,
-                                            const uint32_t flag, void **addr, uint32_t *prefetchCnt);
+ * @ingroup rt_kernel
+ * @brief get kernel address and prefetchCnt
+ * @param [in] hdl           program for dynamic shape
+ * @param [in] tilingKey     tilingKey for dynamic shape
+ * @param [in] stubFunc      stubFunc for static shape
+ * @param [in] flag          flag for distinguishing between dynamic shape and static shape
+ * @param [out] addr         address of kernel function
+ * @param [out] prefetchCnt  prefetchCnt of kernel function
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelGetAddrAndPrefCnt(
+    void* hdl, const uint64_t tilingKey, const void* const stubFunc, const uint32_t flag, void** addr,
+    uint32_t* prefetchCnt);
 
 /**
-* @ingroup rt_kernel
-* @brief get kernel address and prefetchCnt
-* @param [in] hdl           program for dynamic shape
-* @param [in] tilingKey     tilingKey for dynamic shape
-* @param [in] stubFunc      stubFunc for static shape
-* @param [in] flag          flag for distinguishing between dynamic shape and static shape
-* @param [out] kernelInfo   address & prefetchCnt of kernel function
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelGetAddrAndPrefCntV2(void *hdl, const uint64_t tilingKey, const void * const stubFunc,
-                                              const uint32_t flag, rtKernelDetailInfo_t *kernelInfo);
+ * @ingroup rt_kernel
+ * @brief get kernel address and prefetchCnt
+ * @param [in] hdl           program for dynamic shape
+ * @param [in] tilingKey     tilingKey for dynamic shape
+ * @param [in] stubFunc      stubFunc for static shape
+ * @param [in] flag          flag for distinguishing between dynamic shape and static shape
+ * @param [out] kernelInfo   address & prefetchCnt of kernel function
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelGetAddrAndPrefCntV2(
+    void* hdl, const uint64_t tilingKey, const void* const stubFunc, const uint32_t flag,
+    rtKernelDetailInfo_t* kernelInfo);
 
 /**
  * @ingroup rt_kernel
@@ -354,8 +361,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelG
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunch(const void *stubFunc, uint32_t numBlocks, void *args, uint32_t argsSize,
-                                 rtSmDesc_t *smDesc, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunch(
+    const void* stubFunc, uint32_t numBlocks, void* args, uint32_t argsSize, rtSmDesc_t* smDesc, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -370,9 +377,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithHandle(void *hdl, const uint64_t tilingKey, uint32_t numBlocks,
-                                           rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm,
-                                           const void *kernelInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithHandle(
+    void* hdl, const uint64_t tilingKey, uint32_t numBlocks, rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc, rtStream_t stm,
+    const void* kernelInfo);
 
 /**
  * @ingroup rt_kernel
@@ -387,8 +394,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithHandleV2(void *hdl, const uint64_t tilingKey, uint32_t numBlocks,
-    rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithHandleV2(
+    void* hdl, const uint64_t tilingKey, uint32_t numBlocks, rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc, rtStream_t stm,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @ingroup rtKernelLaunchWithFlag
@@ -402,8 +410,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithFlag(const void *stubFunc, uint32_t numBlocks, rtArgsEx_t *argsInfo,
-                                         rtSmDesc_t *smDesc, rtStream_t stm, uint32_t flags);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithFlag(
+    const void* stubFunc, uint32_t numBlocks, rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc, rtStream_t stm, uint32_t flags);
 
 /**
  * @ingroup rtKernelLaunchWithFlag
@@ -418,8 +426,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithFlagV2(const void *stubFunc, uint32_t numBlocks, rtArgsEx_t *argsInfo,
-    rtSmDesc_t *smDesc, rtStream_t stm, uint32_t flags, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchWithFlagV2(
+    const void* stubFunc, uint32_t numBlocks, rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc, rtStream_t stm, uint32_t flags,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @ingroup rt_kernel(abandoned)
@@ -431,7 +440,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchEx(void *args, uint32_t argsSize, uint32_t flags, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtKernelLaunchEx(void* args, uint32_t argsSize, uint32_t flags, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel(in use)
@@ -444,8 +454,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelLaunchFwk(const char_t *opName, void *args, uint32_t argsSize, uint32_t flags,
-                                    rtStream_t rtStream);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtKernelLaunchFwk(const char_t* opName, void* args, uint32_t argsSize, uint32_t flags, rtStream_t rtStream);
 
 /**
  * @ingroup rtAicpuKernelLaunchWithFlag(in use)
@@ -459,9 +469,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelL
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAicpuKernelLaunchWithFlag(const rtKernelLaunchNames_t *launchNames, uint32_t numBlocks,
-                                              const rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm,
-                                              uint32_t flags);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAicpuKernelLaunchWithFlag(
+    const rtKernelLaunchNames_t* launchNames, uint32_t numBlocks, const rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc,
+    rtStream_t stm, uint32_t flags);
 
 /**
  * @ingroup rt_kernel
@@ -472,7 +482,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAicpuKe
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDatadumpInfoLoadWithFlag(const void *dumpInfo, const uint32_t length, const uint32_t flag);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDatadumpInfoLoadWithFlag(const void* dumpInfo, const uint32_t length, const uint32_t flag);
 
 /**
  * @ingroup rt_kernel
@@ -484,7 +495,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDatadum
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuGetFloatStatus(void *outputAddrPtr, uint64_t outputSize, uint32_t checkMode, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtNpuGetFloatStatus(void* outputAddrPtr, uint64_t outputSize, uint32_t checkMode, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -494,7 +506,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuGetF
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuClearFloatStatus(uint32_t checkMode, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtNpuClearFloatStatus(uint32_t checkMode, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -506,8 +519,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuClea
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuGetFloatDebugStatus(void *outputAddrPtr, uint64_t outputSize, uint32_t checkMode,
-                                           rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtNpuGetFloatDebugStatus(void* outputAddrPtr, uint64_t outputSize, uint32_t checkMode, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -517,7 +530,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuGetF
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuClearFloatDebugStatus(uint32_t checkMode, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtNpuClearFloatDebugStatus(uint32_t checkMode, rtStream_t stm);
 
 #ifndef __CLANG_CCE_RUNTIME_H__
 #define __CLANG_CCE_RUNTIME_H__
@@ -531,12 +545,14 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtNpuClea
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 #ifdef __cplusplus
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtConfigureCall(uint32_t numBlocks, rtSmDesc_t *smDesc = nullptr, rtStream_t stm = nullptr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtConfigureCall(uint32_t numBlocks, rtSmDesc_t* smDesc = nullptr, rtStream_t stm = nullptr);
 #else
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtConfigureCall(uint32_t numBlocks, rtSmDesc_t *smDesc, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtConfigureCall(uint32_t numBlocks, rtSmDesc_t* smDesc, rtStream_t stm);
 
 #endif
-#endif  // __CLANG_CCE_RUNTIME_H__
+#endif // __CLANG_CCE_RUNTIME_H__
 
 /**
  * @ingroup rt_kernel
@@ -547,7 +563,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtConfigu
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetupArgument(const void *args, uint32_t size, uint32_t offset);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetupArgument(const void* args, uint32_t size, uint32_t offset);
 
 /**
  * @ingroup rt_kernel
@@ -557,7 +574,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetupAr
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunch(const void *stubFunc);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunch(const void* stubFunc);
 
 /**
  * @ingroup rt_kernel
@@ -570,7 +587,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunch(
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelConfigTransArg(const void *ptr, uint64_t size, uint32_t flag, void **args);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtKernelConfigTransArg(const void* ptr, uint64_t size, uint32_t flag, void** args);
 
 /**
  * @ingroup rt_kernel
@@ -579,7 +597,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtKernelC
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetKernelReportCallback(rtKernelReportCallback callBack);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetKernelReportCallback(rtKernelReportCallback callBack);
 
 /**
  * @ingroup rt_kernel
@@ -589,7 +608,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetKern
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSubscribeReport(uint64_t threadId, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSubscribeReport(uint64_t threadId, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -602,7 +622,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSubscri
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCallbackLaunch(rtCallback_t callBackFunc, void *fnData, rtStream_t stm, bool isBlock);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtCallbackLaunch(rtCallback_t callBackFunc, void* fnData, rtStream_t stm, bool isBlock);
 
 /**
  * @ingroup rt_kernel
@@ -621,7 +642,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtProcess
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtUnSubscribeReport(uint64_t threadId, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtUnSubscribeReport(uint64_t threadId, rtStream_t stm);
 
 /**
  * @ingroup profiling_base
@@ -631,7 +653,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtUnSubsc
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStartOnlineProf(rtStream_t stm, uint32_t sampleNum);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtStartOnlineProf(rtStream_t stm, uint32_t sampleNum);
 
 /**
  * @ingroup profiling_base
@@ -651,7 +674,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStopOnl
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOnlineProfData(rtStream_t stm, rtProfDataInfo_t *pProfData, uint32_t profDataNum);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetOnlineProfData(rtStream_t stm, rtProfDataInfo_t* pProfData, uint32_t profDataNum);
 
 /**
  * @ingroup profiling_base
@@ -659,7 +683,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOnli
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStartADCProfiler(void **addr, uint32_t length);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStartADCProfiler(void** addr, uint32_t length);
 
 /**
  * @ingroup profiling_base
@@ -667,7 +691,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStartAD
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStopADCProfiler(void *addr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStopADCProfiler(void* addr);
 
 /**
  * @ingroup rt_kernel
@@ -679,8 +703,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtStopADC
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCalcLaunchArgsSize(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum,
-                               size_t *launchArgsSize);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtCalcLaunchArgsSize(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum, size_t* launchArgsSize);
 
 /**
  * @ingroup rt_kernel
@@ -693,8 +717,9 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCalcLaunchArgsS
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCreateLaunchArgs(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum,
-                             void* argsData, rtLaunchArgsHandle* argsHandle);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtCreateLaunchArgs(
+    size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum, void* argsData, rtLaunchArgsHandle* argsHandle);
 
 /**
  * @ingroup rt_kernel
@@ -722,7 +747,8 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtResetLaunchArgs
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAppendLaunchAddrInfo(rtLaunchArgsHandle argsHandle, void *addrInfo);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtAppendLaunchAddrInfo(rtLaunchArgsHandle argsHandle, void* addrInfo);
 
 /**
  * @ingroup rt_kernel
@@ -733,7 +759,8 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAppendLaunchAdd
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAppendLaunchHostInfo(rtLaunchArgsHandle argsHandle, size_t hostInfoSize, void **hostInfo);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtAppendLaunchHostInfo(rtLaunchArgsHandle argsHandle, size_t hostInfoSize, void** hostInfo);
 
 /**
  * @ingroup rt_kernel
@@ -743,18 +770,20 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtAppendLaunchHos
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryLoad(const rtDevBinary_t *bin, rtBinHandle *binHandle);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtBinaryLoad(const rtDevBinary_t* bin, rtBinHandle* binHandle);
 
 /**
  * @ingroup rt_kernel
  * @brief Find funcHandle based on binHandle and tilingKey.
  * @param [in] binHandle  funcHandle
-  * @param [in] tilingKey   tilingKey
+ * @param [in] tilingKey   tilingKey
  * @param [out] funcHandle   funcHandle
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryGetFunction(const rtBinHandle binHandle, const uint64_t tilingKey, rtFuncHandle *funcHandle);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtBinaryGetFunction(const rtBinHandle binHandle, const uint64_t tilingKey, rtFuncHandle* funcHandle);
 
 /**
  * @ingroup rt_kernel
@@ -775,8 +804,9 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryUnLoad(rt
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunchKernelByFuncHandle(rtFuncHandle funcHandle, uint32_t numBlocks, rtLaunchArgsHandle argsHandle,
-                                     rtStream_t stm);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtLaunchKernelByFuncHandle(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtLaunchArgsHandle argsHandle, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -789,8 +819,10 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunchKernelByF
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunchKernelByFuncHandleV2(rtFuncHandle funcHandle, uint32_t numBlocks, rtLaunchArgsHandle argsHandle,
-                                       rtStream_t stm, const rtTaskCfgInfo_t *cfgInfo);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtLaunchKernelByFuncHandleV2(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtLaunchArgsHandle argsHandle, rtStream_t stm,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @ingroup rt_kernel
@@ -800,7 +832,8 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunchKernelByF
  * @param [in] stm  associated stream
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetDeviceSatStatus(void * const outputAddrPtr, const uint64_t outputSize, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetDeviceSatStatus(void* const outputAddrPtr, const uint64_t outputSize, rtStream_t stm);
 
 /**
  * @ingroup rt_kernel
@@ -820,8 +853,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCleanDe
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetKernelBin(const char_t * const binFileName, char_t **const buffer, uint32_t *length);
-
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length);
 
 /**
  * @ingroup rt_kernel
@@ -833,8 +866,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetKern
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetBinBuffer(const rtBinHandle binHandle, const rtBinBufferType_t type, void **bin,
-                                 uint32_t *binSize);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetBinBuffer(const rtBinHandle binHandle, const rtBinBufferType_t type, void** bin, uint32_t* binSize);
 
 /**
  * @ingroup rt_kernel
@@ -843,7 +876,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetBinB
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeKernelBin(char_t * const buffer);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeKernelBin(char_t* const buffer);
 
 /**
  * @ingroup rt_kernel
@@ -853,7 +886,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeKer
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSubscribeHostFunc(uint64_t threadId, rtStream_t stream);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSubscribeHostFunc(uint64_t threadId, rtStream_t stream);
 
 /**
  * @ingroup rt_kernel
@@ -872,7 +906,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtProcess
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtUnSubscribeHostFunc(uint64_t threadId, rtStream_t stream);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtUnSubscribeHostFunc(uint64_t threadId, rtStream_t stream);
 
 /**
  * @ingroup rt_kernel
@@ -883,7 +918,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtUnSubsc
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryGetFunctionByName(const rtBinHandle binHandle, const char *kernelName, rtFuncHandle *funcHandle);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtBinaryGetFunctionByName(const rtBinHandle binHandle, const char* kernelName, rtFuncHandle* funcHandle);
 
 /**
  * @ingroup rt_kernel
@@ -894,7 +930,8 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryGetFuncti
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, rtBinHandle *binHandle);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtBinaryLoadWithoutTilingKey(const void* data, const uint64_t length, rtBinHandle* binHandle);
 
 /**
  * @ingroup rt_kernel
@@ -907,8 +944,10 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtBinaryLoadWitho
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunchKernelByFuncHandleV3(rtFuncHandle funcHandle, uint32_t numBlocks, const rtArgsEx_t * const argsInfo,
-                                       rtStream_t stm, const rtTaskCfgInfo_t * const cfgInfo);
+RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE)
+rtError_t rtLaunchKernelByFuncHandleV3(
+    rtFuncHandle funcHandle, uint32_t numBlocks, const rtArgsEx_t* const argsInfo, rtStream_t stm,
+    const rtTaskCfgInfo_t* const cfgInfo);
 
 /**
  * @ingroup rt_kernel
@@ -923,8 +962,9 @@ RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtLaunchKernelByF
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtVectorCoreKernelLaunchWithHandle(void *hdl, const uint64_t tilingKey, uint32_t numBlocks,
-    rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtVectorCoreKernelLaunchWithHandle(
+    void* hdl, const uint64_t tilingKey, uint32_t numBlocks, rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc, rtStream_t stm,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @ingroup rt_kernel
@@ -937,8 +977,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtVectorC
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtVectorCoreKernelLaunch(const void *stubFunc, uint32_t numBlocks, rtArgsEx_t *argsInfo,
-    rtSmDesc_t *smDesc, rtStream_t stm, uint32_t flags, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtVectorCoreKernelLaunch(
+    const void* stubFunc, uint32_t numBlocks, rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc, rtStream_t stm, uint32_t flags,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @brief Cache shape data for profiling in aclgraph
@@ -947,7 +988,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtVectorC
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtCacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize);
 
 /**
  * @brief get function attribute by attribute type.
@@ -957,12 +999,12 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtCacheLa
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t *attrValue);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t* attrValue);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_KERNEL_H
-
+#endif // CCE_RUNTIME_KERNEL_H

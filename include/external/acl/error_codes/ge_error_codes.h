@@ -71,6 +71,6 @@ static const uint32_t ACL_ERROR_GE_MODEL_EXECUTE_TIMEOUT = 545601U;
 static const uint32_t ACL_ERROR_GE_REDEPLOYING = 545602U;
 
 #ifdef __cplusplus
-}  // namespace ge
+} // namespace ge
 #endif
-#endif  // INC_EXTERNAL_GE_GE_ERROR_CODES_H_
+#endif // INC_EXTERNAL_GE_GE_ERROR_CODES_H_

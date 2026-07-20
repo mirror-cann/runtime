@@ -25,10 +25,10 @@ public:
     AttrValue() = delete;
     ~AttrValue() = default;
 
-    AttrValue(const AttrValue &) = delete;
-    AttrValue(AttrValue &&) = delete;
-    AttrValue &operator=(const AttrValue &) = delete;
-    AttrValue &operator=(AttrValue &&) = delete;
+    AttrValue(const AttrValue&) = delete;
+    AttrValue(AttrValue&&) = delete;
+    AttrValue& operator=(const AttrValue&) = delete;
+    AttrValue& operator=(AttrValue&&) = delete;
 
     /*
      * get string value of attr.
@@ -46,7 +46,7 @@ public:
      * attr add string value to list.
      * @param string: string value need to add to list
      */
-    void AddListString(const std::string &string);
+    void AddListString(const std::string& string);
 
     /*
      * get string list size of attr.
@@ -58,13 +58,13 @@ public:
      * set string value to attr.
      * @param string: string value need to set to attr
      */
-    void SetString(const std::string &string);
+    void SetString(const std::string& string);
 
     /*
      * set string list value to attr.
      * @param vector<std::string>: string list value need to set to attr
      */
-    void SetListString(const std::vector<std::string> &bytes);
+    void SetListString(const std::vector<std::string>& bytes);
 
     /*
      * get int value of attr.
@@ -100,7 +100,7 @@ public:
      * set int list value to attr.
      * @param vector<int64_t>: int list value need to set to attr
      */
-    void SetListInt(const std::vector<int64_t> &i);
+    void SetListInt(const std::vector<int64_t>& i);
 
     /*
      * get int list list value of attr.
@@ -112,7 +112,7 @@ public:
      * set int list list value to attr.
      * @param vector<vector<int64_t>>: int list list value need to set to attr
      */
-    void SetListListInt(const std::vector<std::vector<int64_t>> &i);
+    void SetListListInt(const std::vector<std::vector<int64_t>>& i);
 
     /*
      * get float value of attr.
@@ -148,7 +148,7 @@ public:
      * set float list value to attr.
      * @param vector<float>: float list value need to set to attr
      */
-    void SetListFloat(const std::vector<float> &f);
+    void SetListFloat(const std::vector<float>& f);
 
     /*
      * get bool value of attr.
@@ -184,7 +184,7 @@ public:
      * set bool list value to attr.
      * @param vector<bool>: bool list value need to set to attr
      */
-    void SetListBool(const std::vector<bool> &b);
+    void SetListBool(const std::vector<bool>& b);
 
     /*
      * get data type value of attr.
@@ -220,21 +220,21 @@ public:
      * set data type list value to attr.
      * @param vector<int32_t>: data type list value need to set to attr
      */
-    void SetListDataType(const std::vector<DataType> &type);
+    void SetListDataType(const std::vector<DataType>& type);
 
     /*
      * set tensor shape value to attr.
      * @param shape: tensor shape value need to set to attr
      * @return bool: true->success false->failed
      */
-    bool SetTensorShape(const TensorShape *shape);
+    bool SetTensorShape(const TensorShape* shape);
 
     /*
      * set tensor shape list value to attr.
      * @param vector<TensorShape>: tensor shape list value need to set to attr
      * @return uint32_t: success number
      */
-    uint32_t SetListTensorShape(const std::vector<TensorShape *> &shape);
+    uint32_t SetListTensorShape(const std::vector<TensorShape*>& shape);
 
     /*
      * attr add tensor shape value to list.
@@ -265,14 +265,14 @@ public:
      * @param tensor: tensor value need to set to attr
      * @return bool: true->success false->failed
      */
-    bool SetTensor(const Tensor *tensor);
+    bool SetTensor(const Tensor* tensor);
 
     /*
      * set tensor list value to attr.
      * @param vector<Tensor>: tensor list value need to set to attr
      * @return uint32_t: success number
      */
-    uint32_t SetListTensor(const std::vector<Tensor *> &tensor);
+    uint32_t SetListTensor(const std::vector<Tensor*>& tensor);
 
     /*
      * attr add tensor value to list.
@@ -299,8 +299,8 @@ public:
     int32_t ListTensorSize() const;
 
 private:
-    explicit AttrValue(AttrValueImpl *impl);
-    std::shared_ptr<AttrValueImpl> impl_ { nullptr };
+    explicit AttrValue(AttrValueImpl* impl);
+    std::shared_ptr<AttrValueImpl> impl_{nullptr};
 };
 } // namespace aicpu
 #endif // CPU_KERNEL_ATTR_VALUE_H

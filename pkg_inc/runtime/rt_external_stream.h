@@ -49,8 +49,8 @@ extern "C" {
  * @ingroup dvrt_stream
  * @brief stream type
  */
-#define RT_NORMAL_STREAM    (0x00U)
-#define RT_HUGE_STREAM      (0x01U)
+#define RT_NORMAL_STREAM (0x00U)
+#define RT_HUGE_STREAM (0x01U)
 
 /**
  * @ingroup dvrt_stream
@@ -61,7 +61,7 @@ extern "C" {
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtStreamCreateWithFlags(rtStream_t *stm, int32_t priority, uint32_t flags);
+RTS_API rtError_t rtStreamCreateWithFlags(rtStream_t* stm, int32_t priority, uint32_t flags);
 
 /**
  * @ingroup dvrt_stream
@@ -71,7 +71,7 @@ RTS_API rtError_t rtStreamCreateWithFlags(rtStream_t *stm, int32_t priority, uin
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtStreamGetSqid(const rtStream_t stm, uint32_t *sqId);
+RTS_API rtError_t rtStreamGetSqid(const rtStream_t stm, uint32_t* sqId);
 
 /**
  * @ingroup dvrt_stream
@@ -82,7 +82,7 @@ RTS_API rtError_t rtStreamGetSqid(const rtStream_t stm, uint32_t *sqId);
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtStreamGetCqid(const rtStream_t stm, uint32_t *cqId, uint32_t *logicCqId);
+RTS_API rtError_t rtStreamGetCqid(const rtStream_t stm, uint32_t* cqId, uint32_t* logicCqId);
 
 /*
  * @ingroup dvrt_stream
@@ -93,8 +93,8 @@ RTS_API rtError_t rtStreamGetCqid(const rtStream_t stm, uint32_t *cqId, uint32_t
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtDebugRegisterForStream(rtStream_t stm, uint32_t flag, const void *addr,
-                                           uint32_t *streamId, uint32_t *taskId);
+RTS_API rtError_t
+rtDebugRegisterForStream(rtStream_t stm, uint32_t flag, const void* addr, uint32_t* streamId, uint32_t* taskId);
 
 /**
  * @ingroup dvrt_stream
@@ -105,7 +105,7 @@ RTS_API rtError_t rtDebugRegisterForStream(rtStream_t stm, uint32_t flag, const 
  * @return RT_ERROR_NONE for complete
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtGetMaxStreamAndTask(uint32_t streamType, uint32_t *maxStrCount, uint32_t *maxTaskCount);
+RTS_API rtError_t rtGetMaxStreamAndTask(uint32_t streamType, uint32_t* maxStrCount, uint32_t* maxTaskCount);
 
 /**
  * @ingroup dvrt_stream
@@ -116,11 +116,10 @@ RTS_API rtError_t rtGetMaxStreamAndTask(uint32_t streamType, uint32_t *maxStrCou
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtStreamGetWorkspace(const rtStream_t stm, void **workaddr, size_t *worksize);
+RTS_API rtError_t rtStreamGetWorkspace(const rtStream_t stm, void** workaddr, size_t* worksize);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RT_EXTERNAL_STREAM_H
-
+#endif // CCE_RUNTIME_RT_EXTERNAL_STREAM_H

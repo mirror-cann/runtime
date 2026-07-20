@@ -30,7 +30,8 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
  * @param [in] devId    device to create context on
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxCreate(rtContext_t *createCtx, uint64_t flags, int32_t devId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsCtxCreate(rtContext_t* createCtx, uint64_t flags, int32_t devId);
 
 /**
  * @ingroup rts_context
@@ -54,7 +55,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxSet
  * @param [out] currentCtx   returned context
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetCurrent(rtContext_t *currentCtx);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetCurrent(rtContext_t* currentCtx);
 
 /**
  * @ingroup rts_context
@@ -63,7 +64,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGet
  * @param [in] configVal system option's value to be set
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxSetSysParamOpt(rtSysParamOpt configOpt, int64_t configVal);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsCtxSetSysParamOpt(rtSysParamOpt configOpt, int64_t configVal);
 
 /**
  * @ingroup rts_context
@@ -72,7 +74,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxSet
  * @param [out] configVal system option's value to be get
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetSysParamOpt(rtSysParamOpt configOpt, int64_t *configVal);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsCtxGetSysParamOpt(rtSysParamOpt configOpt, int64_t* configVal);
 
 /**
  * @ingroup rts_context
@@ -81,7 +84,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGet
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetCurrentDefaultStream(rtStream_t *stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetCurrentDefaultStream(rtStream_t* stm);
 
 /**
  * @ingroup rt_context
@@ -90,7 +93,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGet
  * @param [out] flags: Pointer to store flags
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsGetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsGetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active);
 
 /**
  * @ingroup rts_context
@@ -98,11 +102,11 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsGetPri
  * @param [out] overflowAddr current ctx's overflowAddr to be get
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetFloatOverflowAddr(void **overflowAddr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsCtxGetFloatOverflowAddr(void** overflowAddr);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RTS_CONTEXT_H
+#endif // CCE_RUNTIME_RTS_CONTEXT_H

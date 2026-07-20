@@ -28,36 +28,33 @@ extern "C" {
 #endif
 
 typedef enum aclplatformDevInfo {
-    ACL_PLATFORM_AICORE_CNT        = 0,
-    ACL_PLATFORM_AICORE_UB_SIZE    = 1,
-    ACL_PLATFORM_CUBE_CORE_CNT     = 2,
-    ACL_PLATFORM_VECTOR_CORE_CNT   = 3,
-    ACL_PLATFORM_L2_SIZE           = 4,
-    ACL_PLATFORM_MEMORY_SIZE       = 5,
-    ACL_PLATFORM_CUBE_FREQ         = 6,
-    ACL_PLATFORM_VEC_FREQ          = 7,
-    ACL_PLATFORM_BT_SIZE           = 8,
-    ACL_PLATFORM_L0_A_SIZE         = 9,
-    ACL_PLATFORM_L0_B_SIZE         = 10,
-    ACL_PLATFORM_L0_C_SIZE         = 11,
-    ACL_PLATFORM_L1_SIZE           = 12,
-    ACL_PLATFORM_SOC_VERSION       = 13,
-    ACL_PLATFORM_AIC_VERSION       = 14,
-    ACL_PLATFORM_NPU_ARCH          = 15,
-    ACL_PLATFORM_MEMORY_TYPE       = 16,
+    ACL_PLATFORM_AICORE_CNT = 0,
+    ACL_PLATFORM_AICORE_UB_SIZE = 1,
+    ACL_PLATFORM_CUBE_CORE_CNT = 2,
+    ACL_PLATFORM_VECTOR_CORE_CNT = 3,
+    ACL_PLATFORM_L2_SIZE = 4,
+    ACL_PLATFORM_MEMORY_SIZE = 5,
+    ACL_PLATFORM_CUBE_FREQ = 6,
+    ACL_PLATFORM_VEC_FREQ = 7,
+    ACL_PLATFORM_BT_SIZE = 8,
+    ACL_PLATFORM_L0_A_SIZE = 9,
+    ACL_PLATFORM_L0_B_SIZE = 10,
+    ACL_PLATFORM_L0_C_SIZE = 11,
+    ACL_PLATFORM_L1_SIZE = 12,
+    ACL_PLATFORM_SOC_VERSION = 13,
+    ACL_PLATFORM_AIC_VERSION = 14,
+    ACL_PLATFORM_NPU_ARCH = 15,
+    ACL_PLATFORM_MEMORY_TYPE = 16,
 } aclplatformDevInfo;
 
 typedef enum aclplatformCoreType {
-    ACL_PLATFORM_CORE_TYPE_AI_CORE     = 0,  /**< AI Core (cube core) */
-    ACL_PLATFORM_CORE_TYPE_VECTOR_CORE = 1,  /**< Vector core */
+    ACL_PLATFORM_CORE_TYPE_AI_CORE = 0,     /**< AI Core (cube core) */
+    ACL_PLATFORM_CORE_TYPE_VECTOR_CORE = 1, /**< Vector core */
 } aclplatformCoreType;
 
-aclError aclplatformGetDeviceInfo(aclplatformDevInfo infoType, char *value, uint32_t maxLen);
+aclError aclplatformGetDeviceInfo(aclplatformDevInfo infoType, char* value, uint32_t maxLen);
 
-aclError aclplatformGetInstructionInfo(aclplatformCoreType type,
-                                        const char *instruction,
-                                        char *value,
-                                        uint32_t maxLen);
+aclError aclplatformGetInstructionInfo(aclplatformCoreType type, const char* instruction, char* value, uint32_t maxLen);
 
 typedef enum aclplatformNpuArch {
     DAV_1001 = 1001,
@@ -103,4 +100,4 @@ typedef enum aclplatformLocalMemType {
 }
 #endif
 
-#endif  // INC_PKG_PLATFORM_ACL_PLATFORM_H_
+#endif // INC_PKG_PLATFORM_ACL_PLATFORM_H_

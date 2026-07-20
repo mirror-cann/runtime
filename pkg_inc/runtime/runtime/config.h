@@ -21,27 +21,27 @@ extern "C" {
 RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 
 #define PLAT_COMBINE(arch, chip, ver) (((arch) << 16U) | ((chip) << 8U) | (ver))
-#define PLAT_GET_ARCH(type)           (((type) >> 16U) & 0xffffU)
-#define PLAT_GET_CHIP(type)           (((type) >> 8U) & 0xffU)
-#define PLAT_GET_VER(type)            ((type) & 0xffU)
+#define PLAT_GET_ARCH(type) (((type) >> 16U) & 0xffffU)
+#define PLAT_GET_CHIP(type) (((type) >> 8U) & 0xffU)
+#define PLAT_GET_VER(type) ((type)&0xffU)
 
 typedef enum tagRtAicpuScheType {
     SCHEDULE_SOFTWARE = 0, /* Software Schedule */
     SCHEDULE_SOFTWARE_OPT,
-    SCHEDULE_HARDWARE, /* HWTS Schedule */
+    SCHEDULE_HARDWARE,     /* HWTS Schedule */
 } rtAicpuScheType;
 
 typedef enum tagRtDeviceCapabilityType {
-    RT_SCHEDULE_SOFTWARE = 0, // Software Schedule
+    RT_SCHEDULE_SOFTWARE = 0,     // Software Schedule
     RT_SCHEDULE_SOFTWARE_OPT,
-    RT_SCHEDULE_HARDWARE, // HWTS Schedule
+    RT_SCHEDULE_HARDWARE,         // HWTS Schedule
     RT_AICPU_BLOCKING_OP_NOT_SUPPORT,
     RT_AICPU_BLOCKING_OP_SUPPORT, // 1910/1980/51 ts support AICPU blocking operation
-    RT_MODE_NO_FFTS, // no ffts
-    RT_MODE_FFTS, // 81 get ffts work mode, ffts
-    RT_MODE_FFTS_PLUS, // 81 get ffts work mode, ffts plus
-    RT_DEV_CAP_SUPPORT, // Capability Support
-    RT_DEV_CAP_NOT_SUPPORT, // Capability not support
+    RT_MODE_NO_FFTS,              // no ffts
+    RT_MODE_FFTS,                 // 81 get ffts work mode, ffts
+    RT_MODE_FFTS_PLUS,            // 81 get ffts work mode, ffts plus
+    RT_DEV_CAP_SUPPORT,           // Capability Support
+    RT_DEV_CAP_NOT_SUPPORT,       // Capability not support
 } rtDeviceCapabilityType;
 
 typedef enum tagRtCubeFracMKNFp16 {
@@ -117,7 +117,7 @@ typedef enum tagRTLastErrLevel {
  * @param [in] aiCoreCnt
  * @return aiCoreCnt
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAiCoreCount(uint32_t *aiCoreCnt);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAiCoreCount(uint32_t* aiCoreCnt);
 
 /**
  * @ingroup
@@ -125,7 +125,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAiCo
  * @param [in] aiCpuCnt
  * @return aiCpuCnt
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAiCpuCount(uint32_t *aiCpuCnt);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetAiCpuCount(uint32_t* aiCpuCnt);
 
 /**
  * @ingroup
@@ -161,7 +161,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetOpEx
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpExecuteTimeOut(uint32_t * const timeout);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpExecuteTimeOut(uint32_t* const timeout);
 
 /**
  * @ingroup
@@ -170,8 +170,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpEx
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpTimeOutInterval(uint64_t *interval);
- 
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpTimeOutInterval(uint64_t* interval);
+
 /**
  * @ingroup
  * @brief set op execute task timeout.
@@ -180,7 +180,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpTi
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetOpExecuteTimeOutV2(uint64_t timeout, uint64_t *actualTimeout);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetOpExecuteTimeOutV2(uint64_t timeout, uint64_t* actualTimeout);
 
 /**
  * @ingroup
@@ -189,7 +190,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetOpEx
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpExecuteTimeoutV2(uint32_t *const timeout);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpExecuteTimeoutV2(uint32_t* const timeout);
 
 /**
  * @ingroup
@@ -199,7 +200,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetOpEx
  *      1:not found ini file, 2:error when reading ini, 3:Heterogenous value is not 1
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetIsHeterogenous(int32_t *heterogenous);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetIsHeterogenous(int32_t* heterogenous);
 
 /**
  * @ingroup

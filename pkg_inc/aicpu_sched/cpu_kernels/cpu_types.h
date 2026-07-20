@@ -54,30 +54,27 @@ enum DataType {
     DT_UINT2 = 32,          // uint2 type
     DT_COMPLEX32 = 33,      // complex32 type
     DT_HIFLOAT8 = 34,       // hifloat8 type
-    DT_FLOAT8_E5M2 = 35,     // float8_e5m2 type
-    DT_FLOAT8_E4M3FN = 36,   // float8_e4m3fn type
-    DT_FLOAT8_E8M0 = 37,     // float8_e8m0 type
-    DT_FLOAT6_E3M2 = 38,     // float6_e3m2 type
-    DT_FLOAT6_E2M3 = 39,     // float6_e2m3 type
-    DT_FLOAT4_E2M1 = 40,     // float4_e2m1 type
-    DT_FLOAT4_E1M2 = 41,     // float4_e1m2 type
+    DT_FLOAT8_E5M2 = 35,    // float8_e5m2 type
+    DT_FLOAT8_E4M3FN = 36,  // float8_e4m3fn type
+    DT_FLOAT8_E8M0 = 37,    // float8_e8m0 type
+    DT_FLOAT6_E3M2 = 38,    // float6_e3m2 type
+    DT_FLOAT6_E2M3 = 39,    // float6_e2m3 type
+    DT_FLOAT4_E2M1 = 40,    // float4_e2m1 type
+    DT_FLOAT4_E1M2 = 41,    // float4_e1m2 type
     DT_MAX                  // Mark the boundaries of data types
 };
 
 AICPU_VISIBILITY inline int GetSizeByDataType(DataType dataType)
 {
     static const std::map<DataType, int> sizeMap = {
-        { DT_FLOAT, 4 },       { DT_FLOAT16, 2 },       { DT_INT8, 1 },           { DT_INT16, 2 },
-        { DT_UINT16, 2 },      { DT_UINT8, 1 },         { DT_INT32, 4 },          { DT_INT64, 8 },
-        { DT_UINT32, 4 },      { DT_UINT64, 8 },        { DT_BOOL, 1 },           { DT_DOUBLE, 8 },
-        { DT_STRING, -1 },     { DT_DUAL_SUB_INT8, 1 }, { DT_DUAL_SUB_UINT8, 1 }, { DT_COMPLEX64, 8 },
-        { DT_COMPLEX128, 16 }, { DT_QINT8, 1 },         { DT_QINT16, 2 },         { DT_QINT32, 4 },
-        { DT_QUINT8, 1 },      { DT_QUINT16, 2 },       { DT_RESOURCE, -1 },      { DT_STRING_REF, -1 },
-        { DT_DUAL, 5 },        { DT_BFLOAT16, 2 },      { DT_UINT1,   1},         { DT_INT2,   1},
-        { DT_UINT2,   1},      { DT_INT4,   1},         { DT_COMPLEX32, 4 },      { DT_HIFLOAT8, 1},
-        { DT_FLOAT8_E4M3FN, 1},{ DT_FLOAT8_E5M2, 1},    { DT_FLOAT4_E2M1, 1},     { DT_FLOAT4_E1M2, 1},
-        { DT_FLOAT8_E8M0, 1}
-    };
+        {DT_FLOAT, 4},       {DT_FLOAT16, 2},     {DT_INT8, 1},          {DT_INT16, 2},         {DT_UINT16, 2},
+        {DT_UINT8, 1},       {DT_INT32, 4},       {DT_INT64, 8},         {DT_UINT32, 4},        {DT_UINT64, 8},
+        {DT_BOOL, 1},        {DT_DOUBLE, 8},      {DT_STRING, -1},       {DT_DUAL_SUB_INT8, 1}, {DT_DUAL_SUB_UINT8, 1},
+        {DT_COMPLEX64, 8},   {DT_COMPLEX128, 16}, {DT_QINT8, 1},         {DT_QINT16, 2},        {DT_QINT32, 4},
+        {DT_QUINT8, 1},      {DT_QUINT16, 2},     {DT_RESOURCE, -1},     {DT_STRING_REF, -1},   {DT_DUAL, 5},
+        {DT_BFLOAT16, 2},    {DT_UINT1, 1},       {DT_INT2, 1},          {DT_UINT2, 1},         {DT_INT4, 1},
+        {DT_COMPLEX32, 4},   {DT_HIFLOAT8, 1},    {DT_FLOAT8_E4M3FN, 1}, {DT_FLOAT8_E5M2, 1},   {DT_FLOAT4_E2M1, 1},
+        {DT_FLOAT4_E1M2, 1}, {DT_FLOAT8_E8M0, 1}};
     auto iter = sizeMap.find(dataType);
     if (iter == sizeMap.end()) {
         return -1;
@@ -147,9 +144,6 @@ enum Format {
     FORMAT_MAX = 0xff
 };
 
-enum DeviceType {
-    HOST,
-    DEVICE
-};
+enum DeviceType { HOST, DEVICE };
 } // namespace aicpu
 #endif // CPU_KERNEL_TYPES_H

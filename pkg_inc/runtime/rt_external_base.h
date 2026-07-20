@@ -26,8 +26,8 @@ extern "C" {
 #define RT_STATIC_ASSERT(cond, msg) _Static_assert(cond, msg)
 #endif
 #endif
-enum { rt_ext_base_common_begin_line_guard_ = __LINE__ };
-// === CCE_RUNTIME_BASE_COMMON_DATA BEGIN (同步维护：rt_external_base.h / base.h) ===
+enum { rt_ext_base_common_begin_line_guard_ = __LINE__ }; // CCE_RUNTIME_BASE_COMMON_DATA BEGIN
+// clang-format off
 #ifndef CCE_RUNTIME_BASE_COMMON_DATA
 #define CCE_RUNTIME_BASE_COMMON_DATA
 // If you need export the function of this library in Win32 dll, use __declspec(dllexport)
@@ -55,14 +55,14 @@ typedef double float64_t;
 #endif
 
 #if defined(__GNUC__) && (__GNUC__ >= 6)
-    #define RT_DEPRECATED __attribute__((deprecated))
-    #define RT_DEPRECATED_MESSAGE(message) __attribute__((deprecated(message)))
+#define RT_DEPRECATED __attribute__((deprecated))
+#define RT_DEPRECATED_MESSAGE(message) __attribute__((deprecated(message)))
 #elif defined(_MSC_VER)
-    #define RT_DEPRECATED __declspec(deprecated)
-    #define RT_DEPRECATED_MESSAGE(message) __declspec(deprecated(message))
+#define RT_DEPRECATED __declspec(deprecated)
+#define RT_DEPRECATED_MESSAGE(message) __declspec(deprecated(message))
 #else
-    #define RT_DEPRECATED
-    #define RT_DEPRECATED_MESSAGE(message)
+#define RT_DEPRECATED
+#define RT_DEPRECATED_MESSAGE(message)
 #endif
 
 /**
@@ -118,28 +118,28 @@ typedef enum schemModeType {
 } rtschemModeType_t;
 
 typedef enum tagSysParamOpt {
-    SYS_OPT_DETERMINISTIC = 0,   // value: 0:non-DETERMINISTIC, 1:DETERMINISTIC
-    SYS_OPT_ENABLE_DEBUG_KERNEL = 1,   // value: 0:disable, 1:enable
-    SYS_OPT_STRONG_CONSISTENCY = 2,   // value: 0:non-STRONG_CONSISTENCY, 1:STRONG_CONSISTENCY
+    SYS_OPT_DETERMINISTIC = 0,       // value: 0:non-DETERMINISTIC, 1:DETERMINISTIC
+    SYS_OPT_ENABLE_DEBUG_KERNEL = 1, // value: 0:disable, 1:enable
+    SYS_OPT_STRONG_CONSISTENCY = 2,  // value: 0:non-STRONG_CONSISTENCY, 1:STRONG_CONSISTENCY
     SYS_OPT_RESERVED = 3,
 } rtSysParamOpt;
 
 typedef enum tagSysParamValue {
-    SYS_OPT_DISABLE = 0,   // sys param opt disable
-    SYS_OPT_ENABLE = 1,   // sys param opt enable
+    SYS_OPT_DISABLE = 0, // sys param opt disable
+    SYS_OPT_ENABLE = 1,  // sys param opt enable
     SYS_OPT_MAX = 2,
 } rtSysParamValue;
 
 typedef struct tagRtTaskCfgInfo {
     uint8_t qos;
     uint8_t partId;
-    uint8_t schemMode; // rtschemModeType_t 0:normal;1:batch;2:sync
-    bool d2dCrossFlag; // d2dCrossFlag true:D2D_CROSS flase:D2D_INNER
+    uint8_t schemMode;        // rtschemModeType_t 0:normal;1:batch;2:sync
+    bool d2dCrossFlag;        // d2dCrossFlag true:D2D_CROSS flase:D2D_INNER
     uint32_t blockDimOffset;
-    uint8_t dumpflag; // dumpflag 0:fault 2:RT_KERNEL_DUMPFLAG 4:RT_FUSION_KERNEL_DUMPFLAG
-    uint8_t neverTimeout; // 1: never timeout, 0: will timeout
+    uint8_t dumpflag;         // dumpflag 0:fault 2:RT_KERNEL_DUMPFLAG 4:RT_FUSION_KERNEL_DUMPFLAG
+    uint8_t neverTimeout;     // 1: never timeout, 0: will timeout
     uint8_t rev[2];
-    uint32_t localMemorySize;  // for simt ub_size
+    uint32_t localMemorySize; // for simt ub_size
 } rtTaskCfgInfo_t;
 
 typedef struct tagRtLaunchTaskCfgInfo {
@@ -152,7 +152,7 @@ typedef struct tagRtLaunchTaskCfgInfo {
     uint8_t qos;
     uint8_t partId;
     uint8_t schemMode; // rtschemModeType_t 0:normal;1:batch;2:sync
-    uint8_t dumpflag; // dumpflag 0:fault 2:RT_KERNEL_DUMPFLAG
+    uint8_t dumpflag;  // dumpflag 0:fault 2:RT_KERNEL_DUMPFLAG
     uint32_t blockDimOffset;
 } LaunchTaskCfgInfo_t;
 
@@ -166,22 +166,22 @@ typedef enum tagRtSwitchDataType {
 } rtSwitchDataType_t;
 
 typedef enum tagRtStreamFlagType {
-    RT_HEAD_STREAM = 0,  // first stream
+    RT_HEAD_STREAM = 0, // first stream
     RT_INVALID_FLAG = 0x7FFFFFFF,
 } rtStreamFlagType_t;
 
 typedef enum tagRtLimitType {
-    RT_LIMIT_TYPE_LOW_POWER_TIMEOUT = 0,  // timeout for power down , ms
+    RT_LIMIT_TYPE_LOW_POWER_TIMEOUT = 0, // timeout for power down , ms
     RT_LIMIT_TYPE_SIMT_STACK_SIZE = 1,
     RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE = 2,
-    RT_LIMIT_TYPE_STACK_SIZE = 3,  // max stack size for each core, bytes
+    RT_LIMIT_TYPE_STACK_SIZE = 3, // max stack size for each core, bytes
     RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE = 4,
     RT_LIMIT_TYPE_SIMT_PRINTF_FIFO_SIZE = 5,
     RT_LIMIT_TYPE_RESERVED,
 } rtLimitType_t;
 
 typedef enum tagRtStreamlistType {
-    RT_NOTSINKED_STREAM = 0,  // not sinked stream
+    RT_NOTSINKED_STREAM = 0, // not sinked stream
     RT_STREAM_TYPE_MAX
 } rtStreamlistType_t;
 
@@ -202,7 +202,7 @@ typedef enum tagRtExceptionExpandType {
 } rtExceptionExpandType_t;
 
 typedef struct rtArgsSizeInfo {
-    void *infoAddr; /* info : atomicIndex|input num input offset|size|size */
+    void* infoAddr; /* info : atomicIndex|input num input offset|size|size */
     uint32_t atomicIndex;
 } rtArgsSizeInfo_t;
 
@@ -221,20 +221,20 @@ typedef enum {
  * @ingroup dvrt_base
  * @brief Program handle.
  */
-typedef void *rtBinHandle;
+typedef void* rtBinHandle;
 
 /**
  * @ingroup dvrt_base
  * @brief Kernel handle.
  */
-typedef void *rtFuncHandle;
+typedef void* rtFuncHandle;
 
 typedef struct rtExceptionKernelInfo {
     uint32_t binSize;
     rtBinHandle bin; // binHandle
     uint32_t kernelNameSize;
-    const char *kernelName;
-    const void *dfxAddr;
+    const char* kernelName;
+    const void* dfxAddr;
     uint16_t dfxSize;
     uint8_t reserved[2]; // 填补空间以保持四字节对齐
     int32_t elfDataFlag;
@@ -242,7 +242,7 @@ typedef struct rtExceptionKernelInfo {
 
 typedef struct rtExceptionArgsInfo {
     uint32_t argsize;
-    void *argAddr;
+    void* argAddr;
     rtArgsSizeInfo_t sizeInfo;
     rtExceptionKernelInfo_t exceptionKernelInfo; // 新增结构体，注意兼容性问题
 } rtExceptionArgsInfo_t;
@@ -255,7 +255,7 @@ typedef struct rtFftsPlusExDetailInfo {
 
 #define UB_DB_SEND_MAX_NUM (4)
 #define FUSION_SUB_TASK_MAX_CCU_NUM (8U)
-#define RT_CCU_SQE_ARGS_LEN     (13U)
+#define RT_CCU_SQE_ARGS_LEN (13U)
 #define MAX_CCU_EXCEPTION_INFO_SIZE (128U)
 
 typedef enum rtFusionType {
@@ -267,7 +267,7 @@ typedef struct rtUbInfo {
     uint8_t functionId;
     uint8_t dieId;
     uint16_t jettyId;
-    uint16_t piValue;  // directWqe类型下该字段无效
+    uint16_t piValue; // directWqe类型下该字段无效
 } rtUbInfo_t;
 
 typedef enum rtUbExType {
@@ -283,18 +283,18 @@ typedef struct rtUbExDetailInfo {
 } rtUbExDetailInfo_t;
 
 typedef struct rtCCUExDetailInfo {
-	uint8_t dieId;
+    uint8_t dieId;
     uint8_t missionId;
     uint16_t instrId;
     uint64_t args[RT_CCU_SQE_ARGS_LEN];
     uint8_t status;
- 	uint8_t subStatus;
- 	uint8_t panicLog[MAX_CCU_EXCEPTION_INFO_SIZE];
+    uint8_t subStatus;
+    uint8_t panicLog[MAX_CCU_EXCEPTION_INFO_SIZE];
 } rtCcuMissionDetailInfo_t;
 
 typedef struct rtMultiCCUExDetailInfo {
     uint16_t ccuMissionNum;
- 	rtCcuMissionDetailInfo_t missionInfo[FUSION_SUB_TASK_MAX_CCU_NUM];
+    rtCcuMissionDetailInfo_t missionInfo[FUSION_SUB_TASK_MAX_CCU_NUM];
 } rtMultiCCUExDetailInfo_t;
 
 typedef struct rtAicoreExDetailInfo {
@@ -303,10 +303,10 @@ typedef struct rtAicoreExDetailInfo {
 
 typedef struct rtAicpuExDetailInfo {
     rtFuncHandle funcHandle;
-    const char *soName;
-    const char *functionName;
-    const char *kernelName;
-    void *argAddr;
+    const char* soName;
+    const char* functionName;
+    const char* kernelName;
+    void* argAddr;
     uint32_t argsize;
 } rtAicpuExDetailInfo_t;
 
@@ -329,8 +329,8 @@ typedef struct rtExceptionExpandInfo {
         rtAicoreExDetailInfo_t aicoreInfo; // 关注下影响
         rtAicpuExDetailInfo_t aicpuInfo;
         rtUbExDetailInfo_t ubInfo;
-        rtMultiCCUExDetailInfo_t ccuInfo;       /* use for ccu task */
-        rtFusionExDetailInfo_t fusionInfo;      /* use for fusion task */
+        rtMultiCCUExDetailInfo_t ccuInfo;  /* use for ccu task */
+        rtFusionExDetailInfo_t fusionInfo; /* use for fusion task */
     } u;
 } rtExceptionExpandInfo_t;
 
@@ -347,20 +347,20 @@ typedef struct rtExceptionInfo {
  * @ingroup dvrt_base
  * @brief stream handle.
  */
-typedef void *rtStream_t;
+typedef void* rtStream_t;
 
 
-typedef void *rtMemcpyDesc_t;
+typedef void* rtMemcpyDesc_t;
 
 typedef void (*rtErrorCallback)(rtExceptionType);
 
-typedef void (*rtTaskFailCallback)(rtExceptionInfo_t *exceptionInfo);
+typedef void (*rtTaskFailCallback)(rtExceptionInfo_t* exceptionInfo);
 
 typedef void (*rtDeviceStateCallback)(uint32_t devId, bool isOpen);
 
 typedef void (*rtStreamStateCallback)(rtStream_t stm, const bool isCreate);
 
-typedef void (*rtOpExceptionCallback)(rtExceptionInfo_t *exceptionInfo, void *userData);
+typedef void (*rtOpExceptionCallback)(rtExceptionInfo_t* exceptionInfo, void* userData);
 
 /**
  * @ingroup profiling_base
@@ -368,55 +368,55 @@ typedef void (*rtOpExceptionCallback)(rtExceptionInfo_t *exceptionInfo, void *us
  * @brief data: data swtich or reporter function
  * @brief dataLen: length of data
  */
-typedef rtError_t (*rtProfCtrlHandle)(uint32_t dataType, void *data, uint32_t dataLen);
+typedef rtError_t (*rtProfCtrlHandle)(uint32_t dataType, void* data, uint32_t dataLen);
 
 /**
  * @ingroup dvrt_base
  * @brief launch args handle.
  */
-typedef void *rtLaunchArgsHandle;
+typedef void* rtLaunchArgsHandle;
 
 /**
  * @ingroup dvrt_base
  * @brief args handle.
  */
-typedef void *rtArgsHandle;
+typedef void* rtArgsHandle;
 
 /**
  * @ingroup dvrt_base
  * @brief para handle.
  */
-typedef void *rtParaHandle;
+typedef void* rtParaHandle;
 
 /**
  * @ingroup dvrt_base
  * @brief runtime event handle.
  */
-typedef void *rtEvent_t;
+typedef void* rtEvent_t;
 
 /**
  * @ingroup dvrt_base
  * @brief label handle.
  */
-typedef void *rtLabel_t;
+typedef void* rtLabel_t;
 
 /**
  * @ingroup dvrt_base
  * @brief model handle.
  */
-typedef void *rtModel_t;
+typedef void* rtModel_t;
 
 /**
  * @ingroup dvrt_base
  * @brief mem handle.
  */
-typedef void *rtMemHandle;
+typedef void* rtMemHandle;
 
 /**
  * @ingroup dvrt_base
  * @brief task group handle.
  */
-typedef void *rtTaskGrp_t;
+typedef void* rtTaskGrp_t;
 
 #define RT_PROF_MAX_DEV_NUM 64
 
@@ -424,18 +424,18 @@ typedef void *rtTaskGrp_t;
 #define PARAM_LEN_MAX 4095
 typedef struct rtCommandHandleParams {
     uint32_t pathLen;
-    uint32_t storageLimit;  // MB
+    uint32_t storageLimit; // MB
     uint32_t profDataLen;
     char_t path[PATH_LEN_MAX + 1];
     char_t profData[PARAM_LEN_MAX + 1];
 } rtCommandHandleParams_t;
 
 /**
- * @brief whitelisted ssid and pid 
+ * @brief whitelisted ssid and pid
  */
 typedef struct {
     uint32_t sdid; // whitelisted server device id
-    int32_t *pid;  // whitelisted pid array
+    int32_t* pid;  // whitelisted pid array
     size_t num;    // length of pid array
 } rtServerPid;
 
@@ -473,7 +473,7 @@ typedef enum {
  * @return RT_ERROR_NONE for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API rtError_t rtProfSetProSwitch(void *data, uint32_t len);
+RTS_API rtError_t rtProfSetProSwitch(void* data, uint32_t len);
 
 /**
  * @ingroup profiling_base
@@ -489,8 +489,8 @@ RTS_API rtError_t rtProfRegisterCtrlCallback(uint32_t moduleId, rtProfCtrlHandle
  * @ingroup dvrt_base
  * @brief notify handle.
  */
-typedef void *rtNotify_t;
-typedef void *rtCntNotify_t;
+typedef void* rtNotify_t;
+typedef void* rtCntNotify_t;
 
 /**
  * @ingroup dvrt_base
@@ -500,17 +500,17 @@ typedef void *rtCntNotify_t;
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for input null ptr
  */
-RTS_API rtError_t rtGetTaskIdAndStreamID(uint32_t *taskId, uint32_t *streamId);
+RTS_API rtError_t rtGetTaskIdAndStreamID(uint32_t* taskId, uint32_t* streamId);
 
 #define RT_PROCESS_SIGN_LENGTH (49)
 
 typedef enum tagRtDevDrvProcessType {
-    RT_DEVDRV_PROCESS_CP1 = 0,   /* aicpu_scheduler */
-    RT_DEVDRV_PROCESS_CP2,       /* custom_process */
-    RT_DEVDRV_PROCESS_DEV_ONLY,  /* TDT */
-    RT_DEVDRV_PROCESS_QS,        /* queue_scheduler */
-    RT_DEVDRV_PROCESS_HCCP,      /* hccp server */
-    RT_DEVDRV_PROCESS_USER,      /* user proc, can bind many on host or device */
+    RT_DEVDRV_PROCESS_CP1 = 0,  /* aicpu_scheduler */
+    RT_DEVDRV_PROCESS_CP2,      /* custom_process */
+    RT_DEVDRV_PROCESS_DEV_ONLY, /* TDT */
+    RT_DEVDRV_PROCESS_QS,       /* queue_scheduler */
+    RT_DEVDRV_PROCESS_HCCP,     /* hccp server */
+    RT_DEVDRV_PROCESS_USER,     /* user proc, can bind many on host or device */
     RT_DEVDRV_PROCESS_CPTYPE_MAX
 } rtDevDrvProcessType_t;
 
@@ -556,8 +556,8 @@ RTS_API rtError_t rtUnbindHostPid(rtBindHostpidInfo info);
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API rtError_t rtQueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t *vfId, uint32_t *hostPid,
-    uint32_t *cpType);
+RTS_API rtError_t
+rtQueryProcessHostPid(int32_t pid, uint32_t* chipId, uint32_t* vfId, uint32_t* hostPid, uint32_t* cpType);
 
 /**
  * @ingroup dvrt_base
@@ -567,7 +567,7 @@ RTS_API rtError_t rtQueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t 
  * @param [out] NA
  * @return RT_ERROR_NONE for ok
  */
-RTS_API rtError_t rtRegTaskFailCallbackByModule(const char_t *moduleName, rtTaskFailCallback callback);
+RTS_API rtError_t rtRegTaskFailCallbackByModule(const char_t* moduleName, rtTaskFailCallback callback);
 
 /**
  * @ingroup dvrt_base
@@ -580,9 +580,10 @@ RTS_API rtError_t rtRegTaskFailCallbackByModule(const char_t *moduleName, rtTask
  */
 RTS_API rtError_t rtGetSocSpec(const char* label, const char* key, char* val, const uint32_t maxLen);
 #endif // CCE_RUNTIME_BASE_COMMON_DATA
-// === CCE_RUNTIME_BASE_COMMON_DATA END ===
-enum { rt_ext_base_common_end_line_guard_ = __LINE__ };
-RT_STATIC_ASSERT(((rt_ext_base_common_end_line_guard_ - rt_ext_base_common_begin_line_guard_) == 555),
+// clang-format on
+enum { rt_ext_base_common_end_line_guard_ = __LINE__ }; // CCE_RUNTIME_BASE_COMMON_DATA END
+RT_STATIC_ASSERT(
+    ((rt_ext_base_common_end_line_guard_ - rt_ext_base_common_begin_line_guard_) == 555),
     "Inside CCE_RUNTIME_BASE_COMMON_DATA is the data shared between rt_external_base.h and base.h. "
     "Adding data structures is not allowed; please add them outside the macro definition.");
 
@@ -615,16 +616,13 @@ typedef enum {
     RT_FUNCTION_TYPE_BLOCK_DIM_INFO = 15U,
     RT_FUNCTION_TYPE_PARAM_SUMMARY = 16U,
     RT_FUNCTION_TYPE_PARAM_INFO = 17U,
-    RT_FUNCTION_TYPE_SCHED_MODE_INFO  = 18U,
+    RT_FUNCTION_TYPE_SCHED_MODE_INFO = 18U,
 } rtFunctionMetaType;
 
-typedef enum tagRtXpuDevType {
-    RT_DEV_TYPE_DPU = 0,
-    RT_DEV_TYPE_REV
-} rtXpuDevType;
+typedef enum tagRtXpuDevType { RT_DEV_TYPE_DPU = 0, RT_DEV_TYPE_REV } rtXpuDevType;
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RT_EXTERNAL_BASE_H
+#endif // CCE_RUNTIME_RT_EXTERNAL_BASE_H

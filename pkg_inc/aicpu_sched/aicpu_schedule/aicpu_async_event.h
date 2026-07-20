@@ -15,8 +15,8 @@
 #include "aicpu_context.h"
 
 namespace aicpu {
-using NotifyFunc = std::function<void(void *param, const uint32_t paramLen)>;
-using EventProcessCallBack = std::function<void(void *param)>;
+using NotifyFunc = std::function<void(void* param, const uint32_t paramLen)>;
+using EventProcessCallBack = std::function<void(void* param)>;
 
 struct AsyncNotifyInfo {
     uint8_t waitType;
@@ -39,20 +39,20 @@ public:
     /**
      * Get the unique object of this class
      */
-    static AsyncEventManager &GetInstance();
+    static AsyncEventManager& GetInstance();
 
     /**
      * Register notify callback function
      * @param notify wait notify callback function
      */
-    void Register(const NotifyFunc &notify);
+    void Register(const NotifyFunc& notify);
 
     /**
      * Notify wait task
      * @param notifyParam notify param info
      * @param paramLen notifyParam len
      */
-    void NotifyWait(void * const notifyParam, const uint32_t paramLen);
+    void NotifyWait(void* const notifyParam, const uint32_t paramLen);
 
     /**
      * Register Event callback function, async op call
@@ -62,8 +62,8 @@ public:
      * @param times Callback execute times
      * @return whether register success
      */
-    bool RegEventCb(const uint32_t eventId, const uint32_t subEventId,
-                    const EventProcessCallBack &cb, const int32_t times = 1);
+    bool RegEventCb(
+        const uint32_t eventId, const uint32_t subEventId, const EventProcessCallBack& cb, const int32_t times = 1);
 
     /**
      * Unregister Event callback function, async op call
@@ -78,27 +78,27 @@ public:
      * @param subEventId queue id
      * @param param event param
      */
-    void ProcessEvent(const uint32_t eventId, const uint32_t subEventId, void * const param = nullptr);
+    void ProcessEvent(const uint32_t eventId, const uint32_t subEventId, void* const param = nullptr);
 
-    bool RegOpEventCb(const uint32_t eventId, const uint32_t subEventId, const EventProcessCallBack &cb) const;
+    bool RegOpEventCb(const uint32_t eventId, const uint32_t subEventId, const EventProcessCallBack& cb) const;
 
     void UnregOpEventCb(const uint32_t eventId, const uint32_t subEventId) const;
 
-    void ProcessOpEvent(const uint32_t eventId, const uint32_t subEventId, void * const param) const;
+    void ProcessOpEvent(const uint32_t eventId, const uint32_t subEventId, void* const param) const;
 
 private:
     AsyncEventManager();
     ~AsyncEventManager();
 
-    AsyncEventManager(const AsyncEventManager &) = delete;
-    AsyncEventManager &operator = (const AsyncEventManager &) = delete;
-    AsyncEventManager(AsyncEventManager &&) = delete;
-    AsyncEventManager &operator = (AsyncEventManager &&) = delete;
+    AsyncEventManager(const AsyncEventManager&) = delete;
+    AsyncEventManager& operator=(const AsyncEventManager&) = delete;
+    AsyncEventManager(AsyncEventManager&&) = delete;
+    AsyncEventManager& operator=(AsyncEventManager&&) = delete;
 
     // wait notify funciton
     NotifyFunc notifyFunc_;
 };
-}  // namespace aicpu
+} // namespace aicpu
 
 #ifdef __cplusplus
 extern "C" {
@@ -108,7 +108,7 @@ extern "C" {
  * @param notifyParam notify info
  * @param paramLen
  */
-__attribute__((weak)) void AicpuNotifyWait(void *notifyParam, const uint32_t paramLen);
+__attribute__((weak)) void AicpuNotifyWait(void* notifyParam, const uint32_t paramLen);
 
 /**
  * Register Event callback function, async op call
@@ -117,8 +117,8 @@ __attribute__((weak)) void AicpuNotifyWait(void *notifyParam, const uint32_t par
  * @param cb Event callback function
  * @return whether register success
  */
-__attribute__((weak)) bool AicpuRegEventCb(const uint32_t eventId,
-    const uint32_t subEventId, const aicpu::EventProcessCallBack &cb);
+__attribute__((weak)) bool AicpuRegEventCb(
+    const uint32_t eventId, const uint32_t subEventId, const aicpu::EventProcessCallBack& cb);
 
 /**
  * Register Event callback function, async op call
@@ -128,8 +128,8 @@ __attribute__((weak)) bool AicpuRegEventCb(const uint32_t eventId,
  * @param times Callback execute times
  * @return whether register success
  */
-__attribute__((weak)) bool AicpuRegEventCbWithTimes(const uint32_t eventId, const uint32_t subEventId,
-    const aicpu::EventProcessCallBack &cb, const int32_t times);
+__attribute__((weak)) bool AicpuRegEventCbWithTimes(
+    const uint32_t eventId, const uint32_t subEventId, const aicpu::EventProcessCallBack& cb, const int32_t times);
 
 /**
  * Unregister Event callback function, async op call
@@ -139,11 +139,11 @@ __attribute__((weak)) bool AicpuRegEventCbWithTimes(const uint32_t eventId, cons
 __attribute__((weak)) void AicpuUnregEventCb(const uint32_t eventId, const uint32_t subEventId);
 
 __attribute__((weak)) __attribute__((visibility("default"))) bool AicpuRegOpEventCb(
-    const uint32_t eventId, const uint32_t subEventId, const aicpu::EventProcessCallBack &cb);
+    const uint32_t eventId, const uint32_t subEventId, const aicpu::EventProcessCallBack& cb);
 
 __attribute__((weak)) __attribute__((visibility("default"))) void AicpuUnregOpEventCb(
     const uint32_t eventId, const uint32_t subEventId);
 #ifdef __cplusplus
 }
 #endif
-#endif  // AICPU_ASYNC_EVENT_H_
+#endif // AICPU_ASYNC_EVENT_H_

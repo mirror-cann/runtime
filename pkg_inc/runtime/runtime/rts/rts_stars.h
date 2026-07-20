@@ -24,9 +24,10 @@ extern "C" {
 RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 
 typedef struct {
-    uint8_t isAddr;           // 0: value, 1: addr
-    uint8_t valueOrAddr[8];   // 当isAddr=0，请根据dataType填充相应字节数，如fp16, bf16填充前2个字节;fp32，uint32, int32，则填充前4个字节; uint64, int64则填充8个字节。当isAddr=1时，则填充8字节的地址值
-    uint8_t size;             // 对valueOrAddr实际填充的字节数
+    uint8_t isAddr; // 0: value, 1: addr
+    uint8_t valueOrAddr[8]; // 当isAddr=0，请根据dataType填充相应字节数，如fp16, bf16填充前2个字节;fp32，uint32,
+                            // int32，则填充前4个字节; uint64, int64则填充8个字节。当isAddr=1时，则填充8字节的地址值
+    uint8_t size; // 对valueOrAddr实际填充的字节数
     uint8_t rsv[6];
 } rtRandomParaInfo_t;
 
@@ -48,10 +49,10 @@ typedef struct {
 } rtNormalDisInfo_t;
 
 typedef enum {
-    RT_RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK = 0, // dropout bitmask
+    RT_RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK = 0,  // dropout bitmask
     RT_RANDOM_NUM_FUNC_TYPE_UNIFORM_DIS,          // 均匀分布
     RT_RANDOM_NUM_FUNC_TYPE_NORMAL_DIS,           // 正态分布
-    RT_RANDOM_NUM_FUNC_TYPE_TRUNCATED_NORMAL_DIS,  // 截断正态分布
+    RT_RANDOM_NUM_FUNC_TYPE_TRUNCATED_NORMAL_DIS, // 截断正态分布
     RT_RANDOM_NUM_FUNC_TYPE_MAX
 } rtRandomNumFuncType;
 
@@ -70,17 +71,17 @@ typedef struct {
     rtRandomNumFuncType funcType;
     union {
         rtDropoutBitMaskInfo_t dropoutBitmaskInfo; // for dropout bitmask
-        rtUniformDisInfo_t uniformDisInfo; // 均匀分布
-        rtNormalDisInfo_t normalDisInfo; // 正态分布、截断正态分布
+        rtUniformDisInfo_t uniformDisInfo;         // 均匀分布
+        rtNormalDisInfo_t normalDisInfo;           // 正态分布、截断正态分布
     } paramInfo;
 } rtRandomNumFuncParaInfo_t;
 
 typedef struct {
     rtRandomNumDataType dataType;
     rtRandomNumFuncParaInfo_t randomNumFuncParaInfo;
-    void *randomParaAddr;  // 判断是否为空指针
-    void *randomResultAddr;   // GE申请内存
-    void *randomCounterAddr;  // GE申请内存
+    void* randomParaAddr;    // 判断是否为空指针
+    void* randomResultAddr;  // GE申请内存
+    void* randomCounterAddr; // GE申请内存
     rtRandomParaInfo_t randomSeed;
     rtRandomParaInfo_t randomNum;
     uint8_t rsv[8];
@@ -94,7 +95,8 @@ typedef struct {
  * @param [in] reserve reserve param
  * @return RT_ERROR_NONE for ok, others failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, const rtStream_t stm, void *reserve);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t* taskInfo, const rtStream_t stm, void* reserve);
 
 /**
  * @ingroup rts_stars
@@ -104,7 +106,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLaunch
  * @param [in] flag         flag
  * @return RT_ERROR_NONE for ok, others failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLaunchBarrierTask(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsLaunchBarrierTask(rtBarrierTaskInfo_t* taskInfo, rtStream_t stm, uint32_t flag);
 
 /**
  * @ingroup rt_stars
@@ -114,11 +117,12 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLaunch
  * @param [in] pointedAddr : the device virtual addr for write value sqe, user should alloc 64B(sqe' size) for that
  * @return RT_ERROR_NONE for ok, others failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtWriteValuePtr(void * const writeValueInfo, rtStream_t const stm, void * const pointedAddr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtWriteValuePtr(void* const writeValueInfo, rtStream_t const stm, void* const pointedAddr);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RTS_STARS_H
+#endif // CCE_RUNTIME_RTS_STARS_H

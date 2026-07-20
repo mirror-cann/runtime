@@ -28,7 +28,7 @@ public:
      * @param shape: tensor shape value need to set to tensor
      * @return bool: true->success, false->failed
      */
-    bool SetTensorShape(const TensorShape *shape);
+    bool SetTensorShape(const TensorShape* shape);
 
     /*
      * get tensor shape value of tensor.
@@ -52,13 +52,13 @@ public:
      * set data ptr to tensor.
      * @param addr: tensor data ptr
      */
-    void SetData(void *addr);
+    void SetData(void* addr);
 
     /*
      * get data ptr of tensor.
      * @return void *: tensor data ptr
      */
-    void *GetData() const;
+    void* GetData() const;
 
     /*
      * set data size to tensor.
@@ -85,8 +85,8 @@ public:
     int64_t NumElements() const;
 
 private:
-    explicit Tensor(TensorImpl *impl);
-    std::shared_ptr<TensorImpl> impl_ { nullptr };
+    explicit Tensor(TensorImpl* impl);
+    std::shared_ptr<TensorImpl> impl_{nullptr};
 };
 } // namespace aicpu
 #endif // CPU_KERNEL_TENSOR_H

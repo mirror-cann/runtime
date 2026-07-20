@@ -9,8 +9,33 @@ repos:
           (?x)^(
             docs
             | example
-            | include
-            | pkg_inc
+            | include/external/acl/(?:
+              acl_prof
+              | acl_rt
+              | acl_rt_allocator
+              | acl_tdt
+              | acl_tdt_queue
+            )\.h
+            | include(?:
+              /(?!
+                (?:
+                  external
+                  | tsd_client
+                )(?:/|$)
+              )
+              | $
+            )
+            | pkg_inc(?:
+              /(?!
+                (?:
+                  aicpu_sched
+                  | queue_schedule
+                  | runtime
+                  | tsd
+                )(?:/|$)
+              )
+              | $
+            )
             | scripts
             | src/(
               aicpu_sched

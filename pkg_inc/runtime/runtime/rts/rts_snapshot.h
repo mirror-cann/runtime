@@ -18,11 +18,11 @@ extern "C" {
 
 RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 
-typedef enum { 
-    RT_PROCESS_STATE_RUNNING = 0, 
-    RT_PROCESS_STATE_LOCKED, 
+typedef enum {
+    RT_PROCESS_STATE_RUNNING = 0,
+    RT_PROCESS_STATE_LOCKED,
     RT_PROCESS_STATE_BACKED_UP,
-    RT_PROCESS_STATE_MAX 
+    RT_PROCESS_STATE_MAX
 } rtProcessState;
 
 typedef enum {
@@ -58,7 +58,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapSho
  *   RT_PROCESS_STATE_LOCKED : RTS API locks are taken so further RTS API calls will block
  * @return ACL_RT_SUCCESS for ok, others failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapShotProcessGetState(rtProcessState *state);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapShotProcessGetState(rtProcessState* state);
 
 /**
  * @ingroup rts_snapshot
@@ -96,7 +96,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapSho
  *        This can be NULL if no additional data is needed.
  * @return ACL_RT_SUCCESS for ok, others failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args);
 
 /**
  * @ingroup rts_snapshot
@@ -118,7 +119,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapSho
  *        Must not be NULL.
  * @return ACL_RT_SUCCESS for ok, others failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapShotCallBack callback);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapShotCallBack callback);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)

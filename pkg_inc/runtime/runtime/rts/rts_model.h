@@ -25,33 +25,29 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
 #define RT_MODEL_STREAM_FLAG_HEAD 0x0U // first stream
 #define RT_MODEL_STREAM_FLAG_DEFAULT 0x7FFFFFFFU
 
-typedef enum {
-    RT_UPDATE_DSA_TASK = 1,
-    RT_UPDATE_AIC_AIV_TASK,
-    RT_UPDATE_MAX
-} rtUpdateTaskAttrId;
+typedef enum { RT_UPDATE_DSA_TASK = 1, RT_UPDATE_AIC_AIV_TASK, RT_UPDATE_MAX } rtUpdateTaskAttrId;
 
 typedef struct {
-   void *srcAddr;
-   size_t size;
-   uint32_t rsv[4];
+    void* srcAddr;
+    size_t size;
+    uint32_t rsv[4];
 } rtDsaTaskUpdateAttr_t;
 
 typedef struct {
-  void *binHandle; // program handle
-  void *funcEntryAddr;
-  void *blockDimAddr;
-  uint32_t rsv[4];
+    void* binHandle; // program handle
+    void* funcEntryAddr;
+    void* blockDimAddr;
+    uint32_t rsv[4];
 } rtAicAivTaskUpdateAttr_t;
 
 typedef union {
-  rtDsaTaskUpdateAttr_t dsaTaskAttr;
-  rtAicAivTaskUpdateAttr_t aicAivTaskAttr;
+    rtDsaTaskUpdateAttr_t dsaTaskAttr;
+    rtAicAivTaskUpdateAttr_t aicAivTaskAttr;
 } rtUpdateTaskAttrVal_t;
 
 typedef struct {
-   rtUpdateTaskAttrId id;
-   rtUpdateTaskAttrVal_t val;
+    rtUpdateTaskAttrId id;
+    rtUpdateTaskAttrVal_t val;
 } rtTaskUpdateCfg_t;
 
 /**
@@ -64,7 +60,8 @@ typedef struct {
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLaunchUpdateTask(rtStream_t destStm, uint32_t destTaskId, rtStream_t stm, rtTaskUpdateCfg_t *cfg);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsLaunchUpdateTask(rtStream_t destStm, uint32_t destTaskId, rtStream_t stm, rtTaskUpdateCfg_t* cfg);
 
 /**
  * @ingroup rts_model
@@ -74,7 +71,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLaunch
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelCreate(rtModel_t *mdl, uint32_t flag);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelCreate(rtModel_t* mdl, uint32_t flag);
 
 /**
  * @ingroup rts_model
@@ -85,7 +82,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelC
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelBindStream(rtModel_t mdl, rtStream_t stm, uint32_t flag);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsModelBindStream(rtModel_t mdl, rtStream_t stm, uint32_t flag);
 
 /**
  * @ingroup rts_model
@@ -105,7 +103,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsEndGra
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelLoadComplete(rtModel_t mdl, void* reserve);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsModelLoadComplete(rtModel_t mdl, void* reserve);
 
 /**
  * @ingroup rts_model
@@ -115,7 +114,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelL
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelUnbindStream(rtModel_t mdl, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsModelUnbindStream(rtModel_t mdl, rtStream_t stm);
 
 /**
  * @ingroup rts_model
@@ -144,7 +144,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelE
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelExecuteAsync(rtModel_t mdl, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsModelExecuteAsync(rtModel_t mdl, rtStream_t stm);
 
 /**
  * @ingroup rts_label
@@ -153,7 +154,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelE
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelCreate(rtLabel_t *lbl);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelCreate(rtLabel_t* lbl);
 
 /**
  * @ingroup rts_label
@@ -173,7 +174,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelD
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelSwitchListCreate(rtLabel_t *labels, size_t num, void **labelList);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsLabelSwitchListCreate(rtLabel_t* labels, size_t num, void** labelList);
 
 /**
  * @ingroup rts_label
@@ -182,7 +184,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelS
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelSwitchListDestroy(void *labelList);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelSwitchListDestroy(void* labelList);
 
 /**
  * @ingroup rts_label
@@ -204,7 +206,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelS
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelSwitchByIndex(void *ptr, uint32_t maxValue, void *labelInfoPtr, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsLabelSwitchByIndex(void* ptr, uint32_t maxValue, void* labelInfoPtr, rtStream_t stm);
 
 /**
  * @ingroup rt_model
@@ -214,7 +217,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsLabelS
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelSetName(rtModel_t mdl, const char_t *mdlName);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsModelSetName(rtModel_t mdl, const char_t* mdlName);
 
 /**
  * @ingroup rt_model
@@ -225,8 +229,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelS
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t * const mdlName);
-
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t* const mdlName);
 
 /**
  * @ingroup rt_model
@@ -236,7 +240,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelG
  * @return ACL_RT_SUCCESS for ok
  * @return ACL_ERROR_RT_PARAM_INVALID for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelGetId(rtModel_t mdl, uint32_t *modelId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelGetId(rtModel_t mdl, uint32_t* modelId);
 
 /**
  * @ingroup rt_model
@@ -247,10 +251,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelG
  */
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsModelAbort(rtModel_t mdl);
 
-
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RTS_MODEL_H
+#endif // CCE_RUNTIME_RTS_MODEL_H

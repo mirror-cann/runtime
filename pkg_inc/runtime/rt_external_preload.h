@@ -19,9 +19,9 @@ extern "C" {
 typedef int32_t (*rtKernelLaunchFillFunc)(void* cfgAddr, uint32_t cfglen);
 
 typedef enum tagRtTaskBuffType {
-    HWTS_STATIC_TASK_DESC = 0,       /**< static task */
-    HWTS_DYNAMIC_TASK_DESC = 1,      /**< dynamic task */
-    PARAM_TASK_INFO_DESC = 2,        /**< task param */
+    HWTS_STATIC_TASK_DESC = 0,  /**< static task */
+    HWTS_DYNAMIC_TASK_DESC = 1, /**< dynamic task */
+    PARAM_TASK_INFO_DESC = 2,   /**< task param */
     MAX_TASK,
 } rtTaskBuffType_t;
 
@@ -35,7 +35,7 @@ typedef enum tagRtTaskType {
 
 typedef struct {
     uint64_t kernelBinOffset;
-    uint64_t argsOffset;                           // need add rtTaskInput_t.argOffset
+    uint64_t argsOffset; // need add rtTaskInput_t.argOffset
     uint32_t literalBuffLen;
     uint16_t blockDim;
     uint8_t kernelFlag;
@@ -52,7 +52,7 @@ typedef struct {
     uint16_t prefetchNum;
     uint16_t softUser;
     uint16_t kernelCredit;
-    uint32_t taskParamOffset;                      // need add rtTaskInput_t.argOffset
+    uint32_t taskParamOffset; // need add rtTaskInput_t.argOffset
     uint8_t swapOut;
 } rtHwtsStaticTaskDesc_t;
 
@@ -90,7 +90,7 @@ typedef struct {
         rtHwtsStaticTaskDesc_t hwtsTaskDesc;
         rtHwtsDynamicTaskDesc_t hwtsDynamicTaskDesc;
         rtParamBufDesc_t paramBufDesc;
-    }u;
+    } u;
 } rtNanoDefaultTaskParam_t;
 
 typedef struct {
@@ -101,14 +101,14 @@ typedef struct {
         rtAicoreTaskParam_t aicoreTask;
         rtNanoDefaultTaskParam_t nanoAicoreTask;
         rtNanoDefaultTaskParam_t nanoHostFuncTask;
-    }u;
+    } u;
 } rtCompilerPartinfo_t;
 
 typedef struct {
-    void* dataBuffer;                       // current write addr
-    uint32_t bufferLen;                     // the space of dataBuffer left
-    rtCompilerPartinfo_t compilerInfo;      // task info for complie
-    uint64_t argOffset;                     // args offset
+    void* dataBuffer;                  // current write addr
+    uint32_t bufferLen;                // the space of dataBuffer left
+    rtCompilerPartinfo_t compilerInfo; // task info for complie
+    uint64_t argOffset;                // args offset
 } rtTaskInput_t;
 
 /**
@@ -119,7 +119,7 @@ typedef struct {
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t * const bufferLen);
+RTS_API rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t* const bufferLen);
 
 /**
  * @ingroup rt_preload_task
@@ -129,10 +129,10 @@ RTS_API rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t * con
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API rtError_t rtTaskBuild(const rtTaskInput_t * const taskInput, uint32_t* taskLen);
+RTS_API rtError_t rtTaskBuild(const rtTaskInput_t* const taskInput, uint32_t* taskLen);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_RT_EXTERNAL_PRELOAD_H
+#endif // CCE_RUNTIME_RT_EXTERNAL_PRELOAD_H

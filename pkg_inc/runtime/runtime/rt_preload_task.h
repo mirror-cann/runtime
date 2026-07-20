@@ -29,7 +29,8 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtGetElfOffset(void* const elfData, const uint32_t elfLen, uint32_t* offset);
 
 /**
  * @ingroup rt_preload_task
@@ -39,7 +40,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtGetElfO
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtRegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc callback);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtRegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc callback);
 
 /**
  * @ingroup rt_preload_task
@@ -55,4 +57,4 @@ RT_RUNTIME_DEPRECATED_DECLS_END
 }
 #endif
 
-#endif  // CCE_RUNTIME_RT_PRELOAD_TASK_H
+#endif // CCE_RUNTIME_RT_PRELOAD_TASK_H

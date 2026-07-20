@@ -24,21 +24,21 @@
 
 namespace ge {
 using Status = uint32_t;
- 	 
+
 static constexpr uint32_t GE_PROF_SUCCESS = 0U;
 static constexpr uint32_t GE_PROF_FAILED = 405091711U;
 
 enum ProfDataTypeConfig {
-    kProfTaskTime       = 0x0002,
-    kProfAiCoreMetrics  = 0x0004,
-    kProfAicpu          = 0x0008,
-    kProfL2cache        = 0x0010,
-    kProfHccl           = 0x0020,
-    kProfTrainingTrace  = 0x0040,
-    kProfFwkScheduleL0  = 0x0200,
-    kProfTaskTimeL0     = 0x0800,
-    kProfTaskTimeL2     = 0x2000,
-    kProfFwkScheduleL1  = 0x01000000,
+    kProfTaskTime = 0x0002,
+    kProfAiCoreMetrics = 0x0004,
+    kProfAicpu = 0x0008,
+    kProfL2cache = 0x0010,
+    kProfHccl = 0x0020,
+    kProfTrainingTrace = 0x0040,
+    kProfFwkScheduleL0 = 0x0200,
+    kProfTaskTimeL0 = 0x0800,
+    kProfTaskTimeL2 = 0x2000,
+    kProfFwkScheduleL1 = 0x01000000,
 };
 
 enum ProfilingAicoreMetrics {
@@ -62,7 +62,7 @@ using aclgrphProfConfig = struct aclgrphProfConfig;
  * @param [in] length: length of configuration path
  * @return Status result of function
  */
-MSVP_PROF_API Status aclgrphProfInit(const char *profiler_path, uint32_t length);
+MSVP_PROF_API Status aclgrphProfInit(const char* profiler_path, uint32_t length);
 
 /**
  * @ingroup AscendCL
@@ -81,8 +81,9 @@ MSVP_PROF_API Status aclgrphProfFinalize();
  * @param [in] data_type_config: modules need profiling
  * @return Status result of function
  */
-MSVP_PROF_API aclgrphProfConfig *aclgrphProfCreateConfig(uint32_t *deviceid_list, uint32_t device_nums,
-    ProfilingAicoreMetrics aicore_metrics, ProfAicoreEvents *aicore_events, uint64_t data_type_config);
+MSVP_PROF_API aclgrphProfConfig* aclgrphProfCreateConfig(
+    uint32_t* deviceid_list, uint32_t device_nums, ProfilingAicoreMetrics aicore_metrics,
+    ProfAicoreEvents* aicore_events, uint64_t data_type_config);
 
 /**
  * @ingroup AscendCL
@@ -90,7 +91,7 @@ MSVP_PROF_API aclgrphProfConfig *aclgrphProfCreateConfig(uint32_t *deviceid_list
  * @param [in] profiler_config: config of profiling
  * @return Status result of function
  */
-MSVP_PROF_API Status aclgrphProfDestroyConfig(aclgrphProfConfig *profiler_config);
+MSVP_PROF_API Status aclgrphProfDestroyConfig(aclgrphProfConfig* profiler_config);
 
 /**
  * @ingroup AscendCL
@@ -98,7 +99,7 @@ MSVP_PROF_API Status aclgrphProfDestroyConfig(aclgrphProfConfig *profiler_config
  * @param [in] profiler_config: config of profiling
  * @return Status result of function
  */
-MSVP_PROF_API Status aclgrphProfStart(aclgrphProfConfig *profiler_config);
+MSVP_PROF_API Status aclgrphProfStart(aclgrphProfConfig* profiler_config);
 
 /**
  * @ingroup AscendCL
@@ -106,8 +107,8 @@ MSVP_PROF_API Status aclgrphProfStart(aclgrphProfConfig *profiler_config);
  * @param [in] profiler_config: config of profiling
  * @return Status result of function
  */
-MSVP_PROF_API Status aclgrphProfStop(aclgrphProfConfig *profiler_config);
+MSVP_PROF_API Status aclgrphProfStop(aclgrphProfConfig* profiler_config);
 
-}  // namespace ge
+} // namespace ge
 
-#endif  // INC_EXTERNAL_GE_GE_PROF_H_
+#endif // INC_EXTERNAL_GE_GE_PROF_H_

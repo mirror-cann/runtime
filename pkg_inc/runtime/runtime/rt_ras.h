@@ -54,7 +54,6 @@ typedef struct {
     rtErrorInfoDetail detail;
 } rtErrorInfo;
 
-
 /**
  * @brief get error verbose info.
  * attention:
@@ -65,7 +64,8 @@ typedef struct {
  * @return RT_ERROR_NONE for ok
  * @return other failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsGetErrorVerbose(const uint32_t deviceId, rtErrorInfo * const errorInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsGetErrorVerbose(const uint32_t deviceId, rtErrorInfo* const errorInfo);
 
 /**
  * @brief repair error based on verbose info.
@@ -77,7 +77,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsGetErr
  * @return RT_ERROR_NONE for ok
  * @return other failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsRepairError(const uint32_t deviceId, const rtErrorInfo * const errorInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsRepairError(const uint32_t deviceId, const rtErrorInfo* const errorInfo);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)

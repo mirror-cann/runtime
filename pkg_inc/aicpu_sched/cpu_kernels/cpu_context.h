@@ -25,19 +25,20 @@ class AICPU_VISIBILITY CpuKernelContext {
     friend class CpuKernelUtils;
     friend class CustCpuKernelUtils;
     friend class CustCpuKernelDlogUtils;
+
 public:
     explicit CpuKernelContext(DeviceType type);
     CpuKernelContext() = delete;
     ~CpuKernelContext() = default;
-    CpuKernelContext(const CpuKernelContext &) = delete;
-    CpuKernelContext(CpuKernelContext &&) = delete;
-    CpuKernelContext &operator = (const CpuKernelContext &) = delete;
-    CpuKernelContext &operator = (CpuKernelContext &&) = delete;
+    CpuKernelContext(const CpuKernelContext&) = delete;
+    CpuKernelContext(CpuKernelContext&&) = delete;
+    CpuKernelContext& operator=(const CpuKernelContext&) = delete;
+    CpuKernelContext& operator=(CpuKernelContext&&) = delete;
 
-    uint32_t Init(NodeDef *nodeDef);
+    uint32_t Init(NodeDef* nodeDef);
 
     // format aicpuops::NodeDef *nodeDef
-    uint32_t Init(void *nodeDef);
+    uint32_t Init(void* nodeDef);
 
     /*
      * get op type.
@@ -49,19 +50,19 @@ public:
      * get input tensor.
      * @return Tensor *: not null->success, null->failed
      */
-    Tensor *Input(uint32_t index) const;
+    Tensor* Input(uint32_t index) const;
 
     /*
      * get output tensor.
      * @return Tensor *: not null->success, null->failed
      */
-    Tensor *Output(uint32_t index) const;
+    Tensor* Output(uint32_t index) const;
 
     /*
      * get attr.
      * @return AttrValue *: not null->success, null->failed
      */
-    AttrValue *GetAttr(std::string name) const;
+    AttrValue* GetAttr(std::string name) const;
 
     /*
      * get input size.
@@ -76,11 +77,11 @@ public:
     uint32_t GetOutputsSize() const;
 
 private:
-    std::string op_;                                           // op type
-    std::vector<std::shared_ptr<Tensor> > inputs_;             // input tensor list
-    std::vector<std::shared_ptr<Tensor> > outputs_;            // out tensor list
+    std::string op_;                                                     // op type
+    std::vector<std::shared_ptr<Tensor> > inputs_;                       // input tensor list
+    std::vector<std::shared_ptr<Tensor> > outputs_;                      // out tensor list
     std::unordered_map<std::string, std::shared_ptr<AttrValue> > attrs_; // attr list
-    std::shared_ptr<Device> device_ { nullptr };
+    std::shared_ptr<Device> device_{nullptr};
     uint64_t workspace_size_{0UL};
     uint64_t workspace_addr_{0UL};
 };

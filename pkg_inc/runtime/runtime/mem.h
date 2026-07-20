@@ -29,30 +29,30 @@ RT_RUNTIME_DEPRECATED_DECLS_BEGIN
  * @ingroup dvrt_mem
  * @brief register host memory
  */
-#define RT_MEM_HOST_REGISTER_MAPPED   (0x2U)
+#define RT_MEM_HOST_REGISTER_MAPPED (0x2U)
 #define RT_MEM_HOST_REGISTER_IOMEMORY (0x4U)
 #define RT_MEM_HOST_REGISTER_READONLY (0x8U)
-#define RT_MEM_HOST_REGISTER_PINNED   (0x10000000U)
+#define RT_MEM_HOST_REGISTER_PINNED (0x10000000U)
 
 typedef enum tagRtMemInfoType {
     RT_MEMORYINFO_DDR,
     RT_MEMORYINFO_HBM,
-    RT_MEMORYINFO_DDR_HUGE,               // Hugepage memory of DDR
-    RT_MEMORYINFO_DDR_NORMAL,             // Normal memory of DDR
-    RT_MEMORYINFO_HBM_HUGE,               // Hugepage memory of HBM
-    RT_MEMORYINFO_HBM_NORMAL,             // Normal memory of HBM
-    RT_MEMORYINFO_DDR_P2P_HUGE,           // Hugepage memory of DDR
-    RT_MEMORYINFO_DDR_P2P_NORMAL,         // Normal memory of DDR
-    RT_MEMORYINFO_HBM_P2P_HUGE,           // Hugepage memory of HBM
-    RT_MEMORYINFO_HBM_P2P_NORMAL,         // Normal memory of HBM
-    RT_MEMORYINFO_HBM_HUGE1G,             // 1G HugePage memory of HBM
-    RT_MEMORYINFO_HBM_P2P_HUGE1G,         // 1G HugePage memory of HBM
-    RT_MEMORYINFO_NORMAL,                 // Normal memory
-    RT_MEMORYINFO_HUGE,                   // Hugepage memory
-    RT_MEMORYINFO_HUGE1G,                 // 1G HugePage memory
-    RT_MEMORYINFO_P2P_NORMAL,             // Normal memory of P2P
-    RT_MEMORYINFO_P2P_HUGE,               // Hugepage memory of P2P
-    RT_MEMORYINFO_P2P_HUGE1G,             // 1G HugePage memory of P2p
+    RT_MEMORYINFO_DDR_HUGE,       // Hugepage memory of DDR
+    RT_MEMORYINFO_DDR_NORMAL,     // Normal memory of DDR
+    RT_MEMORYINFO_HBM_HUGE,       // Hugepage memory of HBM
+    RT_MEMORYINFO_HBM_NORMAL,     // Normal memory of HBM
+    RT_MEMORYINFO_DDR_P2P_HUGE,   // Hugepage memory of DDR
+    RT_MEMORYINFO_DDR_P2P_NORMAL, // Normal memory of DDR
+    RT_MEMORYINFO_HBM_P2P_HUGE,   // Hugepage memory of HBM
+    RT_MEMORYINFO_HBM_P2P_NORMAL, // Normal memory of HBM
+    RT_MEMORYINFO_HBM_HUGE1G,     // 1G HugePage memory of HBM
+    RT_MEMORYINFO_HBM_P2P_HUGE1G, // 1G HugePage memory of HBM
+    RT_MEMORYINFO_NORMAL,         // Normal memory
+    RT_MEMORYINFO_HUGE,           // Hugepage memory
+    RT_MEMORYINFO_HUGE1G,         // 1G HugePage memory
+    RT_MEMORYINFO_P2P_NORMAL,     // Normal memory of P2P
+    RT_MEMORYINFO_P2P_HUGE,       // Hugepage memory of P2P
+    RT_MEMORYINFO_P2P_HUGE1G,     // 1G HugePage memory of P2p
 } rtMemInfoType_t;
 
 typedef rtMemInfoType_t rtMemInfoType;
@@ -62,17 +62,17 @@ typedef enum rtMemcpyAttributeId {
     RT_MEMCPY_ATTRIBUTE_CHECK = 1,
     RT_MEMCPY_ATTRIBUTE_MAX = 2,
 } rtMemcpyAttributeId_t;
- 
+
 typedef union rtMemcpyAttributeValue_union {
     uint32_t rsv[4];
     uint32_t checkBitmap; // bit0：Do not check for matching between address and kind；bit1：check addr is page-lock
 } rtMemcpyAttributeValue_t;
- 
+
 typedef struct rtMemcpyAttribute {
     rtMemcpyAttributeId_t id;
     rtMemcpyAttributeValue_t value;
 } rtMemcpyAttribute_t;
- 
+
 typedef struct rtMemcpyConfig {
     rtMemcpyAttribute_t* attrs;
     uint32_t numAttrs;
@@ -83,9 +83,9 @@ typedef struct rtMemcpyConfig {
  * @brief memory copy channel  type
  */
 typedef enum tagRtMemcpyChannelType {
-    RT_MEMCPY_CHANNEL_TYPE_INNER = 0,  // 1P
+    RT_MEMCPY_CHANNEL_TYPE_INNER = 0, // 1P
     RT_MEMCPY_CHANNEL_TYPE_PCIe,
-    RT_MEMCPY_CHANNEL_TYPE_HCCs,  // not support now
+    RT_MEMCPY_CHANNEL_TYPE_HCCs,      // not support now
     RT_MEMCPY_CHANNEL_TYPE_UB,
     RT_MEMCPY_CHANNEL_TYPE_RESERVED,
 } rtMemcpyChannelType_t;
@@ -125,41 +125,37 @@ typedef enum tagRtMemoryType {
  * @ingroup dvrt_mem
  * @brief ipc type
  */
-typedef enum tagRtIpcMemAttrType {
-    RT_IPC_ATTR_SIO = 0, 
-    RT_IPC_ATTR_HCCS = 1,
-    RT_IPC_ATTR_MAX
-} rtIpcMemAttrType;
+typedef enum tagRtIpcMemAttrType { RT_IPC_ATTR_SIO = 0, RT_IPC_ATTR_HCCS = 1, RT_IPC_ATTR_MAX } rtIpcMemAttrType;
 
 /**
  * @ingroup dvrt_mem
  * @brief memory attribute
  */
 typedef struct tagRtPointerAttributes {
-    rtMemoryType_t memoryType;  // host memory or device memory
+    rtMemoryType_t memoryType; // host memory or device memory
     rtMemLocationType locationType;
-    uint32_t deviceID;          // device ID
+    uint32_t deviceID;         // device ID
     uint32_t pageSize;
 } rtPointerAttributes_t;
 
 typedef struct {
-    const char_t *name;
+    const char_t* name;
     const uint64_t size;
     uint32_t flag;
 } rtMallocHostSharedMemoryIn;
 
 typedef struct {
     int32_t fd;
-    void *ptr;
-    void *devPtr;
+    void* ptr;
+    void* devPtr;
 } rtMallocHostSharedMemoryOut;
 
 typedef struct {
-    const char_t *name;
+    const char_t* name;
     const uint64_t size;
     int32_t fd;
-    void *ptr;
-    void *devPtr;
+    void* ptr;
+    void* devPtr;
 } rtFreeHostSharedMemoryIn;
 
 typedef struct {
@@ -172,28 +168,28 @@ typedef struct {
 } rtMemPhyInfo_t;
 
 typedef struct {
-    uint64_t **addr;
+    uint64_t** addr;
     uint32_t cnt;
-    uint32_t memType;   // ex: RT_MEM_MASK_SVM_TYPE
+    uint32_t memType; // ex: RT_MEM_MASK_SVM_TYPE
     uint32_t flag;
 } rtMemAddrInfo_t;
 
-#define RT_NUMA_NUM_OF_PER_DEV_MAX  (0x40U)
+#define RT_NUMA_NUM_OF_PER_DEV_MAX (0x40U)
 typedef struct {
     uint32_t nodeCnt;
     int32_t nodeId[RT_NUMA_NUM_OF_PER_DEV_MAX];
 } rtMemNumaInfo_t;
 
-#define RT_SVM_GRP_NAME_LEN         (0x20U)
+#define RT_SVM_GRP_NAME_LEN (0x20U)
 typedef struct {
     char name[RT_SVM_GRP_NAME_LEN];
 } rtMemSvmGrpInfo_t;
 
 typedef struct {
-    uint64_t va;                /* Input para: Virtual address requested by the SVM module*/
-    uint64_t size;              /* Input para: Virtual address size*/
-    uint32_t tokenId;          /* Output para */
-    uint32_t tokenValue;       /* Output para */
+    uint64_t va;         /* Input para: Virtual address requested by the SVM module*/
+    uint64_t size;       /* Input para: Virtual address size*/
+    uint32_t tokenId;    /* Output para */
+    uint32_t tokenValue; /* Output para */
 } rtMemUbTokenInfo_t;
 
 typedef struct {
@@ -205,7 +201,6 @@ typedef struct {
         rtMemUbTokenInfo_t ubTokenInfo;
     };
 } rtMemInfo_t;
-
 
 typedef enum {
     RT_DEBUG_MEM_TYPE_L0A = 1,
@@ -228,7 +223,7 @@ typedef struct {
     uint32_t elementSize;
     uint32_t reserved;
     uint64_t srcAddr;
-    uint64_t dstAddr;  // host addr
+    uint64_t dstAddr; // host addr
     uint64_t memLen;
 } rtDebugMemoryParam;
 
@@ -236,8 +231,8 @@ typedef struct {
 #define RT_MEM_USAGE_INFO_RSV (8U)
 typedef struct {
     char name[RT_MEM_MODULE_NAME_LEN]; /* module name */
-    uint64_t curMemSize; /* the total amount of memory currently occupied by the module */
-    uint64_t memPeakSize; /* the peak size of the total memory occupied by the module */
+    uint64_t curMemSize;               /* the total amount of memory currently occupied by the module */
+    uint64_t memPeakSize;              /* the peak size of the total memory occupied by the module */
     size_t reserved[RT_MEM_USAGE_INFO_RSV];
 } rtMemUsageInfo_t;
 
@@ -251,7 +246,8 @@ typedef struct {
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMalloc(void **devPtr, uint64_t size, rtMemType_t type, const uint16_t moduleId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMalloc(void** devPtr, uint64_t size, rtMemType_t type, const uint16_t moduleId);
 
 /**
  * @ingroup dvrt_mem
@@ -260,7 +256,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMalloc(
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFree(void *devPtr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFree(void* devPtr);
 
 /**
  * @ingroup dvrt_mem
@@ -271,7 +267,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFree(vo
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDvppMalloc(void **devPtr, uint64_t size, const uint16_t moduleId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtDvppMalloc(void** devPtr, uint64_t size, const uint16_t moduleId);
 
 /**
  * @ingroup dvrt_mem
@@ -280,7 +277,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDvppMal
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDvppFree(void *devPtr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDvppFree(void* devPtr);
 
 /**
  * @ingroup dvrt_mem
@@ -291,7 +288,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtDvppFre
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMallocHost(void **hostPtr, uint64_t size, const uint16_t moduleId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMallocHost(void** hostPtr, uint64_t size, const uint16_t moduleId);
 
 /**
  * @ingroup dvrt_mem
@@ -300,7 +298,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMallocH
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHost(void *hostPtr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHost(void* hostPtr);
 
 /**
  * @ingroup dvrt_mem
@@ -309,7 +307,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHos
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeWithDevSync(void *devPtr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeWithDevSync(void* devPtr);
 
 /**
  * @ingroup dvrt_mem
@@ -318,7 +316,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeWit
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHostWithDevSync(void *hostPtr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHostWithDevSync(void* hostPtr);
 
 /**
  * @ingroup dvrt_mem
@@ -329,7 +327,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHos
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability *capabilities);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability* capabilities);
 
 /**
  * @ingroup dvrt_mem
@@ -340,8 +339,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtHostMem
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMallocHostSharedMemory(rtMallocHostSharedMemoryIn *in,
-                                           rtMallocHostSharedMemoryOut *out);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMallocHostSharedMemory(rtMallocHostSharedMemoryIn* in, rtMallocHostSharedMemoryOut* out);
 
 /**
  * @ingroup dvrt_mem
@@ -351,7 +350,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMallocH
  * @return RT_ERROR_INVALID_VALUE for error input
  */
 
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHostSharedMemory(rtFreeHostSharedMemoryIn *in);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtFreeHostSharedMemory(rtFreeHostSharedMemoryIn* in);
 
 /**
  * @ingroup dvrt_mem
@@ -363,7 +363,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreeHos
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemAllocManaged(void **ptr, uint64_t size, uint32_t flag, const uint16_t moduleId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemAllocManaged(void** ptr, uint64_t size, uint32_t flag, const uint16_t moduleId);
 
 /**
  * @ingroup dvrt_mem
@@ -372,7 +373,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemAllo
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemFreeManaged(void *ptr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemFreeManaged(void* ptr);
 
 /**
  * @ingroup dvrt_mem
@@ -383,7 +384,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemFree
  * @param [in] moduleid alloc memory module id
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMallocCached(void **devPtr, uint64_t size, rtMemType_t type, const uint16_t moduleId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMallocCached(void** devPtr, uint64_t size, rtMemType_t type, const uint16_t moduleId);
 
 /**
  * @ingroup dvrt_mem
@@ -392,7 +394,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMallocC
  * @param [in] len    memory size
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFlushCache(void *base, size_t len);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFlushCache(void* base, size_t len);
 
 /**
  * @ingroup dvrt_mem
@@ -401,7 +403,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFlushCa
  * @param [in] len    memory size
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtInvalidCache(void *base, size_t len);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtInvalidCache(void* base, size_t len);
 
 /**
  * @ingroup dvrt_mem
@@ -414,8 +416,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtInvalid
  * @param [in] stm   task stream
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyHostTask(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, rtMemcpyKind_t kind, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyHostTask(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, rtMemcpyKind_t kind,
+    rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -429,8 +432,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyH
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsync(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtMemcpyKind_t kind,
-                                rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemcpyAsync(void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtMemcpyKind_t kind, rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -444,8 +447,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncWithoutCheckKind(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
-                                                rtMemcpyKind_t kind, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncWithoutCheckKind(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtMemcpyKind_t kind, rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -456,12 +459,13 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyA
  * @param [in] cnt   the number of byte to copy
  * @param [in] kind  memcpy type
  * @param [in] stm   asynchronized task stream
- * @param [in] memcpyConfig memory copy config  
+ * @param [in] memcpyConfig memory copy config
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncEx(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
-                                  rtMemcpyKind_t kind, rtStream_t stm, rtMemcpyConfig_t *memcpyConfig);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncEx(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtMemcpyKind_t kind, rtStream_t stm,
+    rtMemcpyConfig_t* memcpyConfig);
 
 /**
  * @ingroup dvrt_mem
@@ -476,8 +480,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncWithCfg(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
-    rtMemcpyKind_t kind, rtStream_t stm, uint32_t qosCfg);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncWithCfg(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtMemcpyKind_t kind, rtStream_t stm, uint32_t qosCfg);
 
 /**
  * @ingroup dvrt_mem
@@ -492,8 +496,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncWithCfgV2(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
-    rtMemcpyKind_t kind, rtStream_t stm, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncWithCfgV2(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtMemcpyKind_t kind, rtStream_t stm,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 typedef struct {
     uint32_t resv0;
@@ -504,8 +509,9 @@ typedef struct {
     uint64_t dst;
 } rtMemcpyAddrInfo;
 
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncPtrV2(void *memcpyAddrInfo, uint64_t destMax, uint64_t count,
-                                    rtMemcpyKind_t kind, rtStream_t stream, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyAsyncPtrV2(
+    void* memcpyAddrInfo, uint64_t destMax, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @ingroup dvrt_mem
@@ -520,8 +526,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyD2DAddrAsync(void *dst, uint64_t dstMax, uint64_t dstOffset, const void *src,
-    uint64_t cnt, uint64_t srcOffset, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyD2DAddrAsync(
+    void* dst, uint64_t dstMax, uint64_t dstOffset, const void* src, uint64_t cnt, uint64_t srcOffset, rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -536,8 +542,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpyD
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsync(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-                                rtDataType_t type, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsync(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -553,8 +559,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsyncWithCfg(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-    rtDataType_t type, rtStream_t stm, uint32_t qosCfg);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsyncWithCfg(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm,
+    uint32_t qosCfg);
 
 /**
  * @ingroup dvrt_mem
@@ -570,8 +577,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsyncWithCfgV2(void *dst, uint64_t destMax, const void *src, uint64_t cnt,
-    rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm, const rtTaskCfgInfo_t *cfgInfo);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsyncWithCfgV2(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm,
+    const rtTaskCfgInfo_t* cfgInfo);
 
 /**
  * @ingroup dvrt_mem
@@ -587,8 +595,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsyncV2(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-    rtDataType_t type, rtStream_t stm, void *overflowAddr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceAsyncV2(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm,
+    void* overflowAddr);
 
 /**
  * @ingroup dvrt_mem
@@ -603,8 +612,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReduceA
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpy2d(void *dst, uint64_t dstPitch, const void *src, uint64_t srcPitch, uint64_t width,
-                             uint64_t height, rtMemcpyKind_t kind);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpy2d(
+    void* dst, uint64_t dstPitch, const void* src, uint64_t srcPitch, uint64_t width, uint64_t height,
+    rtMemcpyKind_t kind);
 
 /**
  * @ingroup dvrt_mem
@@ -620,8 +630,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpy2
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpy2dAsync(void *dst, uint64_t dstPitch, const void *src, uint64_t srcPitch, uint64_t width,
-                                  uint64_t height, rtMemcpyKind_t kind, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpy2dAsync(
+    void* dst, uint64_t dstPitch, const void* src, uint64_t srcPitch, uint64_t width, uint64_t height,
+    rtMemcpyKind_t kind, rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -632,7 +643,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemcpy2
  * @return RT_ERROR_NONE for ok
  * @return others for error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemAdvise(void *devPtr, uint64_t count, uint32_t advise);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemAdvise(void* devPtr, uint64_t count, uint32_t advise);
 /**
  * @ingroup dvrt_mem
  * @brief set memory with uint32_t value
@@ -643,7 +655,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemAdvi
  * @return RT_ERROR_NONE for ok, errno for failed
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemset(void *devPtr, uint64_t destMax, uint32_t val, uint64_t cnt);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemset(void* devPtr, uint64_t destMax, uint32_t val, uint64_t cnt);
 
 /**
  * @ingroup dvrt_mem
@@ -656,7 +669,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemset(
  * @return RT_ERROR_NONE for ok, errno for failed
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemsetAsync(void *ptr, uint64_t destMax, uint32_t val, uint64_t cnt, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemsetAsync(void* ptr, uint64_t destMax, uint32_t val, uint64_t cnt, rtStream_t stm);
 
 /**
  * @ingroup dvrt_mem
@@ -666,7 +680,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemsetA
  * @return RT_ERROR_NONE for ok, errno for failed
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetInfo(size_t *freeSize, size_t *totalSize);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemGetInfo(size_t* freeSize, size_t* totalSize);
 
 /**
  * @ingroup dvrt_mem
@@ -677,7 +692,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetI
  * @return RT_ERROR_NONE for ok, errno for failed
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetInfoByType(const int32_t devId, const rtMemType_t type, rtMemInfo_t * const info);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemGetInfoByType(const int32_t devId, const rtMemType_t type, rtMemInfo_t* const info);
 
 /**
  * @ingroup dvrt_mem
@@ -687,7 +703,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetI
  * @param [out] totalSize
  * @return RT_ERROR_NONE for ok, errno for failed
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetInfoEx(rtMemInfoType_t memInfoType, size_t *freeSize, size_t *totalSize);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemGetInfoEx(rtMemInfoType_t memInfoType, size_t* freeSize, size_t* totalSize);
 
 /**
  * @ingroup dvrt_mem
@@ -698,7 +715,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetI
  * @return RT_ERROR_NONE for ok, errno for failed
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemPrefetchToDevice(void *devPtr, uint64_t len, int32_t devId);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemPrefetchToDevice(void* devPtr, uint64_t len, int32_t devId);
 
 /**
  * @ingroup dvrt_mem
@@ -708,7 +726,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemPref
  * @return RT_ERROR_NONE for ok, errno for failed
  * @return RT_ERROR_INVALID_VALUE for error input
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtPointerGetAttributes(rtPointerAttributes_t *attributes, const void *ptr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtPointerGetAttributes(rtPointerAttributes_t* attributes, const void* ptr);
 
 /**
  * @ingroup dvrt_mem
@@ -720,19 +739,21 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtPointer
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcSetMemoryName(const void *ptr, uint64_t byteCount, char_t *name, uint32_t len);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtIpcSetMemoryName(const void* ptr, uint64_t byteCount, char_t* name, uint32_t len);
 
 /**
  * @ingroup dvrt_mem
  * @brief set the attribute of shared memory
- * @param [in] name   identification name 
- * @param [in] type   shared memory mapping type 
+ * @param [in] name   identification name
+ * @param [in] type   shared memory mapping type
  * @param [in] attr   shared memory attribute
  * @return RT_ERROR_NONE for ok
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr);
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtIpcSetMemoryAttr(const char* name, uint32_t type, uint64_t attr);
 
 /**
  * @ingroup dvrt_mem
@@ -742,7 +763,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcSetM
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcDestroyMemoryName(const char_t *name);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcDestroyMemoryName(const char_t* name);
 
 /**
  * @ingroup dvrt_mem
@@ -753,7 +774,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcDest
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcOpenMemory(void **ptr, const char_t *name);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcOpenMemory(void** ptr, const char_t* name);
 
 /**
  * @ingroup dvrt_mem
@@ -764,7 +785,7 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcOpen
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcCloseMemory(const void *ptr);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcCloseMemory(const void* ptr);
 
 /**
  * @ingroup dvrt_mem
@@ -776,8 +797,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtIpcClos
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtSetIpcMemPid(const char_t *name, int32_t pid[], int32_t num);
-
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtSetIpcMemPid(const char_t* name, int32_t pid[], int32_t num);
 
 typedef enum MemAccessFlags {
     RT_MEM_ACCESS_FLAGS_NONE = 0x0,
@@ -810,7 +831,7 @@ typedef struct DrvMemFabricHandle {
 typedef enum DrvMemAttrType {
     RT_ATTR_TYPE_MEM_MAP = 0,
     RT_ATTR_TYPE_MAX,
-}rtDrvMemAttrType;
+} rtDrvMemAttrType;
 
 typedef enum DrvMemGranularityOptions {
     RT_MEM_ALLOC_GRANULARITY_MINIMUM = 0x0,
@@ -838,7 +859,8 @@ typedef enum tagAdviseMemType {
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtReserveMemAddress(void** devPtr, size_t size, size_t alignment, void *devAddr, uint64_t flags);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtReserveMemAddress(void** devPtr, size_t size, size_t alignment, void* devAddr, uint64_t flags);
 
 /**
  * @ingroup dvrt_mem
@@ -875,7 +897,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtFreePhy
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_DRV_ERR for driver error
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMapMem(void* devPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMapMem(void* devPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags);
 
 /**
  * @ingroup dvrt_mem
@@ -889,78 +912,82 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMapMem(
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtUnmapMem(void* devPtr);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to set access to a reserved virtual address range for the other device.
-* @attention
-* 1. Only support ONLINE scene.
-* 2. Support va->pa:
-*    D2H,
-*    D2D(sigle device, different device with same host, different device with different host),
-*    H2H(same host, different host(support latter))
-* 3. rtMemSetAccess: ptr and size must be same with rtMemMap, rtMemGetAccess: ptr and size is in range of set
-* 4. after rtMemMap, if handle has owner(witch location pa handle is created or use witch device pa handle is imported)
-*    the owner location has readwrite prop automatic, not need to set again
-* 5. not support repeat set ptr to same location
-* @param [in] virPtr mapped address.
-* @param [in] size mapped size.
-* @param [in] desc va location and access type, when location is device, id is devid.
-* @param [in] count desc num.
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-* @return RT_ERROR_DRV_ERR for driver error
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *desc, size_t count);
+ * @ingroup dvrt_mem
+ * @brief This command is used to set access to a reserved virtual address range for the other device.
+ * @attention
+ * 1. Only support ONLINE scene.
+ * 2. Support va->pa:
+ *    D2H,
+ *    D2D(sigle device, different device with same host, different device with different host),
+ *    H2H(same host, different host(support latter))
+ * 3. rtMemSetAccess: ptr and size must be same with rtMemMap, rtMemGetAccess: ptr and size is in range of set
+ * 4. after rtMemMap, if handle has owner(witch location pa handle is created or use witch device pa handle is imported)
+ *    the owner location has readwrite prop automatic, not need to set again
+ * 5. not support repeat set ptr to same location
+ * @param [in] virPtr mapped address.
+ * @param [in] size mapped size.
+ * @param [in] desc va location and access type, when location is device, id is devid.
+ * @param [in] count desc num.
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ * @return RT_ERROR_DRV_ERR for driver error
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemSetAccess(void* virPtr, size_t size, rtMemAccessDesc* desc, size_t count);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to get access to a reserved virtual address range for the other device.
-* @param [in] virPtr mapped address.
-* @param [in] location va location, when location is device, id is devid.
-* @param [out] flags access type from desc.
-* @return RT_ERROR_NONE : success
-* @return RT_ERROR_XXX : fail
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetAccess(void *virPtr, rtMemLocation *location, uint64_t *flags);
+ * @ingroup dvrt_mem
+ * @brief This command is used to get access to a reserved virtual address range for the other device.
+ * @param [in] virPtr mapped address.
+ * @param [in] location va location, when location is device, id is devid.
+ * @param [out] flags access type from desc.
+ * @return RT_ERROR_NONE : success
+ * @return RT_ERROR_XXX : fail
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemGetAccess(void* virPtr, rtMemLocation* location, uint64_t* flags);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to export an allocation to a shareable handle.
-* @attention Only support ONLINE scene. Not support compute group.
-* @param [in] handle Handle for the memory allocation.
-* @param [in] handleType Currently unused, must be MEM_HANDLE_TYPE_NONE.
-* @param [in] flags Currently unused, must be zero.
-* @param [out] shareableHandle Export a shareable handle.
-* @return DRV_ERROR_NONE : success
-* @return DV_ERROR_XXX : fail
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-    uint64_t flags, uint64_t *shareableHandle);
+ * @ingroup dvrt_mem
+ * @brief This command is used to export an allocation to a shareable handle.
+ * @attention Only support ONLINE scene. Not support compute group.
+ * @param [in] handle Handle for the memory allocation.
+ * @param [in] handleType Currently unused, must be MEM_HANDLE_TYPE_NONE.
+ * @param [in] flags Currently unused, must be zero.
+ * @param [out] shareableHandle Export a shareable handle.
+ * @return DRV_ERROR_NONE : success
+ * @return DV_ERROR_XXX : fail
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flags, uint64_t* shareableHandle);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to export an allocation to a shareable handle.
-* @attention Only support ONLINE scene. Not support compute group.
-* @param [in] handle Handle for the memory allocation.
-* @param [in] handleType RT_MEM_SHARE_HANDLE_TYPE_DEFAULT or RT_MEM_SHARE_HANDLE_TYPE_FABRIC.
-* @param [in] flags Currently unused, must be zero.
-* @param [out] shareableHandle Export a shareable handle.
-* @return RT_ERROR_NONE : success
-* @return RT_ERROR_XXX : fail
-*/
+ * @ingroup dvrt_mem
+ * @brief This command is used to export an allocation to a shareable handle.
+ * @attention Only support ONLINE scene. Not support compute group.
+ * @param [in] handle Handle for the memory allocation.
+ * @param [in] handleType RT_MEM_SHARE_HANDLE_TYPE_DEFAULT or RT_MEM_SHARE_HANDLE_TYPE_FABRIC.
+ * @param [in] flags Currently unused, must be zero.
+ * @param [out] shareableHandle Export a shareable handle.
+ * @return RT_ERROR_NONE : success
+ * @return RT_ERROR_XXX : fail
+ */
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemExportToShareableHandleV2(
-    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void *shareableHandle);
+    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void* shareableHandle);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to import an allocation from a shareable handle.
-* @attention Only support ONLINE scene. Not support compute group.
-* @param [in] shareableHandle Import a shareable handle.
-* @param [in] devId Device id.
-* @param [out] handle Value of handle returned, all operations on this allocation are to be performed using this handle.
-* @return DRV_ERROR_NONE : success
-* @return DV_ERROR_XXX : fail
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemImportFromShareableHandle(uint64_t shareableHandle, int32_t devId, rtDrvMemHandle *handle);
+ * @ingroup dvrt_mem
+ * @brief This command is used to import an allocation from a shareable handle.
+ * @attention Only support ONLINE scene. Not support compute group.
+ * @param [in] shareableHandle Import a shareable handle.
+ * @param [in] devId Device id.
+ * @param [out] handle Value of handle returned, all operations on this allocation are to be performed using this
+ * handle.
+ * @return DRV_ERROR_NONE : success
+ * @return DV_ERROR_XXX : fail
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemImportFromShareableHandle(uint64_t shareableHandle, int32_t devId, rtDrvMemHandle* handle);
 
 /**
 * @ingroup dvrt_mem
@@ -975,8 +1002,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemImpo
 * @return RT_ERROR_NONE : success
 * @return RT_ERROR_XXX : fail
 */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemImportFromShareableHandleV2(const void *shareableHandle, rtMemSharedHandleType handleType,
-    uint64_t flags, int32_t devId, rtDrvMemHandle *handle);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemImportFromShareableHandleV2(
+    const void* shareableHandle, rtMemSharedHandleType handleType, uint64_t flags, int32_t devId,
+    rtDrvMemHandle* handle);
 
 /**
  * @ingroup dvrt_mem
@@ -988,7 +1016,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemImpo
  * @return RT_ERROR_NONE : success
  * @return RT_ERROR_XXX : fail
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], uint32_t pidNum);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], uint32_t pidNum);
 
 /**
  * @ingroup dvrt_mem
@@ -1002,20 +1031,20 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemSetP
  * @return RT_ERROR_XXX : fail
  */
 RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemSetPidToShareableHandleV2(
-    const void *shareableHandle, rtMemSharedHandleType handleType, int pid[], uint32_t pidNum);
+    const void* shareableHandle, rtMemSharedHandleType handleType, int pid[], uint32_t pidNum);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to calculate either the minimal or recommended granularity.
-* @attention Only support ONLINE scene.
-* @param [in] prop Properties of the allocation.
-* @param [in] option Determines which granularity to return.
-* @param [out] granularity Returned granularity.
-* @return DRV_ERROR_NONE : success
-* @return DV_ERROR_XXX : fail
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetAllocationGranularity(rtDrvMemProp_t *prop, rtDrvMemGranularityOptions option,
-    size_t *granularity);
+ * @ingroup dvrt_mem
+ * @brief This command is used to calculate either the minimal or recommended granularity.
+ * @attention Only support ONLINE scene.
+ * @param [in] prop Properties of the allocation.
+ * @param [in] option Determines which granularity to return.
+ * @param [out] granularity Returned granularity.
+ * @return DRV_ERROR_NONE : success
+ * @return DV_ERROR_XXX : fail
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemGetAllocationGranularity(rtDrvMemProp_t* prop, rtDrvMemGranularityOptions option, size_t* granularity);
 
 /**
  * @ingroup rts_mem
@@ -1036,8 +1065,9 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetA
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_FEATURE_NOT_SUPPORT for not support
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsMemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsMemcpyBatch(
+    void** dsts, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs, size_t* attrsIdxs, size_t numAttrs,
+    size_t* failIdx);
 
 /**
  * @ingroup rts_mem
@@ -1060,59 +1090,64 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsMemcpy
  * @return RT_ERROR_INVALID_VALUE for error input
  * @return RT_ERROR_FEATURE_NOT_SUPPORT for not support
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsMemcpyBatchAsync(void **dsts, size_t *destMaxs, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx, rtStream_t stream);
-
-/**    
-* @ingroup rts_mem
-* @brief mem write value.
-* @param [in] devAddr dev addr.
-* @param [in] value write value.
-* @param [in] flag reserved para.
-* @param [in] stm stream for task launch.
-* @return DRV_ERROR_NONE : success
-* @return DV_ERROR_XXX : fail
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsValueWrite(const void * const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsMemcpyBatchAsync(
+    void** dsts, size_t* destMaxs, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs,
+    size_t* attrsIdxs, size_t numAttrs, size_t* failIdx, rtStream_t stream);
 
 /**
-* @ingroup rts_mem
-* @brief mem wait value.
-* @param [in] devAddr dev addr.
-* @param [in] value expect value.
-* @param [in] flag wait mode.
-* @param [in] stm stream for task launch.
-* @return DRV_ERROR_NONE : success
-* @return DV_ERROR_XXX : fail
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtsValueWait(const void * const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm);
+ * @ingroup rts_mem
+ * @brief mem write value.
+ * @param [in] devAddr dev addr.
+ * @param [in] value write value.
+ * @param [in] flag reserved para.
+ * @param [in] stm stream for task launch.
+ * @return DRV_ERROR_NONE : success
+ * @return DV_ERROR_XXX : fail
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsValueWrite(const void* const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to return the result to the user via virtual address contrast with physical handle.
-* @attention
-* @param [in] virPtr the va that has been mapped to device memory.
-* @param [out] handle physical addr handle.
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-* @return RT_ERROR_DRV_ERR for driver error
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemRetainAllocationHandle(void* virPtr, rtDrvMemHandle *handle);
+ * @ingroup rts_mem
+ * @brief mem wait value.
+ * @param [in] devAddr dev addr.
+ * @param [in] value expect value.
+ * @param [in] flag wait mode.
+ * @param [in] stm stream for task launch.
+ * @return DRV_ERROR_NONE : success
+ * @return DV_ERROR_XXX : fail
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtsValueWait(const void* const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm);
 
 /**
-* @ingroup dvrt_mem
-* @brief This command is used to return memory properties via physical address handle.
-* @attention
-* @param [in] handle physical addr handle.
-* @param [out] prop prop Properties of the allocation.
-* @return RT_ERROR_NONE for ok
-* @return RT_ERROR_INVALID_VALUE for error input
-* @return RT_ERROR_DRV_ERR for driver error
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, rtDrvMemProp_t* prop);
+ * @ingroup dvrt_mem
+ * @brief This command is used to return the result to the user via virtual address contrast with physical handle.
+ * @attention
+ * @param [in] virPtr the va that has been mapped to device memory.
+ * @param [out] handle physical addr handle.
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ * @return RT_ERROR_DRV_ERR for driver error
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemRetainAllocationHandle(void* virPtr, rtDrvMemHandle* handle);
+
+/**
+ * @ingroup dvrt_mem
+ * @brief This command is used to return memory properties via physical address handle.
+ * @attention
+ * @param [in] handle physical addr handle.
+ * @param [out] prop prop Properties of the allocation.
+ * @return RT_ERROR_NONE for ok
+ * @return RT_ERROR_INVALID_VALUE for error input
+ * @return RT_ERROR_DRV_ERR for driver error
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, rtDrvMemProp_t* prop);
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // CCE_RUNTIME_MEM_H
+#endif // CCE_RUNTIME_MEM_H

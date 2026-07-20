@@ -29,7 +29,7 @@ typedef enum {
 
 #pragma pack(push, 1)
 typedef struct {
-    uint32_t fwkKernelType;  // FwkkernelType_t
+    uint32_t fwkKernelType; // FwkkernelType_t
     union {
         ::aicpu::FWKAdapter::FWKOperateParam fwk_kernel;
     } fwkKernelBase;
@@ -47,4 +47,4 @@ struct SessionInfo {
 #ifdef __cplusplus
 }
 #endif
-#endif  // AICPU_ENGINE_STRUCT_H
+#endif // AICPU_ENGINE_STRUCT_H

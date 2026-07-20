@@ -34,7 +34,8 @@ typedef enum rt_queue_work_mode {
  * @param [in] grpName   the name of group, can be nullptr
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueueInitQS(int32_t devId, const char_t *grpName);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemQueueInitQS(int32_t devId, const char_t* grpName);
 
 /**
  * @ingroup rt_mem_queue
@@ -45,7 +46,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueu
  * @param [in] shareName   the name of the share memque
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueueExport(int32_t devId, uint32_t qid, int32_t peerDevId, const char * const shareName);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemQueueExport(int32_t devId, uint32_t qid, int32_t peerDevId, const char* const shareName);
 
 /**
  * @ingroup rt_mem_queue
@@ -56,7 +58,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueu
  * @param [in] shareName   the name of the share memque
  * @return RT_ERROR_NONE for ok
  */
- RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueueUnExport(int32_t devId, uint32_t qid, int32_t peerDevId, const char * const shareName);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemQueueUnExport(int32_t devId, uint32_t qid, int32_t peerDevId, const char* const shareName);
 
 /**
  * @ingroup rt_mem_queue
@@ -67,7 +70,8 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueu
  * @param [out] qid   the queue id of the import device
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueueImport(int32_t devId, int32_t peerDevId, const char * const shareName, uint32_t * const qid);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemQueueImport(int32_t devId, int32_t peerDevId, const char* const shareName, uint32_t* const qid);
 
 /**
  * @ingroup rt_mem_queue
@@ -78,35 +82,39 @@ RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueu
  * @param [in] shareName   the name of the shared memque
  * @return RT_ERROR_NONE for ok
  */
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMemQueueUnImport(int32_t devId, uint32_t qid, int32_t peerDevId, const char * const shareName);
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMemQueueUnImport(int32_t devId, uint32_t qid, int32_t peerDevId, const char* const shareName);
 
 /**
-* @ingroup rt_mem_queue
-* @brief append mbuf to mbuf chain
-* @param [inout] memBufChainHead, the mbuf chain head
-* @param [in] memBuf, the mbuf to append
-* @return RT_ERROR_NONE for ok
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMbufChainAppend(rtMbufPtr_t memBufChainHead, rtMbufPtr_t memBuf);
+ * @ingroup rt_mem_queue
+ * @brief append mbuf to mbuf chain
+ * @param [inout] memBufChainHead, the mbuf chain head
+ * @param [in] memBuf, the mbuf to append
+ * @return RT_ERROR_NONE for ok
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMbufChainAppend(rtMbufPtr_t memBufChainHead, rtMbufPtr_t memBuf);
 
 /**
-* @ingroup rt_mem_queue
-* @brief get mbuf num in mbuf chain
-* @param [in] memBufChainHead, the mbuf chain head
-* @param [out] num, the mbuf chain size
-* @return RT_ERROR_NONE for ok
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMbufChainGetMbufNum(rtMbufPtr_t memBufChainHead, uint32_t *num);
+ * @ingroup rt_mem_queue
+ * @brief get mbuf num in mbuf chain
+ * @param [in] memBufChainHead, the mbuf chain head
+ * @param [out] num, the mbuf chain size
+ * @return RT_ERROR_NONE for ok
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMbufChainGetMbufNum(rtMbufPtr_t memBufChainHead, uint32_t* num);
 
 /**
-* @ingroup rt_mem_queue
-* @brief get mbuf in mbuf chain
-* @param [in] mbufChainHead, the mbuf chain head
-* @param [in] index, the mbuf index which to get in chain
-* @param [out] mbuf, the mbuf to get
-* @return RT_ERROR_NONE for ok
-*/
-RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t rtMbufChainGetMbuf(rtMbufPtr_t memBufChainHead, uint32_t index, rtMbufPtr_t *memBuf);
+ * @ingroup rt_mem_queue
+ * @brief get mbuf in mbuf chain
+ * @param [in] mbufChainHead, the mbuf chain head
+ * @param [in] index, the mbuf index which to get in chain
+ * @param [out] mbuf, the mbuf to get
+ * @return RT_ERROR_NONE for ok
+ */
+RTS_API RT_DEPRECATED_MESSAGE(RT_RUNTIME_DEPRECATED_MESSAGE) rtError_t
+    rtMbufChainGetMbuf(rtMbufPtr_t memBufChainHead, uint32_t index, rtMbufPtr_t* memBuf);
 
 RT_RUNTIME_DEPRECATED_DECLS_END
 #if defined(__cplusplus)

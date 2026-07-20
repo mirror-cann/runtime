@@ -53,7 +53,7 @@ public:
      * set dims value to tensor shape.
      * @param dims: dims value need to set to tensor shape
      */
-    void SetDimSizes(const std::vector<int64_t> &dims);
+    void SetDimSizes(const std::vector<int64_t>& dims);
 
     /*
      * get dims value of tensor shape.
@@ -81,8 +81,8 @@ public:
     int64_t NumElements() const;
 
 private:
-    explicit TensorShape(TensorShapeImpl *tensorShape);
-    std::shared_ptr<TensorShapeImpl> impl_ { nullptr };
+    explicit TensorShape(TensorShapeImpl* tensorShape);
+    std::shared_ptr<TensorShapeImpl> impl_{nullptr};
 };
 } // namespace aicpu
 #endif // CPU_KERNEL_TENSOR_SHAPE_H
