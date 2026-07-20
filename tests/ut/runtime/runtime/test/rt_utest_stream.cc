@@ -59,20 +59,20 @@ namespace {
 struct StreamDestroyPreCallbackCheck {
     bool called = false;
     rtError_t validationResult = RT_ERROR_INVALID_HANDLE;
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
 };
 
-void ValidateStreamDestroyPreCallback(rtStream_t stm, rtStreamState state, void *args)
+void ValidateStreamDestroyPreCallback(rtStream_t stm, rtStreamState state, void* args)
 {
     if (state != RT_STREAM_STATE_DESTROY_PRE) {
         return;
     }
-    auto * const check = static_cast<StreamDestroyPreCallbackCheck *>(args);
+    auto* const check = static_cast<StreamDestroyPreCallbackCheck*>(args);
     if (check == nullptr) {
         return;
     }
 
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     check->validationResult = GetValidatedObject<Stream>(stm, stream);
     check->stream = stream;
     check->called = true;
@@ -81,79 +81,62 @@ void ValidateStreamDestroyPreCallback(rtStream_t stm, rtStreamState state, void 
 
 class StreamTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"stream test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "stream test start" << std::endl; }
 
-    }
-
-    static void TearDownTestCase()
-    {
-        std::cout<<"stream test end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "stream test end" << std::endl; }
 
     virtual void SetUp()
     {
         GlobalContainer::SetHardwareSocVersion("Ascend910B1");
         (void)rtSetDevice(0);
-        std::cout<<"ut test start."<<std::endl;
+        std::cout << "ut test start." << std::endl;
     }
 
     virtual void TearDown()
     {
         ind = 0;
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
-        std::cout<<"ut test end."<<std::endl;
+        std::cout << "ut test end." << std::endl;
     }
 
 public:
-    static Api        *oldApi_;
+    static Api* oldApi_;
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
 };
 
-Api * StreamTest::oldApi_ = NULL;
+Api* StreamTest::oldApi_ = NULL;
 rtStream_t StreamTest::stream_ = NULL;
 rtEvent_t StreamTest::event_ = NULL;
 void* StreamTest::binHandle_ = NULL;
-char  StreamTest::function_ = 'a';
+char StreamTest::function_ = 'a';
 uint32_t StreamTest::binary_[32] = {};
 
-class SubmitFailSchedulerT : public FifoScheduler
-{
+class SubmitFailSchedulerT : public FifoScheduler {
 public:
-    Scheduler *test;
+    Scheduler* test;
 
-    void set(Scheduler *fifoScheduler)
-    {
-        test = fifoScheduler;
-    }
+    void set(Scheduler* fifoScheduler) { test = fifoScheduler; }
 
-    virtual rtError_t PushTask(TaskInfo *task)
+    virtual rtError_t PushTask(TaskInfo* task)
     {
         std::cout << "PushTask begin taskType = " << task->type << "ind = " << ind << std::endl;
-        if (0 == ind)
-        {
+        if (0 == ind) {
             ind = 1;
             std::cout << "PushTask begin taskType = " << task->type << "ind = " << ind << std::endl;
-            return  test->PushTask(task);
+            return test->PushTask(task);
             // return  FifoScheduler::PushTask(task);
         }
         return RT_ERROR_INVALID_VALUE;
     }
 
-    virtual TaskInfo * PopTask()
-    {
-        return test->PopTask();
-    }
+    virtual TaskInfo* PopTask() { return test->PopTask(); }
 };
 
-static void ApiTest_Stream_Cb(void *arg)
-{
-}
+static void ApiTest_Stream_Cb(void* arg) {}
 
 #if 0
 TEST_F(StreamTest, stream_create_and_destroy)
@@ -446,8 +429,8 @@ TEST_F(StreamTest, stream_set_l2_addr_kernel_launch_translate_addr_failed)
 
 TEST_F(StreamTest, StreamSqCqManageGetStreamIdBySqIdNotExist)
 {
-    Runtime *rtInstance = static_cast<Runtime *>(Runtime::Instance());
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = static_cast<Runtime*>(Runtime::Instance());
+    Device* device = rtInstance->DeviceRetain(0, 0);
     ASSERT_NE(device, nullptr);
 
     uint32_t streamId = 0U;
@@ -459,11 +442,11 @@ TEST_F(StreamTest, StreamSqCqManageGetStreamIdBySqIdNotExist)
 
 TEST_F(StreamTest, StreamSqCqManageDeAllocMissSqRef)
 {
-    Runtime *rtInstance = static_cast<Runtime *>(Runtime::Instance());
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = static_cast<Runtime*>(Runtime::Instance());
+    Device* device = rtInstance->DeviceRetain(0, 0);
     ASSERT_NE(device, nullptr);
 
-    StreamSqCqManage *manage = device->GetStreamSqCqManage();
+    StreamSqCqManage* manage = device->GetStreamSqCqManage();
     ASSERT_NE(manage, nullptr);
 
     const uint32_t streamId = UINT32_MAX - 1U;
@@ -479,7 +462,7 @@ TEST_F(StreamTest, StreamSqCqManageDeAllocMissSqRef)
     rtInstance->DeviceRelease(device);
 }
 
-//for llt exception
+// for llt exception
 #if 0
 TEST_F(StreamTest, stream_fusion_end)
 {
@@ -516,7 +499,7 @@ TEST_F(StreamTest, stream_create_with_flag_alloc_no_id)
 
     MOCKER(halResourceIdAlloc).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
-    error = rtStreamCreateWithFlags(&stream, 0, 0);/*flag = 3*/
+    error = rtStreamCreateWithFlags(&stream, 0, 0); /*flag = 3*/
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
@@ -534,44 +517,44 @@ TEST_F(StreamTest, stream_create_with_flag_fast)
 TEST_F(StreamTest, stream_set_proc_stream_task_fail)
 {
     rtError_t error;
-    RawDevice* device= (RawDevice*)((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    RawDevice* device = (RawDevice*)((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     // device->WaitCompletion();
 
     MOCKER(CreateStreamTaskInit).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     // ((RawDevice *)device)->platformConfig_ = 0x300;
 
-    //stream create
+    // stream create
     rtStream_t streamTest;
     error = rtStreamCreateWithFlags(&streamTest, 5, 1);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     // device->WaitCompletion();
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, stream_set_proc_l2_task_fail)
 {
     rtError_t error;
-    RawDevice* device= (RawDevice*)((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    RawDevice* device = (RawDevice*)((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     // device->WaitCompletion();
 
     MOCKER(CreateL2AddrTaskInit).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     //((RawDevice *)device)->platformConfig_ = 0x300;
 
-    //stream create
+    // stream create
     rtStream_t streamTest;
     error = rtStreamCreateWithFlags(&streamTest, 5, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // device->WaitCompletion();
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, stream_sync_fail)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
     rtEvent_t event;
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
@@ -590,7 +573,7 @@ TEST_F(StreamTest, stream_sync_fail)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelBindStream(model, stream, 0);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
 
     stream_var->SetErrCode(1);
     stream_var->SetNeedSyncFlag(false);
@@ -600,14 +583,13 @@ TEST_F(StreamTest, stream_sync_fail)
 
     stream_var->Synchronize();
 
-    //Model model;
-    rt_ut::UnwrapOrNull<Model>(model)->UnbindStream(NULL , false);
+    // Model model;
+    rt_ut::UnwrapOrNull<Model>(model)->UnbindStream(NULL, false);
 
     error = rtModelDestroy(model);
     error = rtEventDestroy(event);
     error = rtStreamDestroy(stream);
     error = rtCtxDestroy(ctx);
-
 }
 #if 0
 TEST_F(StreamTest, stream_insert_free_persist_task_id_01)
@@ -699,18 +681,18 @@ TEST_F(StreamTest, stream_tearDown_fail)
 
     error = rtCtxGetCurrent(&ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Context *ctxPtr = static_cast<Context *>(ctx);
+    Context* ctxPtr = static_cast<Context*>(ctx);
     EXPECT_NE(ctxPtr, nullptr);
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
     stream_var->pendingNum_.Set(0);
-    std::cout<<"stream create success."<<std::endl;
+    std::cout << "stream create success." << std::endl;
 
     MOCKER_CPP_VIRTUAL(ctxPtr->device_, &Device::GetDevRunningState).stubs().will(returnValue(1));
     error = rtStreamDestroy(stream);
-    std::cout<<"stream destroy success."<<std::endl;
+    std::cout << "stream destroy success." << std::endl;
 }
 
 TEST_F(StreamTest, stream_tearDownforce_test)
@@ -721,13 +703,13 @@ TEST_F(StreamTest, stream_tearDownforce_test)
 
     error = rtCtxGetCurrent(&ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Context *ctxPtr = static_cast<Context *>(ctx);
+    Context* ctxPtr = static_cast<Context*>(ctx);
     EXPECT_NE(ctxPtr, nullptr);
-    
+
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
     stream_var->pendingNum_.Set(1);
     stream_var->delayRecycleTaskid_.push_back(0);
     MOCKER_CPP_VIRTUAL(ctxPtr->device_, &Device::GetDevRunningState).stubs().will(returnValue(1));
@@ -736,15 +718,14 @@ TEST_F(StreamTest, stream_tearDownforce_test)
 
 TEST_F(StreamTest, stream_freePersistentTaskId_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     EXPECT_NE(device, nullptr);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
-    CtrlStream *cstream = new CtrlStream(device);
+    CtrlStream* cstream = new CtrlStream(device);
     EXPECT_NE(cstream, nullptr);
     stream->FreePersistentTaskID(cstream);
-    
 
     DELETE_O(stream);
     DELETE_O(cstream);
@@ -765,7 +746,7 @@ TEST_F(StreamTest, stream_StreamSqCqManage)
     manage.GetDefaultCqId(&cqId);
     bool isNeedFast = false;
     bool isFastCq = false;
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     manage.device_ = dev;
     manage.AllocLogicCq(1, isNeedFast, cqId, isFastCq, false);
@@ -788,10 +769,12 @@ TEST_F(StreamTest, stream_StreamSqCqManage_add_full)
     info[0] = stream_Id;
 
     manage.sqIdRefMap_[0] = 5;
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     manage.device_ = dev;
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()),&NpuDriver::NormalSqCqAllocate).stubs().will(returnValue((int32_t)RT_ERROR_SQID_FULL));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::NormalSqCqAllocate)
+        .stubs()
+        .will(returnValue((int32_t)RT_ERROR_SQID_FULL));
     error = manage.Add(stream_Id, 0, sqId, cqId, info, sizeof(info), msg, sizeof(msg));
     EXPECT_EQ(error, RT_ERROR_SQID_FULL);
     uint32_t getCqId = 0;
@@ -813,10 +796,12 @@ TEST_F(StreamTest, stream_StreamSqCqManage_add_full_retry_success)
     info[0] = stream_Id;
 
     manage.sqIdRefMap_[0] = 5;
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     manage.device_ = dev;
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()),&NpuDriver::NormalSqCqAllocate).stubs().will(returnObjectList((int32_t)RT_ERROR_SQID_FULL,(int32_t)RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::NormalSqCqAllocate)
+        .stubs()
+        .will(returnObjectList((int32_t)RT_ERROR_SQID_FULL, (int32_t)RT_ERROR_NONE));
     error = manage.Add(stream_Id, 0, sqId, cqId, info, sizeof(info), msg, sizeof(msg));
     EXPECT_EQ(error, RT_ERROR_NONE);
     uint32_t getCqId = 0;
@@ -836,10 +821,12 @@ TEST_F(StreamTest, stream_StreamSqCqManage_add)
     uint32_t stream_Id = 100;
     info[0] = stream_Id;
 
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     manage.device_ = dev;
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()),&NpuDriver::NormalSqCqAllocate).stubs().will(returnValue((int32_t)RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::NormalSqCqAllocate)
+        .stubs()
+        .will(returnValue((int32_t)RT_ERROR_NONE));
     error = manage.Add(stream_Id, 0, sqId, cqId, info, sizeof(info), msg, sizeof(msg));
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete dev;
@@ -863,7 +850,10 @@ TEST_F(StreamTest, stream_StreamSqCqManage_AllocLogicCq)
     error = manage.AllocLogicCq(1, isNeedFast, cqId, isFastCq, false);
     EXPECT_EQ(error, RT_ERROR_NONE);
     const uint64_t threadId = PidTidFetcher::GetCurrentUserTid();
-    MOCKER(PidTidFetcher::GetCurrentUserTid).stubs().will(returnValue(threadId + 1)).then(returnValue(threadId + 2))
+    MOCKER(PidTidFetcher::GetCurrentUserTid)
+        .stubs()
+        .will(returnValue(threadId + 1))
+        .then(returnValue(threadId + 2))
         .then(returnValue(threadId + 3));
     // normal cq first success
     isFastCq = false;
@@ -945,9 +935,9 @@ TEST_F(StreamTest, SubscribeReport_CB_2)
 
 TEST_F(StreamTest, WaitForTask)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream((Device *)device, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     stream->streamId_ = 1;
     uint32_t currentId = UINT32_MAX;
     MOCKER_CPP_VIRTUAL(device, &RawDevice::TaskReclaim)
@@ -955,19 +945,17 @@ TEST_F(StreamTest, WaitForTask)
         .with(mockcpp::any(), mockcpp::any(), outBound(currentId))
         .will(returnValue(RT_ERROR_NONE));
 
-
     rtError_t error = stream->WaitForTask(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete stream;
     delete device;
 }
 
-
 TEST_F(StreamTest, WaitForTask_Timeout2)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stream = new Stream((Device *)stubDevice, 0);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
     stream->streamId_ = 1;
     uint32_t currentId = UINT32_MAX;
     MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::TaskReclaim)
@@ -983,9 +971,9 @@ TEST_F(StreamTest, WaitForTask_Timeout2)
 
 TEST_F(StreamTest, WaitForTask_Timeout3)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stream = new Stream((Device *)stubDevice, 0);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
     stream->streamId_ = 1;
     uint32_t currentId = UINT32_MAX;
     MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::TaskReclaim)
@@ -994,8 +982,7 @@ TEST_F(StreamTest, WaitForTask_Timeout3)
         .will(returnValue(RT_ERROR_NONE));
 
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(drv,&NpuDriver::GetRunMode).stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     rtError_t error = stream->WaitForTask(0, false, 1);
     const bool curResult = (error == RT_ERROR_NONE) || (error == RT_ERROR_STREAM_SYNC_TIMEOUT);
@@ -1006,15 +993,13 @@ TEST_F(StreamTest, WaitForTask_Timeout3)
 
 TEST_F(StreamTest, ReportDestroyFlipTask)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     rtError_t error = stubDevice->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = new Stream((Device *)stubDevice, 0);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
     stream->streamId_ = 1;
 
-    MOCKER_CPP_VIRTUAL(stream, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stream, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
     stream->ReportDestroyFlipTask();
     DELETE_O(stream);
     DELETE_O(stubDevice);
@@ -1022,18 +1007,13 @@ TEST_F(StreamTest, ReportDestroyFlipTask)
 
 TEST_F(StreamTest, AllocAndSendFlipTask)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stm = new Stream((Device *)stubDevice, 0);
+    Stream* stm = new Stream((Device*)stubDevice, 0);
     stm->streamId_ = 1;
-    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(AllocTaskAndSendDc)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Engine::AddPendingNum)
-        .stubs();
+    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
+    MOCKER(AllocTaskAndSendDc).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Engine::AddPendingNum).stubs();
     uint16_t taskId = 0;
     rtError_t ret = AllocAndSendFlipTask(stm->GetMaxTaskId(), stm);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1043,20 +1023,14 @@ TEST_F(StreamTest, AllocAndSendFlipTask)
 
 TEST_F(StreamTest, AllocAndSendFlipTaskAbort)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stm = new Stream((Device *)stubDevice, 0);
+    Stream* stm = new Stream((Device*)stubDevice, 0);
     stm->streamId_ = 1;
-    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(AllocTaskAndSendDc)
-        .stubs()
-        .will(returnValue(RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL));
-    MOCKER_CPP(&Engine::AddPendingNum)
-        .stubs();
-    MOCKER_CPP(&Engine::TaskFinished)
-        .stubs();
+    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
+    MOCKER(AllocTaskAndSendDc).stubs().will(returnValue(RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL));
+    MOCKER_CPP(&Engine::AddPendingNum).stubs();
+    MOCKER_CPP(&Engine::TaskFinished).stubs();
     uint16_t taskId = 0;
     rtError_t ret = AllocAndSendFlipTask(stm->GetMaxTaskId(), stm);
     EXPECT_EQ(ret, RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL);
@@ -1066,13 +1040,13 @@ TEST_F(StreamTest, AllocAndSendFlipTaskAbort)
 
 TEST_F(StreamTest, stream_ProcFlipTask)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stream = new Stream((Device *)stubDevice, 0);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
     TaskInfo tsk = {};
     stream->streamId_ = 1;
     tsk.stream = stream;
-    TaskInfo *task1 = &tsk;
+    TaskInfo* task1 = &tsk;
     uint16_t flipNum = 1;
     rtError_t error = stream->ProcFlipTask(task1, flipNum);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1085,13 +1059,11 @@ TEST_F(StreamTest, stream_ProcFlipTask)
 
 TEST_F(StreamTest, SendFlipTask)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stm = new Stream((Device *)stubDevice, 0);
+    Stream* stm = new Stream((Device*)stubDevice, 0);
     stm->streamId_ = 1;
-    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
     uint16_t taskId = 0;
     std::unique_ptr<Engine> engine_var = std::make_unique<AsyncHwtsEngine>(stubDevice);
     stm->SetTaskIdFlipNum(1U);
@@ -1103,13 +1075,11 @@ TEST_F(StreamTest, SendFlipTask)
 
 TEST_F(StreamTest, SendFlipTaskAbort)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stm = new Stream((Device *)stubDevice, 0);
+    Stream* stm = new Stream((Device*)stubDevice, 0);
     stm->streamId_ = 1;
-    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
     uint16_t taskId = 0;
     std::unique_ptr<Engine> engine_var = std::make_unique<AsyncHwtsEngine>(stubDevice);
     MOCKER_CPP_VIRTUAL(engine_var.get(), &Engine::SendTask)
@@ -1130,17 +1100,17 @@ TEST_F(StreamTest, StreamExitTearDownAndDestructorSkipDriverRelease)
     DevProperties props = {};
     props.rtsqDepth = 16U;
     dev.RefreshDevProperties(props);
-    Stream * const stream = new Stream(&dev, 0U);
+    Stream* const stream = new Stream(&dev, 0U);
     stream->streamId_ = 7;
-    void * const fakeArgsHandle = reinterpret_cast<void *>(0x1234U);
+    void* const fakeArgsHandle = reinterpret_cast<void*>(0x1234U);
     stream->argsHandle_ = fakeArgsHandle;
-    stream->dvppRRTaskAddr_ = reinterpret_cast<void *>(0x2345U);
-    stream->timelineAddr_ = reinterpret_cast<uint64_t *>(0x3456U);
-    stream->memContainOverflowAddr_ = reinterpret_cast<void *>(0x4567U);
-    stream->switchNArg_.push_back(reinterpret_cast<void *>(0x5678U));
-    stream->recordDevMemAddr_.push_back(reinterpret_cast<void *>(0x6789U));
+    stream->dvppRRTaskAddr_ = reinterpret_cast<void*>(0x2345U);
+    stream->timelineAddr_ = reinterpret_cast<uint64_t*>(0x3456U);
+    stream->memContainOverflowAddr_ = reinterpret_cast<void*>(0x4567U);
+    stream->switchNArg_.push_back(reinterpret_cast<void*>(0x5678U));
+    stream->recordDevMemAddr_.push_back(reinterpret_cast<void*>(0x6789U));
 
-    RuntimeExitStateGuard guard(static_cast<Runtime *>(Runtime::Instance()), true);
+    RuntimeExitStateGuard guard(static_cast<Runtime*>(Runtime::Instance()), true);
 
     EXPECT_EQ(stream->TearDown(), RT_ERROR_NONE);
     EXPECT_EQ(stream->argsHandle_, fakeArgsHandle);
@@ -1153,8 +1123,8 @@ TEST_F(StreamTest, TaskResReleaseHostStateOnExitIsIdempotent)
     taskRes.taskPoolNum_ = 2U;
     const uint32_t poolSize = static_cast<uint32_t>(sizeof(TaskRes) * taskRes.taskPoolNum_);
     taskRes.CreateTaskResBaseAddr(poolSize);
-    taskRes.taskRes_ = reinterpret_cast<TaskRes *>(taskRes.GetTaskResBaseAddr());
-    taskRes.pcieBaseAddr_ = reinterpret_cast<uint8_t *>(0x1234U);
+    taskRes.taskRes_ = reinterpret_cast<TaskRes*>(taskRes.GetTaskResBaseAddr());
+    taskRes.pcieBaseAddr_ = reinterpret_cast<uint8_t*>(0x1234U);
 
     taskRes.ReleaseHostStateOnExit();
     EXPECT_EQ(taskRes.GetTaskResBaseAddr(), nullptr);
@@ -1169,7 +1139,7 @@ TEST_F(StreamTest, TaskResReleaseHostStateOnExitIsIdempotent)
 
 TEST_F(StreamTest, CbSubscribeHostOnlyDeleteClearsMapsWithoutDriverRelease)
 {
-    RuntimeExitStateGuard guard(static_cast<Runtime *>(Runtime::Instance()), true);
+    RuntimeExitStateGuard guard(static_cast<Runtime*>(Runtime::Instance()), true);
     RawDevice dev(0U);
     dev.DevSetTsId(0U);
     Stream stream(&dev, 0U);
@@ -1204,16 +1174,12 @@ TEST_F(StreamTest, CbSubscribeHostOnlyDeleteClearsMapsWithoutDriverRelease)
 
 TEST_F(StreamTest, PushFlipTask)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stm = new Stream((Device *)stubDevice, 0);
+    Stream* stm = new Stream((Device*)stubDevice, 0);
     stm->streamId_ = 1;
-    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&AsyncHwtsEngine::SubmitPush)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(stm, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
+    MOCKER_CPP(&AsyncHwtsEngine::SubmitPush).stubs().will(returnValue(RT_ERROR_NONE));
     std::unique_ptr<AsyncHwtsEngine> engine_var = std::make_unique<AsyncHwtsEngine>(stubDevice);
     stm->SetTaskIdFlipNum(1U);
     rtError_t ret = engine_var->PushFlipTask(stm->GetMaxTaskId(), stm);
@@ -1224,9 +1190,9 @@ TEST_F(StreamTest, PushFlipTask)
 
 TEST_F(StreamTest, stream_GetRecycleTaskHeadId)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stream = new Stream((Device *)stubDevice, 0);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
     stream->streamId_ = 1;
     uint32_t currentId = UINT32_MAX;
     MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::TaskReclaim)
@@ -1247,7 +1213,7 @@ TEST_F(StreamTest, GetLastTaskIdFromCqShm_notNull)
     rtError_t error;
     rtEvent_t event;
 
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(dev, (Device*)NULL);
 
     Stream stream(dev, 0);
@@ -1260,18 +1226,18 @@ TEST_F(StreamTest, GetLastTaskIdFromCqShm_notNull)
     error = rtEventDestroy(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
 TEST_F(StreamTest, stream_ProcL2AddrTask)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
-    Stream *stream = new Stream((Device *)stubDevice, 0);
+    Stream* stream = new Stream((Device*)stubDevice, 0);
     TaskInfo tsk = {};
     stream->streamId_ = 1;
     tsk.stream = stream;
-    TaskInfo *task1 = &tsk;
+    TaskInfo* task1 = &tsk;
     rtError_t error = stream->ProcL2AddrTask(task1);
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete stream;
@@ -1280,20 +1246,19 @@ TEST_F(StreamTest, stream_ProcL2AddrTask)
 
 TEST_F(StreamTest, stream_ProcL2AddrTask2)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskResManage taskResMng;
     stream->taskResMang_ = &taskResMng;
     TaskInfo tsk = {};
-    TaskInfo *task1 = &tsk;
+    TaskInfo* task1 = &tsk;
     rtError_t error = stream->ProcL2AddrTask(task1);
     stream->taskResMang_ = nullptr;
 
@@ -1303,13 +1268,13 @@ TEST_F(StreamTest, stream_ProcL2AddrTask2)
 
 TEST_F(StreamTest, TaskFactoryFreeById)
 {
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
 
-    Stream *stm = new Stream((Device *)stubDevice, 0);
+    Stream* stm = new Stream((Device*)stubDevice, 0);
     EXPECT_NE(stm, nullptr);
     stm->streamId_ = 1;
-    TaskAllocator *allocator = new (std::nothrow) TaskAllocator(128);
+    TaskAllocator* allocator = new (std::nothrow) TaskAllocator(128);
     allocator->FreeById(stm, 0, 0);
 
     delete allocator;
@@ -1320,16 +1285,15 @@ TEST_F(StreamTest, TaskFactoryFreeById)
 
 TEST_F(StreamTest, davinci_task_add_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     stream->davinciTaskListSize_ = STREAM_PUBLIC_TASK_BUFF_SIZE;
     stream->davinciTaskList_ = new (std::nothrow) uint32_t[STREAM_PUBLIC_TASK_BUFF_SIZE];
     stream->taskPublicBuffSize_ = STREAM_PUBLIC_TASK_BUFF_SIZE;
     stream->taskPublicBuff_ = new (std::nothrow) uint32_t[STREAM_PUBLIC_TASK_BUFF_SIZE];
     EXPECT_NE(stream->davinciTaskList_, nullptr);
-
 
     stream->SetIsSupportASyncRecycle(true);
 
@@ -1349,9 +1313,9 @@ TEST_F(StreamTest, davinci_task_add_test)
 
 TEST_F(StreamTest, davinci_task_add_full_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->davinciTaskListSize_ = STREAM_PUBLIC_TASK_BUFF_SIZE;
     stream->davinciTaskList_ = new (std::nothrow) uint32_t[STREAM_PUBLIC_TASK_BUFF_SIZE];
     stream->taskPublicBuffSize_ = STREAM_PUBLIC_TASK_BUFF_SIZE;
@@ -1380,13 +1344,13 @@ TEST_F(StreamTest, davinci_task_add_full_test)
 
 TEST_F(StreamTest, davinci_task_recycle_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     // stream->isLite = false;
     stream->SetStreamAsyncRecycleFlag(true);
@@ -1395,10 +1359,10 @@ TEST_F(StreamTest, davinci_task_recycle_test)
     EXPECT_EQ(stream->GetIsSupportASyncRecycle(), true);
 
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(task, nullptr);
 
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     stream->AddTaskToStream(task);
@@ -1414,10 +1378,10 @@ TEST_F(StreamTest, davinci_task_recycle_test)
     uint32_t pendNumOld = device->engine_->GetPendingNum();
     device->engine_->pendingNum_.Add(1);
     EXPECT_EQ(device->engine_->GetPendingNum(), 1 + pendNumOld);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
     result = device->engine_->ProcessTaskDavinciList(stream, taskId, 0);
     EXPECT_EQ(device->engine_->GetPendingNum(), pendNumOld);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(false);
 
     delete stream;
     delete device;
@@ -1425,22 +1389,22 @@ TEST_F(StreamTest, davinci_task_recycle_test)
 
 TEST_F(StreamTest, davinci_task_list_excption_test)
 {
-    RawDevice *device = new RawDevice(0);
-    bool disableThreadFlag = ((Runtime *)Runtime::Instance())->GetDisableThread();
+    RawDevice* device = new RawDevice(0);
+    bool disableThreadFlag = ((Runtime*)Runtime::Instance())->GetDisableThread();
 
     device->Init();
     uint16_t taskId;
     uint16_t delTaskId;
     rtError_t result;
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     result = stream->TryDelDavinciRecordedTask(taskId, &delTaskId);
     EXPECT_EQ(result, RT_ERROR_STREAM_EMPTY);
 
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
     result = stream->TryDelDavinciRecordedTask(taskId, &delTaskId);
     EXPECT_EQ(result, RT_ERROR_STREAM_EMPTY);
 
-    ((Runtime *)Runtime::Instance())->SetDisableThread(disableThreadFlag);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(disableThreadFlag);
 
     delete stream;
     delete device;
@@ -1448,34 +1412,32 @@ TEST_F(StreamTest, davinci_task_list_excption_test)
 
 TEST_F(StreamTest, davinci_task_del_test)
 {
-    RawDevice *device = new RawDevice(0);
-    bool disableThreadFlag = ((Runtime *)Runtime::Instance())->GetDisableThread();
+    RawDevice* device = new RawDevice(0);
+    bool disableThreadFlag = ((Runtime*)Runtime::Instance())->GetDisableThread();
 
     NpuDriver drv;
-    Engine *engine = new AsyncHwtsEngine(device);
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-    MOCKER_CPP_VIRTUAL(engine, &Engine::Start).stubs()
-                       .will(returnValue((uint32_t)RT_ERROR_NONE));
+    Engine* engine = new AsyncHwtsEngine(device);
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(engine, &Engine::Start).stubs().will(returnValue((uint32_t)RT_ERROR_NONE));
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     EXPECT_EQ(stream->GetIsSupportASyncRecycle(), true);
 
     // DavinciKernelTask
     TaskInfo task = {};
     InitByStream(&task, stream);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     task.id = 1;
     stream->AddTaskToStream(&task);
     EXPECT_EQ(stream->davinciTaskTail_, 1);
 
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
 
     uint16_t taskId = stream->davinciTaskTail_;
     uint16_t delTaskId;
@@ -1490,7 +1452,7 @@ TEST_F(StreamTest, davinci_task_del_test)
     result = stream->TryDelDavinciRecordedTask(taskId, &delTaskId);
     EXPECT_EQ(result, RT_ERROR_STREAM_EMPTY);
 
-    ((Runtime *)Runtime::Instance())->SetDisableThread(disableThreadFlag);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(disableThreadFlag);
 
     delete stream;
     delete engine;
@@ -1499,26 +1461,26 @@ TEST_F(StreamTest, davinci_task_del_test)
 
 TEST_F(StreamTest, stream_sync_failure)
 {
-    RawDevice *device = new RawDevice(0);
-    bool disableThreadFlag = ((Runtime *)Runtime::Instance())->GetDisableThread();
+    RawDevice* device = new RawDevice(0);
+    bool disableThreadFlag = ((Runtime*)Runtime::Instance())->GetDisableThread();
 
     MOCKER_CPP(&Stream::WaitForTask).stubs().will(returnValue(RT_ERROR_END_OF_SEQUENCE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
-    Stream *stream = new Stream(device, 0);
-    Context *ctx = new Context(device, 0);
+    Stream* stream = new Stream(device, 0);
+    Context* ctx = new Context(device, 0);
     ctx->Init();
 
     stream->SetFailureMode(ABORT_ON_FAILURE);
     stream->context_ = ctx;
     stream->SetErrCode(0x95);
     stream->context_ = nullptr;
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
     rtError_t error = stream->Synchronize();
     EXPECT_EQ(error, RT_ERROR_END_OF_SEQUENCE);
 
-    ((Runtime *)Runtime::Instance())->SetDisableThread(disableThreadFlag);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(disableThreadFlag);
 
     delete ctx;
     delete stream;
@@ -1527,35 +1489,36 @@ TEST_F(StreamTest, stream_sync_failure)
 
 TEST_F(StreamTest, stream_EnterFailureAbort)
 {
-    RawDevice *device = new RawDevice(0);
-    bool disableThreadFlag = ((Runtime *)Runtime::Instance())->GetDisableThread();
+    RawDevice* device = new RawDevice(0);
+    bool disableThreadFlag = ((Runtime*)Runtime::Instance())->GetDisableThread();
 
     MOCKER_CPP(&Stream::WaitForTask).stubs().will(returnValue(RT_ERROR_END_OF_SEQUENCE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->failureMode_ = STOP_ON_FAILURE;
     stream->EnterFailureAbort();
     EXPECT_EQ(stream->GetFailureMode(), 2);
 
     delete stream;
     MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer)
-        .stubs().will(returnValue(static_cast<rtError_t>(RT_ERROR_NONE)));
+        .stubs()
+        .will(returnValue(static_cast<rtError_t>(RT_ERROR_NONE)));
     (void)device->Stop();
     delete device;
 }
 
 TEST_F(StreamTest, public_task_recycle_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
     MOCKER_CPP_VIRTUAL(device->engine_, &Engine::WakeUpRecycleThread).stubs();
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     // stream->isLite = false;
     stream->SetStreamAsyncRecycleFlag(true);
@@ -1564,9 +1527,9 @@ TEST_F(StreamTest, public_task_recycle_test)
     EXPECT_EQ(stream->GetIsSupportASyncRecycle(), true);
 
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(task, nullptr);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     stream->AddTaskToStream(task);
@@ -1585,21 +1548,21 @@ TEST_F(StreamTest, public_task_recycle_test)
 
 TEST_F(StreamTest, process_task_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Engine::ProcessPublicTask).stubs().will(returnValue(true));
     MOCKER_CPP(&Engine::ProcessTaskDavinciList).stubs().will(returnValue(false));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->SetStreamAsyncRecycleFlag(false);
     stream->SetIsSupportASyncRecycle(true);
     EXPECT_EQ(stream->GetIsSupportASyncRecycle(), true);
 
     TaskInfo task = {};
     InitByStream(&task, stream);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -1614,29 +1577,28 @@ TEST_F(StreamTest, process_task_test)
     delete device;
 }
 
-
 TEST_F(StreamTest, StreamSetupTest)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream(device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream(device, 0);
 
     MOCKER_CPP(&StreamSqCqManage::AllocStreamSqCq).stubs().will(returnValue(RT_ERROR_SQ_NO_EXIST_SQ_TO_REUSE));
     rtError_t ret = stream->Setup();
     ASSERT_EQ(ret, RT_ERROR_SQ_NO_EXIST_SQ_TO_REUSE);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, stream_setup_fail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     MOCKER(memset_s).stubs().will(returnValue(~EOK));
     stream->Setup();
@@ -1647,13 +1609,13 @@ TEST_F(StreamTest, stream_setup_fail)
 
 TEST_F(StreamTest, stream_delete_postotaskidmap)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     stream->DelPosToTaskIdMap(4097);
     stream->DelPosToTaskIdMap(0);
@@ -1664,15 +1626,14 @@ TEST_F(StreamTest, stream_delete_postotaskidmap)
 
 TEST_F(StreamTest, get_max_trycount_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->SetStreamFastSync(true);
     stream->isModelExcel = true;
     stream->isModelComplete = true;
@@ -1683,19 +1644,16 @@ TEST_F(StreamTest, get_max_trycount_test)
     delete device;
 }
 
-
-
 TEST_F(StreamTest, stars_get_max_trycount_test_1)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->pendingNum_.Add(1U);
     stream->SetStreamFastSync(true);
     stream->isModelExcel = true;
@@ -1711,15 +1669,14 @@ TEST_F(StreamTest, stars_get_max_trycount_test_1)
 
 TEST_F(StreamTest, stars_get_max_trycount_test_2)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->pendingNum_.Add(1U);
     stream->SetStreamFastSync(true);
     stream->isModelExcel = false;
@@ -1735,15 +1692,14 @@ TEST_F(StreamTest, stars_get_max_trycount_test_2)
 
 TEST_F(StreamTest, IsDavinciTask)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     TaskInfo task = {};
@@ -1762,15 +1718,14 @@ TEST_F(StreamTest, IsDavinciTask)
 
 TEST_F(StreamTest, AddArgToRecycleList)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     TaskInfo task = {};
@@ -1795,15 +1750,14 @@ TEST_F(StreamTest, AddArgToRecycleList)
 
 TEST_F(StreamTest, AddArgToRecycleListNoMix)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     TaskInfo task = {};
@@ -1818,22 +1772,22 @@ TEST_F(StreamTest, AddArgToRecycleListNoMix)
 
 TEST_F(StreamTest, ProcArgRecycleList)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     TaskInfo task = {};
     task.u.aicTaskInfo.mixOpt = false;
     stream->CreateArgRecycleList(STREAM_PUBLIC_TASK_BUFF_SIZE);
     stream->AddArgToRecycleList(&task);
-    stream->ProcArgRecycleList();;
+    stream->ProcArgRecycleList();
+    ;
     stream->DestroyArgRecycleList(STREAM_PUBLIC_TASK_BUFF_SIZE);
 
     delete stream;
@@ -1842,18 +1796,17 @@ TEST_F(StreamTest, ProcArgRecycleList)
 
 TEST_F(StreamTest, GetStarsVersion)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
-    MOCKER_CPP(&TaskFactory::Alloc).stubs().will(returnValue((TaskInfo *)nullptr));
+    MOCKER_CPP(&TaskFactory::Alloc).stubs().will(returnValue((TaskInfo*)nullptr));
 
     stream->taskResMang_ = nullptr;
     rtError_t error = stream->GetStarsVersion();
@@ -1873,15 +1826,14 @@ TEST_F(StreamTest, GetStarsVersion)
 
 TEST_F(StreamTest, GetErrorForAbortOnFailure)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs()
-                       .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     rtError_t error = stream->GetErrorForAbortOnFailure(RT_ERROR_STREAM_FULL);
@@ -1906,9 +1858,9 @@ TEST_F(StreamTest, GetHostFuncExecuteError)
 
 TEST_F(StreamTest, return_if_devstatus_not_normal_and_bindflag_true)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     device->SetDevStatus(RT_ERROR_SOCKET_CLOSE);
@@ -1920,14 +1872,14 @@ TEST_F(StreamTest, return_if_devstatus_not_normal_and_bindflag_true)
 
 TEST_F(StreamTest, StarsStmDfxCheck_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
     MOCKER_CPP_VIRTUAL(device->engine_, &Engine::WakeUpRecycleThread).stubs();
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     stream->SetStreamAsyncRecycleFlag(true);
     EXPECT_NE(stream->davinciTaskList_, nullptr);
@@ -1935,9 +1887,9 @@ TEST_F(StreamTest, StarsStmDfxCheck_test)
     EXPECT_EQ(stream->GetIsSupportASyncRecycle(), true);
 
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(task, nullptr);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(task, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     stream->AddTaskToStream(task);
@@ -1969,18 +1921,18 @@ TEST_F(StreamTest, StarsStmDfxCheck_test)
 
 TEST_F(StreamTest, ShowDfxInfo_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
     MOCKER_CPP_VIRTUAL(device->engine_, &Engine::WakeUpRecycleThread).stubs();
 
-    Stream *stream = new Stream(device, 0);
-    TaskResManage *taskRes = new (std::nothrow) TaskResManage();
+    Stream* stream = new Stream(device, 0);
+    TaskResManage* taskRes = new (std::nothrow) TaskResManage();
 
     uint32_t taskPoolSize = taskRes->taskPoolNum_ * sizeof(TaskRes);
-    uint8_t *taskResBaseAddr_ = new (std::nothrow) uint8_t[taskPoolSize];
+    uint8_t* taskResBaseAddr_ = new (std::nothrow) uint8_t[taskPoolSize];
 
     memset_s(taskResBaseAddr_, taskPoolSize, 0U, taskPoolSize);
     taskRes->taskRes_ = (TaskRes*)taskResBaseAddr_;
@@ -1997,12 +1949,12 @@ TEST_F(StreamTest, ShowDfxInfo_test)
 
 TEST_F(StreamTest, Apply_CntValue)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
     MOCKER_CPP_VIRTUAL(device->engine_, &Engine::WakeUpRecycleThread).stubs();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     uint32_t cntValue = 0U;
     rtError_t error = stream->ApplyCntValue(cntValue);
     EXPECT_EQ(cntValue, 0);
@@ -2012,21 +1964,14 @@ TEST_F(StreamTest, Apply_CntValue)
 
 TEST_F(StreamTest, rtResClear_01)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
 
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(device, &RawDevice::TaskReclaim)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device, &RawDevice::GetDevRunningState)
-        .stubs()
-        .will(returnValue(0U))
-        .then(returnValue(1U));
-    MOCKER_CPP_VIRTUAL(device, &RawDevice::DelStreamFromMessageQueue)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::TaskReclaim).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::GetDevRunningState).stubs().will(returnValue(0U)).then(returnValue(1U));
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::DelStreamFromMessageQueue).stubs().will(returnValue(0));
     stream->pendingNum_.Set(1);
     stream->SetIsSupportASyncRecycle(true);
     rtError_t error = stream->ResClear();
@@ -2079,37 +2024,37 @@ TEST_F(StreamTest, SetFailureMode)
     device->Init();
     std::unique_ptr<Stream> stream = std::make_unique<Stream>(device.get(), 0);
     device->chipType_ = CHIP_DC;
-    Context * context = new Context(device.get(), true);
+    Context* context = new Context(device.get(), true);
     stream->context_ = context;
     stream->taskResMang_ = nullptr;
     TaskInfo kernTask = {};
-    kernTask.stream=stream.get();
+    kernTask.stream = stream.get();
     MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(&kernTask));
-    MOCKER_CPP_VIRTUAL(device.get(), &RawDevice::SubmitTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device.get(), &RawDevice::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
     Runtime::maxProgramNum_ = 0;
     rtError_t error = stream->SetFailMode(STOP_ON_FAILURE);
     EXPECT_EQ(error, RT_ERROR_NONE);
     device->chipType_ = oldChipType;
     delete context;
     Runtime::maxProgramNum_ = num;
-    GlobalMockObject::verify(); 
+    GlobalMockObject::verify();
 }
 
 TEST_F(StreamTest, GetTimeLineValue_err_01)
 {
     rtError_t error;
     uint64_t ret;
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
     MOCKER_CPP_VIRTUAL(device->engine_, &Engine::WakeUpRecycleThread).stubs();
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::MemCopySync).stubs().will(returnValue((int32_t)RT_ERROR_DRV_MEMORY));
-    Stream *stream = new Stream(device, 0);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::MemCopySync)
+        .stubs()
+        .will(returnValue((int32_t)RT_ERROR_DRV_MEMORY));
+    Stream* stream = new Stream(device, 0);
     stream->timelineOffset_.insert(0);
     ret = stream->GetTimelineValue(0, 0);
 
@@ -2122,15 +2067,17 @@ TEST_F(StreamTest, GetLastFinishTaskId_err)
 {
     rtError_t error;
     uint64_t ret;
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(true));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
     MOCKER_CPP_VIRTUAL(device->engine_, &Engine::WakeUpRecycleThread).stubs();
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::MemCopySync).stubs().will(returnValue((uint32_t)RT_ERROR_DRV_MEMORY));
-    Stream *stream = new Stream(device, 0);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::MemCopySync)
+        .stubs()
+        .will(returnValue((uint32_t)RT_ERROR_DRV_MEMORY));
+    Stream* stream = new Stream(device, 0);
     uint32_t currId = 0;
     error = stream->GetLastFinishTaskId(0, currId, 100);
     EXPECT_NE(ret, RT_ERROR_NONE);
@@ -2140,9 +2087,9 @@ TEST_F(StreamTest, GetLastFinishTaskId_err)
 
 TEST_F(StreamTest, IsStreamFull_True)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     bool ret;
     uint32_t head = 5;
@@ -2164,10 +2111,10 @@ TEST_F(StreamTest, IsStreamFull_True)
 
 TEST_F(StreamTest, GetTaskEventIdOrNotifyId)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
 
     TaskInfo task = {};
@@ -2251,7 +2198,7 @@ TEST_F(StreamTest, stream_taskGrp_status)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     error = stm->UpdateTaskGroupStatus(StreamTaskGroupStatus::BUTT);
     EXPECT_EQ(error, RT_ERROR_STREAM_TASKGRP_STATUS);
 
@@ -2321,20 +2268,20 @@ TEST_F(StreamTest, stream_handle_invalid_after_destroy)
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *destroyedStream = nullptr;
+    Stream* destroyedStream = nullptr;
     EXPECT_EQ(GetValidatedObject<Stream>(stream, destroyedStream), RT_ERROR_INVALID_HANDLE);
 }
 
 TEST_F(StreamTest, stream_destroy_pre_callback_receives_valid_handle)
 {
-    const char_t * const regName = "ValidateDestroyPreHandle";
+    const char_t* const regName = "ValidateDestroyPreHandle";
     StreamDestroyPreCallbackCheck check;
     EXPECT_EQ(rtsRegStreamStateCallback(regName, ValidateStreamDestroyPreCallback, &check), RT_ERROR_NONE);
 
     rtStream_t stream = nullptr;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *createdStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* createdStream = rt_ut::UnwrapOrNull<Stream>(stream);
     EXPECT_NE(createdStream, nullptr);
 
     error = rtStreamDestroy(stream);
@@ -2343,7 +2290,7 @@ TEST_F(StreamTest, stream_destroy_pre_callback_receives_valid_handle)
     EXPECT_EQ(check.validationResult, RT_ERROR_NONE);
     EXPECT_EQ(check.stream, createdStream);
 
-    Stream *destroyedStream = nullptr;
+    Stream* destroyedStream = nullptr;
     EXPECT_EQ(GetValidatedObject<Stream>(stream, destroyedStream), RT_ERROR_INVALID_HANDLE);
     EXPECT_EQ(rtsRegStreamStateCallback(regName, nullptr, nullptr), RT_ERROR_NONE);
 }
@@ -2357,15 +2304,15 @@ TEST_F(StreamTest, stream_destroy_bound_stream_keeps_handle_valid)
     error = rtModelCreate(&model, 0);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
-    Model *modelObj = rt_ut::UnwrapOrNull<Model>(model);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Model* modelObj = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(streamObj, nullptr);
     ASSERT_NE(modelObj, nullptr);
     streamObj->SetModel(modelObj);
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_ERROR_RT_STREAM_MODEL);
-    Stream *validatedStream = nullptr;
+    Stream* validatedStream = nullptr;
     EXPECT_EQ(GetValidatedObject<Stream>(stream, validatedStream), RT_ERROR_NONE);
 
     streamObj->DelModel(modelObj);
@@ -2399,7 +2346,8 @@ TEST_F(StreamTest, rtsStreamDestroy_invalidFlags)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
-TEST_F(StreamTest, rtsStreamAbort_normal) {
+TEST_F(StreamTest, rtsStreamAbort_normal)
+{
     rtStream_t stream;
     rtError_t error = RT_ERROR_NONE;
     error = rtStreamCreate(&stream, 0);
@@ -2411,22 +2359,16 @@ TEST_F(StreamTest, rtsStreamAbort_normal) {
     count = sizeof(ts_ctrl_msg_body_t);
     MOCKER(halTsdrvCtl)
         .stubs()
-	.with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void*)&ack, sizeof(ack)), outBoundP(&count, sizeof(count)))
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void*)&ack, sizeof(ack)),
+            outBoundP(&count, sizeof(count)))
         .will(returnValue(DRV_ERROR_NONE));
 
-    MOCKER_CPP(&Context::IsStreamAbortSupported)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&Context::IsStreamAbortSupported).stubs().will(returnValue(true));
 
-    MOCKER(halSqCqFree)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
-    MOCKER(halSqCqAllocate)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
-    MOCKER_CPP(&StreamSqCqManage::UpdateStreamSqCq)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER(halSqCqFree).stubs().will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halSqCqAllocate).stubs().will(returnValue(DRV_ERROR_NONE));
+    MOCKER_CPP(&StreamSqCqManage::UpdateStreamSqCq).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = rtsStreamAbort(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2500,7 +2442,7 @@ TEST_F(StreamTest, rtsStreamQuery_normal)
     rtError_t error = RT_ERROR_NONE;
 
     error = rtStreamCreate(&stream, 0);
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     MOCKER_CPP_VIRTUAL(api, &Api::StreamQuery).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtsStreamQuery(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -2517,63 +2459,63 @@ TEST_F(StreamTest, rtsStreamGetAvailableNum_normal)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
-TEST_F(StreamTest, stream_create_with_invalid_config) {
+TEST_F(StreamTest, stream_create_with_invalid_config)
+{
     rtError_t error;
     rtStream_t stream;
     rtStreamCreateConfig_t config;
     rtStreamCreateAttr_t attrs[1];
- 
+
     // 配置无效id
     attrs[0].id = RT_STREAM_CREATE_ATTR_MAX;
     attrs[0].value.flags = 0; // 任意值，因为属性ID未知，值不会被使用
- 
+
     config.attrs = attrs;
     config.numAttrs = 1;
- 
+
     error = rtsStreamCreate(&stream, &config);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
-}
- 
-TEST_F(StreamTest, stream_create_with_valid_config) {
-    rtError_t error;
-    rtStream_t stream;
-    rtStreamCreateConfig_t config;
-    rtStreamCreateAttr_t attrs[2];
- 
-    // 配置有效的FLAGS和PRIORITY
-    attrs[0].id = RT_STREAM_CREATE_ATTR_FLAGS;
-    attrs[0].value.flags = 8; // 假设8是有效的FLAGS值
-    attrs[1].id = RT_STREAM_CREATE_ATTR_PRIORITY;
-    attrs[1].value.priority = 5; // 有效PRIORITY值
- 
- 
-    config.attrs = attrs;
-    config.numAttrs = 2;
- 
-    error = rtsStreamCreate(&stream, &config);
-    EXPECT_EQ(error, RT_ERROR_NONE);
- 
-    // 清理资源
-    error = rtStreamDestroy(stream);
-    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(StreamTest, stream_create_with_priority_out_of_range) 
+TEST_F(StreamTest, stream_create_with_valid_config)
 {
     rtError_t error;
     rtStream_t stream;
     rtStreamCreateConfig_t config;
     rtStreamCreateAttr_t attrs[2];
- 
+
+    // 配置有效的FLAGS和PRIORITY
+    attrs[0].id = RT_STREAM_CREATE_ATTR_FLAGS;
+    attrs[0].value.flags = 8;    // 假设8是有效的FLAGS值
+    attrs[1].id = RT_STREAM_CREATE_ATTR_PRIORITY;
+    attrs[1].value.priority = 5; // 有效PRIORITY值
+
+    config.attrs = attrs;
+    config.numAttrs = 2;
+
+    error = rtsStreamCreate(&stream, &config);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+
+    // 清理资源
+    error = rtStreamDestroy(stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+}
+
+TEST_F(StreamTest, stream_create_with_priority_out_of_range)
+{
+    rtError_t error;
+    rtStream_t stream;
+    rtStreamCreateConfig_t config;
+    rtStreamCreateAttr_t attrs[2];
+
     attrs[0].id = RT_STREAM_CREATE_ATTR_FLAGS;
     attrs[0].value.flags = 8;
     attrs[1].id = RT_STREAM_CREATE_ATTR_PRIORITY;
     attrs[1].value.priority = 8; // Out of range [0, 7]
- 
+
     config.attrs = attrs;
     config.numAttrs = 2;
- 
+
     error = rtsStreamCreate(&stream, &config);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -2592,7 +2534,7 @@ TEST_F(StreamTest, get_priority_range)
 }
 
 TEST_F(StreamTest, get_priority_range_with_nullptr)
-{ 
+{
     rtError_t error;
     int32_t leastPriority;
     int32_t greatestPriority;
@@ -2606,35 +2548,36 @@ TEST_F(StreamTest, get_priority_range_with_nullptr)
     error = rtDeviceGetStreamPriorityRange(NULL, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
- 
-TEST_F(StreamTest, stream_set_attribute1) {
+
+TEST_F(StreamTest, stream_set_attribute1)
+{
     rtStream_t stream;
     rtError_t error;
     rtStreamAttrValue_t value;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     value.failureMode = RT_STREAM_FAILURE_MODE_CONTINUE_ON_FAILURE; // 假设这是一个有效的失败模式值
- 
+
     // 创建流
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     // 设置属性
     error = rtsStreamSetAttribute(stream, RT_STREAM_ATTR_FAILURE_MODE, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     value.overflowSwitch = false; // 关闭溢出检测
     error = rtsStreamSetAttribute(stream, RT_STREAM_ATTR_FLOAT_OVERFLOW_CHECK, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     value.userCustomTag = 0; // 不使用自定义标签
     error = rtsStreamSetAttribute(stream, RT_STREAM_ATTR_USER_CUSTOM_TAG, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtsStreamSetAttribute(stream, RT_STREAM_ATTR_MAX, &value);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
+
     error = rtsStreamSetAttribute(stream, RT_STREAM_ATTR_MAX, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -2643,12 +2586,12 @@ TEST_F(StreamTest, stream_set_attribute1) {
     setvalue.streamPriority = 8; // 修改流优先级的值
     error = rtsStreamSetAttribute(stream, RT_STREAM_ATTR_PRIORITY, &setvalue);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     // 销毁流
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, stream_get_attribute1)
@@ -2656,30 +2599,28 @@ TEST_F(StreamTest, stream_get_attribute1)
     rtError_t error;
     rtStreamAttrValue_t setvalue;
     rtStreamAttrValue_t stmModeRet;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
 
-    MOCKER_CPP_VIRTUAL(device, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
- 
-    Stream *stream = nullptr;
+    MOCKER_CPP_VIRTUAL(device, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
+
+    Stream* stream = nullptr;
     error = rtsStreamGetAttribute(stream, RT_STREAM_ATTR_MAX, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     error = rtsStreamGetAttribute(nullptr, RT_STREAM_ATTR_MAX, &stmModeRet);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
+
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
     stream = rt_ut::UnwrapOrNull<Stream>(stm);
- 
+
     setvalue.failureMode = RT_STREAM_FAILURE_MODE_CONTINUE_ON_FAILURE; // 假设这是一个有效的失败模式值
     error = rtsStreamSetAttribute(stm, RT_STREAM_ATTR_FAILURE_MODE, &setvalue);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtsStreamGetAttribute(stm, RT_STREAM_ATTR_FAILURE_MODE, &stmModeRet);
     EXPECT_EQ(stmModeRet.failureMode, RT_STREAM_FAILURE_MODE_CONTINUE_ON_FAILURE);
- 
+
     setvalue = {0};
     setvalue.overflowSwitch = true; // 关闭溢出检测
     error = rtsStreamSetAttribute(stm, RT_STREAM_ATTR_FLOAT_OVERFLOW_CHECK, &setvalue);
@@ -2687,7 +2628,7 @@ TEST_F(StreamTest, stream_get_attribute1)
     stmModeRet = {0};
     error = rtsStreamGetAttribute(stm, RT_STREAM_ATTR_FLOAT_OVERFLOW_CHECK, &stmModeRet);
     EXPECT_EQ(stmModeRet.overflowSwitch, true);
- 
+
     setvalue = {0};
     setvalue.userCustomTag = 0; // 关闭溢出检测
     error = rtsStreamSetAttribute(stm, RT_STREAM_ATTR_USER_CUSTOM_TAG, &setvalue);
@@ -2703,13 +2644,14 @@ TEST_F(StreamTest, stream_get_attribute1)
     stmModeRet = {0};
     error = rtsStreamGetAttribute(stm, RT_STREAM_ATTR_PRIORITY, &stmModeRet);
     EXPECT_EQ(stmModeRet.streamPriority, 0);
- 
+
     error = rtStreamDestroy(stm);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-TEST_F(StreamTest, stream_update_stream_sqcq) {
+TEST_F(StreamTest, stream_update_stream_sqcq)
+{
     rtStream_t stream;
     rtError_t error = RT_ERROR_NONE;
     error = rtStreamCreate(&stream, 0);
@@ -2718,11 +2660,13 @@ TEST_F(StreamTest, stream_update_stream_sqcq) {
     std::shared_ptr<RawDevice> dev = std::make_shared<RawDevice>(0);
     dev->Init();
     manage.device_ = dev.get();
-    Stream *streamPtr = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamPtr = rt_ut::UnwrapOrNull<Stream>(stream);
     manage.UpdateStreamSqCq(streamPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
     streamPtr->SetSqBaseAddr(1);
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()),&NpuDriver::GetSqAddrInfo).stubs().will(returnValue((int32_t)RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::GetSqAddrInfo)
+        .stubs()
+        .will(returnValue((int32_t)RT_ERROR_NONE));
     manage.UpdateStreamSqCq(streamPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtsStreamDestroy(stream, 0x0);
@@ -2731,43 +2675,43 @@ TEST_F(StreamTest, stream_update_stream_sqcq) {
 
 TEST_F(StreamTest, StreamSetupCreateRecycleListTest)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream(device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream(device, 0);
 
     MOCKER_CPP(&StreamSqCqManage::AllocStreamSqCq).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Stream::AllocLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
     stream->isSupportASyncRecycle_ = true;
     stream->isHasPcieBar_ = true;
-    ((Runtime *)Runtime::Instance())->disableThread_ = false;
+    ((Runtime*)Runtime::Instance())->disableThread_ = false;
     MOCKER_CPP(&Stream::SubmitCreateStreamTask).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     rtError_t ret = stream->Setup();
     ASSERT_EQ(ret, RT_ERROR_INVALID_VALUE);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, Test_CreateStreamAndGet)
 {
     rtError_t error;
-    RawDevice* device= (RawDevice*)((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    RawDevice* device = (RawDevice*)((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
 
     MOCKER_CPP(&StreamSqCqManage::AllocStreamSqCq).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Stream::AllocLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
-    //stream create
+    // stream create
     rtStream_t streamTest;
     error = rtStreamCreateWithFlags(&streamTest, 0, RT_STREAM_CP_PROCESS_USE);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, public_queue)
 {
-    RawDevice* device= (RawDevice*)((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    
+    RawDevice* device = (RawDevice*)((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+
     Stream stream(device, 0);
     uint16_t delTaskPos;
     uint16_t endRecylePos = 10;
@@ -2775,23 +2719,22 @@ TEST_F(StreamTest, public_queue)
     stream.finishTaskId_ = 10;
     EXPECT_EQ(stream.StarsGetPublicTaskHead(&workTask, true, endRecylePos, &delTaskPos), RT_ERROR_STREAM_EMPTY);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(StreamTest, rtsLaunchHostFunc00)
 {
     const bool oldDisableThread = Runtime::Instance()->GetDisableThread();
     Runtime::Instance()->SetDisableThread(true);
-    const ScopeGuard disableThreadGuard([oldDisableThread]() {
-        Runtime::Instance()->SetDisableThread(oldDisableThread);
-    });
+    const ScopeGuard disableThreadGuard(
+        [oldDisableThread]() { Runtime::Instance()->SetDisableThread(oldDisableThread); });
     rtError_t error;
-    Stream streamObj(static_cast<Device *>(nullptr), 0U);
+    Stream streamObj(static_cast<Device*>(nullptr), 0U);
     InitEmbeddedInnerHandle<Stream>(&streamObj);
     rtStream_t stream = ExportEmbeddedHandle<rtStream_t>(&streamObj);
     ASSERT_NE(stream, nullptr);
 
-    Api * const api = Api::Instance();
+    Api* const api = Api::Instance();
     ASSERT_NE(api, nullptr);
     MOCKER_CPP_VIRTUAL(api, &Api::LaunchHostFunc)
         .stubs()
@@ -2804,7 +2747,7 @@ TEST_F(StreamTest, rtsLaunchHostFunc00)
     error = rtsLaunchHostFunc(NULL, ApiTest_Stream_Cb, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
-    }
+}
 
 TEST_F(StreamTest, SendFlipTaskWithStreamId_SuccessPath)
 {
@@ -2822,9 +2765,7 @@ TEST_F(StreamTest, SendFlipTaskWithStreamId_SuccessPath)
     flipTask.type = TS_TASK_TYPE_FLIP;
     flipTask.stream = ctrlStream;
     Runtime::Instance()->SetTrackProfFlag(true);
-    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
     MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::GetCtrlStream)
         .stubs()
         .with(mockcpp::any())
@@ -2861,9 +2802,7 @@ TEST_F(StreamTest, SendFlipTaskWithStreamId_GateCond2_TsNotSupport)
     stream->streamId_ = 1;
     stream->device_ = stubDevice;
     Runtime::Instance()->SetTrackProfFlag(true);
-    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(false));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(false));
     rtError_t ret = SendFlipTaskWithStreamId(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     Runtime::Instance()->SetTrackProfFlag(false);
@@ -2882,9 +2821,7 @@ TEST_F(StreamTest, SendFlipTaskWithStreamId_CtrlStreamNull)
     stream->device_ = stubDevice;
     Runtime::Instance()->SetTrackProfFlag(true);
     stream->SetStreamCacheOpInfoSwitch(1U);
-    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
     MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::GetCtrlStream)
         .stubs()
         .with(mockcpp::any())
@@ -2910,20 +2847,14 @@ TEST_F(StreamTest, SendFlipTaskWithStreamId_AllocTaskFail)
     ctrlStream->streamId_ = 2;
     ctrlStream->device_ = stubDevice;
     Runtime::Instance()->SetTrackProfFlag(true);
-    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
     MOCKER_CPP_VIRTUAL(stubDevice, &RawDevice::GetCtrlStream)
         .stubs()
         .with(mockcpp::any())
         .will(returnValue(ctrlStream));
     MOCKER_CPP(&Stream::AllocTask)
         .stubs()
-        .with(mockcpp::any(),
-              mockcpp::any(),
-              outBound(RT_ERROR_TASK_NOT_SUPPORT),
-              mockcpp::any(),
-              mockcpp::any())
+        .with(mockcpp::any(), mockcpp::any(), outBound(RT_ERROR_TASK_NOT_SUPPORT), mockcpp::any(), mockcpp::any())
         .will(returnValue(static_cast<TaskInfo*>(nullptr)));
     stream->SetSoftWareSqEnable();
     rtError_t ret = SendFlipTaskWithStreamId(stream);
@@ -2936,17 +2867,17 @@ TEST_F(StreamTest, SendFlipTaskWithStreamId_AllocTaskFail)
 }
 TEST_F(StreamTest, recycle_model_delay_recycle_task_cannot_find_task)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     EXPECT_EQ(device->Init(), RT_ERROR_NONE);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_EQ(stream->Setup(), RT_ERROR_NONE);
     stream->SetBindFlag(true);
     stream->streamId_ = 1;
 
     stream->delayRecycleTaskid_.push_back(100);
 
-    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue((TaskInfo *)nullptr));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue((TaskInfo*)nullptr));
 
     stream->RecycleModelDelayRecycleTask();
 
@@ -2958,12 +2889,10 @@ TEST_F(StreamTest, recycle_model_delay_recycle_task_cannot_find_task)
 
 TEST_F(StreamTest, ShmCqInitVirtualCqNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
-    MOCKER_CPP_VIRTUAL(driver, &Driver::VirtualCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    Driver* driver = device->Driver_();
+    MOCKER_CPP_VIRTUAL(driver, &Driver::VirtualCqAllocate).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     {
         ShmCq shmCq;
@@ -2975,12 +2904,10 @@ TEST_F(StreamTest, ShmCqInitVirtualCqNoResource)
 
 TEST_F(StreamTest, DvppGrpSetupLogicCqNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
-    MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqAllocateV2)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    Driver* driver = device->Driver_();
+    MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqAllocateV2).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     {
         DvppGrp grp(device, 0U);
@@ -2992,32 +2919,24 @@ TEST_F(StreamTest, DvppGrpSetupLogicCqNoResource)
 
 TEST_F(StreamTest, StreamSetupAllocSqCqNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
-    Stream *stream = new Stream(device, 0U);
+    Driver* driver = device->Driver_();
+    Stream* stream = new Stream(device, 0U);
     int32_t streamId = 1;
     MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc)
         .stubs()
         .with(outBoundP(&streamId, sizeof(streamId)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    void *executedTimes = reinterpret_cast<void *>(0x1000);
+    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdFree).stubs().will(returnValue(RT_ERROR_NONE));
+    void* executedTimes = reinterpret_cast<void*>(0x1000);
     MOCKER_CPP_VIRTUAL(driver, &Driver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&executedTimes, sizeof(executedTimes)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::MemSetSync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::NormalSqCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::MemSetSync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::NormalSqCqAllocate).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     EXPECT_EQ(stream->Setup(), RT_ERROR_DRV_NO_RESOURCES);
 
@@ -3027,12 +2946,10 @@ TEST_F(StreamTest, StreamSetupAllocSqCqNoResource)
 
 TEST_F(StreamTest, CoprocessorStreamSetupStreamIdNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
-    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_STREAM_RESOURCES));
+    Driver* driver = device->Driver_();
+    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc).stubs().will(returnValue(RT_ERROR_DRV_NO_STREAM_RESOURCES));
 
     {
         CoprocessorStream stream(device, 0U, 0U);
@@ -3045,20 +2962,16 @@ TEST_F(StreamTest, CoprocessorStreamSetupStreamIdNoResource)
 
 TEST_F(StreamTest, CoprocessorStreamSetupAllocSqCqNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     int32_t streamId = 1;
     MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc)
         .stubs()
         .with(outBoundP(&streamId, sizeof(streamId)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::NormalSqCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::NormalSqCqAllocate).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     {
         CoprocessorStream stream(device, 0U, 0U);
@@ -3070,12 +2983,10 @@ TEST_F(StreamTest, CoprocessorStreamSetupAllocSqCqNoResource)
 
 TEST_F(StreamTest, AllocStreamIdForAutoSplitNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
-    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_STREAM_RESOURCES));
+    Driver* driver = device->Driver_();
+    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc).stubs().will(returnValue(RT_ERROR_DRV_NO_STREAM_RESOURCES));
 
     {
         Stream stream(device, 0U);
@@ -3088,9 +2999,9 @@ TEST_F(StreamTest, AllocStreamIdForAutoSplitNoResource)
 
 TEST_F(StreamTest, SetupForAutoSplitAllocStreamIdErrors)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     MOCKER_CPP_VIRTUAL(driver, &Driver::StreamIdAlloc)
         .stubs()
         .will(returnValue(RT_ERROR_DRV_NO_STREAM_RESOURCES))
@@ -3112,12 +3023,10 @@ TEST_F(StreamTest, SetupForAutoSplitAllocStreamIdErrors)
 
 TEST_F(StreamTest, AllocSqCqForAutoSplitWithRetryNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
-    MOCKER_CPP_VIRTUAL(driver, &Driver::NormalSqCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    Driver* driver = device->Driver_();
+    MOCKER_CPP_VIRTUAL(driver, &Driver::NormalSqCqAllocate).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
     {
         Stream stream(device, 0U);
         EXPECT_EQ(stream.AllocSqCqForAutoSplitWithRetry(), RT_ERROR_DRV_NO_RESOURCES);
@@ -3128,17 +3037,13 @@ TEST_F(StreamTest, AllocSqCqForAutoSplitWithRetryNoResource)
 
 TEST_F(StreamTest, StreamSqCqManageAllocLogicCqNoResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     ASSERT_EQ(device->Init(), RT_ERROR_NONE);
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     uint32_t logicCqId = 0U;
     bool isFastCq = false;
-    MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqAllocateV2)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqAllocate).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqAllocateV2).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     {
         StreamSqCqManage manage(device);

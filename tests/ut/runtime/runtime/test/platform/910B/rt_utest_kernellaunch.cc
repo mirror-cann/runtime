@@ -46,7 +46,7 @@
 using namespace testing;
 using namespace cce::runtime;
 
-rtError_t CheckSupportPcieBarCopyStub(NpuDriver *This, const uint32_t deviceId, uint32_t &val)
+rtError_t CheckSupportPcieBarCopyStub(NpuDriver* This, const uint32_t deviceId, uint32_t& val)
 {
     UNUSED(deviceId);
     val = RT_CAPABILITY_SUPPORT;
@@ -58,27 +58,26 @@ protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend310P");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         originType_ = Runtime::Instance()->GetChipType();
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_DC);
         GlobalContainer::SetRtChipType(CHIP_DC);
 
         // using for lite stream condition1 1 online mode
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+            .stubs()
+            .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
         // using for lite stream condition1 2 support picebar
         MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::CheckSupportPcieBarCopy)
-        .stubs()
-        .will(invoke(CheckSupportPcieBarCopyStub));
+            .stubs()
+            .will(invoke(CheckSupportPcieBarCopyStub));
 
         (void)rtSetDevice(0);
         (void)rtSetTSDevice(0);
-
 
         // env check
         const bool isDisableThread = Runtime::Instance()->GetDisableThread();
@@ -87,8 +86,7 @@ protected:
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -103,7 +101,7 @@ protected:
 
         MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
@@ -111,40 +109,34 @@ protected:
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
         ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
-        rtInstance->SetDisableThread(false);      // Recover.
+        rtInstance->SetDisableThread(false); // Recover.
     }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
     static rtChipType_t originType_;
-    static Driver    *driver_;
+    static Driver* driver_;
 };
-
 
 rtStream_t ApiDCDisableThreadTest::stream_ = NULL;
 rtEvent_t ApiDCDisableThreadTest::event_ = NULL;
 void* ApiDCDisableThreadTest::binHandle_ = NULL;
-char  ApiDCDisableThreadTest::function_ = 'a';
+char ApiDCDisableThreadTest::function_ = 'a';
 uint32_t ApiDCDisableThreadTest::binary_[32] = {};
 rtChipType_t ApiDCDisableThreadTest::originType_ = CHIP_BEGIN;
 Driver* ApiDCDisableThreadTest::driver_ = NULL;
@@ -193,7 +185,7 @@ TEST_F(ApiDCDisableThreadTest, hwts_veresion_task_fail_to_command_test)
     ToCommand(&task, &command);
     uint32_t errorcode[3] = {0};
     errorcode[0] = 1;
-    SetResult(&task, (void*)&errorcode,1);
+    SetResult(&task, (void*)&errorcode, 1);
     Complete(&task, 0);
     rtStreamDestroy(stream);
     error = rtDeviceReset(0);

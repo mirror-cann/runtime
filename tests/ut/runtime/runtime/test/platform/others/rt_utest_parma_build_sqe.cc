@@ -43,23 +43,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiParmaSqeTest : public testing::Test
-{
+class ApiParmaSqeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"Parma Build Sqe test start"<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "Parma Build Sqe test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"Parma Build Sqe test end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "Parma Build Sqe test end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -71,7 +61,7 @@ protected:
 TEST_F(ApiParmaSqeTest, GetTaskBufferLen)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     // not support expect chip type nano
     rtTaskBuffType_t type = HWTS_STATIC_TASK_DESC;
@@ -79,7 +69,7 @@ TEST_F(ApiParmaSqeTest, GetTaskBufferLen)
     error = rtGetTaskBufferLen(type, &bufferLen);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-   rtInstance->SetChipType(CHIP_NANO);
+    rtInstance->SetChipType(CHIP_NANO);
     GlobalContainer::SetRtChipType(CHIP_NANO);
 
     // bufferlen is null
@@ -117,9 +107,9 @@ TEST_F(ApiParmaSqeTest, GetTaskBufferLen)
 TEST_F(ApiParmaSqeTest, TaskStaticSqeBuild)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
-   rtInstance->SetChipType(CHIP_NANO);
+    rtInstance->SetChipType(CHIP_NANO);
     GlobalContainer::SetRtChipType(CHIP_NANO);
     uint32_t taskLen = 0;
     uint32_t bufferLen = 0;
@@ -140,7 +130,7 @@ TEST_F(ApiParmaSqeTest, TaskStaticSqeBuild)
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
     // taskInput is null
-   rtInstance->SetChipType(CHIP_NANO);
+    rtInstance->SetChipType(CHIP_NANO);
     GlobalContainer::SetRtChipType(CHIP_NANO);
     error = rtTaskBuild(nullptr, &taskLen);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -155,7 +145,6 @@ TEST_F(ApiParmaSqeTest, TaskStaticSqeBuild)
     taskInput.compilerInfo.bufType = MAX_TASK;
     error = rtTaskBuild(&taskInput, &taskLen);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-
 
     // static task aicore
     taskInput.compilerInfo.taskType = RT_TASK_TYPE_KERNEL_NANO_AICORE;
@@ -176,13 +165,12 @@ TEST_F(ApiParmaSqeTest, TaskStaticSqeBuild)
     GlobalContainer::SetRtChipType(chipType);
 }
 
-
 TEST_F(ApiParmaSqeTest, TaskDynamicSqeBuild)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
-   rtInstance->SetChipType(CHIP_NANO);
+    rtInstance->SetChipType(CHIP_NANO);
     GlobalContainer::SetRtChipType(CHIP_NANO);
     uint32_t taskLen = 0;
     uint32_t bufferLen = 0;
@@ -218,9 +206,9 @@ TEST_F(ApiParmaSqeTest, TaskDynamicSqeBuild)
 TEST_F(ApiParmaSqeTest, TaskPrefetchSqeBuild)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
-   rtInstance->SetChipType(CHIP_NANO);
+    rtInstance->SetChipType(CHIP_NANO);
     GlobalContainer::SetRtChipType(CHIP_NANO);
     uint32_t taskLen = 0;
     uint32_t bufferLen = 0;
@@ -264,13 +252,13 @@ TEST_F(ApiParmaSqeTest, TaskPrefetchSqeBuild)
 TEST_F(ApiParmaSqeTest, GetElfOffset)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     uint32_t MAX_LENGTH = 75776;
     uint32_t offset = 0U;
     char bindata[MAX_LENGTH];
 
-    FILE *bin = NULL;
+    FILE* bin = NULL;
     bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
     if (bin == NULL) {
         printf("error\n");
@@ -285,7 +273,7 @@ TEST_F(ApiParmaSqeTest, GetElfOffset)
     error = rtGetElfOffset(bindata, MAX_LENGTH, &offset);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-   rtInstance->SetChipType(CHIP_NANO);
+    rtInstance->SetChipType(CHIP_NANO);
     GlobalContainer::SetRtChipType(CHIP_NANO);
 
     error = rtGetElfOffset(nullptr, MAX_LENGTH, &offset);

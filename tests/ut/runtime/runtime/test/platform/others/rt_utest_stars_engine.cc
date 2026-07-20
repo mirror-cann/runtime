@@ -32,7 +32,7 @@
 #include "device/device_error_proc.hpp"
 #include "stream_sqcq_manage.hpp"
 #include <map>
-#include <utility>  // For std::pair and std::make_pair.
+#include <utility> // For std::pair and std::make_pair.
 #include "rt_stars_define.h"
 #include "thread_local_container.hpp"
 #include "../../rt_utest_config_define.hpp"
@@ -50,29 +50,29 @@ constexpr uint32_t TS_SDMA_STATUS_LINK_ERROR = 0x9U;
 constexpr uint32_t TS_SDMA_STATUS_POISON_ERROR = 0xAU;
 } // namespace
 
-void ReportErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
+void ReportErrorInfoForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId);
 uint16_t GetAicpuKernelCredit(uint16_t timeout);
-}
-}
+} // namespace runtime
+} // namespace cce
 
-using std::pair;
 using std::make_pair;
+using std::pair;
 
 class OthersStarsEngineTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         std::cout << "StarsTaskTest SetUP" << std::endl;
         rtInstance->SetDisableThread(true);
         originType_ = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_910_B_93);
-    GlobalContainer::SetRtChipType(CHIP_910_B_93);
+        GlobalContainer::SetRtChipType(CHIP_910_B_93);
     }
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         rtInstance->SetDisableThread(false);
@@ -82,43 +82,43 @@ protected:
     virtual void SetUp()
     {
         int64_t hardwareVersion = ((ARCH_C220 << 16) | (CHIP_910_B_93 << 8) | (RT_VER_NA));
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL(driver,
-            &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend910B1";
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), outBoundP(socVer, strlen("Ascend910B1")), mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        char* socVer = "Ascend910B1";
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend910B1")), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NONE));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
         bool enable = false;
-        MOCKER_CPP_VIRTUAL(driver,
-            &Driver::GetSqEnable).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(enable))
+        MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqEnable)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(enable))
             .will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL(driver, &Driver::SetSqHead)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
-        MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::SetSqHead).stubs().will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq).stubs().will(returnValue(RT_ERROR_NONE));
         rtSetDevice(0);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-        engine_ = ((RawDevice *)device_)->engine_;
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+        engine_ = ((RawDevice*)device_)->engine_;
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
 
         grp_ = new DvppGrp(device_, 0);
-        rtDvppGrp_t grp_t = (rtDvppGrp_t *)grp_;
+        rtDvppGrp_t grp_t = (rtDvppGrp_t*)grp_;
         rtError_t ret = rtStreamCreateByGrp(&streamHandleDvpp_, 0, 0, grp_t);
         streamDvpp_ = rt_ut::UnwrapOrNull<Stream>(streamHandleDvpp_);
         streamDvpp_->SetLimitFlag(true);
@@ -139,17 +139,17 @@ protected:
         stream_ = nullptr;
         streamDvpp_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
 
 protected:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Stream *streamDvpp_ = nullptr;
-    Engine *engine_ = nullptr;
-    DvppGrp *grp_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Stream* streamDvpp_ = nullptr;
+    Engine* engine_ = nullptr;
+    DvppGrp* grp_ = nullptr;
     rtStream_t streamHandle_ = 0;
     rtStream_t streamHandleDvpp_ = 0;
     static rtChipType_t originType_;
@@ -157,23 +157,24 @@ protected:
 
 rtChipType_t OthersStarsEngineTest::originType_ = CHIP_MINI;
 
-
 TEST_F(OthersStarsEngineTest, MonitorForWatchDog_02)
 {
     rtError_t error;
     uint16_t streamId;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     originType_ = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
     StarsEngine engine(device_);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device_);
     EXPECT_NE(errorProc, nullptr);
-    MOCKER_CPP_VIRTUAL((RawDevice *)device_, &RawDevice::ReportRingBuffer).stubs().will(returnValue(RT_ERROR_TASK_MONITOR));
+    MOCKER_CPP_VIRTUAL((RawDevice*)device_, &RawDevice::ReportRingBuffer)
+        .stubs()
+        .will(returnValue(RT_ERROR_TASK_MONITOR));
     error = device_->ReportRingBuffer(&streamId);
     EXPECT_EQ(error, RT_ERROR_TASK_MONITOR);
     engine.MonitorForWatchDog(device_);
     delete errorProc;
     rtInstance->SetChipType(originType_);
-        GlobalContainer::SetRtChipType(originType_);
+    GlobalContainer::SetRtChipType(originType_);
 }

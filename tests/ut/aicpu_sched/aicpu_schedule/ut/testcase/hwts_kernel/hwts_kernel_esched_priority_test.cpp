@@ -29,14 +29,15 @@ protected:
     EschedPriorityTsKernel kernel_;
 };
 
-TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_success) {
+TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 3;
     cfg->eventPriority = 1;
@@ -47,14 +48,15 @@ TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_success) {
     GlobalMockObject::verify();
 }
 
-TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_lenError) {
+TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_lenError)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = 0;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 3;
     cfg->eventPriority = 1;
@@ -65,14 +67,15 @@ TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_lenError) {
     GlobalMockObject::verify();
 }
 
-TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_baseNull) {
+TEST_F(EschedPriorityKernelTest, TsKernelSetPriority_baseNull)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = 0;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 3;
     cfg->eventPriority = 1;

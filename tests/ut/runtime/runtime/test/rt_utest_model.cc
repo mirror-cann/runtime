@@ -38,23 +38,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ModelTest : public testing::Test
-{
+class ModelTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
+    static void TearDownTestCase() {}
 
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -62,7 +52,6 @@ protected:
         GlobalMockObject::reset();
         ut::ForceResetPrimaryDeviceIfActive();
     }
-
 };
 
 TEST_F(ModelTest, TestModelSetupWithDevMemAllocFailed)
@@ -70,7 +59,7 @@ TEST_F(ModelTest, TestModelSetupWithDevMemAllocFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::ModelIdAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
     error = rtModelCreate(&rtModel, 0);
@@ -78,13 +67,13 @@ TEST_F(ModelTest, TestModelSetupWithDevMemAllocFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_NE(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestGetCmoIdWithMapMiss)
 {
-    Runtime *rtInstance = static_cast<Runtime *>(Runtime::Instance());
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = static_cast<Runtime*>(Runtime::Instance());
+    Device* device = rtInstance->DeviceRetain(0, 0);
     ASSERT_NE(device, nullptr);
 
     rtModel_t rtModel = nullptr;
@@ -92,7 +81,7 @@ TEST_F(ModelTest, TestGetCmoIdWithMapMiss)
     rtError_t error = rtModelCreate(&rtModel, 0);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     ASSERT_NE(model, nullptr);
     MOCKER_CPP_VIRTUAL(device, &Device::IsSupportFeature)
         .stubs()
@@ -113,9 +102,10 @@ TEST_F(ModelTest, TestModelSetupWithMallocDevValueFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::ModelIdAlloc).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs()
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_DRV_INPUT));
     error = rtModelCreate(&rtModel, 0);
@@ -123,7 +113,7 @@ TEST_F(ModelTest, TestModelSetupWithMallocDevValueFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_NE(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestModelSetupWithMallocDevStringEndGraphFailed)
@@ -131,10 +121,11 @@ TEST_F(ModelTest, TestModelSetupWithMallocDevStringEndGraphFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::ModelIdAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs()
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_DRV_INPUT));
@@ -143,7 +134,7 @@ TEST_F(ModelTest, TestModelSetupWithMallocDevStringEndGraphFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_NE(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestModelSetupWithMallocDevStringAtiveEntryStreamFailed)
@@ -151,10 +142,11 @@ TEST_F(ModelTest, TestModelSetupWithMallocDevStringAtiveEntryStreamFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::ModelIdAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs()
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_NONE))
@@ -164,7 +156,7 @@ TEST_F(ModelTest, TestModelSetupWithMallocDevStringAtiveEntryStreamFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_NE(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocDevStringFailed)
@@ -172,21 +164,21 @@ TEST_F(ModelTest, TestMallocDevStringFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
-    char *str = "demo";
-    void *ptr = (void*) str;
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    char* str = "demo";
+    void* ptr = (void*)str;
     error = model->MallocDevString(str, &ptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocDevStringWithMemSetFailed)
@@ -194,22 +186,22 @@ TEST_F(ModelTest, TestMallocDevStringWithMemSetFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemSetSync).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
-    char *str = "demo";
-    void *ptr = (void*) str;
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    char* str = "demo";
+    void* ptr = (void*)str;
     error = model->MallocDevString(str, &ptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocDevStringWithMemSyncFailed)
@@ -217,7 +209,7 @@ TEST_F(ModelTest, TestMallocDevStringWithMemSyncFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -225,15 +217,15 @@ TEST_F(ModelTest, TestMallocDevStringWithMemSyncFailed)
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemSetSync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
-    char *str = "demo";
-    void *ptr = (void*) str;
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    char* str = "demo";
+    void* ptr = (void*)str;
     error = model->MallocDevString(str, &ptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocDevValueStringFailed)
@@ -241,21 +233,21 @@ TEST_F(ModelTest, TestMallocDevValueStringFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
-    char *str = "demo";
-    void *ptr = (void*) str;
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    char* str = "demo";
+    void* ptr = (void*)str;
     error = model->MallocDevValue(ptr, 1, &ptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocDevValueWithMemSetFailed)
@@ -263,22 +255,22 @@ TEST_F(ModelTest, TestMallocDevValueWithMemSetFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemSetSync).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
-    char *str = "demo";
-    void *ptr = (void*) str;
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    char* str = "demo";
+    void* ptr = (void*)str;
     error = model->MallocDevValue(ptr, 1, &ptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocDevValueWithMemSyncFailed)
@@ -286,7 +278,7 @@ TEST_F(ModelTest, TestMallocDevValueWithMemSyncFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -294,15 +286,15 @@ TEST_F(ModelTest, TestMallocDevValueWithMemSyncFailed)
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemSetSync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
-    char *str = "demo";
-    void *ptr = (void*) str;
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    char* str = "demo";
+    void* ptr = (void*)str;
     error = model->MallocDevValue(ptr, 1, &ptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestAicpuModelDestroyWithSubmitTaskFailed)
@@ -310,18 +302,18 @@ TEST_F(ModelTest, TestAicpuModelDestroyWithSubmitTaskFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP_VIRTUAL(device, &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = model->AicpuModelDestroy();
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestGetStreamToSyncExecute)
@@ -329,16 +321,16 @@ TEST_F(ModelTest, TestGetStreamToSyncExecute)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     rtStream_t rtStream;
     error = rtStreamCreate(&rtStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP(&Model::SynchronizeExecute).stubs().will(returnValue(RT_ERROR_DRV_ERR));
-    Stream *onlineStream = model->context_->onlineStream_;
+    Stream* onlineStream = model->context_->onlineStream_;
     model->context_->onlineStream_ = nullptr;
     error = model->GetStreamToSyncExecute();
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
@@ -346,7 +338,7 @@ TEST_F(ModelTest, TestGetStreamToSyncExecute)
     model->context_->onlineStream_ = onlineStream;
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestExecuteSyncWithOnlineStream)
@@ -354,18 +346,18 @@ TEST_F(ModelTest, TestExecuteSyncWithOnlineStream)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP(&Model::SynchronizeExecute).stubs().will(returnValue(RT_ERROR_NONE));
     error = model->ExecuteSync();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestExecuteSyncWithOnlineStreamFailed)
@@ -373,18 +365,18 @@ TEST_F(ModelTest, TestExecuteSyncWithOnlineStreamFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP(&Model::SynchronizeExecute).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = model->ExecuteSync();
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestExecuteSyncWithDefaultStreamWhenNoOnlineStream)
@@ -392,13 +384,13 @@ TEST_F(ModelTest, TestExecuteSyncWithDefaultStreamWhenNoOnlineStream)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP(&Model::SynchronizeExecute).stubs().will(returnValue(RT_ERROR_DRV_ERR));
-    Stream *savedOnlineStream = model->context_->onlineStream_;
+    Stream* savedOnlineStream = model->context_->onlineStream_;
     model->context_->onlineStream_ = nullptr;
     error = model->ExecuteSync();
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
@@ -406,7 +398,7 @@ TEST_F(ModelTest, TestExecuteSyncWithDefaultStreamWhenNoOnlineStream)
     model->context_->onlineStream_ = savedOnlineStream;
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestMallocExecuteTask)
@@ -415,13 +407,13 @@ TEST_F(ModelTest, TestMallocExecuteTask)
     rtModel_t rtModel;
     rtStream_t rtStream;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtStreamCreate(&rtStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER(ModelExecuteTaskInit).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = model->SubmitExecuteTask(rt_ut::UnwrapOrNull<Stream>(rtStream));
     EXPECT_EQ(error, RT_ERROR_MODEL_EXECUTOR);
@@ -430,7 +422,7 @@ TEST_F(ModelTest, TestMallocExecuteTask)
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtStreamDestroy(rtStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAllStreamInfoWithAllocFailed)
@@ -438,11 +430,11 @@ TEST_F(ModelTest, TestPacketAllStreamInfoWithAllocFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
 
     rtAicpuModelInfo_t infoAicpuModel;
@@ -451,7 +443,7 @@ TEST_F(ModelTest, TestPacketAllStreamInfoWithAllocFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAllStreamInfoWithCopyFailed)
@@ -459,15 +451,16 @@ TEST_F(ModelTest, TestPacketAllStreamInfoWithCopyFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::GetRunMode)
-        .stubs().will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
+        .stubs()
+        .will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
 
     rtAicpuModelInfo_t infoAicpuModel;
     error = model->PacketAllStreamInfo(&infoAicpuModel);
@@ -475,7 +468,7 @@ TEST_F(ModelTest, TestPacketAllStreamInfoWithCopyFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAllStreamInfoWithFlushFailed)
@@ -483,16 +476,17 @@ TEST_F(ModelTest, TestPacketAllStreamInfoWithFlushFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFlushCache).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::GetRunMode)
-        .stubs().will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
+        .stubs()
+        .will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
 
     rtAicpuModelInfo_t infoAicpuModel;
     error = model->PacketAllStreamInfo(&infoAicpuModel);
@@ -500,7 +494,7 @@ TEST_F(ModelTest, TestPacketAllStreamInfoWithFlushFailed)
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAicpuModelInfoWithCopyFailed)
@@ -508,23 +502,24 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithCopyFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFlushCache).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::GetRunMode)
-        .stubs().will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
+        .stubs()
+        .will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
 
     error = model->PacketAicpuModelInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAicpuModelInfoWithFlushFailed)
@@ -532,23 +527,24 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithFlushFailed)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFlushCache).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::GetRunMode)
-        .stubs().will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
+        .stubs()
+        .will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
 
     error = model->PacketAicpuModelInfo();
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAicpuModelInfoWithStreamNotNull)
@@ -557,13 +553,13 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithStreamNotNull)
     rtModel_t rtModel;
     rtStream_t rtStream;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtStreamCreate(&rtStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
 
     model->BindStream(rt_ut::UnwrapOrNull<Stream>(rtStream), 0);
     MOCKER_CPP(&Model::PacketAllStreamInfo).stubs().will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
@@ -574,7 +570,7 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithStreamNotNull)
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtStreamDestroy(rtStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAicpuModelInfoWithPackAicpuTaskError)
@@ -583,13 +579,13 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithPackAicpuTaskError)
     rtModel_t rtModel;
     rtStream_t rtStream;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtStreamCreate(&rtStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     rtCommand_t command = {};
     command.type = static_cast<uint16_t>(TS_TASK_TYPE_ACTIVE_AICPU_STREAM);
     model->SaveAicpuStreamTask(rt_ut::UnwrapOrNull<Stream>(rtStream), &command);
@@ -602,7 +598,7 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithPackAicpuTaskError)
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtStreamDestroy(rtStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, TestPacketAicpuModelInfoWithQueueNotEmpty)
@@ -610,11 +606,11 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithQueueNotEmpty)
     rtError_t error;
     rtModel_t rtModel;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtModelCreate(&rtModel, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model = rt_ut::UnwrapOrNull<Model>(rtModel);
+    Model* model = rt_ut::UnwrapOrNull<Model>(rtModel);
     model->BindQueue(0, RT_MODEL_INPUT_QUEUE);
 
     error = model->PacketAicpuModelInfo();
@@ -622,13 +618,13 @@ TEST_F(ModelTest, TestPacketAicpuModelInfoWithQueueNotEmpty)
 
     error = rtModelDestroy(rtModel);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, model_create_fail)
 {
     rtError_t error;
-    rtModel_t  model;
+    rtModel_t model;
 
     MOCKER(halResourceIdAlloc).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
@@ -636,30 +632,24 @@ TEST_F(ModelTest, model_create_fail)
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
-rtError_t task_gen_callback(rtModel_t model, rtTaskInfo_t *taskInfo)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t task_gen_callback(rtModel_t model, rtTaskInfo_t* taskInfo) { return RT_ERROR_NONE; }
 
 namespace {
 struct ModelDestroyCallbackReentrantArgs {
-    Model *model{nullptr};
+    Model* model{nullptr};
     bool unregisterCalled{false};
     bool registerCalled{false};
 };
 
 struct RuntimeExitingGuard {
-    explicit RuntimeExitingGuard(Runtime *runtime) : rt(runtime), oldIsExiting(runtime->isExiting_)
+    explicit RuntimeExitingGuard(Runtime* runtime) : rt(runtime), oldIsExiting(runtime->isExiting_)
     {
         rt->isExiting_ = true;
     }
 
-    ~RuntimeExitingGuard()
-    {
-        rt->isExiting_ = oldIsExiting;
-    }
+    ~RuntimeExitingGuard() { rt->isExiting_ = oldIsExiting; }
 
-    Runtime *rt{nullptr};
+    Runtime* rt{nullptr};
     bool oldIsExiting{false};
 };
 
@@ -667,22 +657,19 @@ struct ModelDestroyCallbackExitArgs {
     bool called{false};
 };
 
-void SecondaryModelDestroyCallback(void *ptr)
-{
-    (void)ptr;
-}
+void SecondaryModelDestroyCallback(void* ptr) { (void)ptr; }
 
-void MarkModelDestroyCallback(void *ptr)
+void MarkModelDestroyCallback(void* ptr)
 {
-    ModelDestroyCallbackExitArgs * const args = static_cast<ModelDestroyCallbackExitArgs *>(ptr);
+    ModelDestroyCallbackExitArgs* const args = static_cast<ModelDestroyCallbackExitArgs*>(ptr);
     if (args != nullptr) {
         args->called = true;
     }
 }
 
-void ReentrantModelDestroyCallback(void *ptr)
+void ReentrantModelDestroyCallback(void* ptr)
 {
-    ModelDestroyCallbackReentrantArgs * const args = static_cast<ModelDestroyCallbackReentrantArgs *>(ptr);
+    ModelDestroyCallbackReentrantArgs* const args = static_cast<ModelDestroyCallbackReentrantArgs*>(ptr);
     if (args == nullptr || args->model == nullptr) {
         return;
     }
@@ -712,7 +699,7 @@ TEST_F(ModelTest, ModelDestroyCallbackAllowsReentrantRegisterOps)
 
 TEST_F(ModelTest, ModelDestroyCallbackSkippedWhenRuntimeExiting)
 {
-    Runtime * const rtInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const rtInstance = static_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     RuntimeExitingGuard guard(rtInstance);
 
@@ -728,7 +715,7 @@ TEST_F(ModelTest, ModelDestroyCallbackSkippedWhenRuntimeExiting)
 
 TEST_F(ModelTest, ModelFinalizeHostStateOnExitClearsOnlyHostReferences)
 {
-    Runtime * const rtInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const rtInstance = static_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     RuntimeExitingGuard guard(rtInstance);
 
@@ -764,7 +751,7 @@ TEST_F(ModelTest, ModelFinalizeHostStateOnExitClearsOnlyHostReferences)
 
 TEST_F(ModelTest, CaptureModelFinalizeHostStateOnExitClearsCaptureContainers)
 {
-    Runtime * const rtInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const rtInstance = static_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     RuntimeExitingGuard guard(rtInstance);
 
@@ -796,15 +783,13 @@ TEST_F(ModelTest, CaptureModelFinalizeHostStateOnExitClearsCaptureContainers)
     EXPECT_FALSE(model.trackDataReportFlag_);
 }
 
-
-
 #if 1
 
 TEST_F(ModelTest, CacheTaskTrackReport)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
     rtStream_t syncStream;
     rtEvent_t event;
@@ -812,17 +797,17 @@ TEST_F(ModelTest, CacheTaskTrackReport)
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *device = (RawDevice *)((Context *)ctx)->Device_();
+    RawDevice* device = (RawDevice*)((Context*)ctx)->Device_();
     device->chipType_ = CHIP_CLOUD;
 
-    Profiler *profilerPtr = Runtime::Instance()->Profiler_();
+    Profiler* profilerPtr = Runtime::Instance()->Profiler_();
     profilerPtr->SetTrackProfEnable(false);
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamCreateWithFlags(&syncStream, 0, RT_STREAM_FORBIDDEN_DEFAULT);
-        EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -836,18 +821,16 @@ TEST_F(ModelTest, CacheTaskTrackReport)
     error = rtEventRecord(event, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-
-    error=  rtEndGraph(model, stream);
+    error = rtEndGraph(model, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelLoadComplete(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
 
     // synchronize execute
     error = rtModelExecute(model, syncStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 
     profilerPtr->SetTrackProfEnable(true);
 
@@ -874,7 +857,7 @@ TEST_F(ModelTest, model_stream_aicpu_bind)
     rtError_t error;
     rtStream_t stream;
     rtStream_t exe_stream;
-    rtModel_t  model;
+    rtModel_t model;
 
     error = rtStreamCreateWithFlags(&stream, 1, RT_STREAM_AICPU);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -888,7 +871,7 @@ TEST_F(ModelTest, model_stream_aicpu_bind)
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error=  rtEndGraph(model, stream);
+    error = rtEndGraph(model, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelLoadComplete(model);
@@ -905,7 +888,7 @@ TEST_F(ModelTest, model_stream_aicpu_bind)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-rtError_t rtGetIsHeterogenousStub(int32_t *heterogenous)
+rtError_t rtGetIsHeterogenousStub(int32_t* heterogenous)
 {
     *heterogenous = 1;
     return RT_ERROR_NONE;
@@ -916,7 +899,7 @@ TEST_F(ModelTest, model_end_graph)
     MOCKER(&rtGetIsHeterogenous).stubs().will(invoke(rtGetIsHeterogenousStub));
     rtStream_t stream;
     rtStream_t exe_stream;
-    rtModel_t  model;
+    rtModel_t model;
     std::string oldSocVersion = Runtime::Instance()->GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend310P1");
     rtError_t error = rtStreamCreateWithFlags(&stream, 1, RT_STREAM_DEFAULT);
@@ -931,7 +914,7 @@ TEST_F(ModelTest, model_end_graph)
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error=  rtEndGraph(model, stream);
+    error = rtEndGraph(model, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelLoadComplete(model);
@@ -993,18 +976,18 @@ TEST_F(ModelTest, datadumploadinfo)
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    rtModel_t  model;
+    rtModel_t model;
     rtStream_t stream;
     rtDevBinary_t devBin;
-    void      *binHandle_;
-    char       function_;
-    uint32_t   binary_[32];
-    void *args[] = {&error, NULL};
+    void* binHandle_;
+    char function_;
+    uint32_t binary_[32];
+    void* args[] = {&error, NULL};
     devBin.magic = RT_DEV_BINARY_MAGIC_ELF;
     devBin.version = 2;
     devBin.data = (void*)elf_o;
     devBin.length = elf_o_len;
-    uint32_t   datdumpinfo[32];
+    uint32_t datdumpinfo[32];
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1020,7 +1003,7 @@ TEST_F(ModelTest, datadumploadinfo)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *laodstream = (Stream *)(((Context*)ctx)->DefaultStream_());
+    Stream* laodstream = (Stream*)(((Context*)ctx)->DefaultStream_());
     laodstream->SetErrCode(1);
     error = rtDatadumpInfoLoad(datdumpinfo, sizeof(datdumpinfo));
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -1055,18 +1038,18 @@ TEST_F(ModelTest, datadumploadinfo_2)
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    rtModel_t  model;
+    rtModel_t model;
     rtStream_t stream;
     rtDevBinary_t devBin;
-    void      *binHandle_;
-    char       function_;
-    uint32_t   binary_[32];
-    void *args[] = {&error, NULL};
+    void* binHandle_;
+    char function_;
+    uint32_t binary_[32];
+    void* args[] = {&error, NULL};
     devBin.magic = RT_DEV_BINARY_MAGIC_ELF;
     devBin.version = 2;
     devBin.data = (void*)elf_o;
     devBin.length = elf_o_len;
-    uint32_t   datdumpinfo[32];
+    uint32_t datdumpinfo[32];
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1082,7 +1065,7 @@ TEST_F(ModelTest, datadumploadinfo_2)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *laodstream = (Stream *)(((Context*)ctx)->DefaultStream_());
+    Stream* laodstream = (Stream*)(((Context*)ctx)->DefaultStream_());
     laodstream->SetErrCode(1);
     error = rtDatadumpInfoLoad(datdumpinfo, sizeof(datdumpinfo));
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -1121,11 +1104,11 @@ TEST_F(ModelTest, IsActiveTaskExceed)
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     rtStream_t aicpuStream;
     rtStream_t activeStream;
-    rtModel_t  model;
+    rtModel_t model;
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1162,7 +1145,7 @@ TEST_F(ModelTest, model_stream_unbind_stream_fail_01)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
 
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
@@ -1177,23 +1160,22 @@ TEST_F(ModelTest, model_stream_unbind_stream_fail_01)
     error = rtModelBindStream(model, stream, 0);
 
     rt_ut::UnwrapOrNull<Model>(model)->SetNeedSubmitTask(true);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
 
     error = rtModelDestroy(model);
 
     error = rtStreamDestroy(stream);
 
-    //error = rtModelUnbindStream(model, stream);
+    // error = rtModelUnbindStream(model, stream);
 
     error = rtCtxDestroy(ctx);
 }
-
 
 TEST_F(ModelTest, model_stream_unbind_stream_fail_02)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
 
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
@@ -1209,9 +1191,9 @@ TEST_F(ModelTest, model_stream_unbind_stream_fail_02)
 
     rt_ut::UnwrapOrNull<Model>(model)->SetNeedSubmitTask(true);
 
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
 
-    //Model model;
+    // Model model;
     rt_ut::UnwrapOrNull<Model>(model)->UnbindStream(nullptr, false);
 
     error = rtModelDestroy(model);
@@ -1223,7 +1205,7 @@ TEST_F(ModelTest, model_stream_unbind_stream_fail_03)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
 
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
@@ -1240,7 +1222,7 @@ TEST_F(ModelTest, model_stream_unbind_stream_fail_03)
 
     GlobalMockObject::verify();
 
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
     MOCKER_CPP_VIRTUAL(stream_var, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rt_ut::UnwrapOrNull<Model>(model)->UnbindStream(stream_var, false);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
@@ -1252,14 +1234,13 @@ TEST_F(ModelTest, model_stream_unbind_stream_fail_03)
     error = rtCtxDestroy(ctx);
 }
 
-
 #endif
 
 TEST_F(ModelTest, model_stream_excute_task_fail)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
 
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
@@ -1272,17 +1253,19 @@ TEST_F(ModelTest, model_stream_excute_task_fail)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelBindStream(model, stream, 0);
-    //EXPECT_EQ(error, RT_ERROR_NONE);
+    // EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL( (*(((Context **)&ctx)))->Device_(), &Device::SubmitTask).stubs().will(returnValue(ACL_ERROR_RT_PARAM_INVALID));
+    MOCKER_CPP_VIRTUAL((*(((Context**)&ctx)))->Device_(), &Device::SubmitTask)
+        .stubs()
+        .will(returnValue(ACL_ERROR_RT_PARAM_INVALID));
 
     error = rtModelExecute(model, stream, 0);
-    //EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+    // EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     error = rtModelDestroy(model);
 
     error = rtCtxDestroy(ctx);
-    //EXPECT_EQ(error, RT_ERROR_NONE);
+    // EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(ModelTest, save_aicpu_stream_task)
@@ -1294,7 +1277,7 @@ TEST_F(ModelTest, save_aicpu_stream_task)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
 
     command.taskID = 1;
 
@@ -1327,7 +1310,7 @@ TEST_F(ModelTest, model_abort)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model_var = rt_ut::UnwrapOrNull<Model>(model);
+    Model* model_var = rt_ut::UnwrapOrNull<Model>(model);
     error = model_var->ModelAbort();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -1346,7 +1329,7 @@ TEST_F(ModelTest, bind_queue)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *model_var = rt_ut::UnwrapOrNull<Model>(model);
+    Model* model_var = rt_ut::UnwrapOrNull<Model>(model);
     error = model_var->BindQueue(1, RT_MODEL_INPUT_QUEUE);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -1360,7 +1343,7 @@ TEST_F(ModelTest, AicpuModelSetExtId)
 
     rtError_t error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *model_var = rt_ut::UnwrapOrNull<Model>(model);
+    Model* model_var = rt_ut::UnwrapOrNull<Model>(model);
     error = model_var->AicpuModelSetExtId(0U, 1U);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelDestroy(model);
@@ -1382,7 +1365,7 @@ TEST_F(ModelTest, model_head_stream)
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *tmpMdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* tmpMdl = rt_ut::UnwrapOrNull<Model>(model);
     uint16_t num = tmpMdl->IsModelHeadStream(rt_ut::UnwrapOrNull<Stream>(stream));
     EXPECT_EQ(num, 1);
 
@@ -1400,7 +1383,7 @@ TEST_F(ModelTest, model_stream_not_dc_not_support_reuse)
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Device *device = (Device *)((Context *)ctx)->Device_();
+    Device* device = (Device*)((Context*)ctx)->Device_();
     rtModel_t model[2];
     rtStream_t stream;
     uint32_t modelId;
@@ -1446,7 +1429,7 @@ TEST_F(ModelTest, model_stream_get_head_stream)
 
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *tmpMdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* tmpMdl = rt_ut::UnwrapOrNull<Model>(model);
 
     EXPECT_EQ(tmpMdl->IsModelHeadStream(rt_ut::UnwrapOrNull<Stream>(stream)), 1);
 
@@ -1498,7 +1481,7 @@ TEST_F(ModelTest, model_maintain_init_fail)
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    error = rtModelUnbindStream(model, stream); //bind fail
+    error = rtModelUnbindStream(model, stream); // bind fail
     EXPECT_EQ(error, ACL_ERROR_RT_STREAM_MODEL);
 
     error = rtModelDestroy(model);
@@ -1551,7 +1534,7 @@ TEST_F(ModelTest, load_comple_81)
     error = rtModelBindStream(model, stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::GetSqTail).stubs().will(returnValue(1));
     bool temp = device->IsAddrFlatDev();
     device->SetDevType(true);
@@ -1563,7 +1546,7 @@ TEST_F(ModelTest, load_comple_81)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ModelTest, model_disable_sq)
@@ -1575,27 +1558,27 @@ TEST_F(ModelTest, model_disable_sq)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
 
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *model_var = rt_ut::UnwrapOrNull<Model>(model);
+    Model* model_var = rt_ut::UnwrapOrNull<Model>(model);
     error = model_var->DisableSq(stream_var);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-static void acl_reg_func(rtStream_t stream, void **binHandle)
+static void acl_reg_func(rtStream_t stream, void** binHandle)
 {
     rtError_t error;
     rtDevBinary_t devBin;
-    char       function_;
-    uint32_t   binary_[32];
-    void *args[] = {&error, NULL};
+    char function_;
+    uint32_t binary_[32];
+    void* args[] = {&error, NULL};
     devBin.magic = RT_DEV_BINARY_MAGIC_PLAIN_AICPU;
     devBin.version = 1;
     devBin.length = sizeof(binary_);
@@ -1606,11 +1589,11 @@ static void acl_reg_func(rtStream_t stream, void **binHandle)
     error = rtFunctionRegister(*binHandle, &function_, "foo", NULL, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-static void acl_unreg_func(void *binHandle)
+static void acl_unreg_func(void* binHandle)
 {
     rtError_t error;
     error = rtDevBinaryUnRegister(binHandle);
@@ -1625,25 +1608,23 @@ static void acl_unreg_func(void *binHandle)
  * uint32_t headStreamFlags:模型首流标志
  * bool exeStreamIsNull:执行流是否为空
  */
-rtError_t utest_model_stream_setup_sub(Stream *stream)
+rtError_t utest_model_stream_setup_sub(Stream* stream)
 {
     stream->streamId_ = 0;
     return RT_ERROR_NONE;
 }
 
-static void acl_sink_model_exe(uint8_t executorFlags,uint32_t exeStreamFlags,
-uint32_t headStreamFlags, bool exeStreamIsNull = false)
+static void acl_sink_model_exe(
+    uint8_t executorFlags, uint32_t exeStreamFlags, uint32_t headStreamFlags, bool exeStreamIsNull = false)
 {
-    MOCKER_CPP(&Stream::Setup)
-        .stubs()
-        .will(invoke(utest_model_stream_setup_sub));
+    MOCKER_CPP(&Stream::Setup).stubs().will(invoke(utest_model_stream_setup_sub));
 
     rtError_t error;
     rtStream_t streamTs;
     rtStream_t streamHead;
     rtStream_t streamExe;
-    rtModel_t  model;
-    void *binHandle = NULL;
+    rtModel_t model;
+    void* binHandle = NULL;
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     if (!exeStreamIsNull) {
@@ -1677,7 +1658,7 @@ uint32_t headStreamFlags, bool exeStreamIsNull = false)
     error = rtModelLoadComplete(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtModelExecute(model, exeStreamIsNull ? NULL: streamExe, 0);
+    error = rtModelExecute(model, exeStreamIsNull ? NULL : streamExe, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelAbort(model);
@@ -1702,13 +1683,11 @@ uint32_t headStreamFlags, bool exeStreamIsNull = false)
     acl_unreg_func(binHandle);
 }
 
-
-
 /*
-* 1.模型首流为AICPU
-* 2.执行器为EXECUTOR_NONE
-* 3.执行流为RT_STREAM_FORBIDDEN_DEFAULT
-*/
+ * 1.模型首流为AICPU
+ * 2.执行器为EXECUTOR_NONE
+ * 3.执行流为RT_STREAM_FORBIDDEN_DEFAULT
+ */
 TEST_F(ModelTest, model_handle_invalid_after_destroy)
 {
     rtError_t error;
@@ -1720,7 +1699,7 @@ TEST_F(ModelTest, model_handle_invalid_after_destroy)
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *destroyedModel = nullptr;
+    Model* destroyedModel = nullptr;
     error = GetValidatedObject<Model>(model, destroyedModel);
     EXPECT_EQ(error, RT_ERROR_INVALID_HANDLE);
     EXPECT_EQ(destroyedModel, nullptr);
@@ -2018,16 +1997,16 @@ TEST_F(ModelTest, TestBuildSqCqForAutoSplit_EmptyStreamList)
     rtError_t error;
     Model* model = nullptr;
     Context* ctx = (Context*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(0)->GetVal();
-    
+
     error = ctx->ModelCreate(&model, RT_MODEL_NORMAL);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = model->BuildSqCqForAutoSplit();
     EXPECT_EQ(error, RT_ERROR_MODEL_STREAM);
-    
+
     error = ctx->ModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     ((Runtime*)Runtime::Instance())->PrimaryContextRelease(0);
 }
 
@@ -2037,25 +2016,25 @@ TEST_F(ModelTest, TestBuildSqCqForAutoSplit_OnlyAicpuStreams)
     Model* model = nullptr;
     Stream* stream = nullptr;
     Context* ctx = (Context*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(0)->GetVal();
-    
+
     error = ctx->ModelCreate(&model, RT_MODEL_NORMAL);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = ctx->StreamCreate(0, RT_STREAM_AICPU, &stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = model->AddStream(stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = model->BuildSqCqForAutoSplit();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = ctx->ModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = ctx->StreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     ((Runtime*)Runtime::Instance())->PrimaryContextRelease(0);
 }
 
@@ -2107,13 +2086,13 @@ TEST_F(ModelTest, TestBuildSqCqForAutoSplit_TsBindStream)
     Stream* stream = nullptr;
     Stream* stream2 = nullptr;
     Context* ctx = (Context*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(0)->GetVal();
-    Device *dev = ctx->Device_();
+    Device* dev = ctx->Device_();
 
-    SqAddrMemoryOrder *sqAddrMgr = reinterpret_cast<SqAddrMemoryOrder *>(0x1000);
+    SqAddrMemoryOrder* sqAddrMgr = reinterpret_cast<SqAddrMemoryOrder*>(0x1000);
     MOCKER_CPP_VIRTUAL(dev, &Device::GetSqAddrMemoryManage).stubs().will(returnValue(sqAddrMgr));
     MOCKER_CPP(&SqAddrMemoryOrder::AllocSqAddr).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL((NpuDriver *)dev->Driver_(), &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(0));
-    MOCKER_CPP_VIRTUAL((NpuDriver *)dev->Driver_(), &NpuDriver::StreamTaskFill).stubs().will(returnValue(0));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)dev->Driver_(), &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(0));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)dev->Driver_(), &NpuDriver::StreamTaskFill).stubs().will(returnValue(0));
     MOCKER_CPP(&Model::EnterBindStream).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = ctx->ModelCreate(&model, RT_MODEL_NORMAL);

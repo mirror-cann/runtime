@@ -35,7 +35,7 @@ TEST_F(AicpuSdArgsParserTest, ParseArgsSuccess1)
     const std::vector<std::string> expectedGrpName = {"GrpA", "GrpB", "Grp3"};
 
     const int32_t argc = 10;
-    const char *argv[] = {
+    const char* argv[] = {
         "--deviceId=1",
         "--pid=15600",
         "--pidSign=00000000",
@@ -81,19 +81,17 @@ TEST_F(AicpuSdArgsParserTest, ParseArgsSuccess2)
     const std::vector<std::string> expectedGrpName = {"GrpA", "GrpB", "Grp3"};
 
     const int32_t argc = 11;
-    const char *argv[] = {
-        "--deviceId=1",
-        "--pid=15600",
-        "--pidSign=00000000",
-        "--profilingMode=1",
-        "--custSoPath=/home/CustAicpu",
-        "--aicpuPid=456",
-        "--logLevelInPid=302",
-        "--vfId=5",
-        "--groupNameNum=3",
-        "--groupNameList=GrpA,GrpB,Grp3",
-        "--unknownKey=0"
-    };
+    const char* argv[] = {"--deviceId=1",
+                          "--pid=15600",
+                          "--pidSign=00000000",
+                          "--profilingMode=1",
+                          "--custSoPath=/home/CustAicpu",
+                          "--aicpuPid=456",
+                          "--logLevelInPid=302",
+                          "--vfId=5",
+                          "--groupNameNum=3",
+                          "--groupNameList=GrpA,GrpB,Grp3",
+                          "--unknownKey=0"};
 
     ArgsParser argsParser;
     const bool ret = argsParser.ParseArgs(argc, argv);
@@ -128,7 +126,7 @@ TEST_F(AicpuSdArgsParserTest, ParseArgsSuccess3)
     const std::vector<std::string> expectedGrpName = {};
 
     const int32_t argc = 10;
-    const char *argv[] = {
+    const char* argv[] = {
         "--deviceId=0",
         "--pid=369829",
         "--pidSign=000000000000000000000000000000000000000000000000",
@@ -138,8 +136,7 @@ TEST_F(AicpuSdArgsParserTest, ParseArgsSuccess3)
         "--logLevelInPid=103",
         "--vfId=0",
         "--groupNameNum=0",
-        "--groupNameList="
-    };
+        "--groupNameList="};
 
     ArgsParser argsParser;
     const bool ret = argsParser.ParseArgs(argc, argv);
@@ -162,7 +159,7 @@ TEST_F(AicpuSdArgsParserTest, ParseArgsSuccess3)
 TEST_F(AicpuSdArgsParserTest, ParseArgsFail1)
 {
     const int32_t argc = 10;
-    const char *argv[] = {
+    const char* argv[] = {
         "--deviceId=1",
         "--pid=15600",
         "--pidSign=00000000",
@@ -183,7 +180,7 @@ TEST_F(AicpuSdArgsParserTest, ParseArgsFail1)
 TEST_F(AicpuSdArgsParserTest, ParseArgsFail2)
 {
     const int32_t argc = 8;
-    const char *argv[] = {
+    const char* argv[] = {
         "--deviceId=1",
         "--pid=15600",
         "--pidSign=00000000",
@@ -257,10 +254,10 @@ TEST_F(AicpuSdArgsParserTest, GetParaParsedStrSuccess)
     argsParser.grpNameList_ = {"GrpA", "_Grp_B", "__--*Grp_C"};
     std::string expectedParsedStr = "deviceId=1, hostPid=2, pidSign=00000, profilingMode=1, vfId=3, logLevel=4, ";
     expectedParsedStr.append("ccecpulogLevel=-1, aicpulogLevel=-1, ")
-                     .append("aicpuPid=6, grpNameNum=3, grpNameList=[GrpA,_Grp_B,__--*Grp_C,], ")
-                     .append("custSoPath=/home, ")
-                     .append("ctrolCpuList=[], ")
-                     .append("tsdPid=0");
+        .append("aicpuPid=6, grpNameNum=3, grpNameList=[GrpA,_Grp_B,__--*Grp_C,], ")
+        .append("custSoPath=/home, ")
+        .append("ctrolCpuList=[], ")
+        .append("tsdPid=0");
     EXPECT_STREQ(argsParser.GetParaParsedStr().c_str(), expectedParsedStr.c_str());
 }
 
@@ -472,7 +469,6 @@ TEST_F(AicpuSdArgsParserTest, ParseLogAndEventLevelFail2)
     const bool ret = argsParser.ParseLogAndEventLevel(para);
     EXPECT_EQ(ret, false);
 }
-
 
 TEST_F(AicpuSdArgsParserTest, ParseSignSuccess)
 {

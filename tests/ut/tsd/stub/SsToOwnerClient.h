@@ -12,16 +12,17 @@
 #include "SsToOwnerMessage.h"
 class SsToOwnerClient {
 public:
-    SsToOwnerClient(SsToOwnerClient const &) = delete;
+    SsToOwnerClient(SsToOwnerClient const&) = delete;
 
     virtual ~SsToOwnerClient() {}
 
-    static SsToOwnerClient &GetInstance();
+    static SsToOwnerClient& GetInstance();
 
-    uint32_t ChangeAppState(const std::vector<AppInfo> &changeAppList,
-                            std::vector<AppChangeInfo> &changeResult, const int32_t timeOut = 5000);
-    uint32_t QueryAppState(const std::vector<std::string> &appList, std::vector<AppStatus> &result,
-                           const int32_t timeOut = 5000);
+    uint32_t ChangeAppState(
+        const std::vector<AppInfo>& changeAppList, std::vector<AppChangeInfo>& changeResult,
+        const int32_t timeOut = 5000);
+    uint32_t QueryAppState(
+        const std::vector<std::string>& appList, std::vector<AppStatus>& result, const int32_t timeOut = 5000);
     SsToOwnerClient() {}
 };
 

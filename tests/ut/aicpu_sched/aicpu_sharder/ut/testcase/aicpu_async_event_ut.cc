@@ -14,7 +14,6 @@
 #include "mockcpp/mockcpp.hpp"
 #include <stdio.h>
 
-
 using namespace aicpu;
 using namespace std;
 
@@ -28,12 +27,11 @@ public:
         SetThreadLocalCtx(aicpu::CONTEXT_KEY_WAIT_TYPE, "1");
     }
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
+
 protected:
-    static void notifyWait(void *notifyParam, const uint32_t paramLen) {
-        notify_cnt++;
-    }
+    static void notifyWait(void* notifyParam, const uint32_t paramLen) { notify_cnt++; }
+
 protected:
     static uint32_t notify_cnt;
 };
@@ -41,18 +39,17 @@ protected:
 uint32_t AicpuAsyncEventTest::notify_cnt = 0;
 AsyncNotifyInfo notify_info = {0};
 
-
 TEST_F(AicpuAsyncEventTest, NotifyWaitTest)
 {
-    void *param = reinterpret_cast<void *>(&notify_info);
+    void* param = reinterpret_cast<void*>(&notify_info);
     AsyncEventManager::GetInstance().NotifyWait(param, sizeof(AsyncNotifyInfo));
     EXPECT_EQ(AicpuAsyncEventTest::notify_cnt, 1);
 }
 
 TEST_F(AicpuAsyncEventTest, RegEventCbSuccess)
 {
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
     EXPECT_TRUE(AsyncEventManager::GetInstance().RegEventCb(1, 111, cb));
     AsyncEventManager::GetInstance().ProcessEvent(1, 111);
@@ -61,8 +58,8 @@ TEST_F(AicpuAsyncEventTest, RegEventCbSuccess)
 
 TEST_F(AicpuAsyncEventTest, RegEventCbDuplicate)
 {
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
 
     EXPECT_TRUE(AsyncEventManager::GetInstance().RegEventCb(2, 111, cb));
@@ -71,8 +68,8 @@ TEST_F(AicpuAsyncEventTest, RegEventCbDuplicate)
 
 TEST_F(AicpuAsyncEventTest, ProcessEventNotFound)
 {
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
 
     EXPECT_TRUE(AsyncEventManager::GetInstance().RegEventCb(3, 111, cb));
@@ -83,8 +80,8 @@ TEST_F(AicpuAsyncEventTest, ProcessEventNotFound)
 
 TEST_F(AicpuAsyncEventTest, ProcessEventSuccess)
 {
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
 
     EXPECT_TRUE(AsyncEventManager::GetInstance().RegEventCb(4, 111, cb));
@@ -95,25 +92,26 @@ TEST_F(AicpuAsyncEventTest, ProcessEventSuccess)
     EXPECT_EQ(AicpuAsyncEventTest::notify_cnt, 3);
 }
 
-TEST_F(AicpuAsyncEventTest, AicpuNotifyWaitTest) {
-    void *param = reinterpret_cast<void *>(&notify_info);
+TEST_F(AicpuAsyncEventTest, AicpuNotifyWaitTest)
+{
+    void* param = reinterpret_cast<void*>(&notify_info);
     AicpuNotifyWait(param, sizeof(AsyncNotifyInfo));
     EXPECT_EQ(AicpuAsyncEventTest::notify_cnt, 4);
 }
 
-TEST_F(AicpuAsyncEventTest, AicpuRegEventCbTest) {
-    auto cb = [](void *param){
-        AicpuNotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
-    };
+TEST_F(AicpuAsyncEventTest, AicpuRegEventCbTest)
+{
+    auto cb = [](void* param) { AicpuNotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo)); };
     EXPECT_TRUE(AicpuRegEventCb(5, 111, cb));
     AsyncEventManager::GetInstance().ProcessEvent(5, 111);
     AicpuUnregEventCb(5, 111);
     EXPECT_EQ(AicpuAsyncEventTest::notify_cnt, 5);
 }
 
-TEST_F(AicpuAsyncEventTest, AicpuRegEventCbErrorTest) {
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+TEST_F(AicpuAsyncEventTest, AicpuRegEventCbErrorTest)
+{
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
 
     status_t ret = SetThreadLocalCtx(aicpu::CONTEXT_KEY_WAIT_ID, "WAIT_ID");
@@ -140,8 +138,8 @@ TEST_F(AicpuAsyncEventTest, RegOpEventCb)
     aicpu::SetTaskAndStreamId(1U, 2U);
     aicpu::SetAicpuThreadIndex(0U);
 
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
     EXPECT_TRUE(AsyncEventManager::GetInstance().RegOpEventCb(5, 20, cb));
 
@@ -180,8 +178,8 @@ TEST_F(AicpuAsyncEventTest, RegOpEventCbInterface)
     GlobalMockObject::verify();
     aicpu::SetTaskAndStreamId(1U, 1U);
     aicpu::SetAicpuThreadIndex(0U);
-    auto cb = [](void *param){
-        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void *>(&notify_info), sizeof(AsyncNotifyInfo));
+    auto cb = [](void* param) {
+        AsyncEventManager::GetInstance().NotifyWait(reinterpret_cast<void*>(&notify_info), sizeof(AsyncNotifyInfo));
     };
     EXPECT_TRUE(AicpuRegOpEventCb(5, 20, cb));
     aicpu::SetTaskAndStreamId(2U, 1U);

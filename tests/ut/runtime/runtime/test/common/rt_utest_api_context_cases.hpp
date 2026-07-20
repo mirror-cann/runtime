@@ -57,7 +57,7 @@ inline void ExpectCurrentContext(const rtContext_t expected)
     EXPECT_EQ(current, expected);
 }
 
-inline void CreateContextPairAndRejectInvalidFlag(const int32_t devId, rtContext_t &ctxA, rtContext_t &ctxB)
+inline void CreateContextPairAndRejectInvalidFlag(const int32_t devId, rtContext_t& ctxA, rtContext_t& ctxB)
 {
     rtContext_t invalidCtx = nullptr;
     rtError_t error = rtsCtxCreate(&ctxA, 0, devId);
@@ -172,12 +172,12 @@ inline void RunContextThreadRefCountTracksBindingCase()
     ASSERT_EQ(rtGetDevice(&devId), RT_ERROR_NONE);
 
     ASSERT_EQ(rtsCtxCreate(&ctxA, 0, devId), RT_ERROR_NONE);
-    Context *const ctxAPtr = static_cast<Context *>(ctxA);
+    Context* const ctxAPtr = static_cast<Context*>(ctxA);
     ASSERT_NE(ctxAPtr, nullptr);
     EXPECT_EQ(ctxAPtr->GetThreadRefCount(), 1U);
 
     ASSERT_EQ(rtsCtxCreate(&ctxB, 0, devId), RT_ERROR_NONE);
-    Context *const ctxBPtr = static_cast<Context *>(ctxB);
+    Context* const ctxBPtr = static_cast<Context*>(ctxB);
     ASSERT_NE(ctxBPtr, nullptr);
     EXPECT_EQ(ctxAPtr->GetThreadRefCount(), 0U);
     EXPECT_EQ(ctxBPtr->GetThreadRefCount(), 1U);
@@ -222,7 +222,7 @@ inline void RunFinalizingContextBlockedForUserButAllowedForInternalCase()
     ASSERT_EQ(rtGetDevice(&devId), RT_ERROR_NONE);
     ASSERT_EQ(rtsCtxCreate(&ctx, 0, devId), RT_ERROR_NONE);
 
-    Context *const ctxPtr = static_cast<Context *>(ctx);
+    Context* const ctxPtr = static_cast<Context*>(ctx);
     ASSERT_NE(ctxPtr, nullptr);
     EXPECT_EQ(ctxPtr->GetState(), ContextState::CTX_STATE_ACTIVE);
     ASSERT_TRUE(ctxPtr->TearDownIsCanExecute());
@@ -274,8 +274,8 @@ inline void RunPrimaryContextResetKeepsObjectAndCanReinitCase()
     ASSERT_NO_FATAL_FAILURE(ReleasePrimaryRefsForApiContextCase(devId));
     ASSERT_EQ(rtSetDevice(devId), RT_ERROR_NONE);
 
-    Runtime *const rt = Runtime::Instance();
-    Context *const primaryBefore = rt->CurrentContext();
+    Runtime* const rt = Runtime::Instance();
+    Context* const primaryBefore = rt->CurrentContext();
     ASSERT_NE(primaryBefore, nullptr);
     ASSERT_TRUE(primaryBefore->IsPrimary());
     EXPECT_EQ(primaryBefore->GetState(), ContextState::CTX_STATE_ACTIVE);
@@ -289,7 +289,7 @@ inline void RunPrimaryContextResetKeepsObjectAndCanReinitCase()
     EXPECT_EQ(current, nullptr);
 
     ASSERT_EQ(rtSetDevice(devId), RT_ERROR_NONE);
-    Context *const primaryAfter = rt->CurrentContext();
+    Context* const primaryAfter = rt->CurrentContext();
     ASSERT_NE(primaryAfter, nullptr);
     EXPECT_EQ(primaryAfter, primaryBefore);
     EXPECT_EQ(primaryAfter->GetState(), ContextState::CTX_STATE_ACTIVE);
@@ -302,8 +302,8 @@ inline void RunPrimaryRefCountReleaseSemanticsCase()
     ASSERT_NO_FATAL_FAILURE(ReleasePrimaryRefsForApiContextCase(devId));
     ASSERT_EQ(rtSetDevice(devId), RT_ERROR_NONE);
 
-    Runtime *const rt = Runtime::Instance();
-    Context *const primary = rt->CurrentContext();
+    Runtime* const rt = Runtime::Instance();
+    Context* const primary = rt->CurrentContext();
     ASSERT_NE(primary, nullptr);
     ASSERT_TRUE(primary->IsPrimary());
     EXPECT_EQ(primary->GetState(), ContextState::CTX_STATE_ACTIVE);
@@ -334,7 +334,7 @@ inline void RunResetDeviceForceTearsDownRegardlessOfRefCountCase()
     ASSERT_EQ(rtSetDevice(devId), RT_ERROR_NONE);
     ASSERT_EQ(rtSetDevice(devId), RT_ERROR_NONE);
 
-    Context *const primary = Runtime::Instance()->CurrentContext();
+    Context* const primary = Runtime::Instance()->CurrentContext();
     ASSERT_NE(primary, nullptr);
     ASSERT_TRUE(primary->IsPrimary());
     EXPECT_EQ(primary->GetState(), ContextState::CTX_STATE_ACTIVE);
@@ -351,7 +351,7 @@ inline void RunDeviceResetDoesNotDestroyExplicitContextCase()
     ASSERT_EQ(rtGetDevice(&devId), RT_ERROR_NONE);
     ASSERT_EQ(rtsCtxCreate(&ctx, 0, devId), RT_ERROR_NONE);
 
-    Context *const ctxPtr = static_cast<Context *>(ctx);
+    Context* const ctxPtr = static_cast<Context*>(ctx);
     ASSERT_NE(ctxPtr, nullptr);
     ASSERT_FALSE(ctxPtr->IsPrimary());
     EXPECT_EQ(ctxPtr->GetState(), ContextState::CTX_STATE_ACTIVE);
@@ -373,80 +373,61 @@ inline void RunDeviceResetDoesNotDestroyExplicitContextCase()
 } // namespace runtime
 } // namespace cce
 
-#define RT_UTEST_API_CONTEXT_FIXTURE(test_fixture, setup_msg, teardown_msg)                           \
-class test_fixture : public cce::runtime::ut::ApiContextTestBase                                      \
-{                                                                                                     \
-protected:                                                                                            \
-    static void SetUpTestCase()                                                                       \
-    {                                                                                                 \
-        std::cout << setup_msg << std::endl;                                                          \
-    }                                                                                                 \
-                                                                                                      \
-    static void TearDownTestCase()                                                                    \
-    {                                                                                                 \
-        std::cout << teardown_msg << std::endl;                                                       \
-    }                                                                                                 \
-};
+#define RT_UTEST_API_CONTEXT_FIXTURE(test_fixture, setup_msg, teardown_msg)        \
+    class test_fixture : public cce::runtime::ut::ApiContextTestBase {             \
+    protected:                                                                     \
+        static void SetUpTestCase() { std::cout << setup_msg << std::endl; }       \
+                                                                                   \
+        static void TearDownTestCase() { std::cout << teardown_msg << std::endl; } \
+    };
 
-#define RT_UTEST_API_CONTEXT_CASES(test_fixture)                                                    \
-TEST_F(test_fixture, TestRtsCtxDestroy)                                                            \
-{                                                                                                   \
-    cce::runtime::ut::RunRtsCtxDestroyCase();                                                       \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestRtsCtxGetAndSetCurrent)                                                    \
-{                                                                                                   \
-    cce::runtime::ut::RunRtsCtxGetAndSetCurrentCase();                                              \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestRtsGetPrimaryCtxState)                                                     \
-{                                                                                                   \
-    cce::runtime::ut::RunRtsGetPrimaryCtxStateCase();                                               \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestRtsCtxGetAndSetSysParamOpt)                                                \
-{                                                                                                   \
-    cce::runtime::ut::RunRtsCtxGetAndSetSysParamOptCase();                                          \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestRtsCtxGetCurrentDefaultStream)                                             \
-{                                                                                                   \
-    cce::runtime::ut::RunRtsCtxGetCurrentDefaultStreamCase();                                       \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestContextThreadRefCountTracksBinding)                                        \
-{                                                                                                   \
-    cce::runtime::ut::RunContextThreadRefCountTracksBindingCase();                                  \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestDestroyedContextHandleRejected)                                            \
-{                                                                                                   \
-    cce::runtime::ut::RunDestroyedContextHandleRejectedCase();                                      \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestFinalizingContextBlockedForUserButAllowedForInternal)                      \
-{                                                                                                   \
-    cce::runtime::ut::RunFinalizingContextBlockedForUserButAllowedForInternalCase();                 \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestPrimaryContextResetKeepsObjectAndCanReinit)                                \
-{                                                                                                   \
-    cce::runtime::ut::RunPrimaryContextResetKeepsObjectAndCanReinitCase();                          \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestPrimaryRefCountReleaseSemantics)                                           \
-{                                                                                                   \
-    cce::runtime::ut::RunPrimaryRefCountReleaseSemanticsCase();                                     \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestResetDeviceForceTearsDownRegardlessOfRefCount)                             \
-{                                                                                                   \
-    cce::runtime::ut::RunResetDeviceForceTearsDownRegardlessOfRefCountCase();                       \
-}                                                                                                   \
-                                                                                                    \
-TEST_F(test_fixture, TestDeviceResetDoesNotDestroyExplicitContext)                                  \
-{                                                                                                   \
-    cce::runtime::ut::RunDeviceResetDoesNotDestroyExplicitContextCase();                            \
-}
+#define RT_UTEST_API_CONTEXT_CASES(test_fixture)                                                                    \
+    TEST_F(test_fixture, TestRtsCtxDestroy) { cce::runtime::ut::RunRtsCtxDestroyCase(); }                           \
+                                                                                                                    \
+    TEST_F(test_fixture, TestRtsCtxGetAndSetCurrent) { cce::runtime::ut::RunRtsCtxGetAndSetCurrentCase(); }         \
+                                                                                                                    \
+    TEST_F(test_fixture, TestRtsGetPrimaryCtxState) { cce::runtime::ut::RunRtsGetPrimaryCtxStateCase(); }           \
+                                                                                                                    \
+    TEST_F(test_fixture, TestRtsCtxGetAndSetSysParamOpt) { cce::runtime::ut::RunRtsCtxGetAndSetSysParamOptCase(); } \
+                                                                                                                    \
+    TEST_F(test_fixture, TestRtsCtxGetCurrentDefaultStream)                                                         \
+    {                                                                                                               \
+        cce::runtime::ut::RunRtsCtxGetCurrentDefaultStreamCase();                                                   \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestContextThreadRefCountTracksBinding)                                                    \
+    {                                                                                                               \
+        cce::runtime::ut::RunContextThreadRefCountTracksBindingCase();                                              \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestDestroyedContextHandleRejected)                                                        \
+    {                                                                                                               \
+        cce::runtime::ut::RunDestroyedContextHandleRejectedCase();                                                  \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestFinalizingContextBlockedForUserButAllowedForInternal)                                  \
+    {                                                                                                               \
+        cce::runtime::ut::RunFinalizingContextBlockedForUserButAllowedForInternalCase();                            \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestPrimaryContextResetKeepsObjectAndCanReinit)                                            \
+    {                                                                                                               \
+        cce::runtime::ut::RunPrimaryContextResetKeepsObjectAndCanReinitCase();                                      \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestPrimaryRefCountReleaseSemantics)                                                       \
+    {                                                                                                               \
+        cce::runtime::ut::RunPrimaryRefCountReleaseSemanticsCase();                                                 \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestResetDeviceForceTearsDownRegardlessOfRefCount)                                         \
+    {                                                                                                               \
+        cce::runtime::ut::RunResetDeviceForceTearsDownRegardlessOfRefCountCase();                                   \
+    }                                                                                                               \
+                                                                                                                    \
+    TEST_F(test_fixture, TestDeviceResetDoesNotDestroyExplicitContext)                                              \
+    {                                                                                                               \
+        cce::runtime::ut::RunDeviceResetDoesNotDestroyExplicitContextCase();                                        \
+    }
 
 #endif // TESTS_UT_RUNTIME_RUNTIME_TEST_COMMON_RT_UTEST_API_CONTEXT_CASES_HPP_

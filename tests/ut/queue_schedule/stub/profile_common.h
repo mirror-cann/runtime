@@ -35,4 +35,4 @@ typedef struct QueueScheduleTrackTag {
     uint64_t totalCost;
 } QueueScheduleTrack;
 #endif
-}
+} // namespace Hiva

@@ -57,24 +57,19 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class CloudV2ApiImplSpecTest : public testing::Test
-{
+class CloudV2ApiImplSpecTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"ApiImplTestCloudV2 test start start. "<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "ApiImplTestCloudV2 test start start. " << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"ApiImplTestCloudV2 test start end. "<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "ApiImplTestCloudV2 test start end. " << std::endl; }
 
     virtual void SetUp()
     {
         GlobalMockObject::reset();
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
+            .stubs()
+            .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
         (void)rtSetDevice(0);
     }
@@ -87,11 +82,12 @@ protected:
         GlobalMockObject::verify();
         GlobalMockObject::reset();
     }
+
 private:
-    Driver *driver_;
+    Driver* driver_;
 };
 
-drvError_t halShrIdOpen_notify_stub(const char *name, struct drvShrIdInfo *info)
+drvError_t halShrIdOpen_notify_stub(const char* name, struct drvShrIdInfo* info)
 {
     EXPECT_EQ(info->devid, 0);
     EXPECT_EQ(info->tsid, 0);
@@ -102,7 +98,7 @@ drvError_t halShrIdOpen_notify_stub(const char *name, struct drvShrIdInfo *info)
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvDeviceGetIndexByPhyId_stub1001(uint32_t phyId, uint32_t *devIndex)
+drvError_t drvDeviceGetIndexByPhyId_stub1001(uint32_t phyId, uint32_t* devIndex)
 {
     *devIndex = 0;
     return DRV_ERROR_NONE;
@@ -110,7 +106,7 @@ drvError_t drvDeviceGetIndexByPhyId_stub1001(uint32_t phyId, uint32_t *devIndex)
 
 TEST_F(CloudV2ApiImplSpecTest, get_notify_phy_info)
 {
-    Notify *notify = nullptr;
+    Notify* notify = nullptr;
     ApiImpl apiImpl;
     rtError_t error;
     int32_t device_id = 0;
@@ -124,8 +120,8 @@ TEST_F(CloudV2ApiImplSpecTest, get_notify_phy_info)
     error = apiImpl.IpcOpenNotify(&notify, "notify", 1U);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Runtime *runtime = (Runtime *)Runtime::Instance();
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Runtime* runtime = (Runtime*)Runtime::Instance();
     rtChipType_t originType = runtime->GetChipType();
     runtime->SetChipType(CHIP_910_B_93);
     GlobalContainer::SetRtChipType(CHIP_910_B_93);
@@ -149,12 +145,12 @@ TEST_F(CloudV2ApiImplSpecTest, get_notify_phy_info)
     device->SetTschVersion(version);
     runtime->SetChipType(originType);
     GlobalContainer::SetRtChipType(originType);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(CloudV2ApiImplSpecTest, get_notify_phy_info_with_flag_two)
 {
-    Notify *notify = nullptr;
+    Notify* notify = nullptr;
     ApiImpl apiImpl;
     rtError_t error;
     int32_t device_id = 0;
@@ -168,8 +164,8 @@ TEST_F(CloudV2ApiImplSpecTest, get_notify_phy_info_with_flag_two)
     error = apiImpl.IpcOpenNotify(&notify, "notify", 1U);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Runtime *runtime = (Runtime *)Runtime::Instance();
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Runtime* runtime = (Runtime*)Runtime::Instance();
     rtChipType_t originType = runtime->GetChipType();
     runtime->SetChipType(CHIP_910_B_93);
     GlobalContainer::SetRtChipType(CHIP_910_B_93);
@@ -193,7 +189,7 @@ TEST_F(CloudV2ApiImplSpecTest, get_notify_phy_info_with_flag_two)
     device->SetTschVersion(version);
     runtime->SetChipType(originType);
     GlobalContainer::SetRtChipType(originType);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(CloudV2ApiImplSpecTest, stream_set_mode)
@@ -202,14 +198,11 @@ TEST_F(CloudV2ApiImplSpecTest, stream_set_mode)
     ApiImpl apiImpl;
     rtError_t error;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
-    Stream * stream = new Stream(device, 0);
-    MOCKER_CPP(&Stream::SetFailMode)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(RT_ERROR_NONE));
+    Stream* stream = new Stream(device, 0);
+    MOCKER_CPP(&Stream::SetFailMode).stubs().with(mockcpp::any()).will(returnValue(RT_ERROR_NONE));
     stream->SetMode(CONTINUE_ON_FAILURE);
     stream->failureMode_ = ABORT_ON_FAILURE;
     error = apiImpl.StreamSetMode(stream, STOP_ON_FAILURE);
@@ -217,10 +210,10 @@ TEST_F(CloudV2ApiImplSpecTest, stream_set_mode)
 
     device->SetTschVersion(version);
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-drvError_t halShrIdOpen_event_stub(const char *name, struct drvShrIdInfo *info)
+drvError_t halShrIdOpen_event_stub(const char* name, struct drvShrIdInfo* info)
 {
     EXPECT_EQ(info->devid, 0);
     EXPECT_EQ(info->tsid, 0);
@@ -235,20 +228,19 @@ TEST_F(CloudV2ApiImplSpecTest, ModelTaskUpdateFail_001)
 {
     rtError_t error;
 
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
-    MOCKER_CPP_VIRTUAL(device, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(device, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
 
-    Stream * desStm = new Stream(device, 0);
-    Stream * sinkStm = new Stream(device, 0);
+    Stream* desStm = new Stream(device, 0);
+    Stream* sinkStm = new Stream(device, 0);
     uint32_t desTaskId = 1;
     rtMdlTaskUpdateInfo_t para;
 
     InitEmbeddedInnerHandle<Stream>(desStm);
     InitEmbeddedInnerHandle<Stream>(sinkStm);
-    error = rtModelTaskUpdate(reinterpret_cast<rtStream_t>(desStm->GetInnerHandle()), desTaskId,
+    error = rtModelTaskUpdate(
+        reinterpret_cast<rtStream_t>(desStm->GetInnerHandle()), desTaskId,
         reinterpret_cast<rtStream_t>(sinkStm->GetInnerHandle()), &para);
     EXPECT_EQ(error, ACL_ERROR_RT_STREAM_MODEL);
 
@@ -260,13 +252,11 @@ TEST_F(CloudV2ApiImplSpecTest, ModelTaskUpdateFail_001)
 TEST_F(CloudV2ApiImplSpecTest, ModelTaskUpdateFail_002)
 {
     rtError_t error;
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(false));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(false));
 
     rtStream_t desStm;
     error = rtStreamCreate(&desStm, 0);
@@ -276,20 +266,20 @@ TEST_F(CloudV2ApiImplSpecTest, ModelTaskUpdateFail_002)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint64_t tillingkey = 123456;
-    uint64_t *devMemSrc;
-    error = rtMalloc((void **)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
+    uint64_t* devMemSrc;
+    error = rtMalloc((void**)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemcpy(devMemSrc, sizeof(uint64_t), &tillingkey, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *devMem;
-    error = rtMalloc((void **)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
+    void* devMem;
+    error = rtMalloc((void**)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo;
     fftsPlusTaskInfo.descBuf = devMem;
-    rtMdlTaskUpdateInfo_t  para;
+    rtMdlTaskUpdateInfo_t para;
     para.tilingKeyAddr = devMemSrc;
     para.hdl = devMemSrc;
     para.fftsPlusTaskInfo = &fftsPlusTaskInfo;
@@ -322,9 +312,7 @@ TEST_F(CloudV2ApiImplSpecTest, GetDeviceCapModelUpdate_Support)
     MOCKER_CPP(&AsyncHwtsEngine::ReceivingRun).stubs().will(returnValue(RT_ERROR_NONE));
     int32_t value = 0;
 
-    MOCKER(CheckFeatureIsSupportOld)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER(CheckFeatureIsSupportOld).stubs().will(returnValue(true));
 
     error = rtGetDeviceCapability(0, RT_MODULE_TYPE_TSCPU, FEATURE_TYPE_MODEL_TASK_UPDATE, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -344,27 +332,25 @@ TEST_F(CloudV2ApiImplSpecTest, GetDeviceCapModelUpdate_StubDev)
 
 TEST_F(CloudV2ApiImplSpecTest, MODEL_TASK_UPDATE_TEST_1)
 {
-    unsigned char *m_data = g_m_data;
+    unsigned char* m_data = g_m_data;
     size_t m_len = sizeof(g_m_data) / sizeof(g_m_data[0]);
     rtError_t error;
     rtBinHandle bin_handle = nullptr;
-    void *handle;
+    void* handle;
     rtDevBinary_t master_bin;
     master_bin.magic = RT_DEV_BINARY_MAGIC_ELF_AICUBE;
     master_bin.version = 2;
     master_bin.data = m_data;
     master_bin.length = m_len;
 
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
-    std::cout<<"call rtBinaryLoad in:"<<error<<std::endl;
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
+    std::cout << "call rtBinaryLoad in:" << error << std::endl;
     error = rtRegisterAllKernel(&master_bin, &handle);
-    std::cout<<"call rtBinaryLoad out:"<<error<<std::endl;
+    std::cout << "call rtBinaryLoad out:" << error << std::endl;
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtStream_t desStm;
@@ -379,26 +365,26 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_TASK_UPDATE_TEST_1)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *rawDevice = (RawDevice *)curCtx->Device_();
+    RawDevice* rawDevice = (RawDevice*)curCtx->Device_();
     MOCKER_CPP_VIRTUAL(rawDevice->Engine_(), &Engine::SyncTask).stubs().will(returnValue(RT_ERROR_NONE));
     rtModelBindStream(model, desStm, 0);
     rtModelBindStream(model, sinkStm, 0);
 
     uint64_t tillingkey = 123456;
-    uint64_t *devMemSrc;
-    error = rtMalloc((void **)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
+    uint64_t* devMemSrc;
+    error = rtMalloc((void**)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemcpy(devMemSrc, sizeof(uint64_t), &tillingkey, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *devMem;
-    error = rtMalloc((void **)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
+    void* devMem;
+    error = rtMalloc((void**)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo;
     fftsPlusTaskInfo.descBuf = devMem;
-    rtMdlTaskUpdateInfo_t  para;
+    rtMdlTaskUpdateInfo_t para;
     para.tilingKeyAddr = devMemSrc;
     para.hdl = handle;
     para.fftsPlusTaskInfo = &fftsPlusTaskInfo;
@@ -407,12 +393,12 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_TASK_UPDATE_TEST_1)
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtFree(devMemSrc);
     rtFree(devMem);
- 
-    Stream *desStream = rt_ut::UnwrapOrNull<Stream>(desStm);
-    Stream *sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+
+    Stream* desStream = rt_ut::UnwrapOrNull<Stream>(desStm);
+    Stream* sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     MOCKER_CPP_VIRTUAL(desStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(sinkStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
- 
+
     error = rtModelUnbindStream(model, desStm);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelUnbindStream(model, sinkStm);
@@ -428,17 +414,17 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_TASK_UPDATE_TEST_1)
 
     Device* dev2 = curCtx->DefaultStream_()->Device_();
     MOCKER_CPP_VIRTUAL(dev2, &Device::GetDevRunningState)
-    .stubs()
-    .will(returnValue((uint32_t)DEV_RUNNING_NORMAL))
-    .then(returnValue((uint32_t)DEV_RUNNING_DOWN));
+        .stubs()
+        .will(returnValue((uint32_t)DEV_RUNNING_NORMAL))
+        .then(returnValue((uint32_t)DEV_RUNNING_DOWN));
 }
 
 TEST_F(CloudV2ApiImplSpecTest, MODEL_BACKUP)
 {
     rtError_t error;
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
 
     rtStream_t sinkStm;
@@ -449,7 +435,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_BACKUP)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *rawDevice = dynamic_cast<RawDevice *>(dev);
+    RawDevice* rawDevice = dynamic_cast<RawDevice*>(dev);
     MOCKER_CPP_VIRTUAL(rawDevice->Engine_(), &Engine::SyncTask).stubs().will(returnValue(RT_ERROR_NONE));
     rtModelBindStream(model, sinkStm, 0);
 
@@ -468,7 +454,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_BACKUP)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     GlobalMockObject::verify();
 
-    Stream *sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+    Stream* sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     MOCKER_CPP_VIRTUAL(sinkStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtModelUnbindStream(model, sinkStm);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -487,9 +473,9 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_BACKUP)
 TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE)
 {
     rtError_t error;
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
 
     rtStream_t desStm;
@@ -508,7 +494,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *rawDevice = dynamic_cast<RawDevice *>(dev);
+    RawDevice* rawDevice = dynamic_cast<RawDevice*>(dev);
     MOCKER_CPP_VIRTUAL(rawDevice->Engine_(), &Engine::SyncTask).stubs().will(returnValue(RT_ERROR_NONE));
     rtModelBindStream(model, desStm, 0);
     rtModelBindStream(model, sinkStm, 0);
@@ -547,19 +533,18 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE)
 
     TaskInfo task1 = {};
     task1.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task1));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task1));
 
-    MOCKER_CPP_VIRTUAL(dev->GetDeviceSnapShot(), &IDeviceSnapshotOps::OpMemoryRestore).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev->GetDeviceSnapShot(), &IDeviceSnapshotOps::OpMemoryRestore)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     error = ModelRestore(dev->Id_());
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     GlobalMockObject::verify();
- 
-    Stream *desStream = rt_ut::UnwrapOrNull<Stream>(desStm);
-    Stream *sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+
+    Stream* desStream = rt_ut::UnwrapOrNull<Stream>(desStm);
+    Stream* sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     MOCKER_CPP_VIRTUAL(desStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(sinkStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -582,9 +567,9 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE)
 TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE2)
 {
     rtError_t error;
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
 
     rtStream_t desStm;
@@ -599,7 +584,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE2)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *rawDevice = dynamic_cast<RawDevice *>(dev);
+    RawDevice* rawDevice = dynamic_cast<RawDevice*>(dev);
     MOCKER_CPP_VIRTUAL(rawDevice->Engine_(), &Engine::SyncTask).stubs().will(returnValue(RT_ERROR_NONE));
     rtModelBindStream(model, sinkStm, 0);
 
@@ -615,7 +600,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE2)
 
     uint32_t errorcode[3] = {10, 1, 0};
     WaitExecFinishForModelExecuteTask(&task);
-    SetResult(&task, (const uint32_t *)errorcode,1);
+    SetResult(&task, (const uint32_t*)errorcode, 1);
     Complete(&task, 0);
 
     error = rt_ut::UnwrapOrNull<Model>(model)->SinkSqTasksBackup();
@@ -645,17 +630,16 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_RESTORE2)
 
     TaskInfo task1 = {};
     task1.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
-    MOCKER_CPP(&TaskFactory::GetTask)
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task1));
+    MOCKER_CPP_VIRTUAL(dev->GetDeviceSnapShot(), &IDeviceSnapshotOps::OpMemoryRestore)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task1));
-    MOCKER_CPP_VIRTUAL(dev->GetDeviceSnapShot(), &IDeviceSnapshotOps::OpMemoryRestore).stubs().will(returnValue(RT_ERROR_NONE));
- 
-    Stream *desStream = rt_ut::UnwrapOrNull<Stream>(desStm);
-    Stream *sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+        .will(returnValue(RT_ERROR_NONE));
+
+    Stream* desStream = rt_ut::UnwrapOrNull<Stream>(desStm);
+    Stream* sinkStream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     MOCKER_CPP_VIRTUAL(desStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(sinkStream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
- 
+
     error = ModelRestore(dev->Id_());
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -685,14 +669,14 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_002)
     rtError_t error = rtStreamCreate(&sinkStm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     TaskInfo task = {};
     InitByStream(&task, stream);
     task.type = TS_TASK_TYPE_MODEL_TASK_UPDATE;
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(UpdateD2HTaskInit).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = UpdateTaskD2HSubmit(&task, nullptr, stream);
-    EXPECT_EQ(error,RT_ERROR_DRV_ERR);
+    EXPECT_EQ(error, RT_ERROR_DRV_ERR);
     error = rtStreamDestroy(sinkStm);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -703,13 +687,13 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_003)
     rtError_t error = rtStreamCreate(&sinkStm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     TaskInfo task = {};
     InitByStream(&task, stream);
-    Stream *stream_var_t = static_cast<Stream *>(stream);
+    Stream* stream_var_t = static_cast<Stream*>(stream);
     MOCKER_CPP_VIRTUAL(stream_var_t, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(UpdateD2HTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
     MOCKER_CPP_VIRTUAL(curCtx->Device_(), &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = UpdateTaskD2HSubmit(&task, nullptr, stream);
@@ -724,11 +708,11 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_004)
     rtError_t error = rtStreamCreate(&sinkStm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     TaskInfo task = {};
     InitByStream(&task, stream);
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
-    
+
     MOCKER(MemcpyAsyncTaskPrepare).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = UpdateTaskH2DSubmit(&task, stream, nullptr);
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
@@ -742,7 +726,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_005)
     rtError_t error = rtStreamCreate(&sinkStm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     TaskInfo task = {};
     InitByStream(&task, stream);
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
@@ -761,14 +745,14 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_006)
     rtError_t error = rtStreamCreate(&sinkStm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(sinkStm);
     TaskInfo task = {};
     InitByStream(&task, stream);
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(MemcpyAsyncTaskPrepare).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SqeUpdateH2DTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
 
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
     MOCKER_CPP_VIRTUAL(curCtx->Device_(), &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     error = UpdateTaskH2DSubmit(&task, stream, nullptr);
@@ -780,27 +764,25 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_006)
 TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_007)
 {
     rtError_t error;
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
 
-    Stream *stream = new Stream(dev, 0);
+    Stream* stream = new Stream(dev, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
 
     dev->GetDeviceSnapShot()->OpMemoryRestore();
     dev->GetDeviceSnapShot()->OpMemoryBackup();
 
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(dev, 2000U, 5U, 5U,
-        BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
-    void *add = argAllocator->MallocBuffer(1, &(argAllocator->cpyInfoDmaMap_));
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(dev, 2000U, 5U, 5U, BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
+    void* add = argAllocator->MallocBuffer(1, &(argAllocator->cpyInfoDmaMap_));
     argAllocator->FreeBuffer(add, &(argAllocator->cpyInfoDmaMap_));
 
     argAllocator->policy_ = COPY_POLICY_ASYNC_PCIE_DMA;
-    MOCKER_CPP(&H2DCopyMgr::ArgsPoolConvertAddr)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&H2DCopyMgr::ArgsPoolConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = dynamic_cast<DeviceSnapshot*>(dev->GetDeviceSnapShot())->ArgsPoolConvertAddr(argAllocator);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -811,25 +793,25 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_007)
 TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
 {
     rtError_t error;
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
     rtModel_t model;
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *temp_model = rt_ut::UnwrapOrNull<Model>(model);
+    Model* temp_model = rt_ut::UnwrapOrNull<Model>(model);
     temp_model->UpdateSnapShotSqe();
     temp_model->ReBuild();
     rtStream_t sinkStm;
     error = rtStreamCreate(&sinkStm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    RawDevice *rawDevice = dynamic_cast<RawDevice *>(dev);
+    RawDevice* rawDevice = dynamic_cast<RawDevice*>(dev);
     MOCKER_CPP_VIRTUAL(rawDevice->Engine_(), &Engine::SyncTask).stubs().will(returnValue(RT_ERROR_NONE));
     rtModelBindStream(model, sinkStm, 0);
     MOCKER(MemcopyAsync).stubs().will(returnValue(RT_ERROR_NONE));
     uint64_t* args = new uint64_t[20];
-    
+
     std::vector<std::pair<TaskInfo*, std::function<void()>>> testTasks;
     TaskInfo task1 = {};
     InitByStream(&task1, rt_ut::UnwrapOrNull<Stream>(sinkStm));
@@ -840,40 +822,40 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     dynamic_cast<DeviceSnapshot*>(dev->GetDeviceSnapShot())->RecordArgsAddrAndSize(&task1);
     TaskInfo task2 = {};
     InitByStream(&task2, rt_ut::UnwrapOrNull<Stream>(sinkStm));
-    Kernel *aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task2, aicKernel1, aicKernel1->GetKernelAttrType(), 1, nullptr);
     delete aicKernel1;
     task2.u.aicTaskInfo.comm.args = &args[1];
     task2.u.aicTaskInfo.comm.argsSize = 8;
     (rt_ut::UnwrapOrNull<Stream>(sinkStm))->AddTaskToStream(&task2);
     dynamic_cast<DeviceSnapshot*>(dev->GetDeviceSnapShot())->RecordArgsAddrAndSize(&task2);
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
     TaskInfo task3 = {};
     InitByStream(&task3, rt_ut::UnwrapOrNull<Stream>(sinkStm));
-    Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task3, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
     delete aicKernel2;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
     kernel->SetMixType(MIX_AIV);
     task3.u.aicTaskInfo.kernel = kernel;
-    task3.u.aicTaskInfo.mixOpt= true;
+    task3.u.aicTaskInfo.mixOpt = true;
     task3.u.aicTaskInfo.comm.args = &args[3];
     task3.u.aicTaskInfo.comm.argsSize = 8;
-    rtFftsPlusMixAicAivCtx_t * descAlignBuf = new rtFftsPlusMixAicAivCtx_t;
+    rtFftsPlusMixAicAivCtx_t* descAlignBuf = new rtFftsPlusMixAicAivCtx_t;
     task3.u.aicTaskInfo.descAlignBuf = descAlignBuf;
     (rt_ut::UnwrapOrNull<Stream>(sinkStm))->AddTaskToStream(&task3);
     dynamic_cast<DeviceSnapshot*>(dev->GetDeviceSnapShot())->RecordArgsAddrAndSize(&task3);
     TaskInfo task4 = {};
-    rtFftsPlusTaskInfo_t  fftsPlusTaskInfo = {};
+    rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {};
     MOCKER(FillFftsPlusSqe).stubs().will(returnValue(RT_ERROR_NONE));
     InitByStream(&task4, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     FftsPlusTaskInit(&task4, &fftsPlusTaskInfo, 0);
-    FftsPlusTaskInfo *fftsPlusTask = &(task4.u.fftsPlusTask);
+    FftsPlusTaskInfo* fftsPlusTask = &(task4.u.fftsPlusTask);
     fftsPlusTask->descAlignBuf = &args[4];
     fftsPlusTask->descBufLen = 8;
     (rt_ut::UnwrapOrNull<Stream>(sinkStm))->AddTaskToStream(&task4);
@@ -881,7 +863,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     TaskInfo task5 = {};
     InitByStream(&task5, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     StreamActiveTaskInit(&task5, rt_ut::UnwrapOrNull<Stream>(sinkStm));
-    StreamActiveTaskInfo *streamActiveTask = &(task5.u.streamactiveTask);
+    StreamActiveTaskInfo* streamActiveTask = &(task5.u.streamactiveTask);
     streamActiveTask->funcCallSvmMem = &args[5];
     streamActiveTask->funCallMemSize = 8;
     (rt_ut::UnwrapOrNull<Stream>(sinkStm))->AddTaskToStream(&task5);
@@ -891,7 +873,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     task6.type = TS_TASK_TYPE_MEM_WAIT_VALUE;
     InitByStream(&task6, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     MemWaitValueTaskInit(&task6, &args[8], 0, 0);
-    MemWaitValueTaskInfo *memWaitValueTask = &task6.u.memWaitValueTask;
+    MemWaitValueTaskInfo* memWaitValueTask = &task6.u.memWaitValueTask;
     memWaitValueTask->funcCallSvmMem2 = &args[7];
     memWaitValueTask->funCallMemSize2 = 8;
     memWaitValueTask->devAddr = (uint64_t)(&args[8]);
@@ -900,14 +882,14 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     TaskInfo task7 = {};
     InitByStream(&task7, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     StreamLabelSwitchByIndexTaskInit(&task7, &args[9], 10, &args[10]);
-    StmLabelSwitchByIdxTaskInfo * stmLabelSwitchByIdxTaskInfo = &(task7.u.stmLabelSwitchIdxTask);
+    StmLabelSwitchByIdxTaskInfo* stmLabelSwitchByIdxTaskInfo = &(task7.u.stmLabelSwitchIdxTask);
     stmLabelSwitchByIdxTaskInfo->funcCallSvmMem = &args[11];
     stmLabelSwitchByIdxTaskInfo->funCallMemSize = 8;
     testTasks.push_back({&task7, [&task7]() { StreamLabelSwitchByIndexTaskUnInit(&task7); }});
     TaskInfo task8 = {};
     InitByStream(&task8, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     task8.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
-    RdmaPiValueModifyInfo *rdmaPiValueModifyInfo = &(task8.u.rdmaPiValueModifyInfo);
+    RdmaPiValueModifyInfo* rdmaPiValueModifyInfo = &(task8.u.rdmaPiValueModifyInfo);
     rdmaPiValueModifyInfo->funCallMemAddr = &args[12];
     rdmaPiValueModifyInfo->funCallMemSize = 8;
     testTasks.push_back({&task8, []() {}});
@@ -922,7 +904,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     InitByStream(&task10, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     task10.type = TS_TASK_TYPE_MODEL_TASK_UPDATE;
     TilingTabl* tilingTbl = new TilingTabl;
-    MdlUpdateTaskInfo *mdlUpdateTaskInfo = &(task10.u.mdlUpdateTask);
+    MdlUpdateTaskInfo* mdlUpdateTaskInfo = &(task10.u.mdlUpdateTask);
     mdlUpdateTaskInfo->tilingTabLen = 1;
     mdlUpdateTaskInfo->tilingTabAddr = tilingTbl;
     mdlUpdateTaskInfo->tilingKeyAddr = &args[14];
@@ -934,7 +916,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     task11.type = TS_TASK_TYPE_CAPTURE_WAIT;
     InitByStream(&task11, rt_ut::UnwrapOrNull<Stream>(sinkStm));
     MemWaitValueTaskInit(&task11, &args[17], 0, 0);
-    MemWaitValueTaskInfo *captureWaitTask = &task11.u.memWaitValueTask;
+    MemWaitValueTaskInfo* captureWaitTask = &task11.u.memWaitValueTask;
     captureWaitTask->funcCallSvmMem2 = &args[17];
     captureWaitTask->funCallMemSize2 = 8;
     captureWaitTask->devAddr = (uint64_t)(&args[18]);
@@ -943,11 +925,13 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     for (auto& [task, cleanup] : testTasks) {
         dynamic_cast<DeviceSnapshot*>(dev->GetDeviceSnapShot())->RecordFuncCallAddrAndSize(task);
     }
-    
+
     for (auto& [task, cleanup] : testTasks) {
         cleanup();
     }
-    MOCKER_CPP_VIRTUAL(rt_ut::UnwrapOrNull<Stream>(sinkStm), &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rt_ut::UnwrapOrNull<Stream>(sinkStm), &Stream::Synchronize)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&DeviceSnapshot::OpMemoryInfoInit).stubs();
     error = dev->GetDeviceSnapShot()->OpMemoryBackup();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -972,7 +956,7 @@ TEST_F(CloudV2ApiImplSpecTest, MODEL_SNAPSHOT_001)
     EXPECT_EQ(error, RT_ERROR_NONE);
     Device* dev2 = curCtx->DefaultStream_()->Device_();
     MOCKER_CPP_VIRTUAL(dev2, &Device::GetDevRunningState)
-    .stubs()
-    .will(returnValue((uint32_t)DEV_RUNNING_NORMAL))
-    .then(returnValue((uint32_t)DEV_RUNNING_DOWN));
+        .stubs()
+        .will(returnValue((uint32_t)DEV_RUNNING_NORMAL))
+        .then(returnValue((uint32_t)DEV_RUNNING_DOWN));
 }

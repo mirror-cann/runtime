@@ -20,7 +20,7 @@
 
 using namespace std;
 
-class SUBSCRIBE_MANAGER_ST :public testing::Test {
+class SUBSCRIBE_MANAGER_ST : public testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -33,17 +33,15 @@ protected:
         cout << "After bqs_client_utest" << endl;
         GlobalMockObject::verify();
     }
+
 public:
     bqs::SubscribeManager instance;
 };
 
-
 TEST_F(SUBSCRIBE_MANAGER_ST, UpdateSubscribeFullToNotFullOK)
 {
     instance.fullToNotFullQueuesSets_.insert(0U);
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.UpdateSubscribeFullToNotFull(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
@@ -69,10 +67,7 @@ TEST_F(SUBSCRIBE_MANAGER_ST, UpdateSubscribeFullToNotFull_Fail)
 
 TEST_F(SUBSCRIBE_MANAGER_ST, Unsubscribefail_01)
 {
-    MOCKER(halQueueUnsubEvent)
-        .stubs()
-        .will(returnValue(100))
-        .then(returnValue(DRV_ERROR_NOT_EXIST));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(100)).then(returnValue(DRV_ERROR_NOT_EXIST));
     EXPECT_EQ(instance.Subscribe(0), bqs::BQS_STATUS_OK);
     EXPECT_EQ(instance.Unsubscribe(0), bqs::BQS_STATUS_DRIVER_ERROR);
     EXPECT_EQ(instance.Unsubscribe(0), bqs::BQS_STATUS_OK);
@@ -80,13 +75,8 @@ TEST_F(SUBSCRIBE_MANAGER_ST, Unsubscribefail_01)
 
 TEST_F(SUBSCRIBE_MANAGER_ST, UnsubscribeFullToNotFullFail_01)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NOT_EXIST));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NOT_EXIST));
     // success for not subscribed
     EXPECT_EQ(instance.UnsubscribeFullToNotFull(1), bqs::BQS_STATUS_OK);
     EXPECT_EQ(instance.SubscribeFullToNotFull(1), bqs::BQS_STATUS_OK);
@@ -107,15 +97,9 @@ TEST_F(SUBSCRIBE_MANAGER_ST, Subscribe_Fail)
     EXPECT_EQ(instance.Subscribe(0), bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
-TEST_F(SUBSCRIBE_MANAGER_ST, UpdateSubscribe_Success)
-{
-    EXPECT_EQ(instance.UpdateSubscribe(0), bqs::BQS_STATUS_OK);
-}
+TEST_F(SUBSCRIBE_MANAGER_ST, UpdateSubscribe_Success) { EXPECT_EQ(instance.UpdateSubscribe(0), bqs::BQS_STATUS_OK); }
 
-TEST_F(SUBSCRIBE_MANAGER_ST, Unsubscribe_Success)
-{
-    EXPECT_EQ(instance.Unsubscribe(0), bqs::BQS_STATUS_OK);
-}
+TEST_F(SUBSCRIBE_MANAGER_ST, Unsubscribe_Success) { EXPECT_EQ(instance.Unsubscribe(0), bqs::BQS_STATUS_OK); }
 
 TEST_F(SUBSCRIBE_MANAGER_ST, UpdateSubscribe_Fail)
 {
@@ -141,10 +125,7 @@ TEST_F(SUBSCRIBE_MANAGER_ST, ResumeSubscribeFailed1)
     EXPECT_EQ(instance.Subscribe(0), bqs::BQS_STATUS_OK);
     EXPECT_EQ(instance.PauseSubscribe(0, 1, true), bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
     EXPECT_EQ(instance.ResumeSubscribe(0, 1), bqs::BQS_STATUS_DRIVER_ERROR);
 
     // success ResumeSubscribe
@@ -156,14 +137,9 @@ TEST_F(SUBSCRIBE_MANAGER_ST, ResumeSubscribeFailed1)
 TEST_F(SUBSCRIBE_MANAGER_ST, Resubscribe_Fail)
 {
     EXPECT_EQ(instance.Subscribe(0), bqs::BQS_STATUS_OK);
-    MOCKER(halQueueUnsubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
 
-    MOCKER(halQueueSubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
 
     // fail for EnhancedUnSubscribe
     EXPECT_EQ(instance.Resubscribe(0), bqs::BQS_STATUS_DRIVER_ERROR);
@@ -176,10 +152,7 @@ TEST_F(SUBSCRIBE_MANAGER_ST, PauseSubscribe)
     EXPECT_EQ(instance.PauseSubscribe(0, 1, true), bqs::BQS_STATUS_OK);
     EXPECT_EQ(instance.Subscribe(0), bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
 
     // fail for EnhancedUnSubscribe
     EXPECT_EQ(instance.PauseSubscribe(0, 1, true), bqs::BQS_STATUS_DRIVER_ERROR);

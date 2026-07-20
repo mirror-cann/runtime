@@ -12,115 +12,68 @@
 #include <iostream>
 #include <dirent.h>
 
-INT32 mmGetPid()
-{
-    return (INT32)1;
-}
+INT32 mmGetPid() { return (INT32)1; }
 
-INT32 mmGetTid()
-{
-    return (INT32)1;
-}
+INT32 mmGetTid() { return (INT32)1; }
 
-INT32 mmRealPath(const CHAR *path, CHAR *exactPath, INT32 realPathLen)
+INT32 mmRealPath(const CHAR* path, CHAR* exactPath, INT32 realPathLen)
 {
-    if(path == nullptr||exactPath == nullptr)
-    {
+    if (path == nullptr || exactPath == nullptr) {
         return EN_INVALID_PARAM;
     }
-    if (nullptr == realpath(path, exactPath))
-    {
+    if (nullptr == realpath(path, exactPath)) {
         return EN_ERROR;
     }
     return EN_OK;
 }
 
-INT32 mmUnlink(const CHAR *filename) {
-    return unlink(filename);
-}
+INT32 mmUnlink(const CHAR* filename) { return unlink(filename); }
 
 mmTimespec mmGetTickCount()
 {
     mmTimespec spec;
-    spec.tv_sec=1;
-    spec.tv_nsec=1;
+    spec.tv_sec = 1;
+    spec.tv_nsec = 1;
     return spec;
 }
 
-INT32 mmGetTimeOfDay(mmTimeval *timeVal, mmTimezone *timeZone)
+INT32 mmGetTimeOfDay(mmTimeval* timeVal, mmTimezone* timeZone)
 {
     if (timeVal == NULL) {
         return EN_INVALID_PARAM;
     }
-    INT32 ret = gettimeofday((struct timeval *)timeVal, (struct timezone *)timeZone);
+    INT32 ret = gettimeofday((struct timeval*)timeVal, (struct timezone*)timeZone);
     if (ret != EN_OK) {
         ret = EN_ERROR;
     }
     return ret;
 }
 
-INT32 mmCreateTask(mmThread *pstThreadHandle, mmUserBlock_t *pstFuncBlock)
-{
-    return 0;
-}
+INT32 mmCreateTask(mmThread* pstThreadHandle, mmUserBlock_t* pstFuncBlock) { return 0; }
 
-INT32 mmJoinTask(mmThread *pstThreadHandle)
-{
-    return 0;
-}
+INT32 mmJoinTask(mmThread* pstThreadHandle) { return 0; }
 
-INT32 mmCreateTaskWithAttr(mmThread *pstThreadHandle, mmUserBlock_t *pstFuncBlock)
-{
-    return 0;
-}
+INT32 mmCreateTaskWithAttr(mmThread* pstThreadHandle, mmUserBlock_t* pstFuncBlock) { return 0; }
 
-INT32 mmSetThreadPrio(mmThread *pstThreadHandle, INT32 threadPrio)
-{
-    return 0;
-}
+INT32 mmSetThreadPrio(mmThread* pstThreadHandle, INT32 threadPrio) { return 0; }
 
-INT32 mmSetThreadName(mmThread *pstThreadHandle, const CHAR* name)
-{
-    return 0;
-}
+INT32 mmSetThreadName(mmThread* pstThreadHandle, const CHAR* name) { return 0; }
 
-INT32 mmGetThreadName(mmThread *pstThreadHandle, CHAR* name,INT32 size)
-{
-    return 0;
-}
+INT32 mmGetThreadName(mmThread* pstThreadHandle, CHAR* name, INT32 size) { return 0; }
 
-INT32 mmSleep(UINT32 millseconds)
-{
-    return 0;
-}
+INT32 mmSleep(UINT32 millseconds) { return 0; }
 
+INT32 mmMutexInit(mmMutex_t* mutex) { return 0; }
 
-INT32 mmMutexInit( mmMutex_t* mutex )
-{
-    return 0;
-}
+INT32 mmMutexLock(mmMutex_t* mutex) { return 0; }
 
-INT32 mmMutexLock( mmMutex_t* mutex )
-{
-    return 0;
-}
+INT32 mmMutexUnLock(mmMutex_t* mutex) { return 0; }
 
-INT32 mmMutexUnLock( mmMutex_t* mutex )
-{
-    return 0;
-}
+INT32 mmMutexDestory(mmMutex_t* mutex) { return 0; }
 
-INT32 mmMutexDestory( mmMutex_t* mutex )
-{
-    return 0;
-}
+INT32 mmMutexDestroy(mmMutex_t* mutex) { return 0; }
 
-INT32 mmMutexDestroy( mmMutex_t* mutex )
-{
-    return 0;
-}
-
-INT32 mmDlclose(VOID *handle)
+INT32 mmDlclose(VOID* handle)
 {
     if (handle == NULL) {
         return EN_INVALID_PARAM;
@@ -129,16 +82,16 @@ INT32 mmDlclose(VOID *handle)
     return EN_OK;
 }
 
-VOID *mmDlopen(const CHAR *fileName, INT32 mode)
+VOID* mmDlopen(const CHAR* fileName, INT32 mode)
 {
     if ((fileName == NULL) || (mode < MMPA_ZERO)) {
         return NULL;
     }
     return malloc(10);
-    //return dlopen(fileName, mode);
+    // return dlopen(fileName, mode);
 }
 
-VOID *mmDlsym(VOID *handle, const CHAR *funcName)
+VOID* mmDlsym(VOID* handle, const CHAR* funcName)
 {
     if ((handle == NULL) || (funcName == NULL)) {
         return NULL;
@@ -147,51 +100,29 @@ VOID *mmDlsym(VOID *handle, const CHAR *funcName)
     return dlsym(handle, funcName);
 }
 
-CHAR* mmDlerror(void)
-{
-    return nullptr;
-}
+CHAR* mmDlerror(void) { return nullptr; }
 
-INT32 mmOpen(const CHAR *pathName, INT32 flags)
-{
-    return open(pathName,flags);
-}
+INT32 mmOpen(const CHAR* pathName, INT32 flags) { return open(pathName, flags); }
 
-INT32 mmClose(INT32 fd)
-{
-    return close(fd);
-}
+INT32 mmClose(INT32 fd) { return close(fd); }
 
-mmSsize_t mmRead (INT32 fd, VOID* mmBuf, UINT32 mmCount)
-{
-    return read(fd,mmBuf,mmCount);
-}
+mmSsize_t mmRead(INT32 fd, VOID* mmBuf, UINT32 mmCount) { return read(fd, mmBuf, mmCount); }
 
-mmSsize_t mmWrite (INT32 fd, VOID* mmBuf, UINT32 mmCount)
-{
-    return write(fd,mmBuf,mmCount);
-}
+mmSsize_t mmWrite(INT32 fd, VOID* mmBuf, UINT32 mmCount) { return write(fd, mmBuf, mmCount); }
 
-INT32 mmOpen2(const CHAR *pathName, INT32 flags, MODE mode)
-{
-    return open(pathName,flags,mode);
-}
+INT32 mmOpen2(const CHAR* pathName, INT32 flags, MODE mode) { return open(pathName, flags, mode); }
 
-INT32 mmStatGet(const CHAR *path,  mmStat_t *buffer)
-{
-    return stat(path,buffer);
-}
+INT32 mmStatGet(const CHAR* path, mmStat_t* buffer) { return stat(path, buffer); }
 
-INT32 mmGetLocalTime(mmSystemTime_t * st)
+INT32 mmGetLocalTime(mmSystemTime_t* st)
 {
     time_t raw_time = time(NULL);    // ��ȡԭʼʱ��
-    struct tm *timeinfo;
-    timeinfo = localtime(&raw_time);    // ת��Ϊtimeinfo
+    struct tm* timeinfo;
+    timeinfo = localtime(&raw_time); // ת��Ϊtimeinfo
 
-    if(nullptr == st)
+    if (nullptr == st)
         return -1;
-    else
-    {
+    else {
         st->wSecond = timeinfo->tm_sec;
         st->wMinute = timeinfo->tm_min;
         st->wHour = timeinfo->tm_hour;
@@ -206,48 +137,36 @@ INT32 mmGetLocalTime(mmSystemTime_t * st)
     return 0;
 }
 
-INT32 mmMkdir(const CHAR* lpPathName, mmMode_t mode)
-{
-    return mkdir(lpPathName,mode);
-}
+INT32 mmMkdir(const CHAR* lpPathName, mmMode_t mode) { return mkdir(lpPathName, mode); }
 
-INT32 mmAccess(const CHAR* lpPathName)
-{
-    return access(lpPathName, F_OK);
-}
+INT32 mmAccess(const CHAR* lpPathName) { return access(lpPathName, F_OK); }
 
 INT32 mmRmdir(const CHAR* lpPathName)
 {
-    char cmd[4096] = { '\0' };
+    char cmd[4096] = {'\0'};
     sprintf_s(cmd, 4096, "rm -rf %s", lpPathName);
     system(cmd);
     return EN_OK;
 }
 
-LONG mmLseek(INT32 fd, INT64 offset, INT32 seekFlag)
-{
-    return lseek(fd, offset, seekFlag);
-}
+LONG mmLseek(INT32 fd, INT64 offset, INT32 seekFlag) { return lseek(fd, offset, seekFlag); }
 
-INT32 mmSetEnv(const CHAR *name, const CHAR *value, INT32 overwrite)
-{
-    return setenv(name, value, overwrite);
-}
+INT32 mmSetEnv(const CHAR* name, const CHAR* value, INT32 overwrite) { return setenv(name, value, overwrite); }
 
-INT32 mmGetEnv(const CHAR *name, CHAR *value, UINT32 len)
+INT32 mmGetEnv(const CHAR* name, CHAR* value, UINT32 len)
 {
     INT32 ret;
     UINT32 envLen = 0;
     if (name == NULL || value == NULL || len == MMPA_ZERO) {
         return EN_INVALID_PARAM;
     }
-    CHAR *envPtr = getenv(name);
+    CHAR* envPtr = getenv(name);
     if (envPtr == NULL || strlen(envPtr) == 0) {
         return EN_ERROR;
     }
 
     UINT32 lenOfRet = (UINT32)strlen(envPtr);
-    if( lenOfRet < (MMPA_MEM_MAX_LEN - 1)) {
+    if (lenOfRet < (MMPA_MEM_MAX_LEN - 1)) {
         envLen = lenOfRet + 1;
     }
 
@@ -268,7 +187,7 @@ INT32 mmUmask(INT32 pmode)
     return (INT32)umask(mode);
 }
 
-INT32 mmChmod(const CHAR *filename, INT32 mode)
+INT32 mmChmod(const CHAR* filename, INT32 mode)
 {
     if (filename == NULL) {
         return EN_INVALID_PARAM;
@@ -277,7 +196,7 @@ INT32 mmChmod(const CHAR *filename, INT32 mode)
     return chmod(filename, mode);
 }
 
-INT32 mmGetDiskFreeSpace(const CHAR *path, mmDiskSize *diskSize)
+INT32 mmGetDiskFreeSpace(const CHAR* path, mmDiskSize* diskSize)
 {
     if ((path == NULL) || (diskSize == NULL)) {
         return EN_INVALID_PARAM;
@@ -297,7 +216,7 @@ INT32 mmGetDiskFreeSpace(const CHAR *path, mmDiskSize *diskSize)
     return EN_ERROR;
 }
 
-INT32 mmIsDir(const CHAR *fileName)
+INT32 mmIsDir(const CHAR* fileName)
 {
     if (fileName == NULL) {
         return EN_INVALID_PARAM;
@@ -315,14 +234,14 @@ INT32 mmIsDir(const CHAR *fileName)
     return EN_OK;
 }
 
-INT32 mmLocalTimeR(const time_t *timep, struct tm *result)
+INT32 mmLocalTimeR(const time_t* timep, struct tm* result)
 {
     if ((timep == NULL) || (result == NULL)) {
         return EN_INVALID_PARAM;
     } else {
         time_t time = *timep;
         struct tm nowTime = {0};
-        struct tm *tmp = localtime_r(&time, &nowTime);
+        struct tm* tmp = localtime_r(&time, &nowTime);
         if (tmp == NULL) {
             return EN_ERROR;
         }
@@ -349,7 +268,7 @@ INT32 mmSetCurrentThreadName(const CHAR* name)
     return EN_OK;
 }
 
-INT32 mmScandir2(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filterFunc, mmSort2 sort)
+INT32 mmScandir2(const CHAR* path, mmDirent2*** entryList, mmFilter2 filterFunc, mmSort2 sort)
 {
     if ((path == NULL) || (entryList == NULL)) {
         return EN_INVALID_PARAM;
@@ -361,7 +280,7 @@ INT32 mmScandir2(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filterFunc,
     return count;
 }
 
-void mmScandirFree2(mmDirent2 **entryList, INT32 count)
+void mmScandirFree2(mmDirent2** entryList, INT32 count)
 {
     if (entryList == NULL) {
         return;
@@ -377,12 +296,6 @@ void mmScandirFree2(mmDirent2 **entryList, INT32 count)
     entryList = NULL;
 }
 
-CHAR *mmSysGetEnv(mmEnvId id)
-{
-   return nullptr;
-}
+CHAR* mmSysGetEnv(mmEnvId id) { return nullptr; }
 
-INT32 mmSysSetEnv(mmEnvId id, const CHAR *value, INT32 overwrite)
-{
-    return 0;
-}
+INT32 mmSysSetEnv(mmEnvId id, const CHAR* value, INT32 overwrite) { return 0; }

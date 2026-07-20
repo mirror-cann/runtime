@@ -36,24 +36,17 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ChipDeviceTest : public testing::Test
-{
+class ChipDeviceTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         rtSetDevice(0);
         std::cout << "a test SetUP" << std::endl;
-		GlobalMockObject::verify();
+        GlobalMockObject::verify();
     }
 
     virtual void TearDown()
@@ -61,35 +54,37 @@ protected:
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         std::cout << "a test TearDown" << std::endl;
     }
+
 public:
     static uint32_t g_case_num;
     static uint32_t g_streamId;
     static uint16_t g_sId;
     static uint16_t g_tId;
     static uint32_t g_printType;
-    static rtError_t MemCopySyncForRingBuffer(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+    static rtError_t MemCopySyncForRingBuffer(
+        Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
     {
         if (g_case_num == 0) {
             return RT_ERROR_DRV_INPUT;
         }
         if (g_case_num == 100) {
-            DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+            DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
             tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
             tmpCtrlInfo->tail = 0;
             tmpCtrlInfo->head = 0;
             return RT_ERROR_NONE;
         }
         if (size == sizeof(DevRingBufferCtlInfo)) {
-            DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+            DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
             tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
             tmpCtrlInfo->tail = 1;
             tmpCtrlInfo->head = 0;
             return RT_ERROR_NONE;
         }
         if (size == (sizeof(RingBufferElementInfo) + sizeof(StarsDeviceErrorInfo))) {
-            RingBufferElementInfo *info = reinterpret_cast<RingBufferElementInfo *>(dst);
+            RingBufferElementInfo* info = reinterpret_cast<RingBufferElementInfo*>(dst);
             info->errorType = g_case_num;
-            StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+            StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
             switch (g_case_num) {
                 case FFTS_PLUS_AIVECTOR_ERROR:
                     errorInfo->u.coreErrorInfo.comm.streamId = g_streamId;
@@ -128,23 +123,24 @@ public:
         return RT_ERROR_NONE;
     }
 
-    static rtError_t MemCopySyncForRingBuffer2(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+    static rtError_t MemCopySyncForRingBuffer2(
+        Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
     {
         uint32_t DEVICE_RINGBUFFER_SIZE = 2U * 1024U * 1024U;
         uint32_t RINGBUFFER_EXT_ONE_ELEMENT_LENGTH = 12288U; // 4K + 8K
         if (size == DEVICE_RINGBUFFER_SIZE) {
             // ringbuffer 头
-            DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+            DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
             tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
             tmpCtrlInfo->tail = 1;
             tmpCtrlInfo->head = 0;
 
             size_t headSize = sizeof(DevRingBufferCtlInfo);
             size_t elementSize = RINGBUFFER_EXT_ONE_ELEMENT_LENGTH;
-            uint8_t * infoAddr =  reinterpret_cast<uint8_t *>(tmpCtrlInfo) + headSize + (tmpCtrlInfo->head * elementSize);
-            RingBufferElementInfo * info = reinterpret_cast<RingBufferElementInfo *>(infoAddr);
+            uint8_t* infoAddr = reinterpret_cast<uint8_t*>(tmpCtrlInfo) + headSize + (tmpCtrlInfo->head * elementSize);
+            RingBufferElementInfo* info = reinterpret_cast<RingBufferElementInfo*>(infoAddr);
             info->errorType = AICORE_ERROR;
-            StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+            StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
             errorInfo->u.coreErrorInfo.comm.streamId = g_sId;
             errorInfo->u.coreErrorInfo.comm.taskId = g_tId;
             errorInfo->u.coreErrorInfo.comm.coreNum = 0U;
@@ -152,9 +148,10 @@ public:
         return RT_ERROR_NONE;
     }
 
-    static rtError_t MemCopySyncStub0(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+    static rtError_t MemCopySyncStub0(
+        Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
     {
-        RtsTimeoutStreamSnapshot *Snapshot = reinterpret_cast<RtsTimeoutStreamSnapshot *>(dst);
+        RtsTimeoutStreamSnapshot* Snapshot = reinterpret_cast<RtsTimeoutStreamSnapshot*>(dst);
         if (g_printType == 0) {
             Snapshot->stream_num = 0;
         } else if (g_printType == 1) {
@@ -183,11 +180,11 @@ public:
             Snapshot->stream_num = 1;
             Snapshot->detailInfo[0].stream_id = 1;
             Snapshot->detailInfo[0].task_id = 5;
-        } else if(g_printType == 8) {
+        } else if (g_printType == 8) {
             Snapshot->stream_num = 1;
             Snapshot->detailInfo[0].stream_id = 1;
             Snapshot->detailInfo[0].task_id = 6;
-        } else if(g_printType == 9) {
+        } else if (g_printType == 9) {
             Snapshot->stream_num = 1;
             Snapshot->detailInfo[0].stream_id = 1;
             Snapshot->detailInfo[0].task_id = 7;
@@ -196,13 +193,15 @@ public:
         return DRV_ERROR_NONE;
     }
 
-    static rtError_t MemCopySyncStub1(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+    static rtError_t MemCopySyncStub1(
+        Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
     {
-        DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+        DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
         tmpCtrlInfo->magic = 0;
         tmpCtrlInfo->ringBufferLen = 0;
         return DRV_ERROR_NONE;
     }
+
 private:
     rtChipType_t originType;
 };
@@ -214,23 +213,24 @@ uint16_t ChipDeviceTest::g_tId = 0;
 uint32_t ChipDeviceTest::g_printType = 0;
 
 DevRingBufferCtlInfo ctrlInfo;
-DVresult cmodelDrvMemcpyStubForDevErrProc(DVdeviceptr dst, size_t destMax, DVdeviceptr src, size_t size, drvMemcpyKind_t kind)
+DVresult cmodelDrvMemcpyStubForDevErrProc(
+    DVdeviceptr dst, size_t destMax, DVdeviceptr src, size_t size, drvMemcpyKind_t kind)
 {
     ctrlInfo.ringBufferLen = 1U;
     ctrlInfo.magic = RINGBUFFER_MAGIC;
     ctrlInfo.head = 0U;
     ctrlInfo.tail = 1U;
     size_t cpySize = (size < sizeof(DevRingBufferCtlInfo)) ? size : sizeof(DevRingBufferCtlInfo);
-    (void)memcpy_s(reinterpret_cast<void *>(dst), cpySize, &ctrlInfo, cpySize);
+    (void)memcpy_s(reinterpret_cast<void*>(dst), cpySize, &ctrlInfo, cpySize);
     return DRV_ERROR_NONE;
 }
 
 TEST_F(ChipDeviceTest, device_error_proc2)
 {
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    std::unique_ptr<char[]> hostAddr(new (std::nothrow)  char[16]);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[16]);
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
@@ -246,7 +246,7 @@ TEST_F(ChipDeviceTest, device_error_proc2)
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
@@ -254,9 +254,9 @@ TEST_F(ChipDeviceTest, device_error_proc2)
 TEST_F(ChipDeviceTest, device_error_report_ringbuffer_01)
 {
     uint16_t streamId;
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[16]);
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
@@ -267,12 +267,12 @@ TEST_F(ChipDeviceTest, device_error_report_ringbuffer_01)
 
     errorProc->deviceRingBufferAddr_ = hostAddr.get();
     EXPECT_NE(errorProc->deviceRingBufferAddr_, nullptr);
-    DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(errorProc->deviceRingBufferAddr_);
+    DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(errorProc->deviceRingBufferAddr_);
     tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
     tmpCtrlInfo->head = 0;
     tmpCtrlInfo->tail = 1;
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::MemCopySync)
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::MemCopySync)
         .stubs()
         .will(returnValue(RT_ERROR_NONE));
     error = errorProc->ReportRingBuffer(&streamId);
@@ -280,16 +280,16 @@ TEST_F(ChipDeviceTest, device_error_report_ringbuffer_01)
 
     GlobalMockObject::verify();
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
 
 TEST_F(ChipDeviceTest, device_error_clean_ringbuffer_01)
 {
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[16]);
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
@@ -300,33 +300,31 @@ TEST_F(ChipDeviceTest, device_error_clean_ringbuffer_01)
 
     errorProc->deviceRingBufferAddr_ = hostAddr.get();
     EXPECT_NE(errorProc->deviceRingBufferAddr_, nullptr);
-    DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(errorProc->deviceRingBufferAddr_);
+    DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(errorProc->deviceRingBufferAddr_);
     tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
     tmpCtrlInfo->head = 0;
     tmpCtrlInfo->tail = 1;
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::MemCopySync)
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::MemCopySync)
         .stubs()
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP(&DeviceErrorProc::CheckValid)
-    .stubs()
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&DeviceErrorProc::CheckValid).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = errorProc->ProcCleanRingbuffer();
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
 
 TEST_F(ChipDeviceTest, device_error_clean_ringbuffer_02)
 {
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[16]);
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
@@ -337,33 +335,31 @@ TEST_F(ChipDeviceTest, device_error_clean_ringbuffer_02)
 
     errorProc->deviceRingBufferAddr_ = hostAddr.get();
     EXPECT_NE(errorProc->deviceRingBufferAddr_, nullptr);
-    DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(errorProc->deviceRingBufferAddr_);
+    DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(errorProc->deviceRingBufferAddr_);
     tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
     tmpCtrlInfo->head = 0;
     tmpCtrlInfo->tail = 1;
     tmpCtrlInfo->ringBufferLen = 0;
-    
+
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(invoke(MemCopySyncStub1));
 
-    MOCKER_CPP(&DeviceErrorProc::CheckValid)
-    .stubs()
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&DeviceErrorProc::CheckValid).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = errorProc->ProcCleanRingbuffer();
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
 
 TEST_F(ChipDeviceTest, PrintSnapshotInfo)
 {
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device->SetSnapshotFlag(false);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -380,7 +376,7 @@ TEST_F(ChipDeviceTest, PrintSnapshotInfo)
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
 
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t error;
     device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_EVENT_RECORD, error);
@@ -432,17 +428,17 @@ TEST_F(ChipDeviceTest, PrintSnapshotInfo)
     DELETE_A(errorProc->deviceRingBufferAddr_);
     delete errorProc;
     delete stm;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
 
 TEST_F(ChipDeviceTest, PrintStreamTimeoutSnapshotInfo_test)
 {
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device->SetSnapshotFlag(false);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -466,17 +462,15 @@ TEST_F(ChipDeviceTest, PrintStreamTimeoutSnapshotInfo_test)
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-
     device->SetTschVersion(TS_VERSION_STREAM_TIMEOUT_SNAPSHOT);
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 
     g_printType = 1;
     error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     g_printType = 2;
     device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, error);
@@ -530,17 +524,17 @@ TEST_F(ChipDeviceTest, PrintStreamTimeoutSnapshotInfo_test)
     error = errorProc->ProcCleanRingbuffer();
     delete errorProc;
     delete stm;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
 
 TEST_F(ChipDeviceTest, PrintStreamTimeoutSnapshotInfo_add)
 {
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device->SetSnapshotFlag(false);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -556,7 +550,7 @@ TEST_F(ChipDeviceTest, PrintStreamTimeoutSnapshotInfo_add)
     rtError_t error = errorProc->PrintStreamTimeoutSnapshotInfo();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     g_printType = 2;
     device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, error);
@@ -609,7 +603,7 @@ TEST_F(ChipDeviceTest, PrintStreamTimeoutSnapshotInfo_add)
     DELETE_A(errorProc->deviceRingBufferAddr_);
     delete errorProc;
     delete stm;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
 }
@@ -618,16 +612,17 @@ TEST_F(ChipDeviceTest, get_davidDieNum_failed)
 {
     rtError_t error;
     int32_t devId = 1;
-    RawDevice *device = new RawDevice(1);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RawDevice* device = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipOld = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL(driver,
-            &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
-            .will(returnValue(RT_ERROR_DRV_INPUT));
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_DRV_INPUT));
     MOCKER(halGetChipCapability)
         .stubs()
         .with(mockcpp::any(), mockcpp::any())
@@ -636,13 +631,13 @@ TEST_F(ChipDeviceTest, get_davidDieNum_failed)
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
     rtInstance->SetChipType(chipOld);
     GlobalContainer::SetRtChipType(chipOld);
-    delete(device);
+    delete (device);
 }
 
 TEST_F(ChipDeviceTest, AS31XM1X_SPM_TEST)
 {
     rtError_t error;
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     error = GET_CHIP_FEATURE_SET(CHIP_AS31XM1, dev->featureSet_);
     EXPECT_EQ(error, RT_ERROR_NONE);
     bool isSPM = dev->IsSPM(nullptr);

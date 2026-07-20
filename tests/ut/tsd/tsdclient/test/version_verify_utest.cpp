@@ -22,10 +22,7 @@ using namespace tsd;
 using namespace std;
 class VersionVerifyTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before VersionVerifyTest()" << endl;
-    }
+    virtual void SetUp() { cout << "Before VersionVerifyTest()" << endl; }
 
     virtual void TearDown()
     {
@@ -62,7 +59,6 @@ TEST_F(VersionVerifyTest, SetVersionInfo)
 
     versionVerify->ParseVersionInfo(msg.version_info());
     EXPECT_EQ(versionVerify->peerFeatureList_.empty(), false);
-
 }
 TEST_F(VersionVerifyTest, PeerVersionCheckTrue)
 {

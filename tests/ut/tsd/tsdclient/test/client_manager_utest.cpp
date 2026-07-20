@@ -24,11 +24,10 @@
 using namespace tsd;
 using namespace std;
 
-namespace
-{
+namespace {
 std::mutex g_mmpaMutex;
 mmDirent2** g_List;
-INT32 mmScandir2_invoke(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filterFunc, mmSort2 sort)
+INT32 mmScandir2_invoke(const CHAR* path, mmDirent2*** entryList, mmFilter2 filterFunc, mmSort2 sort)
 {
     g_List = (mmDirent2**)malloc(sizeof(mmDirent2*) * 1);
     g_List[0] = (mmDirent2*)malloc(sizeof(mmDirent2));
@@ -38,14 +37,14 @@ INT32 mmScandir2_invoke(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filt
     *entryList = g_List;
     return 1;
 }
-void mmScandirFree2_invoke(mmDirent2 **entryList, INT32 count)
+void mmScandirFree2_invoke(mmDirent2** entryList, INT32 count)
 {
     free(g_List[0]);
     g_List[0] = nullptr;
     free(g_List);
     g_List = nullptr;
 }
-INT32 mmScandir2_invokeExtend(const CHAR *path, mmDirent2 ***entryList, mmFilter2 filterFunc, mmSort2 sort)
+INT32 mmScandir2_invokeExtend(const CHAR* path, mmDirent2*** entryList, mmFilter2 filterFunc, mmSort2 sort)
 {
     g_List = (mmDirent2**)malloc(sizeof(mmDirent2*) * 2);
     g_List[0] = (mmDirent2*)malloc(sizeof(mmDirent2));
@@ -57,7 +56,7 @@ INT32 mmScandir2_invokeExtend(const CHAR *path, mmDirent2 ***entryList, mmFilter
     *entryList = g_List;
     return 2;
 }
-void mmScandirFree2_invokeExtend(mmDirent2 **entryList, INT32 count)
+void mmScandirFree2_invokeExtend(mmDirent2** entryList, INT32 count)
 {
     free(g_List[0]);
     g_List[0] = nullptr;
@@ -66,36 +65,36 @@ void mmScandirFree2_invokeExtend(mmDirent2 **entryList, INT32 count)
     free(g_List);
     g_List = nullptr;
 }
-int32_t drvGetPlatformInfo_invoke(uint32_t *info)
+int32_t drvGetPlatformInfo_invoke(uint32_t* info)
 {
     *info = 1;
 
     return 0;
 }
 
-int32_t halGetDeviceInfo_invoke(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+int32_t halGetDeviceInfo_invoke(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     *value = 1280;
 
     return 0;
 }
 
-drvError_t fake_drvGetDevNum(uint32_t *num_dev)
+drvError_t fake_drvGetDevNum(uint32_t* num_dev)
 {
     *num_dev = 8;
     return DRV_ERROR_NONE;
 }
- 
-drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+
+drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_VERSION)) {
         *value = CHIP_ASCEND_910A << 8;
     }
     return DRV_ERROR_NONE;
 }
-}
+} // namespace
 
-class ClientManagerTest :public testing::Test {
+class ClientManagerTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -116,8 +115,8 @@ TEST_F(ClientManagerTest, CheckPackageExistsNoMatch)
 {
     MOCKER(mmAccess).stubs().will(returnValue(0));
     MOCKER(mmIsDir).stubs().will(returnValue(0));
-    //MOCKER(mmScandir2).stubs().will(returnValue(0));
-    //MOCKER(mmScandirFree2).stubs().will(returnValue(0));
+    // MOCKER(mmScandir2).stubs().will(returnValue(0));
+    // MOCKER(mmScandirFree2).stubs().will(returnValue(0));
     bool ret = ClientManager::GetInstance(0)->CheckPackageExists();
     EXPECT_EQ(ret, false);
 }
@@ -164,7 +163,7 @@ TEST_F(ClientManagerTest, GetInstance1)
     MOCKER(drvGetPlatformInfo).stubs().will(returnValue(DRV_ERROR_SOCKET_CLOSE));
     EXPECT_EQ(nullptr, ClientManager::GetInstance(10));
 }
- 
+
 TEST_F(ClientManagerTest, GetInstance2)
 {
     setenv("ASCEND_AICPU_PATH", "/home", 1);
@@ -201,12 +200,8 @@ TEST_F(ClientManagerTest, GetInstance5)
 
 TEST_F(ClientManagerTest, GetInstance6)
 {
-    MOCKER_CPP(&ClientManager::GetPlatformInfo)
-        .stubs()
-        .will(returnValue(static_cast<uint32_t>(0)));
-    MOCKER_CPP(&ClientManager::GetClientRunMode)
-        .stubs()
-        .will(returnValue(RunningMode::UNSET_MODE));
+    MOCKER_CPP(&ClientManager::GetPlatformInfo).stubs().will(returnValue(static_cast<uint32_t>(0)));
+    MOCKER_CPP(&ClientManager::GetClientRunMode).stubs().will(returnValue(RunningMode::UNSET_MODE));
     EXPECT_EQ(nullptr, ClientManager::GetInstance(105));
 }
 
@@ -333,7 +328,7 @@ TEST_F(ClientManagerTest, TestGetVisibleDevices01)
 
 TEST_F(ClientManagerTest, TestGetVisibleDevices02)
 {
-    char_t *env = nullptr;
+    char_t* env = nullptr;
     MOCKER(mmSysGetEnv).stubs().will(returnValue(env));
     MOCKER(drvGetDevNum).stubs().will(invoke(fake_drvGetDevNum));
     auto ret = ClientManager::GetVisibleDevices();
@@ -405,14 +400,12 @@ TEST_F(ClientManagerTest, TestGetVisibleDevices09)
 
 TEST_F(ClientManagerTest, TestCheckDestructFlag01)
 {
-    MOCKER_CPP(&ClientManager::GetPlatformInfo)
-        .stubs()
-        .will(returnValue(static_cast<uint32_t>(1)));
+    MOCKER_CPP(&ClientManager::GetPlatformInfo).stubs().will(returnValue(static_cast<uint32_t>(1)));
     uint32_t devId = 0U;
     auto ret = ClientManager::CheckDestructFlag(devId);
     EXPECT_EQ(ret, false);
 }
- 
+
 TEST_F(ClientManagerTest, TestCheckDestructFlag02)
 {
     GlobalMockObject::verify();
@@ -424,7 +417,7 @@ TEST_F(ClientManagerTest, TestCheckDestructFlag02)
     auto ret = ClientManager::CheckDestructFlag(devId);
     EXPECT_EQ(ret, false);
 }
- 
+
 TEST_F(ClientManagerTest, TestIsSupportSetVisibleDevices01)
 {
     GlobalMockObject::verify();

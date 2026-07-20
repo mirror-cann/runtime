@@ -21,16 +21,14 @@
 
 class HostCpuDriverStubSt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(HostCpuDriverStubSt, HostCpuDriverStubStSuccess)
 {
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     uint64_t len = 0;
     poolHandle pHandle;
     halMbufChainGetMbuf(mbuf, 0, &mbuf);
@@ -43,7 +41,8 @@ TEST_F(HostCpuDriverStubSt, HostCpuDriverStubStSuccess)
     halMbufAllocEx(0, 0, 0, 0, &mbuf);
 
     mpAttr attr;
-    struct mempool_t *mp = nullptr;;
+    struct mempool_t* mp = nullptr;
+    ;
     halBuffCreatePool(&attr, &mp);
     halBuffDeletePool(mp);
 
@@ -53,12 +52,12 @@ TEST_F(HostCpuDriverStubSt, HostCpuDriverStubStSuccess)
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(HostCpuDriverStubSt, SetDeviceIdToDvpp) {
+TEST_F(HostCpuDriverStubSt, SetDeviceIdToDvpp)
+{
     uint32_t deviceId = 0;
     AicpuSchedule::AicpuSoManager::GetInstance().SetDeviceIdToDvpp(deviceId);
     EXPECT_EQ(AicpuSchedule::AicpuSoManager::GetInstance().soHandle_, nullptr);
 }
-
 
 TEST_F(HostCpuDriverStubSt, OnPreprocessEvent)
 {
@@ -67,29 +66,32 @@ TEST_F(HostCpuDriverStubSt, OnPreprocessEvent)
     EXPECT_EQ(DataPreprocess::TaskQueueMgr::GetInstance().cancelLastword_, nullptr);
 }
 
-TEST_F(HostCpuDriverStubSt, TDTServerInit) {
+TEST_F(HostCpuDriverStubSt, TDTServerInit)
+{
     const std::list<uint32_t> bindCoreList;
     int32_t ret = tdt::TDTServerInit(0, bindCoreList);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(HostCpuDriverStubSt, TDTServerStop) {
+TEST_F(HostCpuDriverStubSt, TDTServerStop)
+{
     int32_t ret = tdt::TDTServerStop();
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(HostCpuDriverStubSt, GetErrDesc) {
+TEST_F(HostCpuDriverStubSt, GetErrDesc)
+{
     std::string ret = tdt::StatusFactory::GetInstance()->GetErrDesc(0);
     EXPECT_EQ(ret, "");
     ret = tdt::StatusFactory::GetInstance()->GetErrCodeDesc(0);
     EXPECT_EQ(ret, "");
 }
 
-extern int32_t SetSubProcScheduleMode(const uint32_t deviceId, const uint32_t waitType,
-                                      const uint32_t hostPid, const uint32_t vfId,
-                                      const struct SubProcScheduleModeInfo *scheInfo);
+extern int32_t SetSubProcScheduleMode(
+    const uint32_t deviceId, const uint32_t waitType, const uint32_t hostPid, const uint32_t vfId,
+    const struct SubProcScheduleModeInfo* scheInfo);
 TEST_F(HostCpuDriverStubSt, SetSubProcScheduleMode)
 {
-  int ret = SetSubProcScheduleMode(0U, 0U, 0U, 0U, nullptr);
-  EXPECT_EQ(ret, 0);
+    int ret = SetSubProcScheduleMode(0U, 0U, 0U, 0U, nullptr);
+    EXPECT_EQ(ret, 0);
 }

@@ -10,7 +10,7 @@
 #include "../../rt_utest_api.hpp"
 #include "../../data/elf.h"
 
-static void MakeDir(const char * const dirName)
+static void MakeDir(const char* const dirName)
 {
     const std::string cmd = "mkdir -p ";
     const std::string name = dirName;
@@ -19,30 +19,28 @@ static void MakeDir(const char * const dirName)
     system(full_command.c_str());
 }
 
-static void CreateACorrectIniFile(const char * const filename)
+static void CreateACorrectIniFile(const char* const filename)
 {
     std::ofstream myfile;
     myfile.open(filename);
 
-    myfile<<"[Global Config]\n";
-    myfile<<"IsStreamSyncEschedMode=1\n";
+    myfile << "[Global Config]\n";
+    myfile << "IsStreamSyncEschedMode=1\n";
 
     myfile.close();
 }
 
-
-class ApiDCDisableThreadOfflineTest : public testing::Test
-{
+class ApiDCDisableThreadOfflineTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_3));
         (void)rtSetSocVersion("Ascend310P");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         originType_ = Runtime::Instance()->GetChipType();
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_DC);
         GlobalContainer::SetRtChipType(CHIP_DC);
 
@@ -62,8 +60,7 @@ protected:
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -78,7 +75,7 @@ protected:
 
         unsetenv("ASCEND_LATEST_INSTALL_PATH");
 
-        std::cout<<"api  test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "api  test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
@@ -86,34 +83,31 @@ protected:
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
-        rtInstance->SetDisableThread(flag);      // Recover.
+        rtInstance->SetDisableThread(flag); // Recover.
     }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
     static rtChipType_t originType_;
     static bool flag;
 };
@@ -121,7 +115,7 @@ public:
 rtStream_t ApiDCDisableThreadOfflineTest::stream_ = NULL;
 rtEvent_t ApiDCDisableThreadOfflineTest::event_ = NULL;
 void* ApiDCDisableThreadOfflineTest::binHandle_ = nullptr;
-char  ApiDCDisableThreadOfflineTest::function_ = 'a';
+char ApiDCDisableThreadOfflineTest::function_ = 'a';
 uint32_t ApiDCDisableThreadOfflineTest::binary_[32] = {};
 rtChipType_t ApiDCDisableThreadOfflineTest::originType_ = CHIP_CLOUD;
 bool ApiDCDisableThreadOfflineTest::flag = false;
@@ -154,7 +148,7 @@ TEST_F(ApiDCDisableThreadOfflineTest, StreamSync_Esched)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // tid not in rtInstance->eschedMap_
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->eschedMap_.clear();
     error = rtStreamSynchronize(stm);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -162,9 +156,9 @@ TEST_F(ApiDCDisableThreadOfflineTest, StreamSync_Esched)
 
 TEST_F(ApiDCDisableThreadOfflineTest, read_streamSync_mode)
 {
-    char_t *env = nullptr;
+    char_t* env = nullptr;
     MOCKER(getenv).stubs().will(returnValue(env));
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->ReadStreamSyncModeFromConfigIni();
     EXPECT_EQ(rtInstance->isStreamSyncEsched_, false);
     GlobalMockObject::verify();

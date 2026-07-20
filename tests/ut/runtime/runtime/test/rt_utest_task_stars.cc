@@ -56,13 +56,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-rtError_t stubGetHardVerBySocVer(const uint32_t deviceId, int64_t &hardwareVersion)
+rtError_t stubGetHardVerBySocVer(const uint32_t deviceId, int64_t& hardwareVersion)
 {
     hardwareVersion = PLATFORMCONFIG_CLOUD_V2;
     return DRV_ERROR_NONE;
 }
 
-rtError_t StubSetStreamOverflowSwitch(Context *ctx, Stream * const stm, const uint32_t flags)
+rtError_t StubSetStreamOverflowSwitch(Context* ctx, Stream* const stm, const uint32_t flags)
 {
     UNUSED(ctx);
     if (stm != nullptr) {
@@ -75,14 +75,14 @@ class StarsTaskTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
+        flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
         std::cout << "StarsTaskTest start" << std::endl;
     }
 
     static void TearDownTestCase()
     {
         std::cout << "StarsTaskTest end" << std::endl;
-        ((Runtime *)Runtime::Instance())->SetDisableThread(flag);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(flag);
     }
 
     virtual void SetUp()
@@ -90,13 +90,13 @@ protected:
         GlobalMockObject::verify();
         (void)rtSetSocVersion("Ascend910B1");
         ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_910_B_93);
         RefreshTaskFuncPointer(CHIP_910_B_93);
         int32_t devId = -1;
         rtSetDevice(0);
         rtGetDevice(&devId);
-        dev_ = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+        dev_ = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
         old = dev_->GetChipType();
         dev_->SetChipType(CHIP_910_B_93);
 
@@ -105,7 +105,7 @@ protected:
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
         ASSERT_NE(stream_, nullptr);
         ctx_ = Runtime::Instance()->CurrentContext();
-        std::cout<<"RtsStApi test start start. old chiptype="<<old<<std::endl;
+        std::cout << "RtsStApi test start start. old chiptype=" << old << std::endl;
     }
     virtual void TearDown()
     {
@@ -114,21 +114,21 @@ protected:
             rtStreamDestroy(streamHandle_);
         }
         dev_->SetChipType(old);
-        ((Runtime *)Runtime::Instance())->DeviceRelease(dev_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(dev_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         stream_ = nullptr;
         streamHandle_ = nullptr;
         dev_ = nullptr;
-        std::cout<<"RtsStApi test start end"<<std::endl;
+        std::cout << "RtsStApi test start end" << std::endl;
     }
 
 protected:
     rtChipType_t oriChipType;
-    Stream *stream_ = nullptr;
+    Stream* stream_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
-    Device *dev_ = nullptr;
-    Context *ctx_ = nullptr;
+    Device* dev_ = nullptr;
+    Context* ctx_ = nullptr;
     rtChipType_t old;
     static bool flag;
 };
@@ -137,8 +137,8 @@ bool StarsTaskTest::flag = false;
 namespace {
 void CleanupConstructTaskModelStream(rtModel_t model, rtStream_t stream)
 {
-    Model * const modelObj = rt_ut::UnwrapOrNull<Model>(model);
-    Stream * const streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Model* const modelObj = rt_ut::UnwrapOrNull<Model>(model);
+    Stream* const streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     EXPECT_NE(modelObj, nullptr);
     EXPECT_NE(streamObj, nullptr);
     if ((modelObj != nullptr) && (streamObj != nullptr)) {
@@ -150,7 +150,7 @@ void CleanupConstructTaskModelStream(rtModel_t model, rtStream_t stream)
     EXPECT_EQ(rtStreamDestroy(stream), RT_ERROR_NONE);
     EXPECT_EQ(rtModelDestroy(model), RT_ERROR_NONE);
 }
-}
+} // namespace
 
 TEST_F(StarsTaskTest, CheckSqeSize)
 {
@@ -174,19 +174,16 @@ TEST_F(StarsTaskTest, StreamSwitch)
 {
     rtStream_t trueStreamHandle = nullptr;
     ASSERT_EQ(rtStreamCreate(&trueStreamHandle, 0), RT_ERROR_NONE);
-    Stream *trueStream = rt_ut::UnwrapOrNull<Stream>(trueStreamHandle);
+    Stream* trueStream = rt_ut::UnwrapOrNull<Stream>(trueStreamHandle);
     ASSERT_NE(trueStream, nullptr);
 
-    std::vector<rtCondition_t> conds = {RT_EQUAL, RT_NOT_EQUAL, RT_GREATER,
-                                        RT_GREATER_OR_EQUAL, RT_LESS, RT_LESS_OR_EQUAL};
+    std::vector<rtCondition_t> conds = {RT_EQUAL, RT_NOT_EQUAL,    RT_GREATER, RT_GREATER_OR_EQUAL,
+                                        RT_LESS,  RT_LESS_OR_EQUAL};
     // stars cond op is not same as runtime.
     // when condition is true, it jump to end adn do nothing, but runtime is need jump to true stream.
-    std::vector<rtStarsCondIsaBranchFunc3_t> expectStarsConds = {RT_STARS_COND_ISA_BRANCH_FUNC3_BNE,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BGE,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BLT,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BGE,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BLT};
+    std::vector<rtStarsCondIsaBranchFunc3_t> expectStarsConds = {
+        RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, RT_STARS_COND_ISA_BRANCH_FUNC3_BGE,
+        RT_STARS_COND_ISA_BRANCH_FUNC3_BLT, RT_STARS_COND_ISA_BRANCH_FUNC3_BGE, RT_STARS_COND_ISA_BRANCH_FUNC3_BLT};
 
     ASSERT_EQ(conds.size(), expectStarsConds.size());
 
@@ -199,7 +196,7 @@ TEST_F(StarsTaskTest, StreamSwitch)
         rtError_t ret = StreamSwitchTaskInitV1(&task, &varData, conds[i], value, trueStream);
         EXPECT_EQ(ret, RT_ERROR_NONE);
         rtStarsSqe_t sqe = {};
-        auto &streamSwitchSqe = sqe.fuctionCallSqe;
+        auto& streamSwitchSqe = sqe.fuctionCallSqe;
         ToConstructSqe(&task, &sqe);
         PrintErrorInfo(&task, dev_->Id_());
         TaskUnInitProc(&task);
@@ -211,23 +208,20 @@ TEST_F(StarsTaskTest, StreamSwitchEx)
 {
     rtStream_t trueStreamHandle = nullptr;
     ASSERT_EQ(rtStreamCreate(&trueStreamHandle, 0), RT_ERROR_NONE);
-    Stream *trueStreams = rt_ut::UnwrapOrNull<Stream>(trueStreamHandle);
+    Stream* trueStreams = rt_ut::UnwrapOrNull<Stream>(trueStreamHandle);
     ASSERT_NE(trueStreams, nullptr);
     uint32_t trueStreamSqId = trueStreams->GetSqId();
-    uint32_t currentStreamId = (uint32_t) stream_->Id_();
+    uint32_t currentStreamId = (uint32_t)stream_->Id_();
     uint32_t currentStreamSqId = stream_->GetSqId();
 
-    std::vector<rtCondition_t> conds = {RT_EQUAL, RT_NOT_EQUAL, RT_GREATER,
-                                        RT_GREATER_OR_EQUAL, RT_LESS, RT_LESS_OR_EQUAL};
+    std::vector<rtCondition_t> conds = {RT_EQUAL, RT_NOT_EQUAL,    RT_GREATER, RT_GREATER_OR_EQUAL,
+                                        RT_LESS,  RT_LESS_OR_EQUAL};
 
     // stars cond op is not same as runtime.
     // when condition is true, it jump to end adn do nothing, but runtime is need jump to true stream.
-    std::vector<rtStarsCondIsaBranchFunc3_t> expectStarsConds = {RT_STARS_COND_ISA_BRANCH_FUNC3_BNE,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BGE,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BLT,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BGE,
-                                                                 RT_STARS_COND_ISA_BRANCH_FUNC3_BLT};
+    std::vector<rtStarsCondIsaBranchFunc3_t> expectStarsConds = {
+        RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, RT_STARS_COND_ISA_BRANCH_FUNC3_BGE,
+        RT_STARS_COND_ISA_BRANCH_FUNC3_BLT, RT_STARS_COND_ISA_BRANCH_FUNC3_BGE, RT_STARS_COND_ISA_BRANCH_FUNC3_BLT};
 
     ASSERT_EQ(conds.size(), expectStarsConds.size());
 
@@ -236,10 +230,9 @@ TEST_F(StarsTaskTest, StreamSwitchEx)
 
     std::vector<rtSwitchDataType_t> dataTypes = {RT_SWITCH_INT32, RT_SWITCH_INT64};
 
-    for (auto dataType:dataTypes) {
+    for (auto dataType : dataTypes) {
         rtStarsCondIsaLoadImmFunc3_t expectLdFunc3 =
-                (dataType == RT_SWITCH_INT64) ? RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LD
-                                              : RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LW;
+            (dataType == RT_SWITCH_INT64) ? RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LD : RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LW;
         for (int i = 0; i < conds.size(); ++i) {
             TaskInfo task = {};
             task.id = i;
@@ -247,7 +240,7 @@ TEST_F(StarsTaskTest, StreamSwitchEx)
             rtError_t ret = StreamSwitchTaskInitV2(&task, &varData, conds[i], trueStreams, &value, dataType);
             EXPECT_EQ(ret, RT_ERROR_NONE);
             rtStarsSqe_t sqe = {};
-            auto &streamSwitchExSqe = sqe.fuctionCallSqe;
+            auto& streamSwitchExSqe = sqe.fuctionCallSqe;
             ToConstructSqe(&task, &sqe);
             TaskUnInitProc(&task);
         }
@@ -267,9 +260,9 @@ TEST_F(StarsTaskTest, RdmaNoSink)
     uint32_t sqeNum = GetSendSqeNum(&rdmaNoSinkTask);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task = &rdmaNoSinkTask;
+    TaskInfo* task = &rdmaNoSinkTask;
     rtStarsSqe_t command = {};
-    RtStarsWriteValueSqe &sqe = command.writeValueSqe;
+    RtStarsWriteValueSqe& sqe = command.writeValueSqe;
     ToConstructSqe(task, &command);
     EXPECT_EQ(sqe.header.type, RT_STARS_SQE_TYPE_WRITE_VALUE);
     EXPECT_EQ(sqe.header.wr_cqe, 0);
@@ -283,7 +276,7 @@ TEST_F(StarsTaskTest, RdmaSink)
     rtError_t ret;
     rtModel_t model;
     rtStream_t streamHandle = nullptr;
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -294,7 +287,7 @@ TEST_F(StarsTaskTest, RdmaSink)
     ret = rtModelBindStream(model, streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint16_t *svm = stream->GetExecutedTimesSvm();
+    uint16_t* svm = stream->GetExecutedTimesSvm();
     uintptr_t svmAddr = (uintptr_t)svm;
     EXPECT_NE(svm, nullptr);
 
@@ -314,9 +307,9 @@ TEST_F(StarsTaskTest, RdmaSink)
     uint32_t sqeNum = GetSendSqeNum(&rdmaSinkTask1);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task1 = &rdmaSinkTask1;
+    TaskInfo* task1 = &rdmaSinkTask1;
     rtStarsSqe_t command1 = {};
-    RtStarsRdmaSinkSqe1 &sqe1 = command1.rdmaSinkSqe1;
+    RtStarsRdmaSinkSqe1& sqe1 = command1.rdmaSinkSqe1;
     ToConstructSqe(task1, &command1);
 
     EXPECT_EQ(sqe1.sqeHeader.type, RT_STARS_SQE_TYPE_COND);
@@ -335,16 +328,16 @@ TEST_F(StarsTaskTest, RdmaSink)
     sqeNum = GetSendSqeNum(&rdmaSinkTask2);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task2 = &rdmaSinkTask2;
+    TaskInfo* task2 = &rdmaSinkTask2;
     rtStarsSqe_t command2 = {};
-    RtStarsRdmaSinkSqe2 &sqe2 = command2.rdmaSinkSqe2;
+    RtStarsRdmaSinkSqe2& sqe2 = command2.rdmaSinkSqe2;
     ToConstructSqe(task2, &command2);
     EXPECT_EQ(sqe2.sqeHeader.type, RT_STARS_SQE_TYPE_COND);
     EXPECT_EQ(sqe2.sqeHeader.wr_cqe, 0U);
     EXPECT_EQ(sqe2.sqeHeader.l1_lock, 0U);
     EXPECT_EQ(sqe2.sqeHeader.l1_unlock, 1U);
     EXPECT_EQ(sqe2.csc, 0U);
-  
+
     ret = rtModelUnbindStream(model, streamHandle);
     EXPECT_EQ(ret, ACL_ERROR_RT_INTERNAL_ERROR);
     stream->DelModel(rt_ut::UnwrapOrNull<Model>(model));
@@ -362,7 +355,7 @@ TEST_F(StarsTaskTest, ModelExecute)
     TaskInfo mdlExecTask = {};
 
     rtStream_t headSreamHandle = nullptr;
-    Stream *headSream = nullptr;
+    Stream* headSream = nullptr;
     ret = rtStreamCreate(&headSreamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     headSream = rt_ut::UnwrapOrNull<Stream>(headSreamHandle);
@@ -376,13 +369,13 @@ TEST_F(StarsTaskTest, ModelExecute)
 
     InitByStream(&mdlExecTask, headSream);
 
-    ret = ModelExecuteTaskInit(&mdlExecTask, rt_ut::UnwrapOrNull<Model>(model),
-        rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
+    ret = ModelExecuteTaskInit(
+        &mdlExecTask, rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     uint32_t sqeNum = GetSendSqeNum(&mdlExecTask);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task = &mdlExecTask;
+    TaskInfo* task = &mdlExecTask;
     rtStarsSqe_t command[3] = {};
     ToConstructSqe(task, command);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -396,7 +389,7 @@ TEST_F(StarsTaskTest, ModelExecute_1)
     rtModel_t model;
     TaskInfo mdlExecTask = {};
     rtStream_t headSreamHandle = nullptr;
-    Stream *headSream = nullptr;
+    Stream* headSream = nullptr;
     ret = rtStreamCreate(&headSreamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     headSream = rt_ut::UnwrapOrNull<Stream>(headSreamHandle);
@@ -410,13 +403,13 @@ TEST_F(StarsTaskTest, ModelExecute_1)
 
     InitByStream(&mdlExecTask, headSream);
     MOCKER(CheckLogLevel).stubs().will(returnValue(1));
-    ret = ModelExecuteTaskInit(&mdlExecTask, rt_ut::UnwrapOrNull<Model>(model),
-        rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
+    ret = ModelExecuteTaskInit(
+        &mdlExecTask, rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     uint32_t sqeNum = GetSendSqeNum(&mdlExecTask);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task = &mdlExecTask;
+    TaskInfo* task = &mdlExecTask;
     rtStarsSqe_t command[3] = {};
     ToConstructSqe(task, command);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -431,7 +424,7 @@ TEST_F(StarsTaskTest, ModelExecute_failed)
     rtModel_t model;
     TaskInfo mdlExecTask = {};
     rtStream_t headSreamHandle = nullptr;
-    Stream *headSream = nullptr;
+    Stream* headSream = nullptr;
     ret = rtStreamCreate(&headSreamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     headSream = rt_ut::UnwrapOrNull<Stream>(headSreamHandle);
@@ -445,8 +438,8 @@ TEST_F(StarsTaskTest, ModelExecute_failed)
 
     InitByStream(&mdlExecTask, headSream);
     MOCKER(memcpy_s).stubs().will(returnValue(EINVAL));
-    ret = ModelExecuteTaskInit(&mdlExecTask, rt_ut::UnwrapOrNull<Model>(model),
-        rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
+    ret = ModelExecuteTaskInit(
+        &mdlExecTask, rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
     (void)ret;
 
     CleanupConstructTaskModelStream(model, headSreamHandle);
@@ -458,7 +451,7 @@ TEST_F(StarsTaskTest, FuncCallAllocDevMem_devMem_failed)
     rtModel_t model;
     TaskInfo mdlExecTask = {};
     rtStream_t headSreamHandle = nullptr;
-    Stream *headSream = nullptr;
+    Stream* headSream = nullptr;
     ret = rtStreamCreate(&headSreamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     headSream = rt_ut::UnwrapOrNull<Stream>(headSreamHandle);
@@ -472,8 +465,8 @@ TEST_F(StarsTaskTest, FuncCallAllocDevMem_devMem_failed)
 
     InitByStream(&mdlExecTask, headSream);
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DRV_INPUT));
-    ret = ModelExecuteTaskInit(&mdlExecTask, rt_ut::UnwrapOrNull<Model>(model),
-        rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
+    ret = ModelExecuteTaskInit(
+        &mdlExecTask, rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
     (void)ret;
 
     CleanupConstructTaskModelStream(model, headSreamHandle);
@@ -487,7 +480,7 @@ TEST_F(StarsTaskTest, FuncCallAllocDevMem_devDfxMem_failed)
     void* mem = memBase;
     TaskInfo mdlExecTask = {};
     rtStream_t headSreamHandle = nullptr;
-    Stream *headSream = nullptr;
+    Stream* headSream = nullptr;
     ret = rtStreamCreate(&headSreamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     headSream = rt_ut::UnwrapOrNull<Stream>(headSreamHandle);
@@ -501,9 +494,7 @@ TEST_F(StarsTaskTest, FuncCallAllocDevMem_devDfxMem_failed)
 
     InitByStream(&mdlExecTask, headSream);
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemAlloc)
         .stubs()
@@ -511,8 +502,8 @@ TEST_F(StarsTaskTest, FuncCallAllocDevMem_devDfxMem_failed)
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_DRV_INPUT));
 
-    ret = ModelExecuteTaskInit(&mdlExecTask, rt_ut::UnwrapOrNull<Model>(model),
-        rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
+    ret = ModelExecuteTaskInit(
+        &mdlExecTask, rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
 
     CleanupConstructTaskModelStream(model, headSreamHandle);
 }
@@ -520,9 +511,9 @@ TEST_F(StarsTaskTest, FuncCallAllocDevMem_devDfxMem_failed)
 TEST_F(StarsTaskTest, ModelMaintaince)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -533,7 +524,7 @@ TEST_F(StarsTaskTest, ModelMaintaince)
     model = rt_ut::UnwrapOrNull<Model>(modelHandle);
 
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
+    TaskInfo* task = &maintainceTask;
     rtStarsSqe_t sqe = {};
 
     InitByStream(&maintainceTask, stream_);
@@ -563,7 +554,7 @@ TEST_F(StarsTaskTest, ModelMaintaince)
 TEST_F(StarsTaskTest, MaintainceTaskForceRecycle)
 {
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
+    TaskInfo* task = &maintainceTask;
     rtStarsSqe_t sqe = {};
 
     InitByStream(&maintainceTask, stream_);
@@ -576,10 +567,10 @@ TEST_F(StarsTaskTest, MaintainceTaskForceRecycle)
 TEST_F(StarsTaskTest, WaitEndgraphError)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
-    Notify *notify;
+    Stream* stream;
+    Notify* notify;
     rtStream_t streamHandle = nullptr;
     rtNotify_t notifyHandle = nullptr;
 
@@ -626,10 +617,10 @@ TEST_F(StarsTaskTest, WaitEndgraphError)
 
 TEST_F(StarsTaskTest, DoCompleteStarsError)
 {
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
-    Notify *notify;
+    Stream* stream;
+    Notify* notify;
     rtStream_t streamHandle = nullptr;
     rtNotify_t notifyHandle = nullptr;
 
@@ -656,9 +647,9 @@ TEST_F(StarsTaskTest, DoCompleteStarsError)
     wait_cqe.errorType = 1U;
     wait_cqe.errorCode = 1U;
 
-    TaskInfo *errTask = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_KERNEL_AICORE, ret);
+    TaskInfo* errTask = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_KERNEL_AICORE, ret);
     dev_->GetTaskFactory()->SetSerialId(stream_, errTask);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(errTask, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     EXPECT_EQ(errTask->type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -666,7 +657,7 @@ TEST_F(StarsTaskTest, DoCompleteStarsError)
     rtStarsCqeSwStatus_t sw_status;
     sw_status.model_exec.stream_id = errTask->stream->Id_();
     sw_status.model_exec.task_id = errTask->id;
-    GetRealReportFaultTask(&task, static_cast<const void *>(&sw_status));
+    GetRealReportFaultTask(&task, static_cast<const void*>(&sw_status));
     (void)dev_->GetTaskFactory()->Recycle(errTask);
     SetStarsResult(&task, wait_cqe);
     Complete(&task, 0);
@@ -689,10 +680,10 @@ TEST_F(StarsTaskTest, DoCompleteStarsError)
 TEST_F(StarsTaskTest, DoCompleteStarsError2)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
-    Notify *notify;
+    Stream* stream;
+    Notify* notify;
     rtStream_t streamHandle = nullptr;
     rtNotify_t notifyHandle = nullptr;
 
@@ -739,10 +730,10 @@ TEST_F(StarsTaskTest, DoCompleteStarsError2)
 TEST_F(StarsTaskTest, DoCompleteStarsError3)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
-    Notify *notify;
+    Stream* stream;
+    Notify* notify;
     rtStream_t streamHandle = nullptr;
     rtNotify_t notifyHandle = nullptr;
 
@@ -788,9 +779,9 @@ TEST_F(StarsTaskTest, DoCompleteStarsError3)
 
 TEST_F(StarsTaskTest, DoCompleteStarsSdmaError)
 {
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     rtError_t ret = rtStreamCreate(&streamHandle, 0);
@@ -809,18 +800,14 @@ TEST_F(StarsTaskTest, DoCompleteStarsSdmaError)
 
     execTask.errorCode = 0x221;
     execTask.mte_error = 0x221;
-    MOCKER(GetRealReportFaultTaskForModelExecuteTask)
-        .stubs()
-        .will(returnValue(&execTask));
+    MOCKER(GetRealReportFaultTaskForModelExecuteTask).stubs().will(returnValue(&execTask));
     Complete(&execTask, 0);
 
     GlobalMockObject::verify();
 
     execTask.errorCode = 0x221;
     execTask.mte_error = 0xFFFF;
-    MOCKER(GetRealReportFaultTaskForModelExecuteTask)
-        .stubs()
-        .will(returnValue(&execTask));
+    MOCKER(GetRealReportFaultTaskForModelExecuteTask).stubs().will(returnValue(&execTask));
     Complete(&execTask, 0);
 
     ret = rtStreamDestroy(streamHandle);
@@ -832,11 +819,11 @@ TEST_F(StarsTaskTest, DoCompleteStarsSdmaError)
 TEST_F(StarsTaskTest, RingBufferMaintain)
 {
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
+    TaskInfo* task = &maintainceTask;
     rtStarsSqe_t sqe = {};
 
     InitByStream(&maintainceTask, stream_);
-    rtError_t ret = RingBufferMaintainTaskInit(&maintainceTask, (void *)0x100, 0, 10);
+    rtError_t ret = RingBufferMaintainTaskInit(&maintainceTask, (void*)0x100, 0, 10);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     ToConstructSqe(task, &sqe);
@@ -928,7 +915,7 @@ TEST_F(StarsTaskTest, OverflowSwitchSetTask)
 
     rtStream_t streamHandle = nullptr;
     ASSERT_EQ(rtStreamCreate(&streamHandle, 0), RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     ASSERT_NE(stm, nullptr);
     TaskInfo tsk = {};
     InitByStream(&tsk, stm);
@@ -944,9 +931,9 @@ TEST_F(StarsTaskTest, OverflowSwitchSetTask)
 TEST_F(StarsTaskTest, DataDumpLoadInfoTask)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -957,7 +944,7 @@ TEST_F(StarsTaskTest, DataDumpLoadInfoTask)
     DataDumpLoadInfoTaskInit(&task, nullptr, 1, 1);
 
     uint32_t errorcode = 10;
-    SetResult(&task, (const uint32_t *)&errorcode, 1);
+    SetResult(&task, (const uint32_t*)&errorcode, 1);
     DoCompleteSuccess(&task, 0);
 
     rtLogicCqReport_t cqe = {};
@@ -965,10 +952,7 @@ TEST_F(StarsTaskTest, DataDumpLoadInfoTask)
     SetStarsResult(&task, cqe);
 }
 
-void DvppGrpCallbackFunc(rtDvppGrpRptInfo_t *report)
-{
-    UNUSED(report);
-}
+void DvppGrpCallbackFunc(rtDvppGrpRptInfo_t* report) { UNUSED(report); }
 
 TEST_F(StarsTaskTest, DvppGrpTestFail)
 {
@@ -1000,16 +984,16 @@ TEST_F(StarsTaskTest, WriteValueTaskTest)
 
     rtStreamSynchronize(streamHandle_);
 
-    TaskInfo *writeValueTask = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_WRITE_VALUE, ret);
+    TaskInfo* writeValueTask = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_WRITE_VALUE, ret);
     ret = WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_NEVER);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ToConstructSqe(writeValueTask, &cmd);
 
-    ret =  WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_DEFAULT);
+    ret = WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_DEFAULT);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ToConstructSqe(writeValueTask, &cmd);
 
-    ret =  WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_ALWAYS);
+    ret = WriteValueTaskInit(writeValueTask, addr, WRITE_VALUE_SIZE_32_BYTE, value, TASK_WR_CQE_ALWAYS);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ToConstructSqe(writeValueTask, &cmd);
 
@@ -1021,19 +1005,21 @@ TEST_F(StarsTaskTest, NotifyIpcTaskHccsTest)
     TaskInfo ntyRecordTask = {};
     InitByStream(&ntyRecordTask, stream_);
     SingleBitNotifyRecordInfo single_bit_notify_info = {true, false, false, false, 1, 0, false};
-    Notify *single_notify = new (std::nothrow) Notify(0, 0);
-    rtError_t ret = NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1,
-        &single_bit_notify_info, nullptr, single_notify, false);
+    Notify* single_notify = new (std::nothrow) Notify(0, 0);
+    rtError_t ret =
+        NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1, &single_bit_notify_info, nullptr, single_notify, false);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     NpuDriver drv;
-    TaskInfo *task = &ntyRecordTask;
+    TaskInfo* task = &ntyRecordTask;
     rtStarsSqe_t sqe = {};
 
     single_notify->srvId_ = 0U;
     int64_t topologyType = TOPOLOGY_HCCS;
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetPairDevicesInfo).expects(once())
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&topologyType, sizeof(topologyType))).will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetPairDevicesInfo)
+        .expects(once())
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&topologyType, sizeof(topologyType)))
+        .will(returnValue(RT_ERROR_NONE));
     ToConstructSqe(task, &sqe);
     uint64_t addr = (uint64_t)sqe.writeValueSqe.write_addr_high << 32 | sqe.writeValueSqe.write_addr_low;
     EXPECT_EQ(addr & RT_STARS_BASE_ADDR, RT_STARS_BASE_ADDR);
@@ -1045,19 +1031,21 @@ TEST_F(StarsTaskTest, NotifyIpcTaskPixTest)
     TaskInfo ntyRecordTask = {};
     InitByStream(&ntyRecordTask, stream_);
     SingleBitNotifyRecordInfo single_bit_notify_info = {true, false, false, false, 1, 0, false};
-    Notify *single_notify = new (std::nothrow) Notify(0, 0);
-    rtError_t ret = NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1,
-        &single_bit_notify_info, nullptr, single_notify, false);
+    Notify* single_notify = new (std::nothrow) Notify(0, 0);
+    rtError_t ret =
+        NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1, &single_bit_notify_info, nullptr, single_notify, false);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     NpuDriver drv;
-    TaskInfo *task = &ntyRecordTask;
+    TaskInfo* task = &ntyRecordTask;
     rtStarsSqe_t sqe = {};
 
     single_notify->srvId_ = 0U;
     int64_t topologyType = TOPOLOGY_PIX;
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetPairDevicesInfo).expects(once())
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&topologyType, sizeof(topologyType))).will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetPairDevicesInfo)
+        .expects(once())
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&topologyType, sizeof(topologyType)))
+        .will(returnValue(RT_ERROR_NONE));
     ToConstructSqe(task, &sqe);
     uint64_t addr = (uint64_t)sqe.writeValueSqe.write_addr_high << 32 | sqe.writeValueSqe.write_addr_low;
     EXPECT_EQ(addr & RT_STARS_PCIE_BASE_ADDR, RT_STARS_PCIE_BASE_ADDR);
@@ -1069,19 +1057,21 @@ TEST_F(StarsTaskTest, NotifyIpcTaskErrTest)
     TaskInfo ntyRecordTask = {};
     InitByStream(&ntyRecordTask, stream_);
     SingleBitNotifyRecordInfo single_bit_notify_info = {true, false, false, false, 1, 0, false};
-    Notify *single_notify = new (std::nothrow) Notify(0, 0);
-    rtError_t ret = NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1,
-        &single_bit_notify_info, nullptr, single_notify, false);
+    Notify* single_notify = new (std::nothrow) Notify(0, 0);
+    rtError_t ret =
+        NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1, &single_bit_notify_info, nullptr, single_notify, false);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     NpuDriver drv;
-    TaskInfo *task = &ntyRecordTask;
+    TaskInfo* task = &ntyRecordTask;
     rtStarsSqe_t sqe = {};
 
     single_notify->srvId_ = 0U;
     int64_t topologyType = TOPOLOGY_UB;
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetPairDevicesInfo).expects(once())
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&topologyType, sizeof(topologyType))).will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetPairDevicesInfo)
+        .expects(once())
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&topologyType, sizeof(topologyType)))
+        .will(returnValue(RT_ERROR_NONE));
     ToConstructSqe(task, &sqe);
     uint64_t addr = (uint64_t)sqe.writeValueSqe.write_addr_high << 32 | sqe.writeValueSqe.write_addr_low;
     EXPECT_EQ(addr, 0);
@@ -1093,9 +1083,9 @@ TEST_F(StarsTaskTest, NotifyIpcTaskErrTestDevid64)
     TaskInfo ntyRecordTask = {};
     InitByStream(&ntyRecordTask, stream_);
     SingleBitNotifyRecordInfo single_bit_notify_info = {true, false, false, false, 64, 0, false};
-    Notify *single_notify = new (std::nothrow) Notify(0, 0);
-    rtError_t ret = NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1,
-        &single_bit_notify_info, nullptr, single_notify, false);
+    Notify* single_notify = new (std::nothrow) Notify(0, 0);
+    rtError_t ret =
+        NotifyRecordTaskInit(&ntyRecordTask, 0, 1, 1, &single_bit_notify_info, nullptr, single_notify, false);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     rtStarsSqe_t sqe = {};
@@ -1106,7 +1096,7 @@ TEST_F(StarsTaskTest, NotifyIpcTaskErrTestDevid64)
 TEST_F(StarsTaskTest, EventResetTask_DoCompleteSuccess)
 {
     rtError_t ret;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1118,7 +1108,7 @@ TEST_F(StarsTaskTest, EventResetTask_DoCompleteSuccess)
     EventResetTaskInit(&task, &event, false, -1);
 
     uint32_t errorcode = 10;
-    SetResult(&task, (const uint32_t *)&errorcode, 1);
+    SetResult(&task, (const uint32_t*)&errorcode, 1);
     Complete(&task, 0);
 
     rtLogicCqReport_t cqe = {};
@@ -1128,12 +1118,11 @@ TEST_F(StarsTaskTest, EventResetTask_DoCompleteSuccess)
 
 TEST_F(StarsTaskTest, MemcpyAsyncTask_sdma_posion_error)
 {
-
     rtError_t error = RT_ERROR_NONE;
     rtStarsSqe_t cmd;
     uint64_t addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(stream_->GetDvppRRTaskAddr()));
 
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
     MemcpyAsyncTaskInitV1(task, nullptr, RT_MEMCPY_HOST_TO_DEVICE);
     task->errorCode = 0x221;
     task->mte_error = 0x221;
@@ -1161,7 +1150,7 @@ TEST_F(StarsTaskTest, MemcpyAsyncTask_ConstructPcieDmaSqe)
     rtStarsSqe_t cmd;
     uint64_t addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(stream_->GetDvppRRTaskAddr()));
 
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
     MemcpyAsyncTaskInitV1(task, nullptr, RT_MEMCPY_HOST_TO_DEVICE);
     ConstructPcieDmaSqe(task, &cmd);
 
@@ -1171,14 +1160,13 @@ TEST_F(StarsTaskTest, MemcpyAsyncTask_ConstructPcieDmaSqe)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
-
 TEST_F(StarsTaskTest, MemcpyAsyncTask_ConstructPcieDmaSqe_2)
 {
     rtError_t error = RT_ERROR_NONE;
     rtStarsSqe_t cmd;
     uint64_t addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(stream_->GetDvppRRTaskAddr()));
 
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
     MemcpyAsyncTaskInitV1(task, nullptr, RT_MEMCPY_HOST_TO_DEVICE);
     task->u.memcpyAsyncTaskInfo.dmaKernelConvertFlag = true;
 
@@ -1195,7 +1183,7 @@ TEST_F(StarsTaskTest, MemcpyAsyncTask_ConstructPcieDmaSqe_3)
     rtStarsSqe_t cmd;
     uint64_t addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(stream_->GetDvppRRTaskAddr()));
 
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
     MemcpyAsyncD2HTaskInit(task, nullptr, 40U, 2U, 3U);
     task->u.memcpyAsyncTaskInfo.dmaKernelConvertFlag = false;
     task->u.memcpyAsyncTaskInfo.dsaSqeUpdateFlag = true;
@@ -1223,13 +1211,13 @@ TEST_F(StarsTaskTest, stars_label_switch_by_index)
 
     TaskInfo task = {};
 
-    uint64_t  ptr = 0;
-    uint32_t  max = 1;
-    uint32_t  labelInfoPtr[16] = {0};
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    uint64_t ptr = 0;
+    uint32_t max = 1;
+    uint32_t labelInfoPtr[16] = {0};
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     rtStarsSqe_t sqe;
     InitByStream(&task, streamObj);
-    error = StreamLabelSwitchByIndexTaskInit(&task, (void *)&ptr, max, (void *)labelInfoPtr);
+    error = StreamLabelSwitchByIndexTaskInit(&task, (void*)&ptr, max, (void*)labelInfoPtr);
     ToConstructSqe(&task, &sqe);
     error = rtLabelDestroy(label);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1251,7 +1239,7 @@ TEST_F(StarsTaskTest, stars_wait_env)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     rtStarsSqe_t sqe;
     InitByStream(&task, streamObj);
     NotifyWaitTaskInit(&task, 0, 0, nullptr, nullptr, false);
@@ -1270,7 +1258,7 @@ TEST_F(StarsTaskTest, stars_wait_env)
 TEST_F(StarsTaskTest, DsaErrorProc)
 {
     cce::runtime::rtStarsCommonSqe_t sqe = {};
-    rtStarsDsaSqe_t *dsaSqe = (rtStarsDsaSqe_t *)&sqe;
+    rtStarsDsaSqe_t* dsaSqe = (rtStarsDsaSqe_t*)&sqe;
     dsaSqe->sqeHeader.type = RT_STARS_SQE_TYPE_DSA;
     dsaSqe->paramAddrValBitmap = 0x1f;
     TaskInfo task = {};
@@ -1283,17 +1271,15 @@ TEST_F(StarsTaskTest, DsaErrorProc)
 TEST_F(StarsTaskTest, DsaFftsplusErrorProc)
 {
     rtFftsPlusTaskErrInfo_t errInfo = {};
-    rtFftsPlusTaskInfo_t  fftsPlusTaskInfo = {};
-    rtStarsDsaSqe_t *dsa_sqe = (rtStarsDsaSqe_t *)&errInfo.dsaSqe;
+    rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {};
+    rtStarsDsaSqe_t* dsa_sqe = (rtStarsDsaSqe_t*)&errInfo.dsaSqe;
     dsa_sqe->sqeHeader.type = RT_STARS_SQE_TYPE_DSA;
     dsa_sqe->paramAddrValBitmap = 0x1f;
     TaskInfo task = {};
     rtFftsPlusSqe_t fftsSqe = {};
     fftsPlusTaskInfo.fftsPlusSqe = &fftsSqe;
 
-    MOCKER(FillFftsPlusSqe)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER(FillFftsPlusSqe).stubs().will(returnValue(RT_ERROR_NONE));
 
     InitByStream(&task, stream_);
     FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
@@ -1305,23 +1291,21 @@ TEST_F(StarsTaskTest, FftsPlusTaskInitTest)
 {
     rtError_t error;
     rtFftsPlusTaskErrInfo_t errInfo = {};
-    rtFftsPlusTaskInfo_t  fftsPlusTaskInfo = {};
-    rtStarsDsaSqe_t *dsa_sqe = (rtStarsDsaSqe_t *)&errInfo.dsaSqe;
+    rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {};
+    rtStarsDsaSqe_t* dsa_sqe = (rtStarsDsaSqe_t*)&errInfo.dsaSqe;
     dsa_sqe->sqeHeader.type = RT_STARS_SQE_TYPE_DSA;
     dsa_sqe->paramAddrValBitmap = 0x1f;
     TaskInfo task = {};
     rtFftsPlusSqe_t fftsSqe = {};
     fftsPlusTaskInfo.fftsPlusSqe = &fftsSqe;
 
-    MOCKER(FillFftsPlusSqe)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER(FillFftsPlusSqe).stubs().will(returnValue(RT_ERROR_NONE));
 
     InitByStream(&task, stream_);
     error = FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     std::vector<uint8_t> descBuf(CONTEXT_LEN, 0U);
-    auto * const ctx = reinterpret_cast<rtFftsPlusComCtx_t *>(descBuf.data());
+    auto* const ctx = reinterpret_cast<rtFftsPlusComCtx_t*>(descBuf.data());
     ctx->contextType = RT_CTX_TYPE_AICORE;
     fftsPlusTaskInfo.descBuf = descBuf.data();
     fftsPlusTaskInfo.descBufLen = descBuf.size();
@@ -1340,14 +1324,12 @@ TEST_F(StarsTaskTest, FillFftsPlusSqeTest)
     TaskInfo task = {};
     stream_->context_ = ctx_;
     InitByStream(&task, stream_);
-    FftsPlusTaskInfo *fftsPlusTask = &task.u.fftsPlusTask;
+    FftsPlusTaskInfo* fftsPlusTask = &task.u.fftsPlusTask;
     fftsPlusTask->fftsSqe.subType = RT_STARS_FFTSPLUS_HCCL_WITHOUT_AICAIV_FLAG;
-    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss= new std::vector<rtFftsPlusTaskErrInfo_t>();
+    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss = new std::vector<rtFftsPlusTaskErrInfo_t>();
     fftsPlusTask->errInfo = ss;
 
-    MOCKER_CPP_VIRTUAL(dev_, &Device::CheckFeatureSupport)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(dev_, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
     uint16_t timeout = 180;
     fftsPlusTask->fftsSqe.timeout = timeout;
     FillFftsPlusSqe(&task, NULL);
@@ -1380,7 +1362,7 @@ TEST_F(StarsTaskTest, StarsVersionTask)
     rtStarsSqe_t command = {};
     ToConstructSqe(&starsVersionTask, &command);
 
-    RtStarsPhSqe *const sqe = &(command.phSqe);
+    RtStarsPhSqe* const sqe = &(command.phSqe);
 
     EXPECT_EQ(sqe->type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
     EXPECT_EQ(sqe->pre_p, 1U);
@@ -1401,13 +1383,13 @@ TEST_F(StarsTaskTest, HCCLFftsPlusTaskInitTest)
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
     fftsSqe.subType = 90;
     fftsSqe.timeout = 151;
-    void * descBuf = malloc(256);
+    void* descBuf = malloc(256);
     uint32_t descBufLen = 256;
-    rtFftsPlusTaskInfo_t  fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
+    rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
     TaskInfo task = {};
 
     rtStream_t stm;
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     dev_->SetTschVersion(((uint32_t)TS_BRANCH_TRUNK << 16) | TS_VERSION_FFTSPLUS_TIMEOUT);
     rtStreamCreate(&stm, 0);
     stream = rt_ut::UnwrapOrNull<Stream>(stm);
@@ -1416,14 +1398,14 @@ TEST_F(StarsTaskTest, HCCLFftsPlusTaskInitTest)
 
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
-    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss= new std::vector<rtFftsPlusTaskErrInfo_t>();
+    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss = new std::vector<rtFftsPlusTaskErrInfo_t>();
     task.stream->SetBindFlag(false);
     task.u.fftsPlusTask.errInfo = ss;
     FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
     EXPECT_EQ(task.type, TS_TASK_TYPE_FFTS_PLUS);
     rtStreamDestroy(stm);
     dev_->SetTschVersion(0);
-    free((void *)fftsPlusTaskInfo.descBuf);
+    free((void*)fftsPlusTaskInfo.descBuf);
     stream = nullptr;
     delete ss;
 }
@@ -1432,19 +1414,19 @@ TEST_F(StarsTaskTest, HCCLFftsPlusTaskInitTest2)
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
     rtStarsSqe_t cmd;
     fftsSqe.subType = 90;
-    void * descBuf = malloc(256);
+    void* descBuf = malloc(256);
     uint32_t descBufLen = 256;
-    rtFftsPlusTaskInfo_t  fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
+    rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
     TaskInfo task = {};
     rtStream_t stm;
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     dev_->SetTschVersion(((uint32_t)TS_BRANCH_TRUNK << 16) | TS_VERSION_FFTSPLUS_TASKID_SAME_FIX);
     rtStreamCreate(&stm, 0);
     stream = rt_ut::UnwrapOrNull<Stream>(stm);
     InitByStream(&task, stream);
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
-    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss= new std::vector<rtFftsPlusTaskErrInfo_t>();
+    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss = new std::vector<rtFftsPlusTaskErrInfo_t>();
     task.u.fftsPlusTask.errInfo = ss;
     FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
     EXPECT_EQ(task.type, TS_TASK_TYPE_FFTS_PLUS);
@@ -1462,7 +1444,7 @@ TEST_F(StarsTaskTest, HCCLFftsPlusTaskInitTest2)
     rtStreamDestroy(stm);
     dev_->FreeHcclIndex(0);
     dev_->SetTschVersion(0);
-    free((void *)fftsPlusTaskInfo.descBuf);
+    free((void*)fftsPlusTaskInfo.descBuf);
     stream = nullptr;
     delete ss;
 }
@@ -1472,36 +1454,36 @@ TEST_F(StarsTaskTest, SameTaskIdForAll)
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
     rtStarsSqe_t cmd;
     fftsSqe.subType = 90;
-    void * descBuf = malloc(256);
+    void* descBuf = malloc(256);
     uint32_t descBufLen = 256;
-    rtFftsPlusTaskInfo_t  fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
+    rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
     TaskInfo task = {};
     rtStream_t stm;
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     dev_->SetTschVersion(((uint32_t)TS_BRANCH_TRUNK << 16) | TS_VERSION_TASK_SAME_FOR_ALL);
     rtStreamCreate(&stm, 0);
     stream = rt_ut::UnwrapOrNull<Stream>(stm);
     InitByStream(&task, stream);
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
-    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss= new std::vector<rtFftsPlusTaskErrInfo_t>();
+    std::vector<cce::runtime::rtFftsPlusTaskErrInfo_t>* ss = new std::vector<rtFftsPlusTaskErrInfo_t>();
     task.u.fftsPlusTask.errInfo = ss;
     FftsPlusTaskInit(&task, &fftsPlusTaskInfo, 0);
     EXPECT_EQ(task.type, TS_TASK_TYPE_FFTS_PLUS);
     ToConstructSqe(&task, &cmd);
     rtStreamDestroy(stm);
     dev_->SetTschVersion(0);
-    free((void *)fftsPlusTaskInfo.descBuf);
+    free((void*)fftsPlusTaskInfo.descBuf);
     stream = nullptr;
     delete ss;
 }
 
 TEST_F(StarsTaskTest, TransExeTimeoutCfgToKernelCredit_Test)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
-    
+
     bool oldflag1 = rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout;
     bool oldflag2 = rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout;
     rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = true;
@@ -1520,7 +1502,7 @@ TEST_F(StarsTaskTest, streamclear_ConstructSqe)
     rtError_t error = RT_ERROR_NONE;
     rtStarsSqe_t cmd;
     TaskInfo rtCommonCmdTask = {0};
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_COMMON_CMD, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_COMMON_CMD, error);
     CommonCmdTaskInfo cmdInfo;
     cmdInfo.streamId = 1;
     cmdInfo.step = RT_STREAM_STOP;
@@ -1536,7 +1518,7 @@ TEST_F(StarsTaskTest, notifyreset_ConstructSqe)
     rtError_t error = RT_ERROR_NONE;
     rtStarsSqe_t cmd;
     TaskInfo rtCommonCmdTask = {0};
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_COMMON_CMD, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_COMMON_CMD, error);
     CommonCmdTaskInfo cmdInfo;
     cmdInfo.notifyId = 1;
     CommonCmdTaskInit(task, PhCmdType::CMD_NOTIFY_RESET, &cmdInfo);
@@ -1550,9 +1532,9 @@ TEST_F(StarsTaskTest, hcclIndexAlloc)
 {
     // 复用 fixture 的 dev_，避免再次 new RawDevice(0) 与 Runtime 内 id=0 的
     // device 实例发生双重注册/释放，导致 TearDown 时 UAF 崩溃。
-    Device *device = dev_;
+    Device* device = dev_;
     uint16_t hcclIndex = UINT16_MAX;
-    uint16_t stmid= 0;
+    uint16_t stmid = 0;
     bool result;
     device->FreeHcclIndex(1);
     result = device->AllocHcclIndex(hcclIndex, stmid);
@@ -1595,15 +1577,15 @@ TEST_F(StarsTaskTest, hcclIndexAlloc)
 TEST_F(StarsTaskTest, IsCapturedTask)
 {
     rtError_t error = RT_ERROR_NONE;
-    TaskInfo *task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_KERNEL_AICORE, error);
+    TaskInfo* task = dev_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_KERNEL_AICORE, error);
     EXPECT_EQ(IsCapturedTask(stream_, task), false);
     (void)dev_->GetTaskFactory()->Recycle(task);
 }
 
 TEST_F(StarsTaskTest, DoCompleteStarsModelExcuteError)
 {
-    Model *model;
-    Stream *stream;
+    Model* model;
+    Stream* stream;
     rtModel_t modelHandle = nullptr;
     rtStream_t streamHandle = nullptr;
 
@@ -1623,18 +1605,14 @@ TEST_F(StarsTaskTest, DoCompleteStarsModelExcuteError)
 
     execTask.errorCode = TS_ERROR_AICORE_MTE_ERROR;
     execTask.mte_error = TS_ERROR_AICORE_MTE_ERROR;
-    MOCKER(GetRealReportFaultTaskForModelExecuteTask)
-        .stubs()
-        .will(returnValue(&execTask));
+    MOCKER(GetRealReportFaultTaskForModelExecuteTask).stubs().will(returnValue(&execTask));
     Complete(&execTask, 0);
 
     GlobalMockObject::verify();
 
     execTask.errorCode = TS_ERROR_AICORE_MTE_ERROR;
     execTask.mte_error = 0xFFFF;
-    MOCKER(GetRealReportFaultTaskForModelExecuteTask)
-        .stubs()
-        .will(returnValue(&execTask));
+    MOCKER(GetRealReportFaultTaskForModelExecuteTask).stubs().will(returnValue(&execTask));
     Complete(&execTask, 0);
 
     ret = rtStreamDestroy(streamHandle);
@@ -1643,21 +1621,17 @@ TEST_F(StarsTaskTest, DoCompleteStarsModelExcuteError)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
-
 TEST_F(StarsTaskTest, PushBackErrInfoForFftsPlusTask)
 {
     TaskInfo taskInfo = {};
-    const void *errInfo = new std::vector<rtFftsPlusTaskErrInfo_t>(0);
+    const void* errInfo = new std::vector<rtFftsPlusTaskErrInfo_t>(0);
     uint32_t len = 10;
     MOCKER(memcpy_s).stubs().will(returnValue(1));
     PushBackErrInfoForFftsPlusTask(&taskInfo, errInfo, len);
     delete errInfo;
 }
 
-TEST_F(StarsTaskTest, PushBackErrInfo)
-{
-    PushBackErrInfo(nullptr, nullptr, 1);
-}
+TEST_F(StarsTaskTest, PushBackErrInfo) { PushBackErrInfo(nullptr, nullptr, 1); }
 
 TEST_F(StarsTaskTest, ConstructSqeForStarsCommonTask)
 {
@@ -1666,13 +1640,13 @@ TEST_F(StarsTaskTest, ConstructSqeForStarsCommonTask)
     taskInfo.u.starsCommTask = starsCommTask;
     taskInfo.stream = stream_;
     taskInfo.id = 1;
-    
+
     rtStarsSqe_t command = {};
-    
+
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    
+
     ConstructSqeForStarsCommonTask(&taskInfo, &command);
-    
+
     EXPECT_EQ(command.commonSqe.sqeHeader.type, RT_STARS_SQE_TYPE_INVALID);
 }
 
@@ -1680,17 +1654,17 @@ TEST_F(StarsTaskTest, RecycleTaskResourceForMemcpyAsyncTask)
 {
     TaskInfo taskInfo = {};
     taskInfo.stream = stream_;
-    
-    MemcpyAsyncTaskInfo *memcpyTask = &taskInfo.u.memcpyAsyncTaskInfo;
+
+    MemcpyAsyncTaskInfo* memcpyTask = &taskInfo.u.memcpyAsyncTaskInfo;
     memcpyTask->desPtr = malloc(64);
     memcpyTask->originalDes = malloc(64);
     memcpyTask->destPtr = malloc(64);
     memcpyTask->size = 64;
-    
+
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    
+
     RecycleTaskResourceForMemcpyAsyncTask(&taskInfo);
-    
+
     free(memcpyTask->desPtr);
     free(memcpyTask->originalDes);
     free(memcpyTask->destPtr);
@@ -1700,14 +1674,14 @@ TEST_F(StarsTaskTest, ToCommandBodyForDynamicProfilingEnableTask)
 {
     TaskInfo taskInfo = {};
     taskInfo.stream = stream_;
-    
-    ProfilingEnableTaskInfo *profTask = &taskInfo.u.profilingEnableTaskInfo;
+
+    ProfilingEnableTaskInfo* profTask = &taskInfo.u.profilingEnableTaskInfo;
     profTask->pid = 1234;
-    
+
     rtCommand_t command = {};
-    
+
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    
+
     ToCommandBodyForDynamicProfilingEnableTask(&taskInfo, &command);
 }
 
@@ -1715,13 +1689,13 @@ TEST_F(StarsTaskTest, ToCommandBodyForProfilingEnableTask)
 {
     TaskInfo taskInfo = {};
     taskInfo.stream = stream_;
-    
-    ProfilingEnableTaskInfo *profTask = &taskInfo.u.profilingEnableTaskInfo;
+
+    ProfilingEnableTaskInfo* profTask = &taskInfo.u.profilingEnableTaskInfo;
     profTask->pid = 1234;
-    
+
     rtCommand_t command = {};
-    
+
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    
+
     ToCommandBodyForProfilingEnableTask(&taskInfo, &command);
 }

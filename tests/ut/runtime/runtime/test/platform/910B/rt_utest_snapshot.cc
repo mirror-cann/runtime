@@ -28,16 +28,11 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class SnapshotTest : public testing::Test
-{
+class SnapshotTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
@@ -142,13 +137,13 @@ TEST_F(SnapshotTest, GetStateNull)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
-static uint32_t rtSnapShotCallBackUt(int32_t devId, void *args)
+static uint32_t rtSnapShotCallBackUt(int32_t devId, void* args)
 {
     std::cout << "snap shot call back" << std::endl;
     return 0U;
 }
 
-static uint32_t rtSnapShotCallBackUtFailed(int32_t devId, void *args)
+static uint32_t rtSnapShotCallBackUtFailed(int32_t devId, void* args)
 {
     std::cout << "snap shot call back failed" << std::endl;
     return 1U;
@@ -156,7 +151,7 @@ static uint32_t rtSnapShotCallBackUtFailed(int32_t devId, void *args)
 
 TEST_F(SnapshotTest, Chip_Support)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -211,7 +206,7 @@ TEST_F(SnapshotTest, SnapShotCallbackFailed)
 
     error = rtSnapShotProcessLock();
     EXPECT_EQ(error, ACL_ERROR_SNAPSHOT_CALLBACK_FAILED);
-    
+
     error = rtSnapShotCallbackUnregister(RT_SNAPSHOT_LOCK_PRE, rtSnapShotCallBackUtFailed);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -260,7 +255,7 @@ TEST_F(SnapshotTest, StreamTaskClean)
     error = rtStreamCreateWithFlags(&stream, 0U, RT_STREAM_PERSISTENT);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Stream *str = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* str = rt_ut::UnwrapOrNull<Stream>(stream);
     str->bindFlag_.Set(true);
     error = str->StreamTaskClean();
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -272,7 +267,8 @@ TEST_F(SnapshotTest, StreamTaskClean)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
-TEST_F(SnapshotTest, ResetBufferForEvent_Normal) {
+TEST_F(SnapshotTest, ResetBufferForEvent_Normal)
+{
     void* eventAddr = nullptr;
     int32_t eventId = 0;
     rtError_t ret = eventPool_->AllocAndInsertEvent(&eventAddr, &eventId);
@@ -283,7 +279,8 @@ TEST_F(SnapshotTest, ResetBufferForEvent_Normal) {
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
-TEST_F(SnapshotTest, ResetBufferForEvent_MultiplePools) {
+TEST_F(SnapshotTest, ResetBufferForEvent_MultiplePools)
+{
     void* eventAddr = nullptr;
     int32_t eventId = 0;
 
@@ -299,13 +296,14 @@ TEST_F(SnapshotTest, ResetBufferForEvent_MultiplePools) {
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
-TEST_F(SnapshotTest, ResetBufferForEvent_MemsetBuffersFailed) {
+TEST_F(SnapshotTest, ResetBufferForEvent_MemsetBuffersFailed)
+{
     void* eventAddr = nullptr;
     int32_t eventId = 0;
     rtError_t ret = eventPool_->AllocAndInsertEvent(&eventAddr, &eventId);
     ASSERT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(device_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(device_->Driver_());
     EXPECT_NE(drv, nullptr);
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemSetSync).stubs().will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
 
@@ -313,12 +311,14 @@ TEST_F(SnapshotTest, ResetBufferForEvent_MemsetBuffersFailed) {
     EXPECT_NE(ret, RT_ERROR_NONE);
 }
 
-TEST_F(SnapshotTest, GetPoolIndex_Initial) {
+TEST_F(SnapshotTest, GetPoolIndex_Initial)
+{
     uint16_t poolIndex = eventPool_->GetPoolIndex();
     EXPECT_EQ(poolIndex, 0U);
 }
 
-TEST_F(SnapshotTest, GetPoolIndex_AfterAlloc) {
+TEST_F(SnapshotTest, GetPoolIndex_AfterAlloc)
+{
     void* eventAddr = nullptr;
     int32_t eventId = 0;
 
@@ -329,10 +329,11 @@ TEST_F(SnapshotTest, GetPoolIndex_AfterAlloc) {
     EXPECT_GE(poolIndex, 0U);
 }
 
-TEST_F(SnapshotTest, SaveModuleDataInfoToList) {
+TEST_F(SnapshotTest, SaveModuleDataInfoToList)
+{
     PlainProgram prog;
     prog.SetKernelRegType(RT_KERNEL_REG_TYPE_CPU);
-    Program *programBase = &prog;
+    Program* programBase = &prog;
     rtBinHandle binHandle = rt_ut::InitAndExportHandle<rtBinHandle>(programBase);
     rtFuncHandle funcHandle = nullptr;
     funcHandle = nullptr;
@@ -369,17 +370,16 @@ TEST_F(SnapshotTest, SnapShotProcessRestore2)
 {
     rtDeviceSqCqInfo_t sqCqInfo1 = {};
     rtDeviceSqCqInfo_t sqCqInfo2 = {};
-    RawDevice * device = dynamic_cast<RawDevice *>(device_);
+    RawDevice* device = dynamic_cast<RawDevice*>(device_);
     device->deviceSqCqPool_->deviceSqCqFreeList_.push_back(sqCqInfo1);
     device->deviceSqCqPool_->deviceSqCqOccupyList_.push_back(sqCqInfo2);
 
-    MOCKER_CPP(&DeviceSqCqPool::AllocSqCqFromDrv).stubs()
+    MOCKER_CPP(&DeviceSqCqPool::AllocSqCqFromDrv)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(1))
         .then(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&DeviceSqCqPool::AllocSqRegVirtualAddr).stubs()
-        .will(returnValue(1))
-        .then(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&DeviceSqCqPool::AllocSqRegVirtualAddr).stubs().will(returnValue(1)).then(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&DeviceSqCqPool::FreeSqCqToDrv).stubs().will(returnValue(RT_ERROR_NONE));
     rtError_t error = device->RestoreSqCqPool();
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -388,7 +388,6 @@ TEST_F(SnapshotTest, SnapShotProcessRestore2)
     error = device->RestoreSqCqPool();
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
-
 
 TEST_F(SnapshotTest, SnapShotProcessRestore3)
 {
@@ -411,11 +410,11 @@ TEST_F(SnapshotTest, SnapShotProcessRestore3)
     rtStream_t stream;
     error = rtStreamCreateWithFlags(&stream, 0U, RT_STREAM_PERSISTENT);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     stm->sqAddr_ = 1;
     captureModel->ModelPushFrontStream(stm);
 
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(device_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(device_->Driver_());
     EXPECT_NE(drv, nullptr);
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::ReAllocResourceId).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::LogicCqAllocate).stubs().will(returnValue(RT_ERROR_NONE));
@@ -423,7 +422,7 @@ TEST_F(SnapshotTest, SnapShotProcessRestore3)
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemSetSync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&SqAddrMemoryOrder::FreeSqAddr).stubs().will(returnValue(RT_ERROR_NONE));
 
-    RawDevice * device = dynamic_cast<RawDevice *>(device_);
+    RawDevice* device = dynamic_cast<RawDevice*>(device_);
     MOCKER_CPP_VIRTUAL(device, &RawDevice::RestoreSqCqPool).stubs().will(returnValue(RT_ERROR_NONE));
     error = SnapShotAclGraphRestore(device);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -435,11 +434,11 @@ TEST_F(SnapshotTest, SnapShotProcessRestore3)
 
 TEST_F(SnapshotTest, SnapShotProcessRestore4)
 {
-    MOCKER_CPP(&SnapShotDeviceRestore).stubs()
+    MOCKER_CPP(&SnapShotDeviceRestore)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
-    MOCKER_CPP(&SnapShotResourceRestore).stubs()
-        .will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));  
+    MOCKER_CPP(&SnapShotResourceRestore).stubs().will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
     rtError_t error = SnapShotProcessRestore();
     EXPECT_NE(error, RT_ERROR_NONE);
 
@@ -449,24 +448,24 @@ TEST_F(SnapshotTest, SnapShotProcessRestore4)
 
 TEST_F(SnapshotTest, SnapShotProcessRestore_Success)
 {
-    RawDevice *rawDevice = dynamic_cast<RawDevice *>(device_);
+    RawDevice* rawDevice = dynamic_cast<RawDevice*>(device_);
     ASSERT_NE(rawDevice, nullptr);
-    
+
     MOCKER_CPP(&SnapShotDeviceRestore).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&SnapShotResourceRestore).stubs().will(returnValue(RT_ERROR_NONE));
-    
-    IDeviceSnapshotOps *deviceSnapshotOps = static_cast<IDeviceSnapshotOps *>(deviceSnapshot_);
+
+    IDeviceSnapshotOps* deviceSnapshotOps = static_cast<IDeviceSnapshotOps*>(deviceSnapshot_);
     MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::GetDeviceSnapShot).stubs().will(returnValue(deviceSnapshotOps));
-    
+
     MOCKER_CPP_VIRTUAL(deviceSnapshot_, &DeviceSnapshot::OpMemoryRestore).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(deviceSnapshot_, &DeviceSnapshot::ArgsPoolRestore).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(deviceSnapshot_, &DeviceSnapshot::UbArgsPoolRestore).stubs().will(returnValue(RT_ERROR_NONE));
-    
+
     MOCKER_CPP(&ModelRestore).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&SnapShotAclGraphRestore).stubs().will(returnValue(RT_ERROR_NONE));
-    
+
     MOCKER_CPP(&Runtime::RestoreModule).stubs().will(returnValue(RT_ERROR_NONE));
-    
+
     rtError_t error = SnapShotProcessRestore();
     EXPECT_EQ(error, RT_ERROR_NONE);
 }

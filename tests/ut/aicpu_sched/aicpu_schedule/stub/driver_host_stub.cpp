@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-drvError_t drvGetProcessSign(struct process_sign *sign)
+drvError_t drvGetProcessSign(struct process_sign* sign)
 {
     int signLen = PROCESS_SIGN_LENGTH;
     int i = 0;
@@ -30,102 +30,63 @@ drvError_t drvGetProcessSign(struct process_sign *sign)
             for (i = 0; i < signLen - 1; ++i) {
                 sign->sign[i] = '0';
             }
-            sign->sign[signLen-1] = '\0';
+            sign->sign[signLen - 1] = '\0';
         }
     }
     return DRV_ERROR_NONE;
 }
 
-int halMbufChainGetMbufNum(Mbuf *mbufChainHead, unsigned int *num)
+int halMbufChainGetMbufNum(Mbuf* mbufChainHead, unsigned int* num) { return DRV_ERROR_NONE; }
+
+int halMbufGetDataLen(Mbuf* mbuf, uint64_t* len) { return DRV_ERROR_NONE; }
+
+int halMbufChainGetMbuf(Mbuf* mbufChainHead, unsigned int index, Mbuf** mbuf) { return DRV_ERROR_NONE; }
+
+int halMbufAllocEx(uint64_t size, unsigned int align, unsigned long flag, int grp_id, Mbuf** mbuf)
 {
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetDataLen(Mbuf *mbuf, uint64_t *len)
-{
-    return DRV_ERROR_NONE;
-}
+int halMbufSetDataLen(Mbuf* mbuf, uint64_t len) { return DRV_ERROR_NONE; }
 
-int halMbufChainGetMbuf(Mbuf *mbufChainHead, unsigned int index, Mbuf **mbuf)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halMbufAllocEx(uint64_t size, unsigned int align, unsigned long flag, int grp_id, Mbuf **mbuf)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halMbufSetDataLen (Mbuf *mbuf, uint64_t len)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halMbufChainAppend(Mbuf *mbufChainHead, Mbuf *mbuf)
-{
-    return DRV_ERROR_NONE;
-}
+int halMbufChainAppend(Mbuf* mbufChainHead, Mbuf* mbuf) { return DRV_ERROR_NONE; }
 
 drvError_t halEschedSetEventPriority(unsigned int devId, EVENT_ID eventId, SCHEDULE_PRIORITY priority)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedSetPidPriority(unsigned int devId, SCHEDULE_PRIORITY priority)
+drvError_t halEschedSetPidPriority(unsigned int devId, SCHEDULE_PRIORITY priority) { return DRV_ERROR_NONE; }
+
+drvError_t halEschedGetEvent(
+    unsigned int devId, unsigned int grpId, unsigned int threadId, EVENT_ID eventId, struct event_info* event)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedGetEvent(unsigned int devId, unsigned int grpId, unsigned int threadId,
-                   EVENT_ID eventId, struct event_info *event)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halEschedSubmitEventBatch(unsigned int devId, SUBMIT_FLAG flag,
-    struct event_summary *events, unsigned int event_num, unsigned int *succ_event_num)
+drvError_t halEschedSubmitEventBatch(
+    unsigned int devId, SUBMIT_FLAG flag, struct event_summary* events, unsigned int event_num,
+    unsigned int* succ_event_num)
 {
     *succ_event_num = event_num;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedAttachDevice(unsigned int devId)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halEschedAttachDevice(unsigned int devId) { return DRV_ERROR_NONE; }
 
-drvError_t halEschedCreateGrp(unsigned int devId, unsigned int grpId, GROUP_TYPE type)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halEschedCreateGrp(unsigned int devId, unsigned int grpId, GROUP_TYPE type) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueSet(unsigned int devId, QueueSetCmdType cmd, QueueSetInputPara *inPut)
-{
-  return DRV_ERROR_NONE;
-}
+drvError_t halQueueSet(unsigned int devId, QueueSetCmdType cmd, QueueSetInputPara* inPut) { return DRV_ERROR_NONE; }
 
-pid_t drvDeviceGetBareTgid(void)
-{
-    return getpid();
-}
+pid_t drvDeviceGetBareTgid(void) { return getpid(); }
 
-int halBuffCreatePool(mp_attr *attr, struct mempool_t **mp)
-{
-    return DRV_ERROR_NONE;
-}
+int halBuffCreatePool(mp_attr* attr, struct mempool_t** mp) { return DRV_ERROR_NONE; }
 
-int halBuffDeletePool(mempool_t *mp)
-{
-    return DRV_ERROR_NONE;
-}
+int halBuffDeletePool(mempool_t* mp) { return DRV_ERROR_NONE; }
 
-int halMbufAllocByPool(poolHandle pHandle, Mbuf **mbuf)
-{
-    return DRV_ERROR_NONE;
-}
+int halMbufAllocByPool(poolHandle pHandle, Mbuf** mbuf) { return DRV_ERROR_NONE; }
 
-int halBuffGetInfo(enum BuffGetCmdType cmd, void *inBuff, unsigned int inLen,
-    void *outBuff, unsigned int *outLen)
+int halBuffGetInfo(enum BuffGetCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
     return DRV_ERROR_NONE;
 }

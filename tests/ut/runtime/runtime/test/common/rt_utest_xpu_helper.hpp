@@ -21,7 +21,7 @@ namespace cce {
 namespace runtime {
 namespace ut {
 
-inline uint32_t TprtOpSqCqInfoMock(uint32_t devId, TprtSqCqOpInfo_t *opInfo)
+inline uint32_t TprtOpSqCqInfoMock(uint32_t devId, TprtSqCqOpInfo_t* opInfo)
 {
     (void)devId;
     if (opInfo != nullptr) {
@@ -42,20 +42,11 @@ inline void MockXpuTprtRuntime()
 
 class XpuRuntimeMockTest : public testing::Test {
 protected:
-    static void MockTprtRuntime()
-    {
-        MockXpuTprtRuntime();
-    }
+    static void MockTprtRuntime() { MockXpuTprtRuntime(); }
 
-    void SetUp() override
-    {
-        MockTprtRuntime();
-    }
+    void SetUp() override { MockTprtRuntime(); }
 
-    void TearDown() override
-    {
-        GlobalMockObject::verify();
-    }
+    void TearDown() override { GlobalMockObject::verify(); }
 };
 
 } // namespace ut

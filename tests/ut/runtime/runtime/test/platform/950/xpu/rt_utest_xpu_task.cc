@@ -37,19 +37,19 @@ using namespace cce::runtime;
 class XpuTaskTest : public ut::XpuRuntimeMockTest {};
 class XpuTaskPureTest : public testing::Test {};
 
-drvError_t drvGetPlatformInfo_online7(uint32_t *info)
+drvError_t drvGetPlatformInfo_online7(uint32_t* info)
 {
     *info = RT_RUN_MODE_ONLINE;
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvGetPlatformInfo_offline7(uint32_t *info)
+drvError_t drvGetPlatformInfo_offline7(uint32_t* info)
 {
     *info = RT_RUN_MODE_OFFLINE;
     return DRV_ERROR_NONE;
 }
 
-rtError_t ParseXpuConfigInfo_mock7(XpuDevice *This)
+rtError_t ParseXpuConfigInfo_mock7(XpuDevice* This)
 {
     This->configInfo_.version = 1.0;
     This->configInfo_.maxStreamNum = 64;
@@ -65,13 +65,13 @@ TEST_F(XpuTaskTest, xpu_task_test_01)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock7));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
-    XpuStream *stream = static_cast<XpuStream *>(context->StreamList_().front());
+    XpuStream* stream = static_cast<XpuStream*>(context->StreamList_().front());
     XpuTaskRollBack(stream, 1025);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
@@ -83,13 +83,13 @@ TEST_F(XpuTaskTest, xpu_task_test_02)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock7));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
-    XpuStream *stream = static_cast<XpuStream *>(context->StreamList_().front());
+    XpuStream* stream = static_cast<XpuStream*>(context->StreamList_().front());
     XpuTaskRollBack(stream, 0);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
@@ -101,11 +101,11 @@ TEST_F(XpuTaskTest, xpu_task_test_03)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock7));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     uint32_t sqeNum = 1;
     TaskInfo** taskInfo = nullptr;
@@ -122,18 +122,18 @@ TEST_F(XpuTaskTest, xpu_task_test_04)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock7));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     uint32_t sqeNum = 1;
     TaskInfo** taskInfo;
     MOCKER_CPP(&TaskResManageDavid::AllocTaskInfoAndPos)
-    .stubs()
-    .will(returnValue(RT_ERROR_TASKRES_QUEUE_FULL))
-    .then(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_TASKRES_QUEUE_FULL))
+        .then(returnValue(RT_ERROR_INVALID_VALUE));
     error = XpuAllocTaskInfo(taskInfo, context->StreamList_().front(), sqeNum, 1);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
@@ -152,22 +152,22 @@ TEST_F(XpuTaskTest, xpu_task_test_06)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     TaskInfo taskInfo = TaskInfo{};
-    TaskInfo *taskInfoPtr = &taskInfo;
+    TaskInfo* taskInfoPtr = &taskInfo;
     taskInfoPtr->u.aicpuTaskInfo = AicpuTaskInfo{};
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     TaskCfg taskCfg{};
@@ -185,9 +185,12 @@ TEST_F(XpuTaskTest, xpu_task_test_06)
     argsInfo.baseArgs.soNameAddrOffset = 1U;
     argsWithType.args.cpuArgsInfo = &argsInfo;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    MOCKER_CPP(&TaskResManageDavid::AllocTaskInfoAndPos).stubs().will(returnValue(RT_ERROR_TASKRES_QUEUE_FULL)).then(returnValue(RT_ERROR_DRV_ERR));
-    error = XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs,
-        context->StreamList_().front(), &taskCfg);
+    MOCKER_CPP(&TaskResManageDavid::AllocTaskInfoAndPos)
+        .stubs()
+        .will(returnValue(RT_ERROR_TASKRES_QUEUE_FULL))
+        .then(returnValue(RT_ERROR_DRV_ERR));
+    error =
+        XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs, context->StreamList_().front(), &taskCfg);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
     delete kernel;
@@ -199,22 +202,22 @@ TEST_F(XpuTaskTest, xpu_task_test_07)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     TaskInfo taskInfo = TaskInfo{};
-    TaskInfo *taskInfoPtr = &taskInfo;
+    TaskInfo* taskInfoPtr = &taskInfo;
     taskInfoPtr->u.aicpuTaskInfo = AicpuTaskInfo{};
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     TaskCfg taskCfg{};
@@ -232,9 +235,11 @@ TEST_F(XpuTaskTest, xpu_task_test_07)
     argsInfo.baseArgs.soNameAddrOffset = 1U;
     argsWithType.args.cpuArgsInfo = &argsInfo;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    MOCKER_CPP_VIRTUAL((XpuStream *)(context->StreamList_().front()), &XpuStream::StarsAddTaskToStream).stubs().will(returnValue(1));
-    error = XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs,
-        context->StreamList_().front(), &taskCfg);
+    MOCKER_CPP_VIRTUAL((XpuStream*)(context->StreamList_().front()), &XpuStream::StarsAddTaskToStream)
+        .stubs()
+        .will(returnValue(1));
+    error =
+        XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs, context->StreamList_().front(), &taskCfg);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
     delete kernel;
@@ -244,7 +249,7 @@ TEST_F(XpuTaskPureTest, xpu_task_test_08)
 {
     rtError_t ret = RT_ERROR_NONE;
     TaskInfo task = {};
-    TaskInfo *taskInfo = &task;
+    TaskInfo* taskInfo = &task;
     taskInfo->type = TS_TASK_TYPE_KERNEL_AICPU;
     MOCKER(XpuPrintAICpuErrorInfoForDavinciTask).stubs();
     XpuPrintErrorInfo(taskInfo, 1);
@@ -254,7 +259,7 @@ TEST_F(XpuTaskPureTest, xpu_task_test_09)
 {
     rtError_t ret = RT_ERROR_NONE;
     TaskInfo task = {};
-    TaskInfo *taskInfo = &task;
+    TaskInfo* taskInfo = &task;
     taskInfo->type = TS_TASK_TYPE_RESERVED;
     XpuPrintErrorInfo(taskInfo, 1);
 }

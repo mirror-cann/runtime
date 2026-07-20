@@ -12,19 +12,20 @@
 
 class ApiStreamTest : public testing::Test {
 public:
-    static Driver *driver_;
+    static Driver* driver_;
     static rtChipType_t originType_;
     static bool disableFlag_;
+
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910A");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         originType_ = Runtime::Instance()->GetChipType();
         disableFlag_ = rtInstance->GetDisableThread();
         rtInstance->SetDisableThread(true);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -36,25 +37,25 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         GlobalMockObject::verify();
-        Context * const curCtx = Runtime::Instance()->CurrentContext();
+        Context* const curCtx = Runtime::Instance()->CurrentContext();
         EXPECT_EQ(curCtx != nullptr, true);
         curCtx->DefaultStream_()->pendingNum_.Set(0U);
         MOCKER_CPP_VIRTUAL(curCtx->Device_(), &Device::GetDevRunningState).stubs().will(returnValue(1U));
         StubClearHalSqSendAndRecvCnt(0);
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtInstance->SetDisableThread(disableFlag_);
     }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
-        RawDevice *rawDevice = new RawDevice(0);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -63,7 +64,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         GlobalMockObject::verify();
@@ -85,7 +86,7 @@ TEST_F(ApiStreamTest, rtGetAvailStreamNum)
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->chipType_;
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
@@ -100,9 +101,7 @@ TEST_F(ApiStreamTest, rtGetAvailStreamNum)
     GlobalContainer::SetRtChipType(type);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halResourceInfoQuery)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halResourceInfoQuery).stubs().will(returnValue(code));
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 

@@ -23,7 +23,7 @@
 
 using namespace AicpuSchedule;
 
-namespace {}  // namespace
+namespace {} // namespace
 
 class OperatorKernelModelEnqueueBuffTest : public OperatorKernelTest {
 protected:
@@ -40,7 +40,7 @@ TEST_F(OperatorKernelModelEnqueueBuffTest, ModelEnqueueBuff)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
@@ -52,7 +52,7 @@ TEST_F(OperatorKernelModelEnqueueBuffTest, ModelEnqueueBuff_failed1)
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halQueueEnQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -71,7 +71,7 @@ TEST_F(OperatorKernelModelEnqueueBuffTest, ModelEnqueueBuff_failed2)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     MOCKER(halMbufGetDataLen).stubs().will(returnValue(2));
@@ -84,7 +84,7 @@ TEST_F(OperatorKernelModelEnqueueBuffTest, ModelEnqueueBuffTaskKernel_failed1)
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halQueueEnQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
-    int *mbuf = nullptr;
+    int* mbuf = nullptr;
     BufEnQueueBuffInfo bufInfoT;
     bufInfoT.mBufPtr = (uint64_t)mbuf;
 
@@ -97,7 +97,7 @@ TEST_F(OperatorKernelModelEnqueueBuffTest, ModelEnqueueBuffTaskKernel_failed2)
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halQueueEnQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
-    char *mbuf = allocFakeMBuf[0];
+    char* mbuf = allocFakeMBuf[0];
     BufEnQueueBuffInfo bufInfoT;
     bufInfoT.mBufPtr = (uint64_t)&mbuf;
 
@@ -112,7 +112,7 @@ TEST_F(OperatorKernelModelEnqueueBuffTest, ModelEnqueueBuffTaskKernel_failed3)
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halQueueEnQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
-    char *mbuf = allocFakeMBuf[0];
+    char* mbuf = allocFakeMBuf[0];
     BufEnQueueBuffInfo bufInfoT;
     bufInfoT.mBufPtr = (uint64_t)&mbuf;
 

@@ -19,18 +19,11 @@ using namespace std;
 
 class AeKernelLibFwkTest : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AeKernelLibFwkTest SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AeKernelLibFwkTest SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AeKernelLibFwkTest TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AeKernelLibFwkTest TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AeKernelLibFwkTest SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AeKernelLibFwkTest SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -39,21 +32,24 @@ protected:
     }
 };
 
-TEST_F(AeKernelLibFwkTest, DestroyInstance_01) {
+TEST_F(AeKernelLibFwkTest, DestroyInstance_01)
+{
     AIKernelsLibFWK::DestroyInstance();
     EXPECT_EQ(AIKernelsLibFWK::instance_, nullptr);
 }
 
-TEST_F(AeKernelLibFwkTest, DestroyInstance_02) {
+TEST_F(AeKernelLibFwkTest, DestroyInstance_02)
+{
     MOCKER_CPP(&FWKKernelTfImpl::GetTensorflowThreadModeSoPath).stubs().will(returnValue(0));
-    AIKernelsLibFWK *instance = AIKernelsLibFWK::GetInstance();
+    AIKernelsLibFWK* instance = AIKernelsLibFWK::GetInstance();
     EXPECT_NE(instance, nullptr);
     EXPECT_NE(AIKernelsLibFWK::instance_, nullptr);
     AIKernelsLibFWK::DestroyInstance();
     EXPECT_EQ(AIKernelsLibFWK::instance_, nullptr);
 }
 
-TEST_F(AeKernelLibFwkTest, TransformKernelErrorCode) {
+TEST_F(AeKernelLibFwkTest, TransformKernelErrorCode)
+{
     auto ret = FWKKernelTfImpl::TransformKernelErrorCode(0, 1000);
     EXPECT_EQ(ret, AE_STATUS_SUCCESS);
     ret = FWKKernelTfImpl::TransformKernelErrorCode(aicpu::FWKAdapter::FWK_ADPT_NATIVE_END_OF_SEQUENCE, 1000);
@@ -62,26 +58,16 @@ TEST_F(AeKernelLibFwkTest, TransformKernelErrorCode) {
     EXPECT_EQ(ret, 3);
 }
 
-
 const std::string rootPath = "/root";
 const std::string userPath = "/home/HwHiAiUser";
 
-char *GetHomeEnvForRoot (const char *__name)
-{
-    return const_cast<char *>(rootPath.data());
-}
+char* GetHomeEnvForRoot(const char* __name) { return const_cast<char*>(rootPath.data()); }
 
-char *GetHomeEnvForUser (const char *__name)
-{
-    return const_cast<char *>(userPath.data());
-}
+char* GetHomeEnvForUser(const char* __name) { return const_cast<char*>(userPath.data()); }
 
-char *GetHomeEnvFail (const char *__name)
-{
-    return nullptr;
-}
+char* GetHomeEnvFail(const char* __name) { return nullptr; }
 
-aicpu::status_t GetAicpuRunModeStub(aicpu::AicpuRunMode &runMode)
+aicpu::status_t GetAicpuRunModeStub(aicpu::AicpuRunMode& runMode)
 {
     runMode = aicpu::AicpuRunMode::THREAD_MODE;
     return aicpu::AICPU_ERROR_NONE;

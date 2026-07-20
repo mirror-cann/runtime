@@ -14,37 +14,23 @@
 using namespace testing;
 
 class DrvModelTest : public testing::Test {
- protected:
-  static void SetUpTestCase() {
-    std::cout << "DrvModelTest SetUP" << std::endl;
-  }
-  static void TearDownTestCase() {
-    std::cout << "DrvModelTest SetUP" << std::endl;
-  }
-  // Some expensive resource shared by all tests.
-  virtual void SetUp()
-  {
-    std::cout << "a test SetUP" << std::endl;
-  }
-  virtual void TearDown()
-  {
-    std::cout << "a test SetUP" << std::endl;
-  }
+protected:
+    static void SetUpTestCase() { std::cout << "DrvModelTest SetUP" << std::endl; }
+    static void TearDownTestCase() { std::cout << "DrvModelTest SetUP" << std::endl; }
+    // Some expensive resource shared by all tests.
+    virtual void SetUp() { std::cout << "a test SetUP" << std::endl; }
+    virtual void TearDown() { std::cout << "a test SetUP" << std::endl; }
 };
 
-
-TEST_F(DrvModelTest, notify_test)
-{
-}
+TEST_F(DrvModelTest, notify_test) {}
 
 TEST_F(DrvModelTest, device_get_addr_test)
 {
-	drvError_t error;
-	uint8_t type;
+    drvError_t error;
+    uint8_t type;
 
-       error = drvDeviceGetTransWay(NULL, NULL, &type);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
-
+    error = drvDeviceGetTransWay(NULL, NULL, &type);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 
 TEST_F(DrvModelTest, sqcqConfig)
@@ -72,4 +58,3 @@ TEST_F(DrvModelTest, GetDeviceSplitMode)
     error = halGetDeviceSplitMode(0, &split_mode);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 }
-

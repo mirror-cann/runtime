@@ -18,21 +18,17 @@ class UTEST_ACL_Fp16 : public testing::Test {
 protected:
     virtual void SetUp() {}
     virtual void TearDown() {}
-
 };
 
-bool Fp16Eq(uint16_t lhs, uint16_t rhs)
-{
-    return (lhs == rhs) || (((lhs | rhs) & INT16_T_MAX) == 0U);
-}
+bool Fp16Eq(uint16_t lhs, uint16_t rhs) { return (lhs == rhs) || (((lhs | rhs) & INT16_T_MAX) == 0U); }
 
-TEST(UTEST_ACL_Fp16, TestHalfToFloat) {
+TEST(UTEST_ACL_Fp16, TestHalfToFloat)
+{
     aclFloat16 halfVal1 = aclFloatToFloat16(1.0f);
     aclFloat16 halfVal2 = aclFloatToFloat16(1.0f);
     ASSERT_TRUE(Fp16Eq(halfVal1, halfVal2));
     halfVal2 = aclFloatToFloat16(-1.0f);
     ASSERT_FALSE(Fp16Eq(halfVal1, halfVal2));
-
 
     aclFloatToFloat16(999999999.0f);
     aclFloatToFloat16(-999999999.0f);

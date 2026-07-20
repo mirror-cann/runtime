@@ -9,34 +9,34 @@
  */
 #include "rt_comm_testcase.hpp"
 
-#define ERROR_PROC(ret, streamId, x, y, xHost, yHost, binHandle)        \
-    if (ret != 0)                                                       \
-    {                                                                   \
-        rtStreamDestroy(streamId);                                      \
-        rtFree(x);                                                      \
-        rtFree(y);                                                      \
-        rtFreeHost(xHost);                                              \
-        rtFreeHost(yHost);                                              \
-        rtDevBinaryUnRegister(binHandle);                               \
-        rtDeviceReset(0);                                                \
-        return false;                                                   \
-    }                                                                   \
+#define ERROR_PROC(ret, streamId, x, y, xHost, yHost, binHandle) \
+    if (ret != 0) {                                              \
+        rtStreamDestroy(streamId);                               \
+        rtFree(x);                                               \
+        rtFree(y);                                               \
+        rtFreeHost(xHost);                                       \
+        rtFreeHost(yHost);                                       \
+        rtDevBinaryUnRegister(binHandle);                        \
+        rtDeviceReset(0);                                        \
+        return false;                                            \
+    }
 
-int rt_kernel_test(rtDevBinary_t *binary, uint32_t funcMode, int32_t device, int32_t priority, uint64_t size,
-                   uint32_t blockDim, uint32_t argsSize, rtL2Ctrl_t *l2ctrl)
+int rt_kernel_test(
+    rtDevBinary_t* binary, uint32_t funcMode, int32_t device, int32_t priority, uint64_t size, uint32_t blockDim,
+    uint32_t argsSize, rtL2Ctrl_t* l2ctrl)
 {
     rtError_t error;
     uint32_t stubFunc;
     uint32_t devFunc;
 
     rtStream_t stream = NULL;
-    void *binHandle = NULL;
-    void *xHost = NULL;
-    void *yHost = NULL;
-    void *x = NULL;
-    void *y = NULL;
+    void* binHandle = NULL;
+    void* xHost = NULL;
+    void* yHost = NULL;
+    void* x = NULL;
+    void* y = NULL;
 
-    unsigned char binArray[2] = { 0xff, 0xff };
+    unsigned char binArray[2] = {0xff, 0xff};
     binary->data = binArray;
     binary->length = sizeof(binArray);
 
@@ -68,14 +68,12 @@ int rt_kernel_test(rtDevBinary_t *binary, uint32_t funcMode, int32_t device, int
     error = rtMemcpyAsync(x, size, xHost, size, RT_MEMCPY_HOST_TO_DEVICE, stream);
     ERROR_PROC(error, stream, x, y, xHost, yHost, binHandle);
 
-    uint8_t *args = NULL;
-    if (argsSize > 0)
-    {
+    uint8_t* args = NULL;
+    if (argsSize > 0) {
         args = new uint8_t[argsSize];
     }
     error = rtKernelLaunch(&stubFunc, blockDim, args, argsSize, l2ctrl, stream);
-    if (argsSize > 0)
-    {
+    if (argsSize > 0) {
         delete[] args;
     }
     ERROR_PROC(error, stream, x, y, xHost, yHost, binHandle);
@@ -96,4 +94,3 @@ int rt_kernel_test(rtDevBinary_t *binary, uint32_t funcMode, int32_t device, int
 
     return 0;
 }
-

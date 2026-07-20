@@ -28,18 +28,17 @@
 using namespace testing;
 using namespace cce::runtime;
 
-static bool CreateFile(std::string &fileName, std::string content);
-static void DeleteFile(std::string &fileName);
+static bool CreateFile(std::string& fileName, std::string content);
+static void DeleteFile(std::string& fileName);
 
-class ChipBinaryLoaderTest : public testing::Test
-{
+class ChipBinaryLoaderTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
-        std::cout<<"BinaryLoaderTest test start start. disbale=%d. "<<rtInstance->GetDisableThread()<<std::endl;
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
+        std::cout << "BinaryLoaderTest test start start. disbale=%d. " << rtInstance->GetDisableThread() << std::endl;
 
-        // Create GatherV3.o binary file 
+        // Create GatherV3.o binary file
         std::ifstream binaryTxtFile(binaryTxtFileName);
         if (!binaryTxtFile.is_open()) {
             std::cout << "Failed to open file: " << binaryTxtFileName << std::endl;
@@ -71,14 +70,11 @@ protected:
 
     static void TearDownTestCase()
     {
-        std::cout<<"BinaryLoaderTest test start end. "<<std::endl;
+        std::cout << "BinaryLoaderTest test start end. " << std::endl;
         DeleteFile(binaryFileName);
     }
 
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -86,7 +82,7 @@ protected:
         rtDeviceReset(0);
     };
 
-    static bool CreateFile(std::string &fileName, std::string content)
+    static bool CreateFile(std::string& fileName, std::string content)
     {
         std::ofstream file(fileName);
         if (!file.is_open()) {
@@ -107,14 +103,14 @@ protected:
         return true;
     }
 
-    static void DeleteFile(std::string &fileName)
-    {
-        std::remove(fileName.c_str());
-    } 
+    static void DeleteFile(std::string& fileName) { std::remove(fileName.c_str()); }
+
 public:
     static std::string binaryTxtFileName;
     static std::string binaryFileName;
 };
 
-std::string ChipBinaryLoaderTest::binaryTxtFileName("llt/ace/npuruntime/runtime/ut/runtime/test/data/GatherV3_9e31943a1a48bf81ddff1fc6379e0be3_high_performance.txt");
-std::string ChipBinaryLoaderTest::binaryFileName("llt/ace/npuruntime/runtime/ut/runtime/test/data/GatherV3_9e31943a1a48bf81ddff1fc6379e0be3_high_performance.o");
+std::string ChipBinaryLoaderTest::binaryTxtFileName(
+    "llt/ace/npuruntime/runtime/ut/runtime/test/data/GatherV3_9e31943a1a48bf81ddff1fc6379e0be3_high_performance.txt");
+std::string ChipBinaryLoaderTest::binaryFileName(
+    "llt/ace/npuruntime/runtime/ut/runtime/test/data/GatherV3_9e31943a1a48bf81ddff1fc6379e0be3_high_performance.o");

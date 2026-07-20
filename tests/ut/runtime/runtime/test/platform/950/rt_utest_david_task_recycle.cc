@@ -47,14 +47,14 @@ namespace {
 constexpr uint32_t TS_CCU_STATUS_DDRC_ERROR = 0x02;
 constexpr uint32_t TS_CCU_STATUS_POISON_ERROR = 0x03;
 constexpr uint32_t TS_CCU_STATUS_DDRC_ERROR_SUBSTATUS = 0x0;
-}
+} // namespace
 
 static bool g_disableThread;
 static rtChipType_t g_chipType;
 
 extern int64_t g_device_driver_version_stub;
 
-static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -74,12 +74,12 @@ protected:
     {
         // backup oringal attribute of runtime
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -90,7 +90,7 @@ protected:
     static void TearDownTestCase()
     {
         // restore oringal attribute
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(g_disableThread);
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
@@ -99,12 +99,12 @@ protected:
     virtual void SetUp()
     {
         std::cout << "TaskResManageTest SetUp start" << std::endl;
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::GetRunMode)
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
             .stubs()
             .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -125,19 +125,17 @@ protected:
 
 TEST_F(DavidTaskRecycleTest, TestTaskRes)
 {
-    TaskResManageDavid *taskResMng = new (std::nothrow) TaskResManageDavid;
+    TaskResManageDavid* taskResMng = new (std::nothrow) TaskResManageDavid;
     taskResMng->taskPoolNum_ = 2049;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    void* addr = &support;
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtStream_t stream = nullptr;
@@ -147,7 +145,7 @@ TEST_F(DavidTaskRecycleTest, TestTaskRes)
     EXPECT_EQ(ret, true);
 
     uint32_t pos = UINT32_MAX;
-    TaskInfo *task = nullptr;
+    TaskInfo* task = nullptr;
     error = taskResMng->AllocTaskInfoAndPos(3U, pos, &task);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(pos, 0);
@@ -163,7 +161,7 @@ TEST_F(DavidTaskRecycleTest, TestTaskRes)
     taskResMng->GetHeadTail(head, tail);
     EXPECT_EQ(head, 0);
     EXPECT_EQ(tail, 67);
-    TaskInfo *getTask = taskResMng->GetTaskInfo(10);
+    TaskInfo* getTask = taskResMng->GetTaskInfo(10);
     EXPECT_NE(getTask, nullptr);
     getTask = taskResMng->GetTaskInfo(66);
     EXPECT_NE(getTask, nullptr);
@@ -258,23 +256,25 @@ TEST_F(DavidTaskRecycleTest, TestTaskRes)
 
     taskResMng->ReleaseTaskResource(rt_ut::UnwrapOrNull<Stream>(stream));
     rtStreamDestroy(stream);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     delete taskResMng;
 }
 
 TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHead)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -284,8 +284,8 @@ TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHead)
     rt_ut::UnwrapOrNull<Stream>(stream)->SetSqMemAttr(false);
 
     uint32_t pos = UINT32_MAX;
-    TaskInfo *task = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    TaskInfo* task = nullptr;
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
 
     for (uint32_t i = 0; i < 1; i++) {
         error = taskResMang->AllocTaskInfoAndPos(1U, pos, &task);
@@ -297,8 +297,8 @@ TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHead)
     }
 
     uint16_t sqHead = 1;
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(sqHead))
@@ -310,22 +310,24 @@ TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHead)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtStreamDestroy(stream);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHeadV2)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -335,8 +337,8 @@ TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHeadV2)
     rt_ut::UnwrapOrNull<Stream>(stream)->SetSqMemAttr(false);
 
     uint32_t pos = UINT32_MAX;
-    TaskInfo *task = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    TaskInfo* task = nullptr;
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
 
     for (uint32_t i = 0; i < 1; i++) {
         error = taskResMang->AllocTaskInfoAndPos(1U, pos, &task);
@@ -348,8 +350,8 @@ TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHeadV2)
     }
 
     uint16_t sqHead = 1;
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(sqHead))
@@ -361,22 +363,19 @@ TEST_F(DavidTaskRecycleTest, SyncTaskRecycleBySqHeadV2)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtStreamDestroy(stream);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 rtLogicCqReport_t g_cqReport;
-rtError_t Sub_LogicCqReportV2(NpuDriver *drv, const LogicCqWaitInfo &waitInfo, uint8_t *report, uint32_t reportCnt,
-                              uint32_t &realCnt)
+rtError_t Sub_LogicCqReportV2(
+    NpuDriver* drv, const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt)
 {
     realCnt = 1;
-    rtLogicCqReport_t *reportPtr = reinterpret_cast<rtLogicCqReport_t *>(report);
+    rtLogicCqReport_t* reportPtr = reinterpret_cast<rtLogicCqReport_t*>(report);
     *reportPtr = g_cqReport;
 
     return RT_ERROR_NONE;
 }
-void DvppGrpCallbackFunc(rtDvppGrpRptInfo_t *report)
-{
-    UNUSED(report);
-}
+void DvppGrpCallbackFunc(rtDvppGrpRptInfo_t* report) { UNUSED(report); }
 
 TEST_F(DavidTaskRecycleTest, DvppWaitGroup)
 {
@@ -389,12 +388,12 @@ TEST_F(DavidTaskRecycleTest, DvppWaitGroup)
 
     ret = rtStreamCreateByGrp(&stream, 0, 0, grp);
     EXPECT_EQ(ret, ACL_RT_SUCCESS);
-    ((DvppGrp *)grp)->getContext()->Device_()->GetStreamSqCqManage()->sqIdToStreamIdMap_[0] =
+    ((DvppGrp*)grp)->getContext()->Device_()->GetStreamSqCqManage()->sqIdToStreamIdMap_[0] =
         rt_ut::UnwrapOrNull<Stream>(stream)->Id_();
     rt_ut::UnwrapOrNull<Stream>(stream)->SetSqMemAttr(false);
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
     ret = rtDvppWaitGroupReport(grp, DvppGrpCallbackFunc, 0);
     EXPECT_EQ(ret, ACL_RT_SUCCESS);
 
@@ -417,12 +416,12 @@ TEST_F(DavidTaskRecycleTest, DvppWaitGroupCommonTaskReportLogicCq)
     ret = rtStreamCreateByGrp(&stream, 0, 0, grp);
     EXPECT_EQ(ret, ACL_RT_SUCCESS);
     rt_ut::UnwrapOrNull<Stream>(stream)->SetSqMemAttr(false);
-    ((DvppGrp *)grp)->getContext()->Device_()->GetStreamSqCqManage()->sqIdToStreamIdMap_[0] =
+    ((DvppGrp*)grp)->getContext()->Device_()->GetStreamSqCqManage()->sqIdToStreamIdMap_[0] =
         rt_ut::UnwrapOrNull<Stream>(stream)->Id_();
 
     uint32_t pos = UINT32_MAX;
-    TaskInfo *task = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    TaskInfo* task = nullptr;
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
 
     for (uint32_t i = 0; i < 1; i++) {
         ret = taskResMang->AllocTaskInfoAndPos(1U, pos, &task);
@@ -438,9 +437,9 @@ TEST_F(DavidTaskRecycleTest, DvppWaitGroupCommonTaskReportLogicCq)
     g_cqReport.streamId = rt_ut::UnwrapOrNull<Stream>(stream)->Id_();
     g_cqReport.taskId = pos;
 
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
 
     ret = rtDvppWaitGroupReport(grp, DvppGrpCallbackFunc, 0);
     EXPECT_EQ(ret, ACL_RT_SUCCESS);
@@ -465,12 +464,12 @@ TEST_F(DavidTaskRecycleTest, DvppWaitGroupCommonTaskReportLogicCqVPC)
     EXPECT_EQ(ret, ACL_RT_SUCCESS);
     rt_ut::UnwrapOrNull<Stream>(stream)->SetSqMemAttr(false);
 
-    ((DvppGrp *)grp)->getContext()->Device_()->GetStreamSqCqManage()->sqIdToStreamIdMap_[0] =
+    ((DvppGrp*)grp)->getContext()->Device_()->GetStreamSqCqManage()->sqIdToStreamIdMap_[0] =
         rt_ut::UnwrapOrNull<Stream>(stream)->Id_();
 
     uint32_t pos = UINT32_MAX;
-    TaskInfo *task = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    TaskInfo* task = nullptr;
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
 
     for (uint32_t i = 0; i < 1; i++) {
         ret = taskResMang->AllocTaskInfoAndPos(1U, pos, &task);
@@ -487,9 +486,9 @@ TEST_F(DavidTaskRecycleTest, DvppWaitGroupCommonTaskReportLogicCqVPC)
     g_cqReport.taskId = pos;
     g_cqReport.errorType = RT_STARS_CQE_ERR_TYPE_EXCEPTION;
     g_cqReport.sqeType = RT_STARS_SQE_TYPE_VPC;
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
 
     bool enable = false;
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqEnable)
@@ -512,17 +511,19 @@ TEST_F(DavidTaskRecycleTest, DvppWaitGroupCommonTaskReportLogicCqVPC)
 
 TEST_F(DavidTaskRecycleTest, ProcLogicCqReport)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -542,22 +543,24 @@ TEST_F(DavidTaskRecycleTest, ProcLogicCqReport)
     GlobalMockObject::verify();
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, TryRecycleTaskV2)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -568,8 +571,8 @@ TEST_F(DavidTaskRecycleTest, TryRecycleTaskV2)
     rt_ut::UnwrapOrNull<Stream>(stream)->SetRecycleFlag(true);
     rt_ut::UnwrapOrNull<Stream>(stream)->SetNeedRecvCqeFlag(true);
 
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqReportV2)
         .stubs()
         .will(returnValue(RT_ERROR_NONE))
@@ -585,36 +588,38 @@ TEST_F(DavidTaskRecycleTest, TryRecycleTaskV2)
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, TryRecycleTaskAbort)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtStream_t stream = nullptr;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->SetSqMemAttr(false);
     streamObj->SetRecycleFlag(true);
     streamObj->SetNeedRecvCqeFlag(true);
     streamObj->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
     streamObj->SetAbortStatus(RT_ERROR_STREAM_ABORT);
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::LogicCqReportV2)
         .stubs()
         .will(returnValue(RT_ERROR_NONE))
@@ -630,22 +635,24 @@ TEST_F(DavidTaskRecycleTest, TryRecycleTaskAbort)
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, TaskReclaimByStreamV2)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -653,7 +660,7 @@ TEST_F(DavidTaskRecycleTest, TaskReclaimByStreamV2)
     rtStream_t stream = nullptr;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->SetSqMemAttr(false);
     rt_ut::UnwrapOrNull<Stream>(stream)->SetFailureMode(ABORT_ON_FAILURE);
 
@@ -666,23 +673,25 @@ TEST_F(DavidTaskRecycleTest, TaskReclaimByStreamV2)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, TryReclaimToTask)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    ((RawDevice *)device)->chipType_ = CHIP_DAVID;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    ((RawDevice*)device)->chipType_ = CHIP_DAVID;
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -699,11 +708,11 @@ TEST_F(DavidTaskRecycleTest, TryReclaimToTask)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&delPos))
         .will(returnValue(RT_ERROR_NONE));
-    //delWorkTask == nullptr abnormal
+    // delWorkTask == nullptr abnormal
     TryReclaimToTask(&taskInfo);
 
     // check cqe
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
     taskResMang->taskResATail_.Set(1);
     taskResMang->taskRes_[0].taskInfo.id = 0;
     taskResMang->taskRes_[0].taskInfo.isCqeNeedConcern = true;
@@ -720,22 +729,24 @@ TEST_F(DavidTaskRecycleTest, TryReclaimToTask)
     taskResMang->taskResATail_.Set(0);
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, FinishedTaskReclaim)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -753,25 +764,25 @@ TEST_F(DavidTaskRecycleTest, FinishedTaskReclaim)
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, ProcReport)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    TaskInfo *reportTask = nullptr;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    TaskInfo* reportTask = nullptr;
     MOCKER(GetTaskInfo).stubs().will(returnValue(reportTask));
     rtLogicCqReport_t report = {0};
     bool isFinished = false;
     bool hasCqeReportErr = false;
     uint32_t pos = ProcReport(device, 0U, 65535, 1, &report, isFinished, hasCqeReportErr);
     EXPECT_EQ(pos, 0);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, ProcReportWithTaskMultiple)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     TaskInfo reportTask = {};
     reportTask.type = TS_TASK_TYPE_MULTIPLE_TASK;
     MOCKER(GetSendDavidSqeNum).stubs().will(returnValue(2));
@@ -789,12 +800,12 @@ TEST_F(DavidTaskRecycleTest, ProcReportWithTaskMultiple)
     pos = ProcReport(device, 0U, 65535, 1, &report, isFinished, hasCqeReportErr);
     EXPECT_EQ(pos, 0);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, ProcCqReportException)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     TaskInfo reportTask = {};
     rtLogicCqReport_t report = {0};
     report.sqeType = TS_TASK_TYPE_KERNEL_AICORE;
@@ -813,13 +824,13 @@ TEST_F(DavidTaskRecycleTest, ProcCqReportException)
     report.errorCode = 0x60004;
     ProcCqReportException(device, report, &reportTask, 0U);
     EXPECT_EQ(reportTask.type, 0);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, ProcCqReportException_Abnormal)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    ((Runtime *)Runtime::Instance())->SetRuntimeExiting(true);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    ((Runtime*)Runtime::Instance())->SetRuntimeExiting(true);
     TaskInfo reportTask = {};
     rtLogicCqReport_t report = {0};
     report.sqeType = TS_TASK_TYPE_KERNEL_AICORE;
@@ -827,15 +838,15 @@ TEST_F(DavidTaskRecycleTest, ProcCqReportException_Abnormal)
     report.errorCode = TS_ERROR_AICORE_OVERFLOW;
     ProcCqReportException(device, report, &reportTask, 0U);
 
-    ((Runtime *)Runtime::Instance())->SetRuntimeExiting(false);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->SetRuntimeExiting(false);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, StarsResumeRtsq_01)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -860,14 +871,14 @@ TEST_F(DavidTaskRecycleTest, StarsResumeRtsq_01)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, StarsResumeRtsq_02)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -893,17 +904,17 @@ TEST_F(DavidTaskRecycleTest, StarsResumeRtsq_02)
     EXPECT_EQ(ret, RT_ERROR_STREAM_ABORT);
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForNotifyWaitTask)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Model *model;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
-    Notify *notify;
+    Stream* stream;
+    Notify* notify;
     rtStream_t streamHandle = nullptr;
     rtNotify_t notifyHandle = nullptr;
 
@@ -934,18 +945,18 @@ TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForNotifyWaitTask)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtModelDestroy(modelHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 extern int32_t faultEventFlag;
 TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForNotifyWaitTaskForAiCpu)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
 
-    Model *model = nullptr;
-    Stream *stream = nullptr;
-    Notify *notify = nullptr;
+    Model* model = nullptr;
+    Stream* stream = nullptr;
+    Notify* notify = nullptr;
     rtStream_t streamHandle = nullptr;
     rtNotify_t notifyHandle = nullptr;
     rtModel_t modelHandle = nullptr;
@@ -986,16 +997,16 @@ TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForNotifyWaitTaskForAiCpu)
     ret = rtModelDestroy(modelHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, PrintErrorInfo)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Model *model;
-    Stream *stream;
-    Notify *notify;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Model* model;
+    Stream* stream;
+    Notify* notify;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1017,14 +1028,14 @@ TEST_F(DavidTaskRecycleTest, PrintErrorInfo)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, CCUTask)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1044,15 +1055,15 @@ TEST_F(DavidTaskRecycleTest, CCUTask)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 extern int32_t faultEventFlag;
 TEST_F(DavidTaskRecycleTest, CCUTaskHBMError)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1083,14 +1094,14 @@ TEST_F(DavidTaskRecycleTest, CCUTaskHBMError)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, FusionTaskAbort)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1110,14 +1121,14 @@ TEST_F(DavidTaskRecycleTest, FusionTaskAbort)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForMemcpyAsyncTask)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1133,19 +1144,19 @@ TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForMemcpyAsyncTask)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForMemcpyAsyncTaskForSDMALinkError)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
-    
+
     MOCKER(PrintErrorInfoForMemcpyAsyncTask).stubs();
 
     TaskInfo taskInfo = {0};
@@ -1157,62 +1168,58 @@ TEST_F(DavidTaskRecycleTest, DoCompleteSuccessForMemcpyAsyncTaskForSDMALinkError
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, PrintAsyncPtrProcFunction)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     ASSERT_NE(driver, nullptr);
 
     char_t errMsg[MSG_LENGTH] = {};
-    char_t *errStr = errMsg;
+    char_t* errStr = errMsg;
     int32_t countNum = 0;
     rtDavidMemcpyAddrInfo deviceAddrInfo = {};
 
-    MOCKER_CPP_VIRTUAL(driver, &Driver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(PrintModuleIdProc).stubs();
 
-    PrintAsyncPtrProc(driver, errStr, static_cast<void *>(&deviceAddrInfo), countNum);
+    PrintAsyncPtrProc(driver, errStr, static_cast<void*>(&deviceAddrInfo), countNum);
 
     GlobalMockObject::verify();
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, PrintAsyncPtrProcErrorCheck)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     ASSERT_NE(driver, nullptr);
 
     char_t errMsg[MSG_LENGTH] = {};
-    char_t *errStr = errMsg;
+    char_t* errStr = errMsg;
     int32_t countNum = 0;
     rtDavidMemcpyAddrInfo deviceAddrInfo = {};
 
-    MOCKER_CPP_VIRTUAL(driver, &Driver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
-    PrintAsyncPtrProc(driver, errStr, static_cast<void *>(&deviceAddrInfo), countNum);
+    PrintAsyncPtrProc(driver, errStr, static_cast<void*>(&deviceAddrInfo), countNum);
 
     EXPECT_TRUE(countNum == 0 || strstr(errStr, "src_addr=") == nullptr);
     GlobalMockObject::verify();
@@ -1220,9 +1227,7 @@ TEST_F(DavidTaskRecycleTest, PrintAsyncPtrProcErrorCheck)
     countNum = 0;
     (void)memset_s(errMsg, MSG_LENGTH, 0, MSG_LENGTH);
 
-    MOCKER_CPP_VIRTUAL(driver, &Driver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     PrintAsyncPtrProc(driver, errStr, nullptr, countNum);
 
@@ -1231,14 +1236,14 @@ TEST_F(DavidTaskRecycleTest, PrintAsyncPtrProcErrorCheck)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, PrintErrorInfoForStreamLabelSwitchByIndexTask)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1255,29 +1260,31 @@ TEST_F(DavidTaskRecycleTest, PrintErrorInfoForStreamLabelSwitchByIndexTask)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, RecycleModeLabel)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtStream_t stream = nullptr;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->SetSqMemAttr(false);
     rtModel_t model;
     rtLabel_t label;
@@ -1287,16 +1294,16 @@ TEST_F(DavidTaskRecycleTest, RecycleModeLabel)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint32_t val = 0x123;
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
-    Label *realLabel = rt_ut::UnwrapOrNull<Label>(label);
-    realLabel->SetLabelDevAddr((void *)(&val));
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Label* realLabel = rt_ut::UnwrapOrNull<Label>(label);
+    realLabel->SetLabelDevAddr((void*)(&val));
     streamObj->models_.insert(realModel);
     streamObj->SetLatestModlId(realModel->Id_());
     streamObj->InsertLabelList(realLabel);
 
     uint32_t pos = UINT32_MAX;
-    TaskInfo *task = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(streamObj->taskResMang_));
+    TaskInfo* task = nullptr;
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(streamObj->taskResMang_));
     error = taskResMang->AllocTaskInfoAndPos(1U, pos, &task);
     task->stream = streamObj;
     task->sqeNum = 1U;
@@ -1314,7 +1321,7 @@ TEST_F(DavidTaskRecycleTest, RecycleModeLabel)
 
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 class DavidTaskRecycleTest1 : public testing::Test {
@@ -1323,12 +1330,12 @@ protected:
     {
         // backup oringal attribute of runtime
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -1339,7 +1346,7 @@ protected:
     static void TearDownTestCase()
     {
         // restore oringal attribute
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(g_disableThread);
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
@@ -1348,12 +1355,12 @@ protected:
     virtual void SetUp()
     {
         std::cout << "TaskResManageTest SetUp start" << std::endl;
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::GetRunMode)
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
             .stubs()
             .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -1374,17 +1381,17 @@ protected:
 TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_GetSqEnableFailed)
 {
     rtError_t error;
-    Device *dev = nullptr;
-    Stream *stm = nullptr;
+    Device* dev = nullptr;
+    Stream* stm = nullptr;
     rtStream_t stmHandle = nullptr;
- 
-    dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+
+    dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(dev, nullptr);
- 
+
     error = rtStreamCreate(&stmHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm = rt_ut::UnwrapOrNull<Stream>(stmHandle);
- 
+
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
     uint16_t sqHead = 0U;
@@ -1392,7 +1399,7 @@ TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_GetSqEnableFailed)
     bool sqEnable = true;
     bool forceFlag = true;
     bool isForceRecycle = true;
-    Stream *exeStream = dev->PrimaryStream_();
+    Stream* exeStream = dev->PrimaryStream_();
     error = GetDrvSqHead(stm, sqHead);
     error = dev->Driver_()->GetSqTail(0U, 0U, 1U, sqTail);
 
@@ -1402,24 +1409,23 @@ TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_GetSqEnableFailed)
     sqHead == sqTail;
     error = rtStreamDestroy(stmHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
- 
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
- 
+
 TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_GetSqEnableFailed2)
 {
     rtError_t error;
-    Device *dev = nullptr;
-    Stream *stm = nullptr;
+    Device* dev = nullptr;
+    Stream* stm = nullptr;
     rtStream_t stmHandle = nullptr;
- 
-    dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+
+    dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(dev, nullptr);
- 
+
     error = rtStreamCreate(&stmHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm = rt_ut::UnwrapOrNull<Stream>(stmHandle);
- 
+
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
     uint16_t sqHead = 0U;
@@ -1427,96 +1433,100 @@ TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_GetSqEnableFailed2)
     bool sqEnable = false;
     bool forceFlag = true;
     bool isForceRecycle = true;
-    Stream *exeStream = dev->PrimaryStream_();
+    Stream* exeStream = dev->PrimaryStream_();
     error = GetDrvSqHead(stm, sqHead);
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail).stubs().will(returnValue(1));
- 
+
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetSqEnable)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(false))
         .will(returnValue(RT_ERROR_NONE));
     error = rtStreamDestroy(stmHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
 TEST_F(DavidTaskRecycleTest, test_recycle_task_abort_on_failure)
 {
     rtError_t error;
-    Device *dev = nullptr;
-    Stream *stm = nullptr;
+    Device* dev = nullptr;
+    Stream* stm = nullptr;
     rtStream_t stmHandle = nullptr;
- 
-    dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+
+    dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(dev, nullptr);
- 
+
     error = rtStreamCreate(&stmHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm = rt_ut::UnwrapOrNull<Stream>(stmHandle);
- 
+
     stm->SetFailureMode(ABORT_ON_FAILURE);
     stm->isForceRecycle_ = false;
- 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     uint16_t sqHead = 0U;
-    MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead).stubs()
+    MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
+        .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(sqHead), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
- 
+
     error = RecycleTaskBySqHeadForRecyleThread(stm);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamDestroy(stmHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
-TEST_F(DavidTaskRecycleTest, test_stream_already_force_recycled) {
+TEST_F(DavidTaskRecycleTest, test_stream_already_force_recycled)
+{
     rtError_t error;
-    Device *dev = nullptr;
-    Stream *stm = nullptr;
+    Device* dev = nullptr;
+    Stream* stm = nullptr;
     rtStream_t stmHandle = nullptr;
- 
-    dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+
+    dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(dev, nullptr);
- 
+
     error = rtStreamCreate(&stmHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm = rt_ut::UnwrapOrNull<Stream>(stmHandle);
- 
+
     stm->isForceRecycle_ = true;
     error = rtStreamDestroy(stmHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
-TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_SqHeadEqualsSqTail) {
+TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_SqHeadEqualsSqTail)
+{
     rtError_t error;
-    Device *dev = nullptr;
-    Stream *stm = nullptr;
+    Device* dev = nullptr;
+    Stream* stm = nullptr;
     rtStream_t stmHandle = nullptr;
- 
-    dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+
+    dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(dev, nullptr);
- 
+
     error = rtStreamCreate(&stmHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm = rt_ut::UnwrapOrNull<Stream>(stmHandle);
- 
+
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
     uint16_t sqHead = 4U;
     uint16_t sqTail = 4U;
     bool sqEnable = true;
- 
-    MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetSqHead).stubs()
+
+    MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetSqHead)
+        .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(sqHead), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
- 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail).stubs().will(returnValue(1));
- 
+
     bool enable = false;
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqEnable)
         .stubs()
@@ -1524,54 +1534,53 @@ TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_SqHeadEqualsSqTail) {
         .will(returnValue(RT_ERROR_NONE));
     sqHead = 0U;
     sqTail = 0U;
- 
+
     error = rtStreamDestroy(stmHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
-TEST_F(DavidTaskRecycleTest, TestNormalTaskReclaim) {
+TEST_F(DavidTaskRecycleTest, TestNormalTaskReclaim)
+{
     rtStream_t stm = nullptr;
-    Device *device_ = nullptr;
-    device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    rtStreamCreate(&stm, 0);
-    StarsEngine engine(device_);
-    bool isExistCqe = true;
-    bool isNeedRecvCqe = true;
-    
-    MOCKER_CPP(&StarsEngine::ProcLogicCqUntilEmpty)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    
-    TaskReclaimForSeparatedStm(rt_ut::UnwrapOrNull<Stream>(stm));
-
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-    rtStreamDestroy(stm);
-}
-
-TEST_F(DavidTaskRecycleTest, TestNormalTaskReclaim2) {
-    rtStream_t stm = nullptr;
-    Device *device_ = nullptr;
-    device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device_ = nullptr;
+    device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     rtStreamCreate(&stm, 0);
     StarsEngine engine(device_);
     bool isExistCqe = true;
     bool isNeedRecvCqe = true;
 
-    MOCKER(ProcLogicCqUntilEmpty)
-    .stubs()
-    .will(ignoreReturnValue());
+    MOCKER_CPP(&StarsEngine::ProcLogicCqUntilEmpty).stubs().will(returnValue(RT_ERROR_NONE));
 
     TaskReclaimForSeparatedStm(rt_ut::UnwrapOrNull<Stream>(stm));
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
     rtStreamDestroy(stm);
 }
 
-TEST_F(DavidTaskRecycleTest, DavidTaskRecycleTest2) {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+TEST_F(DavidTaskRecycleTest, TestNormalTaskReclaim2)
+{
+    rtStream_t stm = nullptr;
+    Device* device_ = nullptr;
+    device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    rtStreamCreate(&stm, 0);
+    StarsEngine engine(device_);
+    bool isExistCqe = true;
+    bool isNeedRecvCqe = true;
+
+    MOCKER(ProcLogicCqUntilEmpty).stubs().will(ignoreReturnValue());
+
+    TaskReclaimForSeparatedStm(rt_ut::UnwrapOrNull<Stream>(stm));
+
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+    rtStreamDestroy(stm);
+}
+
+TEST_F(DavidTaskRecycleTest, DavidTaskRecycleTest2)
+{
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
     rtStream_t stm = nullptr;
     rtStreamCreate(&stm, 0);
@@ -1581,19 +1590,22 @@ TEST_F(DavidTaskRecycleTest, DavidTaskRecycleTest2) {
     rtStreamDestroy(stm);
 }
 
-TEST_F(DavidTaskRecycleTest, TryReclaimToTask_DelWorkTaskIsNull) {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    ((RawDevice *)device)->chipType_ = CHIP_DAVID;
+TEST_F(DavidTaskRecycleTest, TryReclaimToTask_DelWorkTaskIsNull)
+{
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    ((RawDevice*)device)->chipType_ = CHIP_DAVID;
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -1611,27 +1623,30 @@ TEST_F(DavidTaskRecycleTest, TryReclaimToTask_DelWorkTaskIsNull) {
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&delPos))
         .will(returnValue(RT_ERROR_NONE));
 
-    TaskInfo *delWorkTask = nullptr;
+    TaskInfo* delWorkTask = nullptr;
     TryReclaimToTask(&taskInfo);
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-TEST_F(DavidTaskRecycleTest, TryReclaimToTask_EarlyBreak) {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    ((RawDevice *)device)->chipType_ = CHIP_DAVID;
+TEST_F(DavidTaskRecycleTest, TryReclaimToTask_EarlyBreak)
+{
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    ((RawDevice*)device)->chipType_ = CHIP_DAVID;
     uint32_t support = RT_CAPABILITY_SUPPORT;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    void *addr = &support;
+    void* addr = &support;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -1654,14 +1669,14 @@ TEST_F(DavidTaskRecycleTest, TryReclaimToTask_EarlyBreak) {
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_ShouldSubmitRecycleTask_WhenSqDisabled)
 {
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     ASSERT_NE(dev, nullptr);
-    Stream *stm = nullptr;
+    Stream* stm = nullptr;
     rtStream_t stmHandle = nullptr;
     rtError_t error = rtStreamCreate(&stmHandle, 0);
     ASSERT_EQ(error, RT_ERROR_NONE);
@@ -1669,14 +1684,14 @@ TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_ShouldSubmitRecycleTask_When
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
     uint16_t sqHead = 10U;
-    uint16_t sqTail = 20U; 
-    bool sqEnable = false; 
+    uint16_t sqTail = 20U;
+    bool sqEnable = false;
 
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetSqHead)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(sqHead), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail).stubs().will(returnValue(1));
 
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetSqEnable)
@@ -1685,7 +1700,7 @@ TEST_F(DavidTaskRecycleTest, RefreshForceRecyleFlag_ShouldSubmitRecycleTask_When
         .will(returnValue(RT_ERROR_NONE));
     error = rtStreamDestroy(stmHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
 TEST_F(DavidTaskRecycleTest, ProcLogicCqWhenErr)
@@ -1705,8 +1720,7 @@ TEST_F(DavidTaskRecycleTest, ProcLogicCqWhenErr)
     task.u.davinciMultiTaskInfo.sqeNum = 2U;
     task.u.davinciMultiTaskInfo.multipleTaskCqeNum = 2U;
     task.u.davinciMultiTaskInfo.hasUnderstudyTask = true;
-    MOCKER(GetTaskInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
+    MOCKER(GetTaskInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(&task));
     MOCKER_CPP(&Engine::ReportHeartBreakProcV2).stubs().will(returnValue(RT_ERROR_NONE));
 
     g_cqReport.streamId = rt_ut::UnwrapOrNull<Stream>(stream)->Id_();
@@ -1714,9 +1728,9 @@ TEST_F(DavidTaskRecycleTest, ProcLogicCqWhenErr)
     g_cqReport.errorType = RT_STARS_CQE_ERR_TYPE_SQE_ERROR;
     g_cqReport.sqeType = RT_DAVID_SQE_TYPE_JPEGD;
 
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(driver), &NpuDriver::LogicCqReportV2).stubs().will(invoke(Sub_LogicCqReportV2));
 
     ProcLogicCqUntilEmpty(rt_ut::UnwrapOrNull<Stream>(stream));
 

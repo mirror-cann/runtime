@@ -29,7 +29,7 @@ TEST_F(AicpusdLhisiCoverageTest, ComputeProcessApisReturnStubValues)
     std::queue<aicpu::Closure> taskQueue;
     taskQueue.push(task);
 
-    ComputeProcess &process = ComputeProcess::GetInstance();
+    ComputeProcess& process = ComputeProcess::GetInstance();
     process.UpdateProfilingMode(PROFILING_OPEN);
     process.UpdateProfilingModelMode(true);
     EXPECT_EQ(process.Start(deviceVec, 0, pidSign, PROFILING_OPEN, 0, aicpu::THREAD_MODE), 0);
@@ -46,10 +46,10 @@ TEST_F(AicpusdLhisiCoverageTest, ComputeProcessApisReturnStubValues)
 
 TEST_F(AicpusdLhisiCoverageTest, QueueAndMbufApisReturnSuccess)
 {
-    void *tmp = nullptr;
-    void **buf = &tmp;
-    Mbuf *mbuf = nullptr;
-    Mbuf *chainMbuf = nullptr;
+    void* tmp = nullptr;
+    void** buf = &tmp;
+    Mbuf* mbuf = nullptr;
+    Mbuf* chainMbuf = nullptr;
     uint64_t dataLen = 0U;
     unsigned int size = 0U;
     unsigned int num = 0U;
@@ -84,7 +84,7 @@ TEST_F(AicpusdLhisiCoverageTest, OtherStubApisReturnSuccess)
     EXPECT_EQ(halTsDevRecord(0U, 0U, 0U, 0U), 0);
     EXPECT_EQ(drvBindHostPid(info), DRV_ERROR_NONE);
     ThreadPool localPool;
-    ThreadPool &threadPool = ThreadPool::Instance();
+    ThreadPool& threadPool = ThreadPool::Instance();
     threadPool.WaitForStop();
     EXPECT_EQ(threadPool.semInitedNum_, 0);
     EXPECT_EQ(halGetDeviceVfMax(0U, &vfMaxNum), DRV_ERROR_NONE);

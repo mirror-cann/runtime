@@ -12,20 +12,20 @@
 
 namespace qstest {
 
-DlopenStub &DlopenStub::GetInstance()
+DlopenStub& DlopenStub::GetInstance()
 {
     static DlopenStub instance;
     return instance;
 }
 
-bool DlopenStub::RegDlopenFuncPtr(const std::string &fileName, const FuncNamePtrMap &funcMaps)
+bool DlopenStub::RegDlopenFuncPtr(const std::string& fileName, const FuncNamePtrMap& funcMaps)
 {
     const auto iter = ptrManageMap_.find(fileName);
     if (iter != ptrManageMap_.end()) {
         return false;
     }
 
-    for (const auto &iter: funcMaps) {
+    for (const auto& iter : funcMaps) {
         std::cout << iter.first << "  " << iter.second << std::endl;
     }
 
@@ -33,7 +33,7 @@ bool DlopenStub::RegDlopenFuncPtr(const std::string &fileName, const FuncNamePtr
     return true;
 }
 
-void *DlopenStub::dlopen(const char *fileName, int32_t mode)
+void* DlopenStub::dlopen(const char* fileName, int32_t mode)
 {
     const auto iter = ptrManageMap_.find(fileName);
     if (iter == ptrManageMap_.end()) {
@@ -45,12 +45,12 @@ void *DlopenStub::dlopen(const char *fileName, int32_t mode)
     return &(iter->second);
 }
 
-void *DlopenStub::dlsym(void *handle, const char *name)
+void* DlopenStub::dlsym(void* handle, const char* name)
 {
     printf("handle=%p, name=%s\n", handle, name);
 
     bool isFindHandle = false;
-    for (const auto &iter : ptrManageMap_) {
+    for (const auto& iter : ptrManageMap_) {
         if (handle == &(iter.second)) {
             isFindHandle = true;
             break;
@@ -61,7 +61,7 @@ void *DlopenStub::dlsym(void *handle, const char *name)
         return nullptr;
     }
 
-    FuncNamePtrMap *funcNamePtrMap = (reinterpret_cast<FuncNamePtrMap *>(handle));
+    FuncNamePtrMap* funcNamePtrMap = (reinterpret_cast<FuncNamePtrMap*>(handle));
     const auto iter = funcNamePtrMap->find(name);
     if (iter == funcNamePtrMap->end()) {
         return nullptr;
@@ -72,10 +72,10 @@ void *DlopenStub::dlsym(void *handle, const char *name)
     return iter->second;
 }
 
-int32_t DlopenStub::dlclose(void *handle)
+int32_t DlopenStub::dlclose(void* handle)
 {
     std::string soName;
-    for (const auto &iter : ptrManageMap_) {
+    for (const auto& iter : ptrManageMap_) {
         if (handle == &(iter.second)) {
             soName = iter.first;
         }
@@ -90,24 +90,12 @@ int32_t DlopenStub::dlclose(void *handle)
     return 0;
 }
 
-void *DlopenQsTestStub(const char *fileName, int32_t mode)
-{
-    return DlopenStub::GetInstance().dlopen(fileName, mode);
-}
+void* DlopenQsTestStub(const char* fileName, int32_t mode) { return DlopenStub::GetInstance().dlopen(fileName, mode); }
 
-int32_t DlcloseQsTestStub(void *handle)
-{
-    return DlopenStub::GetInstance().dlclose(handle);
-}
+int32_t DlcloseQsTestStub(void* handle) { return DlopenStub::GetInstance().dlclose(handle); }
 
-void *DlsymQsTestStub(void *handle, const char *name)
-{
-    return DlopenStub::GetInstance().dlsym(handle, name);
-}
+void* DlsymQsTestStub(void* handle, const char* name) { return DlopenStub::GetInstance().dlsym(handle, name); }
 
-}  // namespace qstest
+} // namespace qstest
 
-int dlclose(void *__handle)
-{
-    return 0;
-}
+int dlclose(void* __handle) { return 0; }

@@ -14,39 +14,19 @@ void UpdateModelMode(const bool mode) {}
 
 class ProfModelMessage {
 public:
-    explicit ProfModelMessage(const char *tag) {};
+    explicit ProfModelMessage(const char* tag){};
     virtual ~ProfModelMessage() = default;
-    ProfModelMessage *SetDataTagId(const uint16_t dataTagId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuModelIterId(const uint16_t indexId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuModelTimeStamp(const uint64_t timeStamp)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuModelId(const uint32_t modelId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuTagId(const uint16_t tagId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetEventId(const uint16_t eventId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetDeviceId(const uint32_t deviceId)
-    {
-        return this;
-    }
+    ProfModelMessage* SetDataTagId(const uint16_t dataTagId) { return this; }
+    ProfModelMessage* SetAicpuModelIterId(const uint16_t indexId) { return this; }
+    ProfModelMessage* SetAicpuModelTimeStamp(const uint64_t timeStamp) { return this; }
+    ProfModelMessage* SetAicpuModelId(const uint32_t modelId) { return this; }
+    ProfModelMessage* SetAicpuTagId(const uint16_t tagId) { return this; }
+    ProfModelMessage* SetEventId(const uint16_t eventId) { return this; }
+    ProfModelMessage* SetDeviceId(const uint32_t deviceId) { return this; }
     int32_t ReportProfModelMessage();
+
 private:
     ProfModelMessage(const ProfModelMessage&) = delete;
     ProfModelMessage& operator=(const ProfModelMessage&) = delete;
 };
-}  // namespace aicpu
+} // namespace aicpu

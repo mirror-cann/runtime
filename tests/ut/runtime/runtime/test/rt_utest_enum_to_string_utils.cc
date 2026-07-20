@@ -63,20 +63,14 @@ TEST(EnumToStringUtilsTest, InfoTypeToStringKnownValue)
     EXPECT_EQ(InfoTypeToString(3U), "CORE_NUM(3)");
 }
 
-TEST(EnumToStringUtilsTest, InfoTypeToStringUnknownValue)
-{
-    EXPECT_EQ(InfoTypeToString(100U), "UNKNOWN(100)");
-}
+TEST(EnumToStringUtilsTest, InfoTypeToStringUnknownValue) { EXPECT_EQ(InfoTypeToString(100U), "UNKNOWN(100)"); }
 
 TEST(EnumToStringUtilsTest, ModuleTypeToStringKnownValue)
 {
     EXPECT_EQ(ModuleTypeToString(RT_MODULE_TYPE_MEMORY), "MEMORY(10)");
 }
 
-TEST(EnumToStringUtilsTest, ModuleTypeToStringUnknownValue)
-{
-    EXPECT_EQ(ModuleTypeToString(-1), "UNKNOWN(-1)");
-}
+TEST(EnumToStringUtilsTest, ModuleTypeToStringUnknownValue) { EXPECT_EQ(ModuleTypeToString(-1), "UNKNOWN(-1)"); }
 
 TEST(EnumToStringUtilsTest, MemcpyKindToStringKnownValue)
 {
@@ -91,8 +85,7 @@ TEST(EnumToStringUtilsTest, MemcpyKindToStringUnknownValue)
 
 TEST(EnumToStringUtilsTest, MemcpyNewKindToStringKnownValue)
 {
-    EXPECT_EQ(MemcpyNewKindToString(RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE),
-        "MEMCPY_KIND_INNER_DEVICE_TO_DEVICE(6)");
+    EXPECT_EQ(MemcpyNewKindToString(RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE), "MEMCPY_KIND_INNER_DEVICE_TO_DEVICE(6)");
 }
 
 TEST(EnumToStringUtilsTest, MemcpyNewKindToStringUnknownValue)
@@ -144,8 +137,7 @@ TEST(EnumToStringUtilsTest, KernelFlagToStringKnownValue)
 
 TEST(EnumToStringUtilsTest, NotifyFlagToStringKnownValue)
 {
-    EXPECT_EQ(NotifyFlagToString(static_cast<uint32_t>(RT_NOTIFY_FLAG_SHR_ID_SHADOW)),
-        "NOTIFY_FLAG_SHR_ID_SHADOW(64)");
+    EXPECT_EQ(NotifyFlagToString(static_cast<uint32_t>(RT_NOTIFY_FLAG_SHR_ID_SHADOW)), "NOTIFY_FLAG_SHR_ID_SHADOW(64)");
 }
 
 TEST(EnumToStringUtilsTest, RecordModeToStringKnownValue)
@@ -160,14 +152,12 @@ TEST(EnumToStringUtilsTest, WaitModeToStringKnownValue)
 
 TEST(EnumToStringUtilsTest, CaptureEventModeToStringKnownValue)
 {
-    EXPECT_EQ(CaptureEventModeToString(static_cast<uint8_t>(CaptureEventModeType::HARDWARE_MODE)),
-        "HARDWARE_MODE(1)");
+    EXPECT_EQ(CaptureEventModeToString(static_cast<uint8_t>(CaptureEventModeType::HARDWARE_MODE)), "HARDWARE_MODE(1)");
 }
 
 TEST(EnumToStringUtilsTest, DevFeatureTypeToStringKnownValue)
 {
-    EXPECT_EQ(DevFeatureTypeToString(RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH),
-        "FEATURE_SYSTEM_TASKID_BIT_WIDTH(20001)");
+    EXPECT_EQ(DevFeatureTypeToString(RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH), "FEATURE_SYSTEM_TASKID_BIT_WIDTH(20001)");
 }
 
 TEST(EnumToStringUtilsTest, MemTypeToStringKnownValue)
@@ -219,10 +209,7 @@ TEST(EnumToStringUtilsTest, StreamTypeToStringKnownValue)
     EXPECT_EQ(StreamTypeToString(RT_HUGE_STREAM), "HUGE_STREAM(1)");
 }
 
-TEST(EnumToStringUtilsTest, StreamTypeToStringUnknownValue)
-{
-    EXPECT_EQ(StreamTypeToString(999), "UNKNOWN(999)");
-}
+TEST(EnumToStringUtilsTest, StreamTypeToStringUnknownValue) { EXPECT_EQ(StreamTypeToString(999), "UNKNOWN(999)"); }
 
 TEST(EnumToStringUtilsTest, MemInfoTypeToStringKnownValue)
 {
@@ -260,8 +247,11 @@ TEST(EnumToStringUtilsTest, RandomNumDataTypeToStringUnknownValue)
 
 TEST(EnumToStringUtilsTest, RandomNumFuncTypeToStringKnownValue)
 {
-    EXPECT_EQ(RandomNumFuncTypeToString(RT_RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK), "RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK(0)");
-    EXPECT_EQ(RandomNumFuncTypeToString(RT_RANDOM_NUM_FUNC_TYPE_TRUNCATED_NORMAL_DIS), "RANDOM_NUM_FUNC_TYPE_TRUNCATED_NORMAL_DIS(3)");
+    EXPECT_EQ(
+        RandomNumFuncTypeToString(RT_RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK), "RANDOM_NUM_FUNC_TYPE_DROPOUT_BITMASK(0)");
+    EXPECT_EQ(
+        RandomNumFuncTypeToString(RT_RANDOM_NUM_FUNC_TYPE_TRUNCATED_NORMAL_DIS),
+        "RANDOM_NUM_FUNC_TYPE_TRUNCATED_NORMAL_DIS(3)");
 }
 
 TEST(EnumToStringUtilsTest, RandomNumFuncTypeToStringUnknownValue)

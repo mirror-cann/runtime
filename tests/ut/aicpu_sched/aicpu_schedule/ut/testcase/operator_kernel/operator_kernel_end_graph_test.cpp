@@ -21,7 +21,6 @@
 
 using namespace AicpuSchedule;
 
-
 class OperatorKernelEndGraphTest : public OperatorKernelTest {
 protected:
     OperatorKernelEndGraph kernel_;
@@ -38,7 +37,7 @@ TEST_F(OperatorKernelEndGraphTest, ModelEndGraph)
 
 TEST_F(OperatorKernelEndGraphTest, ModelEndGraph_failed1)
 {
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;

@@ -20,16 +20,14 @@
 
 using namespace AicpuSchedule;
 
-
 class OperatorKernelActiveEntryStreamTest : public OperatorKernelTest {
 protected:
     OperatorKernelActiveEntryStream kernel_;
 };
 
-
 TEST_F(OperatorKernelActiveEntryStreamTest, ModelActiveEntryStream_failed1)
 {
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -53,7 +51,7 @@ TEST_F(OperatorKernelActiveEntryStreamTest, ModelActiveEntryStreamTaskKernel_mod
     std::vector<StreamInfo> streams;
     streams.push_back(stream);
     ModelStreamManager::GetInstance().Reg(1, streams);
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel *)nullptr));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
     int ret = kernel_.DoCompute(streamId, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
     ModelStreamManager::GetInstance().UnReg(1, streams);
@@ -111,12 +109,7 @@ TEST_F(OperatorKernelActiveEntryStreamTest, ModelActiveEntryStreamTaskKernel_exe
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
     MOCKER_CPP(&OperatorKernelCommon::SendAICPUSubEvent).stubs().will(returnValue(0));
     RunContext runContextTLocal = {
-        .modelId = 7,
-        .modelTsId = 1,
-        .streamId = 96,
-        .pending = false,
-        .executeInline = true
-    };
+        .modelId = 7, .modelTsId = 1, .streamId = 96, .pending = false, .executeInline = true};
     int ret = kernel_.DoCompute(streamId, runContextTLocal);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     ModelStreamManager::GetInstance().UnReg(1, streams);

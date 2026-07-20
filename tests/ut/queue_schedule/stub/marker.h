@@ -13,4 +13,4 @@ namespace Hiva {
 const uint64_t MARKER_ENQUEUE_EVENT = 0UL;
 
 void Marker(const QueueScheduleTrack enqueEventTrack);
-}
+} // namespace Hiva

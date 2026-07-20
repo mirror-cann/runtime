@@ -10,44 +10,17 @@
 #include "ProcMgrGrpOwnerClient.h"
 #include "tsd_ut_proc_mgr_sys_operator_agent.h"
 #include <iostream>
-uint32_t GrpOwnerClientInit(const char *ownerName)
-{
-    return 0U;
-}
-uint32_t GrpOwnerClientFini(void)
-{
-    return 0U;
-}
-uint32_t GrpOwnerClientRegHeartBeat(struct ResMgrHeartBeatCfg *heartBeatCfg)
-{
-    return 0U;
-}
-uint32_t GrpOwnerClientUnregisterHeartBeat(void)
-{
-    return 0U;
-}
+uint32_t GrpOwnerClientInit(const char* ownerName) { return 0U; }
+uint32_t GrpOwnerClientFini(void) { return 0U; }
+uint32_t GrpOwnerClientRegHeartBeat(struct ResMgrHeartBeatCfg* heartBeatCfg) { return 0U; }
+uint32_t GrpOwnerClientUnregisterHeartBeat(void) { return 0U; }
 
-int32_t RegisterThreadForDog(const char *threadName, const size_t nameLen, uint32_t dogFeedingCycle)
-{
-    return 0;
-}
+int32_t RegisterThreadForDog(const char* threadName, const size_t nameLen, uint32_t dogFeedingCycle) { return 0; }
 
-int32_t UnregisterThreadForDog(const char *threadName, const size_t nameLen)
-{
-    return 0;
-}
+int32_t UnregisterThreadForDog(const char* threadName, const size_t nameLen) { return 0; }
 
-int32_t KickingTheDog(const char *threadName, const size_t nameLen)
-{
-    return 0;
-}
+int32_t KickingTheDog(const char* threadName, const size_t nameLen) { return 0; }
 
-uint32_t ProcMgrSetScheduler(const std::vector<SetSchedulerInfo>& schedulerInfo)
-{
-    return 0;
-}
+uint32_t ProcMgrSetScheduler(const std::vector<SetSchedulerInfo>& schedulerInfo) { return 0; }
 
-int32_t ProcMgrUpdateSePolicy()
-{
-    return 0;
-}
+int32_t ProcMgrUpdateSePolicy() { return 0; }

@@ -40,30 +40,23 @@ using namespace cce::runtime;
 
 class FillFftsPlusMixSqeSubtaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
+    virtual void SetUp() {}
 
-    }
-
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 };
 
 TEST_F(FillFftsPlusMixSqeSubtaskTest, main_aic)
 {
     AicTaskInfo taskInfo;
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
@@ -79,11 +72,11 @@ TEST_F(FillFftsPlusMixSqeSubtaskTest, main_aic)
 TEST_F(FillFftsPlusMixSqeSubtaskTest, default_case)
 {
     AicTaskInfo taskInfo;
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
@@ -98,45 +91,38 @@ TEST_F(FillFftsPlusMixSqeSubtaskTest, default_case)
 
 class PrintErrorModelExecuteTaskFuncCallTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
+    virtual void SetUp() {}
 
-    }
-
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 };
 
 TEST_F(PrintErrorModelExecuteTaskFuncCallTest, default_case)
 {
-   TaskInfo taskInfo = {};
-   Model *model = new Model();
-   ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
-   modelExecuteTaskInfo->model = model;
-   EXPECT_EQ(model, modelExecuteTaskInfo->model);
-   modelExecuteTaskInfo->model->SetFuncCallSvmMem(0ULL);
-   PrintErrorModelExecuteTaskFuncCall(&taskInfo);
-   delete model;
+    TaskInfo taskInfo = {};
+    Model* model = new Model();
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
+    modelExecuteTaskInfo->model = model;
+    EXPECT_EQ(model, modelExecuteTaskInfo->model);
+    modelExecuteTaskInfo->model->SetFuncCallSvmMem(0ULL);
+    PrintErrorModelExecuteTaskFuncCall(&taskInfo);
+    delete model;
 }
 
 TEST_F(PrintErrorModelExecuteTaskFuncCallTest, PrintErrorModelExecuteTaskFuncCall)
 {
     TaskInfo taskInfo = {};
-    Model *model = new Model();
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
+    Model* model = new Model();
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
     modelExecuteTaskInfo->model = model;
-    
+
     modelExecuteTaskInfo->model->SetFuncCallSvmMem(0x1000ULL);
     modelExecuteTaskInfo->model->SetFunCallMemSize(UINT64_MAX);
-    
+
     PrintErrorModelExecuteTaskFuncCall(&taskInfo);
-    
+
     delete model;
 }

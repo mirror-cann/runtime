@@ -9,31 +9,26 @@
  */
 #include "rt_utest_stub.h"
 namespace {
-    std::string STAGES_STR = "[TEST][TEST]";
+std::string STAGES_STR = "[TEST][TEST]";
 }
 
-ErrorManager &ErrorManager::GetInstance() {
-  static ErrorManager instance;
-  return instance;
+ErrorManager& ErrorManager::GetInstance()
+{
+    static ErrorManager instance;
+    return instance;
 }
 
-void ErrorManager::SetStage(const std::string &firstStage, const std::string &secondStage)
+void ErrorManager::SetStage(const std::string& firstStage, const std::string& secondStage)
 {
     STAGES_STR = '[' + firstStage + "][" + secondStage + ']';
 }
 
-const std::string& ErrorManager::GetLogHeader()
-{
-    return STAGES_STR;
-}
+const std::string& ErrorManager::GetLogHeader() { return STAGES_STR; }
 
-int ErrorManager::Init()
-{
-    return 0;
-}
+int ErrorManager::Init() { return 0; }
 
-void ErrorManager::ATCReportErrMessage(std::string error_code, const std::vector<std::string> &key,
-                                       const std::vector<std::string> &value)
+void ErrorManager::ATCReportErrMessage(
+    std::string error_code, const std::vector<std::string>& key, const std::vector<std::string>& value)
 {
     return;
 }
@@ -44,12 +39,6 @@ std::string ErrorManager::GetErrorMessage()
     return message;
 }
 
-int ErrorManager::ReportInterErrMessage(std::string error_code, const std::string &error_msg)
-{
-    return 0;
-}
+int ErrorManager::ReportInterErrMessage(std::string error_code, const std::string& error_msg) { return 0; }
 
-int error_message::FormatErrorMessage(char *str_dst, size_t dst_max, const char *format, ...)
-{
-    return 1;
-}
+int error_message::FormatErrorMessage(char* str_dst, size_t dst_max, const char* format, ...) { return 1; }

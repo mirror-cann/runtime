@@ -16,7 +16,7 @@
 
 namespace tsd {
 
-const uint32_t DEFAULT_HDC_BUFFER_CNT = 5 *1024U;
+const uint32_t DEFAULT_HDC_BUFFER_CNT = 5 * 1024U;
 struct HdcBufferInfo {
     uint32_t bufferLen;
     int32_t segCnt;
@@ -27,70 +27,59 @@ struct HdcBufferInfo {
 class StubServerMsgImpl {
 public:
     StubServerMsgImpl() = default;
-    
+
     virtual ~StubServerMsgImpl() = default;
-    
+
     StubServerMsgImpl(const StubServerMsgImpl&) = delete;
 
     StubServerMsgImpl(StubServerMsgImpl&&) = delete;
 
     StubServerMsgImpl& operator=(const StubServerMsgImpl&) = delete;
-    
+
     StubServerMsgImpl& operator=(StubServerMsgImpl&) = delete;
 
     StubServerMsgImpl& operator=(StubServerMsgImpl&&) = delete;
 
-    static void DefaultVersionNegotiateMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultVersionNegotiateMsgProc(
+        struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultCapabilityGetMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultCapabilityGetMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultStartProcMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultStartProcMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultCloseProcMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultCloseProcMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultUpdateProfilingModeMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultUpdateProfilingModeMsgProc(
+        struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static int32_t StubMsProfReportCallBack(uint32_t moduleId, uint32_t type, void *data, uint32_t len);
+    static int32_t StubMsProfReportCallBack(uint32_t moduleId, uint32_t type, void* data, uint32_t len);
 
-    static void DefaultInitQsMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultInitQsMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultGetPidQosMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultGetPidQosMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultSupportOmInnerDecMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
-    
-    static void DefaultOutGetSupportLevelMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
-    
-    static void DefaultRemoveFileMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultSupportOmInnerDecMsgProc(
+        struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultLoadRuntimePkgMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultOutGetSupportLevelMsgProc(
+        struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultLoadDshapePkgMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultRemoveFileMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultProcessOpenMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
-    
-    static void DefaultProcessCloseMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultLoadRuntimePkgMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
 
-    static void DefaultGetStatusMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
-    
-    static void DefaultCloseListMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-        const HDCMessage &sendStoreMsg);
+    static void DefaultLoadDshapePkgMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
+
+    static void DefaultProcessOpenMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
+
+    static void DefaultProcessCloseMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
+
+    static void DefaultGetStatusMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
+
+    static void DefaultCloseListMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg);
+
 private:
-    static void CovertProtoMsgToHdcMsg(struct drvHdcMsg *msg, const HDCMessage &rspMsg, HdcBufferInfo *buf);
+    static void CovertProtoMsgToHdcMsg(struct drvHdcMsg* msg, const HDCMessage& rspMsg, HdcBufferInfo* buf);
 };
-}
+} // namespace tsd
 #endif

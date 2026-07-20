@@ -23,12 +23,12 @@
 using namespace AicpuSchedule;
 
 namespace {
-int32_t GetMbufDataPtrForCheckInput(const uint64_t srcAddr, void **dataAddrPtr)
+int32_t GetMbufDataPtrForCheckInput(const uint64_t srcAddr, void** dataAddrPtr)
 {
     *dataAddrPtr = &mbuf;
     return AICPU_SCHEDULE_OK;
 }
-}
+} // namespace
 
 class OperatorKernelCheckInputTensorDescTest : public OperatorKernelTest {
 protected:
@@ -51,18 +51,19 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Success
     auto descP = &desc;
     MOCKER(halMbufGetBuffAddr)
         .stubs()
-        .with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **)))
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
         .will(returnValue(0));
 
     ShapeValidation shapevalidation;
     shapevalidation.mbufAddrs = descP;
     shapevalidation.offset = 0;
     uint8_t allTensorData[sizeof(ShapeValidationInfo)] = {0};
-    ShapeValidationInfo *allTensor = (ShapeValidationInfo *)allTensorData;
-    allTensor->inputNums =1;
+    ShapeValidationInfo* allTensor = (ShapeValidationInfo*)allTensorData;
+    allTensor->inputNums = 1;
     allTensor->shapeValidationAddr = &shapevalidation;
     taskT.paraBase = (uint64_t)&allTensorData;
-    printf("shapevalidation.mbufAddrs[%p], allTensor->shapeValidationAddr[%p], shapevalidation addr[%p]\n",
+    printf(
+        "shapevalidation.mbufAddrs[%p], allTensor->shapeValidationAddr[%p], shapevalidation addr[%p]\n",
         shapevalidation.mbufAddrs, allTensor->shapeValidationAddr, &shapevalidation);
 
     int ret = checkInputKernel_.Compute(taskT, runContextT);
@@ -73,14 +74,14 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Success
 {
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 1;
     cfg->tensortlvLen = 36;
@@ -100,25 +101,27 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Success
     auto descP = &desc;
     MOCKER(halMbufGetBuffAddr)
         .stubs()
-        .with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **)))
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
         .will(returnValue(0));
     ShapeValidation shapevalidation;
     shapevalidation.mbufAddrs = PtrToValue(&descP);
     shapevalidation.offset = 0;
     uint64_t dataLen = sizeof(RuntimeTensorDesc) + shapevalidation.offset;
-    MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen))
+    MOCKER(halMbufGetBuffSize)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     uint32_t headSize = sizeof(MbufHeadMsg) + 10U;
     char_t mbufHead[headSize] = {};
-    void *headPtr = reinterpret_cast<void *>(&mbufHead[0U]);
-    MbufHeadMsg *headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
+    void* headPtr = reinterpret_cast<void*>(&mbufHead[0U]);
+    MbufHeadMsg* headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
     MOCKER(halMbufGetPrivInfo)
         .stubs()
         .with(mockcpp::any(), outBoundP(&headPtr), outBoundP(&headSize))
         .will(returnValue(0));
 
     uint8_t allTensorData[sizeof(ShapeValidationInfo)] = {0};
-    ShapeValidationInfo *allTensor = (ShapeValidationInfo *)allTensorData;
+    ShapeValidationInfo* allTensor = (ShapeValidationInfo*)allTensorData;
     allTensor->inputNums = 1;
     allTensor->shapeValidationAddr = &shapevalidation;
     taskT.paraBase = (uint64_t)&allTensorData;
@@ -131,14 +134,14 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
 {
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 1;
     cfg->tensortlvLen = 36;
@@ -160,15 +163,15 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
     auto descP = &desc;
     MOCKER(halMbufGetBuffAddr)
         .stubs()
-        .with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **)))
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
         .will(returnValue(0));
     ShapeValidation shapevalidation;
     shapevalidation.mbufAddrs = descP;
     shapevalidation.offset = 0;
     uint32_t headSize = sizeof(MbufHeadMsg) + 10U;
     char_t mbufHead[headSize] = {};
-    void *headPtr = reinterpret_cast<void *>(&mbufHead[0U]);
-    MbufHeadMsg *headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
+    void* headPtr = reinterpret_cast<void*>(&mbufHead[0U]);
+    MbufHeadMsg* headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
     headMsg->msgType = 2U;
     MOCKER(halMbufGetPrivInfo)
         .stubs()
@@ -176,8 +179,8 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
         .will(returnValue(0));
 
     uint8_t allTensorData[sizeof(ShapeValidationInfo)] = {0};
-    ShapeValidationInfo *allTensor = (ShapeValidationInfo *)allTensorData;
-    allTensor->inputNums =1;
+    ShapeValidationInfo* allTensor = (ShapeValidationInfo*)allTensorData;
+    allTensor->inputNums = 1;
     allTensor->shapeValidationAddr = &shapevalidation;
     taskT.paraBase = (uint64_t)&allTensorData;
 
@@ -190,13 +193,13 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     uint8_t data[56] = {-24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0,
-        -24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+                        -24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 1;
     cfg->tensortlvLen = 56;
@@ -210,7 +213,7 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
     taskT.taskID = 1;
 
     uint8_t buff[sizeof(RuntimeTensorDesc)] = {0};
-    RuntimeTensorDesc *desc = (RuntimeTensorDesc *)buff;
+    RuntimeTensorDesc* desc = (RuntimeTensorDesc*)buff;
     desc->shape[0] = 2;
     desc->shape[1] = 1;
     desc->shape[2] = 2;
@@ -221,8 +224,8 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
     shapevalidation.offset = 0;
 
     uint8_t allTensorData[sizeof(ShapeValidationInfo)] = {0};
-    ShapeValidationInfo *allTensor = (ShapeValidationInfo *)allTensorData;
-    allTensor->inputNums =1;
+    ShapeValidationInfo* allTensor = (ShapeValidationInfo*)allTensorData;
+    allTensor->inputNums = 1;
     allTensor->shapeValidationAddr = &shapevalidation;
     taskT.paraBase = (uint64_t)&allTensorData;
 
@@ -234,14 +237,14 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
 {
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 1;
     cfg->tensortlvLen = 36;
@@ -261,18 +264,20 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
     auto descP = &desc;
     MOCKER(halMbufGetBuffAddr)
         .stubs()
-        .with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **)))
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
         .will(returnValue(0));
     ShapeValidation shapevalidation;
     shapevalidation.mbufAddrs = descP;
     shapevalidation.offset = 1;
     uint64_t dataLen = sizeof(RuntimeTensorDesc) + shapevalidation.offset;
-    MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen))
+    MOCKER(halMbufGetBuffSize)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     uint32_t headSize = sizeof(MbufHeadMsg) + 10U;
     char_t mbufHead[headSize] = {};
-    void *headPtr = reinterpret_cast<void *>(&mbufHead[0U]);
-    MbufHeadMsg *headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
+    void* headPtr = reinterpret_cast<void*>(&mbufHead[0U]);
+    MbufHeadMsg* headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
     headMsg->msgType = 2023U;
     MOCKER(halMbufGetPrivInfo)
         .stubs()
@@ -280,7 +285,7 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_Failed0
         .will(returnValue(0));
 
     uint8_t allTensorData[sizeof(ShapeValidationInfo)] = {0};
-    ShapeValidationInfo *allTensor = (ShapeValidationInfo *)allTensorData;
+    ShapeValidationInfo* allTensor = (ShapeValidationInfo*)allTensorData;
     allTensor->inputNums = 1;
     allTensor->shapeValidationAddr = &shapevalidation;
     taskT.paraBase = (uint64_t)&allTensorData;
@@ -325,8 +330,9 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_CheckMs
     const uint64_t shapeValidationAddr = reinterpret_cast<uint64_t>(&data);
     const ModelConfigTensorDesc modelTensorDesc = {};
     uint64_t curSize = 0UL;
-    EXPECT_EQ(checkInputKernel_.CheckInputTensorDesc(shapeValidationAddr, 0U, modelTensorDesc, curSize),
-              AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
+    EXPECT_EQ(
+        checkInputKernel_.CheckInputTensorDesc(shapeValidationAddr, 0U, modelTensorDesc, curSize),
+        AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
 TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_GetMbufDataPtrFail)
@@ -352,7 +358,9 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_UpdateD
     uint64_t curSize = 0UL;
     MOCKER_CPP(&OperatorKernelCommon::GetMbufDataSize).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelCommon::GetMbufDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&OperatorKernelCommon::UpdateDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
+    MOCKER_CPP(&OperatorKernelCommon::UpdateDataPtr)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
     MOCKER_CPP(&OperatorKernelCheckInputTensorDesc::CheckMsgType).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     const int32_t ret = checkInputKernel_.CheckInputTensorDesc(shapeValidationAddr, index, modelTensorDesc, curSize);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -387,7 +395,9 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_CheckSh
     MOCKER_CPP(&OperatorKernelCommon::UpdateDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelCommon::GetMbufDataPtr).stubs().will(invoke(GetMbufDataPtrForCheckInput));
     MOCKER_CPP(&OperatorKernelCheckInputTensorDesc::CheckMsgType).stubs().will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&OperatorKernelCheckInputTensorDesc::CheckShapeInfo).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
+    MOCKER_CPP(&OperatorKernelCheckInputTensorDesc::CheckShapeInfo)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
     const int32_t ret = checkInputKernel_.CheckInputTensorDesc(shapeValidationAddr, index, modelTensorDesc, curSize);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
@@ -395,7 +405,7 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_CheckSh
 TEST_F(OperatorKernelCheckInputTensorDescTest, ModelCheckInputTensorDesc_CheckShapeInfoShapeLarge)
 {
     ModelConfigTensorDesc modelTensorDesc = {};
-    modelTensorDesc.shape[0] = MAX_DIM_SIZE*2;
+    modelTensorDesc.shape[0] = MAX_DIM_SIZE * 2;
     RuntimeTensorDesc tensorDesc = {};
     const int32_t ret = checkInputKernel_.CheckShapeInfo(modelTensorDesc, tensorDesc);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -415,8 +425,8 @@ TEST_F(OperatorKernelCheckInputTensorDescTest, CheckMsgTypeFail_InvalidMsgType)
 {
     uint32_t headSize = sizeof(MbufHeadMsg) + 10U;
     char_t mbufHead[headSize] = {};
-    void *headPtr = reinterpret_cast<void *>(&mbufHead[0U]);
-    MbufHeadMsg *headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
+    void* headPtr = reinterpret_cast<void*>(&mbufHead[0U]);
+    MbufHeadMsg* headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufHead[10U]);
     headMsg->msgType = 1U;
     MOCKER(halMbufGetPrivInfo)
         .stubs()

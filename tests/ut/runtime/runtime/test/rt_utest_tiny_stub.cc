@@ -64,22 +64,13 @@ using namespace cce::runtime;
 
 class TinyStubTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "TinyStubTest test start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "TinyStubTest test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TinyStubTest test start end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TinyStubTest test start end" << std::endl; }
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TinyStubTest, api_c_stub)
@@ -465,7 +456,7 @@ TEST_F(TinyStubTest, api_profile_log_stub)
 
 TEST_F(TinyStubTest, context_stub)
 {
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     Context ctx(dev, 0);
     ctx.Init();
@@ -623,14 +614,14 @@ TEST_F(TinyStubTest, easy_model_stub)
     ret = rtTaskBuild(&taskInput, &taskLen);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    void *elfData = nullptr;
+    void* elfData = nullptr;
     uint32_t elfLen;
     uint32_t offset;
     ret = rtGetElfOffset(elfData, elfLen, &offset);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    char_t *binFileName = nullptr;
-    char_t *buffer = nullptr;
+    char_t* binFileName = nullptr;
+    char_t* buffer = nullptr;
     uint32_t length = 0;
     ret = rtGetKernelBin(binFileName, &buffer, &length);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -638,20 +629,20 @@ TEST_F(TinyStubTest, easy_model_stub)
     ret = rtFreeKernelBin(buffer);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    void *srcAddrPtr = nullptr;
+    void* srcAddrPtr = nullptr;
     size_t srcLen = 0;
     rtCmoOpCode_t cmoType;
     ret = rtCmoAsync(srcAddrPtr, srcLen, cmoType, stream);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    rtCmoTaskInfo_t *taskInfo = nullptr;
+    rtCmoTaskInfo_t* taskInfo = nullptr;
     uint32_t flag;
     ret = rtCmoTaskLaunch(taskInfo, stream, flag);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    void *dst = nullptr;
+    void* dst = nullptr;
     uint64_t destMax;
-    void *src = nullptr;
+    void* src = nullptr;
     uint64_t cnt;
     rtRecudeKind_t kind;
     rtDataType_t dataType;
@@ -662,7 +653,7 @@ TEST_F(TinyStubTest, easy_model_stub)
     ret = rtReduceAsyncWithCfg(dst, destMax, src, cnt, kind, dataType, stream, qosCfg);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    rtTaskCfgInfo_t *cfgInfo = nullptr;
+    rtTaskCfgInfo_t* cfgInfo = nullptr;
     ret = rtReduceAsyncWithCfgV2(dst, destMax, src, cnt, kind, dataType, stream, cfgInfo);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
@@ -715,8 +706,8 @@ TEST_F(TinyStubTest, simt_printf_stub)
 
 TEST_F(TinyStubTest, engine_stub)
 {
-    RawDevice *device = new RawDevice(0);
-    StarsEngine *engine = nullptr;
+    RawDevice* device = new RawDevice(0);
+    StarsEngine* engine = nullptr;
     engine = static_cast<cce::runtime::StarsEngine*>(EngineFactory::CreateEngine(CHIP_ASCEND_031, device));
     EXPECT_NE(engine, nullptr);
     delete engine;
@@ -793,7 +784,7 @@ TEST_F(TinyStubTest, capture_adapt_stub)
     uint32_t flag = GetCaptureStreamFlag();
     EXPECT_EQ(flag, RT_STREAM_DEFAULT);
 
-    Event *event = nullptr;
+    Event* event = nullptr;
     CaptureCntNotify cntInfo;
     rtError_t err = GetCaptureEventFromTask(nullptr, 0, 0, event, cntInfo);
     EXPECT_EQ(err, RT_ERROR_FEATURE_NOT_SUPPORT);
@@ -807,7 +798,7 @@ TEST_F(TinyStubTest, capture_adapt_stub)
     ret = TaskTypeIsSupportTaskGroup(nullptr);
     EXPECT_EQ(ret, false);
 
-    TaskInfo *task = GetStreamTaskInfo(nullptr, 0, 0);
+    TaskInfo* task = GetStreamTaskInfo(nullptr, 0, 0);
     EXPECT_EQ(task, nullptr);
 }
 
@@ -824,7 +815,7 @@ TEST_F(TinyStubTest, capture_model_utils_stub)
     ret = IsCapturedTask(nullptr, nullptr);
     EXPECT_EQ(ret, false);
 
-    Stream *captureStm = nullptr;
+    Stream* captureStm = nullptr;
     rtError_t err = GetCaptureStream(nullptr, nullptr, nullptr, &captureStm);
     EXPECT_EQ(err, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -968,13 +959,13 @@ TEST_F(TinyStubTest, stream_capture_stub)
     stream.SingleStreamTerminateCapture();
     EXPECT_EQ(stream.GetCaptureStatus(), RT_STREAM_CAPTURE_STATUS_INVALIDATED);
 
-    Stream *newStream = nullptr;
+    Stream* newStream = nullptr;
     rtError_t ret = stream.AllocCascadeCaptureStream(newStream, nullptr);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     stream.UpdateCascadeCaptureStreamInfo(nullptr, nullptr);
 
-    TaskInfo *task = nullptr;
+    TaskInfo* task = nullptr;
     ret = stream.AllocCaptureTaskWithLock(TS_TASK_TYPE_KERNEL_AICORE, 0, &task);
     EXPECT_EQ(ret, RT_ERROR_STREAM_CAPTURE_EXIT);
 
@@ -1032,7 +1023,7 @@ TEST_F(TinyStubTest, device_snapshot_stub)
 
     snapshot.OpMemoryInfoInit();
 
-    const auto &handlerMap = snapshot.GetHandlerMap();
+    const auto& handlerMap = snapshot.GetHandlerMap();
     EXPECT_EQ(handlerMap.size(), 0);
 
     TaskHandlers::HandleStreamSwitch(nullptr, nullptr);
@@ -1045,7 +1036,7 @@ TEST_F(TinyStubTest, device_snapshot_stub)
 
 TEST_F(TinyStubTest, snapshot_callback_manager_stub)
 {
-    SnapshotCallbackManager &manager = SnapshotCallbackManager::GetInstance();
+    SnapshotCallbackManager& manager = SnapshotCallbackManager::GetInstance();
     EXPECT_NE(&manager, nullptr);
 
     rtError_t ret = manager.RegisterCallback(RT_SNAPSHOT_LOCK_PRE, nullptr, nullptr);
@@ -1078,7 +1069,7 @@ TEST_F(TinyStubTest, api_decorator_capture_stub)
     rtError_t ret = api.StreamBeginCapture(nullptr, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    Model *model = nullptr;
+    Model* model = nullptr;
     ret = api.StreamEndCapture(nullptr, &model);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -1086,7 +1077,7 @@ TEST_F(TinyStubTest, api_decorator_capture_stub)
     ret = api.StreamGetCaptureInfo(nullptr, &status, &model);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    TaskGroup *taskGrp = nullptr;
+    TaskGroup* taskGrp = nullptr;
     ret = api.StreamBeginTaskUpdate(nullptr, taskGrp);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -1135,7 +1126,7 @@ TEST_F(TinyStubTest, api_impl_capture_stub)
     ret = impl.StreamBeginCapture(nullptr, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    Model *model = nullptr;
+    Model* model = nullptr;
     ret = impl.StreamEndCapture(nullptr, &model);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -1147,7 +1138,7 @@ TEST_F(TinyStubTest, api_impl_capture_stub)
     ret = impl.ThreadExchangeCaptureMode(&mode);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    TaskGroup *taskGrp = nullptr;
+    TaskGroup* taskGrp = nullptr;
     ret = impl.StreamBeginTaskGrp(nullptr);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -1181,7 +1172,7 @@ TEST_F(TinyStubTest, api_error_capture_stub)
     rtError_t ret = api.StreamBeginCapture(nullptr, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    Model *model = nullptr;
+    Model* model = nullptr;
     ret = api.StreamEndCapture(nullptr, &model);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -1189,7 +1180,7 @@ TEST_F(TinyStubTest, api_error_capture_stub)
     ret = api.StreamGetCaptureInfo(nullptr, &status, &model);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
-    TaskGroup *taskGrp = nullptr;
+    TaskGroup* taskGrp = nullptr;
     ret = api.StreamBeginTaskUpdate(nullptr, taskGrp);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 
@@ -1222,14 +1213,14 @@ TEST_F(TinyStubTest, api_error_capture_stub)
 
 TEST_F(TinyStubTest, context_capture_basic_stub)
 {
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     Context ctx(dev, 0);
     ctx.Init();
     EXPECT_EQ(ctx.StreamBeginCapture(nullptr, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_FEATURE_NOT_SUPPORT);
-    Model *model = nullptr;
+    Model* model = nullptr;
     EXPECT_EQ(ctx.StreamEndCapture(nullptr, &model), RT_ERROR_FEATURE_NOT_SUPPORT);
-    Stream *newStream = nullptr;
+    Stream* newStream = nullptr;
     EXPECT_EQ(ctx.AllocCascadeCaptureStream(nullptr, nullptr, &newStream), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(ctx.UpdateEndGraphTask(nullptr, nullptr, nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
     delete dev;
@@ -1239,7 +1230,7 @@ TEST_F(TinyStubTest, context_capture_basic_stub)
 
 TEST_F(TinyStubTest, context_capture_model_stub)
 {
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     Context ctx(dev, 0);
     ctx.Init();
@@ -1255,14 +1246,14 @@ TEST_F(TinyStubTest, context_capture_model_stub)
 
 TEST_F(TinyStubTest, context_capture_task_stub)
 {
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     Context ctx(dev, 0);
     ctx.Init();
     rtStreamCaptureMode mode;
     EXPECT_EQ(ctx.ThreadExchangeCaptureMode(&mode), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(ctx.StreamBeginTaskGrp(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
-    TaskGroup *taskGrp = nullptr;
+    TaskGroup* taskGrp = nullptr;
     EXPECT_EQ(ctx.StreamEndTaskGrp(nullptr, &taskGrp), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(ctx.StreamBeginTaskUpdate(nullptr, taskGrp), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(ctx.StreamEndTaskUpdate(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
@@ -1273,13 +1264,13 @@ TEST_F(TinyStubTest, context_capture_task_stub)
 
 TEST_F(TinyStubTest, context_capture_notify_stub)
 {
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     Context ctx(dev, 0);
     ctx.Init();
     EXPECT_EQ(ctx.StreamAddToCaptureModelProc(nullptr, nullptr, false), RT_ERROR_FEATURE_NOT_SUPPORT);
     ctx.FreeCascadeCaptureStream(nullptr);
-    Notify *notify = nullptr;
+    Notify* notify = nullptr;
     EXPECT_EQ(ctx.CreateNotify(&notify, 0), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(ctx.AddNotifyToAddedCaptureStream(nullptr, nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
     EXPECT_EQ(ctx.SetNotifyForExeModel(nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
@@ -1290,12 +1281,12 @@ TEST_F(TinyStubTest, context_capture_notify_stub)
 
 TEST_F(TinyStubTest, context_capture_info_stub)
 {
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     Context ctx(dev, 0);
     ctx.Init();
     rtStreamCaptureStatus status;
-    Model *model = nullptr;
+    Model* model = nullptr;
     EXPECT_EQ(ctx.StreamGetCaptureInfo(nullptr, &status, &model), RT_ERROR_FEATURE_NOT_SUPPORT);
     ctx.CaptureModeEnter(nullptr, RT_STREAM_CAPTURE_MODE_GLOBAL);
     ctx.CaptureModeExit(nullptr);
@@ -1312,13 +1303,12 @@ TEST_F(TinyStubTest, jetty_stub)
     mgr.Clear();
     EXPECT_EQ(mgr.ResetJettyForSnapshotRestore(), RT_ERROR_NONE);
 
-    JettyPool *pool = new JettyPool(0);
+    JettyPool* pool = new JettyPool(0);
     delete pool;
 
     EXPECT_EQ(StreamJettyHandler::FillNopWqeOnCaptureEnd(nullptr, JettyType::JETTY_TYPE_H2D), RT_ERROR_NONE);
     EXPECT_EQ(StreamJettyHandler::GetJettyTypeFromTask(nullptr), JettyType::JETTY_TYPE_MAX);
-    EXPECT_EQ(StreamJettyHandler::HandleUbDmaTask(nullptr, JettyType::JETTY_TYPE_H2D, nullptr, nullptr),
-        RT_ERROR_NONE);
+    EXPECT_EQ(StreamJettyHandler::HandleUbDmaTask(nullptr, JettyType::JETTY_TYPE_H2D, nullptr, nullptr), RT_ERROR_NONE);
 }
 
 TEST_F(TinyStubTest, task_david_stub)
@@ -1338,9 +1328,9 @@ TEST_F(TinyStubTest, task_david_stub)
 
 TEST_F(TinyStubTest, xpu_task_fail_callback_manager_stub)
 {
-    auto &instance1 = XpuTaskFailCallBackManager::Instance();
+    auto& instance1 = XpuTaskFailCallBackManager::Instance();
     EXPECT_NE(&instance1, nullptr);
-    auto &instance2 = XpuTaskFailCallBackManager::Instance();
+    auto& instance2 = XpuTaskFailCallBackManager::Instance();
     EXPECT_EQ(&instance1, &instance2);
 
     rtExceptionInfo_t exceptionInfo = {};
@@ -1348,6 +1338,6 @@ TEST_F(TinyStubTest, xpu_task_fail_callback_manager_stub)
 
     rtError_t ret = instance1.RegXpuTaskFailCallback("regName", nullptr);
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
-    ret = instance1.RegXpuTaskFailCallback("regName", reinterpret_cast<void *>(0x1));
+    ret = instance1.RegXpuTaskFailCallback("regName", reinterpret_cast<void*>(0x1));
     EXPECT_EQ(ret, RT_ERROR_FEATURE_NOT_SUPPORT);
 }

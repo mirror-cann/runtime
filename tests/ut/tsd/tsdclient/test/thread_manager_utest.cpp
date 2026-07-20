@@ -22,20 +22,18 @@
 using namespace tsd;
 using namespace std;
 
-namespace
-{
+namespace {
 // clientManager is a singleton, so a deviceId can only point to one mode in all st
 // we define 0 to ProcessMode, and 1 to ThreadMode
 static const int deviceId = 1;
-}
+} // namespace
 
-
-class ThreadManagerTest :public testing::Test {
+class ThreadManagerTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
         // this must be set, ThreadManager:THREAD, ProcessManager:PROCESS
-        //setenv("RUN_MODE", "THREAD", "THREAD");
+        // setenv("RUN_MODE", "THREAD", "THREAD");
         std::string valueStr("THREAD_MODE");
         ClientManager::SetRunMode(valueStr);
         cout << "Before ThreadManagerTest" << endl;
@@ -51,40 +49,22 @@ protected:
     }
 };
 
-int32_t *testAdprofStart(int32_t argc, const char *argv)
+int32_t* testAdprofStart(int32_t argc, const char* argv) { return 0; }
+int32_t* testAdprofStop() { return 0; }
+VOID* mmDlsymFakeAdprofStart(VOID* handle, const CHAR* funcName) { return reinterpret_cast<void*>(testAdprofStart); }
+VOID* mmDlsymFakeAdprofStop(VOID* handle, const CHAR* funcName) { return reinterpret_cast<void*>(testAdprofStop); }
+int32_t* testAdprofStart1(int32_t argc, const char* argv)
 {
-    return 0;
-}
-int32_t *testAdprofStop()
-{
-    return 0;
-}
-VOID *mmDlsymFakeAdprofStart(VOID *handle, const CHAR *funcName)
-{
-    return reinterpret_cast<void*>(testAdprofStart);
-}
-VOID *mmDlsymFakeAdprofStop(VOID *handle, const CHAR *funcName)
-{
-    return reinterpret_cast<void*>(testAdprofStop);
-}
-int32_t *testAdprofStart1(int32_t argc, const char *argv)
-{
-    int32_t *ret = reinterpret_cast<int32_t*>(1);
+    int32_t* ret = reinterpret_cast<int32_t*>(1);
     return ret;
 }
-int32_t *testAdprofStop1()
+int32_t* testAdprofStop1()
 {
-    int32_t *ret = reinterpret_cast<int32_t*>(1);
+    int32_t* ret = reinterpret_cast<int32_t*>(1);
     return ret;
 }
-VOID *mmDlsymFakeAdprofStart1(VOID *handle, const CHAR *funcName)
-{
-    return reinterpret_cast<void*>(testAdprofStart1);
-}
-VOID *mmDlsymFakeAdprofStop1(VOID *handle, const CHAR *funcName)
-{
-    return reinterpret_cast<void*>(testAdprofStop1);
-}
+VOID* mmDlsymFakeAdprofStart1(VOID* handle, const CHAR* funcName) { return reinterpret_cast<void*>(testAdprofStart1); }
+VOID* mmDlsymFakeAdprofStop1(VOID* handle, const CHAR* funcName) { return reinterpret_cast<void*>(testAdprofStop1); }
 TEST_F(ThreadManagerTest, UpdateProfilFailed)
 {
     tsd::TSD_StatusT ret = tsd::TSD_OK;
@@ -98,18 +78,10 @@ TEST_F(ThreadManagerTest, LoadSysOpKernelFailed2)
     tsd::TSD_StatusT ret = tsd::TSD_OK;
     uint32_t rankSize = 1;
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(&ValidateStr)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&PackageWorker::LoadPackage)
-        .stubs()
-        .will(returnValue(tsd::TSD_OK));
-    MOCKER(mmDlopen)
-        .stubs()
-        .will(returnValue((void*)0));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
+    MOCKER(&ValidateStr).stubs().will(returnValue(true));
+    MOCKER_CPP(&PackageWorker::LoadPackage).stubs().will(returnValue(tsd::TSD_OK));
+    MOCKER(mmDlopen).stubs().will(returnValue((void*)0));
     ret = threadModeManager->Open(rankSize);
     EXPECT_NE(ret, tsd::TSD_OK);
 }
@@ -119,15 +91,9 @@ TEST_F(ThreadManagerTest, LoadSysOpKernelFailed3)
     tsd::TSD_StatusT ret = tsd::TSD_OK;
     uint32_t rankSize = 1;
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(&ValidateStr)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&PackageWorker::LoadPackage)
-        .stubs()
-        .will(returnValue(103U));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
+    MOCKER(&ValidateStr).stubs().will(returnValue(true));
+    MOCKER_CPP(&PackageWorker::LoadPackage).stubs().will(returnValue(103U));
     threadModeManager->packageName_[0] = "test";
     ret = threadModeManager->Open(rankSize);
     EXPECT_NE(ret, tsd::TSD_OK);
@@ -157,7 +123,7 @@ TEST_F(ThreadManagerTest, ThreadOpen)
 {
     tsd::TSD_StatusT ret = tsd::TSD_OK;
     std::shared_ptr<ClientManager> clientManager = ClientManager::GetInstance(deviceId);
-    InitFlowGwInfo info = {nullptr,0U};
+    InitFlowGwInfo info = {nullptr, 0U};
     ret = clientManager->InitQs(&info);
     EXPECT_EQ(ret, tsd::TSD_OK);
     ret = clientManager->Open(deviceId);
@@ -173,21 +139,11 @@ TEST_F(ThreadManagerTest, LoadSysOpKernelSuccess)
     tsd::TSD_StatusT ret = tsd::TSD_OK;
     uint32_t rankSize = 1;
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(&ValidateStr)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&PackageWorker::LoadPackage)
-        .stubs()
-        .will(returnValue(tsd::TSD_OK));
-    MOCKER_CPP(&ThreadModeManager::StartCallAICPU)
-        .stubs()
-        .will(returnValue(tsd::TSD_OK));
-    MOCKER_CPP(CheckRealPath)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
+    MOCKER(&ValidateStr).stubs().will(returnValue(true));
+    MOCKER_CPP(&PackageWorker::LoadPackage).stubs().will(returnValue(tsd::TSD_OK));
+    MOCKER_CPP(&ThreadModeManager::StartCallAICPU).stubs().will(returnValue(tsd::TSD_OK));
+    MOCKER_CPP(CheckRealPath).stubs().will(returnValue(true));
     ret = threadModeManager->Open(rankSize);
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
@@ -199,9 +155,7 @@ TEST_F(ThreadManagerTest, HandleAICPUPackageFail)
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
     threadModeManager->packageName_[0] = "Ascend310-aicpu_syskernels.tar.gz";
     setenv("HOME", "", 1);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
     ret = threadModeManager->Open(rankSize);
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
@@ -213,9 +167,7 @@ TEST_F(ThreadManagerTest, HandleAICPUPackageFail2)
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
     threadModeManager->packageName_[0] = "Ascend310-aicpu_syskernels.tar.gz";
     setenv("HOME", "_test", 1);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
     ret = threadModeManager->Open(rankSize);
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
@@ -227,9 +179,7 @@ TEST_F(ThreadManagerTest, HandleAICPUPackageFail3)
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
     threadModeManager->packageName_[0] = "Ascend310-aicpu_syskernels.tar.gz";
     setenv("HOME", "invalid_path", 1);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
     ret = threadModeManager->Open(rankSize);
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
@@ -241,15 +191,9 @@ TEST_F(ThreadManagerTest, HandleAICPUPackageFail4)
     std::shared_ptr<ClientManager> threadModeManager = ClientManager::GetInstance(deviceId);
     threadModeManager->packageName_[0] = "Ascend310-aicpu_syskernels.tar.gz";
     setenv("HOME", "/home", 1);
-    MOCKER_CPP(&ClientManager::CheckPackageExists)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ThreadModeManager::LoadSysOpKernel)
-        .stubs()
-        .will(returnValue(tsd::TSD_OK));
-    MOCKER_CPP(&ThreadModeManager::StartCallAICPU)
-        .stubs()
-        .will(returnValue(tsd::TSD_OK));
+    MOCKER_CPP(&ClientManager::CheckPackageExists).stubs().will(returnValue(true));
+    MOCKER_CPP(&ThreadModeManager::LoadSysOpKernel).stubs().will(returnValue(tsd::TSD_OK));
+    MOCKER_CPP(&ThreadModeManager::StartCallAICPU).stubs().will(returnValue(tsd::TSD_OK));
     ret = threadModeManager->Open(rankSize);
     EXPECT_EQ(ret, tsd::TSD_OK);
     GlobalMockObject::verify();
@@ -292,7 +236,6 @@ TEST_F(ThreadManagerTest, GetSubProcListStatus)
     ret = threadModeManager->GetSubProcListStatus(&pidInfo, 1);
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
-
 
 TEST_F(ThreadManagerTest, HelperTest)
 {
@@ -502,10 +445,7 @@ TEST_F(ThreadManagerTest, ProcessCloseSubProcListTest6)
     threadModeManager->Destroy();
 }
 
-void GetScheduleEnvStub2(const char_t * const envName, std::string &envValue)
-{
-    envValue = "";
-}
+void GetScheduleEnvStub2(const char_t* const envName, std::string& envValue) { envValue = ""; }
 TEST_F(ThreadManagerTest, ProcessOpenTfSoFailed)
 {
     tsd::TSD_StatusT ret = tsd::TSD_OK;

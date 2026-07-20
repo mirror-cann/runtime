@@ -14,7 +14,7 @@
 
 extern int64_t g_device_driver_version_stub;
 
-static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     (void)devId;
     if (value) {
@@ -29,4 +29,4 @@ static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int
     return DRV_ERROR_NONE;
 }
 
-#endif  // HAL_STUB_H_
+#endif // HAL_STUB_H_

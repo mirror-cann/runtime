@@ -61,22 +61,16 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiTest6 : public testing::Test
-{
+class ApiTest6 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         rtSetDevice(0);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
@@ -90,9 +84,9 @@ protected:
 
 TEST_F(ApiTest6, rtGetConditionKernelBin_TEST_1)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
-    char_t *buffer = nullptr;
-    char_t *binFileName = "elf.o";
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
+    char_t* buffer = nullptr;
+    char_t* binFileName = "elf.o";
     uint32_t length = 0;
 
     rtError_t error = rtGetKernelBin(binFileName, &buffer, &length);
@@ -109,7 +103,7 @@ TEST_F(ApiTest6, rtGetConditionKernelBin_TEST_1)
 TEST_F(ApiTest6, Need_Translate_TEST)
 {
     bool bNeed = false;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t ori_chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);
@@ -121,7 +115,7 @@ TEST_F(ApiTest6, Need_Translate_TEST)
 
 TEST_F(ApiTest6, TINY_ALLOC_STACK_TEST)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t ori_chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);
@@ -144,7 +138,6 @@ TEST_F(ApiTest6, TINY_ALLOC_STACK_TEST)
 
     rtInstance->SetChipType(ori_chipType);
     GlobalContainer::SetRtChipType(ori_chipType);
-
 }
 
 TEST_F(ApiTest6, Translate_VA_2_PA_TEST_SYNC)
@@ -155,7 +148,7 @@ TEST_F(ApiTest6, Translate_VA_2_PA_TEST_SYNC)
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     bool isAsync = false;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t ori_chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);
@@ -175,7 +168,7 @@ TEST_F(ApiTest6, Translate_VA_2_PA_TEST_SYNC_FAIL)
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     bool isAsync = false;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t ori_chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);
@@ -195,7 +188,7 @@ TEST_F(ApiTest6, Translate_VA_2_PA_TEST_ASYNC)
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     bool isAsync = true;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t ori_chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);

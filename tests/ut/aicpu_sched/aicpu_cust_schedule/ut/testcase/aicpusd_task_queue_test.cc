@@ -14,17 +14,13 @@
 #include "aicpusd_task_queue.h"
 #undef private
 
-
 using namespace AicpuSchedule;
 
 class TaskMapTest : public testing::Test {
 protected:
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TaskMapTest, BatchAddTaskSuccess)
@@ -33,7 +29,7 @@ TEST_F(TaskMapTest, BatchAddTaskSuccess)
     std::queue<aicpu::Closure> taskQueue = {};
     taskQueue.push(task);
     TaskMap taskMap;
-    const AICPUSharderTaskInfo taskInfo = {.parallelId=1, .shardNum=1};
+    const AICPUSharderTaskInfo taskInfo = {.parallelId = 1, .shardNum = 1};
     bool ret = taskMap.BatchAddTask(taskInfo, taskQueue);
     EXPECT_EQ(ret, true);
     aicpu::Closure outTask;
@@ -49,7 +45,7 @@ TEST_F(TaskMapTest, BatchAddTaskAddNotEmpty)
     std::queue<aicpu::Closure> taskQueue = {};
     taskQueue.push(task);
     TaskMap taskMap;
-    const AICPUSharderTaskInfo taskInfo = {.parallelId=1, .shardNum=1};
+    const AICPUSharderTaskInfo taskInfo = {.parallelId = 1, .shardNum = 1};
     bool ret = taskMap.BatchAddTask(taskInfo, taskQueue);
     EXPECT_EQ(ret, true);
     ret = taskMap.BatchAddTask(taskInfo, taskQueue);
@@ -67,7 +63,7 @@ TEST_F(TaskMapTest, BatchAddTaskReaddSuccess)
     std::queue<aicpu::Closure> taskQueue = {};
     taskQueue.push(task);
     TaskMap taskMap;
-    const AICPUSharderTaskInfo taskInfo = {.parallelId=1, .shardNum=1};
+    const AICPUSharderTaskInfo taskInfo = {.parallelId = 1, .shardNum = 1};
     bool ret = taskMap.BatchAddTask(taskInfo, taskQueue);
     EXPECT_EQ(ret, true);
     auto iter = taskMap.taskMap_.find(taskInfo);
@@ -82,7 +78,7 @@ TEST_F(TaskMapTest, PopTaskFromEmpty)
 {
     std::queue<aicpu::Closure> taskQueue = {};
     TaskMap taskMap;
-    const AICPUSharderTaskInfo taskInfo = {.parallelId=1, .shardNum=1};
+    const AICPUSharderTaskInfo taskInfo = {.parallelId = 1, .shardNum = 1};
     bool ret = taskMap.BatchAddTask(taskInfo, taskQueue);
     EXPECT_EQ(ret, true);
     aicpu::Closure task;
@@ -96,7 +92,7 @@ TEST_F(TaskMapTest, ClearSuccess)
     std::queue<aicpu::Closure> taskQueue = {};
     taskQueue.push(task);
     TaskMap taskMap;
-    const AICPUSharderTaskInfo taskInfo = {.parallelId=1, .shardNum=1};
+    const AICPUSharderTaskInfo taskInfo = {.parallelId = 1, .shardNum = 1};
     bool ret = taskMap.BatchAddTask(taskInfo, taskQueue);
     EXPECT_EQ(ret, true);
     taskMap.Clear();
@@ -107,10 +103,7 @@ class TaskQueueTest : public testing::Test {
 protected:
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TaskQueueTest, EnqueueSuccess)

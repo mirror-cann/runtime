@@ -12,35 +12,22 @@
 #include <string>
 #include "tdt/status.h"
 
-
 namespace tdt {
-    int32_t TDTServerInit(const uint32_t deviceID, const std::list<uint32_t>& bindCoreList)
-    {
-        return 0;
-    }
+int32_t TDTServerInit(const uint32_t deviceID, const std::list<uint32_t>& bindCoreList) { return 0; }
 
-    int32_t TDTServerStop()
-    {
-        return 0;
-    }
+int32_t TDTServerStop() { return 0; }
 
-    StatusFactory* StatusFactory::GetInstance()
-    {
-        static StatusFactory instance_;
-        return &instance_;
-    }
-
-    void StatusFactory::RegisterErrorNo(const uint32_t err, const std::string& desc) {}
-
-    std::string StatusFactory::GetErrDesc(const uint32_t err)
-    {
-        return "";
-    }
-
-    std::string StatusFactory::GetErrCodeDesc(uint32_t errCode)
-    {
-        return "";
-    }
-
-    StatusFactory::StatusFactory() {}
+StatusFactory* StatusFactory::GetInstance()
+{
+    static StatusFactory instance_;
+    return &instance_;
 }
+
+void StatusFactory::RegisterErrorNo(const uint32_t err, const std::string& desc) {}
+
+std::string StatusFactory::GetErrDesc(const uint32_t err) { return ""; }
+
+std::string StatusFactory::GetErrCodeDesc(uint32_t errCode) { return ""; }
+
+StatusFactory::StatusFactory() {}
+} // namespace tdt

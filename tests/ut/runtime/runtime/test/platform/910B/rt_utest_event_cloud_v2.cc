@@ -36,58 +36,55 @@ using namespace testing;
 using namespace cce::runtime;
 
 namespace {
-void ClearEnginePending(Device * const device)
+void ClearEnginePending(Device* const device)
 {
     if (device == nullptr) {
         return;
     }
-    RawDevice * const rawDevice = static_cast<RawDevice *>(device);
-    Engine * const engine = rawDevice->Engine_();
+    RawDevice* const rawDevice = static_cast<RawDevice*>(device);
+    Engine* const engine = rawDevice->Engine_();
     if (engine != nullptr) {
         engine->pendingNum_.Set(0U);
     }
 }
-}
+} // namespace
 
 class EventTest910B : public testing::Test {
 public:
-    Device *device_ = nullptr;
+    Device* device_ = nullptr;
     rtChipType_t oldChipType;
-protected:
-    static void SetUpTestCase()
-    {
-    }
 
-    static void TearDownTestCase()
-    {
-    }
+protected:
+    static void SetUpTestCase() {}
+
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         (void)rtSetDevice(0);
         ut::ClearCurrentContextStatusForReset();
         ut::ClearCurrentDefaultStreamPending();
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     }
 
     virtual void TearDown()
     {
-        RawDevice *rd = (RawDevice *)device_;
+        RawDevice* rd = (RawDevice*)device_;
         while ((rd != nullptr) && rd->IsNeedFreeEventId()) {
             rd->PopNextPoolFreeEventId();
         }
         ClearEnginePending(device_);
         if (device_ != nullptr) {
-            ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+            ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
             device_ = nullptr;
         }
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         GlobalMockObject::verify();
         GlobalMockObject::reset();
     }
@@ -138,7 +135,7 @@ TEST_F(EventTest910B, SwitchToSoftwareModeFailsAfterRecord)
 TEST(EventNotifyWaitTaskTest, NotifyWaitTaskUnInitClearsExternalWaitRetainedOwner)
 {
     TaskInfo task = {};
-    auto *resources = new std::vector<EventResource>;
+    auto* resources = new std::vector<EventResource>;
     resources->push_back({nullptr, 0U, INVALID_EVENT_ID});
     task.u.notifywaitTask.externalWaitRetainedResources = resources;
 
@@ -159,7 +156,7 @@ TEST_F(EventTest910B, NotifyWaitTaskUnInitReleasesRetainedEventWithoutFreeingCur
     event.SetHasReset(false);
 
     TaskInfo task = {};
-    auto *resources = new std::vector<EventResource>;
+    auto* resources = new std::vector<EventResource>;
     resources->push_back({&event, 0x12340000U, 1004});
     task.u.notifywaitTask.externalWaitRetainedResources = resources;
 
@@ -178,7 +175,7 @@ TEST_F(EventTest910B, NotifyWaitTaskUnInitSkipsRetainedEventWhenLaunchEventAddrI
     event.EventIdCountAdd(1004);
 
     TaskInfo task = {};
-    auto *resources = new std::vector<EventResource>;
+    auto* resources = new std::vector<EventResource>;
     resources->push_back({&event, 0U, 1004});
     task.u.notifywaitTask.externalWaitRetainedResources = resources;
 
@@ -190,12 +187,12 @@ TEST_F(EventTest910B, NotifyWaitTaskUnInitSkipsRetainedEventWhenLaunchEventAddrI
 
 TEST_F(EventTest910B, CaptureExternalLaunchNotifyFailureAbortSuccessReleasesRetainedWaits)
 {
-    Model *modelBase = nullptr;
+    Model* modelBase = nullptr;
     rtContext_t current = NULL;
     EXPECT_EQ(rtCtxGetCurrent(&current), RT_ERROR_NONE);
-    Context *ctx = static_cast<Context *>(current);
+    Context* ctx = static_cast<Context*>(current);
     ASSERT_EQ(ctx->ModelCreate(&modelBase, RT_MODEL_CAPTURE_MODEL), RT_ERROR_NONE);
-    CaptureModel *model = dynamic_cast<CaptureModel *>(modelBase);
+    CaptureModel* model = dynamic_cast<CaptureModel*>(modelBase);
     ASSERT_NE(model, nullptr);
     ExternalEventRefreshInfo launch;
     launch.retainedWaitResources.push_back({nullptr, 0U, INVALID_EVENT_ID});
@@ -211,12 +208,12 @@ TEST_F(EventTest910B, CaptureExternalLaunchNotifyFailureAbortSuccessReleasesReta
 
 TEST_F(EventTest910B, CaptureExternalLaunchNotifyFailureAbortFailStoresNoEndGraphNotifyOwner)
 {
-    Model *modelBase = nullptr;
+    Model* modelBase = nullptr;
     rtContext_t current = NULL;
     EXPECT_EQ(rtCtxGetCurrent(&current), RT_ERROR_NONE);
-    Context *ctx = static_cast<Context *>(current);
+    Context* ctx = static_cast<Context*>(current);
     ASSERT_EQ(ctx->ModelCreate(&modelBase, RT_MODEL_CAPTURE_MODEL), RT_ERROR_NONE);
-    CaptureModel *model = dynamic_cast<CaptureModel *>(modelBase);
+    CaptureModel* model = dynamic_cast<CaptureModel*>(modelBase);
     ASSERT_NE(model, nullptr);
     ExternalEventRefreshInfo launch;
     launch.retainedWaitResources.push_back({nullptr, 0U, INVALID_EVENT_ID});
@@ -235,14 +232,14 @@ TEST_F(EventTest910B, CaptureExternalLaunchExecuteRejectsNoEndGraphNotifyOwner)
 {
     rtStream_t stream = nullptr;
     EXPECT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     ASSERT_NE(streamObj, nullptr);
-    Model *modelBase = nullptr;
+    Model* modelBase = nullptr;
     rtContext_t current = NULL;
     EXPECT_EQ(rtCtxGetCurrent(&current), RT_ERROR_NONE);
-    Context *ctx = static_cast<Context *>(current);
+    Context* ctx = static_cast<Context*>(current);
     ASSERT_EQ(ctx->ModelCreate(&modelBase, RT_MODEL_CAPTURE_MODEL), RT_ERROR_NONE);
-    CaptureModel *model = dynamic_cast<CaptureModel *>(modelBase);
+    CaptureModel* model = dynamic_cast<CaptureModel*>(modelBase);
     ASSERT_NE(model, nullptr);
     model->SetCaptureModelStatus(RtCaptureModelStatus::READY);
     model->noEndGraphNotifyOwnerRetainedWaitResources_.reset(new std::vector<EventResource>);
@@ -306,7 +303,7 @@ TEST_F(EventTest910B, query)
         EXPECT_EQ(status, RT_EVENT_INIT);
     }
 
-    Stream * const stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* const stm = rt_ut::UnwrapOrNull<Stream>(stream);
     ASSERT_NE(stm, nullptr);
     stm->pendingNum_.Set(0U);
     error = rtStreamSynchronize(stream);
@@ -327,13 +324,13 @@ TEST_F(EventTest910B, querytest)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     NpuDriver drv;
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetSqHead).stubs().will(returnValue(RT_ERROR_NONE));
     stm->taskPosTail_.Set(2);
     stm->JudgeHeadTailPos(&status, 1);
 
-    Device * dev = stm->Device_();
+    Device* dev = stm->Device_();
     stm->device_ = nullptr;
     stm->JudgeHeadTailPos(&status, 3);
     stm->device_ = dev;
@@ -350,7 +347,7 @@ TEST_F(EventTest910B, querytest1)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     NpuDriver drv;
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetSqHead).stubs().will(returnValue(RT_ERROR_NONE));
     stm->taskPosTail_.Set(2);
@@ -424,12 +421,11 @@ TEST_F(EventTest910B, QueryEventTask_TimeLine)
         .with(outBoundP(&status1, sizeof(status1)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    Device* dev = ((Runtime *)Runtime::Instance())->GetDevice(0, 0);
-    MOCKER_CPP_VIRTUAL(dev, &Device::TaskReclaim).stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    
-    Stream * const streamPtr = rt_ut::UnwrapOrNull<Stream>(stream);
-    Event * const eventPtr = rt_ut::UnwrapOrNull<Event>(event);
+    Device* dev = ((Runtime*)Runtime::Instance())->GetDevice(0, 0);
+    MOCKER_CPP_VIRTUAL(dev, &Device::TaskReclaim).stubs().will(returnValue(RT_ERROR_NONE));
+
+    Stream* const streamPtr = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* const eventPtr = rt_ut::UnwrapOrNull<Event>(event);
     eventPtr->latestRecord_.state = RECORDING;
     eventPtr->latestRecord_.streamId = streamPtr->Id_();
     eventPtr->latestRecord_.taskId = 0;
@@ -440,7 +436,7 @@ TEST_F(EventTest910B, QueryEventTask_TimeLine)
     error = rtEventDestroy(event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     stm->pendingNum_.Sub(stm->pendingNum_.Value());
 
     MOCKER_CPP(&Engine::ProcessTask)
@@ -448,7 +444,7 @@ TEST_F(EventTest910B, QueryEventTask_TimeLine)
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(true));
 
-    Device* device = ((Runtime *)Runtime::Instance())->GetDevice(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->GetDevice(0, 0);
     MOCKER_CPP_VIRTUAL(device, &Device::SubmitTask).stubs().will(returnValue(0));
 
     error = rtStreamDestroy(stream);
@@ -461,7 +457,7 @@ TEST_F(EventTest910B, TestInsertToNotifierMapWithDisableThread)
     rtEvent_t event;
 
     error = rtEventCreate(&event);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
     eventObj->InsertToNotifierMap(0, 0, nullptr);
     eventObj->DeleteFromNotifierMap(0, 0);
@@ -475,10 +471,10 @@ TEST_F(EventTest910B, TestWaitForBusy)
     rtError_t error;
     rtEvent_t event;
 
-    bool isDisableThread = ((Runtime *)Runtime::Instance())->GetDisableThread();
+    bool isDisableThread = ((Runtime*)Runtime::Instance())->GetDisableThread();
 
     error = rtEventCreate(&event);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
@@ -491,15 +487,15 @@ TEST_F(EventTest910B, TestWaitForBusy)
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
     MOCKER_CPP(&Event::GetFailureStatus).stubs().will(returnValue(RT_ERROR_END_OF_SEQUENCE));
 
-    ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(false);
     error = eventObj->WaitForBusy();
     EXPECT_EQ(error, RT_ERROR_END_OF_SEQUENCE);
 
     error = rtEventDestroy(event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
     GlobalMockObject::verify();
-    ((Runtime *)Runtime::Instance())->SetDisableThread(isDisableThread);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(isDisableThread);
 }
 
 TEST_F(EventTest910B, TestWaitForBusy_device_down)
@@ -521,14 +517,12 @@ TEST_F(EventTest910B, TestWaitForBusy_device_down)
 
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
     MOCKER_CPP(&Event::GetFailureStatus).stubs().will(returnValue(RT_ERROR_END_OF_SEQUENCE));
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
 
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     Device* dev = stm->Device_();
-    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState)
-        .stubs()
-        .will(returnValue((uint32_t)DEV_RUNNING_DOWN));
+    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState).stubs().will(returnValue((uint32_t)DEV_RUNNING_DOWN));
     error = eventObj->WaitForBusy();
 
     error = rtEventDestroy(event);
@@ -544,11 +538,11 @@ TEST_F(EventTest910B, TestElapsedTime)
     Event event1;
     Event event2;
     float32_t timeInterval;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+
     rtInstance->SetDisableThread(false);
     rtInstance->SetDisableThread(false);
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     event1.device_ = stub;
     event2.device_ = stub;
     error = event1.ElapsedTime(&timeInterval, &event2);
@@ -570,7 +564,7 @@ TEST_F(EventTest910B, TestElapsedTime)
 
 TEST_F(EventTest910B, TestGetQueueSize)
 {
-    EventPool *eventPool = new (std::nothrow) EventPool(device_, 0);
+    EventPool* eventPool = new (std::nothrow) EventPool(device_, 0);
     eventPool->poolSize_ = 100;
     eventPool->eventQueueHead_ = 0;
     eventPool->eventQueueTail_ = 10;
@@ -580,8 +574,8 @@ TEST_F(EventTest910B, TestGetQueueSize)
 }
 
 TEST_F(EventTest910B, TestTryAllocEventIdForPool)
-{   
-    EventPool *eventPool = new (std::nothrow) EventPool(device_, 0);
+{
+    EventPool* eventPool = new (std::nothrow) EventPool(device_, 0);
     eventPool->eventQueueHead_ = 0;
     eventPool->eventQueueTail_ = 99;
     eventPool->isAging_ = true;
@@ -602,12 +596,12 @@ TEST_F(EventTest910B, TestTryAllocEventIdForPool)
     eventPool->eventQueue_[1] = 2;
     eventPool->eventQueue_[2] = 3;
 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::NotifyIdAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     eventPool->TryAllocEventIdForPool();
     EXPECT_EQ(eventPool->eventQueueHead_, 0);
     EXPECT_EQ(eventPool->eventQueueTail_, 3);
-    
+
     MOCKER_CPP(&EventPool::IsNeedAllocIdForPool).stubs().will(returnValue(true)).then(returnValue(false));
     eventPool->TryAllocEventIdForPool();
     EXPECT_EQ(eventPool->eventQueueHead_, 0);
@@ -619,8 +613,8 @@ TEST_F(EventTest910B, TestTryAllocEventIdForPool)
 
 TEST_F(EventTest910B, TestFreeAllEvent)
 {
-    EventPool *eventPool = new (std::nothrow) EventPool(device_, 0);
-    
+    EventPool* eventPool = new (std::nothrow) EventPool(device_, 0);
+
     eventPool->eventQueueHead_ = 0;
     eventPool->eventQueueTail_ = 2;
     eventPool->eventQueue_[0] = 1;
@@ -635,7 +629,7 @@ TEST_F(EventTest910B, TestFreeAllEvent)
 
 TEST_F(EventTest910B, TestAllocEventIdFromPool)
 {
-    EventPool *eventPool = new (std::nothrow) EventPool(device_, 0);
+    EventPool* eventPool = new (std::nothrow) EventPool(device_, 0);
     eventPool->eventQueueHead_ = 0;
     eventPool->eventQueueTail_ = 2;
     eventPool->eventQueue_[0] = 1;
@@ -661,7 +655,7 @@ TEST_F(EventTest910B, TestEventSynchronizeWithEventInModel)
     rtError_t error;
     rtEvent_t event;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -712,13 +706,13 @@ TEST_F(EventTest910B, CrossDeviceEventWaitDeviceNull)
     error = rtEventCreateExWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     evt->SetRecord(true);
     evt->eventId_ = 1;
-    RawDevice *srcDevice = new RawDevice(1);
+    RawDevice* srcDevice = new RawDevice(1);
     evt->device_ = srcDevice;
-    Device *deviceNull = nullptr;
+    Device* deviceNull = nullptr;
     MOCKER_CPP(&Runtime::GetDevice).stubs().will(returnValue(deviceNull));
 
     error = evt->Wait(stm, 0);
@@ -743,16 +737,16 @@ TEST_F(EventTest910B, CrossDeviceEventWaitAllocTaskFail)
     error = rtEventCreateExWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     evt->SetRecord(true);
     evt->eventId_ = 1;
-    RawDevice *srcDevice = new RawDevice(1);
+    RawDevice* srcDevice = new RawDevice(1);
     evt->device_ = srcDevice;
-    TaskInfo *tsk = nullptr;
-    MOCKER_CPP(&Runtime::GetDevice).stubs().will(returnValue((Device *)srcDevice));
+    TaskInfo* tsk = nullptr;
+    MOCKER_CPP(&Runtime::GetDevice).stubs().will(returnValue((Device*)srcDevice));
     MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(tsk));
-    
+
     error = evt->Wait(stm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -775,17 +769,17 @@ TEST_F(EventTest910B, CrossDeviceEventWaitSuccess)
     error = rtEventCreateExWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     evt->SetRecord(true);
     evt->eventId_ = 1;
-    RawDevice *srcDevice = new RawDevice(1);
+    RawDevice* srcDevice = new RawDevice(1);
     evt->device_ = srcDevice;
-    MOCKER_CPP(&Runtime::GetDevice).stubs().will(returnValue((Device *)srcDevice));
+    MOCKER_CPP(&Runtime::GetDevice).stubs().will(returnValue((Device*)srcDevice));
     MOCKER(MemWaitValueTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
-    Device *waitDev = stm->Device_();
+    Device* waitDev = stm->Device_();
     MOCKER_CPP_VIRTUAL(waitDev, &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
-    
+
     error = evt->Wait(stm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 

@@ -42,21 +42,24 @@ using namespace cce::runtime;
 static rtChipType_t g_chipType;
 
 static TaskInfo g_mockTaskInfo = {};
-static rtError_t AllocTaskInfoSuccessMock(TaskInfo** tsk, Stream* stm, uint32_t& pos) {
+static rtError_t AllocTaskInfoSuccessMock(TaskInfo** tsk, Stream* stm, uint32_t& pos)
+{
     *tsk = &g_mockTaskInfo;
     pos = 0U;
     return RT_ERROR_NONE;
 }
 
-class TaskTestDavidModelC : public testing::Test
-{
+class TaskTestDavidModelC : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        char* socVer = "Ascend950PR_9599";
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NONE));
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
@@ -66,7 +69,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
         rtInstance->SetDisableThread(false);
@@ -75,19 +78,16 @@ protected:
 
     virtual void SetUp()
     {
-        Driver *driver = MockDavidDriverSetup();
+        Driver* driver = MockDavidDriverSetup();
 
         bool enable = false;
-        MOCKER_CPP_VIRTUAL(driver,
-            &Driver::GetSqEnable).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(enable))
+        MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqEnable)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(enable))
             .will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL(driver, &Driver::SetSqHead)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
-        MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::SetSqHead).stubs().will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq).stubs().will(returnValue(RT_ERROR_NONE));
         SetupDavidDeviceAndEngine(device_, engine_);
 
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
@@ -95,7 +95,7 @@ protected:
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
 
         stream_->SetSqMemAttr(false);
-        ((RawDevice *)(stream_->Device_()))->PrimaryStream_()->SetSqBaseAddr(0U);
+        ((RawDevice*)(stream_->Device_()))->PrimaryStream_()->SetSqBaseAddr(0U);
     }
 
     virtual void TearDown()
@@ -109,8 +109,8 @@ protected:
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtDeviceReset(0);
         GlobalMockObject::reset();
     }
@@ -122,10 +122,7 @@ protected:
         return model;
     }
 
-    void DestroyModel(rtModel_t model)
-    {
-        EXPECT_EQ(rtModelDestroy(model), RT_ERROR_NONE);
-    }
+    void DestroyModel(rtModel_t model) { EXPECT_EQ(rtModelDestroy(model), RT_ERROR_NONE); }
 
     rtStream_t CreateExtraStream()
     {
@@ -134,28 +131,24 @@ protected:
         return stream;
     }
 
-    void DestroyExtraStream(rtStream_t stream)
-    {
-        EXPECT_EQ(rtStreamDestroy(stream), RT_ERROR_NONE);
-    }
+    void DestroyExtraStream(rtStream_t stream) { EXPECT_EQ(rtStreamDestroy(stream), RT_ERROR_NONE); }
 
     void MockIsSupportFeatureFalse()
     {
-        MOCKER_CPP_VIRTUAL(device_, &Device::IsSupportFeature)
-            .stubs().will(returnValue(false));
+        MOCKER_CPP_VIRTUAL(device_, &Device::IsSupportFeature).stubs().will(returnValue(false));
     }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
 };
 
 TEST_F(TaskTestDavidModelC, TestModelDebugRegister_CheckTaskCanSendFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MockIsSupportFeatureFalse();
@@ -172,7 +165,7 @@ TEST_F(TaskTestDavidModelC, TestModelDebugRegister_CheckTaskCanSendFail)
 TEST_F(TaskTestDavidModelC, TestModelDebugRegister_AllocTaskInfoFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MockIsSupportFeatureFalse();
@@ -190,7 +183,7 @@ TEST_F(TaskTestDavidModelC, TestModelDebugRegister_AllocTaskInfoFail)
 TEST_F(TaskTestDavidModelC, TestModelDebugRegister_SyncTimeout)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MockIsSupportFeatureFalse();
@@ -211,7 +204,7 @@ TEST_F(TaskTestDavidModelC, TestModelDebugRegister_SyncTimeout)
 TEST_F(TaskTestDavidModelC, TestModelDebugUnRegister_CheckTaskCanSendFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
     mdl->SetDebugRegister(true);
 
@@ -227,7 +220,7 @@ TEST_F(TaskTestDavidModelC, TestModelDebugUnRegister_CheckTaskCanSendFail)
 TEST_F(TaskTestDavidModelC, TestModelDebugUnRegister_AllocTaskInfoFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
     mdl->SetDebugRegister(true);
 
@@ -244,7 +237,7 @@ TEST_F(TaskTestDavidModelC, TestModelDebugUnRegister_AllocTaskInfoFail)
 TEST_F(TaskTestDavidModelC, TestModelDebugUnRegister_SyncTimeout)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
     mdl->SetDebugRegister(true);
 
@@ -264,7 +257,7 @@ TEST_F(TaskTestDavidModelC, TestModelDebugUnRegister_SyncTimeout)
 TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_CheckTaskCanSendFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
@@ -278,7 +271,7 @@ TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_CheckTaskCanSendFail)
 TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_AllocTaskInfoFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
@@ -293,7 +286,7 @@ TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_AllocTaskInfoFail)
 TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_SyncTimeout)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
@@ -311,7 +304,7 @@ TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_SyncTimeout)
 TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_SyncError)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
@@ -329,11 +322,11 @@ TEST_F(TaskTestDavidModelC, TestAicpuMdlDestroy_SyncError)
 TEST_F(TaskTestDavidModelC, TestMdlBindTaskSubmit_CheckTaskCanSendFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     rtStream_t stream = CreateExtraStream();
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
@@ -347,11 +340,11 @@ TEST_F(TaskTestDavidModelC, TestMdlBindTaskSubmit_CheckTaskCanSendFail)
 TEST_F(TaskTestDavidModelC, TestMdlBindTaskSubmit_MaintainceTaskInitFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     rtStream_t stream = CreateExtraStream();
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(AllocTaskInfo).stubs().will(invoke(AllocTaskInfoSuccessMock));
@@ -369,11 +362,11 @@ TEST_F(TaskTestDavidModelC, TestMdlBindTaskSubmit_MaintainceTaskInitFail)
 TEST_F(TaskTestDavidModelC, TestMdlBindTaskSubmit_SendTaskFail)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     rtStream_t stream = CreateExtraStream();
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(AllocTaskInfo).stubs().will(invoke(AllocTaskInfoSuccessMock));
@@ -392,7 +385,7 @@ TEST_F(TaskTestDavidModelC, TestMdlBindTaskSubmit_SendTaskFail)
 TEST_F(TaskTestDavidModelC, TestMdlAddEndGraph_EndGraphNumExceed)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     mdl->IncEndGraphNum();
@@ -406,7 +399,7 @@ TEST_F(TaskTestDavidModelC, TestMdlAddEndGraph_EndGraphNumExceed)
 TEST_F(TaskTestDavidModelC, TestMdlAddEndGraph_StreamNotBoundToModel)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     rtError_t ret = MdlAddEndGraph(mdl, stream_, 0U);
@@ -418,7 +411,7 @@ TEST_F(TaskTestDavidModelC, TestMdlAddEndGraph_StreamNotBoundToModel)
 TEST_F(TaskTestDavidModelC, TestModelLoadCompleteByStream_SubmitLoadCompleteDirectly)
 {
     rtModel_t model = CreateModel();
-    Model *mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* mdl = rt_ut::UnwrapOrNull<Model>(model);
     ASSERT_NE(mdl, nullptr);
 
     mdl->streams_.push_front(stream_);

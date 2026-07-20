@@ -20,15 +20,9 @@ using namespace std;
 
 class TsdSha256Test : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before TsdSha256Test()" << endl;
-    }
+    virtual void SetUp() { cout << "Before TsdSha256Test()" << endl; }
 
-    virtual void TearDown()
-    {
-        cout << "After TsdSha256Test" << endl;
-    }
+    virtual void TearDown() { cout << "After TsdSha256Test" << endl; }
 };
 
 // ============================================================
@@ -59,48 +53,42 @@ TEST_F(TsdSha256Test, Abc)
 TEST_F(TsdSha256Test, MessageDigest)
 {
     const std::string input = "message digest";
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "f7846f55cf23e14eebeab5b4e1550cad5b509e3348fbc4efa3a1413d393cb650");
 }
 
 TEST_F(TsdSha256Test, LowercaseAlphabet)
 {
     const std::string input = "abcdefghijklmnopqrstuvwxyz";
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "71c480df93d6ae2f1efad1447c66c9525e316218cf51fc8d9ed832f2daf18b73");
 }
 
 TEST_F(TsdSha256Test, NumericString20)
 {
     const std::string input = "12345678901234567890";
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "6ed645ef0e1abea1bf1e4e935ff04f9e18d39812387f63cda3415b46240f0405");
 }
 
 TEST_F(TsdSha256Test, AlphanumericFull)
 {
     const std::string input = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "db4bfcbd4da0cd85a60c3c37d3fbd8805c77f15fc6b1fdfe614ee0a7c8fdb4c0");
 }
 
 TEST_F(TsdSha256Test, ThousandAs)
 {
     std::string input(1000, 'a');
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3");
 }
 
 TEST_F(TsdSha256Test, HelloWorld)
 {
     const std::string input = "Hello, World!";
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f");
 }
 
@@ -115,24 +103,21 @@ TEST_F(TsdSha256Test, BinaryData)
 TEST_F(TsdSha256Test, ExactOneBlock)
 {
     std::string input(64, '0');
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "60e05bd1b195af2f94112fa7197a5c88289058840ce7c6df9693756bc6250f55");
 }
 
 TEST_F(TsdSha256Test, ExactTwoBlocks)
 {
     std::string input(128, 'B');
-    std::string result = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "7abaa701a6f4bb8d9ea3872a315597eb6f2ccfd03392d8d10560837f6136d06a");
 }
 
 TEST_F(TsdSha256Test, IncrementalUpdate)
 {
     const std::string full = "abcdefghijklmnopqrstuvwxyz";
-    std::string oneShot = sha256::ComputeHexString(
-        PtrToPtr<const char, const uint8_t>(full.data()), full.size());
+    std::string oneShot = sha256::ComputeHexString(PtrToPtr<const char, const uint8_t>(full.data()), full.size());
 
     sha256::Context ctx;
     sha256::Init(ctx);
@@ -176,48 +161,42 @@ TEST_F(TsdSha256Test, SoftAbc)
 TEST_F(TsdSha256Test, SoftMessageDigest)
 {
     const std::string input = "message digest";
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "f7846f55cf23e14eebeab5b4e1550cad5b509e3348fbc4efa3a1413d393cb650");
 }
 
 TEST_F(TsdSha256Test, SoftLowercaseAlphabet)
 {
     const std::string input = "abcdefghijklmnopqrstuvwxyz";
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "71c480df93d6ae2f1efad1447c66c9525e316218cf51fc8d9ed832f2daf18b73");
 }
 
 TEST_F(TsdSha256Test, SoftThousandAs)
 {
     std::string input(1000, 'a');
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3");
 }
 
 TEST_F(TsdSha256Test, SoftHelloWorld)
 {
     const std::string input = "Hello, World!";
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f");
 }
 
 TEST_F(TsdSha256Test, SoftExactOneBlock)
 {
     std::string input(64, '0');
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "60e05bd1b195af2f94112fa7197a5c88289058840ce7c6df9693756bc6250f55");
 }
 
 TEST_F(TsdSha256Test, SoftExactTwoBlocks)
 {
     std::string input(128, 'B');
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "7abaa701a6f4bb8d9ea3872a315597eb6f2ccfd03392d8d10560837f6136d06a");
 }
 
@@ -232,16 +211,14 @@ TEST_F(TsdSha256Test, SoftBinaryData)
 TEST_F(TsdSha256Test, SoftAlphanumericFull)
 {
     const std::string input = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "db4bfcbd4da0cd85a60c3c37d3fbd8805c77f15fc6b1fdfe614ee0a7c8fdb4c0");
 }
 
 TEST_F(TsdSha256Test, SoftNumericString20)
 {
     const std::string input = "12345678901234567890";
-    std::string result = sha256::ComputeHexStringSoft(
-        PtrToPtr<const char, const uint8_t>(input.data()), input.size());
+    std::string result = sha256::ComputeHexStringSoft(PtrToPtr<const char, const uint8_t>(input.data()), input.size());
     EXPECT_EQ(result, "6ed645ef0e1abea1bf1e4e935ff04f9e18d39812387f63cda3415b46240f0405");
 }
 

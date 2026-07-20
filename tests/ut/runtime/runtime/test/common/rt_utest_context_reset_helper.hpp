@@ -41,19 +41,19 @@ inline void ResetPrimaryDevice()
 
 inline bool IsCurrentContextReadyForReset()
 {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     return (curCtx != nullptr) && (curCtx->GetState() == ContextState::CTX_STATE_ACTIVE) &&
-        (curCtx->Device_() != nullptr) && (curCtx->DefaultStream_() != nullptr);
+           (curCtx->Device_() != nullptr) && (curCtx->DefaultStream_() != nullptr);
 }
 
 inline void ClearCurrentDefaultStreamPending()
 {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     if (!IsCurrentContextReadyForReset()) {
         return;
     }
 
-    auto clearStream = [](Stream * const stream) {
+    auto clearStream = [](Stream* const stream) {
         if (stream == nullptr) {
             return;
         }
@@ -67,14 +67,14 @@ inline void ClearCurrentDefaultStreamPending()
     clearStream(curCtx->DefaultStream_());
     clearStream(curCtx->OnlineStream_());
     clearStream(curCtx->GetCtrlSQStream());
-    for (Stream * const stream : curCtx->StreamList_()) {
+    for (Stream* const stream : curCtx->StreamList_()) {
         clearStream(stream);
     }
 }
 
 inline void ClearCurrentContextStatusForReset()
 {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     if (!IsCurrentContextReadyForReset()) {
         return;
     }
@@ -105,10 +105,7 @@ inline void ForceResetPrimaryDeviceIfActive()
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
-inline void ResetPrimaryDeviceIfActive()
-{
-    ForceResetPrimaryDeviceIfActive();
-}
+inline void ResetPrimaryDeviceIfActive() { ForceResetPrimaryDeviceIfActive(); }
 
 inline void ResetPrimaryDeviceIfActiveWithDeviceDown()
 {
@@ -137,8 +134,9 @@ inline void ResetPrimaryDeviceIfActiveWithDeviceDown()
     ClearCurrentDefaultStreamPending();
 
     MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer)
-        .stubs().will(returnValue(static_cast<rtError_t>(RT_ERROR_NONE)));
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+        .stubs()
+        .will(returnValue(static_cast<rtError_t>(RT_ERROR_NONE)));
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     if ((curCtx != nullptr) && (curCtx->Device_() != nullptr)) {
         MOCKER_CPP_VIRTUAL(curCtx->Device_(), &Device::WaitCompletion).stubs();
     }
@@ -152,7 +150,7 @@ inline void ResetPrimaryDeviceIfActiveWithDeviceDown()
 
 inline bool IsRuntimeNeededForApiContextCase()
 {
-    const testing::TestInfo * const testInfo = testing::UnitTest::GetInstance()->current_test_info();
+    const testing::TestInfo* const testInfo = testing::UnitTest::GetInstance()->current_test_info();
     return (testInfo == nullptr) || (std::strcmp(testInfo->name(), "TestRtsCtxDestroy") != 0);
 }
 
@@ -164,22 +162,13 @@ inline void SetUpApiContextTest()
     (void)rtSetDevice(0);
 }
 
-inline void TearDownApiContextTest()
-{
-    GlobalMockObject::verify();
-}
+inline void TearDownApiContextTest() { GlobalMockObject::verify(); }
 
 class ApiContextTestBase : public testing::Test {
 protected:
-    void SetUp() override
-    {
-        SetUpApiContextTest();
-    }
+    void SetUp() override { SetUpApiContextTest(); }
 
-    void TearDown() override
-    {
-        TearDownApiContextTest();
-    }
+    void TearDown() override { TearDownApiContextTest(); }
 };
 
 } // namespace ut

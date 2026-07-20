@@ -17,30 +17,29 @@
 #include "aicpu_context.h"
 
 namespace aicpu {
-status_t GetAicpuRunMode(uint32_t &runMode)
+status_t GetAicpuRunMode(uint32_t& runMode)
 {
     runMode = aicpu::PROCESS_PCIE_MODE;
     return AICPU_ERROR_NONE;
 }
 
-status_t SetBlockIdxAndBlockNum(uint32_t blockIdx, uint32_t blockNum)
-{
-    return AICPU_ERROR_NONE;
-}
-}
+status_t SetBlockIdxAndBlockNum(uint32_t blockIdx, uint32_t blockNum) { return AICPU_ERROR_NONE; }
+} // namespace aicpu
 
 #ifndef RUN_ON_AICPU
 
-#define MSG_LENGTH_STUB   (1024)
-#define SET_MOUDLE_ID_MAP_NAME(x) { #x, x}
+#define MSG_LENGTH_STUB (1024)
+#define SET_MOUDLE_ID_MAP_NAME(x) \
+    {                             \
+        #x, x                     \
+    }
 
 typedef struct _dcode_stub {
-    const char *c_name;
+    const char* c_name;
     int c_val;
 } DCODE_STUB;
 
-static DCODE_STUB moduleIdName_stub[] =
-{
+static DCODE_STUB moduleIdName_stub[] = {
     SET_MOUDLE_ID_MAP_NAME(SLOG),
     SET_MOUDLE_ID_MAP_NAME(IDEDD),
     SET_MOUDLE_ID_MAP_NAME(2),
@@ -65,153 +64,149 @@ static DCODE_STUB moduleIdName_stub[] =
     SET_MOUDLE_ID_MAP_NAME(21),
     SET_MOUDLE_ID_MAP_NAME(DEVMM),
     SET_MOUDLE_ID_MAP_NAME(KERNEL),
-    {NULL, -1}
+    {NULL, -1}};
+
+static const char* logLevel[] = {
+    "DEBUG", "INFO", "WARNING", "ERROR", "NULL",
 };
 
-static const char *logLevel[] =
+void DlogErrorInner(int module_id, const char* fmt, ...)
 {
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERROR",
-    "NULL",
-};
-
-void DlogErrorInner(int module_id, const char *fmt, ...)
-{
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID){
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID) {
         return;
     }
 
     int len;
     char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [ERROR] ",moduleIdName_stub[module_id].c_name);
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [ERROR] ", moduleIdName_stub[module_id].c_name);
     va_list ap;
 
-    va_start(ap,fmt);
+    va_start(ap, fmt);
     len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
     va_end(ap);
 
-    printf("%s",msg);
+    printf("%s", msg);
     return;
 }
 
-void DlogWarnInner(int module_id, const char *fmt, ...)
+void DlogWarnInner(int module_id, const char* fmt, ...)
 {
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID){
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID) {
         return;
     }
 
     int len;
     char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [WARNING] ",moduleIdName_stub[module_id].c_name);
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [WARNING] ", moduleIdName_stub[module_id].c_name);
     va_list ap;
 
-    va_start(ap,fmt);
+    va_start(ap, fmt);
     len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
     va_end(ap);
 
-    printf("%s",msg);
+    printf("%s", msg);
     return;
 }
 
-void DlogInfoInner(int module_id, const char *fmt, ...)
+void DlogInfoInner(int module_id, const char* fmt, ...)
 {
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID){
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID) {
         return;
     }
 
     int len;
     char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [INFO] ",moduleIdName_stub[module_id].c_name);
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [INFO] ", moduleIdName_stub[module_id].c_name);
     va_list ap;
 
-    va_start(ap,fmt);
+    va_start(ap, fmt);
     len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
     va_end(ap);
 
-    printf("%s",msg);
+    printf("%s", msg);
     return;
 }
 
-void DlogWrite(int module_id, int level, const char *fmt, ...) {
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID || level >= 5) {
-        return;
-    }
-
-    int len;
-    char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [%s]",moduleIdName_stub[module_id].c_name, logLevel[level]);
-    va_list ap;
-
-    va_start(ap,fmt);
-    len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
-    va_end(ap);
-
-    printf("%s",msg);
-    return;
-}
-
-void DlogRecord(int module_id, int level, const char *fmt, ...) {
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID || level >= 5) {
-        return;
-    }
-
-    int len;
-    char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [%s]",moduleIdName_stub[module_id].c_name, logLevel[level]);
-    va_list ap;
-
-    va_start(ap,fmt);
-    len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
-    va_end(ap);
-
-    printf("%s",msg);
-    return;
-}
-
-void DlogDebugInner(int module_id, const char *fmt, ...)
+void DlogWrite(int module_id, int level, const char* fmt, ...)
 {
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID){
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID || level >= 5) {
         return;
     }
 
     int len;
     char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [DEBUG] ",moduleIdName_stub[module_id].c_name);
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [%s]", moduleIdName_stub[module_id].c_name, logLevel[level]);
     va_list ap;
 
-    va_start(ap,fmt);
+    va_start(ap, fmt);
     len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
     va_end(ap);
 
-    printf("%s",msg);
+    printf("%s", msg);
     return;
 }
 
-void DlogInner(int module_id, int level, const char *fmt, ...)
+void DlogRecord(int module_id, int level, const char* fmt, ...)
 {
-    if(module_id < 0 || module_id >= INVLID_MOUDLE_ID || level >= 5) {
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID || level >= 5) {
         return;
     }
 
     int len;
     char msg[MSG_LENGTH_STUB] = {0};
-    snprintf(msg,MSG_LENGTH_STUB,"[%s] [%s]",moduleIdName_stub[module_id].c_name, logLevel[level]);
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [%s]", moduleIdName_stub[module_id].c_name, logLevel[level]);
     va_list ap;
 
-    va_start(ap,fmt);
+    va_start(ap, fmt);
     len = strlen(msg);
-    vsnprintf(msg + len, MSG_LENGTH_STUB- len, fmt, ap);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
     va_end(ap);
 
-    printf("%s",msg);
+    printf("%s", msg);
+    return;
+}
+
+void DlogDebugInner(int module_id, const char* fmt, ...)
+{
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID) {
+        return;
+    }
+
+    int len;
+    char msg[MSG_LENGTH_STUB] = {0};
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [DEBUG] ", moduleIdName_stub[module_id].c_name);
+    va_list ap;
+
+    va_start(ap, fmt);
+    len = strlen(msg);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
+    va_end(ap);
+
+    printf("%s", msg);
+    return;
+}
+
+void DlogInner(int module_id, int level, const char* fmt, ...)
+{
+    if (module_id < 0 || module_id >= INVLID_MOUDLE_ID || level >= 5) {
+        return;
+    }
+
+    int len;
+    char msg[MSG_LENGTH_STUB] = {0};
+    snprintf(msg, MSG_LENGTH_STUB, "[%s] [%s]", moduleIdName_stub[module_id].c_name, logLevel[level]);
+    va_list ap;
+
+    va_start(ap, fmt);
+    len = strlen(msg);
+    vsnprintf(msg + len, MSG_LENGTH_STUB - len, fmt, ap);
+    va_end(ap);
+
+    printf("%s", msg);
     return;
 }
 

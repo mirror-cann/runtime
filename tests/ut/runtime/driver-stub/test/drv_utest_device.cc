@@ -16,37 +16,30 @@
 using namespace testing;
 
 class DrvDevTest : public testing::Test {
- protected:
-  static void SetUpTestCase() {
-    std::cout << "DrvApiTest SetUP" << std::endl;
-  }
-  static void TearDownTestCase() {
-    std::cout << "DrvApiTest Tear Down" << std::endl;
-  }
-  // Some expensive resource shared by all tests.
-  virtual void SetUp()
-  {
-    std::cout << "a test SetUP" << std::endl;
-  }
-  virtual void TearDown()
-  {
+protected:
+    static void SetUpTestCase() { std::cout << "DrvApiTest SetUP" << std::endl; }
+    static void TearDownTestCase() { std::cout << "DrvApiTest Tear Down" << std::endl; }
+    // Some expensive resource shared by all tests.
+    virtual void SetUp() { std::cout << "a test SetUP" << std::endl; }
+    virtual void TearDown()
+    {
         GlobalMockObject::verify();
-    std::cout << "a test SetUP" << std::endl;
-  }
+        std::cout << "a test SetUP" << std::endl;
+    }
 };
 
 TEST_F(DrvDevTest, device_api_test)
 {
     drvError_t error;
-    struct devdrv_device_info* deviceInfo=NULL;
+    struct devdrv_device_info* deviceInfo = NULL;
     uint32_t count;
-    int32_t deviceId=0;
+    int32_t deviceId = 0;
     int64_t value = 0;
 
-    error=drvDeviceOpen((void **)&deviceInfo,deviceId);
+    error = drvDeviceOpen((void**)&deviceInfo, deviceId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
-    error=drvGetDevNum(&count);
+    error = drvGetDevNum(&count);
     EXPECT_EQ(error, DRV_ERROR_NONE);
     error = drvGetDevNum(NULL);
     EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
@@ -60,17 +53,16 @@ TEST_F(DrvDevTest, device_api_test)
     error = halGetDeviceInfo((uint32_t)deviceId, MODULE_TYPE_AICPU, INFO_TYPE_CORE_NUM, &value);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
-    error=drvDeviceClose(deviceId);
+    error = drvDeviceClose(deviceId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-
 }
 
 TEST_F(DrvDevTest, device_close_test)
 {
     drvError_t error;
-    int32_t deviceId=0;
+    int32_t deviceId = 0;
 
-    uint32_t info=0;
+    uint32_t info = 0;
     error = drvGetPlatformInfo(&info);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
@@ -102,16 +94,16 @@ TEST_F(DrvDevTest, device_GetGroupInfo)
     capability_group_info* groupInfos = new (std::nothrow) capability_group_info[groupCount];
     EXPECT_NE(groupInfos, nullptr);
 
-    error = halGetCapabilityGroupInfo(0, 0,  -1,  groupInfos, groupCount);
+    error = halGetCapabilityGroupInfo(0, 0, -1, groupInfos, groupCount);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
-    error = halGetCapabilityGroupInfo(0, 0,  1,  groupInfos, 1);
+    error = halGetCapabilityGroupInfo(0, 0, 1, groupInfos, 1);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
-    error = halGetCapabilityGroupInfo(0, 0,  -10,  groupInfos, 1);
+    error = halGetCapabilityGroupInfo(0, 0, -10, groupInfos, 1);
     EXPECT_NE(error, DRV_ERROR_NONE);
 
-    delete []groupInfos;
+    delete[] groupInfos;
 }
 TEST_F(DrvDevTest, device_EnableP2P)
 {
@@ -119,17 +111,17 @@ TEST_F(DrvDevTest, device_EnableP2P)
     uint32_t devId = 0;
     uint32_t peerDevId = 1;
     uint32_t flag = 0;
-	  int32_t canAccessPeer = 0;
-	
+    int32_t canAccessPeer = 0;
+
     error = halDeviceEnableP2P(devId, peerDevId, flag);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	  error = halDeviceCanAccessPeer(&canAccessPeer, devId, peerDevId);
+    error = halDeviceCanAccessPeer(&canAccessPeer, devId, peerDevId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	  error = halDeviceDisableP2P(devId, peerDevId, flag);
+    error = halDeviceDisableP2P(devId, peerDevId, flag);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 
-extern "C" int AICPUModelLoad(void *arg);
+extern "C" int AICPUModelLoad(void* arg);
 extern "C" int AICPUModelDestroy(uint32_t modelId);
 extern "C" int AICPUModelExecute(uint32_t modelId);
 
@@ -151,7 +143,6 @@ TEST_F(DrvDevTest, device_unused_test)
     err = drvMemDestroyAddr(&ptr);
     EXPECT_EQ(err, DRV_ERROR_NONE);
 
-
     ret = drvMemDeviceOpen(0, 0);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
 
@@ -160,19 +151,19 @@ TEST_F(DrvDevTest, device_unused_test)
 
     err = drvMemSmmuQuery(0, NULL);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
-    
+
     err = halMemGetInfo(0, 0, NULL);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
-    
+
     err = halMemCtl(0, NULL, 0, NULL, NULL);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
-    
+
     err = drvGetP2PStatus(0, 0, NULL);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
-    
+
     ret = AICPUModelLoad(NULL);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
-    
+
     ret = AICPUModelDestroy(0);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
 
@@ -184,4 +175,3 @@ TEST_F(DrvDevTest, device_unused_test)
     err = halGetPairDevicesInfo(0, 0, 0, NULL);
     EXPECT_EQ(err, DRV_ERROR_NONE);
 }
-

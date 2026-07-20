@@ -30,31 +30,24 @@
 
 using namespace testing;
 using namespace cce::runtime;
-#define PROF_AICPU_MODEL_MASK            0x4000000000000000ULL
-#define PROF_AICPU_TRACE_MASK            0x00000008ULL
-#define PROF_TASK_TIME_MASK              0x00000002ULL
-#define PROF_AICORE_METRICS              0x00000004ULL
+#define PROF_AICPU_MODEL_MASK 0x4000000000000000ULL
+#define PROF_AICPU_TRACE_MASK 0x00000008ULL
+#define PROF_TASK_TIME_MASK 0x00000002ULL
+#define PROF_AICORE_METRICS 0x00000004ULL
 
-class CloudV2RuntimeTest : public testing::Test
-{
+class CloudV2RuntimeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         GlobalMockObject::verify();
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtSetDevice(0);
         rtError_t error;
-        Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+        Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
         EXPECT_NE(rtInstance, nullptr);
         GlobalContainer::SetHardwareSocVersion("");
     }
@@ -63,76 +56,54 @@ protected:
     {
         GlobalMockObject::verify();
         rtDeviceReset(0);
-        Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+        Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
         EXPECT_NE(rtInstance, nullptr);
     }
 
     static void InitVisibleDevices()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->userDeviceCnt = 0U;
         rtInstance->isSetVisibleDev = false;
         if (rtInstance->deviceInfo == nullptr) {
             rtInstance->deviceInfo = new (std::nothrow) uint32_t[RT_SET_DEVICE_STR_MAX_LEN];
         }
-        (void)memset_s(rtInstance->deviceInfo, size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
+        (void)memset_s(
+            rtInstance->deviceInfo, size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
             size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN));
-        (void)memset_s(rtInstance->inputDeviceStr, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
+        (void)memset_s(
+            rtInstance->inputDeviceStr, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
             size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U));
         return;
     }
 
-    static int TsdOpenExStub(uint32_t a, uint32_t b, uint32_t c)
-    {
-        return 0;
-    }
+    static int TsdOpenExStub(uint32_t a, uint32_t b, uint32_t c) { return 0; }
 
-    static int TsdOpenStub(uint32_t a, uint32_t b)
-    {
-        return 0;
-    }
+    static int TsdOpenStub(uint32_t a, uint32_t b) { return 0; }
 
-    static int TsdCloseStub(uint32_t a)
-    {
-        return 0;
-    }
+    static int TsdCloseStub(uint32_t a) { return 0; }
 
-    static int UpdateProfilingModeStub(uint32_t a, uint32_t b)
-    {
-        return 0;
-    }
+    static int UpdateProfilingModeStub(uint32_t a, uint32_t b) { return 0; }
 
-    static int TsdSetMsprofReporterCallbackStub(void *ptr)
-    {
-        return 0;
-    }
+    static int TsdSetMsprofReporterCallbackStub(void* ptr) { return 0; }
 
-    static int TsdInitQsStub(uint32_t a, char* s)
-    {
-        return 0;
-    }
+    static int TsdInitQsStub(uint32_t a, char* s) { return 0; }
 
-    static int TsdSetAttrStub(char* s1, char* s2)
-    {
-        return 0;
-    }
+    static int TsdSetAttrStub(char* s1, char* s2) { return 0; }
 
-    static int TsdInitFlowGwStub(uint32_t a, void *info)
-    {
-        return 0;
-    }
+    static int TsdInitFlowGwStub(uint32_t a, void* info) { return 0; }
 
-    static void stubFunc(void)
-    {}
+    static void stubFunc(void) {}
+
 private:
     rtChipType_t originType;
 };
 
 TEST_F(CloudV2RuntimeTest, ut_AllKernelRegister_mix_degenerate)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     ElfProgram prog;
-    char *name = new (std::nothrow) char[20];
+    char* name = new (std::nothrow) char[20];
     strcpy(name, "abc_123_mix_aic");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
@@ -148,22 +119,23 @@ TEST_F(CloudV2RuntimeTest, ut_AllKernelRegister_mix_degenerate)
 TEST_F(CloudV2RuntimeTest, ut_KernelRegister_mix_degenerate)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint8_t mixType = MIX_AIV;
 
     ElfProgram prog;
     prog.elfData_->kernel_num = 1;
-    rtError_t ret = error = rtInstance->KernelRegister(&prog, (const void *)stubFunc, "repeat_mix_aic", "repeat_mix_aic", 196608);
+    rtError_t ret = error =
+        rtInstance->KernelRegister(&prog, (const void*)stubFunc, "repeat_mix_aic", "repeat_mix_aic", 196608);
 }
 
 TEST_F(CloudV2RuntimeTest, ut_AllKernelRegister_2)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    void *code[] = {NULL, NULL, NULL, NULL};
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    void* code[] = {NULL, NULL, NULL, NULL};
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.version = 1;
     bin.data = code;
@@ -181,11 +153,11 @@ TEST_F(CloudV2RuntimeTest, ut_AllKernelRegister_2)
 TEST_F(CloudV2RuntimeTest, ut_AllKernelRegister_3)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    void *code[] = {NULL, NULL, NULL, NULL};
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    void* code[] = {NULL, NULL, NULL, NULL};
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.version = 1;
     bin.data = code;
@@ -201,34 +173,40 @@ TEST_F(CloudV2RuntimeTest, ut_AllKernelRegister_3)
 
 TEST_F(CloudV2RuntimeTest, ut_TsdClientInit)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
-    const char *funcName = "TsdOpenEx";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdOpenExStub));
+    const char* funcName = "TsdOpenEx";
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)TsdOpenExStub));
     funcName = "TsdOpen";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdOpenStub));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)TsdOpenStub));
     funcName = "TsdClose";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdCloseStub));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)TsdCloseStub));
     funcName = "UpdateProfilingMode";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)UpdateProfilingModeStub));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)UpdateProfilingModeStub));
     funcName = "TsdSetMsprofReporterCallback";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdSetMsprofReporterCallbackStub));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)TsdSetMsprofReporterCallbackStub));
     funcName = "TsdInitQs";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdInitQsStub));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)TsdInitQsStub));
     funcName = "TsdSetAttr";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdSetAttrStub));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)TsdSetAttrStub));
     funcName = "TsdInitFlowGw";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)TsdInitFlowGwStub));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)TsdInitFlowGwStub));
     rtInstance->TsdClientInit();
 }
 
 TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
 {
     rtError_t ret = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool haveDevice = rtInstance->isHaveDevice_;
     uint32_t devNum = 3;
 
@@ -240,10 +218,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
     EXPECT_EQ(rtInstance->userDeviceCnt, 0);
     EXPECT_EQ(rtInstance->isSetVisibleDev, false);
 
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     setenv("ASCEND_RT_VISIBLE_DEVICES", "", 1);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
@@ -384,7 +359,11 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
     EXPECT_EQ(rtInstance->userDeviceCnt, 0);
     EXPECT_EQ(rtInstance->isSetVisibleDev, true);
 
-    setenv("ASCEND_RT_VISIBLE_DEVICES", "0,1,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4", 134);
+    setenv(
+        "ASCEND_RT_VISIBLE_DEVICES",
+        "0,1,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,"
+        "2,3,4,5,6,7,8,9,1,2,3,4",
+        134);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -407,33 +386,32 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
 TEST_F(CloudV2RuntimeTest, ut_KernelRegister_mix_aic)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint8_t mixType = MIX_AIC;
 
     ElfProgram prog;
     prog.elfData_->kernel_num = 1;
-    error = rtInstance->KernelRegister(&prog, (const void *)stubFunc, "repeat_mix_aic", "repeat_mix_aic", 196608);
+    error = rtInstance->KernelRegister(&prog, (const void*)stubFunc, "repeat_mix_aic", "repeat_mix_aic", 196608);
 }
-
 
 TEST_F(CloudV2RuntimeTest, ut_KernelRegister_mix_aic2)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint8_t mixType = MIX_AIC_AIV_MAIN_AIC;
 
     ElfProgram prog;
     prog.elfData_->kernel_num = 1;
-    error = rtInstance->KernelRegister(&prog, (const void *)stubFunc, "repeat_mix_aic", "repeat_mix_aic", 196608);
+    error = rtInstance->KernelRegister(&prog, (const void*)stubFunc, "repeat_mix_aic", "repeat_mix_aic", 196608);
     ContextManage::TryToRecycleCtxMdlPool();
 }
 
 TEST_F(CloudV2RuntimeTest, ut_AiCpuProfilerStart_01)
 {
     rtError_t ret = 0;
-    uint32_t deviceList[1]={1};
+    uint32_t deviceList[1] = {1};
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     ret = rtInstance->AiCpuProfilerStart(1, 1, deviceList);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
@@ -441,10 +419,10 @@ TEST_F(CloudV2RuntimeTest, ut_AiCpuProfilerStart_01)
 TEST_F(CloudV2RuntimeTest, binanry_reg_mix_null_data)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.magic = RT_DEV_BINARY_MAGIC_ELF;
     bin.version = 1;
@@ -456,7 +434,7 @@ TEST_F(CloudV2RuntimeTest, binanry_reg_mix_null_data)
 
 TEST_F(CloudV2RuntimeTest, SocTypeInit)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_NE(rtInstance, nullptr);
     uint32_t aicoreNum = 0;
     int64_t virAicoreNum = 1;
@@ -474,17 +452,17 @@ TEST_F(CloudV2RuntimeTest, SocTypeInit)
 
 TEST_F(CloudV2RuntimeTest, AicpuCntInitTest_03)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
-    rtError_t error  = rtInstance->InitAiCpuCnt();
+    rtError_t error = rtInstance->InitAiCpuCnt();
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtInstance->SetSocVersion(socVersion);
 }
 
 TEST_F(CloudV2RuntimeTest, ut_HwtsLogDynamicProfilerStartStopSTTest)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint64_t profConfig = 0ULL;
 
     profConfig |= PROF_TASK_TIME_MASK;
@@ -499,10 +477,7 @@ TEST_F(CloudV2RuntimeTest, ut_HwtsLogDynamicProfilerStartStopSTTest)
 
     // open all device
     uint32_t devNum = 1;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     ret = rtInstance->TsProfilerStart(profConfig, -1, deviceList);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtInstance->TsProfilerStop(profConfig, -1, deviceList);
@@ -515,7 +490,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest1)
     uint32_t userDeviceid = 5;
     uint32_t deviceid = 0;
     uint32_t devNum = 3;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
 
@@ -524,10 +499,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest1)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(deviceid, 5);
 
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     setenv("ASCEND_RT_VISIBLE_DEVICES", "1,-1", 5);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
@@ -541,7 +513,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest1)
     userDeviceid = 0;
     int32_t deviceid0 = 0;
     Api* oldApi_ = Runtime::runtime_->api_;
-    Profiler *profiler = new Profiler(oldApi_);
+    Profiler* profiler = new Profiler(oldApi_);
     profiler->Init();
     ret = rtInstance->ChgUserDevIdToDeviceId(userDeviceid, &deviceid);
     ret |= rtGetVisibleDeviceIdByLogicDeviceId(userDeviceid, &deviceid0);
@@ -560,7 +532,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest2)
     uint32_t userDeviceid = 5;
     uint32_t deviceid = 0;
     uint32_t devNum = 3;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
 
@@ -569,10 +541,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest2)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(deviceid, 5);
 
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     setenv("ASCEND_RT_VISIBLE_DEVICES", "1,-1", 5);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
@@ -594,16 +563,16 @@ TEST_F(CloudV2RuntimeTest, ut_GetVisibleDevicesByChipCloudTest2)
 TEST_F(CloudV2RuntimeTest, ut_AiCpuProfilerStart_00)
 {
     rtError_t ret = 0;
-    uint32_t deviceList[5]={1,2,3,4,5};
+    uint32_t deviceList[5] = {1, 2, 3, 4, 5};
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     ret = rtInstance->AiCpuProfilerStart(1, 5, deviceList);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
 TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesCloudV2)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     ASSERT_NE(rtInstance, nullptr);
 
     DevProperties origProps;
@@ -651,7 +620,7 @@ TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesCloudV2)
         rtInstance->propertiesMap_.erase(CHIP_910_B_93);
     }
     rtInstance->curChipProperties_ = origCurChipProperties;
-    Driver *const npuDrv = rtInstance->driverFactory_.GetDriverIfCreated(NPU_DRIVER);
+    Driver* const npuDrv = rtInstance->driverFactory_.GetDriverIfCreated(NPU_DRIVER);
     if (npuDrv != nullptr) {
         npuDrv->RefreshDevProperties(origProps);
     }
@@ -659,7 +628,7 @@ TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesCloudV2)
 
 TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesFromIniAttrs_AllFieldsOverride)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     // Save original props
     DevProperties origProps;
@@ -694,12 +663,12 @@ TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesFromIniAttrs_AllFieldsOverride)
 
 TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesFromIniAttrs_ZeroIniAttrs_NoChange)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     DevProperties origProps;
     EXPECT_EQ(GET_DEV_PROPERTIES(CHIP_910_B_93, origProps), RT_ERROR_NONE);
 
-    RtIniAttributes iniAttrs = {};  // All zeros
+    RtIniAttributes iniAttrs = {}; // All zeros
     rtInstance->UpdateDevPropertiesFromIniAttrs(CHIP_910_B_93, iniAttrs);
 
     DevProperties afterProps;
@@ -713,7 +682,7 @@ TEST_F(CloudV2RuntimeTest, UpdateDevPropertiesFromIniAttrs_ZeroIniAttrs_NoChange
 
 TEST_F(CloudV2RuntimeTest, UpdateDevProperties_CacheRefresh_StarsPendingMax)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     rtInstance->UpdateDevProperties(CHIP_910_B_93, "Ascend910B4");
 
@@ -730,7 +699,8 @@ TEST_F(CloudV2RuntimeTest, UpdateDevProperties_CacheRefresh_StarsPendingMax)
     }
 }
 
-TEST_F(CloudV2RuntimeTest, ut_GetDcacheLockMixPath_CloudV2_FileExistsInSoDir) {
+TEST_F(CloudV2RuntimeTest, ut_GetDcacheLockMixPath_CloudV2_FileExistsInSoDir)
+{
     std::string currentExePath;
     Dl_info info;
     if (dladdr(reinterpret_cast<void*>(this), &info) && info.dli_fname != nullptr) {
@@ -738,7 +708,7 @@ TEST_F(CloudV2RuntimeTest, ut_GetDcacheLockMixPath_CloudV2_FileExistsInSoDir) {
     } else {
         currentExePath = "/proc/self/exe"; // fallback on Linux
         char buf[1024];
-        ssize_t len = readlink(currentExePath.c_str(), buf, sizeof(buf)-1);
+        ssize_t len = readlink(currentExePath.c_str(), buf, sizeof(buf) - 1);
         if (len != -1) {
             buf[len] = '\0';
             currentExePath = buf;
@@ -770,12 +740,14 @@ TEST_F(CloudV2RuntimeTest, ut_GetDcacheLockMixPath_CloudV2_FileExistsInSoDir) {
     std::remove(targetFile.c_str());
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    EXPECT_TRUE((binaryPath == targetFile) || (binaryPath == "./dcache_lock_mix.o") ||
+    EXPECT_TRUE(
+        (binaryPath == targetFile) || (binaryPath == "./dcache_lock_mix.o") ||
         ((binaryPath.rfind("/dcache_lock_mix.o") != std::string::npos) &&
-        (binaryPath.find("/driver/lib64/common/") == std::string::npos)));
+         (binaryPath.find("/driver/lib64/common/") == std::string::npos)));
 }
 
-TEST_F(CloudV2RuntimeTest, ut_GetDcacheLockMixPath_CloudV2_FileNotExists_UseFallback) {
+TEST_F(CloudV2RuntimeTest, ut_GetDcacheLockMixPath_CloudV2_FileNotExists_UseFallback)
+{
     std::string fallbackPath = "/usr/local/Ascend/driver/lib64/common/dcache_lock_mix.o";
 
     Runtime* rtInstance = (Runtime*)Runtime::Instance();

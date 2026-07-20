@@ -36,7 +36,7 @@
 #include "task_fail_callback_manager.hpp"
 #include "device/device_error_proc.hpp"
 #include <map>
-#include <utility>  // For std::pair and std::make_pair.
+#include <utility> // For std::pair and std::make_pair.
 #include "mmpa_api.h"
 #include "task_submit.hpp"
 #include "thread_local_container.hpp"
@@ -45,34 +45,28 @@
 using namespace testing;
 using namespace cce::runtime;
 
-using std::pair;
 using std::make_pair;
+using std::pair;
 
-class AdcEngineTest : public testing::Test
-{
+class AdcEngineTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
-        std::cout<<"AdcEngineTest test start"<<std::endl;
-
+        std::cout << "AdcEngineTest test start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"AdcEngineTest test start end"<<std::endl;
-
-    }
+    static void TearDownTestCase() { std::cout << "AdcEngineTest test start end" << std::endl; }
 
     virtual void SetUp()
     {
         rtSetDevice(0);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-        engine_ = ((RawDevice *)device_)->engine_;
-        RawDevice *rawDevice = new RawDevice(0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+        engine_ = ((RawDevice*)device_)->engine_;
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
@@ -88,15 +82,15 @@ protected:
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
 
 protected:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
 };
 
@@ -107,19 +101,15 @@ TEST_F(AdcEngineTest, StarsEngine_init)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
 TEST_F(AdcEngineTest, Monitor_RingbufferTaskError)
 {
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
-    MOCKER_CPP(&DeviceErrorProc::ReportRingBuffer)
-        .stubs()
-        .will(returnValue(RT_ERROR_TASK_MONITOR));
+    MOCKER_CPP(&DeviceErrorProc::ReportRingBuffer).stubs().will(returnValue(RT_ERROR_TASK_MONITOR));
     engine->MonitoringRun();
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_NORMAL;
-    rtError_t error = ((Runtime *)Runtime::Instance())->GetWatchDogDevStatus(device_->Id_(), &deviceStatus);
+    rtError_t error = ((Runtime*)Runtime::Instance())->GetWatchDogDevStatus(device_->Id_(), &deviceStatus);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
-
 
 TEST_F(AdcEngineTest, WaitCompletion_test)
 {
@@ -127,9 +117,7 @@ TEST_F(AdcEngineTest, WaitCompletion_test)
     engine->pendingNum_.Add(1U);
     uint32_t pendingNumBefore = engine->pendingNum_.Value();
     engine->WaitCompletion();
-    auto &engine2 = engine;
+    auto& engine2 = engine;
     uint32_t pendingNumAfter = engine2->pendingNum_.Value();
     EXPECT_EQ(pendingNumBefore, pendingNumAfter);
 }
-
-

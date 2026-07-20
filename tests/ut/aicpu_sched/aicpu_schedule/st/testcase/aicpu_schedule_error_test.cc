@@ -44,18 +44,11 @@ using namespace aicpu;
 
 class AICPUScheduleTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -65,7 +58,8 @@ protected:
 };
 
 extern int32_t ComputeProcessMain(int32_t argc, char* argv[]);
-TEST_F(AICPUScheduleTEST, MainTestTsdFailed) {
+TEST_F(AICPUScheduleTEST, MainTestTsdFailed)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -73,16 +67,11 @@ TEST_F(AICPUScheduleTEST, MainTestTsdFailed) {
     char paramModeOk[] = "--profilingMode=1";
     char paramLogLevelOk[] = "--logLevelInPid=0";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
-    char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk };
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk};
     int32_t argc = 5;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
-

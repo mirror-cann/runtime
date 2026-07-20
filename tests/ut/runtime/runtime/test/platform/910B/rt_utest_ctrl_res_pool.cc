@@ -32,40 +32,36 @@
 #include "thread_local_container.hpp"
 #include "raw_device.hpp"
 
-
 using namespace testing;
 using namespace cce::runtime;
 
-class CloudV2CtrlTaskPoolEntryTest : public testing::Test
-{
+class CloudV2CtrlTaskPoolEntryTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        std::cout<<"CtrlTaskPoolEntry test start"<<std::endl;
+        std::cout << "CtrlTaskPoolEntry test start" << std::endl;
         (void)rtSetSocVersion("Ascend910");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         (void)rtSetTSDevice(0);
     }
     static void TearDownTestCase()
     {
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
-    virtual void SetUp()
-    {
-         (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
         GlobalMockObject::verify();
         rtDeviceReset(0);
     }
+
 public:
-    static Api *oldApi_;
+    static Api* oldApi_;
 };
 
 TEST_F(CloudV2CtrlTaskPoolEntryTest, ErrorMessageUtilsTest)
@@ -74,7 +70,7 @@ TEST_F(CloudV2CtrlTaskPoolEntryTest, ErrorMessageUtilsTest)
     const std::vector<std::string> errMsgKey;
     const std::vector<std::string> errMsgValue;
     RtInnerErrcodeType rtErrCode = RT_ERROR_STREAM_SYNC_TIMEOUT;
-    char_t * funcName = nullptr;
+    char_t* funcName = nullptr;
 
     EXPECT_NE(&errMsgKey, nullptr);
     EXPECT_NE(&errMsgValue, nullptr);

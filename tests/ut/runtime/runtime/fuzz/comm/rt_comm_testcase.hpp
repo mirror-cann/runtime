@@ -18,9 +18,11 @@
 
 #include "runtime/rt.h"
 
-int rt_event_ctx_test(int32_t device, uint32_t flags, int32_t priority, uint32_t sleepTime, uint32_t count, int32_t listener);
+int rt_event_ctx_test(
+    int32_t device, uint32_t flags, int32_t priority, uint32_t sleepTime, uint32_t count, int32_t listener);
 
-int rt_kernel_test(rtDevBinary_t *binary, uint32_t funcMode, int32_t device, int32_t priority, uint64_t size,
-                   uint32_t blockDim, uint32_t argsSize, rtL2Ctrl_t *l2ctrl);
+int rt_kernel_test(
+    rtDevBinary_t* binary, uint32_t funcMode, int32_t device, int32_t priority, uint64_t size, uint32_t blockDim,
+    uint32_t argsSize, rtL2Ctrl_t* l2ctrl);
 
 #endif //__COMM_TESTCASE__

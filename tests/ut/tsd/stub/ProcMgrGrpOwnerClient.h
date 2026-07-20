@@ -13,8 +13,7 @@
 #include <stdint.h>
 #include <string>
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 enum GrpOwnerClientErrCode {
@@ -22,26 +21,21 @@ enum GrpOwnerClientErrCode {
     GRP_OWNER_CLIENT_FAILED,
 };
 
-enum HeartChannelType {
-    MIN_CHL = 0U,
-    EZCOMM_CHL,
-    MMAP_CHL,
-    MAX_CHL
-};
+enum HeartChannelType { MIN_CHL = 0U, EZCOMM_CHL, MMAP_CHL, MAX_CHL };
 
 struct ResMgrHeartBeatCfg {
     uint32_t timeout;
     enum HeartChannelType chlType;
 };
 
-uint32_t GrpOwnerClientInit(const char *ownerName);
+uint32_t GrpOwnerClientInit(const char* ownerName);
 uint32_t GrpOwnerClientFini(void);
-uint32_t GrpOwnerClientRegHeartBeat(struct ResMgrHeartBeatCfg *heartBeatCfg);
+uint32_t GrpOwnerClientRegHeartBeat(struct ResMgrHeartBeatCfg* heartBeatCfg);
 uint32_t GrpOwnerClientUnregisterHeartBeat(void);
 
-int32_t RegisterThreadForDog(const char *threadName, const size_t nameLen, uint32_t dogFeedingCycle);
-int32_t UnregisterThreadForDog(const char *threadName, const size_t nameLen);
-int32_t KickingTheDog(const char *threadName, const size_t nameLen);
+int32_t RegisterThreadForDog(const char* threadName, const size_t nameLen, uint32_t dogFeedingCycle);
+int32_t UnregisterThreadForDog(const char* threadName, const size_t nameLen);
+int32_t KickingTheDog(const char* threadName, const size_t nameLen);
 #ifdef __cplusplus
 }
 #endif

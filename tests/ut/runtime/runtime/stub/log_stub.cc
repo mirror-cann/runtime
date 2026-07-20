@@ -15,21 +15,13 @@
 #define MAX_LOG_BUF_SIZE 2048
 using namespace cce::runtime;
 
-static const char *logLevel[] =
-{
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERR",
-    "RESERVED",
+static const char* logLevel[] = {
+    "DEBUG", "INFO", "WARNING", "ERR", "RESERVED",
 };
 
-int CheckLogLevel(int moduleId, int logLevel)
-{
-    return 0;
-}
+int CheckLogLevel(int moduleId, int logLevel) { return 0; }
 
-void DlogRecord(int moduleId, int level, const char *fmt, ...)
+void DlogRecord(int moduleId, int level, const char* fmt, ...)
 {
     if (level < 0 || level > 4) {
         return;
@@ -49,78 +41,73 @@ void DlogRecord(int moduleId, int level, const char *fmt, ...)
     return;
 }
 
-void DlogErrorInner(int module_id, const char *fmt, ...)
+void DlogErrorInner(int module_id, const char* fmt, ...)
 {
     char buf[MAX_LOG_BUF_SIZE] = {0};
 
     va_list arg;
-    va_start (arg, fmt);
+    va_start(arg, fmt);
     vsnprintf(buf, MAX_LOG_BUF_SIZE, fmt, arg);
-    va_end (arg);
+    va_end(arg);
 
-    syslog(RT_LOG_ERROR, "%u %lu [%s]: %s\n",
-           getpid(),syscall(SYS_gettid),logLevel[RT_LOG_ERROR], buf);
+    syslog(RT_LOG_ERROR, "%u %lu [%s]: %s\n", getpid(), syscall(SYS_gettid), logLevel[RT_LOG_ERROR], buf);
 
-    printf("%u %lu [%s]: %s\n",
-           getpid(), syscall(SYS_gettid),logLevel[RT_LOG_ERROR], buf);
+    printf("%u %lu [%s]: %s\n", getpid(), syscall(SYS_gettid), logLevel[RT_LOG_ERROR], buf);
     return;
 }
 
-void DlogWarnInner(int module_id, const char *fmt, ...)
+void DlogWarnInner(int module_id, const char* fmt, ...)
 {
     char buf[MAX_LOG_BUF_SIZE] = {0};
 
     va_list arg;
-    va_start (arg, fmt);
+    va_start(arg, fmt);
     vsnprintf(buf, MAX_LOG_BUF_SIZE, fmt, arg);
-    va_end (arg);
+    va_end(arg);
 
-    syslog(RT_LOG_WARNING, "%u %lu [%s]: %s\n",
-           getpid(),syscall(SYS_gettid),logLevel[RT_LOG_WARNING], buf);
+    syslog(RT_LOG_WARNING, "%u %lu [%s]: %s\n", getpid(), syscall(SYS_gettid), logLevel[RT_LOG_WARNING], buf);
     return;
 }
-void DlogInfoInner(int module_id, const char *fmt, ...)
+void DlogInfoInner(int module_id, const char* fmt, ...)
 {
     char buf[MAX_LOG_BUF_SIZE] = {0};
 
     va_list arg;
-    va_start (arg, fmt);
+    va_start(arg, fmt);
     vsnprintf(buf, MAX_LOG_BUF_SIZE, fmt, arg);
-    va_end (arg);
+    va_end(arg);
 
-    syslog(RT_LOG_INFO, "%u %lu [%s]: %s\n",
-           getpid(),syscall(SYS_gettid),logLevel[RT_LOG_INFO], buf);
+    syslog(RT_LOG_INFO, "%u %lu [%s]: %s\n", getpid(), syscall(SYS_gettid), logLevel[RT_LOG_INFO], buf);
     return;
 }
-void DlogDebugInner(int module_id, const char *fmt, ...)
+void DlogDebugInner(int module_id, const char* fmt, ...)
 {
     char buf[MAX_LOG_BUF_SIZE] = {0};
 
     va_list arg;
-    va_start (arg, fmt);
+    va_start(arg, fmt);
     vsnprintf(buf, MAX_LOG_BUF_SIZE, fmt, arg);
-    va_end (arg);
+    va_end(arg);
 
     /*syslog(RT_LOG_DEBUG, "%u %lu [%s]: %s\n",
            getpid(),syscall(SYS_gettid),logLevel[RT_LOG_DEBUG], buf);*/
     return;
 }
 
-void DlogEventInner(int module_id, const char *fmt, ...)
+void DlogEventInner(int module_id, const char* fmt, ...)
 {
     char buf[MAX_LOG_BUF_SIZE] = {0};
 
     va_list arg;
-    va_start (arg, fmt);
+    va_start(arg, fmt);
     vsnprintf(buf, MAX_LOG_BUF_SIZE, fmt, arg);
-    va_end (arg);
+    va_end(arg);
 
-    syslog(RT_LOG_EVENT, "%u %lu [%s]: %s\n",
-           getpid(),syscall(SYS_gettid),logLevel[RT_LOG_EVENT], buf);
+    syslog(RT_LOG_EVENT, "%u %lu [%s]: %s\n", getpid(), syscall(SYS_gettid), logLevel[RT_LOG_EVENT], buf);
     return;
 }
 
-int dlog_getlevel(int module_id, int *enable_event)
+int dlog_getlevel(int module_id, int* enable_event)
 {
     if (enable_event != nullptr) {
         *enable_event = true;
@@ -129,12 +116,6 @@ int dlog_getlevel(int module_id, int *enable_event)
     return 0;
 }
 
-int DlogReportStart(int devId, int mode)
-{
-    return DRV_ERROR_NONE;
-}
+int DlogReportStart(int devId, int mode) { return DRV_ERROR_NONE; }
 
-void DlogReportStop(int devId)
-{
-    return;
-}
+void DlogReportStop(int devId) { return; }

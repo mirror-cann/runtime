@@ -41,15 +41,13 @@ using namespace cce::runtime;
 
 class CloudV2DeviceResLimitTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         isCfgOpWaitTaskTimeout = rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout;
         isCfgOpExcTaskTimeout = rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = false;
@@ -60,7 +58,7 @@ protected:
     virtual void TearDown()
     {
         rtDeviceReset(0);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = isCfgOpWaitTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = isCfgOpExcTaskTimeout;
         GlobalMockObject::verify();
@@ -94,8 +92,9 @@ TEST_F(CloudV2DeviceResLimitTest, TestSetDeviceResLimitFailed)
 
 TEST_F(CloudV2DeviceResLimitTest, TestSetDeviceResLimitFailed2)
 {
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &label, std::map<std::string, std::string> &res))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string& label, std::map<std::string, std::string>& res))
         .stubs()
         .will(returnValue(false));
     rtError_t error = rtsSetDeviceResLimit(0, RT_DEV_RES_CUBE_CORE, 2);
@@ -135,8 +134,9 @@ TEST_F(CloudV2DeviceResLimitTest, TestSetDeviceResLimitFailed6)
 
 TEST_F(CloudV2DeviceResLimitTest, TestSetDeviceResLimitFailed7)
 {
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &label, std::map<std::string, std::string> &res))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string& label, std::map<std::string, std::string>& res))
         .stubs()
         .will(returnValue(false));
     rtDeviceReset(0);

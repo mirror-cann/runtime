@@ -10,47 +10,26 @@
 #include "easy_comm.h"
 #include "iam.h"
 
-int EzcomRPCSync(int fd, struct EzcomRequest *req, struct EzcomResponse *resp) {
-    return 0;
-}
+int EzcomRPCSync(int fd, struct EzcomRequest* req, struct EzcomResponse* resp) { return 0; }
 
-int IAMInitProc(const AppConfig &config) {
-    return 0;
-}
+int IAMInitProc(const AppConfig& config) { return 0; }
 
-int EzcomRegisterServiceHandler(int fd, void (*handler)(int, struct EzcomRequest *)) {
-    return 0;
-}
-int EzcomCreateServer(const struct EzcomServerAttr *attr)
+int EzcomRegisterServiceHandler(int fd, void (*handler)(int, struct EzcomRequest*)) { return 0; }
+int EzcomCreateServer(const struct EzcomServerAttr* attr) { return 0; }
+int EzcomCreateClient(const struct EzcomAttr* attr) { return 0; }
+
+int EzcomOpenPipe(const char* targetProcName, int procNameLen) { return 0; }
+
+int32_t EzcomOpen(const struct EzcomAttr* attr) { return 1; }
+
+int EzcomOpenPipeAsync(
+    const char* targetProcName, int procNameLen, void (*callback)(const char* targetProcName, int procNameLen, int fd))
 {
     return 0;
 }
-int EzcomCreateClient(const struct EzcomAttr *attr)
-{
-    return 0;
-}
 
-int EzcomOpenPipe(const char *targetProcName, int procNameLen) {
-    return 0;
-}
+int EzcomClosePipe(int fd) { return 0; }
 
-int32_t EzcomOpen(const struct EzcomAttr *attr){
-    return 1;
-}
+int EzcomTimedRPCSync(int fd, struct EzcomRequest* req, struct EzcomResponse* resp, int timeOut) { return 0; }
 
-int EzcomOpenPipeAsync(const char *targetProcName, int procNameLen,
-                       void (*callback)(const char *targetProcName, int procNameLen, int fd)) {
-    return 0;
-}
-
-int EzcomClosePipe(int fd) {
-    return 0;
-}
-
-int EzcomTimedRPCSync(int fd, struct EzcomRequest *req, struct EzcomResponse *resp, int timeOut) {
-    return 0;
-}
-
-int EzcomSendResponse(int fd, const struct EzcomResponse *resp) {
-    return 0;
-}
+int EzcomSendResponse(int fd, const struct EzcomResponse* resp) { return 0; }

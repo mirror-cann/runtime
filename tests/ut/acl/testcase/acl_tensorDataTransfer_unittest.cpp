@@ -13,7 +13,6 @@
 #include "acl/acl_tdt_queue.h"
 #include "common/log_inner.h"
 
-
 #include "acl_tdt_channel/tensor_data_transfer.h"
 
 #include <gtest/gtest.h>
@@ -35,46 +34,41 @@ using namespace acl;
 using namespace tdt;
 
 namespace acl {
-    extern aclError TensorDatasetDeserializes(const std::vector<tdt::DataItem> &itemVec, acltdtDataset *dataset);
-    extern aclError TensorDatasetSerializes(const acltdtDataset *dataset, std::vector<tdt::DataItem> &itemVec);
-    extern aclError GetAclTypeByTdtDataType(tdt::TdtDataType tdtDataType, acltdtTensorType &aclType);
-    extern void GetTensorDimsString(const int64_t *dims, size_t dimNum, std::string &dimsStr);
-    extern aclError GetTdtDataTypeByAclDataType(acltdtTensorType aclType, tdt::TdtDataType &tdtDataType);
-    extern bool GetTensorShape(const std::string &dimsStr, std::vector<int64_t> &dims);
+extern aclError TensorDatasetDeserializes(const std::vector<tdt::DataItem>& itemVec, acltdtDataset* dataset);
+extern aclError TensorDatasetSerializes(const acltdtDataset* dataset, std::vector<tdt::DataItem>& itemVec);
+extern aclError GetAclTypeByTdtDataType(tdt::TdtDataType tdtDataType, acltdtTensorType& aclType);
+extern void GetTensorDimsString(const int64_t* dims, size_t dimNum, std::string& dimsStr);
+extern aclError GetTdtDataTypeByAclDataType(acltdtTensorType aclType, tdt::TdtDataType& tdtDataType);
+extern bool GetTensorShape(const std::string& dimsStr, std::vector<int64_t>& dims);
 
-    extern aclError acltdtReceiveTensorV2(const acltdtChannelHandle *handle, acltdtDataset *dataset, int32_t timeout);
-    extern aclError acltdtSendTensorV2(const acltdtChannelHandle *handle, const acltdtDataset *dataset,
-        int32_t timeout);
+extern aclError acltdtReceiveTensorV2(const acltdtChannelHandle* handle, acltdtDataset* dataset, int32_t timeout);
+extern aclError acltdtSendTensorV2(const acltdtChannelHandle* handle, const acltdtDataset* dataset, int32_t timeout);
 
-    extern aclError GetTdtDataTypeByAclDataTypeV2(acltdtTensorType aclType, int32_t &tdtDataType);
-    extern aclError GetAclTypeByTdtDataTypeV2(int32_t tdtDataType, acltdtTensorType &aclType);
-    extern aclError TensorDatasetSerializesV2(const acltdtDataset *dataset, std::vector<aclTdtDataItemInfo> &itemVec);
-    extern aclError TensorDatasetDeserializesV2(const std::vector<aclTdtDataItemInfo> &itemVec, acltdtDataset *dataset);
-    extern aclError UnpackageRecvDataInfo(uint8_t *outputHostAddr, size_t size, std::vector<aclTdtDataItemInfo> &itemVec);
-    extern aclError TensorDataitemSerialize(std::vector<aclTdtDataItemInfo> &itemVec,
-                                            std::vector<rtMemQueueBuffInfo> &qBufVec);
-    extern aclError GetOrMallocHostMem(const acltdtChannelHandle *handle, acltdtDataset *dataset,
-        size_t bufLen, void *& hostPtr);
-}
+extern aclError GetTdtDataTypeByAclDataTypeV2(acltdtTensorType aclType, int32_t& tdtDataType);
+extern aclError GetAclTypeByTdtDataTypeV2(int32_t tdtDataType, acltdtTensorType& aclType);
+extern aclError TensorDatasetSerializesV2(const acltdtDataset* dataset, std::vector<aclTdtDataItemInfo>& itemVec);
+extern aclError TensorDatasetDeserializesV2(const std::vector<aclTdtDataItemInfo>& itemVec, acltdtDataset* dataset);
+extern aclError UnpackageRecvDataInfo(uint8_t* outputHostAddr, size_t size, std::vector<aclTdtDataItemInfo>& itemVec);
+extern aclError TensorDataitemSerialize(
+    std::vector<aclTdtDataItemInfo>& itemVec, std::vector<rtMemQueueBuffInfo>& qBufVec);
+extern aclError GetOrMallocHostMem(
+    const acltdtChannelHandle* handle, acltdtDataset* dataset, size_t bufLen, void*& hostPtr);
+} // namespace acl
 
-class UTEST_tensor_data_transfer : public testing::Test
-{
-    public:
-        UTEST_tensor_data_transfer(){}
-    protected:
-        void SetUp() override {
-            MockFunctionTest::aclStubInstance().ResetToDefaultMock();
-        }
-        void TearDown() override {
-            Mock::VerifyAndClear(&MockFunctionTest::aclStubInstance());
-        }
+class UTEST_tensor_data_transfer : public testing::Test {
+public:
+    UTEST_tensor_data_transfer() {}
+
+protected:
+    void SetUp() override { MockFunctionTest::aclStubInstance().ResetToDefaultMock(); }
+    void TearDown() override { Mock::VerifyAndClear(&MockFunctionTest::aclStubInstance()); }
 };
 
 TEST_F(UTEST_tensor_data_transfer, TestGetTensorTypeFromItem)
 {
     const int64_t dims[] = {1, 3, 224, 224};
-    void *data = (void*)0x1f;
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, 10);
+    void* data = (void*)0x1f;
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, 10);
     acltdtTensorType tensorType = acltdtGetTensorTypeFromItem(dataItem);
     EXPECT_EQ(tensorType, ACL_SUCCESS);
     EXPECT_NE(acltdtGetTensorTypeFromItem(nullptr), ACL_SUCCESS);
@@ -83,7 +77,7 @@ TEST_F(UTEST_tensor_data_transfer, TestGetTensorTypeFromItem)
 
 TEST_F(UTEST_tensor_data_transfer, acltdtGetSliceInfoFromItem)
 {
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     size_t sliceNum = 99;
     size_t sliceId = 99;
     EXPECT_EQ(acltdtGetSliceInfoFromItem(dataItem, &sliceNum, &sliceId), ACL_SUCCESS);
@@ -95,13 +89,13 @@ TEST_F(UTEST_tensor_data_transfer, acltdtGetSliceInfoFromItem)
 TEST_F(UTEST_tensor_data_transfer, TestGetTensorInfo)
 {
     const int64_t dims[] = {1, 3, 224, 224};
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, nullptr, 1);
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, nullptr, 1);
     aclDataType dataType = acltdtGetDataTypeFromItem(dataItem);
     EXPECT_NE(dataType, ACL_SUCCESS);
     EXPECT_NE(acltdtGetDataTypeFromItem(nullptr), ACL_SUCCESS);
     int32_t tmpData = 0;
-    dataItem->priorityData_ = (void *)&tmpData;
-    void *dataAddr = acltdtGetDataAddrFromItem(dataItem);
+    dataItem->priorityData_ = (void*)&tmpData;
+    void* dataAddr = acltdtGetDataAddrFromItem(dataItem);
     EXPECT_NE(dataAddr, nullptr);
     EXPECT_EQ(dataAddr, &tmpData);
 
@@ -111,16 +105,16 @@ TEST_F(UTEST_tensor_data_transfer, TestGetTensorInfo)
     EXPECT_NE(acltdtGetDimNumFromItem(dataItem), 0);
     EXPECT_EQ(acltdtGetDimNumFromItem(nullptr), 0);
 
-    int64_t *dim = new int64_t[4];
+    int64_t* dim = new int64_t[4];
     EXPECT_NE(acltdtGetDimsFromItem(dataItem, dim, 1), ACL_SUCCESS);
     EXPECT_EQ(acltdtGetDimsFromItem(dataItem, dim, 5), ACL_SUCCESS);
 
     EXPECT_NE(dataItem, nullptr);
-    acltdtDataItem *dataItemNull = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 0, ACL_INT64, &tmpData, 10);
+    acltdtDataItem* dataItemNull = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 0, ACL_INT64, &tmpData, 10);
     EXPECT_EQ(dataItemNull, nullptr);
     EXPECT_NE(acltdtDestroyDataItem(dataItemNull), ACL_SUCCESS);
 
-    acltdtDataset *createDataSet = acltdtCreateDataset();
+    acltdtDataset* createDataSet = acltdtCreateDataset();
     EXPECT_EQ(acltdtDestroyDataset(createDataSet), ACL_SUCCESS);
     createDataSet = acltdtCreateDataset();
     EXPECT_NE(acltdtAddDataItem(createDataSet, dataItemNull), ACL_ERROR_FEATURE_UNSUPPORTED);
@@ -133,15 +127,15 @@ TEST_F(UTEST_tensor_data_transfer, TestGetTensorInfo)
     EXPECT_EQ(acltdtGetDatasetSize(nullptr), 0);
     EXPECT_EQ(acltdtDestroyDataset(createDataSet), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyDataItem(dataItem), ACL_SUCCESS);
-    delete [] dim;
+    delete[] dim;
 }
 
 TEST_F(UTEST_tensor_data_transfer, TestTdtAddDataItem)
 {
     const int64_t dims[] = {1, 3, 224, 224};
-    void *data = (void*)0x1f;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, 1);
+    void* data = (void*)0x1f;
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, 1);
     EXPECT_EQ(acltdtAddDataItem(dataSet, dataItem), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyDataset(dataSet), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyDataItem(dataItem), ACL_SUCCESS);
@@ -157,15 +151,13 @@ TEST_F(UTEST_tensor_data_transfer, TestTdtAddDataItem)
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtChannel01)
 {
     uint32_t deviceId = 1;
-    const char *name = "Pooling";
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillRepeatedly(Return((0)));
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "Pooling";
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillRepeatedly(Return((0)));
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
 
     handle->recvName = "Poolings";
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostStop(_))
-        .WillOnce(Return((1)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostStop(_)).WillOnce(Return((1)));
     EXPECT_NE(acltdtStopChannel(handle), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyChannel(handle), ACL_SUCCESS);
 }
@@ -173,8 +165,8 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtChannel01)
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtChannel02)
 {
     uint32_t deviceId = 1;
-    const char *name = "Pooling";
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "Pooling";
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_EQ(acltdtStopChannel(handle), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyChannel(handle), ACL_SUCCESS);
 }
@@ -182,22 +174,20 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtChannel02)
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtChannel03)
 {
     uint32_t deviceId = 1;
-    const char *name = "";
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
-    std::map<std::string, acltdtChannelHandle *> aclChannleMap;
+    const char* name = "";
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
+    std::map<std::string, acltdtChannelHandle*> aclChannleMap;
     aclChannleMap.erase(handle->name);
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostDestroy())
-        .WillOnce(Return((1)))
-        .WillRepeatedly(Return(0));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostDestroy()).WillOnce(Return((1))).WillRepeatedly(Return(0));
     EXPECT_EQ(acltdtDestroyChannel(handle), ACL_SUCCESS);
 }
 
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor01)
 {
     uint32_t deviceId = 0;
-    const char *name = "tensor";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "tensor";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     aclError ret = acltdtSendTensor(handle, dataSet, 0);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
@@ -207,8 +197,7 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor01)
     ret = acltdtSendTensor(handle, nullptr, 0);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPushData(_, _, _))
-        .WillOnce(Return((1)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPushData(_, _, _)).WillOnce(Return((1)));
 
     ret = acltdtSendTensor(handle, dataSet, -1);
     EXPECT_EQ(ret, ACL_ERROR_FAILURE);
@@ -220,12 +209,11 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor01)
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor02)
 {
     uint32_t deviceId = 0;
-    const char *name = "tensor";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "tensor";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPushData(_, _, _))
-        .WillOnce(Return((1)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPushData(_, _, _)).WillOnce(Return((1)));
     aclError ret = acltdtSendTensor(handle, dataSet, -1);
     EXPECT_EQ(ret, ACL_ERROR_FAILURE);
     EXPECT_EQ(acltdtDestroyChannel(handle), ACL_SUCCESS);
@@ -235,12 +223,11 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor02)
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor03)
 {
     uint32_t deviceId = 0;
-    const char *name = "tensor";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "tensor";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPushData(_, _, _))
-        .WillOnce(Return(0));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPushData(_, _, _)).WillOnce(Return(0));
     aclError ret = acltdtSendTensor(handle, dataSet, -1);
     EXPECT_EQ(ret, ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyChannel(handle), ACL_SUCCESS);
@@ -250,9 +237,9 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtSendTensor03)
 TEST_F(UTEST_tensor_data_transfer, TestAclTdtReceiveTensor01)
 {
     uint32_t deviceId = 0;
-    const char *name = "Pooling";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "Pooling";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     handle->recvName = "Poolings";
 
     EXPECT_EQ(acltdtReceiveTensor(nullptr, dataSet, 0), ACL_ERROR_INVALID_PARAM);
@@ -275,13 +262,13 @@ TEST_F(UTEST_tensor_data_transfer, TestAclTdtReceiveTensor01)
 TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetSerializes01)
 {
     uint32_t deviceId = 0;
-    const char *name = "Pooling";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "Pooling";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
 
     const int64_t dims[] = {1, 3, 224, 224};
-    void *data = (void*)0x1f;
-    acltdtDataItem *item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
+    void* data = (void*)0x1f;
+    acltdtDataItem* item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
 
     tdt::DataItem dataItem1 = {tdt::TDT_END_OF_SEQUENCE, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
     tdt::DataItem dataItem2 = {tdt::TDT_TENSOR, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
@@ -311,14 +298,14 @@ TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetSerializes01)
 
 TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetSerializes02)
 {
-    acltdtDataset *dataSet = acltdtCreateDataset();
+    acltdtDataset* dataSet = acltdtCreateDataset();
     tdt::DataItem dataItem = {tdt::TDT_END_OF_SEQUENCE, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
     std::vector<tdt::DataItem> itemVec;
     itemVec.push_back(dataItem);
 
     const int64_t dims[] = {1, 3, 224, 224};
-    void *data = (void*)0x1f;
-    acltdtDataItem *item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
+    void* data = (void*)0x1f;
+    acltdtDataItem* item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
     (void)acltdtAddDataItem(dataSet, item);
     EXPECT_EQ(TensorDatasetSerializes(dataSet, itemVec), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyDataset(dataSet), ACL_SUCCESS);
@@ -354,13 +341,13 @@ TEST_F(UTEST_tensor_data_transfer, TestGetAclTypeByTdtDataType)
 TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetDeserializes01)
 {
     uint32_t deviceId = 0;
-    const char *name = "Pooling";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "Pooling";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
 
     const int64_t dims[] = {1, 3, 224, 224};
-    void *data = (void*)0x1f;
-    acltdtDataItem *item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
+    void* data = (void*)0x1f;
+    acltdtDataItem* item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
 
     tdt::DataItem dataItem = {tdt::TDT_IMAGE_LABEL, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
     std::vector<tdt::DataItem> itemVec;
@@ -377,7 +364,7 @@ TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetDeserializes01)
 
 TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetDeserializes02)
 {
-    acltdtDataset *dataSet = acltdtCreateDataset();
+    acltdtDataset* dataSet = acltdtCreateDataset();
     tdt::DataItem dataItem = {tdt::TDT_TENSOR, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
     std::vector<tdt::DataItem> itemVec;
     itemVec.push_back(dataItem);
@@ -387,14 +374,14 @@ TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetDeserializes02)
 
 TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetDeserializes03)
 {
-    acltdtDataset *dataSet = acltdtCreateDataset();
+    acltdtDataset* dataSet = acltdtCreateDataset();
     tdt::DataItem dataItem = {tdt::TDT_TENSOR, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
     std::vector<tdt::DataItem> itemVec;
     itemVec.push_back(dataItem);
 
     const int64_t dims[] = {1, 3, 224, 224};
-    void *data = (void*)0x1f;
-    acltdtDataItem *item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
+    void* data = (void*)0x1f;
+    acltdtDataItem* item = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_FLOAT16, data, 1);
     (void)acltdtAddDataItem(dataSet, item);
 
     std::vector<int64_t> dims2;
@@ -406,13 +393,12 @@ TEST_F(UTEST_tensor_data_transfer, TestTensorDatasetDeserializes03)
     EXPECT_EQ(acltdtDestroyDataItem(item), ACL_SUCCESS);
 }
 
-
 TEST_F(UTEST_tensor_data_transfer, TestAcltdtReceiveTensor01)
 {
     uint32_t deviceId = 0;
-    const char *name = "Pooling";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "Pooling";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     tdt::DataItem dataItem = {tdt::TDT_END_OF_SEQUENCE, "hidden", "3", "int64", 8, std::shared_ptr<void>(new int(0))};
     std::vector<tdt::DataItem> itemVec;
     itemVec.push_back(dataItem);
@@ -424,13 +410,12 @@ TEST_F(UTEST_tensor_data_transfer, TestAcltdtReceiveTensor01)
 TEST_F(UTEST_tensor_data_transfer, TestAcltdtReceiveTensor02)
 {
     uint32_t deviceId = 0;
-    const char *name = "tensor";
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "tensor";
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     handle->recvName = "test";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPopData(_, _))
-        .WillOnce(Return((1)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostPopData(_, _)).WillOnce(Return((1)));
     aclError ret = acltdtReceiveTensor(handle, dataSet, -1);
     EXPECT_EQ(ret, ACL_ERROR_FAILURE);
     EXPECT_EQ(acltdtDestroyChannel(handle), ACL_SUCCESS);
@@ -453,24 +438,23 @@ TEST_F(UTEST_tensor_data_transfer, TestGetTensorShape)
 TEST_F(UTEST_tensor_data_transfer, acltdtCreateChannel)
 {
     uint32_t deviceId = 1;
-    const char *name = "name";
+    const char* name = "name";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillOnce(Return((1)));
-    acltdtChannelHandle *ret = acltdtCreateChannel(deviceId, name);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillOnce(Return((1)));
+    acltdtChannelHandle* ret = acltdtCreateChannel(deviceId, name);
     EXPECT_EQ(ret, nullptr);
 }
 
 TEST_F(UTEST_tensor_data_transfer, acltdtCreateDataItemTest)
 {
     acltdtTensorType tdtType = ACL_TENSOR_DATA_UNDEFINED;
-    int64_t *dims = (int64_t *)0x11;
+    int64_t* dims = (int64_t*)0x11;
     size_t dimNum = 10;
     aclDataType dataType = ACL_DT_UNDEFINED;
-    void *data = nullptr;
+    void* data = nullptr;
     size_t size = 0;
 
-    acltdtDataItem *ret = acltdtCreateDataItem(tdtType, dims, dimNum, dataType, data, size);
+    acltdtDataItem* ret = acltdtCreateDataItem(tdtType, dims, dimNum, dataType, data, size);
     EXPECT_EQ(ret, nullptr);
 
     dimNum = 129;
@@ -481,11 +465,11 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCreateDataItemTest)
 TEST_F(UTEST_tensor_data_transfer, acltdtReceiveTensorTest)
 {
     uint32_t deviceId = 1;
-    const char *name = "name";
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    const char* name = "name";
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
     handle->recvName = "tensor";
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     acltdtDestroyChannel(handle);
     acltdtDestroyDataset(dataset);
@@ -494,11 +478,12 @@ TEST_F(UTEST_tensor_data_transfer, acltdtReceiveTensorTest)
 TEST_F(UTEST_tensor_data_transfer, acltdtCreateChannelWithCapacityTest)
 {
     uint32_t deviceId = 0;
-    const char *fakeName = "aaaaaaaaaadddddddddddeeeeeeeecccccccccccdddddddaaaaaaaaaaaadadadadadadadadadadadadadadadadadadaaadaaaadaadadddaddddddddddddddddda";
+    const char* fakeName = "aaaaaaaaaadddddddddddeeeeeeeecccccccccccdddddddaaaaaaaaaaaadadadadadadadadadadadadadadadada"
+                           "dadaaadaaaadaadadddaddddddddddddddddda";
     size_t capacity = 1;
-    acltdtChannelHandle *ret = acltdtCreateChannelWithCapacity(deviceId, fakeName, capacity);
+    acltdtChannelHandle* ret = acltdtCreateChannelWithCapacity(deviceId, fakeName, capacity);
     EXPECT_EQ(ret, nullptr);
-    const char *name = "thj_queue";
+    const char* name = "thj_queue";
     capacity = 2;
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueInit(_))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID))
@@ -512,7 +497,7 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCreateChannelWithCapacityTest)
     ret = acltdtCreateChannelWithCapacity(deviceId, name, capacity);
     EXPECT_EQ(ret, nullptr);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueCreate(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueCreate(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID))
         .WillRepeatedly(Return(RT_ERROR_NONE));
     ret = acltdtCreateChannelWithCapacity(deviceId, name, capacity);
@@ -525,16 +510,16 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCreateChannelWithCapacityTest)
 
 TEST_F(UTEST_tensor_data_transfer, acltdtGetDimsFromItemTest)
 {
-    int64_t *dims = nullptr;
+    int64_t* dims = nullptr;
     size_t dimNum = 10;
-    acltdtDataItem *dataItem = (acltdtDataItem *)0x11;
+    acltdtDataItem* dataItem = (acltdtDataItem*)0x11;
     aclError ret = acltdtGetDimsFromItem(dataItem, dims, dimNum);
     EXPECT_NE(ret, ACL_SUCCESS);
 }
 
 TEST_F(UTEST_tensor_data_transfer, TensorDatasetSerializesV2)
 {
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     acltdtDataItem item;
     item.tdtType = ACL_TENSOR_DATA_TENSOR;
@@ -548,7 +533,7 @@ TEST_F(UTEST_tensor_data_transfer, TensorDatasetSerializesV2)
 
 TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2)
 {
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     std::vector<aclTdtDataItemInfo> itemVec;
     aclTdtDataItemInfo info;
@@ -570,25 +555,24 @@ TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2)
 
 TEST_F(UTEST_tensor_data_transfer, acltdtSendTensorV2)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_))
-        .WillRepeatedly(Return((RT_ERROR_NONE)));
-    acltdtChannelHandle *handle = acltdtCreateChannelWithCapacity(0, "test", 3);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_)).WillRepeatedly(Return((RT_ERROR_NONE)));
+    acltdtChannelHandle* handle = acltdtCreateChannelWithCapacity(0, "test", 3);
     EXPECT_NE(handle, nullptr);
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     int32_t timeout = 300;
 
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    void *data = (void*)(&tmpData);
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, sizeof(int32_t));
+    void* data = (void*)(&tmpData);
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, sizeof(int32_t));
     dataset->blobs.push_back(dataItem);
     dataset->blobs[0]->tdtType = ACL_TENSOR_DATA_UNDEFINED;
     auto ret = acltdtSendTensor(handle, dataset, timeout);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
     dataset->blobs[0]->tdtType = ACL_TENSOR_DATA_TENSOR;
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueEnQueueBuff(_,_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueEnQueueBuff(_, _, _, _))
         .WillOnce(Return((ACL_ERROR_RT_QUEUE_FULL)))
         .WillOnce(Return((ACL_ERROR_RT_INTERNAL_ERROR)))
         .WillRepeatedly(Return((RT_ERROR_NONE)));
@@ -607,18 +591,17 @@ TEST_F(UTEST_tensor_data_transfer, acltdtSendTensorV2)
 
 TEST_F(UTEST_tensor_data_transfer, acltdtSendTensorV2_Device)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_))
-        .WillRepeatedly(Return((RT_ERROR_NONE)));
-    acltdtChannelHandle *handle = acltdtCreateChannelWithCapacity(0, "test", 3);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_)).WillRepeatedly(Return((RT_ERROR_NONE)));
+    acltdtChannelHandle* handle = acltdtCreateChannelWithCapacity(0, "test", 3);
     EXPECT_NE(handle, nullptr);
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     int32_t timeout = 300;
 
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    void *data = (void*)(&tmpData);
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, sizeof(int32_t));
+    void* data = (void*)(&tmpData);
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, data, sizeof(int32_t));
     dataset->blobs.push_back(dataItem);
     dataset->blobs[0]->tdtType = ACL_TENSOR_DATA_UNDEFINED;
     dataset->memType = MEM_DEVICE;
@@ -629,7 +612,7 @@ TEST_F(UTEST_tensor_data_transfer, acltdtSendTensorV2_Device)
     // SaveCtrlSharedPtrToVec中不分配内存，也不拷贝
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMalloc).WillRepeatedly(Return(RT_ERROR_NONE));
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy).WillRepeatedly(Return(RT_ERROR_NONE));
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueEnQueueBuff(_,_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueEnQueueBuff(_, _, _, _))
         .WillOnce(Return((ACL_ERROR_RT_QUEUE_FULL)))
         .WillOnce(Return((ACL_ERROR_RT_INTERNAL_ERROR)))
         .WillRepeatedly(Return((RT_ERROR_NONE)));
@@ -648,10 +631,10 @@ TEST_F(UTEST_tensor_data_transfer, acltdtSendTensorV2_Device)
 
 TEST_F(UTEST_tensor_data_transfer, acltdtReceiveTensorV2)
 {
-    acltdtChannelHandle *handle = acltdtCreateChannelWithCapacity(0, "TF_RECEIVE_1", 3);
+    acltdtChannelHandle* handle = acltdtCreateChannelWithCapacity(0, "TF_RECEIVE_1", 3);
     EXPECT_NE(handle, nullptr);
 
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
 
     int32_t timeout = 300;
@@ -686,7 +669,7 @@ TEST_F(UTEST_tensor_data_transfer, acltdtQueryChannelSize)
     aclError ret = acltdtQueryChannelSize(nullptr, &size);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    acltdtChannelHandle *handle = acltdtCreateChannelWithCapacity(0, "TF_RECEIVE_1", 3);
+    acltdtChannelHandle* handle = acltdtCreateChannelWithCapacity(0, "TF_RECEIVE_1", 3);
     EXPECT_NE(handle, nullptr);
 
     ret = acltdtQueryChannelSize(handle, nullptr);
@@ -753,9 +736,9 @@ TEST_F(UTEST_tensor_data_transfer, GetAclTypeByTdtDataTypeV2)
 TEST_F(UTEST_tensor_data_transfer, UnpackageRecvDataInfoSuccess)
 {
     size_t size = sizeof(ItemInfo) + sizeof(int64_t) + 100;
-    uint8_t *outputHostAddr = static_cast<uint8_t *>(malloc(size));
+    uint8_t* outputHostAddr = static_cast<uint8_t*>(malloc(size));
     EXPECT_NE(outputHostAddr, nullptr);
-    ItemInfo *head = reinterpret_cast<ItemInfo *>(outputHostAddr);
+    ItemInfo* head = reinterpret_cast<ItemInfo*>(outputHostAddr);
     head->cnt = 1;
     head->curCnt = 0;
     head->dataLen = 100;
@@ -772,9 +755,9 @@ TEST_F(UTEST_tensor_data_transfer, UnpackageRecvDataInfoSuccess)
 TEST_F(UTEST_tensor_data_transfer, UnpackageRecvDataInfoTest)
 {
     size_t itemSize = sizeof(ItemInfo) + sizeof(int64_t) + 100;
-    uint8_t *outputHostAddr = new uint8_t[itemSize]{0};
+    uint8_t* outputHostAddr = new uint8_t[itemSize]{0};
     EXPECT_NE(outputHostAddr, nullptr);
-    ItemInfo *head = reinterpret_cast<ItemInfo *>(outputHostAddr);
+    ItemInfo* head = reinterpret_cast<ItemInfo*>(outputHostAddr);
     head->cnt = 1;
     head->curCnt = 0;
     head->dataLen = 100;
@@ -798,13 +781,13 @@ TEST_F(UTEST_tensor_data_transfer, UnpackageRecvDataInfoTest)
 TEST_F(UTEST_tensor_data_transfer, acltdtGetDatasetName)
 {
     EXPECT_EQ(acltdtGetDatasetName(nullptr), nullptr);
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     std::string datasetNameAcquied = acltdtGetDatasetName(dataset);
     EXPECT_EQ(datasetNameAcquied, "");
     std::vector<aclTdtDataItemInfo> itemVec;
     std::string datasetName("123");
-    std::shared_ptr<uint8_t> data(new uint8_t[datasetName.size()], [] (uint8_t *p) {delete[] p;});
+    std::shared_ptr<uint8_t> data(new uint8_t[datasetName.size()], [](uint8_t* p) { delete[] p; });
     const auto retCopy = memcpy_s(data.get(), datasetName.size(), datasetName.c_str(), datasetName.size());
     EXPECT_EQ(retCopy, 0);
     aclTdtDataItemInfo info;
@@ -822,7 +805,7 @@ TEST_F(UTEST_tensor_data_transfer, acltdtGetDatasetName)
 
 TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2_ShouldReturn_ACL_SUCCESS_WhenPriorityDataPtrNotNull)
 {
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     std::vector<aclTdtDataItemInfo> itemVec;
     std::string datasetName("priority_name");
@@ -835,8 +818,8 @@ TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2_ShouldReturn_ACL_
     info.ctrlInfo.dataType = ACL_TENSOR_DATA_TENSOR;
     info.ctrlInfo.version = 1;
     info.ctrlInfo.dataLen = datasetName.size();
-    info.dataPtr = std::shared_ptr<uint8_t>(new uint8_t[1], [] (uint8_t *p) { delete[] p; });
-    info.priorityDataPtr_ = static_cast<void *>(priorityBuf);
+    info.dataPtr = std::shared_ptr<uint8_t>(new uint8_t[1], [](uint8_t* p) { delete[] p; });
+    info.priorityDataPtr_ = static_cast<void*>(priorityBuf);
     itemVec.push_back(info);
 
     auto ret = TensorDatasetDeserializesV2(itemVec, dataset);
@@ -848,12 +831,12 @@ TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2_ShouldReturn_ACL_
 
 TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2_ShouldReturn_ACL_SUCCESS_WhenVersionIs0AndVersionIs1)
 {
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
     std::vector<aclTdtDataItemInfo> itemVec;
 
     std::string datasetName("slice_end");
-    std::shared_ptr<uint8_t> nameData(new uint8_t[datasetName.size()], [] (uint8_t *p) { delete[] p; });
+    std::shared_ptr<uint8_t> nameData(new uint8_t[datasetName.size()], [](uint8_t* p) { delete[] p; });
     const auto retCopy = memcpy_s(nameData.get(), datasetName.size(), datasetName.c_str(), datasetName.size());
     EXPECT_EQ(retCopy, 0);
 
@@ -871,7 +854,7 @@ TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2_ShouldReturn_ACL_
     sliceInfo.ctrlInfo.sliceNum = 2;
     sliceInfo.ctrlInfo.sliceId = 0;
     sliceInfo.dims = {2, 4};
-    sliceInfo.dataPtr = std::shared_ptr<uint8_t>(new uint8_t[sizeof(int32_t)], [] (uint8_t *p) { delete[] p; });
+    sliceInfo.dataPtr = std::shared_ptr<uint8_t>(new uint8_t[sizeof(int32_t)], [](uint8_t* p) { delete[] p; });
     itemVec.push_back(sliceInfo);
 
     auto ret = TensorDatasetDeserializesV2(itemVec, dataset);
@@ -881,16 +864,16 @@ TEST_F(UTEST_tensor_data_transfer, TensorDatasetDeserializesV2_ShouldReturn_ACL_
     EXPECT_GE(acltdtGetDatasetSize(dataset), 1);
 }
 
-rtError_t rtsPointerGetAttributesDevice(const void *ptr, rtPtrAttributes_t *attributes)
+rtError_t rtsPointerGetAttributesDevice(const void* ptr, rtPtrAttributes_t* attributes)
 {
-    (void) ptr;
+    (void)ptr;
     attributes->location.type = RT_MEMORY_LOC_DEVICE;
     return RT_ERROR_NONE;
 }
 
-rtError_t rtsPointerGetAttributesHost(const void *ptr, rtPtrAttributes_t *attributes)
+rtError_t rtsPointerGetAttributesHost(const void* ptr, rtPtrAttributes_t* attributes)
 {
-    (void) ptr;
+    (void)ptr;
     attributes->location.type = RT_MEMORY_LOC_UNREGISTERED;
     return RT_ERROR_NONE;
 }
@@ -899,8 +882,8 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemHostHostPtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesHost))
         .WillOnce(Invoke(rtsPointerGetAttributesHost));
@@ -915,8 +898,8 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemDeviceDevicePtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesHost))
         .WillOnce(Invoke(rtsPointerGetAttributesHost));
@@ -931,9 +914,9 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemNullHostHostPtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
-    acltdtDataItem *dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataItem* dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice));
@@ -950,9 +933,9 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemNullDeviceDevicePtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
-    acltdtDataItem *dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataItem* dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice));
@@ -969,8 +952,8 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemDeviceHostPtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice))
         .WillOnce(Invoke(rtsPointerGetAttributesHost));
@@ -985,9 +968,9 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemNullDeviceHostPtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
-    acltdtDataItem *dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataItem* dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice))
         .WillOnce(Invoke(rtsPointerGetAttributesHost));
@@ -1004,9 +987,9 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemDeviceNullHostPtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
-    acltdtDataItem *dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataItem* dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice))
         .WillOnce(Invoke(rtsPointerGetAttributesHost));
@@ -1023,8 +1006,8 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemHostDevicePtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesHost))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice));
@@ -1039,9 +1022,9 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemNullHostDevicePtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
-    acltdtDataItem *dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataItem* dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesHost))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice));
@@ -1058,9 +1041,9 @@ TEST_F(UTEST_tensor_data_transfer, acltdtAddDataItemHostNullDevicePtr)
 {
     const int64_t dims[] = {1, 3, 224, 224};
     int32_t tmpData = 0;
-    acltdtDataset *dataSet = acltdtCreateDataset();
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
-    acltdtDataItem *dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
+    acltdtDataset* dataSet = acltdtCreateDataset();
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, &tmpData, 4);
+    acltdtDataItem* dataItemEmpty = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, nullptr, 0, ACL_INT64, nullptr, 0);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsPointerGetAttributes(_, _))
         .WillOnce(Invoke(rtsPointerGetAttributesHost))
         .WillOnce(Invoke(rtsPointerGetAttributesDevice));
@@ -1077,7 +1060,7 @@ TEST_F(UTEST_tensor_data_transfer, GetOrMallocHostMem)
 {
     acltdtChannelHandle handle;
     acltdtDataset dataset;
-    void *p = nullptr;
+    void* p = nullptr;
     size_t GEAR_SIZE_ZERO = 1U * 1024U * 1024U;
     size_t GEAR_SIZE_ONE = 10U * 1024U * 1024U;
     size_t GEAR_SIZE_TWO = 100U * 1024U * 1024U;
@@ -1133,12 +1116,11 @@ TEST_F(UTEST_tensor_data_transfer, GetOrMallocHostMem)
 TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_succ_with_tdt)
 {
     uint32_t deviceId = 1;
-    const char *name = "Pooling";
+    const char* name = "Pooling";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillRepeatedly(Return((0)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillRepeatedly(Return((0)));
 
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
     handle->isTdtProcess = true;
 
@@ -1150,12 +1132,11 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_succ_with_tdt)
 TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_succ_without_tdt)
 {
     uint32_t deviceId = 1;
-    const char *name = "Pooling";
+    const char* name = "Pooling";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillRepeatedly(Return((0)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillRepeatedly(Return((0)));
 
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
     handle->isTdtProcess = false;
 
@@ -1167,12 +1148,11 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_succ_without_tdt)
 TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_failed_with_handle_nullptr)
 {
     uint32_t deviceId = 1;
-    const char *name = "Pooling";
+    const char* name = "Pooling";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillRepeatedly(Return((0)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillRepeatedly(Return((0)));
 
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
     handle->isTdtProcess = true;
 
@@ -1184,12 +1164,11 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_failed_with_handle_nullptr
 TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_failed_with_rts_error)
 {
     uint32_t deviceId = 1;
-    const char *name = "Pooling";
+    const char* name = "Pooling";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillRepeatedly(Return((0)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillRepeatedly(Return((0)));
 
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
     handle->isTdtProcess = false;
 
@@ -1204,12 +1183,11 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_failed_with_rts_error)
 TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_succ_receive)
 {
     uint32_t deviceId = 1;
-    const char *name = "TF_RECEIVE_Pooling";
+    const char* name = "TF_RECEIVE_Pooling";
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_))
-        .WillRepeatedly(Return((0)));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), TdtHostInit(_)).WillRepeatedly(Return((0)));
 
-    acltdtChannelHandle *handle = acltdtCreateChannel(deviceId, name);
+    acltdtChannelHandle* handle = acltdtCreateChannel(deviceId, name);
     EXPECT_NE(handle, nullptr);
     handle->isTdtProcess = true;
 
@@ -1221,18 +1199,18 @@ TEST_F(UTEST_tensor_data_transfer, acltdtCleanChannel_succ_receive)
 TEST_F(UTEST_tensor_data_transfer, acltdtGetDimsFromItem_failed_with_valid_dims_but_zero_dimNum)
 {
     int64_t dims[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    size_t dimNum = 0;  // dimNum 为 0，但 dims 不为 nullptr
-    acltdtDataItem *dataItem = (acltdtDataItem *)0x11;
-    
+    size_t dimNum = 0; // dimNum 为 0，但 dims 不为 nullptr
+    acltdtDataItem* dataItem = (acltdtDataItem*)0x11;
+
     aclError ret = acltdtGetDimsFromItem(dataItem, dims, dimNum);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 TEST_F(UTEST_tensor_data_transfer, acltdtGetDimsFromItem_failed_with_nullptr_dims_but_nonzero_dimNum)
 {
-    int64_t *dims = nullptr;
-    size_t dimNum = 10;  // dimNum 不为 0，但 dims 为 nullptr
-    acltdtDataItem *dataItem = (acltdtDataItem *)0x11;
-    
+    int64_t* dims = nullptr;
+    size_t dimNum = 10; // dimNum 不为 0，但 dims 为 nullptr
+    acltdtDataItem* dataItem = (acltdtDataItem*)0x11;
+
     aclError ret = acltdtGetDimsFromItem(dataItem, dims, dimNum);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
@@ -1240,31 +1218,30 @@ TEST_F(UTEST_tensor_data_transfer, acltdtGetDimsFromItem_failed_with_nullptr_dim
 TEST_F(UTEST_tensor_data_transfer, acltdtCreateDataItem_Fail_DimsNotNullButDimNumZero)
 {
     int64_t dims[] = {1, 2, 3};
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 0, ACL_INT64, nullptr, 0);
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 0, ACL_INT64, nullptr, 0);
     EXPECT_EQ(dataItem, nullptr);
 }
 
 TEST_F(UTEST_tensor_data_transfer, acltdtGetDataItem_IndexOutOfRange)
 {
-    acltdtDataset *dataset = acltdtCreateDataset();
+    acltdtDataset* dataset = acltdtCreateDataset();
     EXPECT_NE(dataset, nullptr);
-    
+
     // 空dataset，index=0 应该返回 nullptr（size=0, index>=size）
     EXPECT_EQ(acltdtGetDataItem(dataset, 0), nullptr);
     EXPECT_EQ(acltdtGetDataItem(dataset, 100), nullptr);
-    
+
     // 添加一个元素后，index=1 应该返回 nullptr（size=1, index>=size）
     const int64_t dims[] = {1, 3, 224, 224};
-    acltdtDataItem *dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, nullptr, 0);
+    acltdtDataItem* dataItem = acltdtCreateDataItem(ACL_TENSOR_DATA_TENSOR, dims, 4, ACL_INT64, nullptr, 0);
     EXPECT_EQ(acltdtAddDataItem(dataset, dataItem), ACL_SUCCESS);
     EXPECT_EQ(acltdtGetDataItem(dataset, 1), nullptr);
     EXPECT_EQ(acltdtGetDataItem(dataset, 999), nullptr);
-    
+
     // 正常情况：index=0 应该返回有效指针
-    acltdtDataItem *retrievedItem = acltdtGetDataItem(dataset, 0);
+    acltdtDataItem* retrievedItem = acltdtGetDataItem(dataset, 0);
     EXPECT_EQ(retrievedItem, dataItem);
-    
+
     EXPECT_EQ(acltdtDestroyDataset(dataset), ACL_SUCCESS);
     EXPECT_EQ(acltdtDestroyDataItem(dataItem), ACL_SUCCESS);
 }
-

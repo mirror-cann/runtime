@@ -43,30 +43,26 @@ using namespace cce::runtime;
 
 class CloudV2SetDeviceFailureModeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t oldChipType;
 };
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_continue)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     uint64_t failureMode = CONTINUE_ON_FAILURE;
     auto ret = rtSetDeviceFailureMode(failureMode);
@@ -76,8 +72,8 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_continue)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_stop)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     uint64_t failureMode = STOP_ON_FAILURE;
     auto ret = rtSetDeviceFailureMode(failureMode);
@@ -87,8 +83,8 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_stop)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_different)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     auto ret = rtSetDeviceFailureMode(STOP_ON_FAILURE);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -99,8 +95,8 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_different)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_ts_version_failed)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_CTRL_SQ);
     auto ret = rtSetDeviceFailureMode(STOP_ON_FAILURE);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -109,8 +105,8 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_ts_version_failed)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     uint64_t failureMode = STOP_ON_FAILURE;
     auto ret = rtSetDeviceFailureMode(failureMode);
@@ -118,7 +114,7 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream)
     rtStream_t newStream;
     ret = rtStreamCreate(&newStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(newStream);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(newStream);
     EXPECT_EQ(stream->GetFailureMode(), failureMode);
     ret = rtStreamDestroy(newStream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -127,13 +123,13 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, res_clear)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     rtStream_t newStream;
     auto ret = rtStreamCreate(&newStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(newStream);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(newStream);
     stream->isSupportASyncRecycle_ = true;
     ret = stream->ResClear();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -144,13 +140,13 @@ TEST_F(CloudV2SetDeviceFailureModeTest, res_clear)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, res_clear_timeout)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     rtStream_t newStream;
     auto ret = rtStreamCreate(&newStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(newStream);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(newStream);
     stream->isSupportASyncRecycle_ = true;
     stream->pendingNum_.Set(1);
 
@@ -169,8 +165,8 @@ TEST_F(CloudV2SetDeviceFailureModeTest, res_clear_timeout)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream_mc2)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_MC2_ENHANCE);
     uint64_t failureMode = STOP_ON_FAILURE;
     auto ret = rtSetDeviceFailureMode(failureMode);
@@ -183,18 +179,15 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream_mc2)
 
 TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream_failed)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_MC2_ENHANCE);
     uint64_t failureMode = STOP_ON_FAILURE;
     auto ret = rtSetDeviceFailureMode(failureMode);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     rtStream_t newStream;
 
-    MOCKER_CPP(&Stream::SetFailMode)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP(&Stream::SetFailMode).stubs().with(mockcpp::any()).will(returnValue(RT_ERROR_DRV_ERR));
 
     ret = rtStreamCreateWithFlags(&newStream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(ret, ACL_ERROR_RT_DRV_INTERNAL_ERROR);
@@ -203,42 +196,36 @@ TEST_F(CloudV2SetDeviceFailureModeTest, set_mode_create_stream_failed)
 
 class CloudV2DoCompleteSuccessForNotifyWaitTaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        char *socVer = "Ascend910B1";
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), outBoundP(socVer, strlen("Ascend910B1")), mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
-        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        char* socVer = "Ascend910B1";
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend910B1")), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
         bool enable = false;
-        MOCKER_CPP_VIRTUAL(driver,
-            &Driver::GetSqEnable).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(enable))
+        MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqEnable)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(enable))
             .will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL(driver, &Driver::SetSqHead)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
-        MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq)
-                .stubs()
-                .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::SetSqHead).stubs().will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq).stubs().will(returnValue(RT_ERROR_NONE));
         rtSetDevice(0);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-        engine_ = ((RawDevice *)device_)->engine_;
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+        engine_ = ((RawDevice*)device_)->engine_;
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
@@ -246,7 +233,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         if (stream_->GetPendingNum() > 0) {
             stream_->pendingNum_.Set(0U);
         }
@@ -256,16 +243,17 @@ protected:
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
 
 protected:
-    Engine *engine_ = nullptr;
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
+    Engine* engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
     rtStream_t streamHandle_ = 0;
+
 private:
     rtChipType_t oldChipType;
 };
@@ -276,7 +264,7 @@ TEST_F(CloudV2DoCompleteSuccessForNotifyWaitTaskTest, dfx_case)
     taskInfo.errorCode = RT_ERROR_WAIT_TIMEOUT;
     taskInfo.bindFlag = true;
     Notify notify(0, 1);
-    Model *model = new Model();
+    Model* model = new Model();
     notify.SetEndGraphModel(model);
     taskInfo.u.notifywaitTask.u.notify = &notify;
     DoCompleteSuccessForNotifyWaitTask(&taskInfo, 0);
@@ -301,22 +289,18 @@ TEST_F(CloudV2DoCompleteSuccessForNotifyWaitTaskTest, TestNotifyError)
 
 class CloudV2ReportErrorInfoForModelExecuteTaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t oldChipType;
 };
@@ -327,31 +311,31 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, dfx_case)
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     TaskInfo taskInfo = {};
-    Model *model = new Model();
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
+    Model* model = new Model();
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
     modelExecuteTaskInfo->model = model;
     EXPECT_EQ(model, modelExecuteTaskInfo->model);
 
-    modelExecuteTaskInfo->model->SetFunCallMemSize(sizeof(RtStarsModelExeFuncCall) + sizeof(uint64_t) + sizeof(uint64_t));
-    Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    modelExecuteTaskInfo->model->SetFunCallMemSize(
+        sizeof(RtStarsModelExeFuncCall) + sizeof(uint64_t) + sizeof(uint64_t));
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver_, &Driver::MemCopySync)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
     InitByStream(&taskInfo, rt_ut::UnwrapOrNull<Stream>(stream));
-    ((RawDevice *)((rt_ut::UnwrapOrNull<Stream>(stream))->device_))->driver_ = driver_;
+    ((RawDevice*)((rt_ut::UnwrapOrNull<Stream>(stream))->device_))->driver_ = driver_;
     uint8_t* funcCallSvmMem = new uint8_t[modelExecuteTaskInfo->model->GetFunCallMemSize()];
     modelExecuteTaskInfo->model->SetFuncCallSvmMem(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(funcCallSvmMem)));
     PrintErrorModelExecuteTaskFuncCall(&taskInfo);
-    delete []funcCallSvmMem;
+    delete[] funcCallSvmMem;
     delete model;
     rtStreamDestroy(stream);
 }
 
 TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, ffts_plus)
 {
-
     rtContext_t ctx;
     rtError_t ret = RT_ERROR_NONE;
     ret = rtCtxCreate(&ctx, 0, 0);
@@ -382,7 +366,6 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, ffts_plus)
 
 TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, ffts_plus_1)
 {
-
     rtContext_t ctx;
     rtError_t ret = RT_ERROR_NONE;
     ret = rtCtxCreate(&ctx, 0, 0);
@@ -395,9 +378,9 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, ffts_plus_1)
     TaskInfo taskInfo = {};
     taskInfo.errorCode = RT_ERROR_WAIT_TIMEOUT;
     taskInfo.bindFlag = true;
-    
+
     Notify notify(0, 1);
-    Model *model = new Model();
+    Model* model = new Model();
     notify.SetEndGraphModel(model);
     taskInfo.u.notifywaitTask.u.notify = &notify;
     taskInfo.stream = rt_ut::UnwrapOrNull<Stream>(stream);
@@ -423,17 +406,17 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, model_exe_result_for_softw
 
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     ASSERT_NE(stream, nullptr);
-    RawDevice *dev = static_cast<RawDevice *>(stream->Device_());
+    RawDevice* dev = static_cast<RawDevice*>(stream->Device_());
 
     TaskInfo taskInfo = {};
     taskInfo.bindFlag = true;
 
     MOCKER_CPP_VIRTUAL(dev, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
-    
+
     Notify notify(0, 1);
-    Model *model = new Model();
+    Model* model = new Model();
     notify.SetEndGraphModel(model);
     taskInfo.u.notifywaitTask.u.notify = &notify;
     taskInfo.stream = stream;
@@ -476,7 +459,6 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, model_exe_result_for_softw
 
 TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, socket_close)
 {
-
     rtContext_t ctx;
     rtError_t ret = RT_ERROR_NONE;
     ret = rtCtxCreate(&ctx, 0, 0);
@@ -511,16 +493,16 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, sub_aclgraph_execution_fai
     rtError_t ret = rtCtxCreate(&ctx, 0, 0);
     ASSERT_EQ(ret, RT_ERROR_NONE);
 
-    Context *currentCtx = Runtime::Instance()->CurrentContext();
+    Context* currentCtx = Runtime::Instance()->CurrentContext();
     ASSERT_NE(currentCtx, nullptr);
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
 
-    auto *captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    auto* captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     captureModel->context_ = currentCtx;
     captureModel->isSubCaptureModel_ = true;
 
-    auto *stream = new Stream(device, 0);
+    auto* stream = new Stream(device, 0);
     stream->streamId_ = 5;
     stream->SetModel(captureModel);
     captureModel->ModelPushFrontStream(stream);
@@ -532,7 +514,7 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, sub_aclgraph_execution_fai
     taskInfo.stream = stream;
     taskInfo.typeName = "MODEL_EXECUTE";
 
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo.u.modelExecuteTaskInfo);
     modelExecuteTaskInfo->errorStreamId = 100;
     modelExecuteTaskInfo->errorTaskId = 200;
     modelExecuteTaskInfo->modelId = 300;
@@ -546,39 +528,32 @@ TEST_F(CloudV2ReportErrorInfoForModelExecuteTaskTest, sub_aclgraph_execution_fai
     stream->DelModel(captureModel);
     delete stream;
     delete captureModel;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     ret = rtCtxDestroy(ctx);
     ASSERT_EQ(ret, RT_ERROR_NONE);
 }
 
-class CloudV2CaptureModelProfilerTest : public testing::Test
-{
+class CloudV2CaptureModelProfilerTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t oldChipType;
 };
 
 TEST_F(CloudV2CaptureModelProfilerTest, TASK_TYPE_MIX_AIC)
 {
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
     bool tmp = rt->isHaveDevice_;
     rt->isHaveDevice_ = true;
     Profiler* profiler = rt->profiler_;
@@ -601,7 +576,7 @@ TEST_F(CloudV2CaptureModelProfilerTest, TASK_TYPE_MIX_AIC)
 
 TEST_F(CloudV2CaptureModelProfilerTest, TASK_TYPE_MIX_AIV)
 {
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
     bool tmp = rt->isHaveDevice_;
     rt->isHaveDevice_ = true;
     Profiler* profiler = rt->profiler_;
@@ -630,7 +605,7 @@ TEST_F(CloudV2CaptureModelProfilerTest, STREAM_INFO)
     ret = rtCtxCreate(&ctx, 0, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     captureModel->InsertSingleOperStmIdAndCaptureStmId(0, 1);
-    captureModel->context_ = static_cast<Context *>(ctx);
+    captureModel->context_ = static_cast<Context*>(ctx);
     captureModel->ReportedStreamInfoForProfiling();
     delete captureModel;
     ret = rtCtxDestroy(ctx);
@@ -684,7 +659,7 @@ TEST_F(CloudV2CaptureModelProfilerTest, ERASE_STREAM_INFO_ERROR)
 
 TEST_F(CloudV2CaptureModelProfilerTest, REPORT_STREAM_INFO)
 {
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
     bool tmp = rt->isHaveDevice_;
     rt->isHaveDevice_ = true;
     Profiler* profiler = rt->profiler_;

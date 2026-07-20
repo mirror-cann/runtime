@@ -10,10 +10,10 @@
 #include "gtest/gtest.h"
 char** g_argv = nullptr;
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     g_argv = argv;
-    testing::InitGoogleTest(&argc,argv);
+    testing::InitGoogleTest(&argc, argv);
     int ret = RUN_ALL_TESTS();
-    return ret;  
+    return ret;
 }

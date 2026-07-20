@@ -54,20 +54,15 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class CloudV2ApiAbnormalTest : public testing::Test
-{
+class CloudV2ApiAbnormalTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         oldChipType = rtInstance->GetChipType();
         oldRuntimeSocVersion = rtInstance->GetRawSocVersion();
         oldRtChipType = GlobalContainer::GetRtChipType();
@@ -85,7 +80,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(oldChipType);
         GlobalMockObject::verify();
         rtDeviceReset(0);
@@ -96,6 +91,7 @@ protected:
         GlobalContainer::SetUserSocVersion(oldUserSocVersion);
         rtInstance->SetIsUserSetSocVersion(oldIsUserSetSocVersion);
     }
+
 private:
     rtChipType_t oldChipType;
     std::string oldRuntimeSocVersion;
@@ -112,11 +108,11 @@ TEST_F(CloudV2ApiAbnormalTest, rtsGetMemcpyDescSizeTest)
     char oriSocVersion[128] = {0};
     rtGetSocVersion(oriSocVersion, 128);
     (void)rtSetSocVersion("Ascend910B1");
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtsGetMemcpyDescSize(RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
     rtSetSocVersion(oriSocVersion);
-    ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+    ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 }
 
 TEST_F(CloudV2ApiAbnormalTest, rtsMemcpyAsyncWithDescTest)
@@ -153,13 +149,13 @@ TEST_F(CloudV2ApiAbnormalTest, rtsGetMemcpyDescSize_NonDavidChip_Success)
     char oriSocVersion[128] = {0};
     rtGetSocVersion(oriSocVersion, 128);
     (void)rtSetSocVersion("Ascend910B1");
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+
     error = rtsGetMemcpyDescSize(RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE, &size);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(size, MEMCPY_DESC_SIZE);
     rtSetSocVersion(oriSocVersion);
-    ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+    ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 }
 
 TEST_F(CloudV2ApiAbnormalTest, rtMemcpyAsyncPtrAbnormal)
@@ -173,7 +169,7 @@ TEST_F(CloudV2ApiAbnormalTest, rtMemcpyAsyncPtrAbnormal)
 TEST_F(CloudV2ApiAbnormalTest, rtReduceAsyncV2Abnormal)
 {
     rtError_t error;
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     error = rtReduceAsyncV2(nullptr, 0, nullptr, 0, RT_MEMCPY_SDMA_AUTOMATIC_ADD, RT_DATA_TYPE_FP32, nullptr, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -190,13 +186,10 @@ TEST_F(CloudV2ApiAbnormalTest, rtNotifyResetSuccess)
 {
     Notify notify(0, 0);
     rtNotify_t notifyHandle = rt_ut::InitAndExportHandle<rtNotify_t>(&notify);
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ASSERT_NE(api, nullptr);
 
-    MOCKER_CPP_VIRTUAL(api, &Api::NotifyReset)
-        .stubs()
-        .with(&notify)
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(api, &Api::NotifyReset).stubs().with(&notify).will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(rtNotifyReset(notifyHandle), ACL_RT_SUCCESS);
 }
@@ -205,24 +198,21 @@ TEST_F(CloudV2ApiAbnormalTest, rtNotifyResetApiError)
 {
     Notify notify(0, 0);
     rtNotify_t notifyHandle = rt_ut::InitAndExportHandle<rtNotify_t>(&notify);
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ASSERT_NE(api, nullptr);
 
-    MOCKER_CPP_VIRTUAL(api, &Api::NotifyReset)
-        .stubs()
-        .with(&notify)
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(api, &Api::NotifyReset).stubs().with(&notify).will(returnValue(RT_ERROR_INVALID_VALUE));
 
     EXPECT_NE(rtNotifyReset(notifyHandle), ACL_RT_SUCCESS);
 }
 
 TEST_F(CloudV2ApiAbnormalTest, rtSetOpExecuteTimeOutSuccess)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     const int64_t oldAicpuCnt = rtInstance->GetAicpuCnt();
     rtInstance->SetAicpuCnt(1);
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ASSERT_NE(api, nullptr);
 
     MOCKER_CPP_VIRTUAL(api, &Api::SetOpExecuteTimeOut)
@@ -236,7 +226,7 @@ TEST_F(CloudV2ApiAbnormalTest, rtSetOpExecuteTimeOutSuccess)
 
 TEST_F(CloudV2ApiAbnormalTest, rtSetOpExecuteTimeOutNotSupportWithoutAicpu)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     const rtChipType_t oldChipType = rtInstance->GetChipType();
     const rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
@@ -260,21 +250,21 @@ TEST_F(CloudV2ApiAbnormalTest, rtBarrierTaskLaunchNotSupport)
 
 TEST_F(CloudV2ApiAbnormalTest, rtBarrierTaskLaunchSuccess)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     const rtChipType_t oldChipType = rtInstance->GetChipType();
     const rtChipType_t oldGlobalChipType = GlobalContainer::GetRtChipType();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
-    Stream stream(static_cast<Device *>(nullptr), 0);
+    Stream stream(static_cast<Device*>(nullptr), 0);
     rtStream_t streamHandle = rt_ut::InitAndExportHandle<rtStream_t>(&stream);
     rtBarrierTaskInfo_t barrierTask = {};
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ASSERT_NE(api, nullptr);
 
     MOCKER_CPP_VIRTUAL(api, &Api::BarrierTaskLaunch)
         .stubs()
-        .with(static_cast<const rtBarrierTaskInfo_t *>(&barrierTask), &stream, static_cast<uint32_t>(0U))
+        .with(static_cast<const rtBarrierTaskInfo_t*>(&barrierTask), &stream, static_cast<uint32_t>(0U))
         .will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(rtBarrierTaskLaunch(&barrierTask, streamHandle, 0U), ACL_RT_SUCCESS);
@@ -286,19 +276,19 @@ TEST_F(CloudV2ApiAbnormalTest, rtBinaryLoadWithoutTilingKeySuccess)
 {
     uint8_t data = 0U;
     rtBinHandle binHandle = nullptr;
-    Program *program = new (std::nothrow) ElfProgram(RT_KERNEL_ATTR_TYPE_AICORE);
+    Program* program = new (std::nothrow) ElfProgram(RT_KERNEL_ATTR_TYPE_AICORE);
     ASSERT_NE(program, nullptr);
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ASSERT_NE(api, nullptr);
 
     MOCKER_CPP_VIRTUAL(api, &Api::BinaryLoadWithoutTilingKey)
         .stubs()
-        .with(static_cast<const void *>(&data), static_cast<uint64_t>(sizeof(data)),
-            outBoundP(&program, sizeof(Program *)))
+        .with(
+            static_cast<const void*>(&data), static_cast<uint64_t>(sizeof(data)), outBoundP(&program, sizeof(Program*)))
         .will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(rtBinaryLoadWithoutTilingKey(&data, sizeof(data), &binHandle), ACL_RT_SUCCESS);
-    Program *realProgram = rt_ut::UnwrapOrNull<Program>(binHandle);
+    Program* realProgram = rt_ut::UnwrapOrNull<Program>(binHandle);
     EXPECT_EQ(realProgram, program);
     delete program;
 }
@@ -307,12 +297,12 @@ TEST_F(CloudV2ApiAbnormalTest, rtBinaryLoadWithoutTilingKeyApiError)
 {
     uint8_t data = 0U;
     rtBinHandle binHandle = nullptr;
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ASSERT_NE(api, nullptr);
 
     MOCKER_CPP_VIRTUAL(api, &Api::BinaryLoadWithoutTilingKey)
         .stubs()
-        .with(static_cast<const void *>(&data), static_cast<uint64_t>(sizeof(data)), mockcpp::any())
+        .with(static_cast<const void*>(&data), static_cast<uint64_t>(sizeof(data)), mockcpp::any())
         .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     EXPECT_NE(rtBinaryLoadWithoutTilingKey(&data, sizeof(data), &binHandle), ACL_RT_SUCCESS);
@@ -328,7 +318,7 @@ TEST_F(CloudV2ApiAbnormalTest, rtNpuGetFloatStatusAbnormal)
 
 TEST(RdmaPiValueModifyTaskTest, ConstructSqeRdmaPiValueModifyTaskSuccess)
 {
-    Stream *stream = static_cast<Stream *>(malloc(sizeof(Stream)));
+    Stream* stream = static_cast<Stream*>(malloc(sizeof(Stream)));
     ASSERT_NE(stream, nullptr);
     (void)memset_s(stream, sizeof(Stream), 0, sizeof(Stream));
     stream->streamId_ = 7;
@@ -336,14 +326,14 @@ TEST(RdmaPiValueModifyTaskTest, ConstructSqeRdmaPiValueModifyTaskSuccess)
     TaskInfo taskInfo = {};
     taskInfo.stream = stream;
     taskInfo.id = 123U;
-    taskInfo.u.rdmaPiValueModifyInfo.funCallMemAddrAlign = reinterpret_cast<void *>(0x12345000UL);
+    taskInfo.u.rdmaPiValueModifyInfo.funCallMemAddrAlign = reinterpret_cast<void*>(0x12345000UL);
 
     MOCKER(PrintSqe).stubs();
 
     rtStarsSqe_t command = {};
     ConstructSqeRdmaPiValueModifyTask(&taskInfo, &command);
 
-    const RtStarsFunctionCallSqe &sqe = command.fuctionCallSqe;
+    const RtStarsFunctionCallSqe& sqe = command.fuctionCallSqe;
     EXPECT_EQ(sqe.kernel_credit, RT_STARS_DEFAULT_KERNEL_CREDIT);
     EXPECT_EQ(sqe.csc, 1U);
     EXPECT_EQ(sqe.sqeHeader.type, RT_STARS_SQE_TYPE_COND);
@@ -360,7 +350,7 @@ TEST(RdmaPiValueModifyTaskTest, ConstructSqeRdmaPiValueModifyTaskSuccess)
 
 TEST(RdmaPiValueModifyTaskTest, RdmaPiValueModifyTaskUnInitSuccess)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     const std::string oldRuntimeSocVersion = rtInstance->GetRawSocVersion();
     const rtChipType_t oldRtChipType = GlobalContainer::GetRtChipType();
@@ -383,9 +373,9 @@ TEST(RdmaPiValueModifyTaskTest, RdmaPiValueModifyTaskUnInitSuccess)
         rtInstance->SetIsUserSetSocVersion(oldIsUserSetSocVersion);
         return;
     }
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Device* device = rtInstance->DeviceRetain(0, 0);
     ASSERT_NE(device, nullptr);
-    Stream *stream = static_cast<Stream *>(malloc(sizeof(Stream)));
+    Stream* stream = static_cast<Stream*>(malloc(sizeof(Stream)));
     ASSERT_NE(stream, nullptr);
     (void)memset_s(stream, sizeof(Stream), 0, sizeof(Stream));
     stream->device_ = device;
@@ -393,9 +383,9 @@ TEST(RdmaPiValueModifyTaskTest, RdmaPiValueModifyTaskUnInitSuccess)
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stream;
-    taskInfo.u.rdmaPiValueModifyInfo.funCallMemAddr = reinterpret_cast<void *>(0x12345000UL);
-    taskInfo.u.rdmaPiValueModifyInfo.funCallMemAddrAlign = reinterpret_cast<void *>(0x12346000UL);
-    taskInfo.u.rdmaPiValueModifyInfo.dfxAddr = reinterpret_cast<void *>(0x12347000UL);
+    taskInfo.u.rdmaPiValueModifyInfo.funCallMemAddr = reinterpret_cast<void*>(0x12345000UL);
+    taskInfo.u.rdmaPiValueModifyInfo.funCallMemAddrAlign = reinterpret_cast<void*>(0x12346000UL);
+    taskInfo.u.rdmaPiValueModifyInfo.dfxAddr = reinterpret_cast<void*>(0x12347000UL);
     taskInfo.u.rdmaPiValueModifyInfo.rdmaSubContextCount = 2U;
 
     MOCKER_CPP_VIRTUAL(taskInfo.stream->Device_()->Driver_(), &Driver::DevMemFree)
@@ -437,7 +427,7 @@ TEST(RdmaPiValueModifyTaskTest, PrintDfxInfoForRdmaPiValueModifyTaskCountNotifyR
 
 TEST(RdmaPiValueModifyTaskTest, PrintDfxInfoForRdmaPiValueModifyTaskSuccess)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     ASSERT_NE(rtInstance, nullptr);
     const std::string oldRuntimeSocVersion = rtInstance->GetRawSocVersion();
     const rtChipType_t oldRtChipType = GlobalContainer::GetRtChipType();
@@ -462,14 +452,14 @@ TEST(RdmaPiValueModifyTaskTest, PrintDfxInfoForRdmaPiValueModifyTaskSuccess)
         rtInstance->SetIsUserSetSocVersion(oldIsUserSetSocVersion);
         return;
     }
-    Context *curCtx = static_cast<Context *>(ctx);
+    Context* curCtx = static_cast<Context*>(ctx);
 
     rtStream_t stream = nullptr;
     ret = rtStreamCreate(&stream, 0);
     ASSERT_EQ(ret, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
-    CaptureModel *captureModel = new CaptureModel();
+    CaptureModel* captureModel = new CaptureModel();
     ASSERT_NE(captureModel, nullptr);
     curCtx->models_.push_back(captureModel);
     captureModel->context_ = curCtx;
@@ -478,9 +468,9 @@ TEST(RdmaPiValueModifyTaskTest, PrintDfxInfoForRdmaPiValueModifyTaskSuccess)
     TaskInfo piValueModifyTask = {};
     piValueModifyTask.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
     piValueModifyTask.stream = stm;
-    void *funCallMemAddr = malloc(sizeof(uint64_t));
-    void *funCallMemAddrAlign = malloc(sizeof(uint64_t));
-    void *dfxAddr = malloc(sizeof(uint64_t));
+    void* funCallMemAddr = malloc(sizeof(uint64_t));
+    void* funCallMemAddrAlign = malloc(sizeof(uint64_t));
+    void* dfxAddr = malloc(sizeof(uint64_t));
     piValueModifyTask.u.rdmaPiValueModifyInfo.funCallMemAddr = funCallMemAddr;
     piValueModifyTask.u.rdmaPiValueModifyInfo.funCallMemAddrAlign = funCallMemAddrAlign;
     piValueModifyTask.u.rdmaPiValueModifyInfo.dfxAddr = dfxAddr;
@@ -488,8 +478,16 @@ TEST(RdmaPiValueModifyTaskTest, PrintDfxInfoForRdmaPiValueModifyTaskSuccess)
 
     std::vector<uint64_t> rdmaPiValueInfo{1};
     MOCKER(CheckLogLevel).stubs().will(returnValue(1));
-    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&piValueModifyTask));
-    MOCKER_CPP_VIRTUAL(stm->Device_()->Driver_(), &Driver::MemCopySync).stubs().with(outBoundP(static_cast<void *>(rdmaPiValueInfo.data()), sizeof(uint64_t)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&TaskFactory::GetTask)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any())
+        .will(returnValue(&piValueModifyTask));
+    MOCKER_CPP_VIRTUAL(stm->Device_()->Driver_(), &Driver::MemCopySync)
+        .stubs()
+        .with(
+            outBoundP(static_cast<void*>(rdmaPiValueInfo.data()), sizeof(uint64_t)), mockcpp::any(), mockcpp::any(),
+            mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
 
     Notify notify(0, 0);
     notify.endGraphModel_ = captureModel;
@@ -577,9 +575,9 @@ TEST_F(CloudV2ApiAbnormalTest, rtsLaunchReduceAsyncTaskAbnormal)
 TEST_F(CloudV2ApiAbnormalTest, rtReduceAsyncTaskAbnormal)
 {
     rtError_t ret;
-    void *dst = nullptr;
+    void* dst = nullptr;
     uint64_t destMax;
-    void *src = nullptr;
+    void* src = nullptr;
     uint64_t cnt;
     rtRecudeKind_t kind;
     rtDataType_t dataType;
@@ -591,7 +589,7 @@ TEST_F(CloudV2ApiAbnormalTest, rtReduceAsyncTaskAbnormal)
     ret = rtReduceAsyncWithCfg(dst, destMax, src, cnt, kind, dataType, stream, qosCfg);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
-    rtTaskCfgInfo_t *cfgInfo = nullptr;
+    rtTaskCfgInfo_t* cfgInfo = nullptr;
     ret = rtReduceAsyncWithCfgV2(dst, destMax, src, cnt, kind, dataType, stream, cfgInfo);
     EXPECT_NE(ret, RT_ERROR_NONE);
 }
@@ -639,8 +637,8 @@ TEST_F(CloudV2ApiAbnormalTest, cntNotify_abnormal)
     EXPECT_NE(ret, RT_ERROR_NONE);
     ret = rtCntNotifyCreateServer(&inNotify, 0);
     EXPECT_NE(ret, RT_ERROR_NONE);
-    ret =  rtsCntNotifyRecord(inNotify, nullptr, &recordInfo);
- 	EXPECT_NE(ret, RT_ERROR_NONE);
+    ret = rtsCntNotifyRecord(inNotify, nullptr, &recordInfo);
+    EXPECT_NE(ret, RT_ERROR_NONE);
     ret = rtsCntNotifyWaitWithTimeout(inNotify, nullptr, &waitInfo);
     EXPECT_NE(ret, RT_ERROR_NONE);
     ret = rtsCntNotifyReset(inNotify, nullptr);
@@ -678,7 +676,7 @@ TEST_F(CloudV2ApiAbnormalTest, devRes_abnormal)
 }
 
 TEST_F(CloudV2ApiAbnormalTest, taskbuffer_abnormal)
-{ 
+{
     rtError_t ret = RT_ERROR_NONE;
     rtTaskBuffType_t type;
     uint32_t bufferLen;
@@ -690,7 +688,7 @@ TEST_F(CloudV2ApiAbnormalTest, taskbuffer_abnormal)
     ret = rtTaskBuild(&taskInput, &taskLen);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
-    void *elfData = nullptr;
+    void* elfData = nullptr;
     uint32_t elfLen;
     uint32_t offset;
     ret = rtGetElfOffset(elfData, elfLen, &offset);
@@ -698,7 +696,7 @@ TEST_F(CloudV2ApiAbnormalTest, taskbuffer_abnormal)
 }
 
 TEST_F(CloudV2ApiAbnormalTest, rtIpcDestroyMemoryName_abnormal)
-{ 
+{
     rtError_t ret = RT_ERROR_NONE;
     ret = rtIpcDestroyMemoryName(nullptr);
     EXPECT_NE(ret, RT_ERROR_NONE);
@@ -727,7 +725,7 @@ TEST_F(CloudV2ApiAbnormalTest, debug_abnormal)
     EXPECT_NE(error, RT_ERROR_NONE);
 
     error = rtsDebugReadAICore(&param);
- 	EXPECT_NE(error, RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 }
 
 TEST_F(CloudV2ApiAbnormalTest, rtsRepairError_abnormal)
@@ -742,11 +740,11 @@ TEST_F(CloudV2ApiAbnormalTest, ModelDebugJsonPrint_Error)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtModel_t captureMdl;
     rtCallback_t stub_func = (rtCallback_t)0x12345;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     MOCKER_CPP(&Model::LoadCompleteByStreamPostp).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -806,10 +804,8 @@ TEST_F(CloudV2ApiAbnormalTest, rtsMemcpyAsyncTest)
     rtError_t error;
     char srcPtr[64];
     char dstPtr[64];
-    Api *api = Api::Instance();
-    MOCKER_CPP_VIRTUAL(api, &Api::RtsMemcpyAsync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    Api* api = Api::Instance();
+    MOCKER_CPP_VIRTUAL(api, &Api::RtsMemcpyAsync).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtsMemcpyAsync(srcPtr, 64, dstPtr, 64, RT_MEMCPY_KIND_HOST_TO_HOST, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -819,12 +815,10 @@ TEST_F(CloudV2ApiAbnormalTest, rtsMemcpyTest)
     rtError_t error;
     char srcPtr[64];
     char dstPtr[64];
-    Api *api = Api::Instance();
-    MOCKER_CPP_VIRTUAL(api, &Api::RtsMemcpy)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    Api* api = Api::Instance();
+    MOCKER_CPP_VIRTUAL(api, &Api::RtsMemcpy).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtsMemcpy(srcPtr, 64, dstPtr, 64, RT_MEMCPY_KIND_HOST_TO_HOST, nullptr);
-    
+
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -841,14 +835,11 @@ TEST_F(CloudV2ApiAbnormalTest, RtsMemcpyAsyncTest)
     rtMemcpyConfig_t config;
     config.attrs = &attr;
     config.numAttrs = 1;
-    MOCKER_CPP_VIRTUAL(api, &ApiErrorDecorator::MemcpyAsync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::PointerGetAttributes)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(api, &ApiErrorDecorator::MemcpyAsync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::PointerGetAttributes).stubs().will(returnValue(RT_ERROR_NONE));
 
-    rtError_t error = api.RtsMemcpyAsync(dstPtr, count, srcPtr, count, RT_MEMCPY_KIND_DEVICE_TO_DEVICE, &config, nullptr);
+    rtError_t error =
+        api.RtsMemcpyAsync(dstPtr, count, srcPtr, count, RT_MEMCPY_KIND_DEVICE_TO_DEVICE, &config, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
     attr.value.checkBitmap = 1;
     attr.id = RT_MEMCPY_ATTRIBUTE_CHECK;
@@ -860,7 +851,8 @@ TEST_F(CloudV2ApiAbnormalTest, RtsMemcpyAsyncTest)
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     error = impl.RtsMemcpyAsync(dstPtr, count, srcPtr, count, RT_MEMCPY_KIND_INTER_DEVICE_TO_DEVICE, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = apiDecorator.RtsMemcpyAsync(dstPtr, count, srcPtr, count, RT_MEMCPY_KIND_INTER_DEVICE_TO_DEVICE, nullptr, nullptr);
+    error = apiDecorator.RtsMemcpyAsync(
+        dstPtr, count, srcPtr, count, RT_MEMCPY_KIND_INTER_DEVICE_TO_DEVICE, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -870,7 +862,7 @@ TEST_F(CloudV2ApiAbnormalTest, SetMemcpyDescTest)
     ApiErrorDecorator api(&impl);
     ApiDecorator apiDecorator(&impl);
     char desc[1024];
-    void * descPtr = (void *)((((uint64_t)desc + 64)/64)*64);
+    void* descPtr = (void*)((((uint64_t)desc + 64) / 64) * 64);
     uint32_t srcPtr[64];
     uint32_t dstPtr[64];
     uint64_t count = 64;
@@ -881,9 +873,7 @@ TEST_F(CloudV2ApiAbnormalTest, SetMemcpyDescTest)
         .stubs()
         .with(outBoundP(&attr))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&ApiImpl::CurrentContext)
-            .stubs()
-            .will(returnValue((Context*)nullptr));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(returnValue((Context*)nullptr));
     rtError_t error = api.SetMemcpyDesc(descPtr, dstPtr, srcPtr, count, RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
 
@@ -906,7 +896,7 @@ TEST_F(CloudV2ApiAbnormalTest, rtMemcpyAsyncExZeroNoOp)
 TEST_F(CloudV2ApiAbnormalTest, rtDevBinaryRegister_Null)
 {
     rtError_t error;
-    void *handle;
+    void* handle;
     error = rtDevBinaryRegister(NULL, &handle);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
@@ -918,22 +908,18 @@ TEST_F(CloudV2ApiAbnormalTest, GetHostAtomicCapabilities_ApiErrorDecorator)
     uint32_t caps[1];
     rtAtomicOperation ops[1] = {RT_ATOMIC_OPERATION_INTEGER_ADD};
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, ops, 1, 0), RT_ERROR_NONE);
 
     EXPECT_EQ(api.GetHostAtomicCapabilities(nullptr, ops, 1, 0), RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, nullptr, 1, 0), RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, ops, 0, 0), RT_ERROR_INVALID_VALUE);
-    
+
     rtAtomicOperation invalidOps[1] = {static_cast<rtAtomicOperation>(999)};
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, invalidOps, 1, 0), RT_ERROR_INVALID_VALUE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    MOCKER_CPP_VIRTUAL(rtInstance, &Runtime::ChgUserDevIdToDeviceId)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_ID));
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    MOCKER_CPP_VIRTUAL(rtInstance, &Runtime::ChgUserDevIdToDeviceId).stubs().will(returnValue(RT_ERROR_DEVICE_ID));
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, ops, 1, 255), RT_ERROR_DEVICE_ID); // Invalid device id
 }
 
@@ -944,24 +930,20 @@ TEST_F(CloudV2ApiAbnormalTest, GetP2PAtomicCapabilities_ApiErrorDecorator)
     uint32_t caps[1];
     rtAtomicOperation ops[1] = {RT_ATOMIC_OPERATION_INTEGER_ADD};
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 1), RT_ERROR_NONE);
 
     EXPECT_EQ(api.GetP2PAtomicCapabilities(nullptr, ops, 1, 0, 1), RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, nullptr, 1, 0, 1), RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 0, 0, 1), RT_ERROR_INVALID_VALUE);
-    
+
     rtAtomicOperation invalidOps[1] = {static_cast<rtAtomicOperation>(999)};
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, invalidOps, 1, 0, 1), RT_ERROR_INVALID_VALUE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    MOCKER_CPP_VIRTUAL(rtInstance, &Runtime::ChgUserDevIdToDeviceId)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_ID));
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    MOCKER_CPP_VIRTUAL(rtInstance, &Runtime::ChgUserDevIdToDeviceId).stubs().will(returnValue(RT_ERROR_DEVICE_ID));
 
-    EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 0), RT_ERROR_DEVICE_ID); // src == dst
+    EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 0), RT_ERROR_DEVICE_ID);   // src == dst
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 255, 1), RT_ERROR_DEVICE_ID); // invalid src
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 255), RT_ERROR_DEVICE_ID); // invalid dst
 }
@@ -973,15 +955,11 @@ TEST_F(CloudV2ApiAbnormalTest, GetAtomicCapabilities_ApiDecorator_Forwarding)
     uint32_t caps[1];
     rtAtomicOperation ops[1] = {RT_ATOMIC_OPERATION_INTEGER_ADD};
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-        
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
+
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, ops, 1, 0), RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 1), RT_ERROR_NONE);
 }
@@ -994,15 +972,11 @@ TEST_F(CloudV2ApiAbnormalTest, GetAtomicCapabilities_ApiProfileDecorator)
     uint32_t caps[1];
     rtAtomicOperation ops[1] = {RT_ATOMIC_OPERATION_INTEGER_ADD};
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, ops, 1, 0), RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 1), RT_ERROR_NONE);
 }
@@ -1015,15 +989,11 @@ TEST_F(CloudV2ApiAbnormalTest, GetAtomicCapabilities_ApiProfileLogDecorator)
     uint32_t caps[1];
     rtAtomicOperation ops[1] = {RT_ATOMIC_OPERATION_INTEGER_ADD};
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetHostAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(api.GetHostAtomicCapabilities(caps, ops, 1, 0), RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::GetP2PAtomicCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(api.GetP2PAtomicCapabilities(caps, ops, 1, 0, 1), RT_ERROR_NONE);
 }

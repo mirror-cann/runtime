@@ -30,15 +30,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class PCTraceTest : public testing::Test
-{
+class PCTraceTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetDevice(0);
         rtError_t error1 = rtStreamCreate(&stream_, 0);
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -49,47 +47,42 @@ protected:
         devBin.length = elf_o_len;
         rtError_t error3 = rtDevBinaryRegister(&devBin, &binHandle_);
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 1);
-        std::cout<<"pctrace test start:"<<error1<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "pctrace test start:" << error1 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
     {
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"pctrace test start end : "<<error1<<", "<<error3<<std::endl;
+        std::cout << "pctrace test start end : " << error1 << ", " << error3 << std::endl;
         ut::ForceResetPrimaryDeviceIfActive();
     }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
     static rtStream_t stream_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
 };
 
 rtStream_t PCTraceTest::stream_ = NULL;
 void* PCTraceTest::binHandle_ = NULL;
-char  PCTraceTest::function_ = 'a';
+char PCTraceTest::function_ = 'a';
 uint32_t PCTraceTest::binary_[32] = {};
 
 TEST_F(PCTraceTest, alloc_free_mem)
 {
-    void *ptr = nullptr;
-    void *ptr1 = nullptr;
-    PCTrace *rtPCtrace = new PCTrace();
-    Device *device = new RawDevice(0);
+    void* ptr = nullptr;
+    void* ptr1 = nullptr;
+    PCTrace* rtPCtrace = new PCTrace();
+    Device* device = new RawDevice(0);
     device->Init();
 
-    Module *mdl = new Module(device);
-    Program *realProg = rt_ut::UnwrapOrNull<Program>(binHandle_);
+    Module* mdl = new Module(device);
+    Program* realProg = rt_ut::UnwrapOrNull<Program>(binHandle_);
     ASSERT_NE(realProg, nullptr);
     mdl->Load(realProg);
 
@@ -114,13 +107,13 @@ TEST_F(PCTraceTest, alloc_free_mem)
 
 TEST_F(PCTraceTest, alloc_free_mem2)
 {
-    void *ptr = nullptr;
-    PCTrace *rtPCtrace = new PCTrace();
-    Device *device = new RawDevice(0);
+    void* ptr = nullptr;
+    PCTrace* rtPCtrace = new PCTrace();
+    Device* device = new RawDevice(0);
     device->Init();
 
-    Module *mdl = new Module(device);
-    Program *realProg = rt_ut::UnwrapOrNull<Program>(binHandle_);
+    Module* mdl = new Module(device);
+    Program* realProg = rt_ut::UnwrapOrNull<Program>(binHandle_);
     ASSERT_NE(realProg, nullptr);
     mdl->Load(realProg);
 
@@ -139,13 +132,13 @@ TEST_F(PCTraceTest, alloc_free_mem2)
 
 TEST_F(PCTraceTest, alloc_free_mem3)
 {
-    void *ptr = nullptr;
-    PCTrace *rtPCtrace = new PCTrace();
-    RawDevice *device = new RawDevice(0);
+    void* ptr = nullptr;
+    PCTrace* rtPCtrace = new PCTrace();
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
-    Module *mdl = new Module(device);
-    Program *realProg = rt_ut::UnwrapOrNull<Program>(binHandle_);
+    Module* mdl = new Module(device);
+    Program* realProg = rt_ut::UnwrapOrNull<Program>(binHandle_);
     ASSERT_NE(realProg, nullptr);
     mdl->Load(realProg);
 

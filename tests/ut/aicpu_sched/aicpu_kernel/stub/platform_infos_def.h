@@ -16,24 +16,25 @@
 namespace fe {
 class PlatFormInfos {
 public:
-  PlatFormInfos() {
-    std::cout << "this is fake stub PlatFormInfos" <<std::endl;;
-  }
-  ~PlatFormInfos() {}
-  bool LoadFromBuffer(const char *input_data, uint64_t data_len) {
-    if (data_len >= 10UL) {
-      std::cout << "this is fake stub PlatFormInfos return false" << std::endl;
-      return false;
-    } else {
-      std::cout << "this is fake stub PlatFormInfos return true" << std::endl;
-      return true;
+    PlatFormInfos()
+    {
+        std::cout << "this is fake stub PlatFormInfos" << std::endl;
+        ;
     }
-  }
+    ~PlatFormInfos() {}
+    bool LoadFromBuffer(const char* input_data, uint64_t data_len)
+    {
+        if (data_len >= 10UL) {
+            std::cout << "this is fake stub PlatFormInfos return false" << std::endl;
+            return false;
+        } else {
+            std::cout << "this is fake stub PlatFormInfos return true" << std::endl;
+            return true;
+        }
+    }
 
-  bool Init() {
-    return true;
-  }
+    bool Init() { return true; }
 };
-}
+} // namespace fe
 
 #endif

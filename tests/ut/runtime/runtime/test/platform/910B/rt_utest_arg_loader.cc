@@ -29,23 +29,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class CloudV2ArgLoaderTest : public testing::Test
-{
+class CloudV2ArgLoaderTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"CloudV2ArgLoaderTest start"<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "CloudV2ArgLoaderTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"CloudV2ArgLoaderTest end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "CloudV2ArgLoaderTest end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -54,7 +44,7 @@ protected:
     }
 };
 
-rtError_t StubCheckSupportPcieBarCopy(Driver *that, const uint32_t deviceId, uint32_t &val, const bool need4KAsync)
+rtError_t StubCheckSupportPcieBarCopy(Driver* that, const uint32_t deviceId, uint32_t& val, const bool need4KAsync)
 {
     val = RT_CAPABILITY_SUPPORT;
     return RT_ERROR_NONE;
@@ -64,15 +54,15 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_mix_illegal_size)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
     uint32_t supportPcieBar = 1;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results;
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
@@ -81,29 +71,29 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_mix_illegal_size)
         .stubs()
         .will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
 
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = 40900U;
     bool mixOpt = false;
-    error = loader->LoadForMix(&argsInfo, (Stream *)device->PrimaryStream_(), &results, mixOpt);
+    error = loader->LoadForMix(&argsInfo, (Stream*)device->PrimaryStream_(), &results, mixOpt);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void *)NULL));
+    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void*)NULL));
 
     argsInfo.argsSize = 128U;
-    error = loader->LoadForMix(&argsInfo, (Stream *)device->PrimaryStream_(), &results, mixOpt);
+    error = loader->LoadForMix(&argsInfo, (Stream*)device->PrimaryStream_(), &results, mixOpt);
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
 
     delete loader;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_init_of_chip_as31xm1x)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     UmaArgLoader argLdr(device);
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
@@ -111,7 +101,7 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_init_of_chip_as31xm1x)
     rtInstance->SetAicpuCnt(1);
     rtError_t err = argLdr.Init();
     EXPECT_EQ(RT_ERROR_NONE, err);
-    void *soNameAddr = nullptr;
+    void* soNameAddr = nullptr;
     argLdr.GetKernelInfoDevAddr("123", KernelInfoType::SO_NAME, &soNameAddr);
     argLdr.GetKernelInfoDevAddr("456", KernelInfoType::KERNEL_NAME, &soNameAddr);
     argLdr.RestoreAiCpuKernelInfo();
@@ -122,13 +112,13 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_init_of_chip_as31xm1x)
 
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_teardown_is_idempotent)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     UmaArgLoader argLdr(device);
     EXPECT_EQ(argLdr.Init(), RT_ERROR_NONE);
 
-    argLdr.soNameMap_.emplace("TEST_SO", reinterpret_cast<void *>(0x1000));
-    argLdr.kernelNameMap_.emplace("TEST_KERNEL", reinterpret_cast<void *>(0x2000));
+    argLdr.soNameMap_.emplace("TEST_SO", reinterpret_cast<void*>(0x1000));
+    argLdr.kernelNameMap_.emplace("TEST_KERNEL", reinterpret_cast<void*>(0x2000));
 
     argLdr.TearDown();
     EXPECT_EQ(argLdr.argAllocator_, nullptr);
@@ -159,8 +149,8 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_with_sm)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     ArgLoaderResult result2;
 
@@ -169,34 +159,34 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_with_sm)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
-    error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &result);
+    error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &result2);
+    error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &result2);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = loader->Release(result.handle);
-	EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = loader->Release(result2.handle);
-	EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     delete loader;
-	((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_with_sm_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     uint32_t info = RT_RUN_MODE_ONLINE;
 
@@ -205,19 +195,19 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_with_sm_fail)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     MOCKER(drvGetPlatformInfo).stubs().with(outBoundP(&info, sizeof(info))).will(returnValue(DRV_ERROR_NONE));
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
-    error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &result);
+    error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &result);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
 
     delete loader;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 #if 0
@@ -255,20 +245,20 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_with_memcpy_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     uint32_t info = RT_RUN_MODE_ONLINE;
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    Stream *stream;
-    stream = (Stream *)device->PrimaryStream_();
+    Stream* stream;
+    stream = (Stream*)device->PrimaryStream_();
     stream->models_.clear();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
@@ -277,35 +267,32 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_with_memcpy_fail)
     EXPECT_NE(error, RT_ERROR_SEC_HANDLE);
 
     delete loader;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_copy_long_string_cut)
 {
     int32_t devId = -1;
     rtError_t error;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     rtSmDesc_t smDesc;
     NpuDriver drv;
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
 
-    Stream * stream = new Stream(device, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    Stream* stream = new Stream(device, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
-    MOCKER_CPP_VIRTUAL(drv,&NpuDriver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(drv,&NpuDriver::ManagedMemAlloc)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::ManagedMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
 
-    void *addr;
-    std::string kernelName = "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
-    "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
-    "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
-    "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel";
+    void* addr;
+    std::string kernelName =
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel";
     error = loader->GetKernelInfoDevAddr(kernelName.c_str(), KERNEL_NAME, &addr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -316,12 +303,12 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_copy_long_string_cut)
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_pure_load)
 {
     rtError_t error;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
 
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
     error = loader->PureLoad(81920, args, &result);
@@ -337,15 +324,15 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_pure_load)
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_pure_load_AllocDevMemStub)
 {
     rtError_t error;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
-    
-    Device * device = new RawDevice(0);
+
+    Device* device = new RawDevice(0);
     device->Init();
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
-    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void *)NULL));
+    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void*)NULL));
     error = loader->PureLoad(1024, args, &result);
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
 
@@ -355,12 +342,12 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_pure_load_AllocDevMemStub)
 
 TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_find_kernel_info_name)
 {
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
-    std::unordered_map<std::string, void *> nameMap;
+    std::unordered_map<std::string, void*> nameMap;
     void *addr1, *addr2;
     nameMap.emplace("TEST_KERNEL_01", addr1);
     nameMap.emplace("TEST_KERNEL_02", addr2);
@@ -390,20 +377,24 @@ TEST_F(CloudV2ArgLoaderTest, load_stream_switch_n_args_with_drv_error)
     Stream* trueStreamPtr[] = {&stream};
     StreamSwitchNLoadResult result = {};
 
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::DevMemAlloc).stubs()
-        .will(returnValue(RT_ERROR_NONE)).then(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::DevMemAlloc)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_DRV_ERR));
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
-    rtError_t err = argLdr.LoadStreamSwitchNArgs(&stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize,
-        RT_SWITCH_INT32, &result);
+    rtError_t err = argLdr.LoadStreamSwitchNArgs(
+        &stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize, RT_SWITCH_INT32, &result);
     EXPECT_EQ(RT_ERROR_DRV_ERR, err);
 
     GlobalMockObject::verify();
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs()
-        .will(returnValue(RT_ERROR_NONE)).then(returnValue(RT_ERROR_DRV_ERR));
-    err = argLdr.LoadStreamSwitchNArgs(&stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize,
-        RT_SWITCH_INT32, &result);
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_DRV_ERR));
+    err = argLdr.LoadStreamSwitchNArgs(
+        &stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize, RT_SWITCH_INT32, &result);
     EXPECT_EQ(RT_ERROR_DRV_ERR, err);
 }
 
@@ -416,9 +407,9 @@ TEST_F(CloudV2ArgLoaderTest, find_or_insert_dev_addr)
     Stream stream(&device, 0);
     UmaArgLoader argLdr(&device);
 
-    char_t *kernelName = "tf_test_so_name";
-    std::unordered_map<std::string, void *> nameMap;
-    void *devAddr = nullptr;
+    char_t* kernelName = "tf_test_so_name";
+    std::unordered_map<std::string, void*> nameMap;
+    void* devAddr = nullptr;
 
     rtError_t err = argLdr.Init();
     EXPECT_EQ(RT_ERROR_NONE, err);
@@ -432,11 +423,11 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_rollback)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     uint32_t info = RT_RUN_MODE_ONLINE;
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     uint32_t supportPcieBar = 1;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::CheckSupportPcieBarCopy)
@@ -444,26 +435,24 @@ TEST_F(CloudV2ArgLoaderTest, uma_arg_loader_rollback)
         .with(mockcpp::any(), outBound(supportPcieBar))
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     device = rtInstance->DeviceRetain(devId, 0);
 
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    Stream *stream;
-    stream = (Stream *)device->PrimaryStream_();
+    Stream* stream;
+    stream = (Stream*)device->PrimaryStream_();
     stream->models_.clear();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
 
-    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void *)NULL));
+    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void*)NULL));
 
     error = loader->Load(&argsInfo, stream, &result);
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);

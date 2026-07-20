@@ -29,7 +29,7 @@ protected:
 
 TEST_F(RecordNotifyKernelTest, TsKernelRecordNotify)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
 
     aicpu::HwtsTsKernel tsKernelInfo = {};
@@ -43,7 +43,7 @@ TEST_F(RecordNotifyKernelTest, TsKernelRecordNotify)
 
 TEST_F(RecordNotifyKernelTest, TsKernelRecordNotify_failed1)
 {
-    void *aa = nullptr;
+    void* aa = nullptr;
     aicpu::HwtsTsKernel tsKernelInfo = {};
     tsKernelInfo.kernelBase.cceKernel.paramBase = (uintptr_t)aa;
 
@@ -53,7 +53,7 @@ TEST_F(RecordNotifyKernelTest, TsKernelRecordNotify_failed1)
 
 TEST_F(RecordNotifyKernelTest, TsKernelRecordNotifyHasWait)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&ModelStreamManager::GetStreamModelId).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     aicpu::HwtsTsKernel tsKernelInfo = {};

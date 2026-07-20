@@ -14,84 +14,74 @@
 using namespace testing;
 
 class DrvEventTest : public testing::Test {
- protected:
-  static void SetUpTestCase() {
-    std::cout << "DrvApiTest SetUP" << std::endl;
-  }
-  static void TearDownTestCase() {
-    std::cout << "DrvApiTest SetUP" << std::endl;
-  }
-  // Some expensive resource shared by all tests.
-  virtual void SetUp()
-  {
-    std::cout << "a test SetUP" << std::endl;
-  }
-  virtual void TearDown()
-  {
-    std::cout << "a test SetUP" << std::endl;
-  }
+protected:
+    static void SetUpTestCase() { std::cout << "DrvApiTest SetUP" << std::endl; }
+    static void TearDownTestCase() { std::cout << "DrvApiTest SetUP" << std::endl; }
+    // Some expensive resource shared by all tests.
+    virtual void SetUp() { std::cout << "a test SetUP" << std::endl; }
+    virtual void TearDown() { std::cout << "a test SetUP" << std::endl; }
 };
 
 extern "C" drvError_t drvEventIDListInit();
 
 TEST_F(DrvEventTest, event_api_test)
 {
-	drvError_t error;
-    struct halResourceIdInputInfo  resAllocInput;
-    struct halResourceIdOutputInfo  resAllocOutput;
+    drvError_t error;
+    struct halResourceIdInputInfo resAllocInput;
+    struct halResourceIdOutputInfo resAllocOutput;
     resAllocInput.type = DRV_EVENT_ID;
     resAllocInput.tsId = 0;
     int32_t deviceId = 0;
     drvEventIDListInit();
     error = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     struct halResourceIdInputInfo resFreeInput;
     resFreeInput.type = DRV_EVENT_ID;
     resFreeInput.tsId = 0;
     resFreeInput.resourceId = resAllocOutput.resourceId;
 
-    error = halResourceIdFree (deviceId, &resFreeInput);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = halResourceIdFree(deviceId, &resFreeInput);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 
 TEST_F(DrvEventTest, event_api_test1)
 {
-	drvError_t error;
-    struct halResourceIdInputInfo  resAllocInput;
-    struct halResourceIdOutputInfo  resAllocOutput;
+    drvError_t error;
+    struct halResourceIdInputInfo resAllocInput;
+    struct halResourceIdOutputInfo resAllocOutput;
     resAllocInput.type = DRV_MODEL_ID;
     resAllocInput.tsId = 0;
     int32_t deviceId = 0;
     drvEventIDListInit();
     error = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     struct halResourceIdInputInfo resFreeInput;
     resFreeInput.type = DRV_MODEL_ID;
     resFreeInput.tsId = 0;
     resFreeInput.resourceId = resAllocOutput.resourceId;
 
-    error = halResourceIdFree (deviceId, &resFreeInput);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = halResourceIdFree(deviceId, &resFreeInput);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 TEST_F(DrvEventTest, event_api_test2)
 {
-	drvError_t error;
-    struct halResourceIdInputInfo  resAllocInput;
-    struct halResourceIdOutputInfo  resAllocOutput;
+    drvError_t error;
+    struct halResourceIdInputInfo resAllocInput;
+    struct halResourceIdOutputInfo resAllocOutput;
     resAllocInput.type = DRV_NOTIFY_ID;
     resAllocInput.tsId = 0;
     int32_t deviceId = 0;
     drvEventIDListInit();
     error = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     struct halResourceIdInputInfo resFreeInput;
     resFreeInput.type = DRV_NOTIFY_ID;
     resFreeInput.tsId = 0;
     resFreeInput.resourceId = resAllocOutput.resourceId;
 
-    error = halResourceIdFree (deviceId, &resFreeInput);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = halResourceIdFree(deviceId, &resFreeInput);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }

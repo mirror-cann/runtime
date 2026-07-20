@@ -23,54 +23,50 @@
 
 class AICPUScheduleStubTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleStubTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleStubTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleStubTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleStubTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleStubTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleStubTEST SetUP" << std::endl; }
 
-    virtual void TearDown()
-    {
-        std::cout << "AICPUScheduleStubTEST TearDown" << std::endl;
-    }
+    virtual void TearDown() { std::cout << "AICPUScheduleStubTEST TearDown" << std::endl; }
 };
 
-TEST_F(AICPUScheduleStubTEST, stubTest) {
+TEST_F(AICPUScheduleStubTEST, stubTest)
+{
     DataPreprocess::TaskQueueMgr::GetInstance();
     DataPreprocess::TaskQueueMgr::GetInstance().OnPreprocessEvent(0U);
     EXPECT_EQ(DataPreprocess::TaskQueueMgr::GetInstance().cancelLastword_, nullptr);
 }
- 
-TEST_F(AICPUScheduleStubTEST, TDTServerInit) {
+
+TEST_F(AICPUScheduleStubTEST, TDTServerInit)
+{
     uint32_t deviceID = 0;
     std::list<uint32_t> bindCoreList = {0};
     int32_t ret = tdt::TDTServerInit(deviceID, bindCoreList);
     EXPECT_EQ(ret, 0);
 }
- 
-TEST_F(AICPUScheduleStubTEST, TDTServerStop) {
+
+TEST_F(AICPUScheduleStubTEST, TDTServerStop)
+{
     int32_t ret = tdt::TDTServerStop();
     EXPECT_EQ(ret, 0);
 }
- 
-TEST_F(AICPUScheduleStubTEST, GetErrDesc) {
+
+TEST_F(AICPUScheduleStubTEST, GetErrDesc)
+{
     std::string ret = tdt::StatusFactory::GetInstance()->GetErrDesc(2);
     EXPECT_EQ(ret, "");
 }
- 
-TEST_F(AICPUScheduleStubTEST, GetErrCodeDesc) {
+
+TEST_F(AICPUScheduleStubTEST, GetErrCodeDesc)
+{
     std::string ret = tdt::StatusFactory::GetInstance()->GetErrCodeDesc(2);
     EXPECT_EQ(ret, "");
 }
 
-TEST_F(AICPUScheduleStubTEST, TdtDevicePushData) {
+TEST_F(AICPUScheduleStubTEST, TdtDevicePushData)
+{
     SetTrainMode(MEFLAG);
     const std::string channelName = "test";
     std::vector<tdt::DataItem> items;

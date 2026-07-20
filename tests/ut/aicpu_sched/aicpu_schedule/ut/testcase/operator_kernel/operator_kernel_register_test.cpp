@@ -20,13 +20,9 @@ using namespace AicpuSchedule;
 
 class OperatorKernelRegisterTest : public testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(OperatorKernelRegisterTest, RunKernelNameNullFail)
@@ -65,7 +61,7 @@ TEST_F(OperatorKernelRegisterTest, RegistAndRunKernel)
 {
     class MockOperatorKernel : public OperatorKernel {
     public:
-        int32_t Compute(const AicpuTaskInfo &kernelTaskInfo, const RunContext &taskContext)
+        int32_t Compute(const AicpuTaskInfo& kernelTaskInfo, const RunContext& taskContext)
         {
             return AICPU_SCHEDULE_OK;
         }

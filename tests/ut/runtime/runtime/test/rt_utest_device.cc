@@ -52,18 +52,14 @@ static uint32_t g_expectAicCondIndex = 1U;
 
 class CtrlSQSetupFailStream : public Stream {
 public:
-    explicit CtrlSQSetupFailStream(Device *const dev) : Stream(dev, 0U, RT_STREAM_PRIMARY_DEFAULT)
-    {
-    }
+    explicit CtrlSQSetupFailStream(Device* const dev) : Stream(dev, 0U, RT_STREAM_PRIMARY_DEFAULT) {}
 
-    rtError_t Setup() override
-    {
-        return RT_ERROR_DRV_ERR;
-    }
+    rtError_t Setup() override { return RT_ERROR_DRV_ERR; }
 };
 
-rtError_t CheckStarsCoreErrorInfoStub(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t CheckStarsCoreErrorInfoStub(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     EXPECT_EQ(info->u.coreErrorInfo.info[0].coreId, g_expectCoreId0);
     EXPECT_EQ(info->u.coreErrorInfo.info[1].coreId, g_expectCoreId1);
@@ -72,38 +68,24 @@ rtError_t CheckStarsCoreErrorInfoStub(const StarsDeviceErrorInfo * const info,
     return RT_ERROR_NONE;
 }
 
-class DeviceTest : public testing::Test
-{
+class DeviceTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
+    static void TearDownTestCase() {}
 
-    static void TearDownTestCase()
-    {
+    virtual void SetUp() { rtSetDevice(0); }
 
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
-
-    virtual void TearDown()
-    {
-        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
-    }
+    virtual void TearDown() { ut::ResetPrimaryDeviceIfActiveWithDeviceDown(); }
 };
-
 
 TEST_F(DeviceTest, module_alloc_03)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
-    Module * module1;
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Module* module1;
+    Runtime* rt = ((Runtime*)Runtime::Instance());
     MOCKER(drvMemAllocL2buffAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     bin.magic = RT_DEV_BINARY_MAGIC_PLAIN;
@@ -114,21 +96,18 @@ TEST_F(DeviceTest, module_alloc_03)
     EXPECT_EQ(error, RT_ERROR_NONE);
     program->SetProgMemType(Program::PROGRAM_MEM_FAST);
 
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     dev->chipType_ = CHIP_END;
     dev->l2buffer_ = &bin;
 
     NpuDriver drv;
     dev->driver_ = &drv;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::LoadProgram)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::LoadProgram).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
-    const char * kernelName = "test";
+    const char* kernelName = "test";
     (void)program->AppendKernelName(kernelName);
 
     program->SetDefaultKernelAttrType(RT_KERNEL_ATTR_TYPE_VECTOR);
@@ -153,12 +132,12 @@ TEST_F(DeviceTest, IsSmmuFaultGetValidFailed)
 TEST_F(DeviceTest, module_alloc_04)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
-    Module *module1;
-    Module *module2;
+    Module* module1;
+    Module* module2;
 
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
 
     MOCKER(drvMemAllocL2buffAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
@@ -169,12 +148,12 @@ TEST_F(DeviceTest, module_alloc_04)
     error = rt->ProgramRegister(&bin, &program);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
-    const char *kernelName = "test";
+    const char* kernelName = "test";
     (void)program->AppendKernelName(kernelName);
 
     program->SetDefaultKernelAttrType(RT_KERNEL_ATTR_TYPE_AICPU);
@@ -182,7 +161,7 @@ TEST_F(DeviceTest, module_alloc_04)
     EXPECT_NE(module1, (Module*)NULL);
     uint32_t cnt1 = 0U;
     uint32_t cnt2 = 0U;
-    Kernel *kernel = (Kernel *)malloc(sizeof(Kernel));
+    Kernel* kernel = (Kernel*)malloc(sizeof(Kernel));
     kernel->SetMixType(MIX_AIC);
     module1->GetPrefetchCnt(kernel, cnt1, cnt2);
     kernel->SetMixType(MIX_AIV);
@@ -206,12 +185,12 @@ TEST_F(DeviceTest, module_alloc_04)
 TEST_F(DeviceTest, module_alloc_05)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
-    Module *module1;
-    Module *module2;
+    Module* module1;
+    Module* module2;
 
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
 
     MOCKER(drvMemAllocL2buffAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
@@ -222,12 +201,12 @@ TEST_F(DeviceTest, module_alloc_05)
     error = rt->ProgramRegister(&bin, &program);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
-    const char *kernelName = "test";
+    const char* kernelName = "test";
     (void)program->AppendKernelName(kernelName);
 
     program->SetDefaultKernelAttrType(RT_KERNEL_ATTR_TYPE_VECTOR);
@@ -235,7 +214,7 @@ TEST_F(DeviceTest, module_alloc_05)
     EXPECT_NE(module1, (Module*)NULL);
     uint32_t cnt1 = 0U;
     uint32_t cnt2 = 0U;
-    Kernel *kernel = (Kernel *)malloc(sizeof(Kernel));
+    Kernel* kernel = (Kernel*)malloc(sizeof(Kernel));
     module1->GetPrefetchCnt(kernel, cnt1, cnt2);
 
     module2 = dev->ModuleAlloc(program);
@@ -253,16 +232,14 @@ TEST_F(DeviceTest, module_alloc_05)
 TEST_F(DeviceTest, module_alloc_load_fail_in_rawdev)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
-    Module * module1;
+    Module* module1;
 
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
 
     MOCKER(drvMemAllocL2buffAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
-    MOCKER_CPP(&Module::Load)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP(&Module::Load).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     bin.magic = RT_DEV_BINARY_MAGIC_PLAIN;
     bin.version = 1;
@@ -271,7 +248,7 @@ TEST_F(DeviceTest, module_alloc_load_fail_in_rawdev)
     error = rt->ProgramRegister(&bin, &program);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
@@ -287,16 +264,14 @@ TEST_F(DeviceTest, module_alloc_load_fail_in_rawdev)
 TEST_F(DeviceTest, module_alloc_load_fail_in_stubdev)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
-    Module * module1;
+    Module* module1;
 
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
 
     MOCKER(drvMemAllocL2buffAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
-    MOCKER_CPP(&Module::Load)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP(&Module::Load).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     bin.magic = RT_DEV_BINARY_MAGIC_PLAIN;
     bin.version = 1;
@@ -312,27 +287,25 @@ TEST_F(DeviceTest, START_TEST_1)
 {
     rtError_t error;
     int32_t devId = 1;
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     error = device->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream * stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     device->primaryStream_ = stream;
     device->GetPendingNum();
-    delete(device);
+    delete (device);
 }
 
 TEST_F(DeviceTest, START_TEST_2)
 {
     rtError_t error;
     int32_t devId = 1;
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
 
-    MOCKER_CPP_VIRTUAL(device->engine_, &Engine::Start)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(device->engine_, &Engine::Start).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = device->Start();
     device->ProcDeviceErrorInfo();
     device->Stop();
@@ -344,9 +317,9 @@ TEST_F(DeviceTest, raw_device_init)
 {
     rtError_t error;
 
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
 
-    UmaArgLoader *argLoader = new UmaArgLoader(device);
+    UmaArgLoader* argLoader = new UmaArgLoader(device);
 
     MOCKER_CPP_VIRTUAL(argLoader, &UmaArgLoader::Init).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
@@ -354,65 +327,66 @@ TEST_F(DeviceTest, raw_device_init)
 
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    delete(argLoader);
-    delete(device);
+    delete (argLoader);
+    delete (device);
 }
 
 TEST_F(DeviceTest, raw_device_task_factory)
 {
     rtError_t error;
 
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
 
     MOCKER_CPP(&TaskFactory::Init).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = device->Init();
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    delete(device);
+    delete (device);
 }
 
 TEST_F(DeviceTest, device_error_proc3)
 {
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device, 524288);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device, 524288);
     EXPECT_NE(device, nullptr);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DeviceTest, device_error_proc6)
 {
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device, 524288);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device, 524288);
     EXPECT_NE(device, nullptr);
     TaskInfo task = {};
     task.isNoRingbuffer = 1U;
     errorProc->ProcErrorInfo(&task);
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 uint16_t g_sId = 0;
 uint16_t g_tId = 0;
-rtError_t MemCopySyncForRingBuffer2(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+rtError_t MemCopySyncForRingBuffer2(
+    Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
     uint32_t DEVICE_RINGBUFFER_SIZE = 2U * 1024U * 1024U;
     uint32_t RINGBUFFER_EXT_ONE_ELEMENT_LENGTH = 12288U; // 4K + 8K
     if (size == DEVICE_RINGBUFFER_SIZE) {
         // ringbuffer 头
-        DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+        DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
         tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
         tmpCtrlInfo->tail = 1;
         tmpCtrlInfo->head = 0;
 
         size_t headSize = sizeof(DevRingBufferCtlInfo);
         size_t elementSize = RINGBUFFER_EXT_ONE_ELEMENT_LENGTH;
-        uint8_t * infoAddr =  reinterpret_cast<uint8_t *>(tmpCtrlInfo) + headSize + (tmpCtrlInfo->head * elementSize);
-        RingBufferElementInfo * info = reinterpret_cast<RingBufferElementInfo *>(infoAddr);
+        uint8_t* infoAddr = reinterpret_cast<uint8_t*>(tmpCtrlInfo) + headSize + (tmpCtrlInfo->head * elementSize);
+        RingBufferElementInfo* info = reinterpret_cast<RingBufferElementInfo*>(infoAddr);
         info->errorType = AICORE_ERROR;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         errorInfo->u.coreErrorInfo.comm.streamId = g_sId;
         errorInfo->u.coreErrorInfo.comm.taskId = g_tId;
         errorInfo->u.coreErrorInfo.comm.coreNum = 0U;
@@ -424,21 +398,20 @@ TEST_F(DeviceTest, device_error_report_ringbuffer_02)
 {
     uint16_t streamId;
     rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
     memset(ctlInfo, 0, DEVICE_ERROR_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
+        ctlInfo->ringBufferLen = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
         uint64_t oneElementLen = sizeof(DeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        DeviceErrorInfo *errorInfo = reinterpret_cast<DeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        DeviceErrorInfo* errorInfo = reinterpret_cast<DeviceErrorInfo*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.coreNum = 1;
         errorInfo->u.coreErrorInfo.type = AICORE_ERROR;
@@ -452,7 +425,7 @@ TEST_F(DeviceTest, device_error_report_ringbuffer_02)
     errorProc->deviceRingBufferAddr_ = nullptr;
     errorProc->ReportRingBuffer(&streamId);
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -460,21 +433,20 @@ TEST_F(DeviceTest, device_error_report_ringbuffer_03)
 {
     uint16_t streamId;
     rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
     memset(ctlInfo, 0, DEVICE_ERROR_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
+        ctlInfo->ringBufferLen = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
         uint64_t oneElementLen = sizeof(DeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        DeviceErrorInfo *errorInfo = reinterpret_cast<DeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        DeviceErrorInfo* errorInfo = reinterpret_cast<DeviceErrorInfo*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.coreNum = 1;
         errorInfo->u.coreErrorInfo.type = AICORE_ERROR;
@@ -483,23 +455,23 @@ TEST_F(DeviceTest, device_error_report_ringbuffer_03)
         std::unique_ptr<char[]> hostAddr(new (std::nothrow) char[sizeof(DevRingBufferCtlInfo)]);
         errorProc->ProcRingBufferTask(hostAddr.get(), false, 1);
         errorProc->deviceRingBufferAddr_ = hostAddr.get();
-        MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::MemCopySync)
+            .stubs()
+            .will(returnValue(RT_ERROR_NONE));
         errorProc->ReportRingBuffer(&streamId);
         free(ctlInfo);
     }
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtError_t ret = rtDeviceReset(1);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
-
-rtError_t MemCopySyncStub1(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+rtError_t MemCopySyncStub1(
+    Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
-    DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+    DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
     tmpCtrlInfo->magic = 0;
     tmpCtrlInfo->ringBufferLen = 0;
     return DRV_ERROR_NONE;
@@ -507,22 +479,21 @@ rtError_t MemCopySyncStub1(Driver *drv, void *dst, uint64_t destMax, const void 
 
 TEST_F(DeviceTest, AICORE_Normal)
 {
-//    MOCKER(halMemAlloc).stubs().will(invoke(halMemAllocStub));
+    //    MOCKER(halMemAlloc).stubs().will(invoke(halMemAllocStub));
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
+        ctlInfo->ringBufferLen = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
         uint64_t oneElementLen = sizeof(DeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        DeviceErrorInfo *errorInfo = reinterpret_cast<DeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        DeviceErrorInfo* errorInfo = reinterpret_cast<DeviceErrorInfo*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.coreNum = 1;
         errorInfo->u.coreErrorInfo.type = AICORE_ERROR;
@@ -533,7 +504,7 @@ TEST_F(DeviceTest, AICORE_Normal)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtError_t ret = rtDeviceReset(1);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
@@ -541,20 +512,19 @@ TEST_F(DeviceTest, AICORE_Normal)
 TEST_F(DeviceTest, SDMA_Normal)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
+        ctlInfo->ringBufferLen = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
         uint64_t oneElementLen = sizeof(DeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        DeviceErrorInfo *errorInfo = reinterpret_cast<DeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        DeviceErrorInfo* errorInfo = reinterpret_cast<DeviceErrorInfo*>(info + 1);
         info->errorType = SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.channelStatus = 1;
         errorInfo->u.sdmaErrorInfo.cqeStatus = 1;
@@ -564,7 +534,7 @@ TEST_F(DeviceTest, SDMA_Normal)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtError_t ret = rtDeviceReset(1);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
@@ -572,20 +542,19 @@ TEST_F(DeviceTest, SDMA_Normal)
 TEST_F(DeviceTest, AICPU_Normal_0)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
+        ctlInfo->ringBufferLen = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
         uint64_t oneElementLen = sizeof(DeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        DeviceErrorInfo *errorInfo = reinterpret_cast<DeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        DeviceErrorInfo* errorInfo = reinterpret_cast<DeviceErrorInfo*>(info + 1);
         info->errorType = AICPU_ERROR;
         errorInfo->u.aicpuErrorInfo.errcode = 21001;
         errorProc->ProcessOneElementInRingBuffer(ctlInfo, 0, 1);
@@ -594,7 +563,7 @@ TEST_F(DeviceTest, AICPU_Normal_0)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtError_t ret = rtDeviceReset(1);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
@@ -602,20 +571,19 @@ TEST_F(DeviceTest, AICPU_Normal_0)
 TEST_F(DeviceTest, AICPU_Normal_1)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
+        ctlInfo->ringBufferLen = (DEVICE_ERROR_RINGBUFFER_SIZE - sizeof(DevRingBufferCtlInfo));
         uint64_t oneElementLen = sizeof(DeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        DeviceErrorInfo *errorInfo = reinterpret_cast<DeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        DeviceErrorInfo* errorInfo = reinterpret_cast<DeviceErrorInfo*>(info + 1);
         info->errorType = AICPU_ERROR;
         errorInfo->u.aicpuErrorInfo.errcode = 99999;
         errorProc->ProcessOneElementInRingBuffer(ctlInfo, 0, 1);
@@ -624,7 +592,7 @@ TEST_F(DeviceTest, AICPU_Normal_1)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtError_t ret = rtDeviceReset(1);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
@@ -663,12 +631,12 @@ TEST_F(DeviceTest, raw_device_aicpu_model_abort)
 TEST_F(DeviceTest, DevSetLimit_in_rawdev)
 {
     rtSetDevice(1);
-     rtLimitType_t type = (rtLimitType_t)0U;
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    rtLimitType_t type = (rtLimitType_t)0U;
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
     rtError_t error = rtDeviceSetLimit(1, type, 0U);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
     rtDeviceReset(1);
 }
 
@@ -676,32 +644,31 @@ TEST_F(DeviceTest, DevSetLimit_in_rawdev_01)
 {
     rtSetDevice(1);
     rtLimitType_t type = (rtLimitType_t)1U;
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
     rtError_t error = rtDeviceSetLimit(1, type, 0U);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_AICPU_Normal_0)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = AICPU_ERROR;
         errorInfo->u.aicpuErrorInfo.comm.type = AICPU_ERROR;
         errorInfo->u.aicpuErrorInfo.comm.coreNum = 1;
@@ -725,28 +692,27 @@ TEST_F(DeviceTest, STARS_AICPU_Normal_0)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_AICPU_Normal_02)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = AICPU_ERROR;
         errorInfo->u.aicpuErrorInfo.comm.type = AICPU_ERROR;
         errorInfo->u.aicpuErrorInfo.comm.coreNum = 1;
@@ -770,28 +736,27 @@ TEST_F(DeviceTest, STARS_AICPU_Normal_02)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_SDMA_Normal_0)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.comm.type = SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.comm.coreNum = 1;
@@ -823,28 +788,27 @@ TEST_F(DeviceTest, STARS_SDMA_Normal_0)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_CORE_Normal_0)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.type = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.coreNum = 1;
@@ -869,25 +833,25 @@ TEST_F(DeviceTest, STARS_CORE_Normal_0)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_CORE_Merge_Base_NoExt)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo);
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfoRingBuffer *errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer *>(info + 1);
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfoRingBuffer* errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.type = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.coreNum = 2;
@@ -906,25 +870,25 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_NoExt)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithExt)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
         ctlInfo->tail = 2;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo);
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfoRingBuffer *errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer *>(info + 1);
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfoRingBuffer* errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.type = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.coreNum = 2;
@@ -932,8 +896,8 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithExt)
         errorInfo->u.coreErrorInfo.info[1].coreId = 25;
 
         uintptr_t extAddr = infoAddr + RINGBUFFER_EXT_ONE_ELEMENT_LENGTH;
-        RingBufferElementInfo *extInfo = (RingBufferElementInfo *)extAddr;
-        StarsCoreErrorInfoExt *extData = reinterpret_cast<StarsCoreErrorInfoExt *>(extInfo + 1);
+        RingBufferElementInfo* extInfo = (RingBufferElementInfo*)extAddr;
+        StarsCoreErrorInfoExt* extData = reinterpret_cast<StarsCoreErrorInfoExt*>(extInfo + 1);
         extInfo->errorType = AICORE_EXT_ERROR;
         extData->comm.coreNum = 2;
         extData->info[1].coreId = 25;
@@ -954,25 +918,25 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithExt)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithMismatchedExt)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
         ctlInfo->tail = 2;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo);
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfoRingBuffer *errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer *>(info + 1);
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfoRingBuffer* errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.type = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.coreNum = 2;
@@ -980,8 +944,8 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithMismatchedExt)
         errorInfo->u.coreErrorInfo.info[1].coreId = 25;
 
         uintptr_t extAddr = infoAddr + RINGBUFFER_EXT_ONE_ELEMENT_LENGTH;
-        RingBufferElementInfo *extInfo = (RingBufferElementInfo *)extAddr;
-        StarsCoreErrorInfoExt *extData = reinterpret_cast<StarsCoreErrorInfoExt *>(extInfo + 1);
+        RingBufferElementInfo* extInfo = (RingBufferElementInfo*)extAddr;
+        StarsCoreErrorInfoExt* extData = reinterpret_cast<StarsCoreErrorInfoExt*>(extInfo + 1);
         extInfo->errorType = AIVECTOR_EXT_ERROR;
         extData->comm.coreNum = 1;
         extData->info[0].coreId = 25;
@@ -1002,25 +966,25 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithMismatchedExt)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithDuplicateExtCoreIdKeepsFirstMatch)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
         ctlInfo->tail = 2;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo);
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfoRingBuffer *errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer *>(info + 1);
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfoRingBuffer* errorInfo = reinterpret_cast<StarsDeviceErrorInfoRingBuffer*>(info + 1);
         info->errorType = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.type = AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.coreNum = 2;
@@ -1028,8 +992,8 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithDuplicateExtCoreIdKeepsFirstMatch)
         errorInfo->u.coreErrorInfo.info[1].coreId = 25;
 
         uintptr_t extAddr = infoAddr + RINGBUFFER_EXT_ONE_ELEMENT_LENGTH;
-        RingBufferElementInfo *extInfo = (RingBufferElementInfo *)extAddr;
-        StarsCoreErrorInfoExt *extData = reinterpret_cast<StarsCoreErrorInfoExt *>(extInfo + 1);
+        RingBufferElementInfo* extInfo = (RingBufferElementInfo*)extAddr;
+        StarsCoreErrorInfoExt* extData = reinterpret_cast<StarsCoreErrorInfoExt*>(extInfo + 1);
         extInfo->errorType = AICORE_EXT_ERROR;
         extData->comm.coreNum = 2;
         extData->info[0].coreId = 0;
@@ -1051,15 +1015,15 @@ TEST_F(DeviceTest, STARS_CORE_Merge_Base_WithDuplicateExtCoreIdKeepsFirstMatch)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_DVPP_ErrorInfo)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = errorProc->ProcessStarsDvppErrorInfo(nullptr, 0, device, nullptr);
@@ -1069,16 +1033,15 @@ TEST_F(DeviceTest, STARS_DVPP_ErrorInfo)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
-
 
 TEST_F(DeviceTest, STARS_SQE_ErrorInfo)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = errorProc->ProcessStarsSqeErrorInfo(nullptr, 0, device, nullptr);
@@ -1088,7 +1051,7 @@ TEST_F(DeviceTest, STARS_SQE_ErrorInfo)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -1096,13 +1059,11 @@ TEST_F(DeviceTest, STARS_HcclTimeout_ErrorInfo)
 {
     rtSetDevice(1);
     TaskInfo task = {};
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
-    MOCKER(PushBackErrInfo)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(PushBackErrInfo).stubs().will(returnValue(0));
 
     rtError_t ret = errorProc->ProcessStarsHcclFftsPlusTimeoutErrorInfo(nullptr, 0, device, errorProc);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1114,7 +1075,7 @@ TEST_F(DeviceTest, STARS_HcclTimeout_ErrorInfo)
     GlobalMockObject::reset();
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -1122,13 +1083,11 @@ TEST_F(DeviceTest, STARS_HcclTimeout_ErrorInfo1)
 {
     rtSetDevice(1);
     TaskInfo task = {};
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
-    MOCKER(PushBackErrInfo)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(PushBackErrInfo).stubs().will(returnValue(0));
 
     rtError_t ret = errorProc->ProcessStarsHcclFftsPlusTimeoutErrorInfo(nullptr, 0, device, errorProc);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1140,20 +1099,20 @@ TEST_F(DeviceTest, STARS_HcclTimeout_ErrorInfo1)
     GlobalMockObject::reset();
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_dsa_ErrorInfo)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 0;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const dsaTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* const dsaTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(dsaTask, nullptr);
     errorInfo.u.dsaErrorInfo.coreNum = 1;
     rtError_t ret = errorProc->ProcessStarsDsaErrorInfo(nullptr, 0, device, errorProc);
@@ -1180,7 +1139,7 @@ TEST_F(DeviceTest, STARS_dsa_ErrorInfo)
     delete stm;
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
     GlobalMockObject::verify();
     GlobalMockObject::reset();
@@ -1188,38 +1147,34 @@ TEST_F(DeviceTest, STARS_dsa_ErrorInfo)
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx)
 {
     rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
 
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const tsk = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
-    Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    TaskInfo* const tsk = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    Kernel* aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(tsk, aicKernel, aicKernel->GetKernelAttrType(), 1, nullptr);
     delete aicKernel;
 
-    const void *stubFunc = (void *)0x03;
-    const char *stubName = "efgexample";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x03;
+    const char* stubName = "efgexample";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'e', 'f', 'g', 'h', '\0'};
 
-    MOCKER_CPP(&Runtime::GetProgram)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&Runtime::GetProgram)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP(&Runtime::GetProgram).stubs().will(returnValue(true));
+    MOCKER_CPP(&Runtime::GetProgram).stubs().will(ignoreReturnValue());
     kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
-    AicTaskInfo *aicTaskInfo = &(tsk->u.aicTaskInfo);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
+    AicTaskInfo* aicTaskInfo = &(tsk->u.aicTaskInfo);
     aicTaskInfo->kernel = kernel;
 
     device->GetTaskFactory()->SetSerialId(stm, tsk);
 
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(nullptr, 0, device, errorProc);
@@ -1242,31 +1197,31 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx)
     (void)device->GetTaskFactory()->Recycle(tsk);
     delete stm;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx1)
 {
     // mix
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
 
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
 
-    const void *stubFunc = (void *)0x03;
-    const char *stubName = "abcd";
+    const void* stubFunc = (void*)0x03;
+    const char* stubName = "abcd";
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', '\0'};
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
     taskInfo.u.aicTaskInfo.kernel = kernel;
     taskInfo.u.aicTaskInfo.kernel->mixType_ = 1;
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(nullptr, 0, device, errorProc);
@@ -1283,10 +1238,7 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx1)
     StarsOneTimeoutCoreDfxInfo coreInfo0 = {};
     coreInfo0.subError = 1U;
     errorInfo.u.coreTimeoutDfxInfo.coreInfo[0] = coreInfo0;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&taskInfo));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&taskInfo));
     ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(&errorInfo, 0, device, errorProc);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     GlobalMockObject::verify();
@@ -1303,13 +1255,13 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx1)
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx2)
 {
     // ffts+
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(nullptr, 0, device, errorProc);
@@ -1326,10 +1278,7 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx2)
     StarsOneTimeoutCoreDfxInfo coreInfo0 = {};
     coreInfo0.subError = 1U;
     errorInfo.u.coreTimeoutDfxInfo.coreInfo[0] = coreInfo0;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&taskInfo));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&taskInfo));
     ret = errorProc->ProcessStarsCoreTimeoutDfxInfo(&errorInfo, 0, device, errorProc);
 
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -1344,14 +1293,14 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfx2)
 TEST_F(DeviceTest, STARS_AicoreTimeoutDfx3)
 {
     // ffts+
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     StarsErrorCommonInfo common = {};
@@ -1379,9 +1328,9 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo1)
 {
     // no ffts+
     rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
 
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     errorProc->ProcessStarsTimeoutDfxSlotInfo(nullptr, device, 0);
@@ -1399,7 +1348,7 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo1)
     errorProc->ProcessStarsTimeoutDfxSlotInfo(&errorInfo, device, 0);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     auto error = rtDeviceReset(1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1408,18 +1357,18 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus)
 {
     // ffts+ aicore contexit
     rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    Stream *stm = new Stream(device, 1);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const taskInfo = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_FFTS_PLUS, errCode);
+    TaskInfo* const taskInfo = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_FFTS_PLUS, errCode);
     ASSERT_NE(taskInfo, nullptr);
-    FftsPlusTaskInfo *fftsPlusTaskInfo = &(taskInfo->u.fftsPlusTask);
-    void *descAlignBuf = malloc(256);
+    FftsPlusTaskInfo* fftsPlusTaskInfo = &(taskInfo->u.fftsPlusTask);
+    void* descAlignBuf = malloc(256);
     ASSERT_NE(descAlignBuf, nullptr);
     fftsPlusTaskInfo->descAlignBuf = descAlignBuf;
     fftsPlusTaskInfo->descBufLen = 256;
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     errorProc->ProcessStarsTimeoutDfxSlotInfo4FftsPlus(nullptr, device, 0);
@@ -1440,17 +1389,18 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus)
 
     rtFftsPlusAicAivCtx_t temp = {};
     temp.contextType = RT_CTX_TYPE_AICORE;
-    void *addr = reinterpret_cast<void  *>(&temp);
+    void* addr = reinterpret_cast<void*>(&temp);
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs()
-    .with(outBoundP(addr, sizeof(temp)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
+        .stubs()
+        .with(outBoundP(addr, sizeof(temp)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     errorProc->ProcessStarsTimeoutDfxSlotInfo4FftsPlus(&errorInfo, device, 0);
     GlobalMockObject::verify();
     GlobalMockObject::reset();
     (void)device->GetTaskFactory()->Recycle(taskInfo);
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     auto error = rtDeviceReset(1);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm->device_ = nullptr;
@@ -1462,18 +1412,18 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus1)
 {
     // ffts+ mix contexit
     rtSetDevice(1);
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    Stream *stm = new Stream(device, 1);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const taskInfo = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_FFTS_PLUS, errCode);
+    TaskInfo* const taskInfo = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_FFTS_PLUS, errCode);
     ASSERT_NE(taskInfo, nullptr);
-    FftsPlusTaskInfo *fftsPlusTaskInfo = &(taskInfo->u.fftsPlusTask);
-    void *descAlignBuf = malloc(256);
+    FftsPlusTaskInfo* fftsPlusTaskInfo = &(taskInfo->u.fftsPlusTask);
+    void* descAlignBuf = malloc(256);
     ASSERT_NE(descAlignBuf, nullptr);
     fftsPlusTaskInfo->descAlignBuf = descAlignBuf;
     fftsPlusTaskInfo->descBufLen = 256;
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     errorProc->ProcessStarsTimeoutDfxSlotInfo4FftsPlus(nullptr, device, 0);
@@ -1492,17 +1442,18 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus1)
 
     rtFftsPlusAicAivCtx_t temp = {};
     temp.contextType = RT_CTX_TYPE_MIX_AIC;
-    void *addr = reinterpret_cast<void  *>(&temp);
+    void* addr = reinterpret_cast<void*>(&temp);
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs()
-    .with(outBoundP(addr, sizeof(temp)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
+        .stubs()
+        .with(outBoundP(addr, sizeof(temp)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     errorProc->ProcessStarsTimeoutDfxSlotInfo4FftsPlus(&errorInfo, device, 0);
     GlobalMockObject::verify();
     GlobalMockObject::reset();
     (void)device->GetTaskFactory()->Recycle(taskInfo);
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     auto error = rtDeviceReset(1);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stm->device_ = nullptr;
@@ -1512,20 +1463,20 @@ TEST_F(DeviceTest, STARS_AicoreTimeoutDfxSlotInfo4FftsPlus1)
 
 TEST_F(DeviceTest, message_queue_add_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     device->messageQueue_ = new (std::nothrow) uint64_t[STREAM_MESSAGE_QUEUE_SIZE]();
     EXPECT_NE(device->messageQueue_, nullptr);
 
-    Stream *stream1 = new Stream(device, 0);
-    Stream *stream2 = new Stream(device, 0);
+    Stream* stream1 = new Stream(device, 0);
+    Stream* stream2 = new Stream(device, 0);
 
     device->AddStreamToMessageQueue(stream1);
     device->AddStreamToMessageQueue(stream2);
     device->DelStreamFromMessageQueue(stream1);
     device->DelStreamFromMessageQueue(stream2);
 
-    Stream *recycleStream = device->GetNextRecycleStream();
+    Stream* recycleStream = device->GetNextRecycleStream();
     EXPECT_EQ(recycleStream, nullptr);
 
     delete stream1;
@@ -1535,15 +1486,15 @@ TEST_F(DeviceTest, message_queue_add_test)
 
 TEST_F(DeviceTest, message_queue_add_full_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     device->messageQueueSize_ = 2U;
     device->messageQueue_ = new (std::nothrow) uint64_t[STREAM_MESSAGE_QUEUE_SIZE]();
     EXPECT_NE(device->messageQueue_, nullptr);
 
-    Stream *stream1 = new Stream(device, 0);
-    Stream *stream2 = new Stream(device, 0);
-    Stream *stream3 = new Stream(device, 0);
+    Stream* stream1 = new Stream(device, 0);
+    Stream* stream2 = new Stream(device, 0);
+    Stream* stream3 = new Stream(device, 0);
 
     for (int i = 0; i < 3073; i++) {
         device->AddStreamToMessageQueue(stream1);
@@ -1556,7 +1507,7 @@ TEST_F(DeviceTest, message_queue_add_full_test)
     device->DelStreamFromMessageQueue(stream1);
     device->DelStreamFromMessageQueue(stream2);
 
-    Stream *recycleStream = device->GetNextRecycleStream();
+    Stream* recycleStream = device->GetNextRecycleStream();
     EXPECT_EQ(recycleStream, nullptr);
 
     delete stream1;
@@ -1567,15 +1518,15 @@ TEST_F(DeviceTest, message_queue_add_full_test)
 
 TEST_F(DeviceTest, message_queue_get_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     device->messageQueue_ = new (std::nothrow) uint64_t[STREAM_MESSAGE_QUEUE_SIZE]();
     EXPECT_NE(device->messageQueue_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     device->AddStreamToMessageQueue(stream);
-    Stream *recycleStream = device->GetNextRecycleStream();
+    Stream* recycleStream = device->GetNextRecycleStream();
     EXPECT_EQ(recycleStream, stream);
     recycleStream = device->GetNextRecycleStream();
     EXPECT_EQ(recycleStream, nullptr);
@@ -1586,15 +1537,15 @@ TEST_F(DeviceTest, message_queue_get_test)
 
 TEST_F(DeviceTest, message_queue_add_repeat_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     device->messageQueue_ = new (std::nothrow) uint64_t[STREAM_MESSAGE_QUEUE_SIZE]();
     EXPECT_NE(device->messageQueue_, nullptr);
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     device->AddStreamToMessageQueue(stream);
     device->AddStreamToMessageQueue(stream);
-    Stream *recycleStream = device->GetNextRecycleStream();
+    Stream* recycleStream = device->GetNextRecycleStream();
     EXPECT_EQ(recycleStream, stream);
 
     device->DelStreamFromMessageQueue(stream);
@@ -1608,13 +1559,13 @@ TEST_F(DeviceTest, message_queue_add_repeat_test)
 
 TEST_F(DeviceTest, message_queue_null_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
     MOCKER(mmSemPost).stubs().will(returnValue(0));
     device->AddStreamToMessageQueue(stream);
-    Stream *recycleStream = device->GetNextRecycleStream();
+    Stream* recycleStream = device->GetNextRecycleStream();
     EXPECT_EQ(recycleStream, nullptr);
 
     device->DelStreamFromMessageQueue(stream);
@@ -1625,10 +1576,8 @@ TEST_F(DeviceTest, message_queue_null_test)
 
 TEST_F(DeviceTest, CtrlResEntrySetupFailTest)
 {
-    MOCKER_CPP(&CtrlResEntry::Init)
-        .stubs()
-        .will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
-    RawDevice *device = new RawDevice(1);
+    MOCKER_CPP(&CtrlResEntry::Init).stubs().will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
+    RawDevice* device = new RawDevice(1);
     device->CtrlResEntrySetup();
     EXPECT_EQ(device->ctrlRes_, nullptr);
     DELETE_O(device);
@@ -1637,7 +1586,7 @@ TEST_F(DeviceTest, CtrlResEntrySetupFailTest)
 TEST_F(DeviceTest, CtrlResEntryInitFailTest)
 {
     uint8_t stub;
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
     device->ctrlRes_ = new (std::nothrow) CtrlResEntry();
     device->ctrlRes_->taskBaseAddr_ = new uint8_t[1];
@@ -1649,7 +1598,7 @@ TEST_F(DeviceTest, CtrlResEntryInitFailTest)
 
 TEST_F(DeviceTest, CtrlStreamSetupTest)
 {
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
     device->ctrlRes_ = new (std::nothrow) CtrlResEntry();
     device->ctrlRes_->Init(device);
@@ -1660,7 +1609,7 @@ TEST_F(DeviceTest, CtrlStreamSetupTest)
 }
 TEST_F(DeviceTest, CtrlStreamFailSetupTest)
 {
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->CtrlStreamSetup();
     EXPECT_EQ(device->ctrlStream_, nullptr);
     DELETE_O(device);
@@ -1675,22 +1624,21 @@ TEST_F(DeviceTest, STARS_CORE_FFTSPLUS_0)
     InitByStream(&fftsPlusTask, rt_ut::UnwrapOrNull<Stream>(stream));
     fftsPlusTask.id = 0;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     errorProc->SetRealFaultTaskPtr(&fftsPlusTask);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = FFTS_PLUS_AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.type = FFTS_PLUS_AICORE_ERROR;
         errorInfo->u.coreErrorInfo.comm.coreNum = 1;
@@ -1718,7 +1666,7 @@ TEST_F(DeviceTest, STARS_CORE_FFTSPLUS_0)
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
     rtStreamDestroy(stream);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(0);
 }
 
@@ -1731,22 +1679,21 @@ TEST_F(DeviceTest, STARS_CORE_FFTSPLUS_1)
     InitByStream(&fftsPlusTask, rt_ut::UnwrapOrNull<Stream>(stream));
     fftsPlusTask.id = 0;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     errorProc->SetRealFaultTaskPtr(&fftsPlusTask);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = FFTS_PLUS_SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.comm.type = FFTS_PLUS_SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.comm.coreNum = 1;
@@ -1773,7 +1720,7 @@ TEST_F(DeviceTest, STARS_CORE_FFTSPLUS_1)
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
     rtStreamDestroy(stream);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(0);
 }
 
@@ -1786,22 +1733,21 @@ TEST_F(DeviceTest, STARS_CORE_FFTSPLUS_2)
     InitByStream(&fftsPlusTask, rt_ut::UnwrapOrNull<Stream>(stream));
     fftsPlusTask.id = 0;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     errorProc->SetRealFaultTaskPtr(&fftsPlusTask);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
         ctlInfo->head = 0;
         ctlInfo->magic = RINGBUFFER_MAGIC;
-        ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+        ctlInfo->ringBufferLen = RINGBUFFER_LEN;
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-        uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                             sizeof(DevRingBufferCtlInfo) +
-                             ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        uintptr_t infoAddr =
+            reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = FFTS_PLUS_DSA_ERROR;
         errorInfo->u.dsaErrorInfo.type = FFTS_PLUS_DSA_ERROR;
         errorInfo->u.dsaErrorInfo.coreNum = 1;
@@ -1816,7 +1762,7 @@ TEST_F(DeviceTest, STARS_CORE_FFTSPLUS_2)
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
     rtStreamDestroy(stream);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(0);
 }
 
@@ -1824,18 +1770,19 @@ TEST_F(DeviceTest, AddAddrBinHandleTableTest)
 {
     RawDevice dev(0);
     dev.Init();
-    dev.AddAddrBinHandleMapTable(0, (void *)0x10);
+    dev.AddAddrBinHandleMapTable(0, (void*)0x10);
     auto ret = dev.LookupBinHandleByAddr(0);
     EXPECT_EQ(ret, nullptr);
-    dev.AddAddrBinHandleMapTable(1, (void *)0x20);
+    dev.AddAddrBinHandleMapTable(1, (void*)0x20);
     ret = dev.LookupBinHandleByAddr(1);
-    EXPECT_EQ(ret, (void *)0x20);
+    EXPECT_EQ(ret, (void*)0x20);
 }
 
 uint32_t g_printType = 0;
-rtError_t MemCopySyncStub0(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+rtError_t MemCopySyncStub0(
+    Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
-    RtsTimeoutStreamSnapshot *Snapshot = reinterpret_cast<RtsTimeoutStreamSnapshot *>(dst);
+    RtsTimeoutStreamSnapshot* Snapshot = reinterpret_cast<RtsTimeoutStreamSnapshot*>(dst);
     if (g_printType == 0) {
         Snapshot->stream_num = 0;
     } else if (g_printType == 1) {
@@ -1864,11 +1811,11 @@ rtError_t MemCopySyncStub0(Driver *drv, void *dst, uint64_t destMax, const void 
         Snapshot->stream_num = 1;
         Snapshot->detailInfo[0].stream_id = 1;
         Snapshot->detailInfo[0].task_id = 5;
-    } else if(g_printType == 8) {
+    } else if (g_printType == 8) {
         Snapshot->stream_num = 1;
         Snapshot->detailInfo[0].stream_id = 1;
         Snapshot->detailInfo[0].task_id = 6;
-    } else if(g_printType == 9) {
+    } else if (g_printType == 9) {
         Snapshot->stream_num = 1;
         Snapshot->detailInfo[0].stream_id = 1;
         Snapshot->detailInfo[0].task_id = 7;
@@ -1881,12 +1828,10 @@ TEST_F(DeviceTest, AllocSimtStackPhyBase)
 {
     rtError_t error;
     int32_t devId = 1;
-    RawDevice *device = new RawDevice(1);
+    RawDevice* device = new RawDevice(1);
     device->Init();
 
-    MOCKER_CPP_VIRTUAL(device->engine_, &Engine::Start)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(device->engine_, &Engine::Start).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     device->Start();
 
     error = device->AllocSimtStackPhyBase(CHIP_DAVID);
@@ -1899,36 +1844,34 @@ TEST_F(DeviceTest, AllocSimtStackPhyBase)
     delete device;
 }
 
-rtError_t StubStart(RawDevice *device)
-{
-    device->deviceErrorProc_ = new (std::nothrow) DeviceErrorProc(device);
-}
+rtError_t StubStart(RawDevice* device) { device->deviceErrorProc_ = new (std::nothrow) DeviceErrorProc(device); }
 
 uint32_t g_case_num = 0;
 uint32_t g_streamId = 0;
-rtError_t MemCopySyncForRingBuffer(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+rtError_t MemCopySyncForRingBuffer(
+    Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
     if (g_case_num == 0) {
         return RT_ERROR_DRV_INPUT;
     }
     if (g_case_num == 100) {
-        DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+        DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
         tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
         tmpCtrlInfo->tail = 0;
         tmpCtrlInfo->head = 0;
         return RT_ERROR_NONE;
     }
     if (size == sizeof(DevRingBufferCtlInfo)) {
-        DevRingBufferCtlInfo *tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo *>(dst);
+        DevRingBufferCtlInfo* tmpCtrlInfo = reinterpret_cast<DevRingBufferCtlInfo*>(dst);
         tmpCtrlInfo->magic = RINGBUFFER_MAGIC;
         tmpCtrlInfo->tail = 1;
         tmpCtrlInfo->head = 0;
         return RT_ERROR_NONE;
     }
     if (size == (sizeof(RingBufferElementInfo) + sizeof(StarsDeviceErrorInfo))) {
-        RingBufferElementInfo *info = reinterpret_cast<RingBufferElementInfo *>(dst);
+        RingBufferElementInfo* info = reinterpret_cast<RingBufferElementInfo*>(dst);
         info->errorType = g_case_num;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         switch (g_case_num) {
             case FFTS_PLUS_AIVECTOR_ERROR:
                 errorInfo->u.coreErrorInfo.comm.streamId = g_streamId;
@@ -1967,7 +1910,7 @@ rtError_t MemCopySyncForRingBuffer(Driver *drv, void *dst, uint64_t destMax, con
     return RT_ERROR_NONE;
 }
 
-rtError_t MemCopySyncStub(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+rtError_t MemCopySyncStub(Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
     memcpy_s(dst, destMax, src, size);
     return DRV_ERROR_NONE;
@@ -2041,18 +1984,13 @@ TEST_F(DeviceTest, DevInvalidParamTest)
     EXPECT_EQ(dev.ModuleRetain(nullptr), false);
 }
 
-class PrepareStopTestRawDevice : public RawDevice
-{
+class PrepareStopTestRawDevice : public RawDevice {
 public:
     explicit PrepareStopTestRawDevice(const uint32_t devId, const uint32_t runningState)
         : RawDevice(devId), runningState_(runningState)
-    {
-    }
+    {}
 
-    uint32_t GetDevRunningState() override
-    {
-        return runningState_;
-    }
+    uint32_t GetDevRunningState() override { return runningState_; }
 
 private:
     uint32_t runningState_;
@@ -2066,9 +2004,7 @@ TEST_F(DeviceTest, SetCurGroupInfoTest)
         MOCKER_CPP_VIRTUAL(dev, &RawDevice::GetDevRunningState).stubs().will(returnValue(0U));
 
         dev.deviceErrorProc_ = new (std::nothrow) DeviceErrorProc(nullptr);
-        MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer)
-            .stubs()
-            .will(returnValue(RT_ERROR_DEVICE_NULL));
+        MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
         rtError_t error = dev.SetCurGroupInfo();
         EXPECT_EQ(error, RT_ERROR_DEVICE_NULL);
     }
@@ -2091,9 +2027,7 @@ TEST_F(DeviceTest, PrepareStopReturnsSendStopTaskError)
     dev.deviceErrorProc_ = new (std::nothrow) DeviceErrorProc(nullptr);
     ASSERT_NE(dev.deviceErrorProc_, nullptr);
 
-    MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer)
-        .expects(once())
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer).expects(once()).will(returnValue(RT_ERROR_DEVICE_NULL));
 
     EXPECT_EQ(dev.PrepareStop(), RT_ERROR_DEVICE_NULL);
     GlobalMockObject::verify();
@@ -2103,7 +2037,7 @@ TEST_F(DeviceTest, PrepareStopReturnsSendStopTaskError)
 TEST_F(DeviceTest, SendTaskToStopUseRingBufferSkipWhenAlreadySent)
 {
     DeviceErrorProc errorProc(nullptr);
-    errorProc.deviceRingBufferAddr_ = reinterpret_cast<void *>(0x1U);
+    errorProc.deviceRingBufferAddr_ = reinterpret_cast<void*>(0x1U);
     errorProc.stopTaskSent_ = true;
 
     EXPECT_EQ(errorProc.SendTaskToStopUseRingBuffer(), RT_ERROR_NONE);
@@ -2116,14 +2050,14 @@ TEST_F(DeviceTest, RawDeviceStopOnExitSkipsDeepDeviceRelease)
     DevProperties props = {};
     props.rtsqDepth = 16U;
     dev.RefreshDevProperties(props);
-    ExitMockEngine * const engine = new ExitMockEngine(&dev);
+    ExitMockEngine* const engine = new ExitMockEngine(&dev);
     dev.engine_ = engine;
     dev.deviceErrorProc_ = new (std::nothrow) DeviceErrorProc(&dev);
     ASSERT_NE(dev.deviceErrorProc_, nullptr);
-    dev.primaryStream_ = reinterpret_cast<Stream *>(0x1234U);
-    dev.ctrlStream_ = reinterpret_cast<Stream *>(0x5678U);
+    dev.primaryStream_ = reinterpret_cast<Stream*>(0x1234U);
+    dev.ctrlStream_ = reinterpret_cast<Stream*>(0x5678U);
 
-    RuntimeExitStateGuard guard(static_cast<Runtime *>(Runtime::Instance()), true);
+    RuntimeExitStateGuard guard(static_cast<Runtime*>(Runtime::Instance()), true);
     MOCKER_CPP(&DeviceErrorProc::SendTaskToStopUseRingBuffer).expects(never());
     MOCKER_CPP(&DeviceErrorProc::DestroyDeviceRingBuffer).expects(never());
 
@@ -2144,10 +2078,10 @@ TEST_F(DeviceTest, RawDeviceStopOnExitAllowsNullEngine)
 {
     RawDevice dev(0U);
     dev.engine_ = nullptr;
-    dev.primaryStream_ = reinterpret_cast<Stream *>(0x1234U);
-    dev.ctrlStream_ = reinterpret_cast<Stream *>(0x5678U);
+    dev.primaryStream_ = reinterpret_cast<Stream*>(0x1234U);
+    dev.ctrlStream_ = reinterpret_cast<Stream*>(0x5678U);
 
-    RuntimeExitStateGuard guard(static_cast<Runtime *>(Runtime::Instance()), true);
+    RuntimeExitStateGuard guard(static_cast<Runtime*>(Runtime::Instance()), true);
 
     const rtError_t ret = dev.Stop();
 
@@ -2162,7 +2096,7 @@ TEST_F(DeviceTest, WriteDevString)
     dev.Init();
 
     const size_t size = 128U;
-    char dest[size] = { 0 };
+    char dest[size] = {0};
     const rtError_t error = dev.WriteDevString(dest, size, "ABC");
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -2172,11 +2106,9 @@ TEST_F(DeviceTest, WriteDevString_MemSetSync_error)
     RawDevice dev(0);
     dev.Init();
 
-    MOCKER(drvMemsetD8)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemsetD8).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     const size_t size = 128U;
-    char dest[size] = { 0 };
+    char dest[size] = {0};
     const rtError_t error = dev.WriteDevString(dest, size, "ABC");
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
 }
@@ -2197,9 +2129,7 @@ TEST_F(DeviceTest, WriteDevValue_MemSetSync_error)
     RawDevice dev(0);
     dev.Init();
 
-    MOCKER(drvMemsetD8)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemsetD8).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     uint32_t data = 8U;
     uint32_t result = 0;
     const rtError_t error = dev.WriteDevValue(&result, sizeof(uint32_t), &data);
@@ -2208,11 +2138,11 @@ TEST_F(DeviceTest, WriteDevValue_MemSetSync_error)
 
 TEST_F(DeviceTest, InitDeviceSqCqpool)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2227,17 +2157,17 @@ TEST_F(DeviceTest, InitDeviceSqCqpool)
     rtDeviceSqCqInfo_t sqCqList2[2] = {};
     ret = deviceSqCqPool->AllocSqCq(allcocNum, &sqCqList2[0]);
     EXPECT_EQ(ret, RT_ERROR_NONE);
- 
+
     ret = deviceSqCqPool->FreeSqCqLazy(&sqCqList2[0], 2);
     EXPECT_EQ(ret, RT_ERROR_NONE);
- 
+
     sqCqList2[0].sqId = 1U;
     sqCqList2[0].cqId = 2U;
     sqCqList2[1].sqId = 3U;
     sqCqList2[1].cqId = 4U;
     ret = deviceSqCqPool->FreeSqCqLazy(&sqCqList2[0], 0U);
     EXPECT_NE(ret, RT_ERROR_NONE);
- 
+
     ret = deviceSqCqPool->AllocSqCq(allcocNum, &sqCqList2[0]);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = deviceSqCqPool->FreeSqCqImmediately(&sqCqList2[0], 2U);
@@ -2248,11 +2178,11 @@ TEST_F(DeviceTest, InitDeviceSqCqpool)
 
 TEST_F(DeviceTest, AllocSqCqMemcpyFail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2263,7 +2193,7 @@ TEST_F(DeviceTest, AllocSqCqMemcpyFail)
     ret = deviceSqCqPool->FreeSqCqImmediately(&sqCqList, 1U);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::NormalSqCqAllocate).stubs().will(returnValue(1));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::NormalSqCqAllocate).stubs().will(returnValue(1));
     ret = deviceSqCqPool->AllocSqCq(1U, &sqCqList);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -2272,16 +2202,16 @@ TEST_F(DeviceTest, AllocSqCqMemcpyFail)
 
 TEST_F(DeviceTest, AllocSqCqDrvFail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::NormalSqCqAllocate).stubs().will(returnValue(1));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::NormalSqCqAllocate).stubs().will(returnValue(1));
     rtError_t ret = deviceSqCqPool->AllocSqCqFromDrv(&sqCqList, TSDRV_FLAG_NO_SQ_MEM);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -2293,12 +2223,14 @@ TEST_F(DeviceTest, AllocSqCqDrvFail)
 
 TEST_F(DeviceTest, GetSqRegVirtualAddrBySqidFail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::GetSqRegVirtualAddrBySqid).stubs().will(returnValue(1));
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::GetSqRegVirtualAddrBySqid)
+        .stubs()
+        .will(returnValue(1));
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     rtError_t ret = deviceSqCqPool->AllocSqCq(allcocNum, &sqCqList);
@@ -2309,11 +2241,11 @@ TEST_F(DeviceTest, GetSqRegVirtualAddrBySqidFail)
 
 TEST_F(DeviceTest, SetSqRegVirtualAddrToDeviceTest)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2330,11 +2262,11 @@ TEST_F(DeviceTest, SetSqRegVirtualAddrToDeviceTest)
 
 TEST_F(DeviceTest, GetSqCqPoolFreeResNum)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2347,11 +2279,11 @@ TEST_F(DeviceTest, GetSqCqPoolFreeResNum)
 
 TEST_F(DeviceTest, TryFreeSqCqToDrv)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2369,12 +2301,12 @@ TEST_F(DeviceTest, TryFreeSqCqToDrv)
 
 TEST_F(DeviceTest, StreamSetupTryAlloc)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2393,10 +2325,10 @@ TEST_F(DeviceTest, StreamSetupTryAlloc)
 
 TEST_F(DeviceTest, StreamSetupTryAllocWithContextRecycleResource)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
-    Context *ctx = new Context(device, 0);
+    Stream* stream = new Stream(device, 0);
+    Context* ctx = new Context(device, 0);
     ctx->Init();
     stream->SetContext(ctx);
 
@@ -2415,11 +2347,11 @@ TEST_F(DeviceTest, StreamSetupTryAllocWithContextRecycleResource)
 
 TEST_F(DeviceTest, FreeSqCqFail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
- 
+
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
+
     uint32_t allcocNum = 1U;
     rtDeviceSqCqInfo_t sqCqList = {};
     deviceSqCqPool->PreAllocSqCq();
@@ -2427,7 +2359,7 @@ TEST_F(DeviceTest, FreeSqCqFail)
     rtError_t ret = deviceSqCqPool->AllocSqCq(allcocNum, &sqCqList);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::NormalSqCqFree).stubs().will(returnValue(1U));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::NormalSqCqFree).stubs().will(returnValue(1U));
     ret = deviceSqCqPool->FreeSqCqLazy(&sqCqList, allcocNum);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -2439,13 +2371,13 @@ TEST_F(DeviceTest, FreeSqCqFail)
 
 TEST_F(DeviceTest, SqAddrPoolAllocFail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    SqAddrMemoryOrder *sqAddrMemoryManage = device->GetSqAddrMemoryManage();
-    uint64_t *sqAddr = nullptr;
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::DevMemAlloc).stubs().will(returnValue(1U));
+    SqAddrMemoryOrder* sqAddrMemoryManage = device->GetSqAddrMemoryManage();
+    uint64_t* sqAddr = nullptr;
+
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::DevMemAlloc).stubs().will(returnValue(1U));
     rtError_t ret = sqAddrMemoryManage->AllocSqAddr(static_cast<SQ_ADDR_MEM_ORDER_TYPE>(11), &sqAddr);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -2454,11 +2386,11 @@ TEST_F(DeviceTest, SqAddrPoolAllocFail)
 
 TEST_F(DeviceTest, SqAddrPoolAllocFree)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    SqAddrMemoryOrder *sqAddrMemoryManage = device->GetSqAddrMemoryManage();
-    uint64_t *sqAddr = nullptr;
+
+    SqAddrMemoryOrder* sqAddrMemoryManage = device->GetSqAddrMemoryManage();
+    uint64_t* sqAddr = nullptr;
     rtError_t ret = sqAddrMemoryManage->AllocSqAddr(11U, &sqAddr);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -2471,15 +2403,13 @@ TEST_F(DeviceTest, SqAddrPoolAllocFree)
     ret = sqAddrMemoryManage->FreeSqAddr(sqAddr, 11U);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
-    ret = sqAddrMemoryManage->FreeSqAddr(reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(0x1234)), 11U);
+    ret = sqAddrMemoryManage->FreeSqAddr(reinterpret_cast<uint64_t*>(static_cast<uintptr_t>(0x1234)), 11U);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
     uint64_t addr = 0x1234ULL;
     sqAddr = &addr;
     BufferAllocator sqAddrAlloc(sizeof(uint32_t), 0, 100);
-    MOCKER_CPP(&SqAddrMemoryOrder::FindSqMemPoolByMemOrderType)
-        .stubs()
-        .will(returnValue(&sqAddrAlloc));
+    MOCKER_CPP(&SqAddrMemoryOrder::FindSqMemPoolByMemOrderType).stubs().will(returnValue(&sqAddrAlloc));
     ret = sqAddrMemoryManage->FreeSqAddr(sqAddr, SQ_ADDR_MEM_ORDER_TYPE_32K);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -2488,11 +2418,11 @@ TEST_F(DeviceTest, SqAddrPoolAllocFree)
 
 TEST_F(DeviceTest, SqAddrPoolAllocFreeException)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
- 
-    SqAddrMemoryOrder *sqAddrMemoryManage = device->GetSqAddrMemoryManage();
-    uint64_t *sqAddr = nullptr;
+
+    SqAddrMemoryOrder* sqAddrMemoryManage = device->GetSqAddrMemoryManage();
+    uint64_t* sqAddr = nullptr;
     uint32_t ret = sqAddrMemoryManage->GetMemOrderSizeByMemOrderType(11U);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -2510,7 +2440,7 @@ TEST_F(DeviceTest, SqAddrPoolAllocFreeException)
 
 TEST_F(DeviceTest, ResourceTest)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     device->InsertResInit(RT_DEV_RES_CUBE_CORE, 2);
     uint32_t ret = device->GetResInitValue(RT_DEV_RES_CUBE_CORE);
@@ -2529,7 +2459,7 @@ TEST_F(DeviceTest, ResourceTest)
 
 TEST_F(DeviceTest, InitResource_01)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     int64_t value;
@@ -2542,7 +2472,7 @@ TEST_F(DeviceTest, InitResource_01)
 
 TEST_F(DeviceTest, InitResource_02)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     int64_t value;
@@ -2557,7 +2487,7 @@ TEST_F(DeviceTest, InitResource_02)
 
 TEST_F(DeviceTest, InitResource_03)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     int64_t value;
@@ -2566,18 +2496,19 @@ TEST_F(DeviceTest, InitResource_03)
     std::map<std::string, std::string> res = {{"ai_core_cnt", "@@@@"}};
     MOCKER_CPP(&fe::PlatformInfoManager::InitRuntimePlatformInfos).stubs().will(returnValue(retValue));
     MOCKER_CPP(&fe::PlatformInfoManager::GetRuntimePlatformInfosByDevice).stubs().will(returnValue((uint32_t)0));
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &label, std::map<std::string, std::string> &res))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string& label, std::map<std::string, std::string>& res))
         .stubs()
         .will(returnValue(false));
-        device->InitResource();
+    device->InitResource();
 
     delete device;
 }
 
 TEST_F(DeviceTest, InitResource_04)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     int64_t value;
@@ -2586,8 +2517,9 @@ TEST_F(DeviceTest, InitResource_04)
     std::map<std::string, std::string> res = {{"ai_core_cnt", "@@@@"}};
     MOCKER_CPP(&fe::PlatformInfoManager::InitRuntimePlatformInfos).stubs().will(returnValue(retValue));
     MOCKER_CPP(&fe::PlatformInfoManager::GetRuntimePlatformInfosByDevice).stubs().will(returnValue((uint32_t)0));
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &label, std::map<std::string, std::string> &res))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string& label, std::map<std::string, std::string>& res))
         .stubs()
         .will(returnValue(true));
     device->InitResource();
@@ -2597,7 +2529,7 @@ TEST_F(DeviceTest, InitResource_04)
 
 TEST_F(DeviceTest, IllegalResType)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     device->InsertResInit(RT_DEV_RES_TYPE_MAX, 0);
     device->InsertResLimit(RT_DEV_RES_TYPE_MAX, 0);
@@ -2628,12 +2560,12 @@ TEST_F(DeviceTest, SetSupportHcomCpuFlagTest_01)
 TEST_F(DeviceTest, PushAndFlushFftsPlusArgHandle)
 {
     RawDevice dev(0);
-    UmaArgLoader *argLoader = new UmaArgLoader(&dev);
+    UmaArgLoader* argLoader = new UmaArgLoader(&dev);
     dev.argLoader_ = argLoader;
     MOCKER_CPP_VIRTUAL(*argLoader, &UmaArgLoader::Release).expects(exactly(2)).will(returnValue(RT_ERROR_NONE));
 
-    void *handle1 = reinterpret_cast<void *>(0x1U);
-    void *handle2 = reinterpret_cast<void *>(0x2U);
+    void* handle1 = reinterpret_cast<void*>(0x1U);
+    void* handle2 = reinterpret_cast<void*>(0x2U);
 
     dev.PushFftsPlusArgHandle(handle1);
     dev.PushFftsPlusArgHandle(handle2);
@@ -2645,18 +2577,14 @@ TEST_F(DeviceTest, PushAndFlushFftsPlusArgHandle)
 
 TEST_F(DeviceTest, prof_switch_enable_success)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     device->profSwitchAddr_ = 0x1000UL;
 
-    MOCKER_CPP_VIRTUAL(device, &RawDevice::CheckFeatureSupport)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
     device->ProfSwitchEnable();
 
@@ -2665,33 +2593,26 @@ TEST_F(DeviceTest, prof_switch_enable_success)
 
 TEST_F(DeviceTest, prof_switch_disable_success)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     device->profSwitchAddr_ = 0x1000UL;
 
-    MOCKER_CPP_VIRTUAL(device, &RawDevice::CheckFeatureSupport)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(device, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
     device->ProfSwitchDisable();
 
     delete device;
 }
 
-
 TEST_F(DeviceTest, get_qos_info_by_ipc_feature_not_support)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
-    MOCKER(halGetDeviceInfoByBuff)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+    MOCKER(halGetDeviceInfoByBuff).stubs().will(returnValue(DRV_ERROR_NOT_SUPPORT));
 
     rtError_t error = device->GetQosInfoByIpc();
     EXPECT_EQ(error, RT_ERROR_NONE);

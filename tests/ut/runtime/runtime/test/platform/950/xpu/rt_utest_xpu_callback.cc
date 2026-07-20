@@ -12,7 +12,6 @@
 #include "rt_external.h"
 #include "error_codes/rt_error_codes.h"
 
-
 class XpuCallbackTest : public testing::Test {
 protected:
     static void SetUpTestCase()
@@ -22,49 +21,39 @@ protected:
         std::cout << "XpuCallbackTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "XpuCallbackTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "XpuCallbackTest end" << std::endl; }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
-void CallbackFunc(rtExceptionInfo_t *exceptionInfo) {
-        printf("XpuTaskFail callback");
-}
+void CallbackFunc(rtExceptionInfo_t* exceptionInfo) { printf("XpuTaskFail callback"); }
 
 TEST_F(XpuCallbackTest, create_xpu_set_task_fail_callback_should_success)
 {
-    char *regName ="lltruntime";
+    char* regName = "lltruntime";
     rtError_t error = rtXpuSetTaskFailCallback(RT_DEV_TYPE_DPU, regName, CallbackFunc);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
 TEST_F(XpuCallbackTest, create_xpu_set_task_fail_callback_should_fail_when_regName_is_null)
 {
-    char *regName = nullptr;
+    char* regName = nullptr;
     rtError_t error = rtXpuSetTaskFailCallback(RT_DEV_TYPE_DPU, regName, CallbackFunc);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(XpuCallbackTest, create_xpu_set_task_fail_callback_should_fail_when_devType_is_not_dpu)
 {
-    char *regName ="lltruntime";
+    char* regName = "lltruntime";
     rtError_t error = rtXpuSetTaskFailCallback(RT_DEV_TYPE_REV, regName, CallbackFunc);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(XpuCallbackTest, create_xpu_set_task_fail_callback_should_success_when_callbackFunc_is_null)
 {
-    char *regName ="lltruntime";
+    char* regName = "lltruntime";
     rtError_t error = rtXpuSetTaskFailCallback(RT_DEV_TYPE_DPU, regName, nullptr);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }

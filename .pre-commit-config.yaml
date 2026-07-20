@@ -5,7 +5,44 @@ repos:
       - id: clang-format
         types_or: [c++, c]
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
-        exclude: ^(docs|example|include|pkg_inc|scripts|src/(acl|aicpu_sched|cmodel_driver|dfx|inc|mmpa|platform|queue_schedule|runtime_compact|tprt|tsd)(/|$)|stub|tests)
+        exclude: |
+          (?x)^(
+            docs
+            | example
+            | include
+            | pkg_inc
+            | scripts
+            | src/(
+              acl
+              | aicpu_sched
+              | cmodel_driver
+              | dfx
+              | inc
+              | mmpa
+              | platform
+              | queue_schedule
+              | runtime_compact
+              | tprt
+              | tsd
+            )(/|$)
+            | stub
+            | tests(?:
+              /(?!
+                (?:
+                  cmodel_test
+                  | depends/runtime
+                  | depends/tdt
+                  | ut/acl
+                  | ut/aicpu_sched
+                  | ut/queue_schedule
+                  | ut/runtime
+                  | ut/tsd
+                )(?:/|$)
+                | depends/acl_stub\.h$
+              )
+              | $
+            )
+          )
         args:
           - "--style=file"
           - "--verbose"

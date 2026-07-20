@@ -36,28 +36,21 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 namespace {
 static struct event_info g_event = {
-    .comm = {
-        .event_id = EVENT_TEST,
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
+    .comm =
+        {.event_id = EVENT_TEST,
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
 }
 class HostCpuSchedulerStubUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(HostCpuSchedulerStubUt, HostCpuSchedulerStubUtSuccess)
@@ -113,9 +106,9 @@ TEST_F(HostCpuSchedulerStubUt, HostCpuSchedulerStubUtSuccess)
     aicpu::EventProcessCallBack eventProcessCallBack;
     aicpu::AsyncEventManager::GetInstance().RegEventCb(0, 0, eventProcessCallBack, 0);
     aicpu::AsyncEventManager::GetInstance().ProcessEvent(0, 0, nullptr);
-    EXPECT_TRUE(aicpu::AsyncEventManager::GetInstance().RegOpEventCb(1,1,[](void *param){return;}));
-    aicpu::AsyncEventManager::GetInstance().ProcessOpEvent(1,1,nullptr);
-    aicpu::AsyncEventManager::GetInstance().UnregOpEventCb(1,1);
+    EXPECT_TRUE(aicpu::AsyncEventManager::GetInstance().RegOpEventCb(1, 1, [](void* param) { return; }));
+    aicpu::AsyncEventManager::GetInstance().ProcessOpEvent(1, 1, nullptr);
+    aicpu::AsyncEventManager::GetInstance().UnregOpEventCb(1, 1);
 
     DataPreprocess::TaskQueueMgr::GetInstance().OnPreprocessEvent(0);
     std::list<uint32_t> bindCoreList;
@@ -151,9 +144,10 @@ TEST_F(HostCpuSchedulerStubUt, HostCpuSchedulerStubUtSuccess)
     ret = AicpuSchedule::OpDumpTaskManager::GetInstance().DumpOpInfo(dumpTaskInfo, 0, 0, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     DumpFileName dumpFileName(0, 0);
-    ret = AicpuSchedule::OpDumpTaskManager::GetInstance().DumpOpInfo(const_cast<TaskInfoExt &>(dumpTaskInfo), dumpFileName);
+    ret = AicpuSchedule::OpDumpTaskManager::GetInstance().DumpOpInfo(
+        const_cast<TaskInfoExt&>(dumpTaskInfo), dumpFileName);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    char *infoAddr = nullptr;
+    char* infoAddr = nullptr;
     ret = AicpuSchedule::OpDumpTaskManager::GetInstance().LoadOpMappingInfo(infoAddr, 3);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     event_info event;
@@ -195,7 +189,8 @@ TEST_F(HostCpuSchedulerStubUt, HostCpuSchedulerAicpusdMc2MaintenceThreadStubUtSu
     aicpu::AicpuRunMode runMode;
     int32_t timeout;
     event_info drvEventInfo;
-    auto ret = AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).InitMc2MaintenanceProcess(nullptr, nullptr, nullptr, nullptr);
+    auto ret = AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).InitMc2MaintenanceProcess(
+        nullptr, nullptr, nullptr, nullptr);
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).StartProcessEvent();
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).ProcessEventFunc();

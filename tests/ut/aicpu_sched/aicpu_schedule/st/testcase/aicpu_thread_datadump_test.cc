@@ -62,59 +62,40 @@ using namespace aicpu;
 
 class AiCPUThreadDatadumpSt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 namespace {
-    drvError_t halTsdrvCtlStub(uint32_t devId, int cmd, void *param, size_t paramSize, void *out, size_t *outSize)
-    {
-        TsCtrlMsgBody queryResult = {};
-        queryResult.u.query_stream_overflow_status.status = 1U;
-        memcpy_s(out, sizeof(TsCtrlMsgBody), &queryResult, sizeof(TsCtrlMsgBody));
-        *outSize = sizeof(TsCtrlMsgBody);
-        return 0;
-    }
+drvError_t halTsdrvCtlStub(uint32_t devId, int cmd, void* param, size_t paramSize, void* out, size_t* outSize)
+{
+    TsCtrlMsgBody queryResult = {};
+    queryResult.u.query_stream_overflow_status.status = 1U;
+    memcpy_s(out, sizeof(TsCtrlMsgBody), &queryResult, sizeof(TsCtrlMsgBody));
+    *outSize = sizeof(TsCtrlMsgBody);
+    return 0;
 }
+} // namespace
 
 TEST_F(AiCPUThreadDatadumpSt, DatadumpInitAICPUDatadumpStSuccess)
 {
-    MOCKER_CPP(&ThreadPool::CreateOneWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(signal)
-        .stubs()
-        .will(returnValue(sighandler_t(1)));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
-    MOCKER_CPP(&AicpuEventManager::LoopProcess)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halEschedWaitEvent)
-    .stubs()
-    .will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
+    MOCKER_CPP(&ThreadPool::CreateOneWorker).stubs().will(returnValue(0));
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER(signal).stubs().will(returnValue(sighandler_t(1)));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
+    MOCKER_CPP(&AicpuEventManager::LoopProcess).stubs().will(returnValue(0));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
     StopAICPUDatadump(0, 0);
     InitAICPUDatadump(0, 0);
-    int32_t ret =StopAICPUDatadump(0, 0);
+    int32_t ret = StopAICPUDatadump(0, 0);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpStSuccess) {
-
+TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpStSuccess)
+{
     aicpu::dump::OpMappingInfo opMappingInfo;
     const uint32_t taskId = 3333;
     const uint32_t streamId = 3;
@@ -133,24 +114,24 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpStSuccess) {
     opMappingInfo.set_model_id(modelId);
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
     task->set_tasktype(aicpu::dump::Task::DEBUG);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_debug");
     op->set_op_type("op_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -158,28 +139,27 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpStSuccess) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
 
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     // load op mapping info
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
-
 
     TaskInfoExt dumpTaskInfo(streamId, taskId);
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(dumpTaskInfo, streamId, taskId, contextid, threadid), AICPU_SCHEDULE_OK);
@@ -189,10 +169,14 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpStSuccess) {
     MOCKER_CPP(&OpDumpTask::GetModelId).stubs().will(returnValue(false));
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(dumpTaskInfo, streamId, taskId, contextid, threadid), AICPU_SCHEDULE_OK);
     std::string opMappingInfoStr1 = "1234";
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     opMappingInfo.set_flag(0x02);
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
     // unload model
     opMappingInfo.set_flag(0x00);
@@ -205,25 +189,19 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpStSuccess) {
 }
 
 struct event_info g_event1 = {
-    .comm = {
-        .event_id = EVENT_ID(1),
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
+    .comm =
+        {.event_id = EVENT_ID(1),
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
 
-TEST_F(AiCPUThreadDatadumpSt, DoOnceTest11) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
+TEST_F(AiCPUThreadDatadumpSt, DoOnceTest11)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
     AicpuEventManager::GetInstance().DoOnce(0, 0);
     event_info eventInfo = g_event1;
     AicpuEventManager::GetInstance().ProcTsCtrlEvent(eventInfo, 0);
@@ -231,26 +209,22 @@ TEST_F(AiCPUThreadDatadumpSt, DoOnceTest11) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_EVENT);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, DoOnceTest12) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
+TEST_F(AiCPUThreadDatadumpSt, DoOnceTest12)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
     int32_t ret = AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(ret, DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, adapterVersion) {
+TEST_F(AiCPUThreadDatadumpSt, adapterVersion)
+{
     TsAicpuSqe sqe{};
     TsAicpuMsgInfo msgInfo{};
     AicpuSqeAdapter ada0(sqe, 0U);
     AicpuSqeAdapter ada1(msgInfo, 1U);
     AicpuSqeAdapter ada3(msgInfo, 3U);
-    MOCKER_CPP(tsDevSendMsgAsync)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(halEschedAckEvent)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(tsDevSendMsgAsync).stubs().will(returnValue(0));
+    MOCKER_CPP(halEschedAckEvent).stubs().will(returnValue(0));
     AicpuSqeAdapter::AicpuOpMappingDumpTaskInfo taskInfo(0, 0, 0, 0);
     ada1.IsOpMappingDumpTaskInfoVaild(taskInfo);
     ada1.AicpuMsgVersionResponseToTs(0U);
@@ -310,7 +284,7 @@ TEST_F(AiCPUThreadDatadumpSt, adapterVersion) {
     ret = ada3.AicpuDataDumpLoadResponseToTs(0U);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_FUNCTION);
 
-    AicpuSqeAdapter::AicpuTimeOutConfigInfo  timeOutConfigInfo;
+    AicpuSqeAdapter::AicpuTimeOutConfigInfo timeOutConfigInfo;
     ada1.GetAicpuTimeOutConfigInfo(timeOutConfigInfo);
 
     AicpuSqeAdapter::AicpuInfoLoad infoLoad;
@@ -328,16 +302,13 @@ TEST_F(AiCPUThreadDatadumpSt, adapterVersion) {
     ada3.AicpuActiveStreamSetMsg(activeStreamInfo);
 
     AicpuSqeAdapter::AicpuRecordInfo recordInfo(0, 0, 0, 0, 0, 0, 0);
-    MOCKER_CPP(halTsDevRecord)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(halTsDevRecord).stubs().will(returnValue(1));
     ret = ada0.AicpuRecordResponseToTs(recordInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
     ret = ada3.AicpuRecordResponseToTs(recordInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_FUNCTION);
     ret = ada1.AicpuRecordResponseToTs(recordInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-
 
     ret = ada3.AicpuTimeOutConfigResponseToTs(0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_FUNCTION);
@@ -349,19 +320,20 @@ TEST_F(AiCPUThreadDatadumpSt, adapterVersion) {
     ret = ada1.AicpuInfoLoadResponseToTs(0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
-    AicpuSqeAdapter::AicErrReportInfo  aicErrorMsgInfo;
+    AicpuSqeAdapter::AicErrReportInfo aicErrorMsgInfo;
     aicErrorMsgInfo.u.aicErrorMsg.aic_bitmap_num = 1;
     aicErrorMsgInfo.u.aicErrorMsg.aiv_bitmap_num = 1;
     ada1.GetAicErrReportInfo(aicErrorMsgInfo);
 
-    AicpuSqeAdapter::AicErrReportInfo  aicErrorInfo;
+    AicpuSqeAdapter::AicErrReportInfo aicErrorInfo;
     ada0.GetAicErrReportInfo(aicErrorInfo);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, 1ProcessHWTSControlEventTest) {
+TEST_F(AiCPUThreadDatadumpSt, 1ProcessHWTSControlEventTest)
+{
     event_info eventInfo = g_event1;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AIC_TASK_REPORT;
     int ret = 0;
     ctrlMsg->cmd_type = AICPU_DATADUMP_REPORT;
@@ -383,34 +355,28 @@ TEST_F(AiCPUThreadDatadumpSt, AddPidToTask_Success1)
     tp.threadStatusList_ = std::move(std::vector<ThreadStatus>(1, ThreadStatus::THREAD_INIT));
     EXPECT_EQ(tp.AddPidToTask(0), AICPU_SCHEDULE_OK);
 }
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_Fail1) {
-    MOCKER(halEschedSubscribeEvent)
-        .stubs()
-        .will(returnValue(1));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_Fail1)
+{
+    MOCKER(halEschedSubscribeEvent).stubs().will(returnValue(1));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
     ThreadPool tp;
     const AicpuSchedMode schedMode = SCHED_MODE_INTERRUPT;
     tp.Work(0, 0, schedMode);
     EXPECT_EQ(AicpuSchedule::AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, AicpuScheduleInterface_InitAICPUScheduler_Fail2) {
-
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+TEST_F(AiCPUThreadDatadumpSt, AicpuScheduleInterface_InitAICPUScheduler_Fail2)
+{
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(DRV_ERROR_NONE));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     int32_t ret = AicpuScheduleInterface::GetInstance().DettachDeviceInDestroy(deviceVec);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, AicpuScheduleInterface_InitAICPUScheduler_Fail1) {
-
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+TEST_F(AiCPUThreadDatadumpSt, AicpuScheduleInterface_InitAICPUScheduler_Fail1)
+{
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
     std::vector<uint32_t> deviceVec;
     deviceVec.clear();
     deviceVec.push_back(1);
@@ -418,45 +384,42 @@ TEST_F(AiCPUThreadDatadumpSt, AicpuScheduleInterface_InitAICPUScheduler_Fail1) {
     EXPECT_EQ(ret, DRV_ERROR_NO_DEVICE);
 }
 
-
-TEST_F(AiCPUThreadDatadumpSt, WriteTidForAffinityTest11) {
+TEST_F(AiCPUThreadDatadumpSt, WriteTidForAffinityTest11)
+{
     const size_t threadIndex = 1;
     const size_t aicpuNum = 3;
-    ThreadPool::Instance().threadStatusList_ = std::move(std::vector<ThreadStatus>(aicpuNum, ThreadStatus::THREAD_INIT));
+    ThreadPool::Instance().threadStatusList_ =
+        std::move(std::vector<ThreadStatus>(aicpuNum, ThreadStatus::THREAD_INIT));
     MOCKER(vfork).stubs().will(returnValue(1));
     MOCKER(waitpid).stubs().will(returnValue(0));
     int32_t ret = ThreadPool::Instance().WriteTidForAffinity(threadIndex);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WriteTidForAffinityTest12) {
+TEST_F(AiCPUThreadDatadumpSt, WriteTidForAffinityTest12)
+{
     const size_t threadIndex = 100;
     const size_t aicpuNum = 3;
-    ThreadPool::Instance().threadStatusList_ = std::move(std::vector<ThreadStatus>(aicpuNum, ThreadStatus::THREAD_INIT));
+    ThreadPool::Instance().threadStatusList_ =
+        std::move(std::vector<ThreadStatus>(aicpuNum, ThreadStatus::THREAD_INIT));
     MOCKER(vfork).stubs().will(returnValue(1));
     MOCKER(waitpid).stubs().will(returnValue(0));
     int32_t ret = ThreadPool::Instance().WriteTidForAffinity(threadIndex);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 struct event_info g_event27 = {
-    .comm = {
-        .event_id = 27,
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
-TEST_F(AiCPUThreadDatadumpSt, DoOnceTestSt_Cpu_Illegal_get_event) {
-    MOCKER(halEschedWaitEvent)
-    .stubs()
-    .will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
+    .comm =
+        {.event_id = 27,
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
+TEST_F(AiCPUThreadDatadumpSt, DoOnceTestSt_Cpu_Illegal_get_event)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
     event_info eventInfo = g_event27;
     AicpuEventManager::GetInstance().ProcTsCtrlEvent(eventInfo, 0);
     AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
@@ -464,10 +427,9 @@ TEST_F(AiCPUThreadDatadumpSt, DoOnceTestSt_Cpu_Illegal_get_event) {
     EXPECT_EQ(ret, DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, DoOnceTestSt_Unknown_event_type) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(80));
+TEST_F(AiCPUThreadDatadumpSt, DoOnceTestSt_Unknown_event_type)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(80));
     event_info eventInfo = g_event27;
     AicpuEventManager::GetInstance().ProcTsCtrlEvent(eventInfo, 0);
     AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
@@ -475,13 +437,12 @@ TEST_F(AiCPUThreadDatadumpSt, DoOnceTestSt_Unknown_event_type) {
     EXPECT_EQ(ret, 80);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, ProcessHWTSControlEventTestSt_fail) {
-    MOCKER(tsDevSendMsgAsync)
-    .stubs()
-    .will(returnValue(80));
+TEST_F(AiCPUThreadDatadumpSt, ProcessHWTSControlEventTestSt_fail)
+{
+    MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(80));
     event_info eventInfo = g_event1;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AIC_TASK_REPORT;
     int ret = 0;
     ctrlMsg->cmd_type = AICPU_DATADUMP_REPORT;
@@ -495,23 +456,20 @@ TEST_F(AiCPUThreadDatadumpSt, ProcessHWTSControlEventTestSt_fail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_EVENT);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, GetCurrentRunMode_St_Error) {
+TEST_F(AiCPUThreadDatadumpSt, GetCurrentRunMode_St_Error)
+{
     bool isOnline = true;
     auto ret = AicpuScheduleInterface::GetInstance().GetCurrentRunMode(isOnline);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, InitAICPUSchedulerTest_St_SUCCESS) {
-
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AiCPUThreadDatadumpSt, InitAICPUSchedulerTest_St_SUCCESS)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
 
     std::string ch = "000000000000000000000000000000000000000000000000";
 
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
     std::vector<uint32_t> deviceVec;
     int ret = 0;
     AicpuScheduleInterface::GetInstance().initFlag_ = true;
@@ -530,61 +488,43 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUSchedulerTest_St_SUCCESS) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     AicpuScheduleInterface::GetInstance().initFlag_ = false;
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(-1));
     ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
-    MOCKER_CPP(&AicpuDrvManager::InitDrvSchedModule)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&AicpuDrvManager::InitDrvSchedModule).stubs().will(returnValue(1));
     AicpuScheduleInterface::GetInstance().initFlag_ = false;
     ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, false);
-    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR); 
+    EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 
-    MOCKER_CPP(&AicpuScheduleInterface::BindHostPid)
-        .stubs()
-        .will(returnValue(1));
-    AicpuScheduleInterface::GetInstance().initFlag_ = false;
-    ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, false);
-    EXPECT_EQ(ret, 1); 
-
-    MOCKER_CPP(&GetAicpuDeployContext)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&AicpuScheduleInterface::BindHostPid).stubs().will(returnValue(1));
     AicpuScheduleInterface::GetInstance().initFlag_ = false;
     ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, false);
     EXPECT_EQ(ret, 1);
 
-    MOCKER_CPP(&AicpuDrvManager::InitDrvMgr)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&GetAicpuDeployContext).stubs().will(returnValue(1));
+    AicpuScheduleInterface::GetInstance().initFlag_ = false;
+    ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, false);
+    EXPECT_EQ(ret, 1);
+
+    MOCKER_CPP(&AicpuDrvManager::InitDrvMgr).stubs().will(returnValue(1));
     AicpuScheduleInterface::GetInstance().initFlag_ = false;
     ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
- 
+
     AicpuScheduleInterface::GetInstance().initFlag_ = true;
     ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, CreateOneWorkTest_St) {
+TEST_F(AiCPUThreadDatadumpSt, CreateOneWorkTest_St)
+{
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(signal)
-        .stubs()
-        .will(returnValue(sighandler_t(1)));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER(signal).stubs().will(returnValue(sighandler_t(1)));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
 
     std::vector<uint32_t> deviceId;
     deviceId.push_back(0);
@@ -607,131 +547,104 @@ TEST_F(AiCPUThreadDatadumpSt, AddPidToTask_St_Fail)
     EXPECT_EQ(tp.AddPidToTask(0), AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, CreateOneWorkTest_Ut1) {
+TEST_F(AiCPUThreadDatadumpSt, CreateOneWorkTest_Ut1)
+{
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(signal)
-        .stubs()
-        .will(returnValue(sighandler_t(1)));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(-1));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER(signal).stubs().will(returnValue(sighandler_t(1)));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
 
     std::vector<uint32_t> deviceId;
     deviceId.push_back(0);
     const auto ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceId, 0, 0, true);
     const AicpuSchedMode schedMode = SCHED_MODE_INTERRUPT;
     tp.CreateWorker(schedMode);
-    MOCKER_CPP(&ThreadPool::CreateOneWorker)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&ThreadPool::CreateOneWorker).stubs().will(returnValue(1));
     tp.CreateWorker(schedMode);
-    EXPECT_EQ(ret , 0);
+    EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, CreateOneWorkTest_Ut2) {
+TEST_F(AiCPUThreadDatadumpSt, CreateOneWorkTest_Ut2)
+{
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(signal)
-        .stubs()
-        .will(returnValue(sighandler_t(1)));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+    MOCKER(sem_init).stubs().will(returnValue(-1));
+    MOCKER(sem_wait).stubs().will(returnValue(-1));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER(signal).stubs().will(returnValue(sighandler_t(1)));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
 
     std::vector<uint32_t> deviceId;
     deviceId.push_back(0);
     int32_t ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceId, 0, 0, true);
     const AicpuSchedMode schedMode = SCHED_MODE_INTERRUPT;
     tp.CreateWorker(schedMode);
-    EXPECT_EQ(ret , 0);
+    EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_Fail2) {
-    MOCKER(halEschedSubscribeEvent)
-        .stubs()
-        .will(returnValue(1));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_Fail2)
+{
+    MOCKER(halEschedSubscribeEvent).stubs().will(returnValue(1));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
     ThreadPool tp;
     const AicpuSchedMode schedMode = SCHED_MODE_INTERRUPT;
     tp.Work(0, 0, schedMode);
-    MOCKER_CPP(&GetAicpuDeployContext)
-    .stubs()
-    .will(returnValue(1));
+    MOCKER_CPP(&GetAicpuDeployContext).stubs().will(returnValue(1));
     tp.Work(0, 0, schedMode);
     GlobalMockObject::verify();
-    MOCKER_CPP(&GetAicpuDeployContext)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::SetAffinity)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&GetAicpuDeployContext).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::SetAffinity).stubs().will(returnValue(1));
     tp.Work(0, 0, schedMode);
     GlobalMockObject::verify();
-    MOCKER_CPP(&GetAicpuDeployContext)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::SetAffinity)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&GetAicpuDeployContext).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::SetAffinity).stubs().will(returnValue(0));
     tp.Work(0, 0, schedMode);
     GlobalMockObject::verify();
-    MOCKER(aicpu::aicpuSetContext)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(aicpu::aicpuSetContext).stubs().will(returnValue(1));
     tp.Work(0, 0, schedMode);
     EXPECT_EQ(AicpuSchedule::AicpuEventManager::GetInstance().runningFlag_, false);
 }
-template<typename T, typename... Args>
-std::shared_ptr<T> make_shared_throw_bad_alloc(Args&&... args) {
+template <typename T, typename... Args>
+std::shared_ptr<T> make_shared_throw_bad_alloc(Args&&... args)
+{
     throw std::bad_alloc();
     // return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
     return std::shared_ptr<T>(nullptr);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_CreateKfcDumpInfoSt) {
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_CreateKfcDumpInfoSt)
+{
     int32_t ret = 0;
     MOCKER_CPP(&std::make_shared<KfcDumpInfo>).stubs().will(invoke(make_shared_throw_bad_alloc<KfcDumpInfo>));
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     std::shared_ptr<KfcDumpInfo> kfcDumpInfoPtr1 = nullptr;
     ret = opDumpTaskMgr.CreateKfcDumpInfo(kfcDumpInfoPtr1);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     EXPECT_EQ(kfcDumpInfoPtr1, nullptr);
 }
 
-template<typename T, typename... Args>
-std::shared_ptr<T> make_shared_throw_bad_alloc1(Args&&... args) {
+template <typename T, typename... Args>
+std::shared_ptr<T> make_shared_throw_bad_alloc1(Args&&... args)
+{
     throw std::bad_alloc();
     // return std::shared_ptr<T>(new T(std::forward<Args>(args)...));
     return std::shared_ptr<T>(nullptr);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_CreateOpDumpTaskSt) {
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_CreateOpDumpTaskSt)
+{
     int32_t ret = 0;
     const int32_t hostPid = 1;
     const uint32_t deviceId = 1;
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     std::shared_ptr<OpDumpTask> OpDumpTaskPtr1 = nullptr;
     ret = opDumpTaskMgr.CreateOpDumpTask(OpDumpTaskPtr1, hostPid, deviceId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
-TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed) {
+TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed)
+{
     const uint32_t taskId = 3333;
     const uint32_t streamId = 3;
     const uint32_t contextid = 1;
@@ -753,7 +666,7 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed) {
         opMappingInfo.set_model_id(modelId);
         opMappingInfo.set_flag(0x01);
 
-        aicpu::dump::Task *task = opMappingInfo.add_task();
+        aicpu::dump::Task* task = opMappingInfo.add_task();
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
         task->set_context_id(INVALID_VAL);
@@ -770,8 +683,8 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed) {
         opMappingInfo.set_model_name("model_debug");
         opMappingInfo.set_model_id(modelId);
         opMappingInfo.set_flag(0x01);
- 
-        aicpu::dump::Task *task = opMappingInfo.add_task();
+
+        aicpu::dump::Task* task = opMappingInfo.add_task();
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
         task->set_context_id(INVALID_VAL);
@@ -780,18 +693,27 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed) {
         opMappingInfo.SerializeToString(&opMappingInfoStr2);
     }
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     // load op mapping info
     MOCKER_CPP(&OpDumpTask::PreProcessOpMappingInfo).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_DUMP_FAILED));
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
     MOCKER_CPP(&OpDumpTaskManager::CreateOpDumpTask).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_DUMP_FAILED));
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed1) {
+TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed1)
+{
     const uint32_t taskId = 3333;
     const uint32_t streamId = 3;
     const uint32_t contextid = 1;
@@ -813,7 +735,7 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed1) {
         opMappingInfo.set_model_id(modelId);
         opMappingInfo.set_flag(0x01);
 
-        aicpu::dump::Task *task = opMappingInfo.add_task();
+        aicpu::dump::Task* task = opMappingInfo.add_task();
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
         task->set_context_id(INVALID_VAL);
@@ -831,7 +753,7 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed1) {
         opMappingInfo.set_model_id(modelId);
         opMappingInfo.set_flag(0x01);
 
-        aicpu::dump::Task *task = opMappingInfo.add_task();
+        aicpu::dump::Task* task = opMappingInfo.add_task();
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
         task->set_context_id(INVALID_VAL);
@@ -840,36 +762,49 @@ TEST_F(AiCPUThreadDatadumpSt, InitAICPUDatadumpSt_CreateOpDumpTask_failed1) {
         opMappingInfo.SerializeToString(&opMappingInfoStr2);
     }
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     // load op mapping info
     MOCKER_CPP(&OpDumpTask::PreProcessOpMappingInfo).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_DUMP_FAILED));
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
     MOCKER_CPP(&OpDumpTaskManager::CreateOpDumpTask).stubs().will(returnValue(0));
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr1.c_str(), opMappingInfoStr1.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     MOCKER_CPP(&OpDumpTaskManager::GetDumpStepFromString).stubs().will(returnValue(false));
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr2.c_str(), opMappingInfoStr2.length()),
+        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_MatchAndInsertSt_failed) {
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_MatchAndInsertSt_failed)
+{
     bool ret;
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     const std::string step = "1+1+2";
     DumpStep tmpDumpStep = {};
     ret = opDumpTaskMgr.MatchAndInsert(step, tmpDumpStep);
     EXPECT_EQ(ret, false);
 }
 
-bool MatchAndInsert_stub(const std::string &step, DumpStep &tmpDumpStep) {
+bool MatchAndInsert_stub(const std::string& step, DumpStep& tmpDumpStep)
+{
     throw std::bad_alloc();
     return true;
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_GetDumpStepFromStringSt_failed) {
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_GetDumpStepFromStringSt_failed)
+{
     bool ret;
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     const std::string step = "1+1+2";
     DumpStep tmpDumpStep = {};
     MOCKER_CPP(&OpDumpTaskManager::MatchAndInsert).stubs().will(returnValue(false));
@@ -890,9 +825,10 @@ TEST_F(AiCPUThreadDatadumpSt, WorkTest_GetDumpStepFromStringSt_failed) {
     opDumpTaskMgr.ClearKfcDumpTaskInfo(KfcTaskinfo);
 }
 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_LoadSt_failed) {
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_LoadSt_failed)
+{
     MOCKER_CPP(&OpDumpTaskManager::GetDumpStepFromString).stubs().will(returnValue(false));
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     aicpu::dump::OpMappingInfo opMappingInfo;
     const uint32_t streamId = 0;
     const uint32_t taskId = 0;
@@ -904,10 +840,11 @@ TEST_F(AiCPUThreadDatadumpSt, WorkTest_LoadSt_failed) {
     ret = opDumpTaskMgr.DoDump(opMappingInfo, optionalParam);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
- 
-TEST_F(AiCPUThreadDatadumpSt, WorkTest_DoDumpBySwitchBitmap) {
+
+TEST_F(AiCPUThreadDatadumpSt, WorkTest_DoDumpBySwitchBitmap)
+{
     MOCKER_CPP(&OpDumpTaskManager::GetDumpStepFromString).stubs().will(returnValue(true));
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     aicpu::dump::OpMappingInfo opMappingInfo;
     const uint32_t taskId = 3333;
     const uint32_t streamId = 3;
@@ -925,8 +862,8 @@ TEST_F(AiCPUThreadDatadumpSt, WorkTest_DoDumpBySwitchBitmap) {
     opMappingInfo.set_model_name("model_debug");
     opMappingInfo.set_model_id(modelId);
     opMappingInfo.set_flag(0x01);
- 
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);

@@ -33,16 +33,11 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class TaskResManageTest : public testing::Test
-{
+class TaskResManageTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
@@ -71,7 +66,7 @@ TEST_F(TaskResManageTest, TestUpdateAddrField)
 
 TEST_F(TaskResManageTest, TestLoadInputOutputArgs)
 {
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
+    TaskResManage* taskResMng = new (std::nothrow) TaskResManage;
     rtStream_t stream = nullptr;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -86,8 +81,9 @@ TEST_F(TaskResManageTest, TestLoadInputOutputArgs)
     argsInfo.hasTiling = 1U;
     uint32_t taskResId;
     ret = taskResMng->AllocTaskResId(taskResId);
-    void *kerArgs = static_cast<void *>(args);
-    error = taskResMng->LoadInputOutputArgs(rt_ut::UnwrapOrNull<Stream>(stream), kerArgs, taskResId, 4, (void *)args, &argsInfo);
+    void* kerArgs = static_cast<void*>(args);
+    error = taskResMng->LoadInputOutputArgs(
+        rt_ut::UnwrapOrNull<Stream>(stream), kerArgs, taskResId, 4, (void*)args, &argsInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
     taskResMng->ReleaseTaskResource(rt_ut::UnwrapOrNull<Stream>(stream));
     rtStreamDestroy(stream);
@@ -96,7 +92,7 @@ TEST_F(TaskResManageTest, TestLoadInputOutputArgs)
 
 TEST_F(TaskResManageTest, TestLoadInputOutputArgsWithAicpuArgs)
 {
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
+    TaskResManage* taskResMng = new (std::nothrow) TaskResManage;
     rtStream_t stream = nullptr;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -111,8 +107,9 @@ TEST_F(TaskResManageTest, TestLoadInputOutputArgsWithAicpuArgs)
     argsInfo.kernelOffsetInfoPtr = &hostInputInfo;
     uint32_t taskResId;
     ret = taskResMng->AllocTaskResId(taskResId);
-    void *kerArgs = static_cast<void *>(args);
-    error = taskResMng->LoadInputOutputArgs(rt_ut::UnwrapOrNull<Stream>(stream), kerArgs, taskResId, 4, (void *)args, &argsInfo);
+    void* kerArgs = static_cast<void*>(args);
+    error = taskResMng->LoadInputOutputArgs(
+        rt_ut::UnwrapOrNull<Stream>(stream), kerArgs, taskResId, 4, (void*)args, &argsInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
     taskResMng->ReleaseTaskResource(rt_ut::UnwrapOrNull<Stream>(stream));
     rtStreamDestroy(stream);
@@ -121,54 +118,56 @@ TEST_F(TaskResManageTest, TestLoadInputOutputArgsWithAicpuArgs)
 
 TEST_F(TaskResManageTest, TestFreePcieBarBuffer)
 {
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostUnRegister)
-        .stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFree)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+    TaskResManage* taskResMng = new (std::nothrow) TaskResManage;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
     uint32_t tmpVal;
     taskResMng->FreePcieBarBuffer(&tmpVal, device);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     EXPECT_NE(&tmpVal, nullptr);
     delete taskResMng;
 }
 
 TEST_F(TaskResManageTest, TestMallocPcieBarBufferWithDevMemAllocFailed)
 {
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    TaskResManage* taskResMng = new (std::nothrow) TaskResManage;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy).stubs()
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
+        .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    void *ret = taskResMng->MallocPcieBarBuffer(0, device, true);
+    void* ret = taskResMng->MallocPcieBarBuffer(0, device, true);
     EXPECT_EQ(ret, nullptr);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     delete taskResMng;
 }
 
 TEST_F(TaskResManageTest, TestMallocPcieBarBufferWithPcieHostRegisterFailed)
 {
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    TaskResManage* taskResMng = new (std::nothrow) TaskResManage;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     uint32_t support = RT_CAPABILITY_SUPPORT;
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy).stubs()
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
+        .stubs()
         .with(mockcpp::any(), outBound(support), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    void *ret = taskResMng->MallocPcieBarBuffer(0, device, true);
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::PcieHostRegister)
+        .stubs()
+        .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+    void* ret = taskResMng->MallocPcieBarBuffer(0, device, true);
     EXPECT_EQ(ret, nullptr);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     delete taskResMng;
 }
 
 TEST_F(TaskResManageTest, TestAllocTaskResIdFailed)
 {
     uint32_t taskResId = 0;
-    TaskResManage *taskResMng = new (std::nothrow) TaskResManage;
+    TaskResManage* taskResMng = new (std::nothrow) TaskResManage;
     taskResMng->taskResHead_ = 1;
     bool ret = taskResMng->AllocTaskResId(taskResId);
     EXPECT_EQ(ret, false);
@@ -203,7 +202,7 @@ TEST_F(TaskResManageTest, streamSyncFailed)
     rtError_t error;
     rtEvent_t event;
     rtStream_t stream;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     error = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_FAST_LAUNCH);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -224,7 +223,7 @@ TEST_F(TaskResManageTest, streamSyncFailed)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtEventDestroy(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(TaskResManageTest, FastErrorProcess1)
@@ -237,9 +236,9 @@ TEST_F(TaskResManageTest, FastErrorProcess1)
     error = rtEventCreateExWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     MOCKER_CPP_VIRTUAL((rt_ut::UnwrapOrNull<Stream>(stream))->Device_(), &Device::GetDevStatus)
-    .stubs()
-    .will(returnValue(RT_ERROR_NONE))
-    .then(returnValue(RT_ERROR_LOST_HEARTBEAT));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_LOST_HEARTBEAT));
 
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLimitFlag(true);
     Engine* engine = (Engine*)(((RawDevice*)((rt_ut::UnwrapOrNull<Stream>(stream))->Device_()))->Engine_());
@@ -308,7 +307,9 @@ TEST_F(TaskResManageTest, FastErrorProcess4)
     error = rtEventCreateExWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    MOCKER_CPP_VIRTUAL((rt_ut::UnwrapOrNull<Stream>(stream)), &Stream::PrintStmDfxAndCheckDevice).stubs().will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL((rt_ut::UnwrapOrNull<Stream>(stream)), &Stream::PrintStmDfxAndCheckDevice)
+        .stubs()
+        .will(returnValue(RT_ERROR_DRV_ERR));
     MOCKER(halSqTaskSend).stubs().will(returnValue(DRV_ERROR_IOCRL_FAIL));
     error = rtEventRecord(event, stream);
     EXPECT_EQ(error, ACL_ERROR_RT_DRV_INTERNAL_ERROR);

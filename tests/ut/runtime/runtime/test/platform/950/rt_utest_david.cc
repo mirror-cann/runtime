@@ -90,13 +90,13 @@ namespace {
 constexpr uint32_t TS_SDMA_STATUS_DDRC_ERROR = 0x8U;
 constexpr uint32_t TS_SDMA_STATUS_LINK_ERROR = 0x9U;
 constexpr uint32_t TS_SDMA_STATUS_POISON_ERROR = 0xAU;
-TaskInfo *g_aicpuTask = nullptr;
-void *g_aicpuArgsAddr = nullptr;
-void *g_expectedAicpuSoNameAddr = nullptr;
-void *g_expectedAicpuFuncNameAddr = nullptr;
+TaskInfo* g_aicpuTask = nullptr;
+void* g_aicpuArgsAddr = nullptr;
+void* g_expectedAicpuSoNameAddr = nullptr;
+void* g_expectedAicpuFuncNameAddr = nullptr;
 
-rtError_t AllocAicpuTaskStub(TaskInfo **taskInfo, Stream * const stm, uint32_t &pos, Stream *&dstStm,
-    uint32_t sqeNum, bool isKernelLaunch)
+rtError_t AllocAicpuTaskStub(
+    TaskInfo** taskInfo, Stream* const stm, uint32_t& pos, Stream*& dstStm, uint32_t sqeNum, bool isKernelLaunch)
 {
     UNUSED(sqeNum);
     UNUSED(isKernelLaunch);
@@ -106,7 +106,7 @@ rtError_t AllocAicpuTaskStub(TaskInfo **taskInfo, Stream * const stm, uint32_t &
     return RT_ERROR_NONE;
 }
 
-rtError_t SendAicpuTaskStub(TaskInfo *taskInfo, Stream * const stm)
+rtError_t SendAicpuTaskStub(TaskInfo* taskInfo, Stream* const stm)
 {
     UNUSED(stm);
     EXPECT_EQ(taskInfo, g_aicpuTask);
@@ -114,28 +114,29 @@ rtError_t SendAicpuTaskStub(TaskInfo *taskInfo, Stream * const stm)
     EXPECT_EQ(taskInfo->u.aicpuTaskInfo.funcName, g_expectedAicpuFuncNameAddr);
     return RT_ERROR_NONE;
 }
-}  // namespace
+} // namespace
 
 static bool g_disableThread;
 static rtChipType_t g_chipType;
 extern int64_t g_device_driver_version_stub;
-#define PLATFORMCONFIG_NO_DEVICE                                                              \
-    PLAT_COMBINE((static_cast<uint32_t>(ARCH_C220)), (static_cast<uint32_t>(CHIP_NO_DEVICE)), \
-                 (static_cast<uint32_t>(RT_VER_NA)))
+#define PLATFORMCONFIG_NO_DEVICE                                                     \
+    PLAT_COMBINE(                                                                    \
+        (static_cast<uint32_t>(ARCH_C220)), (static_cast<uint32_t>(CHIP_NO_DEVICE)), \
+        (static_cast<uint32_t>(RT_VER_NA)))
 
 rtLogicCqReport_t g_cqReport1;
-static rtError_t Sub_LogicCqReportV2(NpuDriver *drv, const LogicCqWaitInfo &waitInfo, uint8_t *report,
-                                     uint32_t reportCnt, uint32_t &realCnt)
+static rtError_t Sub_LogicCqReportV2(
+    NpuDriver* drv, const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt)
 {
     realCnt = 1;
-    rtLogicCqReport_t *reportPtr = reinterpret_cast<rtLogicCqReport_t *>(report);
+    rtLogicCqReport_t* reportPtr = reinterpret_cast<rtLogicCqReport_t*>(report);
     g_cqReport1.taskId = 1U;
     *reportPtr = g_cqReport1;
 
     return RT_ERROR_NONE;
 }
 
-static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -152,7 +153,7 @@ static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int
 static bool g_failConnectUbFlag = false;
 
 static drvError_t stubDavidGetDeviceInfoWithConnectUbFlagFail(
-    uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+    uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (g_failConnectUbFlag && (value != nullptr) && (moduleType == MODULE_TYPE_SYSTEM) &&
         (infoType == INFO_TYPE_HD_CONNECT_TYPE)) {
@@ -162,18 +163,18 @@ static drvError_t stubDavidGetDeviceInfoWithConnectUbFlagFail(
     return stubDavidGetDeviceInfo(devId, moduleType, infoType, value);
 }
 
-static rtError_t stubGetHardVerBySocVerFail(const uint32_t deviceId, int64_t &hardwareVersion)
+static rtError_t stubGetHardVerBySocVerFail(const uint32_t deviceId, int64_t& hardwareVersion)
 {
     return RT_ERROR_DRV_INPUT;
 }
 
-rtError_t stubGetHardVerBySocVerNoDevice(const uint32_t deviceId, int64_t &hardwareVersion)
+rtError_t stubGetHardVerBySocVerNoDevice(const uint32_t deviceId, int64_t& hardwareVersion)
 {
     hardwareVersion = PLATFORMCONFIG_NO_DEVICE;
     return DRV_ERROR_NONE;
 }
 
-static drvError_t stubSolomonGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t stubSolomonGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -189,20 +190,14 @@ static drvError_t stubSolomonGetDeviceInfo(uint32_t devId, int32_t moduleType, i
 
 class DavidTaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "DavidTaskTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "DavidTaskTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "DavidTaskTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "DavidTaskTest end" << std::endl; }
 
     virtual void SetUp()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -210,14 +205,14 @@ protected:
         GlobalContainer::SetRtChipType(CHIP_DAVID);
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         dev_ = rtInstance->DeviceRetain(0, 0);
         dev_->SetChipType(CHIP_DAVID);
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::GetRunMode)
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
             .stubs()
             .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::LogicCqReportV2)
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::LogicCqReportV2)
             .stubs()
             .will(invoke(Sub_LogicCqReportV2));
         rtStreamCreate(&streamHandle_, 0);
@@ -227,7 +222,7 @@ protected:
         MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
     }
 
-    void VerifyDavidAtomicCapabilities(const uint32_t *capabilities, uint32_t count)
+    void VerifyDavidAtomicCapabilities(const uint32_t* capabilities, uint32_t count)
     {
         EXPECT_EQ(count, 21U);
         EXPECT_EQ(capabilities[0], 99U);
@@ -258,7 +253,7 @@ protected:
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
 
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->DeviceRelease(dev_);
         rtInstance->SetIsUserSetSocVersion(false);
         rtInstance->SetDisableThread(g_disableThread);
@@ -269,38 +264,32 @@ protected:
     }
 
 protected:
-    Stream *stream_ = nullptr;
-    Device *dev_ = nullptr;
+    Stream* stream_ = nullptr;
+    Device* dev_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
 };
 
 class DavidTaskTest1 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "DavidTaskTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "DavidTaskTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "DavidTaskTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "DavidTaskTest end" << std::endl; }
 
     virtual void SetUp()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
         GlobalContainer::SetRtChipType(CHIP_DAVID);
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         dev_ = rtInstance->DeviceRetain(0, 0);
         dev_->SetChipType(CHIP_DAVID);
         rtStreamCreate(&streamHandle_, 0);
@@ -311,9 +300,9 @@ protected:
     virtual void TearDown()
     {
         rtStreamDestroy(streamHandle_);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->DeviceRelease(dev_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtDeviceReset(0);
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
@@ -321,32 +310,26 @@ protected:
     }
 
 protected:
-    Stream *stream_ = nullptr;
-    Device *dev_ = nullptr;
+    Stream* stream_ = nullptr;
+    Device* dev_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
 };
 
 class DavidTaskTest2 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "DavidTaskTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "DavidTaskTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "DavidTaskTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "DavidTaskTest end" << std::endl; }
 
     virtual void SetUp()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         rtInstance->SetDisableThread(true);
         g_chipType = rtInstance->GetChipType();
@@ -362,7 +345,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtStreamDestroy(streamHandle_);
         rtInstance->DeviceRelease(dev_);
         rtDeviceReset(0);
@@ -373,28 +356,22 @@ protected:
     }
 
 protected:
-    Stream *stream_ = nullptr;
-    Device *dev_ = nullptr;
+    Stream* stream_ = nullptr;
+    Device* dev_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
 };
 
 class DavidTaskErrTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "DavidTaskTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "DavidTaskTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "DavidTaskTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "DavidTaskTest end" << std::endl; }
 
     virtual void SetUp()
     {
         g_failConnectUbFlag = false;
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfoWithConnectUbFlagFail));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -402,14 +379,14 @@ protected:
         GlobalContainer::SetRtChipType(CHIP_DAVID);
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         dev_ = rtInstance->DeviceRetain(0, 0);
         dev_->SetChipType(CHIP_DAVID);
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::GetRunMode)
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
             .stubs()
             .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::LogicCqReportV2)
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::LogicCqReportV2)
             .stubs()
             .will(invoke(Sub_LogicCqReportV2));
         rtStreamCreate(&streamHandle_, 0);
@@ -424,8 +401,8 @@ protected:
     {
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->DeviceRelease(dev_);
         rtDeviceReset(0);
         rtInstance->SetDisableThread(g_disableThread);
@@ -436,47 +413,41 @@ protected:
     }
 
 protected:
-    Stream *stream_ = nullptr;
-    Device *dev_ = nullptr;
+    Stream* stream_ = nullptr;
+    Device* dev_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
 };
 
 class SolomonTaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "SolomonTaskTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "SolomonTaskTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "SolomonTaskTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "SolomonTaskTest end" << std::endl; }
 
     virtual void SetUp()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubSolomonGetDeviceInfo));
         MOCKER(halGetSocVersion).stubs().will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_CLOUD_V5);
         GlobalContainer::SetRtChipType(CHIP_CLOUD_V5);
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend910SOLMON");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         dev_ = rtInstance->DeviceRetain(0, 0);
         dev_->SetChipType(CHIP_CLOUD_V5);
         rtStreamCreate(&streamHandle_, 0);
-        stream_ = (DavidStream *)streamHandle_;
+        stream_ = (DavidStream*)streamHandle_;
         MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
     }
 
     virtual void TearDown()
     {
         rtStreamDestroy(streamHandle_);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->DeviceRelease(dev_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtDeviceReset(0);
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
@@ -484,27 +455,21 @@ protected:
     }
 
 protected:
-    DavidStream *stream_ = nullptr;
-    Device *dev_ = nullptr;
+    DavidStream* stream_ = nullptr;
+    Device* dev_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
 };
 
 class DavidTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "DavidTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "DavidTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "DavidTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "DavidTest end" << std::endl; }
 
     virtual void SetUp()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -512,14 +477,14 @@ protected:
         GlobalContainer::SetRtChipType(CHIP_DAVID);
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         dev_ = rtInstance->DeviceRetain(0, 0);
         dev_->SetChipType(CHIP_DAVID);
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::GetRunMode)
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
             .stubs()
             .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::LogicCqReportV2)
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::LogicCqReportV2)
             .stubs()
             .will(invoke(Sub_LogicCqReportV2));
     }
@@ -527,7 +492,7 @@ protected:
     virtual void TearDown()
     {
         rtDeviceReset(0);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->DeviceRelease(dev_);
         rtInstance->SetDisableThread(g_disableThread);
         rtInstance->SetChipType(g_chipType);
@@ -537,14 +502,14 @@ protected:
     }
 
 protected:
-    Device *dev_ = nullptr;
+    Device* dev_ = nullptr;
 };
 
 TEST_F(DavidTest, GetPrefetchCnt_program_kernel)
 {
     rtError_t ret = RT_ERROR_NONE;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     uint64_t tilingKey = 0;
     Kernel kernel("GetPrefetchCnt_program_kernel", tilingKey, program, RT_KERNEL_ATTR_TYPE_AICPU, 2048, 1024, 0, 0, 0);
     kernel.SetKernelLength1(10240); // 10k < 16k
@@ -620,7 +585,7 @@ TEST_F(DavidTest, GetPrefetchCnt_program_kernel)
 
 TEST_F(SolomonTaskTest, macroinit_for_chip_cloud_v5)
 {
-    Runtime *rt = ((Runtime *)Runtime::Instance());
+    Runtime* rt = ((Runtime*)Runtime::Instance());
     rt->UpdateDevProperties(CHIP_CLOUD_V5, "Ascend910_5591");
     rt->GetSocVersionByHardwareVer(0, 1, 1);
 }
@@ -628,9 +593,9 @@ TEST_F(SolomonTaskTest, macroinit_for_chip_cloud_v5)
 TEST_F(DavidTaskTest, construct_davidsqe_for_model_maintaince)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -643,7 +608,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_maintaince)
     model = rt_ut::UnwrapOrNull<Model>(modelHandle);
 
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
+    TaskInfo* task = &maintainceTask;
     rtDavidSqe_t sqe = {};
     task->id = 0;
     InitByStream(&maintainceTask, stream);
@@ -674,7 +639,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_maintaince)
     uint64_t addr;
     stream->SetModel(model);
     stream->SetLatestModlId(model->Id_());
-    (void)CmoAddrTaskInit(&maintainceTask, (void *)&addr, RT_CMO_INVALID);
+    (void)CmoAddrTaskInit(&maintainceTask, (void*)&addr, RT_CMO_INVALID);
     stream->DelModel(model);
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -693,7 +658,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_profiling_enable_Task)
     task.id = 0;
     rtDavidSqe_t sqe = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    RtDavidPlaceHolderSqe &placeHolderSqe = sqe.phSqe;
+    RtDavidPlaceHolderSqe& placeHolderSqe = sqe.phSqe;
     ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     // head taskType
     EXPECT_EQ(placeHolderSqe.taskType, 27);
@@ -710,7 +675,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_profiling_disable_task)
     task.id = 0;
     rtDavidSqe_t sqe = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    RtDavidPlaceHolderSqe &placeHolderSqe = sqe.phSqe;
+    RtDavidPlaceHolderSqe& placeHolderSqe = sqe.phSqe;
 
     ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     // head taskType
@@ -719,7 +684,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_profiling_disable_task)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_stream_switch_ex)
 {
-    Stream *trueStreams = new Stream(dev_, 0);
+    Stream* trueStreams = new Stream(dev_, 0);
     std::unique_ptr<Stream> streamGuard(trueStreams);
     uint32_t trueStreamSqId = trueStreams->GetSqId();
     uint32_t currentStreamId = (uint32_t)stream_->Id_();
@@ -752,7 +717,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stream_switch_ex)
             EXPECT_EQ(ret, RT_ERROR_NONE);
             rtDavidSqe_t sqe = {};
             TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-            auto &streamSwitchExSqe = sqe.fuctionCallSqe;
+            auto& streamSwitchExSqe = sqe.fuctionCallSqe;
             ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
             EXPECT_EQ(streamSwitchExSqe.header.type, RT_DAVID_SQE_TYPE_COND);
             TaskUnInitProc(&task);
@@ -771,15 +736,15 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_execute)
     MOCKER(PrepareSqeInfoForModelExecuteTask).stubs().will(returnValue(0));
 
     InitByStream(&mdlExecTask, stream_);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     ret = ModelExecuteTaskInit(&mdlExecTask, realModel, realModel->Id_(), 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     uint32_t sqeNum = GetSendDavidSqeNum(&mdlExecTask);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task = &mdlExecTask;
+    TaskInfo* task = &mdlExecTask;
     rtDavidSqe_t command = {};
-    RtDavidStarsFunctionCallSqe &sqe = command.fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe& sqe = command.fuctionCallSqe;
     TaskSqeInfo sqeInfo = {1ULL, 0ULL};
     ToConstructDavidSqe(task, static_cast<void*>(&command), sqeInfo);
     EXPECT_EQ(sqe.header.type, RT_DAVID_SQE_TYPE_COND);
@@ -791,7 +756,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_execute)
 TEST_F(DavidTaskTest, construct_davidsqe_for_maintaince_task_force_recycle)
 {
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
+    TaskInfo* task = &maintainceTask;
     rtDavidSqe_t sqe = {};
     task->id = 0;
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
@@ -805,13 +770,13 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_maintaince_task_force_recycle)
 TEST_F(DavidTaskTest, construct_davidsqe_for_ringbuffer_maintain)
 {
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
-    RingBufferMaintainTaskInfo *const ringBufMtTsk = &(task->u.ringBufMtTask);
+    TaskInfo* task = &maintainceTask;
+    RingBufferMaintainTaskInfo* const ringBufMtTsk = &(task->u.ringBufMtTask);
     rtDavidSqe_t sqe = {};
     task->id = 0;
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&maintainceTask, stream_);
-    rtError_t ret = RingBufferMaintainTaskInit(task, (void *)0x100, 0, 10);
+    rtError_t ret = RingBufferMaintainTaskInit(task, (void*)0x100, 0, 10);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     ToConstructDavidSqe(task, static_cast<void*>(&sqe), sqeInfo);
@@ -843,7 +808,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_write_value_task)
 {
     rtError_t ret;
     TaskInfo tsk = {};
-    TaskInfo *writeValueTask = &tsk;
+    TaskInfo* writeValueTask = &tsk;
     InitByStream(&tsk, stream_);
     uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {};
     rtDavidSqe_t cmd;
@@ -872,7 +837,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_label_switch_by_index)
     rtDavidSqe_t sqe;
     InitByStream(&task, stream_);
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    (void)StreamLabelSwitchByIndexTaskInit(&task, (void *)&ptr, max, (void *)labelInfoPtr);
+    (void)StreamLabelSwitchByIndexTaskInit(&task, (void*)&ptr, max, (void*)labelInfoPtr);
     ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     TaskUnInitProc(&task);
     EXPECT_EQ(sqe.fuctionCallSqe.header.type, RT_DAVID_SQE_TYPE_COND);
@@ -902,8 +867,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_timeout_sqe)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_stars_memcpy_async_sqe_d2d)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_DEVICE_TO_DEVICE;
 
@@ -925,17 +890,17 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_stars_memcpy_async_sqe_d2d)
 TEST_F(DavidTaskTest, memcpy_async_task_init_d2h_ex)
 {
     TaskInfo memcpyTask = {};
-    Runtime *rt = ((Runtime *)Runtime::Instance());
-    Device *device = new RawDevice(0);
+    Runtime* rt = ((Runtime*)Runtime::Instance());
+    Device* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->streamId_ = 1;
     NpuDriver drv;
     rtError_t error;
 
-    void *src = malloc(100);
-    void *dst = malloc(100);
-    uint64_t size = sizeof(void *);
+    void* src = malloc(100);
+    void* dst = malloc(100);
+    uint64_t size = sizeof(void*);
 
     uint32_t backupcopyType_ = memcpyTask.u.memcpyAsyncTaskInfo.copyType;
     memcpyTask.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DEVICE_TO_HOST_EX;
@@ -954,8 +919,8 @@ TEST_F(DavidTaskTest, memcpy_async_task_init_d2h_ex)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_stars_memcpy_async_sqe_pciedma)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_DEVICE_TO_DEVICE;
 
@@ -1003,7 +968,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_david_sqe_base)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_debug_register_for_stream)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     TaskInfo task = {};
     InitByStream(&task, stream_);
     rtError_t error;
@@ -1072,7 +1037,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_get_device_msg)
 {
     TaskInfo task = {};
     uint32_t devMemSize = 4U;
-    const void *devMemAddr = &devMemSize;
+    const void* devMemAddr = &devMemSize;
     InitByStream(&task, stream_);
     GetDevMsgTaskInit(&task, devMemAddr, devMemSize, RT_GET_DEV_ERROR_MSG);
     rtDavidSqe_t sqe = {};
@@ -1098,14 +1063,14 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_label_set)
 {
     TaskInfo task = {};
     uint32_t devDestSize = 4U;
-    void *const devDestAddr = &devDestSize;
+    void* const devDestAddr = &devDestSize;
 
     InitByStream(&task, stream_);
     LabelSetTaskInit(&task, 1, devDestAddr);
     rtModel_t model;
     rtError_t ret = rtModelCreate(&model, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     stream_->SetModel(realModel);
     stream_->SetLatestModlId(realModel->Id_());
     rtDavidSqe_t sqe = {};
@@ -1128,7 +1093,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_cmotask)
     rtCmoTaskInfo_t cmoTask = {};
     CmoTaskInit(&task, &cmoTask, stream_, 0);
 
-    Model *tmpModel = stream_->Model_();
+    Model* tmpModel = stream_->Model_();
 
     stream_->models_.clear();
     cmoTask.opCode = RT_CMO_PREFETCH;
@@ -1152,7 +1117,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_cmotask)
     rtModel_t model;
     rtError_t ret = rtModelCreate(&model, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     stream_->SetModel(realModel);
     stream_->SetLatestModlId(realModel->Id_());
     MOCKER(memcpy_s).stubs().will(returnValue(1));
@@ -1217,8 +1182,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_common_task)
     EXPECT_EQ(sqe1.commonSqe.sqeHeader.type, RT_DAVID_SQE_TYPE_VPC);
 }
 
-static rtError_t StubGetDeviceFaultEventsWithRasEvent(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, bool needLog)
+static rtError_t StubGetDeviceFaultEventsWithRasEvent(
+    const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t& eventCount, bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(needLog);
@@ -1234,8 +1199,8 @@ static rtError_t StubGetDeviceFaultEventsWithRasEvent(const uint32_t deviceId, r
     return RT_ERROR_NONE;
 }
 
-static rtError_t StubGetDeviceFaultEventsWithoutRasEvent(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, bool needLog)
+static rtError_t StubGetDeviceFaultEventsWithoutRasEvent(
+    const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t& eventCount, bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(needLog);
@@ -1251,10 +1216,7 @@ static rtError_t StubGetDeviceFaultEventsWithoutRasEvent(const uint32_t deviceId
     return RT_ERROR_NONE;
 }
 
-TEST_F(DavidTaskTest, CheckAndPrintRasInfo_nullptr)
-{
-    CheckAndPrintRasInfo(nullptr);
-}
+TEST_F(DavidTaskTest, CheckAndPrintRasInfo_nullptr) { CheckAndPrintRasInfo(nullptr); }
 
 TEST_F(DavidTaskTest, CheckAndPrintRasInfo_with_ras_event)
 {
@@ -1270,8 +1232,8 @@ TEST_F(DavidTaskTest, CheckAndPrintRasInfo_without_ras_event)
     GlobalMockObject::verify();
 }
 
-static rtError_t StubGetDeviceFaultEventsError(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, bool needLog)
+static rtError_t StubGetDeviceFaultEventsError(
+    const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t& eventCount, bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(faultEventInfo);
@@ -1280,8 +1242,8 @@ static rtError_t StubGetDeviceFaultEventsError(const uint32_t deviceId, rtDmsFau
     return RT_ERROR_DRV_ERR;
 }
 
-static rtError_t StubGetDeviceFaultEventsFeatureNotSupported(const uint32_t deviceId, rtDmsFaultEvent * const faultEventInfo,
-    uint32_t &eventCount, bool needLog)
+static rtError_t StubGetDeviceFaultEventsFeatureNotSupported(
+    const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t& eventCount, bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(faultEventInfo);
@@ -1318,28 +1280,28 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_model_to_aicpu)
 TEST_F(DavidTaskTest, construct_davidsqe_for_davinci)
 {
     TaskInfo task = {};
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     InitByStream(&task, stream_);
 
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
 
-    Kernel *aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel1, aicKernel1->GetKernelAttrType(), 1, nullptr);
     delete aicKernel1;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -1347,13 +1309,13 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_davinci)
     task.u.aicTaskInfo.kernel = kernel;
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->aicpuControlSqe.header.type, RT_DAVID_SQE_TYPE_AIC);
-    Kernel *vecKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
+    Kernel* vecKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task, vecKernel1, vecKernel1->GetKernelAttrType(), 1, nullptr);
     delete vecKernel1;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->aicpuControlSqe.header.type, RT_DAVID_SQE_TYPE_AIV);
-    Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
     delete aicKernel2;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -1370,20 +1332,20 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
 
     kernel->SetPrefetchCnt1_(0x2);
     kernel->SetPrefetchCnt2_(0x4);
 
-    Kernel *aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel3, aicKernel3->GetKernelAttrType(), 1, nullptr);
     delete aicKernel3;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -1395,7 +1357,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIC);
     EXPECT_EQ(sqe.aicAivSqe.aicIcachePrefetchCnt, 0x2);
 
-    Kernel *vecKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
+    Kernel* vecKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task, vecKernel2, vecKernel2->GetKernelAttrType(), 1, nullptr);
     delete vecKernel2;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
@@ -1404,7 +1366,7 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aic_mix_task)
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIV);
     EXPECT_EQ(sqe.aicAivSqe.aivIcachePrefetchCnt, 0x2);
 
-    Kernel *aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel4, aicKernel4->GetKernelAttrType(), 1, nullptr);
     delete aicKernel4;
     kernel->SetMixType(MIX_AIC_AIV_MAIN_AIC);
@@ -1423,20 +1385,20 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aicaiv_nomix_
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
 
     kernel->SetPrefetchCnt1_(0x2);
     kernel->SetPrefetchCnt2_(0x4);
 
-    Kernel *aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel5, aicKernel5->GetKernelAttrType(), 1, nullptr);
     delete aicKernel5;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -1446,16 +1408,16 @@ TEST_F(DavidTaskTest, check_prefetch_cnt_on_construct_davidsqe_for_aicaiv_nomix_
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIC);
     EXPECT_EQ(sqe.aicAivSqe.aicIcachePrefetchCnt, 0x2);
 
-    Kernel *vecKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
+    Kernel* vecKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task, vecKernel3, vecKernel3->GetKernelAttrType(), 1, nullptr);
     delete vecKernel3;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
     ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.header.type, RT_DAVID_SQE_TYPE_AIV);
     EXPECT_EQ(sqe.aicAivSqe.aivIcachePrefetchCnt, 0x2);
-    ((Runtime *)Runtime::Instance())->SetBiuperfProfFlag(true);
-    ((Runtime *)Runtime::Instance())->SetL2CacheProfFlag(true);
-    Kernel *vecKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
+    ((Runtime*)Runtime::Instance())->SetBiuperfProfFlag(true);
+    ((Runtime*)Runtime::Instance())->SetL2CacheProfFlag(true);
+    Kernel* vecKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task, vecKernel4, vecKernel4->GetKernelAttrType(), 1, nullptr);
     delete vecKernel4;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AIVEC);
@@ -1472,17 +1434,17 @@ TEST_F(DavidTaskTest, config_schem_mode_on_construct_davidsqe_for_aic_mix_task)
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
 
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
 
-    Kernel *aicKernel6 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel6 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel6, aicKernel6->GetKernelAttrType(), 1, nullptr);
     delete aicKernel6;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -1495,12 +1457,12 @@ TEST_F(DavidTaskTest, config_schem_mode_on_construct_davidsqe_for_aic_mix_task)
     kernel->SetSchedMode(RT_SCHEM_MODE_BATCH);
     taskcfg.isBaseValid = 1;
     taskcfg.base.schemMode = RT_SCHEM_MODE_NORMAL;
-    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 10, &taskcfg, false); 
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 10, &taskcfg, false);
     ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.schem, RT_SCHEM_MODE_NORMAL);
     // 优先级配置校验2
     kernel->SetSchedMode(RT_SCHEM_MODE_BATCH);
-    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 10, nullptr, false); 
+    AicTaskInit(&task, kernel, kernel->GetKernelAttrType(), 10, nullptr, false);
     ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     EXPECT_EQ(sqe.aicAivSqe.schem, RT_SCHEM_MODE_BATCH);
     // AIV场景优先级配置
@@ -1523,18 +1485,18 @@ TEST_F(DavidTaskTest, config_schem_mode_on_construct_davidsqe_for_aic_mix_task)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async)
 {
-    void *src = nullptr;
+    void* src = nullptr;
     uint64_t count = 40U;
     TaskInfo task = {};
     task.id = 0;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncD2HTaskInit(&task, src, count, 2U, 3U);
@@ -1542,7 +1504,7 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async)
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->memcpyAsyncSqe.header.type, RT_DAVID_SQE_TYPE_ASYNCDMA);
 
-    MemcpyAsyncTaskInfo *const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = RT_MEMCPY_ADDR_D2D_SDMA;
     memcpyAsyncTaskInfo->d2dOffsetFlag = true;
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
@@ -1556,11 +1518,11 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_build_multiple_task)
 {
-    UmaArgLoader *loader = new UmaArgLoader(dev_);
+    UmaArgLoader* loader = new UmaArgLoader(dev_);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(false));
     MOCKER_CPP_VIRTUAL(loader, &UmaArgLoader::LoadCpuKernelArgs).stubs().will(returnValue(0));
     rtError_t errorRet;
-    void *args[] = {&errorRet, NULL};
+    void* args[] = {&errorRet, NULL};
     rtTaskDesc_t taskDesc[2] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
@@ -1574,20 +1536,20 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_build_multiple_task)
     taskDesc[0].u.aicpuTaskDesc.argsInfo.args = args;
     taskDesc[0].u.aicpuTaskDesc.argsInfo.argsSize = sizeof(args);
 
-    void *devPtr;
+    void* devPtr;
     rtMalloc(&devPtr, 16, RT_MEMORY_HBM, DEFAULT_MODULEID);
     taskDesc[1].type = RT_MULTIPLE_TASK_TYPE_DVPP;
     taskDesc[1].u.dvppTaskDesc.sqe.sqeHeader.type = 14;
-    taskDesc[1].u.dvppTaskDesc.aicpuTaskPos = 1 + 3;  // for dvpp rr, add 3 write value
+    taskDesc[1].u.dvppTaskDesc.aicpuTaskPos = 1 + 3; // for dvpp rr, add 3 write value
     taskDesc[1].u.dvppTaskDesc.sqe.commandCustom[12] = 0;
     taskDesc[1].u.dvppTaskDesc.sqe.commandCustom[13] = 0;
 
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     EXPECT_NE(task, nullptr);
     taskInfo.id = 0;
 
-    Runtime *rt = (Runtime *)Runtime::Instance();
+    Runtime* rt = (Runtime*)Runtime::Instance();
 
     rtDavidSqe_t sqe[2];
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
@@ -1606,20 +1568,20 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_build_multiple_task)
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_pciedma)
 {
-    void *src = nullptr;
+    void* src = nullptr;
     uint64_t count = 40U;
     TaskInfo task = {};
-    Driver *drv;
-    drv = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(drv), &NpuDriver::GetRunMode)
+    Driver* drv;
+    drv = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(drv), &NpuDriver::GetRunMode)
         .stubs()
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncD2HTaskInit(&task, src, count, 2U, 3U);
-    MemcpyAsyncTaskInfo *const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = RT_MEMCPY_DIR_H2D;
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
 
@@ -1627,12 +1589,12 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_pciedma)
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->pcieDmaSqe.header.type, RT_DAVID_SQE_TYPE_ASYNCDMA);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
@@ -1677,22 +1639,22 @@ TEST_F(DavidTaskTest, construct_ccu_launch_0)
     InitByStream(&task, stream_);
     rtCcuTaskInfo_t info = {0};
     info.argSize = RT_CCU_SQE_ARGS_LEN;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)CcuLaunchTaskInit(&task, &info);
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->ccuSqe.header.type, RT_DAVID_SQE_TYPE_CCU);
     uint32_t errorcode = 10;
-    SetResult(&task, (const uint32_t *)&errorcode, 1);
+    SetResult(&task, (const uint32_t*)&errorcode, 1);
     free(sqe);
 }
 
 TEST_F(DavidTaskTest, construct_davidsqe_notify_subtype)
 {
-    const char_t *res1 = GetNotifySubType(10);
+    const char_t* res1 = GetNotifySubType(10);
     EXPECT_EQ(strcmp(res1, "unknown"), 0);
 
-    const char_t *res2 = GetNotifySubType(0);
+    const char_t* res2 = GetNotifySubType(0);
     EXPECT_EQ(strcmp(res2, "single notify record"), 0);
 }
 
@@ -1701,18 +1663,18 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_notify)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    void* addr = &value;
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     CountNotifyWaitInfo cntNtfyInfo = {};
     NotifyWaitTaskInit(&task, 0, 1, &cntNtfyInfo, nullptr, false);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_WAIT);
@@ -1727,39 +1689,39 @@ TEST_F(DavidTaskTest, construct_ccu_launch)
     InitByStream(&task, stream_);
     rtCcuTaskInfo_t info = {0};
     info.argSize = RT_CCU_SQE_ARGS_LEN;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)CcuLaunchTaskInit(&task, &info);
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->ccuSqe.header.type, RT_DAVID_SQE_TYPE_CCU);
     uint32_t errorcode = 10;
-    SetResult(&task, (const uint32_t *)&errorcode, 1);
+    SetResult(&task, (const uint32_t*)&errorcode, 1);
     free(sqe);
 }
 
 TEST_F(DavidTaskTest, construct_davidsqe_for_memcpy_async_ptr)
 {
-    void *src = nullptr;
+    void* src = nullptr;
     uint64_t count = 40U;
     TaskInfo task = {};
 
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     MemcpyAsyncD2HTaskInit(&task, src, count, 2U, 3U);
-    MemcpyAsyncTaskInfo *const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* const memcpyAsyncTaskInfo = &(task.u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = RT_MEMCPY_ADDR_D2D_SDMA;
     memcpyAsyncTaskInfo->copyKind = RT_MEMCPY_RESERVED;
 
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->memcpyAsyncPtrSqe.header.type, RT_DAVID_SQE_TYPE_SDMA);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
@@ -1773,8 +1735,8 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_write_value_ptr)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    void* addr = &value;
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     (void)WriteValuePtrTaskInit(&task, addr, TASK_WR_CQE_DEFAULT);
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
@@ -1785,12 +1747,12 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_write_value_ptr)
 
     EXPECT_EQ(sqe->writeValueSqe.header.type, RT_DAVID_SQE_TYPE_WRITE_VALUE);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     TaskUnInitProc(&task);
@@ -1804,18 +1766,18 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_notify_1)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    void* addr = &value;
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     CountNotifyWaitInfo cntNtfyInfo = {};
     NotifyWaitTaskInit(&task, 0, 1, &cntNtfyInfo, nullptr, false);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_WAIT);
@@ -1829,19 +1791,19 @@ TEST_F(DavidTaskTest, construct_davidsqe_for_event)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
-    DavidEvent *evt = new (std::nothrow) DavidEvent(dev_, 0x1, nullptr, false);
+    void* addr = &value;
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
+    DavidEvent* evt = new (std::nothrow) DavidEvent(dev_, 0x1, nullptr, false);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
 
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->notifySqe.header.type, RT_DAVID_SQE_TYPE_NOTIFY_RECORD);
@@ -1862,12 +1824,12 @@ protected:
     static void SetUpTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -1880,7 +1842,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtDeviceReset(0);
         rtInstance->SetDisableThread(g_disableThread);
         rtInstance->SetChipType(g_chipType);
@@ -1888,10 +1850,7 @@ protected:
     }
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(DavidApiTest, test_some_invalid_input_for_device_api_in_david)
@@ -1943,8 +1902,8 @@ TEST_F(DavidApiTest, test_some_invalid_input_for_device_api_in_david)
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &arg;
     argsInfo.argsSize = sizeof(arg);
-    void *devArgsAddr = nullptr;
-    void *argsHandle = nullptr;
+    void* devArgsAddr = nullptr;
+    void* argsHandle = nullptr;
     error = rtGetDevArgsAddr(nullptr, &argsInfo, &devArgsAddr, &argsHandle);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
@@ -2005,18 +1964,18 @@ TEST_F(DavidTaskTest, base_task_ubdma_doorbell)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     InitByStream(&task, streamObj);
     task.id = 0;
     UbDbSendTaskInit(&task, &dbInfo, 0);
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = streamObj->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(newSqAddr + (pos << SHIFT_SIX_SIZE));
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
@@ -2029,7 +1988,7 @@ TEST_F(DavidTaskTest, base_task_ubdma_doorbell)
     sqe = nullptr;
 }
 
-void TaskFailCallBackForDoorBell(rtExceptionInfo_t *exceptionInfo)
+void TaskFailCallBackForDoorBell(rtExceptionInfo_t* exceptionInfo)
 {
     // TS_ERROR_TASK_EXCEPTION -> RT_ERROR_TSFW_TASK_EXCEPTION -> ACL_ERROR_RT_TS_ERROR
     EXPECT_EQ(exceptionInfo->retcode, ACL_ERROR_RT_TS_ERROR);
@@ -2049,7 +2008,7 @@ void TaskFailCallBackForDoorBell(rtExceptionInfo_t *exceptionInfo)
 TEST_F(DavidTaskTest, base_task_ubdma_doorbell_DoCompleteSuccess)
 {
     rtError_t error;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     error = rtRegTaskFailCallbackByModule("taskFailCallBackForDoorBell", TaskFailCallBackForDoorBell);
@@ -2088,7 +2047,7 @@ TEST_F(DavidTaskTest, base_task_ubdma_doorbell_DoCompleteSuccess)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-void TaskFailCallBackForFusionKernelTask32B(rtExceptionInfo_t *exceptionInfo)
+void TaskFailCallBackForFusionKernelTask32B(rtExceptionInfo_t* exceptionInfo)
 {
     EXPECT_EQ(exceptionInfo->expandInfo.u.fusionInfo.u.aicoreCcuInfo.ccuDetailMsg.ccuMissionNum, 8U);
     EXPECT_EQ(exceptionInfo->expandInfo.type, RT_EXCEPTION_FUSION);
@@ -2106,7 +2065,7 @@ void TaskFailCallBackForFusionKernelTask32B(rtExceptionInfo_t *exceptionInfo)
 
 TEST_F(DavidTaskTest, aic_aiv_aicpu_subtask_dev_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicpuError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
@@ -2134,7 +2093,7 @@ TEST_F(DavidTaskTest, aic_aiv_aicpu_subtask_dev_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, ccu_task_dev_error_proc_for_fusion_32B)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.ccuError = 1U;
     errorInfo.u.fusionKernelErrorInfo.u.ccuInfo.comm.coreNum = 4U;
@@ -2150,8 +2109,8 @@ TEST_F(DavidTaskTest, ccu_task_dev_error_proc_for_fusion_32B)
     InitByStream(&task, stream_);
     MOCKER(GetTaskInfo).stubs().will(returnValue(&task));
 
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.fusionKernelErrorInfo.u.ccuInfo.davidSqe);
-    RtDavidStarsCcuSqe32B *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe32B *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.fusionKernelErrorInfo.u.ccuInfo.davidSqe);
+    RtDavidStarsCcuSqe32B* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe32B*>(sqe);
     for (uint8_t idx = 0U; idx < task.u.fusionKernelTask.ccuSqeNum; idx++) {
         ccuSqe[idx].resv.ccuResvDesc1.dieId = (idx % 2U);
         ccuSqe[idx].instStartId = idx + 2U;
@@ -2171,7 +2130,7 @@ TEST_F(DavidTaskTest, ccu_task_dev_error_proc_for_fusion_32B)
     delete errorProc;
 }
 
-void TaskFailCallBackForFusionKernelTask128B(rtExceptionInfo_t *exceptionInfo)
+void TaskFailCallBackForFusionKernelTask128B(rtExceptionInfo_t* exceptionInfo)
 {
     EXPECT_EQ(exceptionInfo->expandInfo.u.fusionInfo.u.aicoreCcuInfo.ccuDetailMsg.ccuMissionNum, 2U);
     EXPECT_EQ(exceptionInfo->expandInfo.type, RT_EXCEPTION_FUSION);
@@ -2189,12 +2148,12 @@ void TaskFailCallBackForFusionKernelTask128B(rtExceptionInfo_t *exceptionInfo)
 
 TEST_F(DavidTaskTest, ccu_task_dev_error_proc_for_fusion_128B)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.ccuError = 1U;
     errorInfo.u.fusionKernelErrorInfo.u.ccuInfo.comm.coreNum = 2U;
-    rtError_t ret = rtRegTaskFailCallbackByModule("TaskFailCallBackForFusionKernelTask128B",
-                                                  TaskFailCallBackForFusionKernelTask128B);
+    rtError_t ret = rtRegTaskFailCallbackByModule(
+        "TaskFailCallBackForFusionKernelTask128B", TaskFailCallBackForFusionKernelTask128B);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     TaskInfo task = {};
@@ -2209,8 +2168,8 @@ TEST_F(DavidTaskTest, ccu_task_dev_error_proc_for_fusion_128B)
     InitByStream(&task, stream_);
     MOCKER(GetTaskInfo).stubs().will(returnValue(&task));
 
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.fusionKernelErrorInfo.u.ccuInfo.davidSqe);
-    RtDavidStarsCcuSqe *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.fusionKernelErrorInfo.u.ccuInfo.davidSqe);
+    RtDavidStarsCcuSqe* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe*>(sqe);
     for (uint8_t idx = 0U, num = 0U; num < task.u.fusionKernelTask.ccuSqeNum; num++, idx += 2U) {
         ccuSqe[idx].resv.ccuResvDesc1.dieId = (num % 2U);
         ccuSqe[idx].instStartId = num + 2U;
@@ -2232,7 +2191,7 @@ TEST_F(DavidTaskTest, ccu_task_dev_error_proc_for_fusion_128B)
 
 TEST_F(DavidTaskTest, aic_task_dev_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2252,7 +2211,7 @@ TEST_F(DavidTaskTest, aic_task_dev_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, aic_task_hw_r_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2273,7 +2232,7 @@ TEST_F(DavidTaskTest, aic_task_hw_r_error_proc_for_fusion)
 extern int32_t faultEventFlag;
 TEST_F(DavidTaskTest, aic_task_hw_l_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2308,7 +2267,7 @@ TEST_F(DavidTaskTest, aic_task_hw_l_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, aic_task_sw_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2344,7 +2303,7 @@ TEST_F(DavidTaskTest, aic_task_sw_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, aic_task_link_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2400,7 +2359,7 @@ TEST_F(DavidTaskTest, aic_task_link_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, aic_task_sw_error_proc1_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2422,16 +2381,16 @@ TEST_F(DavidTaskTest, aic_task_sw_error_proc1_for_fusion)
 
 TEST_F(DavidTaskTest, aic_task_sw_rror_proc1_for_fusion_search_kernel)
 {
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', 'd', '\0'};
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
 
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aicError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aicInfo.comm.coreNum = 1U;
@@ -2458,7 +2417,7 @@ TEST_F(DavidTaskTest, aic_task_sw_rror_proc1_for_fusion_search_kernel)
 
 TEST_F(DavidTaskTest, aiv_task_dev_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aivError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aivInfo.comm.coreNum = 1U;
@@ -2476,7 +2435,7 @@ TEST_F(DavidTaskTest, aiv_task_dev_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, wait_timeout_for_notify)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.timeoutErrorInfo.waitType = 7U;
     TaskInfo task = {};
@@ -2492,7 +2451,7 @@ TEST_F(DavidTaskTest, wait_timeout_for_notify)
 
 TEST_F(DavidTaskTest, wait_timeout_for_null)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.timeoutErrorInfo.waitType = 7U;
 
@@ -2504,7 +2463,7 @@ TEST_F(DavidTaskTest, wait_timeout_for_null)
 
 TEST_F(DavidTaskTest, null_task_dev_error_proc_for_fusion)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.fusionKernelErrorInfo.aivError = 1U;
     errorInfo.u.fusionKernelErrorInfo.aivInfo.comm.coreNum = 1U;
@@ -2519,7 +2478,7 @@ TEST_F(DavidTaskTest, null_task_dev_error_proc_for_fusion)
 
 TEST_F(DavidTaskTest, aicore_task_dev_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_ERROR_NA);
     TaskInfo task = {};
@@ -2534,7 +2493,7 @@ TEST_F(DavidTaskTest, aicore_task_dev_error_proc)
 
 TEST_F(DavidTaskTest, aicore_task_sw_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_S_ERROR);
     TaskInfo task = {};
@@ -2565,7 +2524,7 @@ TEST_F(DavidTaskTest, aicore_task_sw_error_proc)
 
 TEST_F(DavidTaskTest, aicore_task_hw_l_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_HW_L_ERROR);
     TaskInfo task = {};
@@ -2596,7 +2555,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_l_error_proc)
 
 TEST_F(DavidTaskTest, aic_task_link_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_LINK_ERROR);
     TaskInfo task = {};
@@ -2648,7 +2607,7 @@ TEST_F(DavidTaskTest, aic_task_link_error_proc)
 
 TEST_F(DavidTaskTest, aicore_task_hw_r_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
@@ -2664,7 +2623,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_proc)
 
 TEST_F(DavidTaskTest, aicore_task_hw_r_error_in_black_list_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
@@ -2686,7 +2645,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_in_black_list_proc)
 
 TEST_F(DavidTaskTest, aicore_task_hw_r_error_hbm_uce_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
@@ -2708,7 +2667,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_hbm_uce_proc)
 
 TEST_F(DavidTaskTest, aicore_task_hw_r_error_not_support_get_fault_event)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
@@ -2729,7 +2688,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_not_support_get_fault_event)
 
 TEST_F(DavidTaskTest, aicore_task_hw_r_error_l2_buffer_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
@@ -2749,7 +2708,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_l2_buffer_error_proc)
 
 TEST_F(DavidTaskTest, aicore_task_hw_r_error_mte_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.coreErrorInfo.comm.flag = static_cast<uint8_t>(AixErrClass::AIX_MTE_POISON_ERROR);
     TaskInfo task = {};
@@ -2770,7 +2729,7 @@ TEST_F(DavidTaskTest, aicore_task_hw_r_error_mte_error_proc)
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoNotSupportRas)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2795,7 +2754,7 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoNotSupportRas)
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndHbmUceError)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2818,7 +2777,7 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndHbmUceError)
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndHbmUceBlacklistError)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2840,7 +2799,7 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndHbmUceBlacklistError
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndNotSupportGetFaultEvent)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2862,7 +2821,7 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndNotSupportGetFaultEv
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndL2BufferError)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2883,7 +2842,7 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndL2BufferError)
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndNoRas)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2905,11 +2864,11 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfoSupportRasAndNoRas)
 
 TEST_F(DavidTaskTest, IsFaultEventOccurAndIsHitBlacklistIsNull)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     rtDmsFaultEvent* faultEventInfo = nullptr;
     const std::map<uint32_t, std::string> eventIdBlkList;
     uint32_t hbmUceEventId = 0x80e01801U;
-    bool res = IsFaultEventOccur(hbmUceEventId ,faultEventInfo, 0);
+    bool res = IsFaultEventOccur(hbmUceEventId, faultEventInfo, 0);
     EXPECT_EQ(res, false);
     res = IsHitBlacklist(faultEventInfo, 0, eventIdBlkList);
     EXPECT_EQ(res, false);
@@ -2918,7 +2877,7 @@ TEST_F(DavidTaskTest, IsFaultEventOccurAndIsHitBlacklistIsNull)
 
 TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfo03)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -2947,8 +2906,8 @@ TEST_F(DavidTaskTest, ProcessStarsSdmaErrorInfo03)
 TEST_F(DavidTaskTest, aicore_timeout_task_dev_error_proc)
 {
     rtSetDevice(1);
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
 
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.starsV2CoreTimeoutDfxInfo.comm.chipId = 1;
@@ -2977,11 +2936,11 @@ TEST_F(DavidTaskTest, aicore_timeout_task_dev_error_proc)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
-void TaskFailCallBackForCcuTaskStub(rtExceptionInfo_t *exceptionInfo)
+void TaskFailCallBackForCcuTaskStub(rtExceptionInfo_t* exceptionInfo)
 {
     EXPECT_EQ(exceptionInfo->expandInfo.u.ccuInfo.ccuMissionNum, 1U);
     EXPECT_EQ(exceptionInfo->expandInfo.type, RT_EXCEPTION_CCU);
@@ -3000,7 +2959,7 @@ void TaskFailCallBackForCcuTaskStub(rtExceptionInfo_t *exceptionInfo)
 
 TEST_F(DavidTaskTest, ccu_task_dev_error_proc)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.ccuErrorInfo.comm.coreNum = 1U;
     rtError_t ret = rtRegTaskFailCallbackByModule("TaskFailCallBackForCcuTask", TaskFailCallBackForCcuTaskStub);
@@ -3015,8 +2974,8 @@ TEST_F(DavidTaskTest, ccu_task_dev_error_proc)
     ret = ProcessDavidStarsCcuErrorInfo(nullptr, 0, dev_, nullptr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.ccuErrorInfo.davidSqe);
-    RtDavidStarsCcuSqe *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.ccuErrorInfo.davidSqe);
+    RtDavidStarsCcuSqe* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe*>(sqe);
     ccuSqe[0].resv.ccuResvDesc1.dieId = 1U;
     ccuSqe[0].instStartId = 2U;
     ccuSqe[0].resv.ccuResvDesc1.missionId = 4U;
@@ -3035,8 +2994,8 @@ TEST_F(DavidTaskTest, ccu_task_dev_error_proc)
 TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -3052,8 +3011,8 @@ TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery)
 
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.ccuErrorInfo.comm.coreNum = 1U;
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.ccuErrorInfo.davidSqe);
-    RtDavidStarsCcuSqe *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.ccuErrorInfo.davidSqe);
+    RtDavidStarsCcuSqe* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe*>(sqe);
     ccuSqe[0].resv.ccuResvDesc1.dieId = 1U;
     ccuSqe[0].instStartId = 2U;
     ccuSqe[0].resv.ccuResvDesc1.missionId = 4U;
@@ -3063,7 +3022,7 @@ TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery)
     for (uint8_t idx = 0U; idx < 10; idx++) {
         ccuSqe[0].usrData[idx] = 0xFFFFFFFF;
     }
-    
+
     MOCKER(GetTaskInfo).stubs().will(returnValue(&taskInfo));
     taskInfo.stream->Device_()->SetDeviceRas(true);
     faultEventFlag = 7;
@@ -3086,14 +3045,14 @@ TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery2)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -3109,8 +3068,8 @@ TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery2)
 
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.ccuErrorInfo.comm.coreNum = 1U;
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.ccuErrorInfo.davidSqe);
-    RtDavidStarsCcuSqe *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.ccuErrorInfo.davidSqe);
+    RtDavidStarsCcuSqe* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe*>(sqe);
     ccuSqe[0].resv.ccuResvDesc1.dieId = 1U;
     ccuSqe[0].instStartId = 2U;
     ccuSqe[0].resv.ccuResvDesc1.missionId = 4U;
@@ -3132,14 +3091,14 @@ TEST_F(DavidTaskTest, MapFusionCcuErrorCodeForFastRecovery2)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskTest, MapCcuErrorCodeForFastRecovery)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -3154,8 +3113,8 @@ TEST_F(DavidTaskTest, MapCcuErrorCodeForFastRecovery)
 
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.ccuErrorInfo.comm.coreNum = 1U;
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.ccuErrorInfo.davidSqe);
-    RtDavidStarsCcuSqe *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.ccuErrorInfo.davidSqe);
+    RtDavidStarsCcuSqe* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe*>(sqe);
     ccuSqe[0].resv.ccuResvDesc1.dieId = 1U;
     ccuSqe[0].instStartId = 2U;
     ccuSqe[0].resv.ccuResvDesc1.missionId = 4U;
@@ -3165,7 +3124,7 @@ TEST_F(DavidTaskTest, MapCcuErrorCodeForFastRecovery)
     for (uint8_t idx = 0U; idx < 10; idx++) {
         ccuSqe[0].usrData[idx] = 0xFFFFFFFF;
     }
-    
+
     MOCKER(GetTaskInfo).stubs().will(returnValue(&taskInfo));
     taskInfo.stream->Device_()->SetDeviceRas(true);
     faultEventFlag = 7;
@@ -3188,14 +3147,14 @@ TEST_F(DavidTaskTest, MapCcuErrorCodeForFastRecovery)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskTest, base_MapCcuErrorCodeForFastRecovery)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -3210,8 +3169,8 @@ TEST_F(DavidTaskTest, base_MapCcuErrorCodeForFastRecovery)
 
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.ccuErrorInfo.comm.coreNum = 1U;
-    rtDavidSqe_t *sqe = const_cast<rtDavidSqe_t *>(errorInfo.u.ccuErrorInfo.davidSqe);
-    RtDavidStarsCcuSqe *ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe *>(sqe);
+    rtDavidSqe_t* sqe = const_cast<rtDavidSqe_t*>(errorInfo.u.ccuErrorInfo.davidSqe);
+    RtDavidStarsCcuSqe* ccuSqe = reinterpret_cast<RtDavidStarsCcuSqe*>(sqe);
     ccuSqe[0].resv.ccuResvDesc1.dieId = 1U;
     ccuSqe[0].instStartId = 2U;
     ccuSqe[0].resv.ccuResvDesc1.missionId = 4U;
@@ -3232,7 +3191,7 @@ TEST_F(DavidTaskTest, base_MapCcuErrorCodeForFastRecovery)
 
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskTest, base_task_ubdma_direct)
@@ -3247,21 +3206,21 @@ TEST_F(DavidTaskTest, base_task_ubdma_direct)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     InitByStream(&task, streamObj);
     TaskCommonInfoInit(&task);
-    DirectSendTaskInfo *directSend = &(task.u.directSendTask);
+    DirectSendTaskInfo* directSend = &(task.u.directSendTask);
     task.type = TS_TASK_TYPE_DIRECT_SEND;
-    task.typeName = const_cast<char_t *>("UB_DIRECT_SEND");
+    task.typeName = const_cast<char_t*>("UB_DIRECT_SEND");
     directSend->wrCqe = 1;
     directSend->wqeSize = 0;
     directSend->dieId = 0;
     directSend->jettyId = 10;
     directSend->funcId = 1;
-    directSend->wqe = (uint8_t *)malloc(2 * 64 * sizeof(uint8_t));
+    directSend->wqe = (uint8_t*)malloc(2 * 64 * sizeof(uint8_t));
     directSend->wqePtrLen = 128;
 
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     Complete(&task, 0);
@@ -3287,27 +3246,27 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForModelUpdateTask)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     InitByStream(&task, streamObj);
     uint16_t desStreamId = 0;
     uint16_t destaskId = 0;
     uint16_t exeStreamId = 0;
-    void *devCopyMem = nullptr;
+    void* devCopyMem = nullptr;
     uint32_t tilingTabLen = 1;
     rtMdlTaskUpdateInfo_t para;
     para.tilingKeyAddr = nullptr;
     para.hdl = nullptr;
     rtError_t ret = ModelTaskUpdateInit(&task, desStreamId, destaskId, exeStreamId, devCopyMem, tilingTabLen, &para);
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = streamObj->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(newSqAddr + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->phSqe.taskType, TS_TASK_TYPE_MODEL_TASK_UPDATE);
@@ -3333,22 +3292,22 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForAicpuInfoLoadTask)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     InitByStream(&task, streamObj);
-    const void *const aicpuInfo = nullptr;
+    const void* const aicpuInfo = nullptr;
     uint32_t length = 0;
     rtError_t ret = AicpuInfoLoadTaskInit(&task, aicpuInfo, length);
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->phSqe.taskType, TS_TASK_TYPE_AICPU_INFO_LOAD);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = streamObj->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(newSqAddr + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     Complete(&task, 0);
@@ -3373,21 +3332,21 @@ TEST_F(DavidTaskTest, toConstructDavidSqeForNopTask)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     InitByStream(&task, streamObj);
     rtError_t ret = NopTaskInit(&task);
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe->phSqe.taskType, TS_TASK_TYPE_NOP);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = streamObj->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
 
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(newSqAddr + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(newSqAddr + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {newSqAddr, 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     Complete(&task, 0);
@@ -3424,18 +3383,18 @@ TEST_F(DavidTaskTest, mutiple_task_construct_sqe_test_error)
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_MULTIPLE_TASK;
     InitByStream(&task, stream_);
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
 
     MOCKER_CPP_VIRTUAL(stream_->Device_()->ArgLoader_(), &ArgLoader::GetKernelInfoDevAddr).stubs().will(returnValue(1));
 
-    DavinciMultiTaskInfo *const davinciMultiTaskInfo = &(task.u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* const davinciMultiTaskInfo = &(task.u.davinciMultiTaskInfo);
     rtMultipleTaskInfo_t multipleTask = {};
     rtTaskDesc_t taskDesc[1];
     multipleTask.taskDesc = taskDesc;
     davinciMultiTaskInfo->multipleTaskInfo = &multipleTask;
-    rtMultipleTaskInfo_t *const multipleTaskInfo =
-        static_cast<rtMultipleTaskInfo_t *>(const_cast<void *>(davinciMultiTaskInfo->multipleTaskInfo));
+    rtMultipleTaskInfo_t* const multipleTaskInfo =
+        static_cast<rtMultipleTaskInfo_t*>(const_cast<void*>(davinciMultiTaskInfo->multipleTaskInfo));
     multipleTaskInfo->taskNum = 1;
     multipleTaskInfo->taskDesc[0].type = RT_MULTIPLE_TASK_TYPE_AICPU;
     multipleTaskInfo->taskDesc[0].u.aicpuTaskDesc.kernelLaunchNames.soName = nullptr;
@@ -3448,7 +3407,7 @@ TEST_F(DavidTaskTest, mutiple_task_construct_sqe_test_error)
     free(sqe);
 }
 
-void TaskFailCallBackForDirectWqe(rtExceptionInfo_t *exceptionInfo)
+void TaskFailCallBackForDirectWqe(rtExceptionInfo_t* exceptionInfo)
 {
     // TS_ERROR_TASK_BUS_ERROR -> RT_ERROR_TSFW_TASK_BUS_ERROR -> ACL_ERROR_RT_TS_ERROR
     EXPECT_EQ(exceptionInfo->retcode, ACL_ERROR_RT_TS_ERROR);
@@ -3463,7 +3422,7 @@ void TaskFailCallBackForDirectWqe(rtExceptionInfo_t *exceptionInfo)
 TEST_F(DavidTaskTest, base_task_ubdma_direct_DoCompleteSuccess)
 {
     rtError_t error;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     error = rtRegTaskFailCallbackByModule("taskFailCallBackForDirectWqe", TaskFailCallBackForDirectWqe);
@@ -3482,7 +3441,7 @@ TEST_F(DavidTaskTest, base_task_ubdma_direct_DoCompleteSuccess)
     wqeInfo.functionId = 1;
     wqeInfo.jettyId = 10;
     wqeInfo.wqeSize = 0;
-    wqeInfo.wqe = (uint8_t *)malloc(2 * 64 * sizeof(uint8_t));
+    wqeInfo.wqe = (uint8_t*)malloc(2 * 64 * sizeof(uint8_t));
     wqeInfo.wqePtrLen = 128U;
     InitByStream(&task, stream);
     UbDirectSendTaskInit(&task, &wqeInfo);
@@ -3502,14 +3461,11 @@ TEST_F(DavidTaskTest, base_task_ubdma_direct_DoCompleteSuccess)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-bool IsDavidUbDmaStub(const uint32_t copyTypeFlag)
-{
-    return true;
-}
+bool IsDavidUbDmaStub(const uint32_t copyTypeFlag) { return true; }
 
-drvError_t halAsyncDmaCreateStub(uint32_t devId, struct halAsyncDmaInputPara *in, struct halAsyncDmaOutputPara *out)
+drvError_t halAsyncDmaCreateStub(uint32_t devId, struct halAsyncDmaInputPara* in, struct halAsyncDmaOutputPara* out)
 {
-    out->wqe = (uint8_t *)malloc(64);
+    out->wqe = (uint8_t*)malloc(64);
     out->dieId = 1;
     out->functionId = 10;
     out->jettyId = 12;
@@ -3517,7 +3473,7 @@ drvError_t halAsyncDmaCreateStub(uint32_t devId, struct halAsyncDmaInputPara *in
     return DRV_ERROR_NONE;
 }
 
-drvError_t halAsyncDmaDestoryStub(uint32_t devId, halAsyncDmaDestoryPara *para)
+drvError_t halAsyncDmaDestoryStub(uint32_t devId, halAsyncDmaDestoryPara* para)
 {
     para->size = 64;
     free(para->wqe);
@@ -3528,7 +3484,7 @@ drvError_t halAsyncDmaDestoryStub(uint32_t devId, halAsyncDmaDestoryPara *para)
 TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncDmaSqe)
 {
     rtError_t error;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     TaskInfo memcpyTask = {};
     error = rtSetDevice(0);
@@ -3537,11 +3493,11 @@ TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncDmaSqe)
     error = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
-    Driver *drv;
-    drv = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    ((RawDevice *)(stream->device_))->driver_ = drv;
+    Driver* drv;
+    drv = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    ((RawDevice*)(stream->device_))->driver_ = drv;
     memcpyTask.type = TS_TASK_TYPE_MEMCPY;
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(drv), &NpuDriver::GetRunMode)
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(drv), &NpuDriver::GetRunMode)
         .stubs()
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
     InitByStream(&memcpyTask, stream);
@@ -3561,7 +3517,7 @@ TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncDmaSqe)
 TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncUbDbSqe)
 {
     rtError_t error;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
     TaskInfo memcpyTask = {};
     error = rtSetDevice(0);
@@ -3571,11 +3527,11 @@ TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncUbDbSqe)
     stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     stream->SetBindFlag(true);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Driver *drv;
-    drv = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    ((RawDevice *)(stream->device_))->driver_ = drv;
+    Driver* drv;
+    drv = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    ((RawDevice*)(stream->device_))->driver_ = drv;
     memcpyTask.type = TS_TASK_TYPE_MEMCPY;
-    MOCKER_CPP_VIRTUAL((NpuDriver *)(drv), &NpuDriver::GetRunMode)
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(drv), &NpuDriver::GetRunMode)
         .stubs()
         .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
     InitByStream(&memcpyTask, stream);
@@ -3595,17 +3551,17 @@ TEST_F(DavidTaskTest1, memcpy_async_to_ConstructDavidAsyncUbDbSqe)
 TEST_F(DavidTaskTest1, memcpy_async_task_init_d2h_ex_for_ubdma)
 {
     TaskInfo memcpyTask = {};
-    Runtime *rt = ((Runtime *)Runtime::Instance());
-    Device *device = new RawDevice(0);
+    Runtime* rt = ((Runtime*)Runtime::Instance());
+    Device* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->streamId_ = 1;
     NpuDriver drv;
     rtError_t error;
 
-    void *src = malloc(100);
-    void *dst = malloc(100);
-    uint64_t size = sizeof(void *);
+    void* src = malloc(100);
+    void* dst = malloc(100);
+    uint64_t size = sizeof(void*);
 
     InitByStream(&memcpyTask, stream);
     (void)MemcpyAsyncTaskInitV3(&memcpyTask, RT_MEMCPY_DEVICE_TO_HOST_EX, src, dst, size, 0, NULL);
@@ -3630,15 +3586,15 @@ TEST_F(DavidTaskTest, InitFuncStreamSwitchTaskV1)
 {
     TaskInfo switchtask = {};
     rtError_t error;
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     NpuDriver drv;
     drv.chipType_ = CHIP_DAVID;
     stub->driver_ = &drv;
-    void *buf = malloc(2);
+    void* buf = malloc(2);
 
     InitByStream(&switchtask, stream_);
     switchtask.u.streamswitchTask.trueStream = stream_;
-    stream_->executedTimesSvm_ = static_cast<uint16_t *>(buf);
+    stream_->executedTimesSvm_ = static_cast<uint16_t*>(buf);
     rtStarsStreamSwitchFcPara_t switchfcPara = {};
     stub->starsRegBaseAddr_ = 0x55;
     error = InitFuncCallParaForStreamSwitchTaskV1(&switchtask, switchfcPara, CHIP_DAVID);
@@ -3676,13 +3632,13 @@ TEST_F(DavidTaskTest, InitFuncStreamSwitchTaskV1)
 TEST_F(DavidTaskTest, InitFuncStreamSwitchTaskNotSupport)
 {
     TaskInfo switchtask = {};
-    void *buf = malloc(2);
+    void* buf = malloc(2);
     ASSERT_NE(buf, nullptr);
 
     InitByStream(&switchtask, stream_);
     switchtask.u.streamswitchTask.trueStream = stream_;
     switchtask.u.streamactiveTask.activeStream = stream_;
-    stream_->executedTimesSvm_ = static_cast<uint16_t *>(buf);
+    stream_->executedTimesSvm_ = static_cast<uint16_t*>(buf);
 
     rtStarsStreamSwitchFcPara_t switchfcPara = {};
     rtError_t error = InitFuncCallParaForStreamSwitchTaskV1(&switchtask, switchfcPara, CHIP_ADC);
@@ -3700,15 +3656,15 @@ TEST_F(DavidTaskTest1, InitFuncStreamSwitchTaskV2)
 {
     TaskInfo switchtask = {};
     rtError_t error;
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     NpuDriver drv;
     drv.chipType_ = CHIP_DAVID;
     stub->driver_ = &drv;
-    void *buf = malloc(2);
+    void* buf = malloc(2);
 
     InitByStream(&switchtask, stream_);
     switchtask.u.streamswitchTask.trueStream = stream_;
-    stream_->executedTimesSvm_ = static_cast<uint16_t *>(buf);
+    stream_->executedTimesSvm_ = static_cast<uint16_t*>(buf);
     rtStarsStreamSwitchExFcPara_t switchfcExPara = {};
     stub->starsRegBaseAddr_ = 0;
     error = InitFuncCallParaForStreamSwitchTaskV2(&switchtask, switchfcExPara, CHIP_ASCEND_031);
@@ -3723,9 +3679,9 @@ TEST_F(DavidTaskTest1, InitFuncStreamSwitchTaskV2)
 TEST_F(DavidTaskTest1, model_maintaince_init_david)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     NpuDriver drv;
     drv.chipType_ = CHIP_DAVID;
     stub->driver_ = &drv;
@@ -3733,7 +3689,7 @@ TEST_F(DavidTaskTest1, model_maintaince_init_david)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     model = rt_ut::UnwrapOrNull<Model>(modelHandle);
     TaskInfo maintainceTask = {};
-    TaskInfo *task = &maintainceTask;
+    TaskInfo* task = &maintainceTask;
     InitByStream(&maintainceTask, stream_);
     (void)ModelMaintainceTaskInit(&maintainceTask, MMT_STREAM_ADD, model, stream_, RT_MODEL_HEAD_STREAM, 0U);
     ret = rtModelDestroy(modelHandle);
@@ -3745,7 +3701,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_aicpu_kernel_mc2_type)
 {
     TaskInfo task = {};
 
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     InitByStream(&task, stream_);
     AicpuTaskInit(&task, 1, (uint32_t)0);
@@ -3753,13 +3709,13 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_aicpu_kernel_mc2_type)
     task.u.aicpuTaskInfo.aicpuKernelType = KERNEL_TYPE_AICPU_KFC;
     ToConstructDavidSqe(&task, static_cast<void*>(sqe), sqeInfo);
     task.id = 0;
-    rtDavidSqe_t *sqeAddr = sqe;
+    rtDavidSqe_t* sqeAddr = sqe;
     uint16_t pos = task.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
 
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(&task, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe->aicpuSqe.resv.fusionSubTypeDesc.subType, 0U);
@@ -3770,19 +3726,20 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_aicpu_kernel_mc2_type)
     sqe = nullptr;
 }
 
-void TaskFailCallBackStubfunc(const uint32_t streamId, const uint32_t taskId, const uint32_t threadId,
-                              const uint32_t retCode, const Device *const dev)
+void TaskFailCallBackStubfunc(
+    const uint32_t streamId, const uint32_t taskId, const uint32_t threadId, const uint32_t retCode,
+    const Device* const dev)
 {
     // stub
 }
 
 TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_1)
 {
-    const void *stubFunc = (void *)0x02;
-    const char *stubName = "abc";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x02;
+    const char* stubName = "abc";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
 
@@ -3823,22 +3780,22 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_1)
     aicAivInfo.launchTaskCfg = &taskCfgInfo;
     FusionKernelTaskInit(&kernTask);
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
-    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void *>(&fusionInfo);
+    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void*>(&fusionInfo);
     kernTask.u.fusionKernelTask.argsInfo = &argsInfo;
     kernTask.u.fusionKernelTask.argsSize = argsInfo.argsSize;
     kernTask.u.fusionKernelTask.args = argsInfo.args;
     kernTask.u.fusionKernelTask.sqeLen = 6U;
     rtArgsSizeInfo_t argsSizeInfo;
-    argsSizeInfo.infoAddr = (void *)0x12345678;
+    argsSizeInfo.infoAddr = (void*)0x12345678;
     argsSizeInfo.atomicIndex = 0x87654321;
     error = rtSetExceptionExtInfo(&argsSizeInfo);
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
-    kernTask.u.fusionKernelTask.aicAivType = 0;  //aic no mix
+    kernTask.u.fusionKernelTask.aicAivType = 0; // aic no mix
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].aicpuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
 
-    kernTask.u.fusionKernelTask.aicAivType = 1;  //aiv no mix
+    kernTask.u.fusionKernelTask.aicAivType = 1; // aiv no mix
     fusionInfo.subTask[0].task.aicpuInfo.flags = RT_KERNEL_HOST_FIRST;
     ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].aicpuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
@@ -3863,15 +3820,15 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_1)
 
     Handle argHdl = {};
     argHdl.freeArgs = true;
-    kernTask.u.fusionKernelTask.argHandle = static_cast<void *>(&argHdl);
+    kernTask.u.fusionKernelTask.argHandle = static_cast<void*>(&argHdl);
 
     WaitAsyncCopyComplete(&kernTask);
     SetStarsResult(&kernTask, cqe);
     Complete(&kernTask, 0);
     PrintErrorInfo(&kernTask, 0);
-    kernTask.u.fusionKernelTask.argHandle = static_cast<void *>(&argHdl);
+    kernTask.u.fusionKernelTask.argHandle = static_cast<void*>(&argHdl);
     TaskUnInitProc(&kernTask);
-    ((Runtime *)Runtime::Instance())->SetConnectUbFlag(true);
+    ((Runtime*)Runtime::Instance())->SetConnectUbFlag(true);
     TaskUnInitProc(&kernTask);
     delete kernel;
 }
@@ -3920,7 +3877,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_2)
     fusionInfo.subTask[1].task.aicoreInfo.hdl = nullptr;
     fusionInfo.subTask[1].task.aicoreInfo.config = &launchConfig;
 
-    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void *>(&fusionInfo);
+    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void*>(&fusionInfo);
     kernTask.u.fusionKernelTask.argsInfo = &argsInfo;
     kernTask.u.fusionKernelTask.argsSize = argsInfo.argsSize;
     kernTask.u.fusionKernelTask.args = argsInfo.args;
@@ -3931,7 +3888,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_2)
     aicAivInfo.launchTaskCfg = &taskCfgInfo;
     FusionKernelTaskInit(&kernTask);
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
-    kernTask.u.fusionKernelTask.aicAivType = 0;  //aic no mix
+    kernTask.u.fusionKernelTask.aicAivType = 0; // aic no mix
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
     EXPECT_EQ(sqe[0].ccuSqe.header.type, RT_DAVID_SQE_TYPE_FUSION);
@@ -3972,7 +3929,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_3)
     fusionInfo.subTask[1].task.aicoreInfo.hdl = nullptr;
     fusionInfo.subTask[1].task.aicoreInfo.config = &launchConfig;
 
-    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void *>(&fusionInfo);
+    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void*>(&fusionInfo);
     kernTask.u.fusionKernelTask.argsInfo = &argsInfo;
     kernTask.u.fusionKernelTask.argsSize = argsInfo.argsSize;
     kernTask.u.fusionKernelTask.args = argsInfo.args;
@@ -3983,7 +3940,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_3)
     aicAivInfo.launchTaskCfg = &taskCfgInfo;
     FusionKernelTaskInit(&kernTask);
     AixKernelTaskInitForFusion(&kernTask, &aicAivInfo, &taskCfgInfo);
-    kernTask.u.fusionKernelTask.aicAivType = 0;  //aic no mix
+    kernTask.u.fusionKernelTask.aicAivType = 0; // aic no mix
 
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     ToConstructDavidSqe(&kernTask, static_cast<void*>(sqe), sqeInfo);
@@ -4010,7 +3967,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_fusion_kernel_launch_error_type)
     fusionInfo.subTaskNum = 1U;
     fusionInfo.subTask[0].type = RT_FUSION_END;
 
-    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void *>(&fusionInfo);
+    kernTask.u.fusionKernelTask.fusionKernelInfo = static_cast<void*>(&fusionInfo);
     kernTask.u.fusionKernelTask.argsInfo = &argsInfo;
     kernTask.u.fusionKernelTask.argsSize = argsInfo.argsSize;
     kernTask.u.fusionKernelTask.args = argsInfo.args;
@@ -4035,16 +3992,16 @@ TEST_F(DavidTaskTest1, load_args_for_aicore_task)
     argsInfo.isNoNeedH2DCopy = 1U;
     argsInfo.args = &arg;
     argsInfo.argsSize = sizeof(arg);
-    Kernel *aicKernel8 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel8 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&kernTask, aicKernel8, aicKernel8->GetKernelAttrType(), 1, nullptr);
     delete aicKernel8;
     EXPECT_EQ(kernTask.type, TS_TASK_TYPE_KERNEL_AICORE);
     kernTask.u.aicTaskInfo.argsInfo = &argsInfo;
     stream_->isHasPcieBar_ = true;
-    stream_->taskResMang_->taskRes_[0].copyDev = (void *)1000;
+    stream_->taskResMang_->taskRes_[0].copyDev = (void*)1000;
 
     uint32_t args[128];
-    void *kerArgs = static_cast<void *>(args);
+    void* kerArgs = static_cast<void*>(args);
     MOCKER(memcpy_s).stubs().will(returnValue(0));
     error = LoadArgsInfo(&kernTask, stream_, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -4055,9 +4012,9 @@ TEST_F(DavidTaskTest1, load_args_for_aicore_task)
 TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -4069,7 +4026,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr)
     model = rt_ut::UnwrapOrNull<Model>(modelHandle);
 
     TaskInfo cmoAddrTask = {};
-    TaskInfo *task = &cmoAddrTask;
+    TaskInfo* task = &cmoAddrTask;
     rtDavidSqe_t sqe = {};
     task->id = 0;
     InitByStream(&cmoAddrTask, stream);
@@ -4077,7 +4034,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr)
     uint8_t addr[64];
     stream->SetModel(model);
     stream->SetLatestModlId(model->Id_());
-    (void)CmoAddrTaskInit(&cmoAddrTask, (void *)addr, RT_CMO_INVALID);
+    (void)CmoAddrTaskInit(&cmoAddrTask, (void*)addr, RT_CMO_INVALID);
     PrintErrorInfo(&cmoAddrTask, 0);
     stream->DelModel(model);
     ret = rtStreamDestroy(streamHandle);
@@ -4089,9 +4046,9 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr)
 TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr_error)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -4104,12 +4061,12 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr_error)
     model = rt_ut::UnwrapOrNull<Model>(modelHandle);
 
     TaskInfo cmoAddrTask = {};
-    TaskInfo *task = &cmoAddrTask;
+    TaskInfo* task = &cmoAddrTask;
     rtDavidSqe_t sqe = {};
     task->id = 0;
     InitByStream(&cmoAddrTask, stream);
     uint8_t addr[64];
-    (void)CmoAddrTaskInit(&cmoAddrTask, (void *)addr, RT_CMO_INVALID);
+    (void)CmoAddrTaskInit(&cmoAddrTask, (void*)addr, RT_CMO_INVALID);
     PrintErrorInfo(&cmoAddrTask, 0);
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -4120,9 +4077,9 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr_error)
 TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr_error2)
 {
     rtError_t ret;
-    Model *model;
+    Model* model;
     rtModel_t modelHandle = nullptr;
-    Stream *stream;
+    Stream* stream;
     rtStream_t streamHandle = nullptr;
 
     ret = rtStreamCreate(&streamHandle, 0);
@@ -4134,7 +4091,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr_error2)
     model = rt_ut::UnwrapOrNull<Model>(modelHandle);
 
     TaskInfo cmoAddrTask = {};
-    TaskInfo *task = &cmoAddrTask;
+    TaskInfo* task = &cmoAddrTask;
     rtDavidSqe_t sqe = {};
     task->id = 0;
     InitByStream(&cmoAddrTask, stream);
@@ -4142,7 +4099,7 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_cmo_addr_error2)
     stream->SetLatestModlId(model->Id_());
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     uint8_t addr[64];
-    (void)CmoAddrTaskInit(&cmoAddrTask, (void *)addr, RT_CMO_INVALID);
+    (void)CmoAddrTaskInit(&cmoAddrTask, (void*)addr, RT_CMO_INVALID);
     PrintErrorInfo(&cmoAddrTask, 0);
     stream->DelModel(model);
     ret = rtStreamDestroy(streamHandle);
@@ -4167,10 +4124,10 @@ TEST_F(DavidTaskTest1, load_args_for_aicpu_task)
     AicpuTaskInit(&kernTask, 1, 1);
     kernTask.u.aicpuTaskInfo.aicpuArgsInfo = &argsInfo;
     stream_->isHasPcieBar_ = true;
-    stream_->taskResMang_->taskRes_[0].copyDev = (void *)1000;
+    stream_->taskResMang_->taskRes_[0].copyDev = (void*)1000;
 
     uint32_t args[128];
-    void *kerArgs = static_cast<void *>(args);
+    void* kerArgs = static_cast<void*>(args);
     MOCKER(memcpy_s).stubs().will(returnValue(0));
     error = LoadArgsInfo(&kernTask, stream_, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -4182,7 +4139,7 @@ TEST_F(DavidTaskTest, stream_launch_aicpu_kernel_preserves_name_address_preceden
 {
     TaskInfo taskInfo = {};
     g_aicpuTask = &taskInfo;
-    g_aicpuArgsAddr = reinterpret_cast<void *>(0x10000U);
+    g_aicpuArgsAddr = reinterpret_cast<void*>(0x10000U);
     StarsArgLoaderResult loadResult = {};
     loadResult.kerArgs = g_aicpuArgsAddr;
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
@@ -4200,14 +4157,14 @@ TEST_F(DavidTaskTest, stream_launch_aicpu_kernel_preserves_name_address_preceden
 
     PlainProgram program(RT_KERNEL_ATTR_TYPE_AICPU);
     Kernel kernel("RawAicpuFunction", 0U, &program, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
-    kernel.SetKernelLiteralNameDevAddr(reinterpret_cast<void *>(0x20000U),
-        reinterpret_cast<void *>(0x30000U), stream_->Device_()->Id_());
+    kernel.SetKernelLiteralNameDevAddr(
+        reinterpret_cast<void*>(0x20000U), reinterpret_cast<void*>(0x30000U), stream_->Device_()->Id_());
     argsInfo.soNameAddrOffset = 8U;
     argsInfo.kernelNameAddrOffset = 16U;
-    g_expectedAicpuSoNameAddr = reinterpret_cast<void *>(0x10008U);
-    g_expectedAicpuFuncNameAddr = reinterpret_cast<void *>(0x10010U);
-    const rtError_t error = StreamLaunchCpuKernelExWithArgs(1U, &argsInfo, nullptr, stream_, RT_KERNEL_DEFAULT,
-        KERNEL_TYPE_AICPU, &kernel);
+    g_expectedAicpuSoNameAddr = reinterpret_cast<void*>(0x10008U);
+    g_expectedAicpuFuncNameAddr = reinterpret_cast<void*>(0x10010U);
+    const rtError_t error =
+        StreamLaunchCpuKernelExWithArgs(1U, &argsInfo, nullptr, stream_, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, &kernel);
     EXPECT_EQ(error, RT_ERROR_NONE);
     g_aicpuTask = nullptr;
     g_aicpuArgsAddr = nullptr;
@@ -4219,8 +4176,8 @@ TEST_F(DavidTaskTest, uninit_aicpu_task_clears_exception_name_addresses)
 {
     TaskInfo taskInfo = {};
     taskInfo.type = TS_TASK_TYPE_KERNEL_AICPU;
-    taskInfo.u.aicpuTaskInfo.soName = reinterpret_cast<void *>(0x1000U);
-    taskInfo.u.aicpuTaskInfo.funcName = reinterpret_cast<void *>(0x2000U);
+    taskInfo.u.aicpuTaskInfo.soName = reinterpret_cast<void*>(0x1000U);
+    taskInfo.u.aicpuTaskInfo.funcName = reinterpret_cast<void*>(0x2000U);
 
     StarsV2DavinciTaskUnInit(&taskInfo);
 
@@ -4231,8 +4188,8 @@ TEST_F(DavidTaskTest, uninit_aicpu_task_clears_exception_name_addresses)
 TEST_F(DavidTaskTest1, notify_task_wait_timeout_error_proc)
 {
     rtSetDevice(1);
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.timeoutErrorInfo.waitType = RT_DAVID_SQE_TYPE_NOTIFY_WAIT;
 
@@ -4243,7 +4200,7 @@ TEST_F(DavidTaskTest1, notify_task_wait_timeout_error_proc)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -4256,20 +4213,20 @@ protected:
     virtual void SetUp()
     {
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         originType_ = Runtime::Instance()->GetChipType();
         Runtime::Instance()->SetDisableThread(true);
         rtInstance->SetChipType(CHIP_DAVID);
         GlobalContainer::SetRtChipType(CHIP_DAVID);
 
         int64_t hardwareVersion = CHIP_DAVID << 8;
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -4280,7 +4237,9 @@ protected:
 
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetCapabilityGroupInfo)
             .stubs()
-            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&capGroupInfos, sizeof(capability_group_info)), mockcpp::any())
+            .with(
+                mockcpp::any(), mockcpp::any(), mockcpp::any(),
+                outBoundP(&capGroupInfos, sizeof(capability_group_info)), mockcpp::any())
             .will(returnValue(RT_ERROR_NONE));
 
         (void)rtSetDevice(0);
@@ -4291,42 +4250,42 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
-        rtInstance->SetDisableThread(false);  // Recover.
+        rtInstance->SetDisableThread(false); // Recover.
         GlobalMockObject::verify();
     }
 
 public:
-    Stream *stm_ = nullptr;
-    Device *dev_ = nullptr;
+    Stream* stm_ = nullptr;
+    Device* dev_ = nullptr;
     static rtChipType_t originType_;
-    static Driver *driver_;
+    static Driver* driver_;
 };
 rtChipType_t DavidVnpuApiTest::originType_ = CHIP_MINI;
-Driver *DavidVnpuApiTest::driver_ = NULL;
+Driver* DavidVnpuApiTest::driver_ = NULL;
 
 class DavidVfApiTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         originType_ = Runtime::Instance()->GetChipType();
         Runtime::Instance()->SetDisableThread(true);
         rtInstance->SetChipType(CHIP_DAVID);
         GlobalContainer::SetRtChipType(CHIP_DAVID);
 
         int64_t hardwareVersion = CHIP_DAVID << 8;
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -4341,29 +4300,26 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
-        rtInstance->SetDisableThread(false);  // Recover.
+        rtInstance->SetDisableThread(false); // Recover.
     }
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 public:
-    Stream *stm_ = nullptr;
-    Device *dev_ = nullptr;
+    Stream* stm_ = nullptr;
+    Device* dev_ = nullptr;
     static rtChipType_t originType_;
-    static Driver *driver_;
+    static Driver* driver_;
 };
 
 rtChipType_t DavidVfApiTest::originType_ = CHIP_MINI;
-Driver *DavidVfApiTest::driver_ = NULL;
+Driver* DavidVfApiTest::driver_ = NULL;
 
 TEST_F(DavidVfApiTest, test_setgroup_for_david)
 {
@@ -4394,7 +4350,7 @@ TEST_F(DavidVfApiTest, test_setgroup_for_david)
     error = rtGetAiCpuCount(&aiCpuCnt);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     MOCKER_CPP_VIRTUAL(device, &Device::SetCurGroupInfo).stubs().will(returnValue(RT_ERROR_STREAM_NEW));
     error = rtSetGroup(1);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -4417,7 +4373,7 @@ TEST_F(DavidVfApiTest, test_rtGetAddrAndPrefCntWithHandle)
 
 TEST_F(DavidVfApiTest, test_rtKernelGetAddrAndPrefCnt)
 {
-    void *addr = NULL;
+    void* addr = NULL;
     uint32_t cnt = 0U;
     rtError_t error = rtKernelGetAddrAndPrefCnt(NULL, 355, NULL, 1, &addr, &cnt);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -4425,7 +4381,7 @@ TEST_F(DavidVfApiTest, test_rtKernelGetAddrAndPrefCnt)
 
 TEST_F(DavidVfApiTest, test_rtKernelGetAddrAndPrefCntV2)
 {
-    void *addr = NULL;
+    void* addr = NULL;
     uint32_t cnt = 0U;
     rtError_t error = rtKernelGetAddrAndPrefCntV2(NULL, 355, NULL, RT_DYNAMIC_SHAPE_KERNEL, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -4433,8 +4389,8 @@ TEST_F(DavidVfApiTest, test_rtKernelGetAddrAndPrefCntV2)
 
 TEST_F(DavidTaskTest2, fusion_kernel_task_dev_error_proc)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = ProcessDavidStarsFusionKernelErrorInfo(nullptr, 0, device, nullptr);
@@ -4444,14 +4400,14 @@ TEST_F(DavidTaskTest2, fusion_kernel_task_dev_error_proc)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(DavidTaskTest2, fusion_kernel_task_wait_timeout_error_proc)
 {
     rtSetDevice(1);
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.timeoutErrorInfo.waitType = RT_DAVID_SQE_TYPE_FUSION;
 
@@ -4462,15 +4418,15 @@ TEST_F(DavidTaskTest2, fusion_kernel_task_wait_timeout_error_proc)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(DavidTaskTest2, ccu_task_wait_timeout_error_proc)
 {
     rtSetDevice(1);
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
     errorInfo.u.timeoutErrorInfo.waitType = RT_DAVID_SQE_TYPE_CCU;
 
@@ -4481,7 +4437,7 @@ TEST_F(DavidTaskTest2, ccu_task_wait_timeout_error_proc)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -4525,22 +4481,22 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_stream_active)
 
     rtError_t ret = RT_ERROR_NONE;
     uint32_t addr = 0x111;
-    ((RawDevice *)(stream_->Device_()))->starsRegBaseAddr_ = reinterpret_cast<uint64_t>(&addr);
+    ((RawDevice*)(stream_->Device_()))->starsRegBaseAddr_ = reinterpret_cast<uint64_t>(&addr);
     ret = StreamActiveTaskInit(&streamActiveTask, stream_);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    TaskInfo *tsk = &streamActiveTask;
-    rtDavidSqe_t *command = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    TaskInfo* tsk = &streamActiveTask;
+    rtDavidSqe_t* command = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     RtDavidStarsFunctionCallSqe sqe = command->fuctionCallSqe;
     ToConstructDavidSqe(tsk, static_cast<void*>(command), sqeInfo);
     streamActiveTask.id = 0;
-    rtDavidSqe_t *sqeAddr = (rtDavidSqe_t *)(&sqe);
+    rtDavidSqe_t* sqeAddr = (rtDavidSqe_t*)(&sqe);
     uint16_t pos = streamActiveTask.id;
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(&sqe);
     stream_->SetSqBaseAddr(newSqAddr);
-    sqeAddr = reinterpret_cast<rtDavidSqe_t *>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
+    sqeAddr = reinterpret_cast<rtDavidSqe_t*>(stream_->GetSqBaseAddr() + (pos << SHIFT_SIX_SIZE));
     TaskSqeInfo sqeInfoAddr = {stream_->GetSqBaseAddr(), 0ULL};
     ToConstructDavidSqe(tsk, static_cast<void*>(sqeAddr), sqeInfoAddr);
     EXPECT_EQ(sqe.header.type, RT_DAVID_SQE_TYPE_COND);
@@ -4550,14 +4506,14 @@ TEST_F(DavidTaskTest1, construct_davidsqe_for_stream_active)
     command = nullptr;
 }
 
-static rtError_t MemcpyAsyncTaskInitV1Stub(TaskInfo *const taskInfo, void *memcpyAddrInfo, const uint64_t cpySize)
+static rtError_t MemcpyAsyncTaskInitV1Stub(TaskInfo* const taskInfo, void* memcpyAddrInfo, const uint64_t cpySize)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_MEMCPY;
-    taskInfo->typeName = const_cast<char_t *>("MEMCPY_ASYNC");
-    Stream *const stream = taskInfo->stream;
+    taskInfo->typeName = const_cast<char_t*>("MEMCPY_ASYNC");
+    Stream* const stream = taskInfo->stream;
     const int32_t devId = static_cast<int32_t>(stream->Device_()->Id_());
 
     memcpyAsyncTaskInfo->dmaAddr.offsetAddr.devid = static_cast<uint32_t>(devId);
@@ -4573,15 +4529,15 @@ TEST_F(DavidApiTest, test_memcpy_async_ptr_for_david)
     rtError_t error;
     rtStream_t stream;
     EXPECT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->SetSqMemAttr(false);
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)(malloc(sizeof(rtDavidSqe_t)));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)(malloc(sizeof(rtDavidSqe_t)));
     uint64_t oldSqAddr = streamObj->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     streamObj->SetSqBaseAddr(newSqAddr);
     MOCKER(MemcpyAsyncTaskInitV1).stubs().will(invoke(MemcpyAsyncTaskInitV1Stub));
 
-    void *addr = (void *)0x100;
+    void* addr = (void*)0x100;
     ApiImplDavid apiImpl;
     streamObj->Context_()->SetCtxMode(STOP_ON_FAILURE);
     streamObj->Context_()->SetFailureError(RT_ERROR_CONTEXT_ABORT_ON_FAILURE);
@@ -4601,7 +4557,7 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david0)
     rtEventStatus_t status;
     EXPECT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
 
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
 
     NpuDriver drv;
@@ -4621,13 +4577,13 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david0)
         .will(returnValue(DRV_ERROR_NONE));
     error = drv.GetSqHead(0U, 0U, 1U, head);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     taskRes->taskResATail_.Set(2);
     davidStream->JudgeHeadTailPos(&status, 3);
     taskRes->taskResATail_.Set(tail);
 
-    Device *dev = davidStream->Device_();
+    Device* dev = davidStream->Device_();
     davidStream->device_ = nullptr;
     davidStream->JudgeHeadTailPos(&status, 3);
     davidStream->device_ = dev;
@@ -4643,7 +4599,7 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david00)
     rtEventStatus_t status;
     EXPECT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
 
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
 
     NpuDriver drv;
@@ -4663,13 +4619,13 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david00)
         .will(returnValue(DRV_ERROR_NONE));
     error = drv.GetSqHead(0U, 0U, 1U, head);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     taskRes->taskResATail_.Set(2);
     davidStream->JudgeHeadTailPos(&status, 3);
     taskRes->taskResATail_.Set(tail);
 
-    Device *dev = davidStream->Device_();
+    Device* dev = davidStream->Device_();
     davidStream->device_ = nullptr;
     davidStream->JudgeHeadTailPos(&status, 3);
     davidStream->device_ = dev;
@@ -4688,13 +4644,13 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david1)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
 
     error = rtEventCreateWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     eventObj->SetRecord(true);
     eventObj->Context_()->SetCtxMode(CONTINUE_ON_FAILURE);
     error = rtEventQueryStatus(event, &status);
@@ -4721,11 +4677,11 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david2)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
     NpuDriver drv;
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetSqHead).stubs().will(returnValue((int32_t)RT_ERROR_NONE));
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     davidStream->taskPosTail_.Set(2);
     davidStream->JudgeHeadTailPos(&status, 1);
@@ -4742,17 +4698,17 @@ TEST_F(DavidApiTest, test_judge_head_tail_pos_for_david3)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
     NpuDriver drv;
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetSqHead).stubs().will(returnValue((int32_t)RT_ERROR_NONE));
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     davidStream->taskPosTail_.Set(2);
     davidStream->JudgeHeadTailPos(&status, 3);
     davidStream->taskPosTail_.Set(tail);
 
-    Device *dev = davidStream->Device_();
+    Device* dev = davidStream->Device_();
     davidStream->device_ = nullptr;
     davidStream->JudgeHeadTailPos(&status, 3);
     davidStream->device_ = dev;
@@ -4769,7 +4725,7 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david0)
     bool isWaitFlag = false;
     EXPECT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
 
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
 
     error = davidStream->GetLastTaskIdFromRtsq(taskId);
@@ -4792,13 +4748,13 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david0)
         .will(returnValue(DRV_ERROR_NONE));
     error = drv.GetSqHead(0U, 0U, 1U, head);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     taskRes->taskResATail_.Set(2);
     davidStream->QueryWaitTask(isWaitFlag, 3);
     taskRes->taskResATail_.Set(tail);
 
-    Device *dev = davidStream->Device_();
+    Device* dev = davidStream->Device_();
     davidStream->device_ = nullptr;
     davidStream->QueryWaitTask(isWaitFlag, 3);
     davidStream->device_ = dev;
@@ -4815,7 +4771,7 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david1)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
 
     struct halSqCqQueryInfo queryInfoIn = {};
@@ -4830,7 +4786,7 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david1)
         .stubs()
         .with(mockcpp::any(), outBoundP(&queryInfoIn, sizeof(queryInfoIn)))
         .will(returnValue(DRV_ERROR_NONE));
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     davidStream->taskPosTail_.Set(2);
     davidStream->QueryWaitTask(isWaitFlag, 3);
@@ -4842,7 +4798,7 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david1)
 
 TEST_F(DavidApiTest, TestRtsDeviceGetCapabilityTaskIdBitWidthOnDavid)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
 
     rtError_t error = rtsDeviceGetCapability(0, RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH, &value);
@@ -4858,11 +4814,11 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david2)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream *davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* davidStream = rt_ut::UnwrapOrNull<Stream>(stream);
     davidStream->SetSqMemAttr(false);
     NpuDriver drv;
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetSqHead).stubs().will(returnValue((int32_t)RT_ERROR_NONE));
-    TaskResManageDavid *taskRes = reinterpret_cast<TaskResManageDavid *>(davidStream->taskResMang_);
+    TaskResManageDavid* taskRes = reinterpret_cast<TaskResManageDavid*>(davidStream->taskResMang_);
     uint16_t tail = taskRes->taskResATail_.Value();
     davidStream->taskPosTail_.Set(2);
     davidStream->QueryWaitTask(isWaitFlag, 3);
@@ -4874,8 +4830,8 @@ TEST_F(DavidApiTest, test_query_wait_task_for_david2)
 
 TEST_F(DavidTaskTest, test_sdma_mte_error)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
-    DevRingBufferCtlInfo *ctlInfo = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     memset_s(ctlInfo, DEVICE_ERROR_EXT_RINGBUFFER_SIZE, 0, DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     if (ctlInfo != nullptr) {
         ctlInfo->tail = 1;
@@ -4886,8 +4842,8 @@ TEST_F(DavidTaskTest, test_sdma_mte_error)
         uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
         uintptr_t infoAddr =
             reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
-        RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-        StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+        RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+        StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
         info->errorType = SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.comm.type = SDMA_ERROR;
         errorInfo->u.sdmaErrorInfo.comm.coreNum = 1;
@@ -4902,12 +4858,12 @@ TEST_F(DavidTaskTest, test_sdma_mte_error)
 }
 
 uint64_t g_simtStackPhySize = 0;
-rtError_t NpuDriverDevMemAllocStub(NpuDriver *a, void **dptr, uint64_t size)
+rtError_t NpuDriverDevMemAllocStub(NpuDriver* a, void** dptr, uint64_t size)
 {
     if (dptr == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
-    *dptr = (void *)malloc(size);
+    *dptr = (void*)malloc(size);
     if (*dptr == nullptr) {
         return RT_ERROR_INVALID_VALUE;
     }
@@ -4915,7 +4871,7 @@ rtError_t NpuDriverDevMemAllocStub(NpuDriver *a, void **dptr, uint64_t size)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriverDevMemFreeStub(NpuDriver *a, void *dptr)
+rtError_t NpuDriverDevMemFreeStub(NpuDriver* a, void* dptr)
 {
     if (dptr == nullptr) {
         return RT_ERROR_INVALID_VALUE;
@@ -4930,7 +4886,7 @@ TEST_F(DavidTaskTest, Subscribe_David)
     TaskInfo taskInfo = {};
     rtExceptionArgsInfo_t argsInfo = {};
     taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
-    AicTaskInfo *aicTaskInfo = &(taskInfo.u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo.u.aicTaskInfo);
     uint32_t infoAddr = 0U;
     aicTaskInfo->comm.args = &infoAddr;
     aicTaskInfo->inputArgsSize.infoAddr = &infoAddr;
@@ -4952,8 +4908,8 @@ TEST_F(DavidTaskTest, CheckTaskCanSend_device_down)
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
-    Engine *engine = ((RawDevice *)(streamObj->Device_()))->Engine_();
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Engine* engine = ((RawDevice*)(streamObj->Device_()))->Engine_();
     engine->GetDevice()->SetDevStatus(RT_ERROR_LOST_HEARTBEAT);
     rtError_t error = rtCmoTaskLaunch(&cmoTask, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_LOST_HEARTBEAT);
@@ -4971,7 +4927,7 @@ TEST_F(DavidTaskTest, CheckTaskCanSend_abortStatus_abnormal)
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
     rtError_t error = rtCmoTaskLaunch(&cmoTask, stream, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_DEVICE_TASK_ABORT);
@@ -4980,7 +4936,7 @@ TEST_F(DavidTaskTest, CheckTaskCanSend_abortStatus_abnormal)
 
 TEST_F(DavidTaskTest, get_connect_ub_flag_success)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     bool connectUbFlag = false;
     rtError_t err = GetConnectUbFlagFromDrv(0, connectUbFlag);
     EXPECT_EQ(err, RT_ERROR_NONE);
@@ -4988,7 +4944,7 @@ TEST_F(DavidTaskTest, get_connect_ub_flag_success)
 
 TEST_F(DavidTaskErrTest, get_connect_ub_flag_fail)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     bool connectUbFlag = false;
     rtError_t err = GetConnectUbFlagFromDrv(0, connectUbFlag);
     EXPECT_EQ(err, RT_ERROR_DRV_INPUT);
@@ -4996,14 +4952,14 @@ TEST_F(DavidTaskErrTest, get_connect_ub_flag_fail)
 
 TEST_F(DavidTaskErrTest, get_connect_ub_flag_fail2)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtError_t err = rtInstance->InitSocVersion();
     EXPECT_EQ(err, RT_ERROR_DRV_INPUT);
 }
 
 TEST_F(DavidTaskTest, get_connect_ub_flag_fail4)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     MOCKER_CPP(&Runtime::InitSocVersionAndChipType).stubs().will(returnValue(RT_ERROR_NONE));
     rtError_t err = rtInstance->InitSocVersion();
     EXPECT_EQ(err, RT_ERROR_NONE);
@@ -5015,7 +4971,7 @@ TEST_F(DavidTaskTest, test_enter_failure0)
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->Context_()->SetCtxMode(STOP_ON_FAILURE);
     streamObj->EnterFailureAbort();
     EXPECT_EQ(streamObj->GetFailureMode(), 2);
@@ -5028,7 +4984,7 @@ TEST_F(DavidTaskTest, test_enter_failure1)
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     streamObj->Context_()->SetCtxMode(CONTINUE_ON_FAILURE);
     streamObj->SetContext(nullptr);
     streamObj->EnterFailureAbort();
@@ -5038,12 +4994,12 @@ TEST_F(DavidTaskTest, test_enter_failure1)
 
 TEST_F(DavidTaskTest, get_tseg_info_failed)
 {
-    Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER(halGetTsegInfoByVa).stubs().will(returnValue(1));
-    rtError_t err = ((NpuDriver *)(driver_))->GetTsegInfoByVa(0, 0, 0, 0, nullptr);
+    rtError_t err = ((NpuDriver*)(driver_))->GetTsegInfoByVa(0, 0, 0, 0, nullptr);
     EXPECT_NE(err, RT_ERROR_NONE);
     MOCKER(halPutTsegInfo).stubs().will(returnValue(1));
-    err = ((NpuDriver *)(driver_))->PutTsegInfo(0, nullptr);
+    err = ((NpuDriver*)(driver_))->PutTsegInfo(0, nullptr);
     EXPECT_NE(err, RT_ERROR_NONE);
 }
 
@@ -5197,25 +5153,28 @@ TEST_F(DavidTaskTest, GetFastRingBufferErrorMap_check_mapping)
 {
     std::unordered_map<uint32_t, std::unordered_map<uint32_t, uint32_t>> errorMap;
     GetFastRingBufferErrorMap(errorMap);
-    
+
     EXPECT_TRUE(errorMap.find(RT_DAVID_SQE_TYPE_AIC) != errorMap.end());
     EXPECT_TRUE(errorMap[RT_DAVID_SQE_TYPE_AIC].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_AIC].end());
     EXPECT_EQ(errorMap[RT_DAVID_SQE_TYPE_AIC][TS_ERROR_TASK_EXCEPTION], TS_ERROR_AICORE_EXCEPTION);
-    
+
     EXPECT_TRUE(errorMap.find(RT_DAVID_SQE_TYPE_AIV) != errorMap.end());
     EXPECT_TRUE(errorMap[RT_DAVID_SQE_TYPE_AIV].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_AIV].end());
     EXPECT_EQ(errorMap[RT_DAVID_SQE_TYPE_AIV][TS_ERROR_TASK_EXCEPTION], TS_ERROR_AICORE_EXCEPTION);
-    
+
     EXPECT_TRUE(errorMap.find(RT_DAVID_SQE_TYPE_AICPU_H) != errorMap.end());
-    EXPECT_TRUE(errorMap[RT_DAVID_SQE_TYPE_AICPU_H].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_AICPU_H].end());
+    EXPECT_TRUE(
+        errorMap[RT_DAVID_SQE_TYPE_AICPU_H].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_AICPU_H].end());
     EXPECT_EQ(errorMap[RT_DAVID_SQE_TYPE_AICPU_H][TS_ERROR_TASK_EXCEPTION], TS_ERROR_AICPU_EXCEPTION);
-    
+
     EXPECT_TRUE(errorMap.find(RT_DAVID_SQE_TYPE_AICPU_D) != errorMap.end());
-    EXPECT_TRUE(errorMap[RT_DAVID_SQE_TYPE_AICPU_D].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_AICPU_D].end());
+    EXPECT_TRUE(
+        errorMap[RT_DAVID_SQE_TYPE_AICPU_D].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_AICPU_D].end());
     EXPECT_EQ(errorMap[RT_DAVID_SQE_TYPE_AICPU_D][TS_ERROR_TASK_EXCEPTION], TS_ERROR_AICPU_EXCEPTION);
-    
+
     EXPECT_TRUE(errorMap.find(RT_DAVID_SQE_TYPE_SDMA) != errorMap.end());
-    EXPECT_TRUE(errorMap[RT_DAVID_SQE_TYPE_SDMA].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_SDMA].end());
+    EXPECT_TRUE(
+        errorMap[RT_DAVID_SQE_TYPE_SDMA].find(TS_ERROR_TASK_EXCEPTION) != errorMap[RT_DAVID_SQE_TYPE_SDMA].end());
     EXPECT_EQ(errorMap[RT_DAVID_SQE_TYPE_SDMA][TS_ERROR_TASK_EXCEPTION], TS_ERROR_SDMA_ERROR);
 }
 
@@ -5223,9 +5182,9 @@ TEST_F(DavidTaskTest, InitFastRingBuffer_basic)
 {
     std::unique_ptr<char[]> buffer(new (std::nothrow) char[100]);
     memset_s(buffer.get(), 100, 0, 100);
-    
+
     InitFastRingBuffer(buffer.get());
-    
+
     DevRingBufferCtlInfo* ctrlInfo = RtPtrToPtr<DevRingBufferCtlInfo*>(buffer.get());
     EXPECT_EQ(ctrlInfo->magic, 0U);
     EXPECT_EQ(ctrlInfo->head, 0U);
@@ -5255,13 +5214,13 @@ TEST_F(DavidTaskTest, ProcessReportFastRingBuffer_with_valid_task)
     DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     std::unique_ptr<char[]> buffer(new (std::nothrow) char[4096]);
     memset_s(buffer.get(), 4096, 0, 4096);
-    
+
     DevRingBufferCtlInfo* ctrlInfo = RtPtrToPtr<DevRingBufferCtlInfo*>(buffer.get());
     ctrlInfo->magic = RINGBUFFER_MAGIC;
     ctrlInfo->head = 0U;
     ctrlInfo->tail = 1U;
     ctrlInfo->ringBufferLen = 2U;
-    
+
     StarsOpExceptionInfo* starsReport = RtValueToPtr<StarsOpExceptionInfo*>(
         RtPtrToValue(buffer.get()) + sizeof(DevRingBufferCtlInfo) + sizeof(RingBufferElementInfo));
     starsReport->sqeType = RT_DAVID_SQE_TYPE_AIC;
@@ -5269,20 +5228,20 @@ TEST_F(DavidTaskTest, ProcessReportFastRingBuffer_with_valid_task)
     starsReport->sqHead = 0U;
     starsReport->taskId = 0U;
     starsReport->errorCode = TS_ERROR_TASK_EXCEPTION;
-    
+
     TaskInfo taskInfo;
     memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
     taskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
     taskInfo.tid = 1U;
     InitByStream(&taskInfo, stream_);
-    
+
     errorProc->fastRingBufferAddr_ = buffer.get();
     MOCKER(GetTaskInfo).stubs().will(returnValue(&taskInfo));
     MOCKER(TaskFailCallBack).stubs().will(ignoreReturnValue());
     errorProc->ProcessReportFastRingBuffer();
-    
+
     EXPECT_EQ(taskInfo.stream->GetErrCode(), TS_ERROR_AICORE_EXCEPTION);
-    
+
     errorProc->fastRingBufferAddr_ = nullptr;
     delete errorProc;
     GlobalMockObject::verify();
@@ -5572,29 +5531,27 @@ TEST_F(DavidTaskTest, LoadArgsInfoForAicpuKernelTask_LoadFailed)
     rtError_t error = RT_ERROR_NONE;
     TaskInfo kernTask = {};
     InitByStream(&kernTask, stream_);
-    
+
     uint64_t arg = 0x123456789;
     rtArgsEx_t argsInfo = {};
     argsInfo.isNoNeedH2DCopy = 1U;
     argsInfo.args = &arg;
-    argsInfo.argsSize = 2048U;  // 超过 RTS_LITE_PCIE_BAR_COPY_SIZE_NEW (1024)，触发 Load 失败
-    
+    argsInfo.argsSize = 2048U; // 超过 RTS_LITE_PCIE_BAR_COPY_SIZE_NEW (1024)，触发 Load 失败
+
     AicpuTaskInit(&kernTask, 1, 1);
     kernTask.u.aicpuTaskInfo.argsInfo = &argsInfo;
     stream_->isHasPcieBar_ = true;
-    stream_->taskResMang_->taskRes_[0].copyDev = (void *)1000;
-    
+    stream_->taskResMang_->taskRes_[0].copyDev = (void*)1000;
+
     error = LoadArgsInfo(&kernTask, stream_, 0);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-    
+
     TaskUnInitProc(&kernTask);
 }
 
 TEST_F(DavidTaskTest, GetPageFaultCount_stub_no_support)
 {
-    MOCKER(NpuDriver::GetPageFaultCount)
-        .stubs()
-        .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+    MOCKER(NpuDriver::GetPageFaultCount).stubs().will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
     Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->ReportPageFaultProc();
     EXPECT_EQ(rtInstance->pageFaultSupportFlag_, false);
@@ -5642,8 +5599,8 @@ TEST_F(DavidTaskTest, UpdateUbdmaSqeWithJettyInfo_TaskFactoryNull)
     StreamJettyContext context;
     context.taskWqeCounts.push_back({&taskInfo, 1});
     JettyInfo jettyInfo = {};
-    TaskFactory *origFactory = dev_->GetTaskFactory();
-    RawDevice *rawDev = dynamic_cast<RawDevice *>(dev_);
+    TaskFactory* origFactory = dev_->GetTaskFactory();
+    RawDevice* rawDev = dynamic_cast<RawDevice*>(dev_);
     if (rawDev != nullptr) {
         rawDev->taskFactory_ = nullptr;
     }

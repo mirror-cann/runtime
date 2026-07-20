@@ -33,13 +33,13 @@ typedef enum {
 } TlvDataType;
 
 typedef struct {
-    char *name;
+    char* name;
     TlvDataType type;
     size_t offset_by_father_node;
-    void *sub_field_def;
+    void* sub_field_def;
 } TlvFieldDef;
 
-typedef int64_t(*PfnRecordString)(void *dest_addr, char *data, size_t len);
+typedef int64_t (*PfnRecordString)(void* dest_addr, char* data, size_t len);
 typedef struct {
     uint64_t tlv_string_len : 1;
     TlvDataType string_len_type;
@@ -48,23 +48,23 @@ typedef struct {
 
 typedef struct {
     size_t field_num;
-    TlvFieldDef *field_defs;
+    TlvFieldDef* field_defs;
     size_t dest_struct_size;
 } TlvStructDef;
 
-typedef void*(*PfnGetItem)(void *array_addr, int64_t index);
+typedef void* (*PfnGetItem)(void* array_addr, int64_t index);
 typedef struct {
-    TlvStructDef *item_def;
-    uint64_t   tlv_item_num_flag : 1;
+    TlvStructDef* item_def;
+    uint64_t tlv_item_num_flag : 1;
     TlvDataType item_num_type;
     PfnGetItem pfnGetItem;
 } TlvArrayDef;
 
-typedef struct  {
-    char *name;
+typedef struct {
+    char* name;
     size_t tlv_t;
     size_t field_num;
-    TlvFieldDef *field_defs;
+    TlvFieldDef* field_defs;
 } TlvDef;
 
 typedef struct {
@@ -74,17 +74,17 @@ typedef struct {
     uint64_t tlv_len_flag : 1;
     TlvDataType tlv_num_or_len_type;
     size_t tlv_list_num;
-    TlvDef *tlvs;
+    TlvDef* tlvs;
 } TlvSubTlvsDef;
 
-typedef struct  {
-    uint8_t *tlv_area;
+typedef struct {
+    uint8_t* tlv_area;
     size_t tlv_len;
-    uint8_t *data;
+    uint8_t* data;
     size_t size;
 } ParseDataDef;
 
-int64_t ParseTlvStruct(TlvStructDef *def, uint8_t *tlv_area, size_t tlv_len, uint8_t *data);
+int64_t ParseTlvStruct(TlvStructDef* def, uint8_t* tlv_area, size_t tlv_len, uint8_t* data);
 #ifdef __cplusplus
 }
 #endif

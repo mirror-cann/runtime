@@ -17,26 +17,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-
-class ChipDriverTest : public testing::Test
-{
+class ChipDriverTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"Driver test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "Driver test start" << std::endl; }
 
-    }
+    static void TearDownTestCase() { std::cout << "Driver test start end" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"Driver test start end"<<std::endl;
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -49,12 +36,12 @@ TEST_F(ChipDriverTest, managed_mem_alloc)
 {
     rtError_t error;
     NpuDriver drv;
-    drv.runMode_ =  RT_RUN_MODE_OFFLINE;
+    drv.runMode_ = RT_RUN_MODE_OFFLINE;
     drv.chipType_ = CHIP_CLOUD;
     MOCKER(halMemAlloc).stubs().will(returnValue(DRV_ERROR_NONE));
     MOCKER(drvMbindHbm).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    void *dptr = nullptr;
+    void* dptr = nullptr;
 
     error = drv.ManagedMemAlloc(&dptr, 128, Driver::MANAGED_MEM_RW, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);

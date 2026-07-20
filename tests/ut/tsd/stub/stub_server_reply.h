@@ -17,7 +17,7 @@
 #include "driver/ascend_hal.h"
 
 namespace tsd {
-using ServerReplyMsg = void (*)(struct drvHdcMsg *msg, HdcBufferInfo *buf, const HDCMessage &sendMsg);
+using ServerReplyMsg = void (*)(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendMsg);
 
 class StubServerReply {
 public:
@@ -27,11 +27,11 @@ public:
 
     void ClearAllCallBack();
 
-    void SetCurMsgType(const struct drvHdcMsg *msg);
+    void SetCurMsgType(const struct drvHdcMsg* msg);
 
     void ResetServerReply();
 
-    bool ReplyToHost(struct drvHdcMsg *msg);
+    bool ReplyToHost(struct drvHdcMsg* msg);
 
 private:
     StubServerReply();
@@ -43,7 +43,7 @@ private:
     StubServerReply(StubServerReply&&) = delete;
 
     StubServerReply& operator=(const StubServerReply&) = delete;
-    
+
     StubServerReply& operator=(StubServerReply&) = delete;
 
     StubServerReply& operator=(StubServerReply&&) = delete;
@@ -56,6 +56,6 @@ private:
 
     HDCMessage sendStoreMsg_;
 };
-}
+} // namespace tsd
 
 #endif

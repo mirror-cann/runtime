@@ -66,7 +66,7 @@ TEST_F(SomaMemMngTsKernelTest, TsKernelSomaMemMng_freesuccess)
 
     MOCKER(halMemPoolFree)
         .stubs()
-        .with( mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(DRV_ERROR_NONE));
 
     mng->deviceId = 0;
@@ -87,9 +87,9 @@ TEST_F(SomaMemMngTsKernelTest, TsKernelSomaMemMng_freefailed)
 {
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    
+
     auto mng = std::make_unique<SomaMemMng>();
-    
+
     MOCKER(halMemPoolFree)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -101,10 +101,10 @@ TEST_F(SomaMemMngTsKernelTest, TsKernelSomaMemMng_freefailed)
     mng->mempoolId = 123;
     mng->va = 0x100000000ULL;
     mng->size = 4096;
-    
+
     cceKernel.paramBase = (uint64_t)mng.get();
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    
+
     int ret = kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }

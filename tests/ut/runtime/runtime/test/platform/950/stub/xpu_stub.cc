@@ -11,13 +11,13 @@
 
 using namespace cce::runtime;
 
-drvError_t drvGetPlatformInfo_online(uint32_t *info)
+drvError_t drvGetPlatformInfo_online(uint32_t* info)
 {
     *info = RT_RUN_MODE_ONLINE;
     return DRV_ERROR_NONE;
 }
 
-rtError_t ParseXpuConfigInfo_mock(XpuDevice *This)
+rtError_t ParseXpuConfigInfo_mock(XpuDevice* This)
 {
     This->configInfo_.version = 1.0;
     This->configInfo_.maxStreamNum = 64;
@@ -27,7 +27,7 @@ rtError_t ParseXpuConfigInfo_mock(XpuDevice *This)
     return RT_ERROR_NONE;
 }
 
-drvError_t drvGetPlatformInfo_offline(uint32_t *info)
+drvError_t drvGetPlatformInfo_offline(uint32_t* info)
 {
     *info = RT_RUN_MODE_OFFLINE;
     return DRV_ERROR_NONE;

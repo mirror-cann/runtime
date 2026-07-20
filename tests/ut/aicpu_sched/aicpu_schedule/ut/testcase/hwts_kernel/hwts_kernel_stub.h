@@ -24,31 +24,31 @@
 namespace AicpuSchedule {
 class EventProcessKernelTest : public testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 int halGrpQueryWithTwoGroup(
-    GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen);
-int halGrpQueryWithError(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen);
+    GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen);
+int halGrpQueryWithError(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen);
 
-int32_t CreateOrFindCustPidStub(const uint32_t deviceId, const uint32_t loadLibNum, const char *const loadLibName[],
-    const uint32_t hostPid, const uint32_t vfId, const char *groupNameList, const uint32_t groupNameNum,
-    int32_t *custProcPid, bool *firstStart);
-int32_t CreateOrFindCustPidStubExist(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char *const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart);
-int32_t CreateOrFindCustPidFailedStub(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char *const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart);
-int32_t CreateOrFindCustPidFailedStub2(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char *const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart);
-}  // namespace AicpuSchedule
+int32_t CreateOrFindCustPidStub(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid,
+    bool* firstStart);
+int32_t CreateOrFindCustPidStubExist(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid,
+    bool* firstStart);
+int32_t CreateOrFindCustPidFailedStub(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid,
+    bool* firstStart);
+int32_t CreateOrFindCustPidFailedStub2(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid,
+    bool* firstStart);
+} // namespace AicpuSchedule
 
-#endif  // EVENT_PROCESS_KERNEL_STUB_H
+#endif // EVENT_PROCESS_KERNEL_STUB_H

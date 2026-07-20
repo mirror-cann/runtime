@@ -79,17 +79,17 @@ static constexpr uint32_t PM_ERR_IAMDATAENQUE_FAIL = 0xF1020BU;
 // sstoowner F10300-F10400
 // =============================================================
 static constexpr uint32_t PM_ERR_SET_STATE_BUSY = 0xF10300U;
-static constexpr uint32_t PM_ERR_SET_STATE_RESULT_FAIL = 0xF10301U; // merge the results of all groupowners
+static constexpr uint32_t PM_ERR_SET_STATE_RESULT_FAIL = 0xF10301U;     // merge the results of all groupowners
 static constexpr uint32_t PM_ERR_CHANGE_APP_BUSY = 0xF10302U;
-static constexpr uint32_t PM_ERR_CHANGE_APP_RESULT_FAIL = 0xF10303U; // merge the results of all apps
-static constexpr uint32_t PM_ERR_STOP_ALLAPP_RESULT_FAIL = 0xF10304U; // merge the results of all apps
+static constexpr uint32_t PM_ERR_CHANGE_APP_RESULT_FAIL = 0xF10303U;    // merge the results of all apps
+static constexpr uint32_t PM_ERR_STOP_ALLAPP_RESULT_FAIL = 0xF10304U;   // merge the results of all apps
 static constexpr uint32_t PM_ERR_QUERY_APPLIST_RESULT_FAIL = 0xF10305U; // merge the results of all apps
-static constexpr uint32_t PM_ERR_DUMP_RESULT_FAIL = 0xF10306U; // merge the results of all apps
-static constexpr uint32_t PM_ERR_CFG_RELOAD_RESULT_FAIL = 0xF10307U; // merge the results of all apps
+static constexpr uint32_t PM_ERR_DUMP_RESULT_FAIL = 0xF10306U;          // merge the results of all apps
+static constexpr uint32_t PM_ERR_CFG_RELOAD_RESULT_FAIL = 0xF10307U;    // merge the results of all apps
 static constexpr uint32_t PM_ERR_IAMREG_QFS_FAIL = 0xF10308U;
 static constexpr uint32_t PM_ERR_CTRL_CMD_INVALID = 0xF10309U;
 static constexpr uint32_t PM_ERR_IAMREG_VFS_FAIL = 0xF1030AU;
 static constexpr uint32_t PM_ERR_START_DELAY_CORE_AFFINITY_BUSY = 0xF1030BU;
 static constexpr uint32_t PM_ERR_DELAY_CORE_AFFINITY_RESULT_FAIL = 0xF1030CU;
-}
+} // namespace ProcMgr
 #endif

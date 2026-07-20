@@ -21,20 +21,14 @@ using namespace testing;
 using namespace cce::runtime;
 class FftsManualThreadTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-        
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         (void)rtSetDevice(0);
-        Runtime *rtInstance = (Runtime *) Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtError_t error = rtStreamCreate(&stream_, 0);
         EXPECT_EQ(error, ACL_RT_SUCCESS);
         std::cout << "ffts manual test begin." << std::endl;
@@ -43,7 +37,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *) Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtError_t error = rtStreamDestroy(stream_);
         EXPECT_EQ(error, ACL_RT_SUCCESS);
         GlobalMockObject::verify();
@@ -53,8 +47,8 @@ protected:
         rtDeviceReset(0);
     }
 
-    rtError_t AddManualThreadSubTask(rtFftsTaskInfo_t &fftsTask, rtFftsSubTaskType_t subTaskType,
-                                     uint32_t srcCacheNum, uint32_t dstCacheNum)
+    rtError_t AddManualThreadSubTask(
+        rtFftsTaskInfo_t& fftsTask, rtFftsSubTaskType_t subTaskType, uint32_t srcCacheNum, uint32_t dstCacheNum)
     {
         rtError_t error = ACL_RT_SUCCESS;
 
@@ -84,8 +78,7 @@ protected:
     }
 
 private:
-
-    rtError_t AddManualThreadCache(rtFftsTaskInfo_t &fftsTask, uint8_t &cacheId, bool isSrc)
+    rtError_t AddManualThreadCache(rtFftsTaskInfo_t& fftsTask, uint8_t& cacheId, bool isSrc)
     {
         uint32_t cacheIdx = fftsTask.tickCacheNum;
 
@@ -93,8 +86,8 @@ private:
             std::cout << "cacheIdx is over max ticket cache num. cacheIdx=" << cacheIdx << std::endl;
             return ACL_ERROR_RT_PARAM_INVALID;
         }
-        rtTicketCache_t &cache = fftsTask.ticketCache[cacheIdx];
-        rtManualThreadCacheInfo_t &manualCache = cache.custom.manualThreadCache;
+        rtTicketCache_t& cache = fftsTask.ticketCache[cacheIdx];
+        rtManualThreadCacheInfo_t& manualCache = cache.custom.manualThreadCache;
         if (isSrc) {
             cache.cacheOption = RT_CACHE_OP_INVALIDATE;
         } else {
@@ -104,7 +97,7 @@ private:
 
         size_t dmuStartPos = dmuList_.size();
         manualCache.dmuNum = threadNum_;
-        for (int i = 0 ; i < threadNum_; ++i) {
+        for (int i = 0; i < threadNum_; ++i) {
             rtManualThreadDmuInfo_t dmuInfo{0};
             dmuInfo.dataAddr = 0x10 + i;
             dmuList_.emplace_back(dmuInfo);
@@ -118,7 +111,7 @@ private:
         return ACL_RT_SUCCESS;
     }
 
-    rtError_t InitManualThreadSrcSlot(rtFftsTaskInfo_t &fftsTask, rtFftsSubTaskInfo_t &subTask, uint32_t srcCacheNum)
+    rtError_t InitManualThreadSrcSlot(rtFftsTaskInfo_t& fftsTask, rtFftsSubTaskInfo_t& subTask, uint32_t srcCacheNum)
     {
         rtError_t error = ACL_RT_SUCCESS;
         for (uint8_t srcIdx = 0; srcIdx < srcCacheNum; ++srcIdx) {
@@ -134,7 +127,7 @@ private:
         return error;
     }
 
-    rtError_t InitManualThreadDstSlot(rtFftsTaskInfo_t &fftsTask, rtFftsSubTaskInfo_t &subTask, uint32_t dstCacheNum)
+    rtError_t InitManualThreadDstSlot(rtFftsTaskInfo_t& fftsTask, rtFftsSubTaskInfo_t& subTask, uint32_t dstCacheNum)
     {
         rtError_t error = ACL_RT_SUCCESS;
         for (uint8_t dstIdx = 0; dstIdx < dstCacheNum; ++dstIdx) {
@@ -146,7 +139,7 @@ private:
         return error;
     }
 
-    rtError_t AddManualThreadAicSubTask(rtFftsTaskInfo_t &fftsTask, uint32_t srcCacheNum, uint32_t dstCacheNum)
+    rtError_t AddManualThreadAicSubTask(rtFftsTaskInfo_t& fftsTask, uint32_t srcCacheNum, uint32_t dstCacheNum)
     {
         uint32_t taskIdx = fftsTask.subTaskNum;
         if (taskIdx >= RT_FFTS_MAX_SUB_TASK_NUM) {
@@ -154,8 +147,8 @@ private:
             return ACL_ERROR_RT_PARAM_INVALID;
         }
 
-        rtFftsSubTaskInfo_t &subTask = fftsTask.subTask[taskIdx];
-        rtManualThreadAicAivInfo_t &manualThreadAicAiv = subTask.custom.manualThreadAicAiv;
+        rtFftsSubTaskInfo_t& subTask = fftsTask.subTask[taskIdx];
+        rtManualThreadAicAivInfo_t& manualThreadAicAiv = subTask.custom.manualThreadAicAiv;
         subTask.subTaskType = RT_FFTS_SUB_TASK_TYPE_AIC;
         subTask.threadDim = threadNum_;
         rtError_t error = InitManualThreadSrcSlot(fftsTask, subTask, srcCacheNum);
@@ -178,7 +171,7 @@ private:
         onceDmuInfo.dataAddr = 0x11;
         dmuList_.emplace_back(onceDmuInfo);
 
-        for (int i = 0 ; i < threadNum_; ++i) {
+        for (int i = 0; i < threadNum_; ++i) {
             rtManualThreadDmuInfo_t dmuInfo{0};
             dmuInfo.dataAddr = 0x12 + i;
             dmuList_.emplace_back(dmuInfo);
@@ -196,7 +189,7 @@ private:
         return ACL_RT_SUCCESS;
     }
 
-    rtError_t AddManualThreadNopTask(rtFftsTaskInfo_t &fftsTask, uint32_t srcCacheNum, uint32_t dstCacheNum)
+    rtError_t AddManualThreadNopTask(rtFftsTaskInfo_t& fftsTask, uint32_t srcCacheNum, uint32_t dstCacheNum)
     {
         uint32_t taskIdx = fftsTask.subTaskNum;
         if (taskIdx >= RT_FFTS_MAX_SUB_TASK_NUM) {
@@ -204,7 +197,7 @@ private:
             return ACL_ERROR_RT_PARAM_INVALID;
         }
 
-        rtFftsSubTaskInfo_t &subTask = fftsTask.subTask[taskIdx];
+        rtFftsSubTaskInfo_t& subTask = fftsTask.subTask[taskIdx];
         subTask.subTaskType = RT_FFTS_SUB_TASK_TYPE_NOP;
         subTask.threadDim = threadNum_;
         InitManualThreadSrcSlot(fftsTask, subTask, srcCacheNum);

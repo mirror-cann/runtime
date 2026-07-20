@@ -54,15 +54,15 @@ public:
         auto& bindRelation = bqs::BindRelation::GetInstance();
         auto& dstToSrcRelation = bindRelation.GetDstToSrcRelation();
         for (auto& relation : dstToSrcRelation) {
-            const auto &dstId = relation.first;
-            for (auto srcId : relation.second){
+            const auto& dstId = relation.first;
+            for (auto srcId : relation.second) {
                 allRelation.emplace_back(std::make_tuple(srcId, dstId));
             }
         }
 
         for (auto& relation : allRelation) {
-            auto &srcId = std::get<0>(relation);
-            auto &dstId = std::get<1>(relation);
+            auto& srcId = std::get<0>(relation);
+            auto& dstId = std::get<1>(relation);
             bqs::BqsStatus ret = bindRelation.UnBind(srcId, dstId);
             EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
         }
@@ -81,25 +81,22 @@ void NewQueueId(const uint32_t queueId)
     std::cout << "g_queueId:" << *g_queueId << std::endl;
 }
 
-void DeleteQueueId()
-{
-    delete g_queueId;
-}
+void DeleteQueueId() { delete g_queueId; }
 
-int MbufAllocFake(unsigned int size, Mbuf **mbuf)
+int MbufAllocFake(unsigned int size, Mbuf** mbuf)
 {
     *(char**)mbuf = allocFakeMBuf;
     return DRV_ERROR_NONE;
 }
 
-int32_t halMbufGetBuffAddrFake(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFake(Mbuf* mbuf, void** buf)
 {
     std::cout << "queue_schedule_stub halMbufGetBuffAddr stub begin" << std::endl;
-    *(int32_t **)buf = (int32_t *)mbuf;
+    *(int32_t**)buf = (int32_t*)mbuf;
     std::cout << "queue_schedule_stub halMbufGetBuffAddr stub end" << std::endl;
     return DRV_ERROR_NONE;
 }
-}  // namespace
+} // namespace
 
 TEST_F(BQS_QUEUE_MANAGER_STest, InitSuccess1)
 {
@@ -199,7 +196,10 @@ TEST_F(BQS_QUEUE_MANAGER_STest, EnqueueRelationEventOnNotify)
 {
     instance.stopped_ = false;
     instance.initialized_ = false;
-    auto th = std::thread {[&] {sleep(1); instance.NotifyInitSuccess(0); }};
+    auto th = std::thread{[&] {
+        sleep(1);
+        instance.NotifyInitSuccess(0);
+    }};
     bqs::BqsStatus ret = instance.EnqueueRelationEvent();
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     if (th.joinable()) {
@@ -244,7 +244,7 @@ TEST_F(BQS_QUEUE_MANAGER_STest, MakeUpMbuf_Fail)
 {
     MOCKER(halMbufAlloc).stubs().will(returnValue(1)).then(returnValue(0));
     MOCKER(halMbufSetDataLen).stubs().will(returnValue(1));
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     // fail for alloc
     instance.MakeUpMbuf(&mbuf);
     EXPECT_EQ(mbuf, nullptr);

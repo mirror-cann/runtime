@@ -13,4 +13,4 @@
 #define REPORT_INNER_ERROR(error_code, fmt, ...)
 #define REPORT_CALL_ERROR(error_code, fmt, ...)
 #define REPORT_INPUT_ERROR(error_code, key, value)
-#endif  // ERROR_MANAGER_H_
+#endif // ERROR_MANAGER_H_

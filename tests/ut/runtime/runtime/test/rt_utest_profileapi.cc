@@ -44,22 +44,20 @@ extern void SetProfilerOn();
 extern void SetProfilerOff();
 extern void SetEnvVarOn();
 extern void SetEnvVarOff();
-#define PROF_TASK_TIME_MASK              0x00000002ULL
-class ProfileApiTest : public testing::Test
-{
+#define PROF_TASK_TIME_MASK 0x00000002ULL
+class ProfileApiTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         SetProfilerOn();
-        oldApi_ = const_cast<Api *>(Runtime::runtime_->api_);
+        oldApi_ = const_cast<Api*>(Runtime::runtime_->api_);
         Runtime::runtime_->api_ = Runtime::runtime_->profiler_->apiProfileDecorator_;
         Runtime::runtime_->profiler_->profCfg_.isRtsProfEn = 1;
 
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -72,12 +70,12 @@ protected:
 
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 0);
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error3<<std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error3 << std::endl;
     }
 
     static void TearDownTestCase()
     {
-        Context *context = NULL;
+        Context* context = NULL;
 
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
 
@@ -87,43 +85,39 @@ protected:
         rtDeviceReset(0);
     }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
     void AddObserver()
     {
-        Context *context = NULL;
+        Context* context = NULL;
         oldApi_->ContextGetCurrent(&context);
     }
 
     void DecObserver()
     {
-        Context *context = NULL;
+        Context* context = NULL;
         oldApi_->ContextGetCurrent(&context);
         ((RawDevice*)(context->device_))->engine_->observerNum_--;
-        ((RawDevice*)(context->device_))->engine_->observers_[((RawDevice*)(context->device_))->engine_->observerNum_] = NULL;
+        ((RawDevice*)(context->device_))->engine_->observers_[((RawDevice*)(context->device_))->engine_->observerNum_] =
+            NULL;
     }
 
 public:
-    static Api        *oldApi_;
+    static Api* oldApi_;
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
 };
 
-Api * ProfileApiTest::oldApi_ = NULL;
+Api* ProfileApiTest::oldApi_ = NULL;
 rtStream_t ProfileApiTest::stream_ = NULL;
 rtEvent_t ProfileApiTest::event_ = NULL;
 void* ProfileApiTest::binHandle_ = NULL;
-char  ProfileApiTest::function_ = 'a';
+char ProfileApiTest::function_ = 'a';
 uint32_t ProfileApiTest::binary_[32] = {};
 
 TEST_F(ProfileApiTest, stream_create_and_destroy)
@@ -138,7 +132,6 @@ TEST_F(ProfileApiTest, stream_create_and_destroy)
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(ProfileApiTest, stream_wait_event_and_sync)
@@ -212,32 +205,31 @@ TEST_F(ProfileApiTest, event_record_and_sync)
 TEST_F(ProfileApiTest, kernel_launch)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
-    error = rtKernelLaunch(&error, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&error, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     error = rtKernelLaunch(&function_, 1, NULL, 0, NULL, stream_);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-    error = rtKernelLaunch(&function_, 0, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 0, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamSynchronize(stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
 TEST_F(ProfileApiTest, kernel_launch_l2_preload)
 {
     rtError_t error;
     rtL2Ctrl_t ctrl;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
     memset_s(&ctrl, sizeof(rtL2Ctrl_t), 0, sizeof(rtL2Ctrl_t));
 
@@ -245,7 +237,7 @@ TEST_F(ProfileApiTest, kernel_launch_l2_preload)
 
     /* preload is right */
     ctrl.size = 128;
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), &ctrl, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), &ctrl, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamSynchronize(stream_);
@@ -282,29 +274,21 @@ TEST_F(ProfileApiTest, kernel_launch_fusion)
 }
 #endif
 
-static rtError_t kernel_launch_stub(const void *stubFunc,
-                         uint32_t blockDim,
-                         void *args,
-                         uint32_t argsSize,
-                         rtSmDesc_t *smDesc,
-                         rtStream_t stream)
+static rtError_t kernel_launch_stub(
+    const void* stubFunc, uint32_t blockDim, void* args, uint32_t argsSize, rtSmDesc_t* smDesc, rtStream_t stream)
 {
-    return (stubFunc == &ProfileApiTest::function_)
-          && (blockDim == 1)
-          && (((void **)args)[0] == (void*)100)
-          && (((void **)args)[1] == (void*)200)
-          && (argsSize == 2*sizeof(void*))
-          && (smDesc == NULL)
-          && (stream == ProfileApiTest::stream_)
-          ? RT_ERROR_NONE
-          : RT_ERROR_INVALID_VALUE;
+    return (stubFunc == &ProfileApiTest::function_) && (blockDim == 1) && (((void**)args)[0] == (void*)100) &&
+                   (((void**)args)[1] == (void*)200) && (argsSize == 2 * sizeof(void*)) && (smDesc == NULL) &&
+                   (stream == ProfileApiTest::stream_) ?
+               RT_ERROR_NONE :
+               RT_ERROR_INVALID_VALUE;
 }
 
 TEST_F(ProfileApiTest, kernel_launch_config)
 {
     rtSmDesc_t desc;
     rtError_t error;
-    void *args[] = {(void*)100, (void*)200};
+    void* args[] = {(void*)100, (void*)200};
 
     MOCKER(rtKernelLaunch).stubs().will(invoke(kernel_launch_stub));
 
@@ -335,7 +319,7 @@ TEST_F(ProfileApiTest, kernel_launch_config)
 TEST_F(ProfileApiTest, kernel_trans_arg)
 {
     rtError_t error;
-    void *arg = NULL;
+    void* arg = NULL;
 
     error = rtKernelConfigTransArg(NULL, 128, 0, &arg);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -347,16 +331,16 @@ TEST_F(ProfileApiTest, kernel_trans_arg)
 TEST_F(ProfileApiTest, kernel_launch_ex)
 {
     rtError_t error;
-    error = rtKernelLaunchEx((void *)1, 1, 0, NULL);
+    error = rtKernelLaunchEx((void*)1, 1, 0, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(ProfileApiTest, kernel_launch_with_default_stream)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, NULL);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -401,7 +385,7 @@ TEST_F(ProfileApiTest, get_priority_range)
 TEST_F(ProfileApiTest, host_mem_alloc_free)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
 
     error = rtMallocHost(&hostPtr, 64, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -413,7 +397,7 @@ TEST_F(ProfileApiTest, host_mem_alloc_free)
 TEST_F(ProfileApiTest, device_mem_alloc_free)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -425,7 +409,7 @@ TEST_F(ProfileApiTest, device_mem_alloc_free)
 TEST_F(ProfileApiTest, device_dvpp_mem_alloc_free)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtDvppMalloc(&devPtr, 64, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -437,8 +421,8 @@ TEST_F(ProfileApiTest, device_dvpp_mem_alloc_free)
 TEST_F(ProfileApiTest, memcpy_host_to_device)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
 
     error = rtMalloc(&hostPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -459,8 +443,8 @@ TEST_F(ProfileApiTest, memcpy_host_to_device)
 TEST_F(ProfileApiTest, memcpy_async_host_to_device)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
 
     error = rtMalloc(&hostPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -469,7 +453,7 @@ TEST_F(ProfileApiTest, memcpy_async_host_to_device)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemcpyAsync(devPtr, 64, hostPtr, 64, RT_MEMCPY_HOST_TO_DEVICE, stream_);
-    //EXPECT_EQ(error, RT_ERROR_NONE);
+    // EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamSynchronize(stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -484,8 +468,8 @@ TEST_F(ProfileApiTest, memcpy_async_host_to_device)
 TEST_F(ProfileApiTest, hosttask_memcpy_host_to_device)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
 
     error = rtMalloc(&hostPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -514,8 +498,8 @@ TEST_F(ProfileApiTest, hosttask_memcpy_host_to_device)
 TEST_F(ProfileApiTest, hosttask_memcpy_default_stream)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
 
     error = rtMalloc(&hostPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -536,8 +520,8 @@ TEST_F(ProfileApiTest, hosttask_memcpy_default_stream)
 TEST_F(ProfileApiTest, memcpy_async_host_to_device_default_stream)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
 
     error = rtMalloc(&hostPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -546,7 +530,7 @@ TEST_F(ProfileApiTest, memcpy_async_host_to_device_default_stream)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemcpyAsync(devPtr, 64, hostPtr, 64, RT_MEMCPY_HOST_TO_DEVICE, NULL);
-    //EXPECT_EQ(error, RT_ERROR_NONE);
+    // EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamSynchronize(NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -558,8 +542,6 @@ TEST_F(ProfileApiTest, memcpy_async_host_to_device_default_stream)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
-
 TEST_F(ProfileApiTest, dev_sync_null)
 {
     int32_t devId;
@@ -568,10 +550,10 @@ TEST_F(ProfileApiTest, dev_sync_null)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
 
-//    error = rtDeviceReset(0);
-//    EXPECT_EQ(error, RT_ERROR_NONE);
+    //    error = rtDeviceReset(0);
+    //    EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtDeviceSynchronize();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -581,7 +563,7 @@ TEST_F(ProfileApiTest, dev_sync_null)
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
 TEST_F(ProfileApiTest, dev_sync_ok)
@@ -597,16 +579,16 @@ TEST_F(ProfileApiTest, dev_get_all)
     int32_t devId;
     rtError_t error;
 
-    //error = rtGetDevice(NULL);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtGetDevice(NULL);
+    // EXPECT_NE(error, RT_ERROR_NONE);
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
 
-   // error = rtDeviceReset(0);
-   // EXPECT_EQ(error, RT_ERROR_NONE);
+    // error = rtDeviceReset(0);
+    // EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -617,7 +599,7 @@ TEST_F(ProfileApiTest, dev_get_all)
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
 // TEST_F(ProfileApiTest, device_exchange)
@@ -656,11 +638,11 @@ TEST_F(ProfileApiTest, dev_default_use)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    //error = rtCtxSetCurrent(NULL);
-    //EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
+    // error = rtCtxSetCurrent(NULL);
+    // EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    //error = rtDeviceReset(0);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtDeviceReset(0);
+    // EXPECT_NE(error, RT_ERROR_NONE);
 
     error = rtCtxGetCurrent(&ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -678,7 +660,7 @@ TEST_F(ProfileApiTest, dev_default_use)
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(defaultDevId, 0);
 
-    error =rtSetDevice(devId);
+    error = rtSetDevice(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -696,8 +678,8 @@ TEST_F(ProfileApiTest, context_create_and_destroy)
     error = rtCtxDestroy(ctx);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-    //error = rtCtxCreate(NULL, 0, 0);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtCtxCreate(NULL, 0, 0);
+    // EXPECT_NE(error, RT_ERROR_NONE);
 
     int32_t devNum = 0;
     error = rtGetDeviceCount(&devNum);
@@ -722,8 +704,8 @@ TEST_F(ProfileApiTest, context_create_and_destroy)
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(current, ctx);
 
-    //error = rtCtxDestroy(ctx);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtCtxDestroy(ctx);
+    // EXPECT_NE(error, RT_ERROR_NONE);
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -734,11 +716,10 @@ TEST_F(ProfileApiTest, context_create_and_destroy)
     error = rtCtxDestroy(ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    //error = rtCtxDestroy(NULL);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtCtxDestroy(NULL);
+    // EXPECT_NE(error, RT_ERROR_NONE);
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(ProfileApiTest, context_set_and_get)
@@ -748,11 +729,11 @@ TEST_F(ProfileApiTest, context_set_and_get)
     rtContext_t current = NULL;
     int32_t currentDevId = -1;
 
-    //error = rtCtxGetDevice(NULL);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtCtxGetDevice(NULL);
+    // EXPECT_NE(error, RT_ERROR_NONE);
 
-    //error = rtCtxGetCurrent(NULL);
-    //EXPECT_NE(error, RT_ERROR_NONE);
+    // error = rtCtxGetCurrent(NULL);
+    // EXPECT_NE(error, RT_ERROR_NONE);
 
     int32_t devId = 0;
     error = rtGetDevice(&devId);
@@ -854,13 +835,13 @@ TEST_F(ProfileApiTest, context_destroy_with_stream_abandon)
 TEST_F(ProfileApiTest, managed_mem)
 {
     rtError_t error;
-    void *ptr = NULL;
+    void* ptr = NULL;
 
     error = rtMemAllocManaged(&ptr, 128, 0, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemFreeManaged(ptr);
-    //EXPECT_EQ(error, RT_ERROR_NONE);
+    // EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 /*UT for profiler.cc SetDevice() "if (RT_ERROR_NONE != error)" Line:655*/
@@ -868,7 +849,9 @@ TEST_F(ProfileApiTest, SET_DEVICE_TEST_1)
 {
     rtError_t error;
 
-	MOCKER_CPP_VIRTUAL((Api *)(((Runtime *)Runtime::Instance())->Api_()), &Api::ContextGetCurrent).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL((Api*)(((Runtime*)Runtime::Instance())->Api_()), &Api::ContextGetCurrent)
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtSetDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -876,13 +859,12 @@ TEST_F(ProfileApiTest, SET_DEVICE_TEST_1)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
 /*UT for profiler.cc SetDevice() "if (RT_ERROR_NONE != error)" Line:664*/
 TEST_F(ProfileApiTest, SET_DEVICE_TEST_2)
 {
     rtError_t error;
 
-    Engine *engine = new AsyncHwtsEngine(NULL);
+    Engine* engine = new AsyncHwtsEngine(NULL);
     MOCKER_CPP_VIRTUAL(engine, &Engine::SubmitTaskNormal).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtSetDevice(0);
@@ -899,7 +881,7 @@ TEST_F(ProfileApiTest, model_api)
     rtError_t error;
     rtStream_t stream;
     rtStream_t execStream;
-    rtModel_t  model;
+    rtModel_t model;
     uint32_t taskid = 0;
     uint32_t streamId = 0;
 
@@ -985,22 +967,19 @@ TEST_F(ProfileApiTest, stream_with_flag_create_and_destroy)
 
     AddObserver();
 
-    error = rtStreamCreateWithFlags(&stream, 0, 0);/*flag = 3*/
+    error = rtStreamCreateWithFlags(&stream, 0, 0); /*flag = 3*/
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
-void STREAM_cb(void *arg)
-{
-}
+void STREAM_cb(void* arg) {}
 
 static uint32_t g_profilingSwitchFlag = 0;
 static uint32_t g_profilingReporterFlag = 0;
 static uint32_t g_regkernelLaunchFlag = 0;
-static rtError_t StubProfRegisterCtrlCallback(uint32_t dataType, void *data, uint32_t dataLen)
+static rtError_t StubProfRegisterCtrlCallback(uint32_t dataType, void* data, uint32_t dataLen)
 {
     if (dataType == 1) {
         g_profilingSwitchFlag = 1;
@@ -1015,7 +994,7 @@ static void StubProfilingDelAll()
     g_profilingReporterFlag = 0;
 }
 
-static rtError_t StubRegkernelLaunchFillFunc(void *cfgAddr, uint32_t cfgLen)
+static rtError_t StubRegkernelLaunchFillFunc(void* cfgAddr, uint32_t cfgLen)
 {
     g_regkernelLaunchFlag = cfgLen;
     return 0;
@@ -1029,7 +1008,7 @@ TEST_F(ProfileApiTest, rtRegKernelLaunchFillFunc)
     error = rtUnRegKernelLaunchFillFunc("g_opSystemRunCfg");
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     error = rtRegKernelLaunchFillFunc("g_opSystemRunCfg", StubRegkernelLaunchFillFunc);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -1037,7 +1016,7 @@ TEST_F(ProfileApiTest, rtRegKernelLaunchFillFunc)
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     error = rtInstance->callbackMap_.count("g_opSystemRunCfg");
     EXPECT_EQ(error, 0);
-    rtError_t ret = rtInstance->ExeCallbackFillFunc("g_opSystemRunCfg", (void *)(0x02), 100);
+    rtError_t ret = rtInstance->ExeCallbackFillFunc("g_opSystemRunCfg", (void*)(0x02), 100);
     EXPECT_EQ(g_regkernelLaunchFlag, 0);
     error = rtUnRegKernelLaunchFillFunc("g_opSystemRunCfg");
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -1053,8 +1032,8 @@ TEST_F(ProfileApiTest, GetL2CacheOffset_fail)
 {
     uint64_t offset;
     MOCKER(halMemCtl).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
-    ApiErrorDecorator *apiErrDecorator_ = new ApiErrorDecorator(oldApi_);
-    rtError_t error = apiErrDecorator_->GetL2CacheOffset(0,&offset);
+    ApiErrorDecorator* apiErrDecorator_ = new ApiErrorDecorator(oldApi_);
+    rtError_t error = apiErrDecorator_->GetL2CacheOffset(0, &offset);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
     delete apiErrDecorator_;
 }
@@ -1064,7 +1043,7 @@ TEST_F(ProfileApiTest, model_api_cacheTrack)
     rtError_t error;
     rtStream_t stream;
     rtStream_t execStream;
-    rtModel_t  model;
+    rtModel_t model;
     uint32_t taskid = 0;
     uint32_t streamId = 0;
 
@@ -1124,7 +1103,7 @@ TEST_F(ProfileApiTest, model_api_cacheTrack)
     error = rtStreamDestroy(execStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-        ProfCtrlCallbackManager::Instance().DelAllData();
+    ProfCtrlCallbackManager::Instance().DelAllData();
     StubProfilingDelAll();
 }
 
@@ -1225,7 +1204,7 @@ TEST_F(ProfileApiTest, rtGetDeviceIdByGeModelIdx)
 
 TEST_F(ProfileApiTest, rtGetDeviceIdByGeModeIdxWithVisibleDevice)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
@@ -1255,20 +1234,20 @@ TEST_F(ProfileApiTest, RegProfCtrlCallback)
 {
     ApiImpl impl;
     ApiErrorDecorator api(&impl);
-    rtError_t  error = api.RegProfCtrlCallback(1, NULL);
+    rtError_t error = api.RegProfCtrlCallback(1, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(ProfileApiTest, GetMsprofReporterCallback)
 {
-    auto &instance = ProfilingAgent::Instance();
+    auto& instance = ProfilingAgent::Instance();
     EXPECT_NE(&instance, nullptr);
     instance.GetMsprofReporterCallback();
 }
 
 TEST_F(ProfileApiTest, NotifyProfInfo)
 {
-    auto &instance = ProfCtrlCallbackManager::Instance();
+    auto& instance = ProfCtrlCallbackManager::Instance();
     EXPECT_NE(&instance, nullptr);
     instance.NotifyProfInfo(1);
 }
@@ -1310,7 +1289,7 @@ TEST_F(ProfileApiTest, prof_mechanism_test)
     uint64_t profConfig = 1;
     int32_t numsDev = 1;
     uint32_t devid = 0;
-    uint32_t *deviceList = &devid;
+    uint32_t* deviceList = &devid;
 
     Runtime::runtime_->api_ = oldApi_;
 

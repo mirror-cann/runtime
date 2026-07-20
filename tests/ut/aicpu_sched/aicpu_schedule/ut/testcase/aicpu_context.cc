@@ -24,11 +24,9 @@ using namespace std;
 
 class AiCPUContextUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(AiCPUContextUt, AiCPUContextUtSuccess)
@@ -75,16 +73,16 @@ TEST_F(AiCPUContextUt, AiCPUContextUtSuccess)
         chlId = GetStreamDvppChannelId(0, chlType);
         EXPECT_EQ(chlId, -1);
         InitStreamDvppChannel(0, AICPU_DVPP_CHL_VPC, 2);
-        uint8_t *buff = reinterpret_cast<uint8_t *>(0xf00400000040);
+        uint8_t* buff = reinterpret_cast<uint8_t*>(0xf00400000040);
         SetStreamDvppBuffBychlType(AICPU_DVPP_CHL_VPC, 16 * 1024 * 1024, buff);
         SetStreamDvppBuffByStreamId(AICPU_DVPP_CHL_VPC, 0, 16 * 1024 * 1024, buff);
-        uint8_t *outBuff = nullptr;
+        uint8_t* outBuff = nullptr;
         uint64_t outLen = 0;
         GetDvppBufAndLenBychlType(AICPU_DVPP_CHL_VPC, &outBuff, &outLen);
         EXPECT_EQ(outLen, 16 * 1024 * 1024);
 
         GetDvppBufAndLenByStreamId(0, AICPU_DVPP_CHL_VPC, &outBuff);
-        EXPECT_EQ(outBuff, reinterpret_cast<uint8_t *>(0xf00400000040));
+        EXPECT_EQ(outBuff, reinterpret_cast<uint8_t*>(0xf00400000040));
     }
 }
 
@@ -98,10 +96,10 @@ TEST_F(AiCPUContextUt, AiCPUContextUtFail)
     EXPECT_EQ(streamId, 0);
 
     InitStreamDvppChannel(0, AICPU_DVPP_CHL_BUTT, 2);
-    uint8_t *buff = reinterpret_cast<uint8_t *>(0xf00400000040);
+    uint8_t* buff = reinterpret_cast<uint8_t*>(0xf00400000040);
     SetStreamDvppBuffBychlType(AICPU_DVPP_CHL_BUTT, 16 * 1024 * 1024, buff);
     SetStreamDvppBuffByStreamId(AICPU_DVPP_CHL_BUTT, 0, 16 * 1024 * 1024, buff);
-    uint8_t *outBuff = nullptr;
+    uint8_t* outBuff = nullptr;
     uint64_t outLen = 0;
     GetDvppBufAndLenBychlType(AICPU_DVPP_CHL_BUTT, &outBuff, &outLen);
     GetDvppBufAndLenByStreamId(0, AICPU_DVPP_CHL_BUTT, &outBuff);

@@ -41,11 +41,11 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessCopyTensorDesc_suc
     param.outputDynamicFlagsAddr = PtrToValue(dynamicFlags.data());
 
     char placeHolder0[1500U] = {};
-    Mbuf *mbuf0 = reinterpret_cast<Mbuf *>(&placeHolder0[0U]);
-    Mbuf **mbufPtr0 = &mbuf0;
+    Mbuf* mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
+    Mbuf** mbufPtr0 = &mbuf0;
     char placeHolder1[1500U] = {};
-    Mbuf *mbuf1 = reinterpret_cast<Mbuf *>(&placeHolder1[0U]);
-    Mbuf **mbufPtr1 = &mbuf1;
+    Mbuf* mbuf1 = reinterpret_cast<Mbuf*>(&placeHolder1[0U]);
+    Mbuf** mbufPtr1 = &mbuf1;
     std::vector<uint64_t> outputMbufAddrs;
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr0));
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr1));
@@ -56,15 +56,15 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessCopyTensorDesc_suc
     param.outputStaticTensorDescAddr = PtrToValue(&statisticTensorDesc);
 
     char placeHolderResp[1280U] = {};
-    RuntimeTensorDesc *dynamicTensorDesc = reinterpret_cast<RuntimeTensorDesc *>(&placeHolderResp[mbufDataOffSet]);
+    RuntimeTensorDesc* dynamicTensorDesc = reinterpret_cast<RuntimeTensorDesc*>(&placeHolderResp[mbufDataOffSet]);
     dynamicTensorDesc->dataSize = 32U;
-    Mbuf *mbufResp = reinterpret_cast<Mbuf *>(&placeHolderResp[0U]);
+    Mbuf* mbufResp = reinterpret_cast<Mbuf*>(&placeHolderResp[0U]);
     param.respMsgMbufAddr = PtrToValue(&mbufResp);
 
     EXPECT_EQ(kernel_.CopyTensorDesc(&param, runContextT), AICPU_SCHEDULE_OK);
 
-    RuntimeTensorDesc *tensorDesc0 = reinterpret_cast<RuntimeTensorDesc *>(&placeHolder0[mbufDataOffSet]);
-    RuntimeTensorDesc *tensorDesc1 = reinterpret_cast<RuntimeTensorDesc *>(&placeHolder1[mbufDataOffSet]);
+    RuntimeTensorDesc* tensorDesc0 = reinterpret_cast<RuntimeTensorDesc*>(&placeHolder0[mbufDataOffSet]);
+    RuntimeTensorDesc* tensorDesc1 = reinterpret_cast<RuntimeTensorDesc*>(&placeHolder1[mbufDataOffSet]);
     EXPECT_EQ(tensorDesc0->dataSize, 16U);
     EXPECT_EQ(tensorDesc1->dataSize, 32U);
 }
@@ -79,8 +79,8 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessCopyTensorDesc_fai
     RuntimeTensorDesc outputStaticTensor;
     param.outputStaticTensorDescAddr = PtrToValue(&outputStaticTensor);
 
-    Mbuf *mbuf0 = nullptr;
-    Mbuf **mbufPtr0 = &mbuf0;
+    Mbuf* mbuf0 = nullptr;
+    Mbuf** mbufPtr0 = &mbuf0;
     std::vector<uint64_t> outputMbufAddrs;
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr0));
     param.outputMbufAddrsAddr = PtrToValue(outputMbufAddrs.data());
@@ -103,17 +103,17 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessCopyTensorDesc_fai
     param.outputDynamicFlagsAddr = PtrToValue(dynamicFlags.data());
 
     char placeHolder0[1500U] = {};
-    Mbuf *mbuf0 = reinterpret_cast<Mbuf *>(&placeHolder0[0U]);
-    Mbuf **mbufPtr0 = &mbuf0;
+    Mbuf* mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
+    Mbuf** mbufPtr0 = &mbuf0;
     std::vector<uint64_t> outputMbufAddrs;
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr0));
     param.outputMbufAddrsAddr = PtrToValue(outputMbufAddrs.data());
 
     uint64_t dataLen = mbufDataOffSet + sizeof(RuntimeTensorDesc);
     char placeHolderResp[dataLen] = {};
-    RuntimeTensorDesc *runtimeTensor = reinterpret_cast<RuntimeTensorDesc *>(&placeHolderResp[mbufDataOffSet]);
+    RuntimeTensorDesc* runtimeTensor = reinterpret_cast<RuntimeTensorDesc*>(&placeHolderResp[mbufDataOffSet]);
     runtimeTensor->dataSize = mbufDataOffSet + 1;
-    Mbuf *respMbuf = reinterpret_cast<Mbuf *>(&placeHolderResp[0U]);
+    Mbuf* respMbuf = reinterpret_cast<Mbuf*>(&placeHolderResp[0U]);
     param.respMsgMbufAddr = PtrToValue(&respMbuf);
 
     RuntimeTensorDesc outputStaticTensor;
@@ -137,8 +137,8 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessCopyTensorDesc_dyn
     param.outputsNum = 1U;
 
     char placeHolder1[1500U] = {};
-    Mbuf *mbuf1 = reinterpret_cast<Mbuf *>(&placeHolder1[0U]);
-    Mbuf **mbufPtr1 = &mbuf1;
+    Mbuf* mbuf1 = reinterpret_cast<Mbuf*>(&placeHolder1[0U]);
+    Mbuf** mbufPtr1 = &mbuf1;
     std::vector<uint64_t> outputMbufAddrs = {PtrToValue(mbufPtr1)};
     param.outputMbufAddrsAddr = PtrToValue(outputMbufAddrs.data());
 
@@ -149,10 +149,10 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessCopyTensorDesc_dyn
     // fail for resp mbuf is null
     EXPECT_EQ(kernel_.CopyTensorDesc(&param, runContextT), AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
-    Mbuf *mbuf = BufManager::GetInstance().MallocAndGuardBuf(1024U, modelId);
+    Mbuf* mbuf = BufManager::GetInstance().MallocAndGuardBuf(1024U, modelId);
     param.respMsgMbufAddr = &mbuf;
     char head[256U] = {};
-    void *headPtr = reinterpret_cast<void *>(&head[0U]);
+    void* headPtr = reinterpret_cast<void*>(&head[0U]);
     uint32_t headSize = 256;
     MOCKER(halMbufGetPrivInfo)
         .stubs()
@@ -175,12 +175,12 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostProcessForAllocatedOutput
     EXPECT_EQ(
         kernel_.AllocatedOutput(nullptr, nullptr, 0, 0, nullptr, nullptr), AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
     // fail for halMbufGetBuffAddr fail
-    Mbuf *outputMbuf = 1;
+    Mbuf* outputMbuf = 1;
     MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(1)).then(returnValue(0));
     EXPECT_EQ(kernel_.AllocatedOutput(nullptr, outputMbuf, 0, 0, nullptr, nullptr), AICPU_SCHEDULE_ERROR_FROM_DRV);
     // fail for memcpy
     RuntimeTensorDesc tensorDesc = {};
-    RuntimeTensorDesc *descPtr = &tensorDesc;
+    RuntimeTensorDesc* descPtr = &tensorDesc;
     MOCKER(memcpy_s).stubs().will(returnValue(1));
     EXPECT_EQ(
         kernel_.AllocatedOutput(nullptr, outputMbuf, 0, 0, nullptr, &descPtr), AICPU_SCHEDULE_ERROR_SAFE_FUNCTION_ERR);
@@ -195,17 +195,18 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostProcessForOutputToAllocat
     MOCKER_CPP(&OperatorKernelPostProcessDynamicOutput::IsSupportSdmaCopy).stubs().will(returnValue(false));
 
     char placeHolder0[1500U] = {};
-    Mbuf *mbuf0 = reinterpret_cast<Mbuf *>(&placeHolder0[0U]);
-    Mbuf **mbufPtr0 = &mbuf0;
+    Mbuf* mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
+    Mbuf** mbufPtr0 = &mbuf0;
 
     char head[256U] = {};
     // fail for null runtimeTensorDesc
-    RuntimeTensorDesc *desc = nullptr;
+    RuntimeTensorDesc* desc = nullptr;
     MOCKER_CPP(&OperatorKernelPostProcessDynamicOutput::GetRuntimeTensor)
         .stubs()
         .with(mockcpp::any(), outBoundP(&desc))
         .will(returnValue(AICPU_SCHEDULE_OK));
-    EXPECT_EQ(kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
+    EXPECT_EQ(
+        kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
         AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
     // fail for alloc mbuf
@@ -216,7 +217,8 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostProcessForOutputToAllocat
     RuntimeTensorDesc descs[] = {
         dynamicTensorDesc, dynamicTensorDesc, dynamicTensorDesc, dynamicTensorDesc, dynamicTensorDesc};
     desc = &descs[0];
-    EXPECT_EQ(kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
+    EXPECT_EQ(
+        kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
         AICPU_SCHEDULE_ERROR_FROM_DRV);
 
     // fail for CopyMbufHeadInfo
@@ -226,19 +228,23 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostProcessForOutputToAllocat
         .stubs()
         .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID))
         .then(returnValue(AICPU_SCHEDULE_OK));
-    EXPECT_EQ(kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
+    EXPECT_EQ(
+        kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
         AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
     // fail for halMbufGetBuffAddr
     MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(1)).then(returnValue(0));
-    EXPECT_EQ(kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
+    EXPECT_EQ(
+        kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
         AICPU_SCHEDULE_ERROR_FROM_DRV);
     // fail for memcpy tensordesc
     MOCKER(memcpy_s).stubs().will(returnValue(1)).then(returnValue(0)).then(returnValue(1));
-    EXPECT_EQ(kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
+    EXPECT_EQ(
+        kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
         AICPU_SCHEDULE_ERROR_SAFE_FUNCTION_ERR);
     // fail for memcpy data
-    EXPECT_EQ(kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
+    EXPECT_EQ(
+        kernel_.PostProcessForOutputToAllocate(nullptr, mbufPtr0, 0, &desc, &head[0U], 256U, runContextT),
         AICPU_SCHEDULE_ERROR_SAFE_FUNCTION_ERR);
 }
 
@@ -252,12 +258,12 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, PostprocessFreeMbuf_success)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
 
     PostprocessDynamicOutputKernelArgs param = {};
-    Mbuf *mbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
+    Mbuf* mbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
     param.respMsgMbufAddr = &mbuf;
 
     param.inputsNum = 1U;
     std::vector<uint64_t> inputMbufAddrs;
-    Mbuf *inputMbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
+    Mbuf* inputMbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
     inputMbufAddrs.emplace_back(&inputMbuf);
     param.inputMbufAddrsAddr = PtrToValue(inputMbufAddrs.data());
     EXPECT_EQ(kernel_.FreeMbuf(&param, runContextT), AICPU_SCHEDULE_OK);
@@ -281,11 +287,11 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, ModelPostprocessDynamicOutput
     param.outputDynamicFlagsAddr = PtrToValue(dynamicFlags.data());
 
     char placeHolder0[1500U] = {};
-    Mbuf *mbuf0 = reinterpret_cast<Mbuf *>(&placeHolder0[0U]);
-    Mbuf **mbufPtr0 = &mbuf0;
+    Mbuf* mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
+    Mbuf** mbufPtr0 = &mbuf0;
     char placeHolder1[1500U] = {};
-    Mbuf *mbuf1 = reinterpret_cast<Mbuf *>(&placeHolder1[0U]);
-    Mbuf **mbufPtr1 = &mbuf1;
+    Mbuf* mbuf1 = reinterpret_cast<Mbuf*>(&placeHolder1[0U]);
+    Mbuf** mbufPtr1 = &mbuf1;
     std::vector<uint64_t> outputMbufAddrs;
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr0));
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr1));
@@ -295,12 +301,12 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, ModelPostprocessDynamicOutput
     statisticTensorDesc.dataSize = 16U;
     param.outputStaticTensorDescAddr = PtrToValue(&statisticTensorDesc);
 
-    Mbuf *mbuf = BufManager::GetInstance().MallocAndGuardBuf(1024U, modelId);
+    Mbuf* mbuf = BufManager::GetInstance().MallocAndGuardBuf(1024U, modelId);
     param.respMsgMbufAddr = &mbuf;
 
     param.inputsNum = 1U;
     std::vector<uint64_t> inputMbufAddrs;
-    Mbuf *inputMbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
+    Mbuf* inputMbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
     inputMbufAddrs.emplace_back(&inputMbuf);
     param.inputMbufAddrsAddr = PtrToValue(inputMbufAddrs.data());
     EXPECT_NE(inputMbuf, nullptr);
@@ -326,11 +332,11 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, ModelPostprocessDynamicOutput
     MOCKER_CPP(&OperatorKernelPostProcessDynamicOutput::IsSupportSdmaCopy).stubs().will(returnValue(false));
 
     char placeHolder0[1500U] = {};
-    Mbuf *mbuf0 = reinterpret_cast<Mbuf *>(&placeHolder0[0U]);
-    Mbuf **mbufPtr0 = &mbuf0;
+    Mbuf* mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
+    Mbuf** mbufPtr0 = &mbuf0;
     char placeHolder1[1500U] = {};
-    Mbuf *mbuf1 = reinterpret_cast<Mbuf *>(&placeHolder1[0U]);
-    Mbuf **mbufPtr1 = &mbuf1;
+    Mbuf* mbuf1 = reinterpret_cast<Mbuf*>(&placeHolder1[0U]);
+    Mbuf** mbufPtr1 = &mbuf1;
     std::vector<uint64_t> outputMbufAddrs;
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr0));
     outputMbufAddrs.emplace_back(PtrToValue(mbufPtr1));
@@ -340,17 +346,17 @@ TEST_F(OperatorKernelPostProcessDynamicOutputTest, ModelPostprocessDynamicOutput
     statisticTensorDesc.dataSize = 16U;
     param.outputStaticTensorDescAddr = PtrToValue(&statisticTensorDesc);
 
-    Mbuf *mbuf = BufManager::GetInstance().MallocAndGuardBuf(1024U, modelId);
+    Mbuf* mbuf = BufManager::GetInstance().MallocAndGuardBuf(1024U, modelId);
     param.respMsgMbufAddr = &mbuf;
-    RuntimeTensorDesc *dynamicTensorDesc =
-        reinterpret_cast<RuntimeTensorDesc *>(reinterpret_cast<char *>(mbuf) + mbufDataOffSet);
+    RuntimeTensorDesc* dynamicTensorDesc =
+        reinterpret_cast<RuntimeTensorDesc*>(reinterpret_cast<char*>(mbuf) + mbufDataOffSet);
     dynamicTensorDesc->dataSize = 10;
     char data[10] = {};
     dynamicTensorDesc->dataAddr = PtrToValue(&data[0U]);
 
     param.inputsNum = 1U;
     std::vector<uint64_t> inputMbufAddrs;
-    Mbuf *inputMbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
+    Mbuf* inputMbuf = BufManager::GetInstance().MallocAndGuardBuf(16U, modelId);
     inputMbufAddrs.emplace_back(&inputMbuf);
     param.inputMbufAddrsAddr = PtrToValue(inputMbufAddrs.data());
 

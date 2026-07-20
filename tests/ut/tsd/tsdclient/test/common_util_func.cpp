@@ -12,17 +12,17 @@
 #include <fstream>
 namespace tsd {
 
-bool WriteTmpFile(const std::string &filePath, const std::string &fileName)
+bool WriteTmpFile(const std::string& filePath, const std::string& fileName)
 {
     // ut工程只运行在tmp目录下写小文件，用完之后要及时删除
     const std::string dstFile = "/tmp/" + filePath + "/" + fileName;
     std::ofstream outFile(dstFile);
-    if(!outFile) {
-        std::cout<<"Can not creat file "<<dstFile<<std::endl;
+    if (!outFile) {
+        std::cout << "Can not creat file " << dstFile << std::endl;
         return false;
     }
-    outFile << "this is tmp file"<<std::endl;
+    outFile << "this is tmp file" << std::endl;
     outFile.close();
     return true;
 }
-}
+} // namespace tsd

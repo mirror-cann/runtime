@@ -13,9 +13,9 @@
 namespace AicpuSchedule {
 
 int halGrpQueryWithTwoGroup(
-    GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
+    GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
-    GroupQueryOutput *groupQueryOutput = reinterpret_cast<GroupQueryOutput *>(outBuff);
+    GroupQueryOutput* groupQueryOutput = reinterpret_cast<GroupQueryOutput*>(outBuff);
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
@@ -34,9 +34,9 @@ int halGrpQueryWithTwoGroup(
     return 0;
 }
 
-int halGrpQueryWithError(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
+int halGrpQueryWithError(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
-    GroupQueryOutput *groupQueryOutput = reinterpret_cast<GroupQueryOutput *>(outBuff);
+    GroupQueryOutput* groupQueryOutput = reinterpret_cast<GroupQueryOutput*>(outBuff);
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
@@ -55,36 +55,36 @@ int halGrpQueryWithError(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen
     return 0;
 }
 
-int32_t CreateOrFindCustPidStub(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
+int32_t CreateOrFindCustPidStub(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
 {
     *custProcPid = 1234509;
     *firstStart = true;
     return 0;
 }
-int32_t CreateOrFindCustPidStubExist(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
+int32_t CreateOrFindCustPidStubExist(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
 {
     *custProcPid = 1234509;
     *firstStart = false;
     return 0;
 }
-int32_t CreateOrFindCustPidFailedStub(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
+int32_t CreateOrFindCustPidFailedStub(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
 {
     *custProcPid = -1;
     *firstStart = false;
     return 1;
 }
-int32_t CreateOrFindCustPidFailedStub2(const uint32_t deviceId, const uint32_t loadLibNum,
-    const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-    const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
+int32_t CreateOrFindCustPidFailedStub2(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
 {
     *custProcPid = -100;
     *firstStart = false;
     return 1;
 }
-}  // namespace AicpuSchedule
+} // namespace AicpuSchedule

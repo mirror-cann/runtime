@@ -27,29 +27,22 @@ protected:
         std::cout << "XpuRuntimeTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "XpuRuntimeTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "XpuRuntimeTest end" << std::endl; }
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(XpuRuntimeTest, createStreamArgRes_Success)
 {
-    Runtime *rt = new Runtime();
-    Context *ctx = new Context(nullptr,true);
-    RefObject<Context *> &refObj = rt->priCtxs_[0][0];
+    Runtime* rt = new Runtime();
+    Context* ctx = new Context(nullptr, true);
+    RefObject<Context*>& refObj = rt->priCtxs_[0][0];
     refObj.SetVal(ctx);
     MOCKER(ContextManage::RemoveContextFromSet).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(ctx,&Context::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
-    XpuContext *xpuCtx = new XpuContext(nullptr,true);
+    MOCKER_CPP_VIRTUAL(ctx, &Context::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
+    XpuContext* xpuCtx = new XpuContext(nullptr, true);
     rt->xpuCtxt_ = xpuCtx;
     DELETE_O(rt);
     EXPECT_TRUE(true);

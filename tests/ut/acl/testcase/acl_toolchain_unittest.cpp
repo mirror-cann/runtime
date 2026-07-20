@@ -44,10 +44,10 @@ extern "C" {
 #endif
 
 extern ACL_FUNC_VISIBILITY aclError aclmdlInitDump();
-extern ACL_FUNC_VISIBILITY aclError aclmdlSetDump(const char *dumpCfgPath);
+extern ACL_FUNC_VISIBILITY aclError aclmdlSetDump(const char* dumpCfgPath);
 extern ACL_FUNC_VISIBILITY aclError aclmdlFinalizeDump();
 
-typedef aclError (*aclDumpSetCallbackFunc)(const char *configStr);
+typedef aclError (*aclDumpSetCallbackFunc)(const char* configStr);
 extern ACL_FUNC_VISIBILITY aclError aclDumpSetCallbackRegister(aclDumpSetCallbackFunc cbFunc);
 extern ACL_FUNC_VISIBILITY aclError aclDumpSetCallbackUnRegister();
 typedef aclError (*aclDumpUnSetCallbackFunc)();
@@ -62,47 +62,43 @@ namespace acl {
 extern void resetAclJsonHash();
 }
 
-class UTEST_ACL_toolchain : public testing::Test
-{
-    public:
-        UTEST_ACL_toolchain(){}
-    protected:
-        virtual void SetUp() {}
-        virtual void TearDown() {
-            Mock::VerifyAndClear((void *)(&MockFunctionTest::aclStubInstance()));
-        }
-        static void SetUpTestCase() {
-            resetAclJsonHash();
-            (void)aclInit(nullptr);
-        }
-        static void TearDownTestCase()
-        {
-            (void)aclFinalize();
-        }
+class UTEST_ACL_toolchain : public testing::Test {
+public:
+    UTEST_ACL_toolchain() {}
+
+protected:
+    virtual void SetUp() {}
+    virtual void TearDown() { Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance())); }
+    static void SetUpTestCase()
+    {
+        resetAclJsonHash();
+        (void)aclInit(nullptr);
+    }
+    static void TearDownTestCase() { (void)aclFinalize(); }
 };
 
-static int32_t MsprofRegTypeInfoStub(uint16_t level, uint32_t typeId, const char *typeName)
+static int32_t MsprofRegTypeInfoStub(uint16_t level, uint32_t typeId, const char* typeName)
 {
-    (void) level;
-    (void) typeId;
-    (void) typeName;
+    (void)level;
+    (void)typeId;
+    (void)typeName;
     return 2;
 }
 
-static int32_t MsprofRegTypeInfoStub2(uint16_t level, uint32_t typeId, const char *typeName)
+static int32_t MsprofRegTypeInfoStub2(uint16_t level, uint32_t typeId, const char* typeName)
 {
-    (void) level;
-    (void) typeName;
+    (void)level;
+    (void)typeName;
     if ((typeId > MSPROF_REPORT_ACL_RUNTIME_BASE_TYPE) && (typeId < MSPROF_REPORT_ACL_OTHERS_BASE_TYPE)) {
         return 2;
     }
     return 0;
 }
 
-static int32_t MsprofRegTypeInfoStubForCnt(uint16_t level, uint32_t typeId, const char *typeName)
+static int32_t MsprofRegTypeInfoStubForCnt(uint16_t level, uint32_t typeId, const char* typeName)
 {
-    (void) level;
-    (void) typeName;
+    (void)level;
+    (void)typeName;
     profTypeCnt.emplace_back(typeId);
     return 0;
 }
@@ -122,7 +118,7 @@ TEST_F(UTEST_ACL_toolchain, dumpInitFailed)
     EXPECT_EQ(ret, ACL_ERROR_INTERNAL_ERROR);
 }
 
-aclError DumpSetCallbackFunc(const char *configStr)
+aclError DumpSetCallbackFunc(const char* configStr)
 {
     (void)configStr;
     return ACL_ERROR_INTERNAL_ERROR;
@@ -182,7 +178,7 @@ TEST_F(UTEST_ACL_toolchain, AdumpSetDumpFailedTest)
     ret = aclmdlSetDump(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
     EXPECT_NE(ret, ACL_SUCCESS);
 
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
     ret = aclmdlFinalizeDump();
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
@@ -197,15 +193,15 @@ TEST_F(UTEST_ACL_toolchain, dumpFinalizeFailedTest)
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpUnSetDump()).WillOnce(Return((1)));
     ret = aclmdlFinalizeDump();
     EXPECT_NE(ret, ACL_SUCCESS);
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
 
     // kill dump server failed
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdxDataDumpServerUnInit()).WillOnce(Return(1));
     ret = aclmdlFinalizeDump();
     EXPECT_EQ(ret, ACL_ERROR_INTERNAL_ERROR);
 
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
-    (void) aclmdlFinalizeDump();  // to acl dump init flag
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
+    (void)aclmdlFinalizeDump(); // to acl dump init flag
 }
 
 TEST_F(UTEST_ACL_toolchain, LiteExceptionDumpTest)
@@ -255,7 +251,7 @@ TEST_F(UTEST_ACL_toolchain, FinalizeDumpTest_AdumpSetDumpConfig_Failed)
     ret = aclmdlFinalizeDump();
     EXPECT_NE(ret, ACL_SUCCESS);
 
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
     ret = aclmdlFinalizeDump();
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
@@ -307,12 +303,11 @@ TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_AdumpSetDumpConfig_ADUMP_INPUT_FAILED_
     aclError ret = aclmdlInitDump();
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpSetDumpConfig(_))
-        .WillOnce(Return(Adx::ADUMP_INPUT_FAILED));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpSetDumpConfig(_)).WillOnce(Return(Adx::ADUMP_INPUT_FAILED));
     ret = aclmdlSetDump(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
     EXPECT_EQ(ret, ACL_ERROR_INVALID_DUMP_CONFIG);
 
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
 
     ret = aclmdlFinalizeDump();
     EXPECT_EQ(ret, ACL_SUCCESS);
@@ -333,21 +328,19 @@ TEST_F(UTEST_ACL_toolchain, aclmdlSetDump_GetConfigStrFromFile_Failed_Test)
 TEST_F(UTEST_ACL_toolchain, HandleDumpCommand_AdxDataDumpServerInit_Failed_Test)
 {
     acl::AclDump aclDump;
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdxDataDumpServerInit())
-        .WillOnce(Return(1));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdxDataDumpServerInit()).WillOnce(Return(1));
     aclError ret = aclDump.HandleDumpConfig(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
     EXPECT_EQ(ret, ACL_ERROR_INTERNAL_ERROR);
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
 }
 
 TEST_F(UTEST_ACL_toolchain, HandleDumpCommand_AdumpSetDumpConfig_ADUMP_INPUT_FAILED_Test)
 {
     acl::AclDump aclDump;
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpSetDumpConfig(_))
-        .WillOnce(Return(Adx::ADUMP_INPUT_FAILED));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), AdumpSetDumpConfig(_)).WillOnce(Return(Adx::ADUMP_INPUT_FAILED));
     aclError ret = aclDump.HandleDumpConfig(ACL_BASE_DIR "/tests/ut/acl/json/dumpConfig.json");
     EXPECT_EQ(ret, ACL_ERROR_INVALID_DUMP_CONFIG);
-    Mock::VerifyAndClear((void *) (&MockFunctionTest::aclStubInstance()));
+    Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance()));
 }
 
 TEST_F(UTEST_ACL_toolchain, HandleDumpConfig_EmptyConfigStr_Test)
@@ -479,8 +472,7 @@ TEST_F(UTEST_ACL_toolchain, setDeviceSuccess)
 
 TEST_F(UTEST_ACL_toolchain, AclProfilingManagerInitFailed)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_,_,_))
-    .WillRepeatedly(Return(2));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_, _, _)).WillRepeatedly(Return(2));
     acl::AclProfilingManager aclProfManager;
     aclError ret = aclProfManager.Init();
     EXPECT_NE(ret, ACL_SUCCESS);
@@ -505,10 +497,8 @@ TEST_F(UTEST_ACL_toolchain, HandleProfilingCommand)
     const string config = "test";
     bool configFileFlag = false;
     bool noValidConfig = false;
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofInit(_,_,_))
-        .WillRepeatedly(Return(1));
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofInit(_,_,_))
-    .WillRepeatedly(Return(1));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofInit(_, _, _)).WillRepeatedly(Return(1));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofInit(_, _, _)).WillRepeatedly(Return(1));
     aclError ret = aclprof.HandleProfilingCommand(config, configFileFlag, noValidConfig);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
@@ -518,28 +508,27 @@ TEST_F(UTEST_ACL_toolchain, HandleProfilingCommand)
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 
-int32_t MsprofReporterCallbackImpl(uint32_t moduleId, uint32_t type, void *data, uint32_t len)
+int32_t MsprofReporterCallbackImpl(uint32_t moduleId, uint32_t type, void* data, uint32_t len)
 {
-    (void) moduleId;
-    (void) type;
-    (void) data;
-    (void) len;
+    (void)moduleId;
+    (void)type;
+    (void)data;
+    (void)len;
     return 0;
 }
 
 TEST_F(UTEST_ACL_toolchain, MsprofCtrlHandle)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_,_,_))
-    .WillRepeatedly(Return(2));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_, _, _)).WillRepeatedly(Return(2));
     rtProfCommandHandle_t command;
     command.profSwitch = 1;
     command.devNums = 1;
     command.devIdList[0] = 0;
     command.type = 1;
-    auto ret = AclProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void *>(&command), sizeof(rtProfCommandHandle_t));
+    auto ret = AclProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void*>(&command), sizeof(rtProfCommandHandle_t));
     EXPECT_NE(ret, ACL_SUCCESS);
 
-    ret = AclProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void *>(&command), sizeof(rtProfCommandHandle_t) - 1);
+    ret = AclProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void*>(&command), sizeof(rtProfCommandHandle_t) - 1);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 }
 
@@ -587,29 +576,28 @@ TEST_F(UTEST_ACL_toolchain, AclProfilingReporter_3)
 
 TEST_F(UTEST_ACL_toolchain, AclProfilingReporter_4)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_,_,_))
-    .WillRepeatedly(Return(0));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_, _, _)).WillRepeatedly(Return(0));
     EXPECT_EQ(AclProfilingManager::GetInstance().Init(), ACL_SUCCESS);
 }
 
 TEST_F(UTEST_ACL_toolchain, AclProfilingReporter_5)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_,_,_))
-    .WillRepeatedly(Invoke(MsprofRegTypeInfoStub));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_, _, _))
+        .WillRepeatedly(Invoke(MsprofRegTypeInfoStub));
     EXPECT_NE(AclProfilingManager::GetInstance().Init(), ACL_SUCCESS);
 }
 
 TEST_F(UTEST_ACL_toolchain, AclProfilingReporter_6)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_,_,_))
-    .WillRepeatedly(Invoke(MsprofRegTypeInfoStub2));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_, _, _))
+        .WillRepeatedly(Invoke(MsprofRegTypeInfoStub2));
     EXPECT_NE(AclProfilingManager::GetInstance().Init(), ACL_SUCCESS);
 }
 
 TEST_F(UTEST_ACL_toolchain, AclProfiling_PROF_TYPE_TO_NAMES)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_,_,_))
-    .WillRepeatedly(Invoke(MsprofRegTypeInfoStubForCnt));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), MsprofRegTypeInfo(_, _, _))
+        .WillRepeatedly(Invoke(MsprofRegTypeInfoStubForCnt));
     AclProfilingManager::GetInstance().RegisterProfilingType();
     size_t cnt = (AclProfType::AclRtProfTypeEnd - AclProfType::AclRtProfTypeStart - 1);
     EXPECT_EQ(profTypeCnt.size(), cnt);

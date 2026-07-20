@@ -39,18 +39,14 @@ static uint16_t ind = 0;
 
 class CtrlStreamTest : public testing::Test {
 public:
-
 protected:
     static void SetUpTestCase()
     {
-        std::cout<<"stream test start"<<std::endl;
+        std::cout << "stream test start" << std::endl;
         GlobalMockObject::verify();
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"stream test end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "stream test end" << std::endl; }
 
     virtual void SetUp()
     {
@@ -68,83 +64,79 @@ protected:
 
 TEST_F(CtrlStreamTest, SynchronizePolymorphismTest)
 {
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     ASSERT_NE(dev, nullptr);
-    
-    CtrlStream *ctrlStream = new (std::nothrow) CtrlStream(dev);
+
+    CtrlStream* ctrlStream = new (std::nothrow) CtrlStream(dev);
     ASSERT_NE(ctrlStream, nullptr);
-    
+
     rtError_t error = ctrlStream->Setup();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
-    Stream *streamBase = static_cast<Stream*>(ctrlStream);
+
+    Stream* streamBase = static_cast<Stream*>(ctrlStream);
     error = streamBase->Synchronize();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = streamBase->Synchronize(true, 1000);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     delete ctrlStream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
 TEST_F(CtrlStreamTest, SynchronizeWithDefaultParamsTest)
 {
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     ASSERT_NE(dev, nullptr);
-    
+
     CtrlStream ctrlStream(dev);
     rtError_t error = ctrlStream.Setup();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = ctrlStream.Synchronize();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = ctrlStream.Synchronize(false);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = ctrlStream.Synchronize(false, -1);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
 TEST_F(CtrlStreamTest, SynchronizeGetHeadPosFromCtrlSqFailTest)
 {
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     ASSERT_NE(dev, nullptr);
-    
+
     CtrlStream ctrlStream(dev);
     rtError_t error = ctrlStream.Setup();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
-    MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetCtrlSqHead)
-        .expects(once())
-        .will(returnValue(3));
-    
+
+    MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetCtrlSqHead).expects(once()).will(returnValue(3));
+
     error = ctrlStream.Synchronize();
     EXPECT_NE(error, RT_ERROR_NONE);
-    
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }
 
 TEST_F(CtrlStreamTest, SynchronizeWithRecycledTaskTest)
 {
-    Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     ASSERT_NE(dev, nullptr);
-    
+
     CtrlStream ctrlStream(dev);
     rtError_t error = ctrlStream.Setup();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     ctrlStream.sqTailPos_ = 10;
-    
-    MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetCtrlSqHead)
-        .expects(atLeast(1))
-        .will(returnValue(RT_ERROR_NONE));
-    
+
+    MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::GetCtrlSqHead).expects(atLeast(1)).will(returnValue(RT_ERROR_NONE));
+
     error = ctrlStream.Synchronize();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
-    ((Runtime *)Runtime::Instance())->DeviceRelease(dev);
+
+    ((Runtime*)Runtime::Instance())->DeviceRelease(dev);
 }

@@ -39,45 +39,50 @@ using namespace cce::runtime;
 
 class SetDeviceFailureModeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         oldChipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_ADC);
         GlobalContainer::SetRtChipType(CHIP_ADC);
         int64_t hardwareVersion = CHIP_910_B_93 << 8;
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
         rtSetDevice(0);
     }
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(oldChipType);
         GlobalContainer::SetRtChipType(oldChipType);
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t oldChipType;
 };
 
 TEST_F(SetDeviceFailureModeTest, set_mode_adc)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     auto ret = rtSetDeviceFailureMode(STOP_ON_FAILURE);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

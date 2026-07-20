@@ -18,18 +18,11 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 class AicpusdModelStatisticTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AicpusdModelStatisticTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpusdModelStatisticTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AicpusdModelStatisticTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AicpusdModelStatisticTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AicpusdModelStatisticTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AicpusdModelStatisticTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -38,13 +31,15 @@ protected:
     }
 };
 
-TEST_F(AicpusdModelStatisticTEST, StatModelExeTime) {
+TEST_F(AicpusdModelStatisticTEST, StatModelExeTime)
+{
     AicpuSdModelStatistic::GetInstance().InitModelStatInfo();
     AicpuSdModelStatistic::GetInstance().MarNNModelStartTime(1U);
     AicpuSdModelStatistic::GetInstance().StatNNModelExecTime(1U);
     EXPECT_EQ(AicpuSdModelStatistic::GetInstance().modelStatArray_[1U].useFlag, true);
 }
-TEST_F(AicpusdModelStatisticTEST, StatModelExeTimeFaild) {
+TEST_F(AicpusdModelStatisticTEST, StatModelExeTimeFaild)
+{
     AicpuSdModelStatistic::GetInstance().MarNNModelStartTime(MAX_MODEL_COUNT);
     AicpuSdModelStatistic::GetInstance().StatNNModelExecTime(MAX_MODEL_COUNT);
     AicpuSdModelStatistic::GetInstance().modelStatArray_[1U].useFlag = false;
@@ -53,7 +48,8 @@ TEST_F(AicpusdModelStatisticTEST, StatModelExeTimeFaild) {
     AicpuSdModelStatistic::GetInstance().modelStatArray_[1U].useFlag = true;
 }
 
-TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutput) {
+TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutput)
+{
     std::vector<uint64_t> totalSizeList;
     totalSizeList.push_back(123UL);
     std::vector<ModelConfigTensorDesc> curStatVec;
@@ -69,15 +65,15 @@ TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutput) {
     AicpuSdModelStatistic::GetInstance().StatNNModelInput(1U, totalSizeList, curStatVec);
     size_t inputSize = AicpuSdModelStatistic::GetInstance().modelStatArray_[1U].inputStatVec.size();
     EXPECT_EQ(inputSize, 2);
-    RuntimeTensorDesc  runDesc;
+    RuntimeTensorDesc runDesc;
     runDesc.dtype = 0;
     runDesc.shape[0] = 1;
     runDesc.shape[1] = 10;
-    RuntimeTensorDesc  runDesc1;
+    RuntimeTensorDesc runDesc1;
     runDesc1.dtype = 0;
     runDesc1.shape[0] = 1;
     runDesc1.shape[1] = 2;
-    RuntimeTensorDesc  runDesc2;
+    RuntimeTensorDesc runDesc2;
     runDesc2.dtype = 0;
     runDesc2.shape[0] = 1;
     runDesc2.shape[1] = 12;
@@ -94,11 +90,12 @@ TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutput) {
         model->IncreaseStaticNNModelOutputIndex();
         model->GetCurStaticNNModelOutputIndex();
     }
-    
+
     EXPECT_EQ(outputSize, 5);
 }
 
-TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutputFailed) {
+TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutputFailed)
+{
     std::vector<uint64_t> totalSizeList;
     totalSizeList.push_back(123UL);
     std::vector<ModelConfigTensorDesc> curStatVec;
@@ -108,7 +105,7 @@ TEST_F(AicpusdModelStatisticTEST, StatModelInputAndOutputFailed) {
     curDes.shape[1] = 2;
     curStatVec.push_back(curDes);
     AicpuSdModelStatistic::GetInstance().StatNNModelInput(MAX_MODEL_COUNT, totalSizeList, curStatVec);
-    RuntimeTensorDesc  runDesc;
+    RuntimeTensorDesc runDesc;
     runDesc.dtype = 0;
     runDesc.shape[0] = 1;
     runDesc.shape[1] = -10;

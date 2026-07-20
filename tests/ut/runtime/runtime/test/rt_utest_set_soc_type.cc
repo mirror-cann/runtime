@@ -32,20 +32,13 @@ using namespace cce::runtime;
 
 class RuntimeSetSocTypeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
+    virtual void SetUp() {}
 
-    }
-
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 };
 
 TEST_F(RuntimeSetSocTypeTest, SetSocTypeByChipType_test_for_david_v120)

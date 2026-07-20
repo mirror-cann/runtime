@@ -32,13 +32,8 @@ TEST_F(QsArgsParserUtest, ParseArgsSuccess1)
     const uint32_t expectedLogLevel = 2U;
     const uint32_t expectedEventLevel = 3U;
     const std::vector<std::string> startParams = {
-        PARAM_DEVICEID + "1",
-        PARAM_HOST_PID + std::to_string(hostPid),
-        PARAM_PIDSIGN + pidSign,
-        PARAM_LOGLEVEL + "302",
-        PARAM_VFID + std::to_string(vfId),
-        PARAM_GRP_NAME + "grpa"
-    };
+        PARAM_DEVICEID + "1",   PARAM_HOST_PID + std::to_string(hostPid), PARAM_PIDSIGN + pidSign,
+        PARAM_LOGLEVEL + "302", PARAM_VFID + std::to_string(vfId),        PARAM_GRP_NAME + "grpa"};
 
     ArgsParser argsParser;
     const bool ret = argsParser.ParseArgs(startParams);
@@ -60,14 +55,9 @@ TEST_F(QsArgsParserUtest, ParseArgsSuccess2)
     const uint32_t expectedLogLevel = 2U;
     const uint32_t expectedEventLevel = 3U;
     const std::vector<std::string> startParams = {
-        PARAM_DEVICEID + "1",
-        PARAM_HOST_PID + std::to_string(hostPid),
-        PARAM_PIDSIGN + pidSign,
-        PARAM_LOGLEVEL + "302",
-        PARAM_VFID + std::to_string(vfId),
-        PARAM_GRP_NAME + "grpa",
-        "--unknownKey=0"
-    };
+        PARAM_DEVICEID + "1",   PARAM_HOST_PID + std::to_string(hostPid), PARAM_PIDSIGN + pidSign,
+        PARAM_LOGLEVEL + "302", PARAM_VFID + std::to_string(vfId),        PARAM_GRP_NAME + "grpa",
+        "--unknownKey=0"};
 
     ArgsParser argsParser;
     const bool ret = argsParser.ParseArgs(startParams);
@@ -88,13 +78,8 @@ TEST_F(QsArgsParserUtest, ParseArgsFail1)
     const std::string pidSign = "00000000";
 
     const std::vector<std::string> startParams = {
-        PARAM_DEVICEID + "100",
-        PARAM_HOST_PID + std::to_string(hostPid),
-        PARAM_PIDSIGN + pidSign,
-        PARAM_LOGLEVEL + "302",
-        PARAM_VFID + std::to_string(vfId),
-        PARAM_GRP_NAME + "grpa"
-    };
+        PARAM_DEVICEID + "100", PARAM_HOST_PID + std::to_string(hostPid), PARAM_PIDSIGN + pidSign,
+        PARAM_LOGLEVEL + "302", PARAM_VFID + std::to_string(vfId),        PARAM_GRP_NAME + "grpa"};
 
     ArgsParser argsParser;
     const bool ret = argsParser.ParseArgs(startParams);
@@ -108,12 +93,8 @@ TEST_F(QsArgsParserUtest, ParseArgsFail2)
     const std::string pidSign = "00000000";
 
     const std::vector<std::string> startParams = {
-        PARAM_DEVICEID + "1",
-        PARAM_PIDSIGN + pidSign,
-        PARAM_LOGLEVEL + "302",
-        PARAM_VFID + std::to_string(vfId),
-        PARAM_GRP_NAME + "grpa"
-    };
+        PARAM_DEVICEID + "1", PARAM_PIDSIGN + pidSign, PARAM_LOGLEVEL + "302", PARAM_VFID + std::to_string(vfId),
+        PARAM_GRP_NAME + "grpa"};
 
     ArgsParser argsParser;
     const bool ret = argsParser.ParseArgs(startParams);
@@ -124,7 +105,7 @@ TEST_F(QsArgsParserUtest, ParseArgsFail3)
 {
     ArgsParser argsParser;
     int32_t argc = 0;
-    const char *argv[] = {
+    const char* argv[] = {
         "--deviceId=1",
     };
     const bool ret = argsParser.ParseArgs(argc, argv);
@@ -308,9 +289,7 @@ TEST_F(QsArgsParserUtest, ParseLogAndEventLevelSuccessHost)
     EXPECT_EQ(logLevel, expectedLogLevel);
     const int32_t eventLevel = argsParser.GetEventLevel();
     EXPECT_EQ(eventLevel, 1);
-    MOCKER_CPP(&bqs::FeatureCtrl::IsHostQs)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&bqs::FeatureCtrl::IsHostQs).stubs().will(returnValue(true));
     argsParser.SetLogLevel(1, 1);
 }
 

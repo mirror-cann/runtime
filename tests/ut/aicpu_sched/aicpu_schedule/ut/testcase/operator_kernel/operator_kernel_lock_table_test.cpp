@@ -20,9 +20,7 @@
 #include "aicpusd_model_execute.h"
 #include "operator_kernel_stub.h"
 
-
 using namespace AicpuSchedule;
-
 
 class OperatorKernelLockTableTest : public OperatorKernelTest {
 protected:
@@ -112,12 +110,8 @@ TEST_F(OperatorKernelLockTableTest, ModelLockTable_pending_write_read)
     AicpuModel aicpuModel;
     aicpuModel.modelId_ = 0U;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
-    RunContext runContextLocal = {.modelId = 0,
-                                  .modelTsId = 0,
-                                  .streamId = 0,
-                                  .pending = false,
-                                  .executeInline = true,
-                                  .gotoTaskIndex = -1};
+    RunContext runContextLocal = {
+        .modelId = 0, .modelTsId = 0, .streamId = 0, .pending = false, .executeInline = true, .gotoTaskIndex = -1};
     EXPECT_EQ(kernel_.Compute(taskT, runContextLocal), AICPU_SCHEDULE_OK);
     EXPECT_TRUE(runContextLocal.pending);
     EventWaitManager::TableUnlockWaitManager().ClearBatch({0U});

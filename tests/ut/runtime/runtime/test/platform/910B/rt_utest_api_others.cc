@@ -10,49 +10,47 @@
 #include "../../rt_utest_api.hpp"
 #include "../../data/elf.h"
 
-rtError_t CmoTaskInitStub(TaskInfo *taskInfo, const rtCmoTaskInfo_t *const cmoTaskInfo, const Stream * const stm,
-                      const uint32_t flag)
+rtError_t CmoTaskInitStub(
+    TaskInfo* taskInfo, const rtCmoTaskInfo_t* const cmoTaskInfo, const Stream* const stm, const uint32_t flag)
 {
     (void)flag;
     taskInfo->typeName = "CMO";
     taskInfo->type = TS_TASK_TYPE_CMO;
     taskInfo->u.cmoTask.cmoid = 0U;
- 
+
     return RT_ERROR_MODEL_NULL;
 }
 
-class RtOthersApiTest : public testing::Test
-{
+class RtOthersApiTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        RawDevice *rawDevice = new RawDevice(0);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         (void)rtSetDevice(0);
         (void)rtSetTSDevice(1);
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
- 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
- 
+
         rtDevBinary_t devBin;
         devBin.magic = RT_DEV_BINARY_MAGIC_ELF;
         devBin.version = 2;
         devBin.data = (void*)elf_o;
         devBin.length = elf_o_len;
         rtError_t error3 = rtDevBinaryRegister(&devBin, &binHandle_);
- 
+
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 0);
         delete rawDevice;
- 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
- 
+
     static void TearDownTestCase()
     {
         GlobalMockObject::verify();
@@ -60,38 +58,38 @@ protected:
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
         rtDeviceReset(0);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
- 
+
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
- 
+
     virtual void TearDown()
     {
         GlobalMockObject::verify();
         GlobalMockObject::reset();
     }
- 
+
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
-    static Driver*    driver_;
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
+    static Driver* driver_;
 };
 rtStream_t RtOthersApiTest::stream_ = NULL;
 rtEvent_t RtOthersApiTest::event_ = NULL;
 void* RtOthersApiTest::binHandle_ = nullptr;
-char  RtOthersApiTest::function_ = 'a';
+char RtOthersApiTest::function_ = 'a';
 uint32_t RtOthersApiTest::binary_[32] = {};
 Driver* RtOthersApiTest::driver_ = NULL;
 
@@ -99,7 +97,7 @@ TEST_F(RtOthersApiTest, api_rtsSetCmoDesc)
 {
     rtError_t error;
     rtCmoAddrInfo cmoAddrInfo;
-    void *srcAddr = nullptr;
+    void* srcAddr = nullptr;
 
     error = rtsSetCmoDesc(&cmoAddrInfo, srcAddr, 64);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -150,28 +148,28 @@ TEST_F(RtOthersApiTest, capture_api_36)
     rtError_t error;
     rtStream_t stream;
     rtTaskGrp_t taskGrpHandle = nullptr;
- 
+
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtsStreamBeginTaskGrp(stream);
     EXPECT_EQ(error, ACL_ERROR_RT_STREAM_NOT_CAPTURED);
- 
+
     error = rtsStreamEndTaskGrp(stream, &taskGrpHandle);
     EXPECT_EQ(error, ACL_ERROR_RT_STREAM_NOT_CAPTURED);
- 
+
     error = rtsStreamBeginTaskUpdate(stream, taskGrpHandle);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
+
     error = rtsStreamEndTaskUpdate(stream);
     EXPECT_EQ(error, ACL_ERROR_STREAM_TASK_GROUP_STATUS);
- 
+
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-rtError_t GetThreadIdByStreamIdStub(CbSubscribe *cbSubscribe, const uint32_t devId, const int32_t streamId,
-    uint64_t *const threadId)
+rtError_t GetThreadIdByStreamIdStub(
+    CbSubscribe* cbSubscribe, const uint32_t devId, const int32_t streamId, uint64_t* const threadId)
 {
     UNUSED(cbSubscribe);
     UNUSED(devId);
@@ -184,15 +182,13 @@ TEST_F(RtOthersApiTest, capture_api_37)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtModel_t captureMdl;
     rtCallback_t stub_func = (rtCallback_t)0x12345;
 
     MOCKER_CPP(&Model::LoadCompleteByStreamPostp).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Context::CreateContextCallBackThread).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&CbSubscribe::GetThreadIdByStreamId)
-        .stubs()
-        .will(invoke(GetThreadIdByStreamIdStub));
+    MOCKER_CPP(&CbSubscribe::GetThreadIdByStreamId).stubs().will(invoke(GetThreadIdByStreamIdStub));
     MOCKER_CPP(&DevInfoManage::IsSupportChipFeature).stubs().will(returnValue(true));
 
     error = rtStreamCreate(&stream, 0);

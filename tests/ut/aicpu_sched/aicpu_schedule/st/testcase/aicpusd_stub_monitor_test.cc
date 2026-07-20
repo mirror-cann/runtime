@@ -18,13 +18,13 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 
 class AicpuStubMonitorTEST : public testing::Test {
-
     virtual void SetUp() {}
 
     virtual void TearDown() {}
 };
 
-TEST_F(AicpuStubMonitorTEST, HandleOpTimeoutTest) {
+TEST_F(AicpuStubMonitorTEST, HandleOpTimeoutTest)
+{
     AicpuMonitor::GetInstance().HandleOpTimeout();
     AicpuMonitor::GetInstance().InitAsyncOpTimer();
     AicpuMonitor::GetInstance().SendKillMsgToTsd();
@@ -35,99 +35,118 @@ TEST_F(AicpuStubMonitorTEST, HandleOpTimeoutTest) {
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, InitMonitorTest) {
+TEST_F(AicpuStubMonitorTEST, InitMonitorTest)
+{
     auto ret = AicpuMonitor::GetInstance().InitMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuStubMonitorTEST, SendKillMsgToTsdTest) {
+TEST_F(AicpuStubMonitorTEST, SendKillMsgToTsdTest)
+{
     AicpuMonitor::GetInstance().SendKillMsgToTsd();
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetTaskInfoTest) {
+TEST_F(AicpuStubMonitorTEST, SetTaskInfoTest)
+{
     TaskInfoForMonitor taskInfo;
     AicpuMonitor::GetInstance().SetTaskInfo(1, taskInfo);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetOpExecuteTimeOutTest) {
+TEST_F(AicpuStubMonitorTEST, SetOpExecuteTimeOutTest)
+{
     AicpuMonitor::GetInstance().SetOpExecuteTimeOut(2, 10);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetTaskStartTimeTest) {
+TEST_F(AicpuStubMonitorTEST, SetTaskStartTimeTest)
+{
     AicpuMonitor::GetInstance().SetTaskStartTime(2);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetTaskEndTimeTest) {
+TEST_F(AicpuStubMonitorTEST, SetTaskEndTimeTest)
+{
     AicpuMonitor::GetInstance().SetTaskEndTime(2);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetAicpuStreamTaskStartTimeTest) {
+TEST_F(AicpuStubMonitorTEST, SetAicpuStreamTaskStartTimeTest)
+{
     AicpuMonitor::GetInstance().SetAicpuStreamTaskStartTime(2);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetAicpuStreamTaskEndTimeTest) {
+TEST_F(AicpuStubMonitorTEST, SetAicpuStreamTaskEndTimeTest)
+{
     AicpuMonitor::GetInstance().SetAicpuStreamTaskEndTime(2);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetModelStartTimeTest) {
+TEST_F(AicpuStubMonitorTEST, SetModelStartTimeTest)
+{
     AicpuMonitor::GetInstance().SetModelStartTime(2);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetModelEndTimeTest) {
+TEST_F(AicpuStubMonitorTEST, SetModelEndTimeTest)
+{
     AicpuMonitor::GetInstance().SetModelEndTime(2);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, RunTest) {
+TEST_F(AicpuStubMonitorTEST, RunTest)
+{
     AicpuMonitor::GetInstance().Run();
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, StopMonitorTest) {
+TEST_F(AicpuStubMonitorTEST, StopMonitorTest)
+{
     AicpuMonitor::GetInstance().StopMonitor();
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetTaskTimeoutFlagTest) {
+TEST_F(AicpuStubMonitorTEST, SetTaskTimeoutFlagTest)
+{
     auto ret = AicpuMonitor::GetInstance().SetTaskTimeoutFlag();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuStubMonitorTEST, SetModelTimeoutFlagTest) {
+TEST_F(AicpuStubMonitorTEST, SetModelTimeoutFlagTest)
+{
     auto ret = AicpuMonitor::GetInstance().SetModelTimeoutFlag();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuStubMonitorTEST, WorkTest) {
-    AicpuMonitor *monitor;
+TEST_F(AicpuStubMonitorTEST, WorkTest)
+{
+    AicpuMonitor* monitor;
     AicpuMonitor::GetInstance().Work(monitor);
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, HandleTaskTimeoutTest) {
+TEST_F(AicpuStubMonitorTEST, HandleTaskTimeoutTest)
+{
     AicpuMonitor::GetInstance().HandleTaskTimeout();
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, HandleModelTimeoutTest) {
+TEST_F(AicpuStubMonitorTEST, HandleModelTimeoutTest)
+{
     AicpuMonitor::GetInstance().HandleModelTimeout();
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, DisableModelTimeoutTest) {
+TEST_F(AicpuStubMonitorTEST, DisableModelTimeoutTest)
+{
     AicpuMonitor::GetInstance().DisableModelTimeout();
     EXPECT_EQ(AicpuMonitor::GetInstance().deviceId_, 0);
 }
 
-TEST_F(AicpuStubMonitorTEST, GetTaskDefaultTimeoutTest) {
+TEST_F(AicpuStubMonitorTEST, GetTaskDefaultTimeoutTest)
+{
     auto ret = AicpuMonitor::GetInstance().GetTaskDefaultTimeout();
     EXPECT_EQ(ret, 0);
 }

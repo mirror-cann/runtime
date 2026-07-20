@@ -15,14 +15,14 @@
 
 #define private public
 #define protected public
-//#include "easy_comm.h"
+// #include "easy_comm.h"
 
 #include "bind_relation.h"
-//#include "queue_manager.h"
+// #include "queue_manager.h"
 #include "bqs_server.h"
-//#include "bqs_log.h"
+// #include "bqs_log.h"
 #include "bqs_msg.h"
-//#include "bqs_status.h"
+// #include "bqs_status.h"
 #undef private
 #undef protected
 
@@ -49,8 +49,7 @@ protected:
     }
 };
 
-void BqsCheckAssign32UAddStubOverFlow(const uint32_t para1,
-    const uint32_t para2, uint32_t &result, bool &onceOverFlow)
+void BqsCheckAssign32UAddStubOverFlow(const uint32_t para1, const uint32_t para2, uint32_t& result, bool& onceOverFlow)
 {
     onceOverFlow = true;
     return;
@@ -103,7 +102,7 @@ TEST_F(BQS_SERVER_STest, ParseGetBindMsgByDstSuccess)
     bqsBindQueueMsg->set_src_queue_id(0);
     bqsBindQueueMsg->set_dst_queue_id(6);
 
-    auto &bindRelation = bqs::BindRelation::GetInstance();
+    auto& bindRelation = bqs::BindRelation::GetInstance();
     auto srcEntity = bqs::EntityInfo(5U, 0U);
     auto dstEntity = bqs::EntityInfo(6U, 0U);
     auto abnormalSrc = bqs::EntityInfo(7U, 0U);
@@ -179,7 +178,7 @@ TEST_F(BQS_SERVER_STest, ParseGetPagedBindMsgSuccess)
     bqsPagedMsg->set_offset(0);
     bqsPagedMsg->set_limit(20);
 
-    auto &bindRelation = bqs::BindRelation::GetInstance();
+    auto& bindRelation = bqs::BindRelation::GetInstance();
     auto srcEntity = bqs::EntityInfo(5U, 0U);
     auto dstEntity = bqs::EntityInfo(6U, 0U);
     auto dstEntity1 = bqs::EntityInfo(7U, 0U);
@@ -199,9 +198,7 @@ TEST_F(BQS_SERVER_STest, ParseGetPagedBindMsgSuccess)
 
     uint32_t bindNum = bqsBindQueueMsgs->bind_queue_vec_size();
     EXPECT_EQ(bindNum, 4U);
-    MOCKER(BqsCheckAssign32UAdd)
-        .stubs()
-        .will(invoke(BqsCheckAssign32UAddStubOverFlow));
+    MOCKER(BqsCheckAssign32UAdd).stubs().will(invoke(BqsCheckAssign32UAddStubOverFlow));
     bqs::BqsServer::GetInstance().SendRspMsg(0, 0);
 }
 

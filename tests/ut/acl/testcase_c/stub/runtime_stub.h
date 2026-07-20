@@ -19,23 +19,24 @@
 
 class RuntimeStubMock {
 public:
-  static RuntimeStubMock& GetInstance() {
-    static RuntimeStubMock mock;
-    return mock;
-  }
-  MOCK_METHOD0(rtInit, rtError_t());
-  MOCK_METHOD2(rtSubscribeReport, rtError_t(uint64_t threadId, rtStream_t stream));
-  MOCK_METHOD2(rtUnSubscribeReport, rtError_t(uint64_t threadId, rtStream_t stream));
-  MOCK_METHOD4(rtCallbackLaunch, rtError_t(rtCallback_t callBackFunc, void *fnData, rtStream_t stream, bool isBlock));
-  MOCK_METHOD1(rtProcessReport, rtError_t(int32_t timeout));
+    static RuntimeStubMock& GetInstance()
+    {
+        static RuntimeStubMock mock;
+        return mock;
+    }
+    MOCK_METHOD0(rtInit, rtError_t());
+    MOCK_METHOD2(rtSubscribeReport, rtError_t(uint64_t threadId, rtStream_t stream));
+    MOCK_METHOD2(rtUnSubscribeReport, rtError_t(uint64_t threadId, rtStream_t stream));
+    MOCK_METHOD4(rtCallbackLaunch, rtError_t(rtCallback_t callBackFunc, void* fnData, rtStream_t stream, bool isBlock));
+    MOCK_METHOD1(rtProcessReport, rtError_t(int32_t timeout));
 
-  MOCK_METHOD2(rtSubscribeHostFunc, rtError_t(uint64_t threadId, rtStream_t stream));
-  MOCK_METHOD2(rtUnSubscribeHostFunc, rtError_t(uint64_t threadId, rtStream_t stream));
-  MOCK_METHOD1(rtProcessHostFunc, rtError_t(int32_t timeout));
-  MOCK_METHOD1(rtCtxGetCurrent, rtError_t(rtContext_t *ctx));
-  MOCK_METHOD1(rtGetRunMode, rtError_t(rtRunMode *mode));
-  MOCK_METHOD2(rtStreamCreateWithConfig, rtError_t(rtStream_t *stream, rtStreamConfigHandle *handle));
+    MOCK_METHOD2(rtSubscribeHostFunc, rtError_t(uint64_t threadId, rtStream_t stream));
+    MOCK_METHOD2(rtUnSubscribeHostFunc, rtError_t(uint64_t threadId, rtStream_t stream));
+    MOCK_METHOD1(rtProcessHostFunc, rtError_t(int32_t timeout));
+    MOCK_METHOD1(rtCtxGetCurrent, rtError_t(rtContext_t* ctx));
+    MOCK_METHOD1(rtGetRunMode, rtError_t(rtRunMode* mode));
+    MOCK_METHOD2(rtStreamCreateWithConfig, rtError_t(rtStream_t* stream, rtStreamConfigHandle* handle));
 };
 
-rtError_t rtGetRunMode_Device_Normal_Invoke(rtRunMode *mode);
+rtError_t rtGetRunMode_Device_Normal_Invoke(rtRunMode* mode);
 #endif

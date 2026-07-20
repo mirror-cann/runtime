@@ -25,9 +25,9 @@ using namespace AicpuSchedule;
 
 namespace {
 uint32_t batchDequeueInfoDeviceIds[] = {0U, 1U};
-int32_t CheckAndParseBatchDeqBufParamsStub(OperatorKernelModelBatchDequeueBuff *obj,
-    const BatchDequeueBuffDesc *const batchDeqBufDesc, const AicpuTaskInfo &kernelTaskInfo,
-    const RunContext &taskContext, BatchDequeueBuffInfo &batchDeqBufInfo)
+int32_t CheckAndParseBatchDeqBufParamsStub(
+    OperatorKernelModelBatchDequeueBuff* obj, const BatchDequeueBuffDesc* const batchDeqBufDesc,
+    const AicpuTaskInfo& kernelTaskInfo, const RunContext& taskContext, BatchDequeueBuffInfo& batchDeqBufInfo)
 {
     batchDeqBufInfo.inputNums = 1;
     batchDeqBufInfo.queueIds = &batchDequeueInfoQueueIds[0];
@@ -35,7 +35,7 @@ int32_t CheckAndParseBatchDeqBufParamsStub(OperatorKernelModelBatchDequeueBuff *
     batchDeqBufInfo.deviceIds = &batchDequeueInfoDeviceIds[0];
     return AICPU_SCHEDULE_OK;
 }
-}  // namespace
+} // namespace
 
 class OperatorKernelModelBatchDequeueBuffTest : public OperatorKernelTest {
 protected:
@@ -50,7 +50,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelBatchDequeueBuff_001)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
@@ -62,7 +62,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelBatchDequeueBuff_002)
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
     MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
     AicpuTaskInfo taskT;
-    BatchDequeueBuffDesc *dequeBuff = nullptr;
+    BatchDequeueBuffDesc* dequeBuff = nullptr;
     taskT.paraBase = (uint64_t)dequeBuff;
     int ret = kernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -81,7 +81,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelBatchDequeueBuff_003)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int32_t ret = kernel_.Compute(taskT, runContextT);
@@ -103,7 +103,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelBatchDequeueBuff_004)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int32_t ret = kernel_.Compute(taskT, runContextT);
@@ -119,13 +119,16 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, DequeueBuffTask_001)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     MOCKER_CPP(&OperatorKernelModelBatchDequeueBuff::AlignBatchDequeueBuff).stubs().will(returnValue(0));
     uint64_t respLen = sizeof(struct buff_iovec) + sizeof(struct iovec_info);
-    MOCKER(halQueuePeek).stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&respLen), mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueuePeek)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&respLen), mockcpp::any())
+        .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     int32_t ret = kernel_.ModelDequeueBuffTaskKernel(queue, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
@@ -140,13 +143,16 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, DequeueBuffTask_002)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     MOCKER_CPP(&OperatorKernelModelBatchDequeueBuff::AlignBatchDequeueBuff).stubs().will(returnValue(0));
     uint64_t respLen = sizeof(struct buff_iovec) + sizeof(struct iovec_info);
-    MOCKER(halQueuePeek).stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&respLen), mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueuePeek)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&respLen), mockcpp::any())
+        .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     MOCKER_CPP(&BufManager::MallocAndGuardBuf).stubs().will(returnValue(mbuf));
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     int32_t ret = kernel_.ModelDequeueBuffTaskKernel(queue, runContextT);
@@ -162,13 +168,16 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelDequeueBuffTaskKernel_003)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     MOCKER_CPP(&OperatorKernelModelBatchDequeueBuff::AlignBatchDequeueBuff).stubs().will(returnValue(0));
     uint64_t respLen = sizeof(struct buff_iovec) + sizeof(struct iovec_info);
-    MOCKER(halQueuePeek).stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&respLen), mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueuePeek)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&respLen), mockcpp::any())
+        .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     MOCKER_CPP(&BufManager::MallocAndGuardBuf).stubs().will(returnValue(mbuf));
     MOCKER_CPP(&AicpuModel::GetModelDestroyStatus).stubs().will(returnValue(true));
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
@@ -227,7 +236,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, AlignBatchDequeueBuff_003)
 TEST_F(OperatorKernelModelBatchDequeueBuffTest, CheckAndParseBatchDeqBuffParams_001)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     AicpuTaskInfo task;
@@ -252,7 +261,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, CheckAndParseBatchDeqBuffParams_
 
 TEST_F(OperatorKernelModelBatchDequeueBuffTest, CheckAndParseBatchDeqBufParams_003)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo task;
     BatchDequeueBuffDesc batchDeqBufDesc = {};
@@ -268,10 +277,11 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, CheckAndParseBatchDeqBufParams_0
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelDequeueBuffTaskKernel_FAILED1) {
+TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelDequeueBuffTaskKernel_FAILED1)
+{
     MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    Mbuf **mbuf = nullptr;
+    Mbuf** mbuf = nullptr;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)mbuf};
     int ret = kernel_.ModelDequeueBuffTaskKernel(queue, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -285,7 +295,7 @@ TEST_F(OperatorKernelModelBatchDequeueBuffTest, ModelDequeueBuffTaskKernel_TryOn
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char tmpBuf[128] = {0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     BufEnQueueBuffInfo queue{0, 0, (uint64_t)&mbuf};
     int32_t ret = kernel_.ModelDequeueBuffTaskKernel(queue, runContextT, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);

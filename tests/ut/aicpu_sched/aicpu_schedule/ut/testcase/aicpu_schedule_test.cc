@@ -72,199 +72,202 @@
 using namespace AicpuSchedule;
 using namespace aicpu;
 
-
 namespace {
 using AicpuScheduleUtStub::DlopenMsqOperatorStub;
 using AicpuScheduleUtStub::DlsymMsqOperatorStub;
 
 static struct event_info g_event = {
-    .comm = {
-        .event_id = EVENT_TEST,
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
+    .comm =
+        {.event_id = EVENT_TEST,
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
 
-drvError_t halEschedAckEventModelOperatorV0Success(uint32_t devId, EVENT_ID eventId, uint32_t subeventId,
-    char *msg, uint32_t msgLen) {
-    hwts_response_t *hwtsResp  = reinterpret_cast<hwts_response_t *>(msg);
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(hwtsResp->msg);
+drvError_t halEschedAckEventModelOperatorV0Success(
+    uint32_t devId, EVENT_ID eventId, uint32_t subeventId, char* msg, uint32_t msgLen)
+{
+    hwts_response_t* hwtsResp = reinterpret_cast<hwts_response_t*>(msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(hwtsResp->msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_MODEL_OPERATE_RESPONSE);
     EXPECT_EQ(ctrlMsg->u.aicpu_model_operate_resp.cmd_type, AICPU_MODEL_OPERATE);
     std::cout << "halEschedAckEvent v0 check succ." << std::endl;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedAckEventModelOperatorV1Success(uint32_t devId, EVENT_ID eventId, uint32_t subeventId,
-    char *msg, uint32_t msgLen) {
-    hwts_response_t *hwtsResp  = reinterpret_cast<hwts_response_t *>(msg);
-    TsAicpuMsgInfo *msgInfo = reinterpret_cast<TsAicpuMsgInfo *>(hwtsResp->msg);
+drvError_t halEschedAckEventModelOperatorV1Success(
+    uint32_t devId, EVENT_ID eventId, uint32_t subeventId, char* msg, uint32_t msgLen)
+{
+    hwts_response_t* hwtsResp = reinterpret_cast<hwts_response_t*>(msg);
+    TsAicpuMsgInfo* msgInfo = reinterpret_cast<TsAicpuMsgInfo*>(hwtsResp->msg);
     EXPECT_EQ(msgInfo->cmd_type, TS_AICPU_MODEL_OPERATE);
     std::cout << "halEschedAckEvent v1 check succ." << std::endl;
     return DRV_ERROR_NONE;
 }
 
-int tsDevSendMsgAsyncSuccess(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncSuccess(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->u.aicpu_timeout_cfg_resp.result, AICPU_SCHEDULE_OK);
     return 0;
 }
 
-int tsDevSendMsgAsyncModelreporterrlogV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncModelreporterrlogV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_ERR_MSG_REPORT);
     return 0;
 }
 
-int tsDevSendMsgAsyncreporterrlogV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncreporterrlogV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_TASK_REPORT);
     return 0;
 }
 
-int tsDevSendMsgAsyncDumpResponseV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncDumpResponseV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_DATADUMP_RESPONSE);
     EXPECT_EQ(ctrlMsg->u.aicpu_dump_resp.cmd_type, AICPU_DATADUMP_REPORT);
     return 0;
 }
 
-int tsDevSendMsgAsyncDumpResponseV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncDumpResponseV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_DEBUG_DATADUMP_REPORT);
     return 0;
 }
 
-int tsDevSendMsgAsyncDataDumpLoadResponseV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncDataDumpLoadResponseV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_DATADUMP_RESPONSE);
     EXPECT_EQ(ctrlMsg->u.aicpu_dump_resp.cmd_type, AICPU_DATADUMP_LOADINFO);
     return 0;
 }
 
-int tsDevSendMsgAsyncDataDumpLoadResponseV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncDataDumpLoadResponseV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_DEBUG_DATADUMP_REPORT);
     return 0;
 }
 
-
-int tsDevSendMsgAsyncNoticeTsPidResponseV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncNoticeTsPidResponseV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_NOTICE_TS_PID);
     return 0;
 }
 
-int tsDevSendMsgAsyncNoticeTsPidResponseV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncNoticeTsPidResponseV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_RECORD);
     return 0;
 }
 
-int tsDevSendMsgAsyncRecordResponseV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncRecordResponseV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_RECORD);
     return 0;
 }
 
-int tsDevSendMsgAsyncRecordResponseV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncRecordResponseV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_RECORD);
     return 0;
 }
 
-int tsDevSendMsgAsyncAicpuTimeOutConfigResponseV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncAicpuTimeOutConfigResponseV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_TIMEOUT_CONFIG_RESPONSE);
     return 0;
 }
 
-int tsDevSendMsgAsyncAicpuTimeOutConfigResponseV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncAicpuTimeOutConfigResponseV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_TIMEOUT_CONFIG);
     return 0;
 }
 
-int tsDevSendMsgAsyncInfoLoadResponseV0Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncInfoLoadResponseV0Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, AICPU_INFO_LOAD_RESPONSE);
     return 0;
 }
 
-int tsDevSendMsgAsyncInfoLoadResponseV1Success(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncInfoLoadResponseV1Success(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(ctrlMsg->cmd_type, TS_AICPU_INFO_LOAD);
     return 0;
 }
 
-int tsDevSendMsgAsyncFail(unsigned int devId, unsigned int tsId, char *msg,
-                             unsigned int msgLen, unsigned int handleId) {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncFail(unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_NE(ctrlMsg->u.aicpu_timeout_cfg_resp.result, AICPU_SCHEDULE_OK);
     return 0;
 }
-void addPreProcessFFTSPLUSContext(const aicpu::dump::Task *task, aicpu::dump::Context *context)
+void addPreProcessFFTSPLUSContext(const aicpu::dump::Task* task, aicpu::dump::Context* context)
 {
-    const auto &inputFromTask = task->input();
+    const auto& inputFromTask = task->input();
     uint32_t inputFromTaskSize = static_cast<uint32_t>(inputFromTask.size());
     for (uint32_t j = 0U; j < inputFromTaskSize; ++j) {
-        aicpu::dump::RealAddressAndSize * opInput = context->add_input();
-        const auto &task_input = inputFromTask.at(j);
+        aicpu::dump::RealAddressAndSize* opInput = context->add_input();
+        const auto& task_input = inputFromTask.at(j);
         uint64_t dataAddr = task_input.address();
         uint64_t size = task_input.size();
         opInput->set_address(dataAddr);
         opInput->set_size(size);
     }
-    const auto &outputFromTask = task->output();
+    const auto& outputFromTask = task->output();
     uint32_t outputFromTaskSize = static_cast<uint32_t>(outputFromTask.size());
     for (uint32_t j = 0U; j < outputFromTaskSize; ++j) {
-        aicpu::dump::RealAddressAndSize * outInput = context->add_output();
-        const auto &task_output = outputFromTask.at(j);
+        aicpu::dump::RealAddressAndSize* outInput = context->add_output();
+        const auto& task_output = outputFromTask.at(j);
         uint64_t dataAddr = task_output.address();
         uint64_t size = task_output.size();
         outInput->set_address(dataAddr);
         outInput->set_size(size);
     }
 }
-}
+} // namespace
 
 class AICPUScheduleTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -273,32 +276,32 @@ protected:
     }
 };
 
-TEST_F(AICPUScheduleTEST, LOADTEST) {
-    AicpuModelInfo *ModelInfoptr = (AicpuModelInfo *)malloc(sizeof(AicpuModelInfo));
+TEST_F(AICPUScheduleTEST, LOADTEST)
+{
+    AicpuModelInfo* ModelInfoptr = (AicpuModelInfo*)malloc(sizeof(AicpuModelInfo));
     if (ModelInfoptr == nullptr) {
         return;
     }
     ModelInfoptr->moduleID = 1;
     ModelInfoptr->streamInfoNum = 10;
-    ModelInfoptr->aicpuTaskNum  = 10;
-    ModelInfoptr->queueSize  = 0;
+    ModelInfoptr->aicpuTaskNum = 10;
+    ModelInfoptr->queueSize = 0;
     // TODO
-    ModelInfoptr->tsId  = 0;
-    StreamInfo *streamInfo = (StreamInfo *)malloc(sizeof(StreamInfo) * 10);
+    ModelInfoptr->tsId = 0;
+    StreamInfo* streamInfo = (StreamInfo*)malloc(sizeof(StreamInfo) * 10);
     if (streamInfo == nullptr) {
         return;
     }
     streamInfo[0].streamID = 0;
-    streamInfo[0].streamFlag = AICPU_STREAM_INDEX|HEAD_STREAM_INDEX;
+    streamInfo[0].streamFlag = AICPU_STREAM_INDEX | HEAD_STREAM_INDEX;
     for (int i = 1; i < 10; i++) {
         streamInfo[i].streamID = i;
         streamInfo[i].streamFlag = 0;
     }
 
-
-    AicpuTaskInfo *aicpuTaskinfo = (AicpuTaskInfo *)malloc(sizeof(AicpuTaskInfo) * 10);
+    AicpuTaskInfo* aicpuTaskinfo = (AicpuTaskInfo*)malloc(sizeof(AicpuTaskInfo) * 10);
     if (aicpuTaskinfo == nullptr) {
-        return ;
+        return;
     }
 
     std::string taskNames[10];
@@ -310,9 +313,9 @@ TEST_F(AICPUScheduleTEST, LOADTEST) {
     }
 
     ModelInfoptr->streamInfoPtr = (uint64_t)streamInfo;
-    ModelInfoptr->aicpuTaskPtr  = (uint64_t)aicpuTaskinfo;
+    ModelInfoptr->aicpuTaskPtr = (uint64_t)aicpuTaskinfo;
 
-    int ret = AICPUModelLoad((void *)ModelInfoptr);
+    int ret = AICPUModelLoad((void*)ModelInfoptr);
     ret = AICPUModelDestroy(ModelInfoptr->moduleID);
     free(ModelInfoptr);
     free(streamInfo);
@@ -325,12 +328,10 @@ int g_tryTimes = 0;
 std::map<pid_t, uint32_t> g_threadAndModelId;
 std::mutex mtxForThreadModel;
 
-int AICPUScheduleTESTStub_EndGraph(unsigned int chip_id, unsigned int grpId,
-                                   unsigned int thread_index, unsigned int timeout,
-                                   struct event_info *eventInfo)
+int AICPUScheduleTESTStub_EndGraph(
+    unsigned int chip_id, unsigned int grpId, unsigned int thread_index, unsigned int timeout,
+    struct event_info* eventInfo)
 {
-
-
     uintptr_t modelIdaddr = 0;
     mtxForThreadModel.lock();
     auto it = g_threadAndModelId.find(GetTid());
@@ -354,23 +355,22 @@ int AICPUScheduleTESTStub_EndGraph(unsigned int chip_id, unsigned int grpId,
     eventMsg.kernel_info.kernelName = (uintptr_t)g_char;
     eventMsg.kernel_info.paramBase = (uintptr_t)modelIdaddr;
     eventInfo->priv.msg_len = sizeof(hwts_ts_task);
-    memcpy(eventInfo->priv.msg,(char *)&eventMsg,sizeof(hwts_ts_task));
+    memcpy(eventInfo->priv.msg, (char*)&eventMsg, sizeof(hwts_ts_task));
     return 0;
 }
 
 std::mutex mt;
 int g_load_try = 0;
-AicpuModelInfo *ModelInfoptr = nullptr;
-StreamInfo *streamInfo = nullptr;
-AicpuTaskInfo *aicpuTaskinfo = nullptr;
-char *kernelName = nullptr;
-uint32_t *streamId = nullptr;
-// drvError_t halEschedWaitEvent(unsigned int chip_id, unsigned int  thread_index, unsigned int timeout，struct event_info *event)
-int AICPUScheduleTESTStub_LOAD(unsigned int chip_id,
-                                unsigned int grpId,
-                                 unsigned int thread_index,
-                                 unsigned int timeout,
-                                 struct event_info *eventInfo)
+AicpuModelInfo* ModelInfoptr = nullptr;
+StreamInfo* streamInfo = nullptr;
+AicpuTaskInfo* aicpuTaskinfo = nullptr;
+char* kernelName = nullptr;
+uint32_t* streamId = nullptr;
+// drvError_t halEschedWaitEvent(unsigned int chip_id, unsigned int  thread_index, unsigned int timeout，struct
+// event_info *event)
+int AICPUScheduleTESTStub_LOAD(
+    unsigned int chip_id, unsigned int grpId, unsigned int thread_index, unsigned int timeout,
+    struct event_info* eventInfo)
 {
     {
         std::unique_lock<std::mutex> lock(mt);
@@ -386,39 +386,38 @@ int AICPUScheduleTESTStub_LOAD(unsigned int chip_id,
 
     printf("\n=============AICPUScheduleTESTStub_LOAD====\n");
 
-
-    ModelInfoptr = (AicpuModelInfo *)malloc(sizeof(AicpuModelInfo));
+    ModelInfoptr = (AicpuModelInfo*)malloc(sizeof(AicpuModelInfo));
     if (ModelInfoptr == nullptr) {
         return 0;
     }
     ModelInfoptr->moduleID = 100;
     ModelInfoptr->tsId = 12345;
     ModelInfoptr->streamInfoNum = 10;
-    ModelInfoptr->aicpuTaskNum  = 10;
-    ModelInfoptr->queueSize  = 0;
-    streamInfo = (StreamInfo *)malloc(sizeof(StreamInfo) * 10);
+    ModelInfoptr->aicpuTaskNum = 10;
+    ModelInfoptr->queueSize = 0;
+    streamInfo = (StreamInfo*)malloc(sizeof(StreamInfo) * 10);
     if (streamInfo == nullptr) {
         return 0;
     }
     streamInfo[0].streamID = 0;
-    streamInfo[0].streamFlag = AICPU_STREAM_INDEX|HEAD_STREAM_INDEX;
+    streamInfo[0].streamFlag = AICPU_STREAM_INDEX | HEAD_STREAM_INDEX;
     for (int i = 1; i < 10; i++) {
         streamInfo[i].streamID = i;
         streamInfo[i].streamFlag = 0;
     }
 
-    aicpuTaskinfo = (AicpuTaskInfo *)malloc(sizeof(AicpuTaskInfo) * 10);
+    aicpuTaskinfo = (AicpuTaskInfo*)malloc(sizeof(AicpuTaskInfo) * 10);
     if (aicpuTaskinfo == nullptr) {
         return 0;
     }
 
-    kernelName = (char *)malloc(20);
+    kernelName = (char*)malloc(20);
     for (int i = 0; i < 10; i++) {
         aicpuTaskinfo[i].kernelName = (uintptr_t)kernelName;
     }
-    memcpy((char *)(uintptr_t)aicpuTaskinfo[0].kernelName, "activeEntryStream", strlen("activeEntryStream") + 1);
+    memcpy((char*)(uintptr_t)aicpuTaskinfo[0].kernelName, "activeEntryStream", strlen("activeEntryStream") + 1);
 
-    streamId = (uint32_t *)malloc(4);
+    streamId = (uint32_t*)malloc(4);
     *streamId = 1;
     aicpuTaskinfo[0].paraBase = (uintptr_t)streamId;
 
@@ -429,9 +428,7 @@ int AICPUScheduleTESTStub_LOAD(unsigned int chip_id,
     }
 
     ModelInfoptr->streamInfoPtr = (uint64_t)streamInfo;
-    ModelInfoptr->aicpuTaskPtr  = (uint64_t)aicpuTaskinfo;
-
-
+    ModelInfoptr->aicpuTaskPtr = (uint64_t)aicpuTaskinfo;
 
     eventInfo->comm.pid = 100;
     eventInfo->comm.host_pid = 200;
@@ -451,19 +448,16 @@ int AICPUScheduleTESTStub_LOAD(unsigned int chip_id,
     eventMsg.u.aicpu_model_operate.arg_ptr = (uintptr_t)ModelInfoptr;
 
     eventInfo->priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    memcpy(eventInfo->priv.msg, (char *)&eventMsg, sizeof(ts_aicpu_sqe_t));
+    memcpy(eventInfo->priv.msg, (char*)&eventMsg, sizeof(ts_aicpu_sqe_t));
     return 0;
 }
 
 // int32_t halEschedAckEvent(uint32_t chip_id, EVENT_ID event_id, char *msg, uint32_t msg_len)
-int AICPUScheduleTESTAckStub(unsigned int chip_id,
-                               EVENT_ID event_id,
-                               unsigned int subeventId,
-                               char *msg,
-                               uint32_t msg_len)
+int AICPUScheduleTESTAckStub(
+    unsigned int chip_id, EVENT_ID event_id, unsigned int subeventId, char* msg, uint32_t msg_len)
 {
     printf("===========event_id=%d===========\n", event_id);
-    hwts_response_t *response = (hwts_response_t *)msg;
+    hwts_response_t* response = (hwts_response_t*)msg;
     printf("===========result=%d===========\n", response->result);
     printf("===========mailbox_id=%d=======\n", response->mailbox_id);
     printf("===========serial_no=%d========\n", response->serial_no);
@@ -471,14 +465,11 @@ int AICPUScheduleTESTAckStub(unsigned int chip_id,
 }
 
 // int32_t halEschedAckEvent(uint32_t chip_id, EVENT_ID event_id, char *msg, uint32_t msg_len)
-int AICPUScheduleTESTAckStub_LOAD(unsigned int chip_id,
-                               EVENT_ID event_id,
-                               unsigned int subeventId,
-                               char *msg,
-                               uint32_t msg_len)
+int AICPUScheduleTESTAckStub_LOAD(
+    unsigned int chip_id, EVENT_ID event_id, unsigned int subeventId, char* msg, uint32_t msg_len)
 {
     printf("===========event_id=%d===========\n", event_id);
-    TsAicpuSqe *response = (TsAicpuSqe *)msg;
+    TsAicpuSqe* response = (TsAicpuSqe*)msg;
     printf("===========result=%d=============\n", response->u.aicpu_model_operate_resp.result_code);
     printf("===========cmdType=%d============\n", response->cmd_type);
     return 0;
@@ -486,12 +477,11 @@ int AICPUScheduleTESTAckStub_LOAD(unsigned int chip_id,
 
 std::mutex mut;
 
-void PackageLoadInformation (uint32_t *modelId,
-                             AicpuModelInfo *&ModelInfoptr,
-                             StreamInfo *&streamInfo,
-                             AicpuTaskInfo *&aicpuTaskinfo,
-                             uint32_t *&streamId) {
-    ModelInfoptr = (AicpuModelInfo *)malloc(sizeof(AicpuModelInfo));
+void PackageLoadInformation(
+    uint32_t* modelId, AicpuModelInfo*& ModelInfoptr, StreamInfo*& streamInfo, AicpuTaskInfo*& aicpuTaskinfo,
+    uint32_t*& streamId)
+{
+    ModelInfoptr = (AicpuModelInfo*)malloc(sizeof(AicpuModelInfo));
     if (ModelInfoptr == nullptr) {
         return;
     }
@@ -508,28 +498,28 @@ void PackageLoadInformation (uint32_t *modelId,
     ModelInfoptr->moduleID = *modelId;
     ModelInfoptr->tsId = 12345;
     ModelInfoptr->streamInfoNum = 10;
-    ModelInfoptr->aicpuTaskNum  = 10;
-    ModelInfoptr->queueSize  = 0;
-    streamInfo = (StreamInfo *)malloc(sizeof(StreamInfo) * 10);
+    ModelInfoptr->aicpuTaskNum = 10;
+    ModelInfoptr->queueSize = 0;
+    streamInfo = (StreamInfo*)malloc(sizeof(StreamInfo) * 10);
     if (streamInfo == nullptr) {
         return;
     }
     streamInfo[0].streamID = (*modelId - 1) * 10;
-    streamInfo[0].streamFlag = AICPU_STREAM_INDEX|HEAD_STREAM_INDEX;
+    streamInfo[0].streamFlag = AICPU_STREAM_INDEX | HEAD_STREAM_INDEX;
     for (int i = (*modelId - 1) * 10 + 1; i < (*modelId - 1) * 10 + 10; i++) {
         streamInfo[i - (*modelId - 1) * 10].streamID = i;
         streamInfo[i - (*modelId - 1) * 10].streamFlag = 0;
     }
 
-    aicpuTaskinfo = (AicpuTaskInfo *)malloc(sizeof(AicpuTaskInfo) * 10);
+    aicpuTaskinfo = (AicpuTaskInfo*)malloc(sizeof(AicpuTaskInfo) * 10);
     if (aicpuTaskinfo == nullptr) {
-        return ;
+        return;
     }
 
-    aicpuTaskinfo[0].kernelName = (uintptr_t)(char *)malloc(20);
-    memcpy((char *)(uintptr_t)aicpuTaskinfo[0].kernelName, "activeEntryStream", strlen("activeEntryStream") + 1);
+    aicpuTaskinfo[0].kernelName = (uintptr_t)(char*)malloc(20);
+    memcpy((char*)(uintptr_t)aicpuTaskinfo[0].kernelName, "activeEntryStream", strlen("activeEntryStream") + 1);
 
-    streamId = (uint32_t *)malloc(4);
+    streamId = (uint32_t*)malloc(4);
     *streamId = (*modelId - 1) * 10 + 1;
     aicpuTaskinfo[0].paraBase = (uintptr_t)streamId;
 
@@ -540,23 +530,23 @@ void PackageLoadInformation (uint32_t *modelId,
     }
 
     ModelInfoptr->streamInfoPtr = (uint64_t)streamInfo;
-    ModelInfoptr->aicpuTaskPtr  = (uint64_t)aicpuTaskinfo;
+    ModelInfoptr->aicpuTaskPtr = (uint64_t)aicpuTaskinfo;
 }
 
-void freeLoadInformation(AicpuModelInfo *&ModelInfoptr,
-                         StreamInfo *&streamInfo,
-                         AicpuTaskInfo *&aicpuTaskinfo,
-                         uint32_t *&streamId) {
+void freeLoadInformation(
+    AicpuModelInfo*& ModelInfoptr, StreamInfo*& streamInfo, AicpuTaskInfo*& aicpuTaskinfo, uint32_t*& streamId)
+{
     free(ModelInfoptr);
     free(streamInfo);
-    free((char *)(uintptr_t)aicpuTaskinfo[0].kernelName);
+    free((char*)(uintptr_t)aicpuTaskinfo[0].kernelName);
     free(streamId);
     free(aicpuTaskinfo);
 }
 
-void LoadAndExecute(uint32_t *modelId) {
+void LoadAndExecute(uint32_t* modelId)
+{
     printf("===========LoadAndExecute: modelId=%d===========\n", *modelId);
-    AicpuModelInfo *ModelInfoptr = (AicpuModelInfo *)malloc(sizeof(AicpuModelInfo));
+    AicpuModelInfo* ModelInfoptr = (AicpuModelInfo*)malloc(sizeof(AicpuModelInfo));
     if (ModelInfoptr == nullptr) {
         return;
     }
@@ -573,30 +563,30 @@ void LoadAndExecute(uint32_t *modelId) {
     ModelInfoptr->moduleID = *modelId;
     ModelInfoptr->tsId = 12345;
     ModelInfoptr->streamInfoNum = 10;
-    ModelInfoptr->aicpuTaskNum  = 10;
-    ModelInfoptr->queueSize  = 0;
-    StreamInfo *streamInfo = (StreamInfo *)malloc(sizeof(StreamInfo) * 10);
+    ModelInfoptr->aicpuTaskNum = 10;
+    ModelInfoptr->queueSize = 0;
+    StreamInfo* streamInfo = (StreamInfo*)malloc(sizeof(StreamInfo) * 10);
     if (streamInfo == nullptr) {
         return;
     }
     streamInfo[0].streamID = (*modelId - 1) * 10;
-    streamInfo[0].streamFlag = AICPU_STREAM_INDEX|HEAD_STREAM_INDEX;
+    streamInfo[0].streamFlag = AICPU_STREAM_INDEX | HEAD_STREAM_INDEX;
     for (int i = (*modelId - 1) * 10 + 1; i < (*modelId - 1) * 10 + 10; i++) {
         streamInfo[i - (*modelId - 1) * 10].streamID = i;
         streamInfo[i - (*modelId - 1) * 10].streamFlag = 0;
     }
 
-    AicpuTaskInfo *aicpuTaskinfo = (AicpuTaskInfo *)malloc(sizeof(AicpuTaskInfo) * 10);
+    AicpuTaskInfo* aicpuTaskinfo = (AicpuTaskInfo*)malloc(sizeof(AicpuTaskInfo) * 10);
     if (aicpuTaskinfo == nullptr) {
-        return ;
+        return;
     }
 
     for (int i = 0; i < 10; i++) {
-        aicpuTaskinfo[i].kernelName = (uintptr_t)(char *)malloc(20);
-        memcpy((char *)(uintptr_t)aicpuTaskinfo[i].kernelName, "activeEntryStream", strlen("activeEntryStream") + 1);
+        aicpuTaskinfo[i].kernelName = (uintptr_t)(char*)malloc(20);
+        memcpy((char*)(uintptr_t)aicpuTaskinfo[i].kernelName, "activeEntryStream", strlen("activeEntryStream") + 1);
     }
 
-    uint32_t *streamId = (uint32_t *)malloc(4);
+    uint32_t* streamId = (uint32_t*)malloc(4);
     *streamId = (*modelId - 1) * 10 + 1;
     aicpuTaskinfo[0].paraBase = (uintptr_t)streamId;
 
@@ -611,15 +601,15 @@ void LoadAndExecute(uint32_t *modelId) {
     }
 
     ModelInfoptr->streamInfoPtr = (uint64_t)streamInfo;
-    ModelInfoptr->aicpuTaskPtr  = (uint64_t)aicpuTaskinfo;
+    ModelInfoptr->aicpuTaskPtr = (uint64_t)aicpuTaskinfo;
 
-    int ret = AICPUModelLoad((void *)ModelInfoptr);
+    int ret = AICPUModelLoad((void*)ModelInfoptr);
     ret = AICPUModelExecute(*modelId);
     ret = AICPUModelDestroy(*modelId);
     free(ModelInfoptr);
     free(streamInfo);
     for (int i = 0; i < 10; i++) {
-        free((char *)(uintptr_t)aicpuTaskinfo[i].kernelName);
+        free((char*)(uintptr_t)aicpuTaskinfo[i].kernelName);
     }
     free(streamId);
     free(aicpuTaskinfo);
@@ -629,34 +619,26 @@ uint32_t modelId1 = 1;
 uint32_t modelId2 = 2;
 uint32_t modelId3 = 3;
 
-TEST_F(AICPUScheduleTEST, EXECUTETESTLOOPWAIT) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(invoke(AICPUScheduleTESTStub_EndGraph));
+TEST_F(AICPUScheduleTEST, EXECUTETESTLOOPWAIT)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(invoke(AICPUScheduleTESTStub_EndGraph));
 
-    MOCKER_CPP(&AicpuEventManager::DoOnce)
-        .stubs()
-        .will(returnValue(16));
-    MOCKER_CPP(&AicpuEventManager::ModelLoopTimeOut)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(halEschedAckEvent)
-        .stubs()
-        .will(invoke(AICPUScheduleTESTAckStub));
+    MOCKER_CPP(&AicpuEventManager::DoOnce).stubs().will(returnValue(16));
+    MOCKER_CPP(&AicpuEventManager::ModelLoopTimeOut).stubs().will(returnValue(true));
+    MOCKER(halEschedAckEvent).stubs().will(invoke(AICPUScheduleTESTAckStub));
     LoadAndExecute(&modelId1);
     LoadAndExecute(&modelId2);
     LoadAndExecute(&modelId1);
     LoadAndExecute(&modelId3);
 
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
     AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(AicpuEventManager::GetInstance().runningFlag_, true);
 }
 
-TEST_F(AICPUScheduleTEST, EXECUTETESTREPORTSTATUS) {
-    AicpuModelInfo *ModelInfoptr = (AicpuModelInfo *)malloc(sizeof(AicpuModelInfo));
+TEST_F(AICPUScheduleTEST, EXECUTETESTREPORTSTATUS)
+{
+    AicpuModelInfo* ModelInfoptr = (AicpuModelInfo*)malloc(sizeof(AicpuModelInfo));
     if (ModelInfoptr == nullptr) {
         return;
     }
@@ -665,25 +647,25 @@ TEST_F(AICPUScheduleTEST, EXECUTETESTREPORTSTATUS) {
     ModelInfoptr->moduleID = modelId;
     ModelInfoptr->tsId = 12345;
     ModelInfoptr->streamInfoNum = 1;
-    ModelInfoptr->aicpuTaskNum  = 1;
-    ModelInfoptr->queueSize  = 0;
-    StreamInfo *streamInfo = (StreamInfo *)malloc(sizeof(StreamInfo));
+    ModelInfoptr->aicpuTaskNum = 1;
+    ModelInfoptr->queueSize = 0;
+    StreamInfo* streamInfo = (StreamInfo*)malloc(sizeof(StreamInfo));
     if (streamInfo == nullptr) {
         return;
     }
     streamInfo[0].streamID = aicpuStreamId;
-    streamInfo[0].streamFlag = AICPU_STREAM_INDEX|HEAD_STREAM_INDEX;
+    streamInfo[0].streamFlag = AICPU_STREAM_INDEX | HEAD_STREAM_INDEX;
 
-    AicpuTaskInfo *aicpuTaskinfo = (AicpuTaskInfo *)malloc(sizeof(AicpuTaskInfo));
+    AicpuTaskInfo* aicpuTaskinfo = (AicpuTaskInfo*)malloc(sizeof(AicpuTaskInfo));
     if (aicpuTaskinfo == nullptr) {
-        return ;
+        return;
     }
 
-    aicpuTaskinfo[0].kernelName = (uintptr_t)(char *)malloc(20);
-    memcpy((char *)(uintptr_t)aicpuTaskinfo[0].kernelName, "modelReportStatus", strlen("modelReportStatus") + 1);
+    aicpuTaskinfo[0].kernelName = (uintptr_t)(char*)malloc(20);
+    memcpy((char*)(uintptr_t)aicpuTaskinfo[0].kernelName, "modelReportStatus", strlen("modelReportStatus") + 1);
 
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + 2 * sizeof(uint32_t));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + 2 * sizeof(uint32_t));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     aicpuTaskinfo[0].paraBase = (uintptr_t)paraMem;
 
@@ -693,15 +675,15 @@ TEST_F(AICPUScheduleTEST, EXECUTETESTREPORTSTATUS) {
     aicpuTaskinfo[0].streamID = aicpuStreamId;
 
     ModelInfoptr->streamInfoPtr = (uint64_t)streamInfo;
-    ModelInfoptr->aicpuTaskPtr  = (uint64_t)aicpuTaskinfo;
+    ModelInfoptr->aicpuTaskPtr = (uint64_t)aicpuTaskinfo;
 
-    int ret = AICPUModelLoad((void *)ModelInfoptr);
+    int ret = AICPUModelLoad((void*)ModelInfoptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     ret = AICPUModelDestroy(modelId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     free(ModelInfoptr);
     free(streamInfo);
-    free((char *)(uintptr_t)aicpuTaskinfo[0].kernelName);
+    free((char*)(uintptr_t)aicpuTaskinfo[0].kernelName);
     free(paraMem);
     free(aicpuTaskinfo);
 }
@@ -709,21 +691,16 @@ TEST_F(AICPUScheduleTEST, EXECUTETESTREPORTSTATUS) {
 static uint32_t modelId11 = 1;
 static uint32_t modelId22 = 2;
 static uint32_t modelId33 = 3;
-TEST_F(AICPUScheduleTEST, multiThread_EXECUTETEST) {
-
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(invoke(AICPUScheduleTESTStub_EndGraph));
-    MOCKER_CPP(&AicpuEventManager::CallModeLoopProcess)
-        .stubs();
-    MOCKER(halEschedAckEvent)
-        .stubs()
-        .will(invoke(AICPUScheduleTESTAckStub));
+TEST_F(AICPUScheduleTEST, multiThread_EXECUTETEST)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(invoke(AICPUScheduleTESTStub_EndGraph));
+    MOCKER_CPP(&AicpuEventManager::CallModeLoopProcess).stubs();
+    MOCKER(halEschedAckEvent).stubs().will(invoke(AICPUScheduleTESTAckStub));
 
     printf("=======================multiThread_EXECUTETEST=====================\n");
-    std::thread t1(LoadAndExecute,&modelId11);
-    std::thread t2(LoadAndExecute,&modelId22);
-    std::thread t3(LoadAndExecute,&modelId33);
+    std::thread t1(LoadAndExecute, &modelId11);
+    std::thread t2(LoadAndExecute, &modelId22);
+    std::thread t3(LoadAndExecute, &modelId33);
     t1.join();
     t2.join();
     t3.join();
@@ -731,7 +708,7 @@ TEST_F(AICPUScheduleTEST, multiThread_EXECUTETEST) {
 }
 
 #if 1
-drvError_t drvGetPlatformInfo_stub(uint32_t *info)
+drvError_t drvGetPlatformInfo_stub(uint32_t* info)
 {
     *info = 0;
     return DRV_ERROR_NONE;
@@ -740,7 +717,7 @@ drvError_t drvGetPlatformInfo_stub(uint32_t *info)
 namespace {
 uint32_t g_msqCqeStub[4] = {0U};
 
-drvError_t HalResAddrMapMsqStub(unsigned int, struct res_addr_info *, unsigned long *va, unsigned int *len)
+drvError_t HalResAddrMapMsqStub(unsigned int, struct res_addr_info*, unsigned long* va, unsigned int* len)
 {
     if (va != nullptr) {
         *va = reinterpret_cast<unsigned long>(g_msqCqeStub);
@@ -750,41 +727,24 @@ drvError_t HalResAddrMapMsqStub(unsigned int, struct res_addr_info *, unsigned l
     }
     return DRV_ERROR_NONE;
 }
-}  // namespace
+} // namespace
 
-TEST_F(AICPUScheduleTEST, MULTI_EXECUTETEST) {
+TEST_F(AICPUScheduleTEST, MULTI_EXECUTETEST)
+{
     printf("=======================MULTI_EXECUTETEST=====================\n");
     g_load_try = 0;
-    MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(invoke(AICPUScheduleTESTStub_LOAD));
+    MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
+    MOCKER(halEschedWaitEvent).stubs().will(invoke(AICPUScheduleTESTStub_LOAD));
 
-    MOCKER(halEschedAckEvent)
-        .stubs()
-        .will(invoke(AICPUScheduleTESTAckStub_LOAD));
+    MOCKER(halEschedAckEvent).stubs().will(invoke(AICPUScheduleTESTAckStub_LOAD));
 
-    MOCKER(drvGetPlatformInfo)
-        .stubs()
-        .will(invoke(drvGetPlatformInfo_stub));
+    MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_stub));
 
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
 
     setenv("ASCEND_GLOBAL_LOG_LEVEL", "3", 1);
     setenv("ASCEND_GLOBAL_EVENT_ENABLE", "1", 1);
@@ -802,99 +762,103 @@ TEST_F(AICPUScheduleTEST, MULTI_EXECUTETEST) {
 
 #endif
 
-TEST_F(AICPUScheduleTEST, AICPUExecuteTask_FAIL) {
+TEST_F(AICPUScheduleTEST, AICPUExecuteTask_FAIL)
+{
     int ret = AICPUExecuteTask(nullptr, nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, AICPUPreOpenKernels_FAIL) {
+TEST_F(AICPUScheduleTEST, AICPUPreOpenKernels_FAIL)
+{
     int ret = AICPUPreOpenKernels(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, AICPUPreOpenKernels_SUCCESS) {
+TEST_F(AICPUScheduleTEST, AICPUPreOpenKernels_SUCCESS)
+{
     char test[10] = "test";
     int ret = AICPUPreOpenKernels(test);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, LOADPROCESS_ERROR) {
+TEST_F(AICPUScheduleTEST, LOADPROCESS_ERROR)
+{
     static uint32_t modelId1 = 1;
-    int ret = AICPUModelLoad((void *)nullptr);
+    int ret = AICPUModelLoad((void*)nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, DoOnceTest1) {
+TEST_F(AICPUScheduleTEST, DoOnceTest1)
+{
     AicpuEventManager::GetInstance().InitEventFunc(SCHED_MODE_INTERRUPT);
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
     AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUScheduleTEST, DoOnceTest2) {
+TEST_F(AICPUScheduleTEST, DoOnceTest2)
+{
     AicpuEventManager::GetInstance().InitEventFunc(SCHED_MODE_INTERRUPT);
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
     AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUScheduleTEST, DoOnceTest3) {
+TEST_F(AICPUScheduleTEST, DoOnceTest3)
+{
     AicpuEventManager::GetInstance().InitEventFunc(SCHED_MODE_INTERRUPT);
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_WAIT_FAILED));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_WAIT_FAILED));
     AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUScheduleTEST, DoOnceTest4) {
+TEST_F(AICPUScheduleTEST, DoOnceTest4)
+{
     AicpuEventManager::GetInstance().InitEventFunc(SCHED_MODE_INTERRUPT);
-    MOCKER_CPP(&AicpuSchedule::g_aicpuProfiler.GetHiperfSoStatus)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&AicpuSchedule::g_aicpuProfiler.GetHiperfSoStatus).stubs().will(returnValue(true));
     AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUScheduleTEST, DoOnceTestFailedAicpuIllegalCPU) {
+TEST_F(AICPUScheduleTEST, DoOnceTestFailedAicpuIllegalCPU)
+{
     AicpuEventManager::GetInstance().InitEventFunc(SCHED_MODE_INTERRUPT);
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
     int32_t ret = AicpuEventManager::GetInstance().DoOnce(0, 0);
     EXPECT_EQ(ret, DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU);
 }
 
-TEST_F(AICPUScheduleTEST, CheckAndSetExitFlagTest) {
+TEST_F(AICPUScheduleTEST, CheckAndSetExitFlagTest)
+{
     AicpuEventManager::GetInstance().noThreadFlag_ = true;
     AicpuEventManager::GetInstance().CheckAndSetExitFlag();
     EXPECT_EQ(AicpuEventManager::GetInstance().noThreadFlag_, true);
 }
 
-TEST_F(AICPUScheduleTEST, GetRunningFlag) {
+TEST_F(AICPUScheduleTEST, GetRunningFlag)
+{
     const bool flag = AicpuEventManager::GetInstance().GetRunningFlag();
     EXPECT_EQ(flag, false);
 }
 
-TEST_F(AICPUScheduleTEST, ModelLoopTimeOutTest) {
+TEST_F(AICPUScheduleTEST, ModelLoopTimeOutTest)
+{
     const int32_t retVal = 0;
     uint32_t waitCounter = 0U;
     const bool timeoutFlag = AicpuEventManager::GetInstance().ModelLoopTimeOut(retVal, waitCounter, 1);
     EXPECT_EQ(timeoutFlag, false);
 }
 
-TEST_F(AICPUScheduleTEST, ModelLoopTimeOutTestTrue) {
+TEST_F(AICPUScheduleTEST, ModelLoopTimeOutTestTrue)
+{
     const int32_t retVal = 16;
     uint32_t waitCounter = 0U;
     const bool timeoutFlag = AicpuEventManager::GetInstance().ModelLoopTimeOut(retVal, waitCounter, 1);
     EXPECT_EQ(timeoutFlag, true);
 }
 
-TEST_F(AICPUScheduleTEST,EventDistributionTest) {
+TEST_F(AICPUScheduleTEST, EventDistributionTest)
+{
     AicpuSqeAdapter::AicpuModelOperateInfo info = {0};
     info.cmd_type = TS_AICPU_MODEL_EXECUTE;
     int ret = AicpuEventManager::GetInstance().EventDistribution(info);
@@ -913,11 +877,12 @@ TEST_F(AICPUScheduleTEST,EventDistributionTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_CMD_TYPE);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventTest)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AIC_TASK_REPORT;
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -937,21 +902,21 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_EVENT);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1Test)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *ctrlMsg = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* ctrlMsg = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
     uint16_t version = 1;
-    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion)
-        .stubs()
-        .will(returnValue(version));
+    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue(version));
     ctrlMsg->cmd_type = TS_AIC_ERROR_REPORT;
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoUseAivBitmapNumTest) {
+TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoUseAivBitmapNumTest)
+{
     AicpuSqeAdapter::AicErrReportInfo reportInfo = {};
     reportInfo.u.aicErrorMsg.aic_bitmap_num = 1;
     reportInfo.u.aicErrorMsg.aiv_bitmap_num = 2;
@@ -968,7 +933,8 @@ TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoUseAivBitmapNumTest) {
     EXPECT_NE(output.find("aivmap[2]"), std::string::npos);
 }
 
-TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoRejectOverflowBitmapNumTest) {
+TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoRejectOverflowBitmapNumTest)
+{
     AicpuSqeAdapter::AicErrReportInfo reportInfo = {};
     reportInfo.u.aicErrorMsg.aic_bitmap_num = 20;
     reportInfo.u.aicErrorMsg.aiv_bitmap_num = 7;
@@ -981,53 +947,48 @@ TEST_F(AICPUScheduleTEST, PrintAicErrReportInfoRejectOverflowBitmapNumTest) {
     EXPECT_EQ(output.find("Bit map is :"), std::string::npos);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1ModelOperatorTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1ModelOperatorTest)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
 
     const uint32_t timeout = 100U;
-    TsAicpuMsgInfo *msgInfo = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* msgInfo = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
     msgInfo->tid = 5;
     msgInfo->ts_id = 1;
     msgInfo->cmd_type = TS_AICPU_MODEL_OPERATE;
     uint16_t version = 1;
-    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion)
-        .stubs()
-        .will(returnValue(version));
-    MOCKER_CPP(&AicpuEventManager::EventDistribution)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue(version));
+    MOCKER_CPP(&AicpuEventManager::EventDistribution).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER(halEschedAckEvent).stubs().will(invoke(halEschedAckEventModelOperatorV1Success));
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV0ModelOperatorTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV0ModelOperatorTest)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100U;
-    TsAicpuSqe *info = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* info = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     info->tid = 5;
     info->ts_id = 1;
     info->cmd_type = AICPU_MODEL_OPERATE;
     uint16_t version = 0;
-    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion)
-        .stubs()
-        .will(returnValue(version));
-    MOCKER_CPP(&AicpuEventManager::EventDistribution)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue(version));
+    MOCKER_CPP(&AicpuEventManager::EventDistribution).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER(halEschedAckEvent).stubs().will(invoke(halEschedAckEventModelOperatorV0Success));
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1ReportErrLogTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1ReportErrLogTest)
+{
     ErrLogRptInfo reportInfo = {};
     TsAicpuMsgInfo info = {0};
     info.cmd_type = TS_AICPU_TASK_REPORT;
@@ -1037,7 +998,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV1ReportErrLogTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV0ReportErrLogTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV0ReportErrLogTest)
+{
     TsAicpuSqe info = {0};
     ErrLogRptInfo reportInfo = {};
     AicpuSqeAdapter adapter(info, 0U);
@@ -1046,7 +1008,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventV0ReportErrLogTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlDumpRspV1Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlDumpRspV1Test)
+{
     TsAicpuMsgInfo info{0};
     info.cmd_type = TS_AICPU_DEBUG_DATADUMP_REPORT;
     AicpuSqeAdapter adapter(info, 1U);
@@ -1055,7 +1018,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlDumpRspV1Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlDumpRspV0Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlDumpRspV0Test)
+{
     TsAicpuSqe info = {0};
     AicpuSqeAdapter adapter(info, 0U);
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncDumpResponseV0Success));
@@ -1063,15 +1027,17 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlDumpRspV0Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlNoticeTsPidResponseV1Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlNoticeTsPidResponseV1Test)
+{
     TsAicpuMsgInfo info{0};
     AicpuSqeAdapter adapter(info, 1U);
-    MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));                
+    MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));
     const auto ret = adapter.AicpuNoticeTsPidResponse(0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlNoticeTsPidResponseV0Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlNoticeTsPidResponseV0Test)
+{
     TsAicpuSqe info = {0};
     AicpuSqeAdapter adapter(info, 0U);
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncNoticeTsPidResponseV0Success));
@@ -1079,25 +1045,28 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlNoticeTsPidResponseV0Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlRecordResponseV1Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlRecordResponseV1Test)
+{
     TsAicpuMsgInfo info{0};
     AicpuSqeAdapter adapter(info, 1U);
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncRecordResponseV1Success));
-    AicpuSqeAdapter::AicpuRecordInfo info1(0,0,0,0,0,0,0);
+    AicpuSqeAdapter::AicpuRecordInfo info1(0, 0, 0, 0, 0, 0, 0);
     const auto ret = adapter.AicpuRecordResponseToTs(info1);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlRecordResponseV0Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlRecordResponseV0Test)
+{
     TsAicpuSqe info = {0};
     AicpuSqeAdapter adapter(info, 0U);
-    AicpuSqeAdapter::AicpuRecordInfo info1(0,0,0,0,0,0,0);
+    AicpuSqeAdapter::AicpuRecordInfo info1(0, 0, 0, 0, 0, 0, 0);
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncRecordResponseV0Success));
     const auto ret = adapter.AicpuRecordResponseToTs(info1);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlTimeOutConfigResponseV1Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlTimeOutConfigResponseV1Test)
+{
     TsAicpuMsgInfo info{0};
     info.cmd_type = TS_AICPU_TIMEOUT_CONFIG;
     AicpuSqeAdapter adapter(info, 1U);
@@ -1106,7 +1075,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlTimeOutConfigResponseV1Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlTimeOutConfigResponseV0Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlTimeOutConfigResponseV0Test)
+{
     TsAicpuSqe info = {0};
     AicpuSqeAdapter adapter(info, 0U);
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncAicpuTimeOutConfigResponseV0Success));
@@ -1114,7 +1084,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlTimeOutConfigResponseV0Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlInfoLoadResponseV1Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlInfoLoadResponseV1Test)
+{
     TsAicpuMsgInfo info{0};
     info.cmd_type = TS_AICPU_INFO_LOAD;
     AicpuSqeAdapter adapter(info, 1U);
@@ -1123,7 +1094,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlInfoLoadResponseV1Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlInfoLoadResponseV0Test) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlInfoLoadResponseV0Test)
+{
     TsAicpuSqe info = {0};
     AicpuSqeAdapter adapter(info, 0U);
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncInfoLoadResponseV0Success));
@@ -1131,14 +1103,15 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlInfoLoadResponseV0Test) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess01) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess01)
+{
     // set op execute success
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100U;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1153,14 +1126,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess01) {
     EXPECT_EQ(AicpuMonitor::GetInstance().tsOpTimeOut_, timeout);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess02) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess02)
+{
     // set op wait success and stop aicpu op timer
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100U;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1175,14 +1149,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess02) {
     EXPECT_EQ(AicpuMonitor::GetInstance().opTimeoutFlag_, true);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess03) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess03)
+{
     // set op wait and execute success
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100U;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1198,15 +1173,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess03) {
     EXPECT_EQ(AicpuMonitor::GetInstance().tsOpTimeOut_, timeout);
 }
 
-
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess04) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess04)
+{
     // op wait enable and wait time is 0, aicpu op timer will not be closed
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1222,14 +1197,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess04) {
     EXPECT_EQ(AicpuMonitor::GetInstance().opTimeoutFlag_, true);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess05) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess05)
+{
     // op wait enable and wait time is larger than execut time, aicpu op timer will not be closed
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1246,14 +1222,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess05) {
     EXPECT_EQ(AicpuMonitor::GetInstance().tsOpTimeOut_.load(), timeout);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess06) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess06)
+{
     // op wait enable and wait time is lesser than execut time, aicpu op timer will not be closed
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1270,14 +1247,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventSuccess06) {
     EXPECT_EQ(AicpuMonitor::GetInstance().tsOpTimeOut_.load(), timeout);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail01) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail01)
+{
     // set op execute failed by timeout overflow
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1287,19 +1265,20 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail01) {
     ctrlMsg->u.ts_to_aicpu_timeout_cfg.op_wait_timeout = 0;
 
     MOCKER(tsDevSendMsgAsync).stubs().will(invoke(tsDevSendMsgAsyncFail));
-    MOCKER_CPP(&aicpu::GetSystemTickFreq).stubs().will(returnValue(UINT64_MAX / (timeout-1)));
+    MOCKER_CPP(&aicpu::GetSystemTickFreq).stubs().will(returnValue(UINT64_MAX / (timeout - 1)));
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail02) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail02)
+{
     // set timeout config failed by not set anything
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1313,14 +1292,15 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail02) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail03) {
+TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail03)
+{
     // set op execute failed by send msg fail
     event_info eventInfo;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     eventInfo.priv.msg_len = sizeof(TsAicpuSqe);
 
     const uint32_t timeout = 100;
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(eventInfo.priv.msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(eventInfo.priv.msg);
     ctrlMsg->tid = 5;
     ctrlMsg->ts_id = 1;
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
@@ -1334,11 +1314,12 @@ TEST_F(AICPUScheduleTEST, ProcessSetTimeoutEventFail03) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSKernelEventTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSKernelEventTest)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_TS_HWTS_KERNEL;
     eventInfo.priv.msg_len = sizeof(hwts_ts_task);
-    struct hwts_ts_task *eventMsg = reinterpret_cast<hwts_ts_task *>(eventInfo.priv.msg);
+    struct hwts_ts_task* eventMsg = reinterpret_cast<hwts_ts_task*>(eventInfo.priv.msg);
     eventMsg->mailbox_id = 1;
     eventMsg->serial_no = 9527;
     eventMsg->kernel_info.kernel_type = KERNEL_TYPE_AICPU;
@@ -1348,29 +1329,28 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSKernelEventTest) {
     eventMsg->kernel_info.kernelName = (uintptr_t)kernelName;
     eventMsg->kernel_info.kernelSo = (uintptr_t)kernelSo;
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
-    MOCKER_CPP(&AicpuEventProcess::ExecuteTsKernelTask)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuEventProcess::ExecuteTsKernelTask).stubs().will(returnValue(0));
     int ret = AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
 namespace AicpuSchedule {
-bool StubCheckOverflow(int32_t &result)
+bool StubCheckOverflow(int32_t& result)
 {
     result = AICPU_SCHEDULE_ERROR_OVERFLOW;
     return true;
 }
 
 void ResetFpsrStub() {}
-}
+} // namespace AicpuSchedule
 
-TEST_F(AICPUScheduleTEST, ProcessFFTSKernelEventTest) {
+TEST_F(AICPUScheduleTEST, ProcessFFTSKernelEventTest)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_TS_HWTS_KERNEL;
     eventInfo.comm.subevent_id = EVENT_FFTS_PLUS_MSG;
     eventInfo.priv.msg_len = sizeof(hwts_ts_task);
-    struct hwts_ts_task *eventMsg = reinterpret_cast<hwts_ts_task *>(eventInfo.priv.msg);
+    struct hwts_ts_task* eventMsg = reinterpret_cast<hwts_ts_task*>(eventInfo.priv.msg);
     eventMsg->mailbox_id = 1;
     eventMsg->serial_no = 9527;
     eventMsg->kernel_info.kernel_type = KERNEL_TYPE_AICPU;
@@ -1379,15 +1359,14 @@ TEST_F(AICPUScheduleTEST, ProcessFFTSKernelEventTest) {
     char kernelSo[] = "libcpu_kernels.so";
     eventMsg->kernel_info.kernelName = (uintptr_t)kernelName;
     eventMsg->kernel_info.kernelSo = (uintptr_t)kernelSo;
-    MOCKER_CPP(&AicpuEventProcess::ExecuteTsKernelTask)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuEventProcess::ExecuteTsKernelTask).stubs().will(returnValue(0));
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     int ret = AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessEventCDQTest) {
+TEST_F(AICPUScheduleTEST, ProcessEventCDQTest)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_CDQ_MSG;
     eventInfo.comm.subevent_id = 0;
@@ -1395,10 +1374,11 @@ TEST_F(AICPUScheduleTEST, ProcessEventCDQTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSTimoutCfgTest) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSTimoutCfgTest)
+{
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
     ctrlMsg->u.ts_to_aicpu_timeout_cfg.op_execute_timeout_en = 1;
     ctrlMsg->u.ts_to_aicpu_timeout_cfg.op_execute_timeout = 300;
@@ -1406,13 +1386,12 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSTimoutCfgTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSTimoutCfgTestFail) {
-    MOCKER(aicpu::GetSystemTickFreq)
-        .stubs()
-        .will(returnValue(0xFFFFFFFFFFFFFFFF));
+TEST_F(AICPUScheduleTEST, ProcessHWTSTimoutCfgTestFail)
+{
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(0xFFFFFFFFFFFFFFFF));
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_TIMEOUT_CONFIG;
     ctrlMsg->u.ts_to_aicpu_timeout_cfg.op_execute_timeout_en = 1;
     ctrlMsg->u.ts_to_aicpu_timeout_cfg.op_execute_timeout = 300;
@@ -1420,7 +1399,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSTimoutCfgTestFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessCdqEventTest) {
+TEST_F(AICPUScheduleTEST, ProcessCdqEventTest)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_CDQ_MSG;
     eventInfo.comm.subevent_id = 0;
@@ -1428,90 +1408,60 @@ TEST_F(AICPUScheduleTEST, ProcessCdqEventTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, InitAICPUSchedulerTest_JsonEmpty) {
+TEST_F(AICPUScheduleTEST, InitAICPUSchedulerTest_JsonEmpty)
+{
     AicpuScheduleInterface::GetInstance().initFlag_ = true;
-    MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+    MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
 
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(-1));
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0,
-                                                                       1, true);
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 1, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     AicpuScheduleInterface::GetInstance().initFlag_ = false;
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
-    ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0,
-                                                                   1, true);
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
+    ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 1, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, InitAICPUSchedulerTest_SUCCESS) {
+TEST_F(AICPUScheduleTEST, InitAICPUSchedulerTest_SUCCESS)
+{
     AicpuScheduleInterface::GetInstance().initFlag_ = true;
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
 
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(0);
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0,
-                                                                       0, true);
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     AicpuScheduleInterface::GetInstance().initFlag_ = false;
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
-    ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0,
-                                                                   0, true);
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
+    ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, UpdateProfilingModeTest) {
+TEST_F(AICPUScheduleTEST, UpdateProfilingModeTest)
+{
     int ret = UpdateProfilingMode(0, 0, 1);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessEventTest) {
+TEST_F(AICPUScheduleTEST, ProcessEventTest)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_DVPP_MSG;
     int ret = AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
@@ -1529,9 +1479,7 @@ TEST_F(AICPUScheduleTEST, ProcessEventTest) {
     ret = AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
     EXPECT_EQ(ret, 1);
 
-    MOCKER_CPP(&AicpuEventProcess::ProcessAICPUEvent)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuEventProcess::ProcessAICPUEvent).stubs().will(returnValue(0));
     eventInfo.comm.event_id = EVENT_AICPU_MSG;
     ret = AicpuEventManager::GetInstance().ProcessEvent(eventInfo, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -1548,7 +1496,8 @@ TEST_F(AICPUScheduleTEST, ProcessEventTest) {
     // EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessEventTest02) {
+TEST_F(AICPUScheduleTEST, ProcessEventTest02)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_TS_HWTS_KERNEL;
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
@@ -1560,16 +1509,11 @@ TEST_F(AICPUScheduleTEST, ProcessEventTest02) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessEventTest2) {
-    MOCKER_CPP(&AicpuEventProcess::ProcessAICPUEvent)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&AicpuQueueEventProcess::ProcessQsMsg)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&AicpuQueueEventProcess::ProcessDrvMsg)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, ProcessEventTest2)
+{
+    MOCKER_CPP(&AicpuEventProcess::ProcessAICPUEvent).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuQueueEventProcess::ProcessQsMsg).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuQueueEventProcess::ProcessDrvMsg).stubs().will(returnValue(0));
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     // MOCKER_CPP(&AicpuEventManager::ProcessCdqEvent)
     //     .stubs()
@@ -1629,7 +1573,8 @@ TEST_F(AICPUScheduleTEST, ProcessEventTest2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_NOT_FOUND_EVENT);
 }
 
-TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
+TEST_F(AICPUScheduleTEST, DumpDataSeccTEST)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     const uint32_t taskId = 11;
     const uint32_t streamId = 1;
@@ -1649,27 +1594,27 @@ TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
     opMappingInfo.set_loop_cond_addr(reinterpret_cast<uint64_t>(&loopCond));
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_n a.m\\ /e");
     op->set_op_type("op_t y.p\\e/ rr");
 
-    aicpu::dump::Output *output = task->add_output();
-    aicpu::dump::DimRange *dimRange = output->add_dim_range();
+    aicpu::dump::Output* output = task->add_output();
+    aicpu::dump::DimRange* dimRange = output->add_dim_range();
     dimRange->set_dim_start(1);
     dimRange->set_dim_end(2);
 
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -1677,12 +1622,12 @@ TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Output *output1 = task->add_output();
+    aicpu::dump::Output* output1 = task->add_output();
     output1->set_data_type(dataType);
     output1->set_format(1);
     RuntimeTensorDesc tensorDesc;
     int32_t data2[4] = {1, 2, 3, 4};
-    int *p2 = &data2[0];
+    int* p2 = &data2[0];
     tensorDesc.dataAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(p2));
     tensorDesc.shape[0] = 2;
     tensorDesc.shape[1] = 2;
@@ -1691,25 +1636,25 @@ TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
     tensorDesc.originalShape[1] = 2;
     tensorDesc.originalShape[2] = 2;
     tensorDesc.dtype = dataType;
-    aicpu::dump::Shape *shape1 = output1->mutable_shape();
+    aicpu::dump::Shape* shape1 = output1->mutable_shape();
     shape1->add_dim(-1);
     shape1->add_dim(2);
-    RuntimeTensorDesc *descp = &tensorDesc;
+    RuntimeTensorDesc* descp = &tensorDesc;
     output1->set_address(reinterpret_cast<uint64_t>(&descp));
     output1->set_size(sizeof(data2));
     output1->set_addr_type(aicpu::dump::AddressType::NOTILING_ADDR); // aicpu::dump::AddressType::NOTILING_ADDR
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
     RuntimeTensorDesc inputDesc;
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     inputDesc.dataAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(q));
     inputDesc.shape[0] = 2;
     inputDesc.shape[1] = 2;
@@ -1718,10 +1663,10 @@ TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
     inputDesc.originalShape[1] = 2;
     inputDesc.originalShape[2] = 2;
     inputDesc.dtype = dataType;
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(-1);
     inShape->add_dim(2);
-    RuntimeTensorDesc *descp2 = &inputDesc;
+    RuntimeTensorDesc* descp2 = &inputDesc;
     input->set_address(reinterpret_cast<uint64_t>(&descp2));
     input->set_size(sizeof(inData));
     input->set_addr_type(aicpu::dump::AddressType::NOTILING_ADDR); // aicpu::dump::AddressType::NOTILING_ADDR
@@ -1740,7 +1685,7 @@ TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
     eventMsgDumpData.u.ts_to_aicpu_datadump.model_id = 10;
     eventMsgDumpData.u.ts_to_aicpu_datadump.stream_id = streamId;
     eventMsgDumpData.u.ts_to_aicpu_datadump.task_id = taskId;
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId), AICPU_SCHEDULE_OK);
     AicpuSqeAdapter adapter(eventMsgDumpData, 0U);
     auto ret = AicpuEventProcess::GetInstance().ProcessDumpDataEvent(adapter);
@@ -1789,11 +1734,11 @@ TEST_F(AICPUScheduleTEST, DumpDataSeccTEST) {
 
     task->set_task_id(65536U);
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()),
-        AICPU_SCHEDULE_OK);
+    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DumpDataFailTEST) {
+TEST_F(AICPUScheduleTEST, DumpDataFailTEST)
+{
     const uint32_t taskId = 111;
     const uint32_t streamId = 1;
     const uint32_t modelId = 222;
@@ -1805,26 +1750,26 @@ TEST_F(AICPUScheduleTEST, DumpDataFailTEST) {
     opMappingInfo.set_model_name("model_n a.m\\ /e");
     opMappingInfo.set_model_id(modelId);
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_n a.m\\ /e");
     op->set_op_type("op_t y.p\\e/ rr");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
-    aicpu::dump::Shape *originShape = output->mutable_origin_shape();
+    aicpu::dump::Shape* originShape = output->mutable_origin_shape();
     originShape->add_dim(2);
     originShape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -1832,13 +1777,13 @@ TEST_F(AICPUScheduleTEST, DumpDataFailTEST) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
-    aicpu::dump::Shape *inputOriginShape = input->mutable_origin_shape();
+    aicpu::dump::Shape* inputOriginShape = input->mutable_origin_shape();
     inputOriginShape->add_dim(2);
     inputOriginShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
@@ -1851,7 +1796,7 @@ TEST_F(AICPUScheduleTEST, DumpDataFailTEST) {
     int32_t ret = 0;
     // load op mapping info
     LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
 
     // task not exist
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId + 1), AICPU_SCHEDULE_OK);
@@ -1869,14 +1814,14 @@ TEST_F(AICPUScheduleTEST, DumpDataFailTEST) {
     opMappingInfo.set_iterations_per_loop_addr(reinterpret_cast<uint64_t>(&iterationsPerLoop));
     opMappingInfo.set_loop_cond_addr(0LLU);
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()),
-        AICPU_SCHEDULE_OK);
+    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
     // invalied dump step
     opMappingInfo.set_dump_step("1000000000000000000000000000000000000000000000000000000000000");
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()),
+    EXPECT_EQ(
+        opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()),
         AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
     // unload model
@@ -1890,17 +1835,18 @@ TEST_F(AICPUScheduleTEST, DumpDataFailTEST) {
     opDumpTaskPtr->PreProcessOpMappingInfo(*task, "", param, dumpStep, DumpMode::TENSOR_DUMP_DATA);
 }
 
-int tsDevSendMsgAsyncDataDumpStub(unsigned int devId, unsigned int tsId, char *msg, unsigned int msgLen,
-                                  unsigned int handleId) {
-
-    TsAicpuSqe *rsp = reinterpret_cast<TsAicpuSqe *>(msg);
+int tsDevSendMsgAsyncDataDumpStub(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
+{
+    TsAicpuSqe* rsp = reinterpret_cast<TsAicpuSqe*>(msg);
     const uint16_t dumpRet = rsp->u.aicpu_dump_resp.result_code;
     EXPECT_EQ(dumpRet, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
     return 0;
 }
 
-TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidStreamId) {
+TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidStreamId)
+{
     TsAicpuSqe eventMsgDumpData = {0};
     eventMsgDumpData.pid = 0x1112;
     eventMsgDumpData.cmd_type = AICPU_DATADUMP_REPORT;
@@ -1917,7 +1863,8 @@ TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidStreamId) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidTaskId) {
+TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidTaskId)
+{
     TsAicpuSqe eventMsgDumpData = {0};
     eventMsgDumpData.pid = 0x1112;
     eventMsgDumpData.cmd_type = AICPU_DATADUMP_REPORT;
@@ -1934,7 +1881,8 @@ TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidTaskId) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidModelId) {
+TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidModelId)
+{
     TsAicpuSqe eventMsgDumpData = {0};
     eventMsgDumpData.pid = 0x1112;
     eventMsgDumpData.cmd_type = AICPU_DATADUMP_REPORT;
@@ -1951,7 +1899,8 @@ TEST_F(AICPUScheduleTEST, DumpDataFailedByInvalidModelId) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DumpFftsDataFailedByInvalidStreamId) {
+TEST_F(AICPUScheduleTEST, DumpFftsDataFailedByInvalidStreamId)
+{
     TsAicpuSqe eventMsgDumpData = {0};
     eventMsgDumpData.pid = 0x1112;
     eventMsgDumpData.cmd_type = AICPU_DATADUMP_REPORT;
@@ -1968,7 +1917,8 @@ TEST_F(AICPUScheduleTEST, DumpFftsDataFailedByInvalidStreamId) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DumpFftsDataFailedByInvalidTaskId) {
+TEST_F(AICPUScheduleTEST, DumpFftsDataFailedByInvalidTaskId)
+{
     TsAicpuSqe eventMsgDumpData = {0};
     eventMsgDumpData.pid = 0x1112;
     eventMsgDumpData.cmd_type = AICPU_DATADUMP_REPORT;
@@ -1985,7 +1935,8 @@ TEST_F(AICPUScheduleTEST, DumpFftsDataFailedByInvalidTaskId) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DumpDebugInfoTEST) {
+TEST_F(AICPUScheduleTEST, DumpDebugInfoTEST)
+{
     const uint32_t taskId = 333;
     const uint32_t streamId = 3;
     const uint32_t modelId = 33;
@@ -2004,23 +1955,23 @@ TEST_F(AICPUScheduleTEST, DumpDebugInfoTEST) {
     opMappingInfo.set_loop_cond_addr(reinterpret_cast<uint64_t>(&loopCond));
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_name_debug");
     op->set_op_type("op_type_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -2028,19 +1979,19 @@ TEST_F(AICPUScheduleTEST, DumpDebugInfoTEST) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
 
@@ -2050,22 +2001,24 @@ TEST_F(AICPUScheduleTEST, DumpDebugInfoTEST) {
     // load op mapping info
     EXPECT_EQ(LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId, INVALID_VAL, INVALID_VAL), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessDumpPath) {
-  OpDumpTask task(0, 0);
-  task.optionalParam_.hasModelId = true;
-  AicpuModel *aicpuModel = new AicpuModel();
-  MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-  DumpFileName dumpFileName(0, 0);
-  EXPECT_EQ(task.DumpPath(0, 0, dumpFileName, false).empty(), false);
-  delete aicpuModel;
-  aicpuModel = nullptr;
+TEST_F(AICPUScheduleTEST, ProcessDumpPath)
+{
+    OpDumpTask task(0, 0);
+    task.optionalParam_.hasModelId = true;
+    AicpuModel* aicpuModel = new AicpuModel();
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
+    DumpFileName dumpFileName(0, 0);
+    EXPECT_EQ(task.DumpPath(0, 0, dumpFileName, false).empty(), false);
+    delete aicpuModel;
+    aicpuModel = nullptr;
 }
 
-TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
+TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST)
+{
     const uint32_t taskId = 111;
     const uint32_t streamId = 1;
     const uint32_t modelId = 222;
@@ -2077,30 +2030,30 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
     opMappingInfo.set_model_name("model_n a.m\\ /e");
     opMappingInfo.set_model_id(modelId);
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(0);
     task->set_tasktype(aicpu::dump::Task::FFTSPLUS);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_n a.m\\ /e");
     op->set_op_type("op_t y.p\\e/ rr");
-    aicpu::dump::OpAttr *opAttr = task->add_attr();
+    aicpu::dump::OpAttr* opAttr = task->add_attr();
     opAttr->set_name("name");
     opAttr->set_value("value");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
-    aicpu::dump::Shape *originShape = output->mutable_origin_shape();
+    aicpu::dump::Shape* originShape = output->mutable_origin_shape();
     originShape->add_dim(2);
     originShape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -2108,13 +2061,13 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
-    aicpu::dump::Shape *inputOriginShape = input->mutable_origin_shape();
+    aicpu::dump::Shape* inputOriginShape = input->mutable_origin_shape();
     inputOriginShape->add_dim(2);
     inputOriginShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
@@ -2126,7 +2079,7 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
 
     int32_t ret = 0;
     // load op mapping info
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
 
     // task not exist
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId + 1), AICPU_SCHEDULE_OK);
@@ -2144,8 +2097,7 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
     opMappingInfo.set_iterations_per_loop_addr(reinterpret_cast<uint64_t>(&iterationsPerLoop));
     opMappingInfo.set_loop_cond_addr(0LLU);
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()),
-        AICPU_SCHEDULE_OK);
+    EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
     TaskInfoExt dumpTaskInfo;
     dumpTaskInfo.streamId_ = streamId;
     dumpTaskInfo.taskId_ = taskId;
@@ -2157,8 +2109,7 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
     // invalied dump step
     opMappingInfo.set_dump_step("1000000000000000000000000000000000000000000000000000000000000");
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(dumpTaskInfo, name),
-        AICPU_SCHEDULE_OK);
+    EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(dumpTaskInfo, name), AICPU_SCHEDULE_OK);
 
     // unload model
     opMappingInfo.set_flag(0x00);
@@ -2166,7 +2117,8 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDataFailTEST) {
     opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
 }
 
-TEST_F(AICPUScheduleTEST, FftsPlusDumpDebugInfoTEST) {
+TEST_F(AICPUScheduleTEST, FftsPlusDumpDebugInfoTEST)
+{
     const uint32_t taskId = 333;
     const uint32_t streamId = 3;
     const uint32_t modelId = 33;
@@ -2185,24 +2137,24 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDebugInfoTEST) {
     opMappingInfo.set_loop_cond_addr(reinterpret_cast<uint64_t>(&loopCond));
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(0);
     task->set_tasktype(aicpu::dump::Task::FFTSPLUS);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_name_debug");
     op->set_op_type("op_type_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
 
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
@@ -2211,29 +2163,27 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDebugInfoTEST) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
-    aicpu::dump::Context *context = task->add_context();
+    aicpu::dump::Context* context = task->add_context();
     addPreProcessFFTSPLUSContext(task, context);
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
 
-
-
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     // load op mapping info
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
     TaskInfoExt dumpTaskInfo;
@@ -2250,15 +2200,16 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpDebugInfoTEST) {
     eventMsgDumpData.vf_id = 0;
     eventMsgDumpData.tid = 0x10001;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.model_id = 222;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id = streamId+1;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id = taskId+1;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id1 = streamId+1;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id1 = taskId+1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id = streamId + 1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id = taskId + 1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id1 = streamId + 1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id1 = taskId + 1;
     AicpuSqeAdapter ada(eventMsgDumpData, 0U);
     AicpuEventProcess::GetInstance().ProcessDumpFFTSPlusDataEvent(ada);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0)
+{
     const uint32_t taskId = 1111;
     const uint32_t streamId = 11;
     const uint32_t modelId = 2222;
@@ -2270,27 +2221,27 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
     opMappingInfo.set_model_name("model_name_1");
     opMappingInfo.set_model_id(modelId);
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("opname_1");
     op->set_op_type("optype_1");
 
     // output 1
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
-    aicpu::dump::Shape *originShape = output->mutable_origin_shape();
+    aicpu::dump::Shape* originShape = output->mutable_origin_shape();
     originShape->add_dim(2);
     originShape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -2299,12 +2250,12 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
     output->set_size(sizeof(data));
 
     // output 2
-    aicpu::dump::Output *output1 = task->add_output();
+    aicpu::dump::Output* output1 = task->add_output();
     output1->set_data_type(dataType);
     output1->set_format(1);
-    aicpu::dump::Shape *shape1 = output1->mutable_shape();
+    aicpu::dump::Shape* shape1 = output1->mutable_shape();
     shape1->add_dim(0);
-    aicpu::dump::Shape *originShape1 = output1->mutable_origin_shape();
+    aicpu::dump::Shape* originShape1 = output1->mutable_origin_shape();
     originShape1->add_dim(0);
     output1->set_address(0ULL);
     output1->set_original_name("original_name_output2");
@@ -2314,13 +2265,13 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
     output1->set_size(0);
 
     // output 3
-    aicpu::dump::Output *output2 = task->add_output();
+    aicpu::dump::Output* output2 = task->add_output();
     output2->set_data_type(dataType);
     output2->set_format(1);
-    aicpu::dump::Shape *shape2 = output2->mutable_shape();
+    aicpu::dump::Shape* shape2 = output2->mutable_shape();
     shape2->add_dim(2);
     shape2->add_dim(2);
-    aicpu::dump::Shape *originShape2 = output2->mutable_origin_shape();
+    aicpu::dump::Shape* originShape2 = output2->mutable_origin_shape();
     originShape2->add_dim(2);
     originShape2->add_dim(2);
     output2->set_address(reinterpret_cast<uint64_t>(&p));
@@ -2331,25 +2282,25 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
     output2->set_size(sizeof(data));
 
     // input 0
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
-    aicpu::dump::Shape *inputOriginShape = input->mutable_origin_shape();
+    aicpu::dump::Shape* inputOriginShape = input->mutable_origin_shape();
     inputOriginShape->add_dim(2);
     inputOriginShape->add_dim(2);
     input->set_address(reinterpret_cast<uint64_t>(&p));
     input->set_size(sizeof(data));
 
     // input 1
-    aicpu::dump::Input *input1 = task->add_input();
+    aicpu::dump::Input* input1 = task->add_input();
     input1->set_data_type(dataType);
     input1->set_format(1);
-    aicpu::dump::Shape *inShape1 = input1->mutable_shape();
+    aicpu::dump::Shape* inShape1 = input1->mutable_shape();
     inShape1->add_dim(0);
-    aicpu::dump::Shape *inputOriginShape1 = input1->mutable_origin_shape();
+    aicpu::dump::Shape* inputOriginShape1 = input1->mutable_origin_shape();
     inputOriginShape1->add_dim(0);
     input1->set_size(0);
 
@@ -2359,7 +2310,7 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
     int32_t ret = 0;
     // load op mapping info
     LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
 
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId), AICPU_SCHEDULE_OK);
 
@@ -2369,7 +2320,8 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_with_0) {
     LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0)
+{
     const uint32_t taskId = 11111;
     const uint32_t streamId = 111;
     const uint32_t modelId = 22222;
@@ -2381,22 +2333,22 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0) {
     opMappingInfo.set_model_name("model_name_1");
     opMappingInfo.set_model_id(modelId);
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("opname_1");
     op->set_op_type("optype_1");
 
     // output 1
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(0);
-    aicpu::dump::Shape *originShape = output->mutable_origin_shape();
+    aicpu::dump::Shape* originShape = output->mutable_origin_shape();
     originShape->add_dim(0);
     output->set_address(0ULL);
     output->set_original_name("original_name");
@@ -2406,12 +2358,12 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0) {
     output->set_size(0);
 
     // output 2
-    aicpu::dump::Output *output1 = task->add_output();
+    aicpu::dump::Output* output1 = task->add_output();
     output1->set_data_type(dataType);
     output1->set_format(1);
-    aicpu::dump::Shape *shape1 = output1->mutable_shape();
+    aicpu::dump::Shape* shape1 = output1->mutable_shape();
     shape1->add_dim(0);
-    aicpu::dump::Shape *originShape1 = output1->mutable_origin_shape();
+    aicpu::dump::Shape* originShape1 = output1->mutable_origin_shape();
     originShape1->add_dim(0);
     output1->set_address(0ULL);
     output1->set_original_name("original_name_output2");
@@ -2421,12 +2373,12 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0) {
     output1->set_size(0);
 
     // input 1
-    aicpu::dump::Input *input1 = task->add_input();
+    aicpu::dump::Input* input1 = task->add_input();
     input1->set_data_type(dataType);
     input1->set_format(1);
-    aicpu::dump::Shape *inShape1 = input1->mutable_shape();
+    aicpu::dump::Shape* inShape1 = input1->mutable_shape();
     inShape1->add_dim(0);
-    aicpu::dump::Shape *inputOriginShape1 = input1->mutable_origin_shape();
+    aicpu::dump::Shape* inputOriginShape1 = input1->mutable_origin_shape();
     inputOriginShape1->add_dim(0);
     input1->set_size(0);
 
@@ -2436,7 +2388,7 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0) {
     int32_t ret = 0;
     // load op mapping info
     LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
 
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(streamId, taskId), AICPU_SCHEDULE_OK);
 
@@ -2446,9 +2398,10 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_output_all_0) {
     LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_baseaddr_null) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_baseaddr_null)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpInput *opInput = task.baseDumpData_.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = task.baseDumpData_.add_input();
     if (opInput != nullptr) {
         opInput->set_size(100);
         uint64_t baseAddr = 0;
@@ -2459,9 +2412,10 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_baseaddr_null) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_baseaddr_null) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_baseaddr_null)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpOutput *opOutput = task.baseDumpData_.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = task.baseDumpData_.add_output();
     if (opOutput != nullptr) {
         opOutput->set_size(100);
         uint64_t baseAddr = 0;
@@ -2472,9 +2426,10 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_baseaddr_null) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_data_addr_null) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_data_addr_null)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpInput *opInput = task.baseDumpData_.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = task.baseDumpData_.add_input();
     if (opInput != nullptr) {
         uint64_t addr = 0;
         opInput->set_size(1);
@@ -2486,9 +2441,10 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_data_addr_null) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_data_addr_null) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_data_addr_null)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpOutput *opOutput = task.baseDumpData_.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = task.baseDumpData_.add_output();
     if (opOutput != nullptr) {
         uint64_t addr = 0;
         opOutput->set_size(1);
@@ -2500,7 +2456,8 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_data_addr_null) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPLUS_DumpPath_INVALID_VAL) {
+TEST_F(AICPUScheduleTEST, FFTSPLUS_DumpPath_INVALID_VAL)
+{
     OpDumpTask task(0, 0);
     task.taskType_ = aicpu::dump::Task::FFTSPLUS;
     DumpFileName dumpFileName(1, 1, INVALID_VAL, INVALID_VAL);
@@ -2508,9 +2465,10 @@ TEST_F(AICPUScheduleTEST, FFTSPLUS_DumpPath_INVALID_VAL) {
     EXPECT_STREQ(str.c_str(), "/.Debug.1.1.1");
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_invalid_threadId) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_invalid_threadId)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpInput *opInput = task.baseDumpData_.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = task.baseDumpData_.add_input();
     if (opInput != nullptr) {
         uint64_t addr = 1;
         opInput->set_size(1);
@@ -2532,9 +2490,10 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_invalid_threadId) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_invalid_threadId) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_invalid_threadId)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpOutput *opOutput = task.baseDumpData_.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = task.baseDumpData_.add_output();
     if (opOutput != nullptr) {
         uint64_t addr = 1;
         opOutput->set_size(1);
@@ -2551,9 +2510,10 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_invalid_threadId) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_memcpy_fail) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_memcpy_fail)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpInput *opInput = task.baseDumpData_.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = task.baseDumpData_.add_input();
     if (opInput != nullptr) {
         int32_t data = 0;
         uint64_t addr = (uint64_t)(&data);
@@ -2563,14 +2523,14 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_memcpy_fail) {
         task.taskType_ = aicpu::dump::Task::AICPU;
         task.UpdateDumpData();
         IDE_SESSION session = IdeDumpStart(nullptr);
-        EXPECT_EQ(task.ProcessInputDump(task.baseDumpData_, "", session),
-                                        AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+        EXPECT_EQ(task.ProcessInputDump(task.baseDumpData_, "", session), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_memcpy_fail) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_memcpy_fail)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpOutput *opOutput = task.baseDumpData_.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = task.baseDumpData_.add_output();
     if (opOutput != nullptr) {
         int32_t data = 0;
         uint64_t addr = (uint64_t)(&data);
@@ -2579,14 +2539,14 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_memcpy_fail) {
         task.outputsAddrType_.push_back(0);
         task.UpdateDumpData();
         IDE_SESSION session = IdeDumpStart(nullptr);
-        EXPECT_EQ(task.ProcessOutputDump(task.baseDumpData_, "", session),
-                  AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+        EXPECT_EQ(task.ProcessOutputDump(task.baseDumpData_, "", session), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessInputDump_dump_fail) {
+TEST_F(AICPUScheduleTEST, ProcessInputDump_dump_fail)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpInput *opInput = task.baseDumpData_.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = task.baseDumpData_.add_input();
     if (opInput != nullptr) {
         int64_t data = 0;
         uint64_t addr = (uint64_t)(&data);
@@ -2596,18 +2556,16 @@ TEST_F(AICPUScheduleTEST, ProcessInputDump_dump_fail) {
         task.UpdateDumpData();
         task.buffSize_ = 4;
         task.buff_.reset(new char[task.buffSize_]);
-        MOCKER(IdeDumpData)
-            .stubs()
-            .will(returnValue(IDE_DAEMON_UNKNOW_ERROR));
+        MOCKER(IdeDumpData).stubs().will(returnValue(IDE_DAEMON_UNKNOW_ERROR));
         IDE_SESSION session = IdeDumpStart(nullptr);
-        EXPECT_EQ(task.ProcessInputDump(task.baseDumpData_, "", session),
-                  AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+        EXPECT_EQ(task.ProcessInputDump(task.baseDumpData_, "", session), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_dump_fail) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_dump_fail)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpOutput *opOutput = task.baseDumpData_.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = task.baseDumpData_.add_output();
     if (opOutput != nullptr) {
         int64_t data = 0;
         uint64_t addr = (uint64_t)(&data);
@@ -2617,25 +2575,24 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_dump_fail) {
         task.UpdateDumpData();
         task.buffSize_ = 4;
         task.buff_.reset(new char[task.buffSize_]);
-        MOCKER(IdeDumpData)
-            .stubs()
-            .will(returnValue(IDE_DAEMON_UNKNOW_ERROR));
+        MOCKER(IdeDumpData).stubs().will(returnValue(IDE_DAEMON_UNKNOW_ERROR));
         IDE_SESSION session = IdeDumpStart(nullptr);
-        EXPECT_EQ(task.ProcessOutputDump(task.baseDumpData_, "", session),
-                                         AICPU_SCHEDULE_ERROR_DUMP_FAILED);
+        EXPECT_EQ(task.ProcessOutputDump(task.baseDumpData_, "", session), AICPU_SCHEDULE_ERROR_DUMP_FAILED);
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_input_output_null) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_input_output_null)
+{
     ::toolkit::dumpdata::DumpData dumpData;
     OpDumpTask task(0, 0);
     task.baseDumpData_ = dumpData;
     EXPECT_EQ(task.DumpOpInfo(), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_input_size_0) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_input_size_0)
+{
     ::toolkit::dumpdata::DumpData dumpData;
-    ::toolkit::dumpdata::OpInput *opInput = dumpData.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = dumpData.add_input();
     if (opInput != nullptr) {
         uint64_t buffSize = 0;
         opInput->set_size(buffSize);
@@ -2645,9 +2602,10 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_input_size_0) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOutputDump_output_size_0) {
+TEST_F(AICPUScheduleTEST, ProcessOutputDump_output_size_0)
+{
     ::toolkit::dumpdata::DumpData dumpData;
-    ::toolkit::dumpdata::OpOutput *opOutput = dumpData.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = dumpData.add_output();
     if (opOutput != nullptr) {
         uint64_t buffSize = 0;
         opOutput->set_size(buffSize);
@@ -2657,19 +2615,16 @@ TEST_F(AICPUScheduleTEST, ProcessOutputDump_output_size_0) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOpWorkspaceDumpFailTes) {
-    MOCKER_CPP(&IdeDumpData)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&IdeDumpStart)
-        .stubs()
-        .will(returnValue((void *)111));
+TEST_F(AICPUScheduleTEST, ProcessOpWorkspaceDumpFailTes)
+{
+    MOCKER_CPP(&IdeDumpData).stubs().will(returnValue(0));
+    MOCKER_CPP(&IdeDumpStart).stubs().will(returnValue((void*)111));
     MOCKER(memcpy_s).stubs().will(returnValue(EOK));
-    int32_t data[8] = {1, 2, 3, 4, 5, 6, 7 ,8};
+    int32_t data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     uint64_t data_size = sizeof(data);
     OpDumpTask task(0, 0);
     uint64_t data_addr = data;
-    ::toolkit::dumpdata::Workspace *workSpace = task.baseDumpData_.add_space();
+    ::toolkit::dumpdata::Workspace* workSpace = task.baseDumpData_.add_space();
     if (workSpace != nullptr) {
         workSpace->set_size(data_size);
         task.opWorkspaceAddr_.push_back(0);
@@ -2686,49 +2641,43 @@ TEST_F(AICPUScheduleTEST, ProcessOpWorkspaceDumpFailTes) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, ProcessOpWorkspaceDumpSuccessTest) {
-    MOCKER_CPP(&IdeDumpData)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&IdeDumpStart)
-        .stubs()
-        .will(returnValue((void *)111));
+TEST_F(AICPUScheduleTEST, ProcessOpWorkspaceDumpSuccessTest)
+{
+    MOCKER_CPP(&IdeDumpData).stubs().will(returnValue(0));
+    MOCKER_CPP(&IdeDumpStart).stubs().will(returnValue((void*)111));
     MOCKER(memcpy_s).stubs().will(returnValue(EOK));
-    int32_t data[8] = {1, 2, 3, 4, 5, 6, 7 ,8};
+    int32_t data[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     uint64_t data_size = sizeof(data);
     OpDumpTask task(0, 0);
     uint64_t data_addr = data;
-    ::toolkit::dumpdata::Workspace *workSpace = task.baseDumpData_.add_space();
+    ::toolkit::dumpdata::Workspace* workSpace = task.baseDumpData_.add_space();
     if (workSpace != nullptr) {
         // workSpace->set_data_addr(data);
         workSpace->set_size(data_size);
-task.opWorkspaceAddr_.push_back(data_size);
+        task.opWorkspaceAddr_.push_back(data_size);
         task.buffSize_ = data_size;
         IDE_SESSION session = IdeDumpStart(nullptr);
         EXPECT_EQ(task.ProcessOpWorkspaceDump(task.baseDumpData_, "", session), AICPU_SCHEDULE_OK);
     }
 }
 
-TEST_F(AICPUScheduleTEST, PreProcessWorkspaceSuccessTest) {
-    MOCKER_CPP(&IdeDumpData)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&IdeDumpStart)
-        .stubs()
-        .will(returnValue((void *)111));
+TEST_F(AICPUScheduleTEST, PreProcessWorkspaceSuccessTest)
+{
+    MOCKER_CPP(&IdeDumpData).stubs().will(returnValue(0));
+    MOCKER_CPP(&IdeDumpStart).stubs().will(returnValue((void*)111));
     MOCKER(memcpy_s).stubs().will(returnValue(EOK));
     OpDumpTask opDumpTask(0, 0);
     aicpu::dump::OpMappingInfo opMappingInfo;
     {
         const uint32_t taskId = 402;
         const uint32_t streamId = 402;
-        
-        int32_t input[8] = {1, 2, 3, 4, 5, 6, 7 ,8};
-        int32_t *inputaddress = &input[0];
+
+        int32_t input[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+        int32_t* inputaddress = &input[0];
         int32_t inputSize = sizeof(input);
         int32_t inputoffset = 0;
-        int32_t data[10] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10}; // workspace
-        const int32_t dataType = 7; // int32
+        int32_t data[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; // workspace
+        const int32_t dataType = 7;                         // int32
 
         opMappingInfo.set_dump_path("dump_path");
         opMappingInfo.set_model_name("model_n a.m\\ /e");
@@ -2736,23 +2685,23 @@ TEST_F(AICPUScheduleTEST, PreProcessWorkspaceSuccessTest) {
         uint64_t iterationsPerLoop = 1;
 
         opMappingInfo.set_flag(0x01);
-        aicpu::dump::Task *task = opMappingInfo.add_task();
+        aicpu::dump::Task* task = opMappingInfo.add_task();
         {
-            task->set_task_id(taskId+1);
-            task->set_stream_id(streamId+1);
-            
+            task->set_task_id(taskId + 1);
+            task->set_stream_id(streamId + 1);
+
             // input
-            aicpu::dump::Input *input = task->add_input();
+            aicpu::dump::Input* input = task->add_input();
             {
                 input->set_data_type(dataType);
                 input->set_format(1);
-                aicpu::dump::Shape *inShape = input->mutable_shape();
+                aicpu::dump::Shape* inShape = input->mutable_shape();
                 {
                     inShape->add_dim(2);
                     inShape->add_dim(2);
                 }
                 input->set_address(reinterpret_cast<uint64_t>(&inputaddress));
-                aicpu::dump::Shape *inputOriginShape = input->mutable_origin_shape();
+                aicpu::dump::Shape* inputOriginShape = input->mutable_origin_shape();
                 {
                     inputOriginShape->add_dim(2);
                     inputOriginShape->add_dim(2);
@@ -2761,181 +2710,159 @@ TEST_F(AICPUScheduleTEST, PreProcessWorkspaceSuccessTest) {
                 input->set_size(inputSize);
                 input->set_offset(inputoffset);
             }
-            aicpu::dump::Op *op = task->mutable_op();
+            aicpu::dump::Op* op = task->mutable_op();
             {
                 op->set_op_name("op_n a.m\\ /e");
                 op->set_op_type("op_t y.p\\e/ rr");
             }
             // Workspace
-            aicpu::dump::Workspace *space = task->add_space();
+            aicpu::dump::Workspace* space = task->add_space();
             {
                 space->set_type(aicpu::dump::Workspace::LOG);
-                //space->set_data_addr(data);
-                //space->set_size(sizeof(data));
+                // space->set_data_addr(data);
+                // space->set_size(sizeof(data));
                 space->set_data_addr(0); // task0 的data_addr为0
                 space->set_size(sizeof(data));
             }
         }
-
     }
     ::toolkit::dumpdata::DumpData dumpData;
     aicpu::dump::Task task = opMappingInfo.task().at(0);
     EXPECT_EQ(opDumpTask.PreProcessWorkspace(task, dumpData), AICPU_SCHEDULE_OK);
-
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTest) {
-    MOCKER(&aicpu::IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
+TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTest)
+{
+    MOCKER(&aicpu::IsSupportedProfData).stubs().will(returnValue(true));
     HwtsTsKernel kernelInfo = {0};
     kernelInfo.kernelType = 1;
 
-    AicpuEventProcess &aep = AicpuEventProcess::GetInstance();
+    AicpuEventProcess& aep = AicpuEventProcess::GetInstance();
 
     EXPECT_EQ(aep.ExecuteTsKernelTask(kernelInfo, 0, 0, 0, 0, 0), AICPU_SCHEDULE_OK);
 }
 
 namespace aicpu {
-status_t GetThreadLocalCtxStub(const std::string &key, std::string &value)
+status_t GetThreadLocalCtxStub(const std::string& key, std::string& value)
 {
     value = "True";
     return AICPU_ERROR_NONE;
 }
-}
-TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTest2) {
-    MOCKER(aicpu::GetThreadLocalCtx)
-        .stubs()
-        .will(invoke(aicpu::GetThreadLocalCtxStub));
+} // namespace aicpu
+TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTest2)
+{
+    MOCKER(aicpu::GetThreadLocalCtx).stubs().will(invoke(aicpu::GetThreadLocalCtxStub));
     HwtsTsKernel kernelInfo = {0};
     kernelInfo.kernelType = 1;
 
-    AicpuEventProcess &aep = AicpuEventProcess::GetInstance();
+    AicpuEventProcess& aep = AicpuEventProcess::GetInstance();
 
     EXPECT_EQ(aep.ExecuteTsKernelTask(kernelInfo, 0, 0, 0, 0, 0), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTest3) {
-    MOCKER(&aicpu::IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER(aeCallInterface)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(AE_STATUS_KERNEL_API_INNER_ERROR)));
+TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTest3)
+{
+    MOCKER(&aicpu::IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER(aeCallInterface).stubs().will(returnValue(static_cast<int32_t>(AE_STATUS_KERNEL_API_INNER_ERROR)));
     HwtsTsKernel kernelInfo = {0};
     kernelInfo.kernelType = 1;
 
-    AicpuEventProcess &aep = AicpuEventProcess::GetInstance();
+    AicpuEventProcess& aep = AicpuEventProcess::GetInstance();
 
     EXPECT_EQ(aep.ExecuteTsKernelTask(kernelInfo, 0, 0, 0, 0, 0), AE_STATUS_KERNEL_API_INNER_ERROR);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskNoKernelName) {
-    MOCKER(aicpu::GetThreadLocalCtx)
-        .stubs()
-        .will(invoke(aicpu::GetThreadLocalCtxStub));
+TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskNoKernelName)
+{
+    MOCKER(aicpu::GetThreadLocalCtx).stubs().will(invoke(aicpu::GetThreadLocalCtxStub));
     HwtsTsKernel kernelInfo = {0};
     kernelInfo.kernelType = 0;
-    char *kernelname = "TestKernelName";
+    char* kernelname = "TestKernelName";
     kernelInfo.kernelBase.cceKernel.kernelName = reinterpret_cast<uintptr_t>(kernelname);
-    AicpuEventProcess &aep = AicpuEventProcess::GetInstance();
+    AicpuEventProcess& aep = AicpuEventProcess::GetInstance();
     EXPECT_EQ(aep.ExecuteTsKernelTask(kernelInfo, 0, 0, 0, 0, 0), AICPU_SCHEDULE_ERROR_NOT_FOUND_LOGICAL_TASK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskLongKernelName) {
-    MOCKER(aicpu::GetThreadLocalCtx)
-        .stubs()
-        .will(invoke(aicpu::GetThreadLocalCtxStub));
-    MOCKER(strncpy_s)
-        .stubs()
-        .will(returnValue(161));
+TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskLongKernelName)
+{
+    MOCKER(aicpu::GetThreadLocalCtx).stubs().will(invoke(aicpu::GetThreadLocalCtxStub));
+    MOCKER(strncpy_s).stubs().will(returnValue(161));
     HwtsTsKernel kernelInfo = {0};
     kernelInfo.kernelType = 0;
-    char *kernelname = "TestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlow";
+    char* kernelname = "TestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlowTestKerne"
+                       "lNameExceptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlowTestKernelNameExce"
+                       "ptionAbnormalLongOverFlowTestKernelNameExceptionAbnormalLongOverFlow";
     kernelInfo.kernelBase.cceKernel.kernelName = reinterpret_cast<uintptr_t>(kernelname);
-    AicpuEventProcess &aep = AicpuEventProcess::GetInstance();
+    AicpuEventProcess& aep = AicpuEventProcess::GetInstance();
     EXPECT_EQ(aep.ExecuteTsKernelTask(kernelInfo, 0, 0, 0, 0, 0), AICPU_SCHEDULE_ERROR_NOT_FOUND_LOGICAL_TASK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTaskAbort) {
+TEST_F(AICPUScheduleTEST, ExecuteTsKernelTaskTaskAbort)
+{
     MOCKER(aicpu::GetThreadLocalCtx).stubs().will(invoke(aicpu::GetThreadLocalCtxStub));
     HwtsTsKernel kernelInfo = {0};
     kernelInfo.kernelType = 1;
- 
-    AicpuEventProcess &aep = AicpuEventProcess::GetInstance();
+
+    AicpuEventProcess& aep = AicpuEventProcess::GetInstance();
     MOCKER(aeCallInterface).stubs().will(returnValue(static_cast<int32_t>(AE_STATUS_TASK_ABORT)));
     EXPECT_EQ(aep.ExecuteTsKernelTask(kernelInfo, 0, 0, 0, 0, 0), AE_STATUS_TASK_ABORT);
 }
 
-TEST_F(AICPUScheduleTEST, StopTest) {
+TEST_F(AICPUScheduleTEST, StopTest)
+{
     ComputeProcess::GetInstance().Stop();
     EXPECT_TRUE(true);
 }
 
 namespace {
-    drvError_t halEschedSubmitEventBatchPart(unsigned int devId, SUBMIT_FLAG flag,
-        struct event_summary *events, unsigned int event_num, unsigned int *succ_event_num)
-    {
-        if (event_num >= 1) {
-            *succ_event_num = event_num - 1;
-        } else {
-            *succ_event_num = event_num;
-        }
-        return DRV_ERROR_NONE;
+drvError_t halEschedSubmitEventBatchPart(
+    unsigned int devId, SUBMIT_FLAG flag, struct event_summary* events, unsigned int event_num,
+    unsigned int* succ_event_num)
+{
+    if (event_num >= 1) {
+        *succ_event_num = event_num - 1;
+    } else {
+        *succ_event_num = event_num;
     }
+    return DRV_ERROR_NONE;
 }
+} // namespace
 
-TEST_F(AICPUScheduleTEST, TdtServerTestERROR1) {
+TEST_F(AICPUScheduleTEST, TdtServerTestERROR1)
+{
     // MOCKER(&tdt::TDTServerInit)
     //     .stubs()
     //     .will(returnValue(1));
     int ret = ComputeProcess::GetInstance().StartTdtServer();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(&tdt::TDTServerStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(&tdt::TDTServerStop).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().StopTdtServer();
 }
 
-
-TEST_F(AICPUScheduleTEST, TdtServerTestSuccess) {
-    MOCKER(&tdt::TDTServerInit)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, TdtServerTestSuccess)
+{
+    MOCKER(&tdt::TDTServerInit).stubs().will(returnValue(0));
     int ret = ComputeProcess::GetInstance().StartTdtServer();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(&tdt::TDTServerStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(&tdt::TDTServerStop).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().StopTdtServer();
 }
 
 const char* stubGetEnv()
 {
-    char *str = "1";
-    std::cout << "stubGetEnv"<< std::endl;
+    char* str = "1";
+    std::cout << "stubGetEnv" << std::endl;
     return str;
 }
 
-TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_01) {
-    MOCKER(&tdt::TDTServerInit)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_01)
+{
+    MOCKER(&tdt::TDTServerInit).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     AicpuSchedule::AicpuDrvManager::GetInstance().dcpuNum_ = 1;
     AicpuSchedule::AicpuDrvManager::GetInstance().aicpuNumPerDev_ = 1;
     ComputeProcess::GetInstance().runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
@@ -2944,96 +2871,75 @@ TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_01) {
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
     std::string ch = "000000000000000000000000000000000000000000000000";
     deviceVec[0] = 1;
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0,
-                                                                       0, true);
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, 0, ch, (ProfilingMode)0, 0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     setenv("DATAMASTER_RUN_MODE", "1", 1);
     ret = ComputeProcess::GetInstance().StartTdtServer();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(&tdt::TDTServerStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(&tdt::TDTServerStop).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().StopTdtServer();
     unsetenv("DATAMASTER_RUN_MODE");
 }
 
-TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_02) {
-    MOCKER(&tdt::TDTServerInit)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_02)
+{
+    MOCKER(&tdt::TDTServerInit).stubs().will(returnValue(0));
     AicpuSchedule::AicpuDrvManager::GetInstance().dcpuNum_ = 1;
     AicpuSchedule::AicpuDrvManager::GetInstance().aicpuNumPerDev_ = 1;
     ComputeProcess::GetInstance().runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
     setenv("DATAMASTER_RUN_MODE", "1", 1);
     int ret = ComputeProcess::GetInstance().StartTdtServer();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(&tdt::TDTServerStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(&tdt::TDTServerStop).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().StopTdtServer();
     unsetenv("DATAMASTER_RUN_MODE");
 }
 
-TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_03) {
-    MOCKER(&tdt::TDTServerInit)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, TdtServerTestSuccessWithoutDcpu_03)
+{
+    MOCKER(&tdt::TDTServerInit).stubs().will(returnValue(0));
     AicpuSchedule::AicpuDrvManager::GetInstance().dcpuNum_ = 0;
     AicpuSchedule::AicpuDrvManager::GetInstance().aicpuNumPerDev_ = 1;
     ComputeProcess::GetInstance().runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
     setenv("DATAMASTER_RUN_MODE", "1", 1);
     int ret = ComputeProcess::GetInstance().StartTdtServer();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(&tdt::TDTServerStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(&tdt::TDTServerStop).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().StopTdtServer();
     unsetenv("DATAMASTER_RUN_MODE");
 }
 
-TEST_F(AICPUScheduleTEST, StopTdtServerERROR1) {
+TEST_F(AICPUScheduleTEST, StopTdtServerERROR1)
+{
     ComputeProcess::GetInstance().isStartTdtFlag_ = false;
     ComputeProcess::GetInstance().StopTdtServer();
     EXPECT_EQ(ComputeProcess::GetInstance().runMode_, aicpu::AicpuRunMode::PROCESS_PCIE_MODE);
 }
 
-TEST_F(AICPUScheduleTEST, StopTdtServerERROR2) {
+TEST_F(AICPUScheduleTEST, StopTdtServerERROR2)
+{
     ComputeProcess::GetInstance().isStartTdtFlag_ = true;
-    MOCKER(&tdt::TDTServerStop)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(&tdt::TDTServerStop).stubs().will(returnValue(1));
     ComputeProcess::GetInstance().StopTdtServer();
     EXPECT_EQ(ComputeProcess::GetInstance().runMode_, aicpu::AicpuRunMode::PROCESS_PCIE_MODE);
 }
 
-TEST_F(AICPUScheduleTEST, MemorySvmDeviceERROR3) {
+TEST_F(AICPUScheduleTEST, MemorySvmDeviceERROR3)
+{
     ComputeProcess::GetInstance().pidSign_ = "123";
-    MOCKER(halMemInitSvmDevice)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halMemInitSvmDevice).stubs().will(returnValue(1));
     int ret = ComputeProcess::GetInstance().MemorySvmDevice();
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStartTestOK) {
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+TEST_F(AICPUScheduleTEST, ComputeProcessStartTestOK)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -3042,7 +2948,8 @@ TEST_F(AICPUScheduleTEST, ComputeProcessStartTestOK) {
 }
 
 extern int32_t ComputeProcessMain(int32_t argc, char* argv[]);
-TEST_F(AICPUScheduleTEST, MainTest) {
+TEST_F(AICPUScheduleTEST, MainTest)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3053,20 +2960,18 @@ TEST_F(AICPUScheduleTEST, MainTest) {
     char paramGrpNumOk[] = "--groupNameNum=2";
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,     paramPidSignOk,
+                    paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 7;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(20));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, MainTest02) {
+TEST_F(AICPUScheduleTEST, MainTest02)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3077,15 +2982,12 @@ TEST_F(AICPUScheduleTEST, MainTest02) {
     char paramGrpNumOk[] = "--groupNameNum=2";
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,     paramPidSignOk,
+                    paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 7;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(20));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
@@ -3107,16 +3009,15 @@ TEST_F(AICPUScheduleTEST, MainTestSuccess) {
         .stubs()
         .will(returnValue(0));
 
-    char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk };
-    int32_t argc = 8;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
+    char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk,
+paramGrpNameOk, paramGrpNumOk }; int32_t argc = 8; MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler) .stubs()
         .will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }*/
 
-TEST_F(AICPUScheduleTEST, MainTestErr) {
+TEST_F(AICPUScheduleTEST, MainTestErr)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramDeviceIdErr1[] = "--deviceId=20";
@@ -3137,70 +3038,68 @@ TEST_F(AICPUScheduleTEST, MainTestErr) {
     char paramGrpNumOk[] = "--groupNameNum=2";
     char paramGrpNumErr1[] = "--groupNameNum=a";
     char paramLogLevelOk[] = "--logLevelInPid=0";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
-    char *argv1[] = {processName};
+    char* argv1[] = {processName};
     int32_t argc1 = 1;
     int32_t ret = ComputeProcessMain(argc1, argv1);
     EXPECT_EQ(ret, -1);
 
-    char *argv2[] = {processName, paramDeviceIdErr1};
+    char* argv2[] = {processName, paramDeviceIdErr1};
     int32_t argc2 = 2;
     ret = ComputeProcessMain(argc2, argv2);
     EXPECT_EQ(ret, -1);
 
-    char *argv3[] = {processName, paramDeviceIdErr2};
+    char* argv3[] = {processName, paramDeviceIdErr2};
     int32_t argc3 = 2;
     ret = ComputeProcessMain(argc3, argv3);
     EXPECT_EQ(ret, -1);
 
-    char *argv4[] = {processName, paramDeviceIdOk, paramPidErr};
+    char* argv4[] = {processName, paramDeviceIdOk, paramPidErr};
     int32_t argc4 = 3;
     ret = ComputeProcessMain(argc4, argv4);
     EXPECT_EQ(ret, -1);
 
-    char *argv5[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeErr};
+    char* argv5[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeErr};
     int32_t argc5 = 5;
     ret = ComputeProcessMain(argc5, argv5);
     EXPECT_EQ(ret, -1);
 
-    char *argv6[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramVfIdErr1};
+    char* argv6[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramVfIdErr1};
     int32_t argc6 = 6;
     ret = ComputeProcessMain(argc6, argv6);
     EXPECT_EQ(ret, -1);
 
-    char *argv7[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramVfIdErr2};
+    char* argv7[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramVfIdErr2};
     int32_t argc7 = 6;
     ret = ComputeProcessMain(argc7, argv7);
     EXPECT_EQ(ret, -1);
-    char *argv8[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramDeviceModeErr1};
+    char* argv8[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramDeviceModeErr1};
     int32_t argc8 = 6;
     ret = ComputeProcessMain(argc8, argv8);
     EXPECT_EQ(ret, -1);
-    char *argv9[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramDeviceModeErr2};
+    char* argv9[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramDeviceModeErr2};
     int32_t argc9 = 6;
     ret = ComputeProcessMain(argc9, argv9);
     EXPECT_EQ(ret, -1);
-    char *argv10[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk,
-                      paramLogLevelOk, paramGrpNameErr1, paramGrpNumOk};
+    char* argv10[] = {processName, paramDeviceIdOk, paramPidOk,       paramPidSignOk,
+                      paramModeOk, paramLogLevelOk, paramGrpNameErr1, paramGrpNumOk};
     int32_t argc10 = 8;
     ret = ComputeProcessMain(argc10, argv10);
     EXPECT_EQ(ret, -1);
-    char *argv11[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk,
-                      paramLogLevelOk, paramGrpNameErr2, paramGrpNumOk};
+    char* argv11[] = {processName, paramDeviceIdOk, paramPidOk,       paramPidSignOk,
+                      paramModeOk, paramLogLevelOk, paramGrpNameErr2, paramGrpNumOk};
     int32_t argc11 = 8;
     ret = ComputeProcessMain(argc11, argv11);
     EXPECT_EQ(ret, -1);
-    char *argv12[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk,
-                      paramLogLevelOk, paramGrpNameOk, paramGrpNumErr1};
+    char* argv12[] = {processName, paramDeviceIdOk, paramPidOk,     paramPidSignOk,
+                      paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumErr1};
     int32_t argc12 = 8;
     ret = ComputeProcessMain(argc12, argv12);
     EXPECT_EQ(ret, -1);
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    char *argv13[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk,
-                      paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
+    char* argv13[] = {processName, paramDeviceIdOk, paramPidOk,     paramPidSignOk,
+                      paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
     int32_t argc13 = 8;
     ret = ComputeProcessMain(argc13, argv13);
     EXPECT_EQ(ret, -1);
@@ -3214,33 +3113,28 @@ TEST_F(AICPUScheduleTEST, AddToCgroup_ERROR)
     char paramPidSignOk[] = "--pidSign=12345A";
     char paramModeOk[] = "--profilingMode=1";
     char paramDeviceModeOk[] = "--deviceMode=1";
-    char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramDeviceModeOk };
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramDeviceModeOk};
     int32_t argc = 6;
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(system).stubs().will(returnValue(-1));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, InitDrvSchedModuleTest) {
-    MOCKER(halEschedAttachDevice)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUScheduleTEST, InitDrvSchedModuleTest)
+{
+    MOCKER(halEschedAttachDevice).stubs().will(returnValue(1));
     std::map<EVENT_ID, SCHEDULE_PRIORITY> priority;
-    int ret = AicpuDrvManager::GetInstance().InitDrvSchedModule(0,priority);
+    int ret = AicpuDrvManager::GetInstance().InitDrvSchedModule(0, priority);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 
     GlobalMockObject::verify();
-    MOCKER(halEschedCreateGrp)
-        .stubs()
-        .will(returnValue(1));
-    ret = AicpuDrvManager::GetInstance().InitDrvSchedModule(0,priority);
+    MOCKER(halEschedCreateGrp).stubs().will(returnValue(1));
+    ret = AicpuDrvManager::GetInstance().InitDrvSchedModule(0, priority);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
-
 }
 
-TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951) {
+TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.pid = 100;
     eventInfo.comm.host_pid = 200;
@@ -3252,7 +3146,7 @@ TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951) {
     struct hwts_ts_task eventMsg = {0};
     eventMsg.mailbox_id = 0x55AA;
     eventMsg.serial_no = 0x1122;
-//#ifndef CFG_SOC_PLATFORM_CLOUD
+    // #ifndef CFG_SOC_PLATFORM_CLOUD
     eventMsg.kernel_info.pid = GetTid();
     eventMsg.kernel_info.kernel_type = 0;
     eventMsg.kernel_info.streamID = 0;
@@ -3265,9 +3159,9 @@ TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951) {
     eventMsg.kernel_info.blockNum = 1;
     eventMsg.kernel_info.l2InMain = 1;
     eventMsg.kernel_info.taskID = (uintptr_t)g_char;
-//#endif
+    // #endif
     eventInfo.priv.msg_len = sizeof(hwts_ts_task);
-    memcpy(eventInfo.priv.msg, (char *)&eventMsg, sizeof(hwts_ts_task));
+    memcpy(eventInfo.priv.msg, (char*)&eventMsg, sizeof(hwts_ts_task));
 
     HwtsTsKernel aicpufwKernelInfo = {0};
     uint32_t mailboxId = 0;
@@ -3275,10 +3169,10 @@ TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951) {
     uint32_t streamId = 0;
     uint64_t taskId = 0;
     uint16_t dataDumpEnableMode = 0U;
-    int ret = AicpuEventManager::GetInstance().HWTSKernelEventMessageParse(eventInfo, mailboxId, aicpufwKernelInfo,
-        serialNo, streamId, taskId, dataDumpEnableMode);
+    int ret = AicpuEventManager::GetInstance().HWTSKernelEventMessageParse(
+        eventInfo, mailboxId, aicpufwKernelInfo, serialNo, streamId, taskId, dataDumpEnableMode);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-//#ifndef CFG_SOC_PLATFORM_CLOUD
+    // #ifndef CFG_SOC_PLATFORM_CLOUD
 
     eventMsg.mailbox_id = 0x55AA;
     eventMsg.serial_no = 0x1122;
@@ -3286,9 +3180,9 @@ TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951) {
     eventMsg.kernel_info.kernel_type = 1;
     eventMsg.kernel_info.paramBase = (uintptr_t)g_char;
     eventInfo.priv.msg_len = sizeof(hwts_ts_task);
-    memcpy(eventInfo.priv.msg, (char *)&eventMsg, sizeof(hwts_ts_task));
-    ret = AicpuEventManager::GetInstance().HWTSKernelEventMessageParse(eventInfo, mailboxId, aicpufwKernelInfo,
-        serialNo, streamId, taskId, dataDumpEnableMode);
+    memcpy(eventInfo.priv.msg, (char*)&eventMsg, sizeof(hwts_ts_task));
+    ret = AicpuEventManager::GetInstance().HWTSKernelEventMessageParse(
+        eventInfo, mailboxId, aicpufwKernelInfo, serialNo, streamId, taskId, dataDumpEnableMode);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     eventMsg.mailbox_id = 0x55AA;
@@ -3296,43 +3190,30 @@ TEST_F(AICPUScheduleTEST, HWTSKernelEventMessageParse_1951) {
     eventMsg.kernel_info.pid = GetTid();
     eventMsg.kernel_info.kernel_type = 10;
     eventInfo.priv.msg_len = sizeof(hwts_ts_task);
-    memcpy(eventInfo.priv.msg, (char *)&eventMsg, sizeof(hwts_ts_task));
-    ret = AicpuEventManager::GetInstance().HWTSKernelEventMessageParse(eventInfo, mailboxId, aicpufwKernelInfo, serialNo,
-                                                                       streamId, taskId, dataDumpEnableMode);
+    memcpy(eventInfo.priv.msg, (char*)&eventMsg, sizeof(hwts_ts_task));
+    ret = AicpuEventManager::GetInstance().HWTSKernelEventMessageParse(
+        eventInfo, mailboxId, aicpufwKernelInfo, serialNo, streamId, taskId, dataDumpEnableMode);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
-//#endif
+    // #endif
 }
 
 namespace {
-    hdcError_t drvHdcGetCapacityPCIE(struct drvHdcCapacity *capacity)
-    {
-        capacity->chanType = HDC_CHAN_TYPE_PCIE;
-        return DRV_ERROR_NONE;
-    }
+hdcError_t drvHdcGetCapacityPCIE(struct drvHdcCapacity* capacity)
+{
+    capacity->chanType = HDC_CHAN_TYPE_PCIE;
+    return DRV_ERROR_NONE;
 }
+} // namespace
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStart_MemorySvmDevice) {
-    MOCKER(halMemInitSvmDevice)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(drvHdcGetCapacity)
-        .stubs()
-        .will(invoke(drvHdcGetCapacityPCIE));
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+TEST_F(AICPUScheduleTEST, ComputeProcessStart_MemorySvmDevice)
+{
+    MOCKER(halMemInitSvmDevice).stubs().will(returnValue(0));
+    MOCKER(drvHdcGetCapacity).stubs().will(invoke(drvHdcGetCapacityPCIE));
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -3340,28 +3221,15 @@ TEST_F(AICPUScheduleTEST, ComputeProcessStart_MemorySvmDevice) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStart_InitTaskMonitorContext_ERR) {
-    MOCKER(halMemInitSvmDevice)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(drvHdcGetCapacity)
-        .stubs()
-        .will(invoke(drvHdcGetCapacityPCIE));
-    MOCKER(InitTaskMonitorContext)
-        .stubs()
-        .will(returnValue(1));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+TEST_F(AICPUScheduleTEST, ComputeProcessStart_InitTaskMonitorContext_ERR)
+{
+    MOCKER(halMemInitSvmDevice).stubs().will(returnValue(0));
+    MOCKER(drvHdcGetCapacity).stubs().will(invoke(drvHdcGetCapacityPCIE));
+    MOCKER(InitTaskMonitorContext).stubs().will(returnValue(1));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -3369,10 +3237,9 @@ TEST_F(AICPUScheduleTEST, ComputeProcessStart_InitTaskMonitorContext_ERR) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, StartMsqSuccess) {
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMsqSuccess)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -3381,10 +3248,9 @@ TEST_F(AICPUScheduleTEST, StartMsqSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, StartMsqSuccessFail) {
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMsqSuccessFail)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -3393,23 +3259,27 @@ TEST_F(AICPUScheduleTEST, StartMsqSuccessFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStart_LoadKernelSo) {
+TEST_F(AICPUScheduleTEST, ComputeProcessStart_LoadKernelSo)
+{
     MOCKER(aeBatchLoadKernelSo).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().LoadKernelSo();
     EXPECT_EQ(ComputeProcess::GetInstance().runMode_, aicpu::AicpuRunMode::PROCESS_PCIE_MODE);
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStart_UpdateProfilingMode) {
+TEST_F(AICPUScheduleTEST, ComputeProcessStart_UpdateProfilingMode)
+{
     ComputeProcess::GetInstance().UpdateProfilingMode(1);
     EXPECT_EQ(ComputeProcess::GetInstance().runMode_, aicpu::AicpuRunMode::PROCESS_PCIE_MODE);
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStart_UpdateProfilingModelMode) {
+TEST_F(AICPUScheduleTEST, ComputeProcessStart_UpdateProfilingModelMode)
+{
     ComputeProcess::GetInstance().UpdateProfilingModelMode(false);
     EXPECT_EQ(ComputeProcess::GetInstance().runMode_, aicpu::AicpuRunMode::PROCESS_PCIE_MODE);
 }
 
-TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_01) {
+TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_01)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3420,18 +3290,13 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_01) {
     char paramGrpNumOk[] = "--groupNameNum=2";
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlclose).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,     paramPidSignOk,
+                    paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 8;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(20));
     MOCKER(dlog_setlevel).stubs().will(returnValue(-1));
     MOCKER(DlogSetAttr).stubs().will(returnValue(-1));
     MOCKER(TsdReportStartOrStopErrCode).stubs().will(returnValue(-1));
@@ -3439,7 +3304,8 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_01) {
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_02) {
+TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_02)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3450,23 +3316,19 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_02) {
     char paramGrpNumOk[] = "--groupNameNum=2";
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(-1));
+    MOCKER(dlclose).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,     paramPidSignOk,
+                    paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 8;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(20));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_03) {
+TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_03)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3478,23 +3340,19 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_03) {
     char paramDeviceModel[] = "--deviceMode=1";
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(1));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(-1));
+    MOCKER(dlclose).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(20));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_04) {
+TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_04)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3506,14 +3364,11 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_04) {
     char paramDeviceModel[] = "--deviceMode=1";
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(1));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(-1));
+    MOCKER(dlclose).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
     MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
         .stubs()
@@ -3522,7 +3377,8 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_04) {
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_05) {
+TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_05)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3534,45 +3390,42 @@ TEST_F(AICPUScheduleTEST, TransferErrCodeToErrMsg_05) {
     char paramDeviceModel[] = "--deviceMode=1";
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(1));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(-1));
+    MOCKER(dlclose).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_ERROR_INIT_FAILED));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INIT_FAILED));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(AICPUScheduleTEST, InitCpuScheduler_Success) {
+TEST_F(AICPUScheduleTEST, InitCpuScheduler_Success)
+{
     printf("=======================InitCpuScheduler=====================\n");
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     CpuSchedInitParam initParam = {0, 0, PROFILING_CLOSE};
     int ret = InitCpuScheduler(&initParam);
     EXPECT_EQ(ret, AICPU_SCHEDULE_SUCCESS);
 }
 
-TEST_F(AICPUScheduleTEST, InitCpuScheduler_Failed) {
+TEST_F(AICPUScheduleTEST, InitCpuScheduler_Failed)
+{
     printf("=======================InitCpuScheduler=====================\n");
     int ret = InitCpuScheduler(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_Failed) {
+TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_Failed)
+{
     printf("=======================AicpuLoadModelWithQ=====================\n");
     int ret = AicpuLoadModelWithQ(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_Success) {
+TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_Success)
+{
     printf("=======================AicpuLoadModelWithQ=====================\n");
     ModelQueueInfo modelQueueInfo = {0, 0};
     ModelTaskInfo modelTaskInfo = {0, 0, 0};
@@ -3588,7 +3441,8 @@ TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_Success) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_StreamsNull) {
+TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_StreamsNull)
+{
     printf("=======================AicpuLoadModelWithQ=====================\n");
     ModelQueueInfo modelQueueInfo = {0, 0};
     ModelInfo modelInfo = {}; //{0, 1, nullptr, 1, &modelQueueInfo, };
@@ -3602,7 +3456,8 @@ TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_StreamsNull) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_TasksNull) {
+TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_TasksNull)
+{
     printf("=======================AicpuLoadModelWithQ=====================\n");
     ModelQueueInfo modelQueueInfo = {0, 0};
     ModelStreamInfo modelStreamInfo = {0, 0, 1, nullptr};
@@ -3617,7 +3472,8 @@ TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_TasksNull) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_QueuesNull) {
+TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_QueuesNull)
+{
     printf("=======================AicpuLoadModelWithQ=====================\n");
     ModelTaskInfo modelTaskInfo = {0, 0, 0};
     ModelStreamInfo modelStreamInfo = {0, 0, 1, &modelTaskInfo};
@@ -3632,24 +3488,22 @@ TEST_F(AICPUScheduleTEST, AicpuLoadModelWithQ_QueuesNull) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
 }
 
-int32_t AicpuSchedulerSubModuleProcessFake(const struct TsdSubEventInfo * const eventInfo)
+int32_t AicpuSchedulerSubModuleProcessFake(const struct TsdSubEventInfo* const eventInfo)
 {
     std::cout << "enter AicpuSchedulerSubModuleProcessFake" << std::endl;
     return 0;
 }
 
-void *dlsymStubAicpuSdMain(void *const soHandle, const char_t * const funcName)
+void* dlsymStubAicpuSdMain(void* const soHandle, const char_t* const funcName)
 {
     std::cout << "enter dlsymStub" << std::endl;
-    return (reinterpret_cast<void *>(AicpuSchedulerSubModuleProcessFake));
+    return (reinterpret_cast<void*>(AicpuSchedulerSubModuleProcessFake));
 }
 
-int dlcloseStub(void *handle)
+int dlcloseStub(void* handle) { return 0; }
+
+TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Ok)
 {
-    return 0;
-}
-
-TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Ok) {
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3662,24 +3516,24 @@ TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Ok) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
     MOCKER(halGetDeviceFromChip).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Ok2) {
+TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Ok2)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3692,24 +3546,24 @@ TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Ok2) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
     MOCKER(halGetDeviceFromChip).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_nok1) {
+TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_nok1)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3727,23 +3581,23 @@ TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_nok1) {
     MOCKER(halGetDeviceFromChip).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-void *dlsymStubAicpuSdMainNull(void *const soHandle, const char_t * const funcName)
+void* dlsymStubAicpuSdMainNull(void* const soHandle, const char_t* const funcName)
 {
     std::cout << "enter dlsymStub" << std::endl;
     return NULL;
 }
 
-TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail) {
+TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3756,7 +3610,7 @@ TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
@@ -3764,17 +3618,17 @@ TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail) {
     MOCKER(halBuffInit).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(1));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail2) {
+TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail2)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3787,7 +3641,7 @@ TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail2) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
@@ -3795,17 +3649,17 @@ TEST_F(AICPUScheduleTEST, RegEventMsgCallBackFunc_Fail2) {
     MOCKER(halBuffInit).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(0)).then(returnValue(1));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, StopQsSubModuleInAicpu_Fail) {
+TEST_F(AICPUScheduleTEST, StopQsSubModuleInAicpu_Fail)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3818,24 +3672,29 @@ TEST_F(AICPUScheduleTEST, StopQsSubModuleInAicpu_Fail) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
-    MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain)).then(invoke(dlsymStubAicpuSdMain)).then(invoke(dlsymStubAicpuSdMain)).then(invoke(dlsymStubAicpuSdMainNull));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
+    MOCKER(dlsym)
+        .stubs()
+        .will(invoke(dlsymStubAicpuSdMain))
+        .then(invoke(dlsymStubAicpuSdMain))
+        .then(invoke(dlsymStubAicpuSdMain))
+        .then(invoke(dlsymStubAicpuSdMainNull));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
     MOCKER(halGetDeviceFromChip).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, StartupResponse_Fail) {
+TEST_F(AICPUScheduleTEST, StartupResponse_Fail)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3854,17 +3713,17 @@ TEST_F(AICPUScheduleTEST, StartupResponse_Fail) {
     MOCKER(halBuffInit).stubs().will(returnValue(0));
     MOCKER(StartupResponse).stubs().will(returnValue(-1));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, WaitForShutDown_Fail) {
+TEST_F(AICPUScheduleTEST, WaitForShutDown_Fail)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3883,17 +3742,17 @@ TEST_F(AICPUScheduleTEST, WaitForShutDown_Fail) {
     MOCKER(halBuffInit).stubs().will(returnValue(0));
     MOCKER(WaitForShutDown).stubs().will(returnValue(-1));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Fail) {
+TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Fail)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3906,24 +3765,24 @@ TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Fail) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMainNull));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
     MOCKER(halGetDeviceFromChip).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Fail2) {
+TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Fail2)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3936,24 +3795,28 @@ TEST_F(AICPUScheduleTEST, RegQueueScheduleModuleCallBack_Fail2) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
-    MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain)).then(invoke(dlsymStubAicpuSdMain)).then(invoke(dlsymStubAicpuSdMainNull));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
+    MOCKER(dlsym)
+        .stubs()
+        .will(invoke(dlsymStubAicpuSdMain))
+        .then(invoke(dlsymStubAicpuSdMain))
+        .then(invoke(dlsymStubAicpuSdMainNull));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
     MOCKER(halGetDeviceFromChip).stubs().will(returnValue(0));
     MOCKER(halBuffInit).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,  paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, SetBatchLoadMode_Succ) {
+TEST_F(AICPUScheduleTEST, SetBatchLoadMode_Succ)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -3967,7 +3830,7 @@ TEST_F(AICPUScheduleTEST, SetBatchLoadMode_Succ) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubAicpuSdMain));
     MOCKER(dlclose).stubs().will(invoke(dlcloseStub));
     MOCKER(halGetDeviceCountFromChip).stubs().will(returnValue(0));
@@ -3976,19 +3839,19 @@ TEST_F(AICPUScheduleTEST, SetBatchLoadMode_Succ) {
     MOCKER(StartupResponse).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(1));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramModeOk, paramLogLevelOk, paramGrpNameOk, paramGrpNumOk, paramDeviceModel, aicpuProcNum};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,    paramPidSignOk,   paramModeOk,
+                    paramLogLevelOk, paramGrpNameOk,  paramGrpNumOk, paramDeviceModel, aicpuProcNum};
     int32_t argc = 10;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlusProcessInputDump_baseaddr_null_threadId_over) {
+TEST_F(AICPUScheduleTEST, FFTSPlusProcessInputDump_baseaddr_null_threadId_over)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpInput *opInput = task.baseDumpData_.add_input();
+    ::toolkit::dumpdata::OpInput* opInput = task.baseDumpData_.add_input();
     if (opInput != nullptr) {
         opInput->set_size(1);
         uint64_t baseAddr = 0;
@@ -4004,9 +3867,10 @@ TEST_F(AICPUScheduleTEST, FFTSPlusProcessInputDump_baseaddr_null_threadId_over) 
     }
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlusProcessOutputDump_baseaddr_null_threadId_over) {
+TEST_F(AICPUScheduleTEST, FFTSPlusProcessOutputDump_baseaddr_null_threadId_over)
+{
     OpDumpTask task(0, 0);
-    ::toolkit::dumpdata::OpOutput *opOutput = task.baseDumpData_.add_output();
+    ::toolkit::dumpdata::OpOutput* opOutput = task.baseDumpData_.add_output();
     if (opOutput != nullptr) {
         opOutput->set_size(1);
         uint64_t baseAddr = 0;
@@ -4022,7 +3886,8 @@ TEST_F(AICPUScheduleTEST, FFTSPlusProcessOutputDump_baseaddr_null_threadId_over)
     }
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventSuccessTest) {
+TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventSuccessTest)
+{
     const uint32_t taskId = 3330;
     const uint32_t streamId = 3;
     const uint32_t contextid = 1;
@@ -4042,24 +3907,24 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventSuccessTest
     opMappingInfo.set_model_id(modelId);
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
     task->set_tasktype(aicpu::dump::Task::DEBUG);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_debug");
     op->set_op_type("op_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -4067,19 +3932,19 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventSuccessTest
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
 
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
@@ -4090,12 +3955,13 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventSuccessTest
     // load op mapping info
     EXPECT_EQ(LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     TaskInfoExt dumpTaskInfo(streamId, taskId);
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(dumpTaskInfo, streamId, taskId, contextid, threadid), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestContextIsINVALID) {
+TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestContextIsINVALID)
+{
     const uint32_t taskId = 3331;
     const uint32_t streamId = 3;
     const uint32_t modelId = 33;
@@ -4114,24 +3980,24 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestCon
     opMappingInfo.set_loop_cond_addr(reinterpret_cast<uint64_t>(&loopCond));
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(0);
     task->set_tasktype(aicpu::dump::Task::FFTSPLUS);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_name_debug");
     op->set_op_type("op_type_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -4139,27 +4005,27 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestCon
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
-    aicpu::dump::Context *context = task->add_context();
+    aicpu::dump::Context* context = task->add_context();
     addPreProcessFFTSPLUSContext(task, context);
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     // load op mapping info
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
@@ -4171,15 +4037,16 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestCon
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.model_id = 222;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id = streamId;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id = taskId;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id1 = streamId+1;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id1 = taskId+1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id1 = streamId + 1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id1 = taskId + 1;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.context_id = INVALID_VAL;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.thread_id = 0;
     AicpuSqeAdapter ada(eventMsgDumpData, 0U);
     EXPECT_EQ(AicpuEventProcess::GetInstance().ProcessDumpFFTSPlusDataEvent(ada), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestThreadIsINVALID) {
+TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestThreadIsINVALID)
+{
     const uint32_t taskId = 3332;
     const uint32_t streamId = 3;
     const uint32_t modelId = 33;
@@ -4198,24 +4065,24 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestThr
     opMappingInfo.set_loop_cond_addr(reinterpret_cast<uint64_t>(&loopCond));
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(0);
     task->set_tasktype(aicpu::dump::Task::FFTSPLUS);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_name_debug");
     op->set_op_type("op_type_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -4223,26 +4090,26 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestThr
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
 
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     // load op mapping info
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
@@ -4254,8 +4121,8 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestThr
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.model_id = 222;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id = streamId;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id = taskId;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id1 = streamId+1;
-    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id1 = taskId+1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.stream_id1 = streamId + 1;
+    eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.task_id1 = taskId + 1;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.context_id = 0;
     eventMsgDumpData.u.ts_to_aicpu_ffts_plus_datadump.thread_id = INVALID_VAL;
     AicpuSqeAdapter ada(eventMsgDumpData, 0U);
@@ -4267,13 +4134,10 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugProcessDumpFFTSPlusDataEventFailTestThr
     EXPECT_EQ(LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, FftsPlusDumpStats) {
-    MOCKER_CPP(&IdeDumpData)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&IdeDumpStart)
-        .stubs()
-        .will(returnValue((void *)111));
+TEST_F(AICPUScheduleTEST, FftsPlusDumpStats)
+{
+    MOCKER_CPP(&IdeDumpData).stubs().will(returnValue(0));
+    MOCKER_CPP(&IdeDumpStart).stubs().will(returnValue((void*)111));
     MOCKER(memcpy_s).stubs().will(returnValue(EOK));
     aicpu::dump::OpMappingInfo opMappingInfo;
     const uint32_t taskId = 22;
@@ -4281,14 +4145,14 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpStats) {
     const uint32_t contextId = 1;
     const uint32_t modelId = 222;
     int32_t output[4] = {1, 2, 3, 4};
-    int32_t *outputaddress = &output[0];
+    int32_t* outputaddress = &output[0];
     int32_t outputSize = sizeof(output);
-    int32_t outputoffset = outputSize/2;
+    int32_t outputoffset = outputSize / 2;
     const int32_t dataType = 7; // int32
     int32_t input[4] = {1, 2, 3, 4};
-    int32_t *inputaddress = &input[0];
+    int32_t* inputaddress = &input[0];
     int32_t inputSize = sizeof(input);
-    int32_t inputoffset = inputSize/2;
+    int32_t inputoffset = inputSize / 2;
 
     opMappingInfo.set_dump_path("dump_path");
     opMappingInfo.set_model_name("model_n a.m\\ /e");
@@ -4297,17 +4161,17 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpStats) {
     uint64_t iterationsPerLoop = 1;
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     {
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
-        aicpu::dump::Op *op = task->mutable_op();
+        aicpu::dump::Op* op = task->mutable_op();
         {
             op->set_op_name("op_n a.m\\ /e");
             op->set_op_type("op_t y.p\\e/ rr");
         }
         // task->set_end_graph();
-        aicpu::dump::Input *input = task->add_input();
+        aicpu::dump::Input* input = task->add_input();
         {
             input->set_data_type(dataType);
             input->set_format(1);
@@ -4317,7 +4181,7 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpStats) {
             input->set_size(inputSize);
             input->set_offset(inputoffset);
         }
-        aicpu::dump::Output *output = task->add_output();
+        aicpu::dump::Output* output = task->add_output();
         {
             output->set_data_type(dataType);
             output->set_format(1);
@@ -4333,19 +4197,19 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpStats) {
         // aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
         task->set_tasktype(aicpu::dump::Task::FFTSPLUS); // FFTSPLUS
         task->set_context_id(contextId);
-        aicpu::dump::OpAttr *opAttr = task->add_attr();
+        aicpu::dump::OpAttr* opAttr = task->add_attr();
         {
             opAttr->set_name("name");
             opAttr->set_value("value");
         }
     }
-    aicpu::dump::Context *context = task->add_context();
+    aicpu::dump::Context* context = task->add_context();
     addPreProcessFFTSPLUSContext(task, context);
     // opMappingInfo.set_dump_step("1");
     opMappingInfo.set_dump_data(1);
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
     TaskInfoExt dumpTaskInfo;
@@ -4362,7 +4226,8 @@ TEST_F(AICPUScheduleTEST, FftsPlusDumpStats) {
     opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugOpDumpTaskOpInfoSuccessTest) {
+TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugOpDumpTaskOpInfoSuccessTest)
+{
     const uint32_t taskId = 3333;
     const uint32_t streamId = 3;
     const uint32_t contextid = 1;
@@ -4382,24 +4247,24 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugOpDumpTaskOpInfoSuccessTest) {
     opMappingInfo.set_model_id(modelId);
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     task->set_task_id(taskId);
     task->set_stream_id(streamId);
     task->set_context_id(INVALID_VAL);
     task->set_tasktype(aicpu::dump::Task::DEBUG);
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("op_debug");
     op->set_op_type("op_debug");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int *p = &data[0];
+    int* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(&p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -4407,19 +4272,19 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugOpDumpTaskOpInfoSuccessTest) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
+    aicpu::dump::OpBuffer* opBuffer = task->add_buffer();
     opBuffer->set_buffer_type(aicpu::dump::BufferType::L1);
     opBuffer->set_address(uint64_t(p));
     opBuffer->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &inData[0];
+    int32_t* q = &inData[0];
     input->set_address(reinterpret_cast<uint64_t>(&q));
     input->set_size(sizeof(inData));
 
@@ -4429,7 +4294,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugOpDumpTaskOpInfoSuccessTest) {
     // load op mapping info
     EXPECT_EQ(LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     TaskInfoExt dumpTaskInfo(streamId, taskId);
     EXPECT_EQ(opDumpTaskMgr.DumpOpInfo(dumpTaskInfo, streamId, taskId, contextid, threadid), AICPU_SCHEDULE_OK);
 
@@ -4439,24 +4304,21 @@ TEST_F(AICPUScheduleTEST, FFTSPlusOpDebugOpDumpTaskOpInfoSuccessTest) {
     EXPECT_EQ(LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 }
 
-void setdata(int32_t * a, int size)
+void setdata(int32_t* a, int size)
 {
     for (int32_t i = 0; i < size; i++) {
-        *(a+i) = i;
+        *(a + i) = i;
     }
     for (int32_t i = 0; i < size; i++) {
-        std::cout << *(a+i) << " ";
+        std::cout << *(a + i) << " ";
     }
     std::cout << std::endl;
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
-    MOCKER_CPP(&IdeDumpData)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&IdeDumpStart)
-        .stubs()
-        .will(returnValue((void *)111));
+TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump)
+{
+    MOCKER_CPP(&IdeDumpData).stubs().will(returnValue(0));
+    MOCKER_CPP(&IdeDumpStart).stubs().will(returnValue((void*)111));
     MOCKER(memcpy_s).stubs().will(returnValue(EOK));
     aicpu::dump::OpMappingInfo opMappingInfo;
     const uint32_t taskId = 22;
@@ -4476,8 +4338,8 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
     setdata(output1, 40);
     int32_t output2[50] = {0};
     setdata(output2, 50);
-    uint64_t input0address  = &input0[0];
-    uint64_t input1address  = &input1[0];
+    uint64_t input0address = &input0[0];
+    uint64_t input1address = &input1[0];
     uint64_t output0address = &output0[0];
     uint64_t output1address = &output1[0];
     uint64_t output2address = &output2[0];
@@ -4486,24 +4348,49 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
     uint64_t output0size = sizeof(output0);
     uint64_t output1size = sizeof(output1);
     uint64_t output2size = sizeof(output2);
-    std::cout << "sizeof(input0) =" << sizeof(input0)  << "   sizeof(int32_t) =" << sizeof(int32_t) <<std::endl;
+    std::cout << "sizeof(input0) =" << sizeof(input0) << "   sizeof(int32_t) =" << sizeof(int32_t) << std::endl;
 
-    uint64_t ctx0thread0input0size = sizeof(input0)*6/10;    	uint64_t ctx0thread1input0size = sizeof(input0) -ctx0thread0input0size ;
-    uint64_t ctx0thread0input1size = sizeof(input1)*6/10;    	uint64_t ctx0thread1input1size = sizeof(input1) -ctx0thread0input1size ;
-    uint64_t ctx0thread0output0size =sizeof(output0)*6/10;   	uint64_t ctx0thread1output0size =sizeof(output0) -ctx0thread0output0size;
-    uint64_t ctx0thread0output1size =sizeof(output1)*6/10;   	uint64_t ctx0thread1output1size =sizeof(output1) -ctx0thread0output1size;
-    uint64_t ctx0thread0output2size =sizeof(output2)*6/10;    	uint64_t ctx0thread1output2size =sizeof(output2) -ctx0thread0output2size;
-	
-	uint64_t ctx0thread0input0addr = input0address ;    	uint64_t ctx0thread1input0addr = input0address  + ctx0thread0input0size ;
-    uint64_t ctx0thread0input1addr = input1address ;    	uint64_t ctx0thread1input1addr = input1address  + ctx0thread0input1size ;
-    uint64_t ctx0thread0output0addr =output0address;   	    uint64_t ctx0thread1output0addr =output0address + ctx0thread0output0size;
-    uint64_t ctx0thread0output1addr =output1address;   	    uint64_t ctx0thread1output1addr =output1address + ctx0thread0output1size;
-    uint64_t ctx0thread0output2addr =output2address;   	    uint64_t ctx0thread1output2addr =output2address + ctx0thread0output2size;
-	std::cout << "ctx0thread0input0addr =" << ctx0thread0input0addr  << " ctx0thread0input0size =" << ctx0thread0input0size  << "|"<< " ctx0thread1input0addr =" << ctx0thread1input0addr << " ctx0thread1input0size =" << ctx0thread1input0size <<std::endl;
-	std::cout << "ctx0thread0input1addr =" << ctx0thread0input1addr  << " ctx0thread0input1size =" << ctx0thread0input1size  << "|"<< " ctx0thread1input1addr =" << ctx0thread1input1addr << " ctx0thread1input1size =" << ctx0thread1input1size <<std::endl;
-	std::cout << "ctx0thread0output0addr=" << ctx0thread0output0addr << " ctx0thread0output0size=" << ctx0thread0output0size << "|"<< " ctx0thread1output0addr=" << ctx0thread1output0addr<< " ctx0thread1output0size=" << ctx0thread1output0size<<std::endl;
-	std::cout << "ctx0thread0output1addr=" << ctx0thread0output1addr << " ctx0thread0output1size=" << ctx0thread0output1size << "|"<< " ctx0thread1output1addr=" << ctx0thread1output1addr<< " ctx0thread1output1size=" << ctx0thread1output1size<<std::endl;
-	std::cout << "ctx0thread0output2addr=" << ctx0thread0output2addr << " ctx0thread0output2size=" << ctx0thread0output2size << "|"<< " ctx0thread1output2addr=" << ctx0thread1output2addr<< " ctx0thread1output2size=" << ctx0thread1output2size<<std::endl;
+    uint64_t ctx0thread0input0size = sizeof(input0) * 6 / 10;
+    uint64_t ctx0thread1input0size = sizeof(input0) - ctx0thread0input0size;
+    uint64_t ctx0thread0input1size = sizeof(input1) * 6 / 10;
+    uint64_t ctx0thread1input1size = sizeof(input1) - ctx0thread0input1size;
+    uint64_t ctx0thread0output0size = sizeof(output0) * 6 / 10;
+    uint64_t ctx0thread1output0size = sizeof(output0) - ctx0thread0output0size;
+    uint64_t ctx0thread0output1size = sizeof(output1) * 6 / 10;
+    uint64_t ctx0thread1output1size = sizeof(output1) - ctx0thread0output1size;
+    uint64_t ctx0thread0output2size = sizeof(output2) * 6 / 10;
+    uint64_t ctx0thread1output2size = sizeof(output2) - ctx0thread0output2size;
+
+    uint64_t ctx0thread0input0addr = input0address;
+    uint64_t ctx0thread1input0addr = input0address + ctx0thread0input0size;
+    uint64_t ctx0thread0input1addr = input1address;
+    uint64_t ctx0thread1input1addr = input1address + ctx0thread0input1size;
+    uint64_t ctx0thread0output0addr = output0address;
+    uint64_t ctx0thread1output0addr = output0address + ctx0thread0output0size;
+    uint64_t ctx0thread0output1addr = output1address;
+    uint64_t ctx0thread1output1addr = output1address + ctx0thread0output1size;
+    uint64_t ctx0thread0output2addr = output2address;
+    uint64_t ctx0thread1output2addr = output2address + ctx0thread0output2size;
+    std::cout << "ctx0thread0input0addr =" << ctx0thread0input0addr
+              << " ctx0thread0input0size =" << ctx0thread0input0size << "|"
+              << " ctx0thread1input0addr =" << ctx0thread1input0addr
+              << " ctx0thread1input0size =" << ctx0thread1input0size << std::endl;
+    std::cout << "ctx0thread0input1addr =" << ctx0thread0input1addr
+              << " ctx0thread0input1size =" << ctx0thread0input1size << "|"
+              << " ctx0thread1input1addr =" << ctx0thread1input1addr
+              << " ctx0thread1input1size =" << ctx0thread1input1size << std::endl;
+    std::cout << "ctx0thread0output0addr=" << ctx0thread0output0addr
+              << " ctx0thread0output0size=" << ctx0thread0output0size << "|"
+              << " ctx0thread1output0addr=" << ctx0thread1output0addr
+              << " ctx0thread1output0size=" << ctx0thread1output0size << std::endl;
+    std::cout << "ctx0thread0output1addr=" << ctx0thread0output1addr
+              << " ctx0thread0output1size=" << ctx0thread0output1size << "|"
+              << " ctx0thread1output1addr=" << ctx0thread1output1addr
+              << " ctx0thread1output1size=" << ctx0thread1output1size << std::endl;
+    std::cout << "ctx0thread0output2addr=" << ctx0thread0output2addr
+              << " ctx0thread0output2size=" << ctx0thread0output2size << "|"
+              << " ctx0thread1output2addr=" << ctx0thread1output2addr
+              << " ctx0thread1output2size=" << ctx0thread1output2size << std::endl;
 
     const int32_t dataType = 7; // int32
 
@@ -4514,17 +4401,17 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
     uint64_t iterationsPerLoop = 1;
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     {
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
-        aicpu::dump::Op *op = task->mutable_op();
+        aicpu::dump::Op* op = task->mutable_op();
         {
             op->set_op_name("op_n a.m\\ /e");
             op->set_op_type("op_t y.p\\e/ rr");
         }
         // task->set_end_graph();
-        aicpu::dump::Input *input0 = task->add_input();
+        aicpu::dump::Input* input0 = task->add_input();
         {
             input0->set_data_type(dataType);
             input0->set_format(1);
@@ -4533,7 +4420,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
             input0->set_size(0);
             input0->set_offset(0);
         }
-        aicpu::dump::Input *input1 = task->add_input();
+        aicpu::dump::Input* input1 = task->add_input();
         {
             input1->set_data_type(dataType);
             input1->set_format(1);
@@ -4542,7 +4429,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
             input1->set_size(0);
             input1->set_offset(0);
         }
-        aicpu::dump::Output *output0 = task->add_output();
+        aicpu::dump::Output* output0 = task->add_output();
         {
             output0->set_data_type(dataType);
             output0->set_format(1);
@@ -4555,7 +4442,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
             output0->set_size(0);
             output0->set_offset(0);
         }
-        aicpu::dump::Output *output1 = task->add_output();
+        aicpu::dump::Output* output1 = task->add_output();
         {
             output1->set_data_type(dataType);
             output1->set_format(1);
@@ -4568,7 +4455,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
             output1->set_size(0);
             output1->set_offset(0);
         }
-        aicpu::dump::Output *output2 = task->add_output();
+        aicpu::dump::Output* output2 = task->add_output();
         {
             output2->set_data_type(dataType);
             output2->set_format(1);
@@ -4583,70 +4470,70 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
         }
         // aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
         task->set_tasktype(aicpu::dump::Task::FFTSPLUS); // FFTSPLUS
-        //task->set_context_id(contextId);
-        aicpu::dump::Context *context0 = task->add_context();
+        // task->set_context_id(contextId);
+        aicpu::dump::Context* context0 = task->add_context();
         {
             context0->set_context_id(contextId0);
             context0->set_thread_id(0);
-            aicpu::dump::RealAddressAndSize *input0 = context0->add_input(); //input 0
+            aicpu::dump::RealAddressAndSize* input0 = context0->add_input(); // input 0
             {
                 input0->set_address(ctx0thread0input0addr);
                 input0->set_size(ctx0thread0input0size);
             }
-            aicpu::dump::RealAddressAndSize *input1 = context0->add_input(); //input 1
+            aicpu::dump::RealAddressAndSize* input1 = context0->add_input(); // input 1
             {
                 input1->set_address(ctx0thread0input1addr);
                 input1->set_size(ctx0thread0input1size);
             }
-            aicpu::dump::RealAddressAndSize *output0 = context0->add_output(); //output 0
+            aicpu::dump::RealAddressAndSize* output0 = context0->add_output(); // output 0
             {
                 output0->set_address(ctx0thread0output0addr);
                 output0->set_size(ctx0thread0output0size);
             }
-            aicpu::dump::RealAddressAndSize *output1 = context0->add_output(); //output 1
+            aicpu::dump::RealAddressAndSize* output1 = context0->add_output(); // output 1
             {
                 output1->set_address(ctx0thread0output1addr);
                 output1->set_size(ctx0thread0output1size);
             }
-            aicpu::dump::RealAddressAndSize *output2 = context0->add_output(); //output 2
+            aicpu::dump::RealAddressAndSize* output2 = context0->add_output(); // output 2
             {
                 output2->set_address(ctx0thread0output2addr);
                 output2->set_size(ctx0thread0output2size);
             }
         }
 
-        aicpu::dump::Context *context1 = task->add_context();
+        aicpu::dump::Context* context1 = task->add_context();
         {
             context1->set_context_id(contextId0);
             context1->set_thread_id(1);
-            aicpu::dump::RealAddressAndSize *input0 = context1->add_input(); //input 0
+            aicpu::dump::RealAddressAndSize* input0 = context1->add_input(); // input 0
             {
                 input0->set_address(ctx0thread1input0addr);
                 input0->set_size(ctx0thread1input0size);
             }
-            aicpu::dump::RealAddressAndSize *input1 = context1->add_input(); //input 1
+            aicpu::dump::RealAddressAndSize* input1 = context1->add_input(); // input 1
             {
                 input1->set_address(ctx0thread1input1addr);
                 input1->set_size(ctx0thread1input1size);
             }
-            aicpu::dump::RealAddressAndSize *output0 = context1->add_output(); //output 0
+            aicpu::dump::RealAddressAndSize* output0 = context1->add_output(); // output 0
             {
                 output0->set_address(ctx0thread1output0addr);
                 output0->set_size(ctx0thread1output0size);
             }
-            aicpu::dump::RealAddressAndSize *output1 = context1->add_output(); //output 1
+            aicpu::dump::RealAddressAndSize* output1 = context1->add_output(); // output 1
             {
                 output1->set_address(ctx0thread1output1addr);
                 output1->set_size(ctx0thread1output1size);
             }
-            aicpu::dump::RealAddressAndSize *output2 = context1->add_output(); //output 2
+            aicpu::dump::RealAddressAndSize* output2 = context1->add_output(); // output 2
             {
                 output2->set_address(ctx0thread1output2addr);
                 output2->set_size(ctx0thread1output2size);
             }
         }
 
-        aicpu::dump::OpAttr *opAttr = task->add_attr();
+        aicpu::dump::OpAttr* opAttr = task->add_attr();
         {
             opAttr->set_name("name");
             opAttr->set_value("value");
@@ -4657,7 +4544,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
 
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
     TaskInfoExt dumpTaskInfo;
@@ -4681,13 +4568,10 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump) {
     opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length());
 }
 
-TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
-    MOCKER_CPP(&IdeDumpData)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&IdeDumpStart)
-        .stubs()
-        .will(returnValue((void *)111));
+TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1)
+{
+    MOCKER_CPP(&IdeDumpData).stubs().will(returnValue(0));
+    MOCKER_CPP(&IdeDumpStart).stubs().will(returnValue((void*)111));
     MOCKER(memcpy_s).stubs().will(returnValue(EOK));
     aicpu::dump::OpMappingInfo opMappingInfo;
     const uint32_t taskId = 23;
@@ -4707,34 +4591,59 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
     setdata(output1, 40);
     int32_t output2[50] = {0};
     setdata(output2, 50);
-    uint64_t input0address  = &input0[0];
-    uint64_t input1address  = &input1[0];
+    uint64_t input0address = &input0[0];
+    uint64_t input1address = &input1[0];
     uint64_t output0address = &output0[0];
     uint64_t output1address = &output1[0];
     uint64_t output2address = &output2[0];
-	uint64_t input0size = sizeof(input0);
-	uint64_t input1size = sizeof(input1);
-	uint64_t output0size = sizeof(output0);
-	uint64_t output1size = sizeof(output1);
-	uint64_t output2size = sizeof(output2);
-    std::cout << "sizeof(input0) =" << sizeof(input0)  << "   sizeof(int32_t) =" << sizeof(int32_t) <<std::endl;
+    uint64_t input0size = sizeof(input0);
+    uint64_t input1size = sizeof(input1);
+    uint64_t output0size = sizeof(output0);
+    uint64_t output1size = sizeof(output1);
+    uint64_t output2size = sizeof(output2);
+    std::cout << "sizeof(input0) =" << sizeof(input0) << "   sizeof(int32_t) =" << sizeof(int32_t) << std::endl;
 
-    uint64_t ctx0thread0input0size = sizeof(input0)*6/10;    	uint64_t ctx0thread1input0size = sizeof(input0) -ctx0thread0input0size ;
-    uint64_t ctx0thread0input1size = sizeof(input1)*6/10;    	uint64_t ctx0thread1input1size = sizeof(input1) -ctx0thread0input1size ;
-    uint64_t ctx0thread0output0size =sizeof(output0)*6/10;   	uint64_t ctx0thread1output0size =sizeof(output0) -ctx0thread0output0size;
-    uint64_t ctx0thread0output1size =sizeof(output1)*6/10;   	uint64_t ctx0thread1output1size =sizeof(output1) -ctx0thread0output1size;
-    uint64_t ctx0thread0output2size =sizeof(output2)*6/10;    	uint64_t ctx0thread1output2size =sizeof(output2) -ctx0thread0output2size;
-	
-	uint64_t ctx0thread0input0addr = input0address ;    	uint64_t ctx0thread1input0addr = input0address  + ctx0thread0input0size ;
-    uint64_t ctx0thread0input1addr = input1address ;    	uint64_t ctx0thread1input1addr = input1address  + ctx0thread0input1size ;
-    uint64_t ctx0thread0output0addr =output0address;   	    uint64_t ctx0thread1output0addr =output0address + ctx0thread0output0size;
-    uint64_t ctx0thread0output1addr =output1address;   	    uint64_t ctx0thread1output1addr =output1address + ctx0thread0output1size;
-    uint64_t ctx0thread0output2addr =output2address;   	    uint64_t ctx0thread1output2addr =output2address + ctx0thread0output2size;
-	std::cout << "ctx0thread0input0addr =" << ctx0thread0input0addr  << " ctx0thread0input0size =" << ctx0thread0input0size  << "|"<< " ctx0thread1input0addr =" << ctx0thread1input0addr << " ctx0thread1input0size =" << ctx0thread1input0size <<std::endl;
-	std::cout << "ctx0thread0input1addr =" << ctx0thread0input1addr  << " ctx0thread0input1size =" << ctx0thread0input1size  << "|"<< " ctx0thread1input1addr =" << ctx0thread1input1addr << " ctx0thread1input1size =" << ctx0thread1input1size <<std::endl;
-	std::cout << "ctx0thread0output0addr=" << ctx0thread0output0addr << " ctx0thread0output0size=" << ctx0thread0output0size << "|"<< " ctx0thread1output0addr=" << ctx0thread1output0addr<< " ctx0thread1output0size=" << ctx0thread1output0size<<std::endl;
-	std::cout << "ctx0thread0output1addr=" << ctx0thread0output1addr << " ctx0thread0output1size=" << ctx0thread0output1size << "|"<< " ctx0thread1output1addr=" << ctx0thread1output1addr<< " ctx0thread1output1size=" << ctx0thread1output1size<<std::endl;
-	std::cout << "ctx0thread0output2addr=" << ctx0thread0output2addr << " ctx0thread0output2size=" << ctx0thread0output2size << "|"<< " ctx0thread1output2addr=" << ctx0thread1output2addr<< " ctx0thread1output2size=" << ctx0thread1output2size<<std::endl;
+    uint64_t ctx0thread0input0size = sizeof(input0) * 6 / 10;
+    uint64_t ctx0thread1input0size = sizeof(input0) - ctx0thread0input0size;
+    uint64_t ctx0thread0input1size = sizeof(input1) * 6 / 10;
+    uint64_t ctx0thread1input1size = sizeof(input1) - ctx0thread0input1size;
+    uint64_t ctx0thread0output0size = sizeof(output0) * 6 / 10;
+    uint64_t ctx0thread1output0size = sizeof(output0) - ctx0thread0output0size;
+    uint64_t ctx0thread0output1size = sizeof(output1) * 6 / 10;
+    uint64_t ctx0thread1output1size = sizeof(output1) - ctx0thread0output1size;
+    uint64_t ctx0thread0output2size = sizeof(output2) * 6 / 10;
+    uint64_t ctx0thread1output2size = sizeof(output2) - ctx0thread0output2size;
+
+    uint64_t ctx0thread0input0addr = input0address;
+    uint64_t ctx0thread1input0addr = input0address + ctx0thread0input0size;
+    uint64_t ctx0thread0input1addr = input1address;
+    uint64_t ctx0thread1input1addr = input1address + ctx0thread0input1size;
+    uint64_t ctx0thread0output0addr = output0address;
+    uint64_t ctx0thread1output0addr = output0address + ctx0thread0output0size;
+    uint64_t ctx0thread0output1addr = output1address;
+    uint64_t ctx0thread1output1addr = output1address + ctx0thread0output1size;
+    uint64_t ctx0thread0output2addr = output2address;
+    uint64_t ctx0thread1output2addr = output2address + ctx0thread0output2size;
+    std::cout << "ctx0thread0input0addr =" << ctx0thread0input0addr
+              << " ctx0thread0input0size =" << ctx0thread0input0size << "|"
+              << " ctx0thread1input0addr =" << ctx0thread1input0addr
+              << " ctx0thread1input0size =" << ctx0thread1input0size << std::endl;
+    std::cout << "ctx0thread0input1addr =" << ctx0thread0input1addr
+              << " ctx0thread0input1size =" << ctx0thread0input1size << "|"
+              << " ctx0thread1input1addr =" << ctx0thread1input1addr
+              << " ctx0thread1input1size =" << ctx0thread1input1size << std::endl;
+    std::cout << "ctx0thread0output0addr=" << ctx0thread0output0addr
+              << " ctx0thread0output0size=" << ctx0thread0output0size << "|"
+              << " ctx0thread1output0addr=" << ctx0thread1output0addr
+              << " ctx0thread1output0size=" << ctx0thread1output0size << std::endl;
+    std::cout << "ctx0thread0output1addr=" << ctx0thread0output1addr
+              << " ctx0thread0output1size=" << ctx0thread0output1size << "|"
+              << " ctx0thread1output1addr=" << ctx0thread1output1addr
+              << " ctx0thread1output1size=" << ctx0thread1output1size << std::endl;
+    std::cout << "ctx0thread0output2addr=" << ctx0thread0output2addr
+              << " ctx0thread0output2size=" << ctx0thread0output2size << "|"
+              << " ctx0thread1output2addr=" << ctx0thread1output2addr
+              << " ctx0thread1output2size=" << ctx0thread1output2size << std::endl;
 
     const int32_t dataType = 7; // int32
 
@@ -4745,17 +4654,17 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
     uint64_t iterationsPerLoop = 1;
 
     opMappingInfo.set_flag(0x01);
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
     {
         task->set_task_id(taskId);
         task->set_stream_id(streamId);
-        aicpu::dump::Op *op = task->mutable_op();
+        aicpu::dump::Op* op = task->mutable_op();
         {
             op->set_op_name("op_n a.m\\ /e");
             op->set_op_type("op_t y.p\\e/ rr");
         }
         // task->set_end_graph();
-        aicpu::dump::Input *input0 = task->add_input();
+        aicpu::dump::Input* input0 = task->add_input();
         {
             input0->set_data_type(dataType);
             input0->set_format(1);
@@ -4764,7 +4673,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
             input0->set_size(input0size);
             input0->set_offset(0);
         }
-        aicpu::dump::Input *input1 = task->add_input();
+        aicpu::dump::Input* input1 = task->add_input();
         {
             input1->set_data_type(dataType);
             input1->set_format(1);
@@ -4773,7 +4682,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
             input1->set_size(input1size);
             input1->set_offset(0);
         }
-        aicpu::dump::Output *output0 = task->add_output();
+        aicpu::dump::Output* output0 = task->add_output();
         {
             output0->set_data_type(dataType);
             output0->set_format(1);
@@ -4786,7 +4695,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
             output0->set_size(output0size);
             output0->set_offset(0);
         }
-        aicpu::dump::Output *output1 = task->add_output();
+        aicpu::dump::Output* output1 = task->add_output();
         {
             output1->set_data_type(dataType);
             output1->set_format(1);
@@ -4799,7 +4708,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
             output1->set_size(output1size);
             output1->set_offset(0);
         }
-        aicpu::dump::Output *output2 = task->add_output();
+        aicpu::dump::Output* output2 = task->add_output();
         {
             output2->set_data_type(dataType);
             output2->set_format(1);
@@ -4814,9 +4723,9 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
         }
         // aicpu::dump::OpBuffer *opBuffer = task->add_buffer();
         task->set_tasktype(0); // no FFTSPLUS
-        //task->set_context_id(contextId);
+        // task->set_context_id(contextId);
 
-        aicpu::dump::OpAttr *opAttr = task->add_attr();
+        aicpu::dump::OpAttr* opAttr = task->add_attr();
         {
             opAttr->set_name("name");
             opAttr->set_value("value");
@@ -4827,7 +4736,7 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
 
     std::string opMappingInfoStr;
     opMappingInfo.SerializeToString(&opMappingInfoStr);
-    OpDumpTaskManager &opDumpTaskMgr = OpDumpTaskManager::GetInstance();
+    OpDumpTaskManager& opDumpTaskMgr = OpDumpTaskManager::GetInstance();
     EXPECT_EQ(opDumpTaskMgr.LoadOpMappingInfo(opMappingInfoStr.c_str(), opMappingInfoStr.length()), AICPU_SCHEDULE_OK);
 
     TaskInfoExt dumpTaskInfo;
@@ -4851,7 +4760,8 @@ TEST_F(AICPUScheduleTEST, FFTSPlus_ut_dynamicshape_dump1) {
 }
 
 // 此用例请务必保证最后执行，可能影响其余用例的正常运行
-TEST_F(AICPUScheduleTEST, Ut_MainTestWithVf) {
+TEST_F(AICPUScheduleTEST, Ut_MainTestWithVf)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=2";
     char paramPidOk[] = "--pid=4";
@@ -4861,25 +4771,22 @@ TEST_F(AICPUScheduleTEST, Ut_MainTestWithVf) {
     char paramVfId[] = "--vfId=2";
     char paramGrpNameOk[] = "--groupNameList=Grp3";
     char paramGrpNumOk[] = "--groupNameNum=1";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
     MOCKER(open, int(const char*, int)).stubs().will(returnValue(0));
     MOCKER(ioctl, int(int, int, void*)).stubs().will(returnValue(0));
     MOCKER(close).stubs().will(returnValue(0));
 
-    char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                     paramModeOk, paramLogLevelOk, paramVfId, paramGrpNameOk, paramGrpNumOk };
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,     paramPidSignOk, paramModeOk,
+                    paramLogLevelOk, paramVfId,       paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUScheduleTEST, UtMainTestWithVf_openFail) {
+TEST_F(AICPUScheduleTEST, UtMainTestWithVf_openFail)
+{
     char processName[] = "aicpu_scheduler";
     char paramDeviceIdOk[] = "--deviceId=2";
     char paramPidOk[] = "--pid=4";
@@ -4889,20 +4796,16 @@ TEST_F(AICPUScheduleTEST, UtMainTestWithVf_openFail) {
     char paramVfId[] = "--vfId=2";
     char paramGrpNameOk[] = "--groupNameList=Grp3";
     char paramGrpNumOk[] = "--groupNameNum=1";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
     MOCKER(open, int(const char*, int)).stubs().will(returnValue(-1));
     MOCKER(ioctl, int(int, int, void*)).stubs().will(returnValue(0));
     MOCKER(close).stubs().will(returnValue(0));
 
-    char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                     paramModeOk, paramLogLevelOk, paramVfId, paramGrpNameOk, paramGrpNumOk };
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,     paramPidSignOk, paramModeOk,
+                    paramLogLevelOk, paramVfId,       paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 9;
-    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuScheduleInterface::InitAICPUScheduler).stubs().will(returnValue(0));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, 0);
 
@@ -4922,23 +4825,18 @@ TEST_F(AICPUScheduleTEST, AddToCgroup_ERROR_001)
     char paramVfId[] = "--vfId=2";
     char paramGrpNameOk[] = "--groupNameList=Grp3";
     char paramGrpNumOk[] = "--groupNameNum=1";
-   char* argv[] = { processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                     paramModeOk, paramLogLevelOk, paramVfId, paramGrpNameOk, paramGrpNumOk };
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk,     paramPidSignOk, paramModeOk,
+                    paramLogLevelOk, paramVfId,       paramGrpNameOk, paramGrpNumOk};
     int32_t argc = 9;
     MOCKER_CPP(&AicpuSchedule::AddToCgroup).stubs().will(returnValue(false));
-    MOCKER(access)
-        .stubs()
-        .will(returnValue(0));
-     MOCKER(waitpid)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(access).stubs().will(returnValue(0));
+    MOCKER(waitpid).stubs().will(returnValue(-1));
     int32_t ret = ComputeProcessMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
 TEST_F(AICPUScheduleTEST, AddToCgroup_Adc)
 {
-
     MOCKER_CPP(&FeatureCtrl::ShouldAddtocGroup).stubs().will(returnValue(false));
     const bool ret = AddToCgroup(0, 0);
     EXPECT_EQ(ret, true);
@@ -4954,19 +4852,18 @@ TEST_F(AICPUScheduleTEST, AddToCgroupSuccess)
     GlobalMockObject::verify();
 }
 
-int32_t SubProcCallBackFuncInfo(uint32_t deviceID) {
+int32_t SubProcCallBackFuncInfo(uint32_t deviceID)
+{
     std::cout << "enter SubProcCallBackFuncInfo" << std::endl;
     return TS_SUCCESS;
 }
 
-int32_t SubProcCallBackFuncInfoFail(uint32_t deviceID) {
-    return 1;
-}
+int32_t SubProcCallBackFuncInfoFail(uint32_t deviceID) { return 1; }
 
-void *dlsymStubForDvpp(void *const soHandle, const char_t *const funcName)
+void* dlsymStubForDvpp(void* const soHandle, const char_t* const funcName)
 {
     std::cout << "enter dlsymStub" << std::endl;
-    return (reinterpret_cast<void *>(SubProcCallBackFuncInfo));
+    return (reinterpret_cast<void*>(SubProcCallBackFuncInfo));
 }
 
 TEST_F(AICPUScheduleTEST, SetDeviceIdToDvpp_01)
@@ -4977,7 +4874,7 @@ TEST_F(AICPUScheduleTEST, SetDeviceIdToDvpp_01)
 
 TEST_F(AICPUScheduleTEST, SetDeviceIdToDvpp_02)
 {
-    AicpuSchedule::AicpuSoManager &aicpuSoManager = AicpuSchedule::AicpuSoManager::GetInstance();
+    AicpuSchedule::AicpuSoManager& aicpuSoManager = AicpuSchedule::AicpuSoManager::GetInstance();
     int32_t addr = 1234;
     aicpuSoManager.soHandle_ = &addr;
     MOCKER(dlsym).stubs().will(invoke(dlsymStubForDvpp));
@@ -4988,8 +4885,8 @@ TEST_F(AICPUScheduleTEST, SetDeviceIdToDvpp_02)
 
 TEST_F(AICPUScheduleTEST, SetDeviceIdToDvppDlsymFail)
 {
-    MOCKER(dlsym).stubs().will(returnValue((void *)nullptr));
-    char_t *path = "test";
+    MOCKER(dlsym).stubs().will(returnValue((void*)nullptr));
+    char_t* path = "test";
     MOCKER(realpath).stubs().will(returnValue(path));
     MOCKER(dlopen).stubs().will(returnValue((void*)(123)));
     AicpuSchedule::AicpuSoManager::GetInstance().SetDeviceIdToDvpp(32);
@@ -4998,8 +4895,8 @@ TEST_F(AICPUScheduleTEST, SetDeviceIdToDvppDlsymFail)
 
 TEST_F(AICPUScheduleTEST, SetDeviceIdToDvppSetDeviceFail)
 {
-    MOCKER(dlsym).stubs().will(returnValue((void *)SubProcCallBackFuncInfoFail));
-    char_t *path = "test";
+    MOCKER(dlsym).stubs().will(returnValue((void*)SubProcCallBackFuncInfoFail));
+    char_t* path = "test";
     MOCKER(realpath).stubs().will(returnValue(path));
     MOCKER(dlopen).stubs().will(returnValue((void*)(123)));
     AicpuSchedule::AicpuSoManager::GetInstance().SetDeviceIdToDvpp(32);
@@ -5009,9 +4906,9 @@ TEST_F(AICPUScheduleTEST, SetDeviceIdToDvppSetDeviceFail)
 TEST_F(AICPUScheduleTEST, OpenSoFile_01)
 {
     MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
-    char_t *path = "test";
+    char_t* path = "test";
     MOCKER(realpath).stubs().will(returnValue(path));
-    void *retHandle = nullptr;
+    void* retHandle = nullptr;
     const bool ret = AicpuSchedule::AicpuSoManager::GetInstance().OpenSo("test");
     EXPECT_EQ(ret, false);
 }
@@ -5019,9 +4916,9 @@ TEST_F(AICPUScheduleTEST, OpenSoFile_01)
 TEST_F(AICPUScheduleTEST, OpenSoFile_02)
 {
     MOCKER(dlopen).stubs().will(returnValue((void*)(123)));
-    char_t *path = "test";
+    char_t* path = "test";
     MOCKER(realpath).stubs().will(returnValue(path));
-    void *retHandle = nullptr;
+    void* retHandle = nullptr;
     const bool ret = AicpuSchedule::AicpuSoManager::GetInstance().OpenSo("test");
     EXPECT_EQ(ret, true);
 }
@@ -5049,18 +4946,16 @@ TEST_F(AICPUScheduleTEST, CloseSo_02)
     EXPECT_EQ(AicpuSchedule::AicpuSoManager::GetInstance().soHandle_, nullptr);
 }
 
-uint32_t CastV2(void * parm)
-{
-    return 0;
-}
+uint32_t CastV2(void* parm) { return 0; }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSKernelEvent_KFC_UTest) {
-    MOCKER(dlsym).stubs().will(returnValue((void *)CastV2));
+TEST_F(AICPUScheduleTEST, ProcessHWTSKernelEvent_KFC_UTest)
+{
+    MOCKER(dlsym).stubs().will(returnValue((void*)CastV2));
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_TS_HWTS_KERNEL;
     eventInfo.priv.msg_len = sizeof(hwts_ts_task);
-    struct hwts_ts_task *eventMsg = reinterpret_cast<hwts_ts_task *>(eventInfo.priv.msg);
+    struct hwts_ts_task* eventMsg = reinterpret_cast<hwts_ts_task*>(eventInfo.priv.msg);
     eventMsg->mailbox_id = 1;
     eventMsg->serial_no = 9527;
     eventMsg->kernel_info.kernel_type = KERNEL_TYPE_AICPU_KFC;
@@ -5073,30 +4968,33 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSKernelEvent_KFC_UTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSLoadPlatformFromBuf) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSLoadPlatformFromBuf)
+{
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_INFO_LOAD;
     ctrlMsg->u.ts_to_aicpu_info.length = 0U;
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventNotifyRecord) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventNotifyRecord)
+{
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_NOTIFY_RECORD;
     ctrlMsg->u.ts_to_aicpu_info.length = 0U;
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventDatadumpReport) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventDatadumpReport)
+{
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_DATADUMP_REPORT;
     ctrlMsg->u.ts_to_aicpu_info.length = 0U;
     MOCKER_CPP(&AicpuEventProcess::ProcessDumpDataEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
@@ -5104,10 +5002,11 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventDatadumpReport) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventDatadumpLoadInfo) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventDatadumpLoadInfo)
+{
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_DATADUMP_LOADINFO;
     ctrlMsg->u.ts_to_aicpu_info.length = 0U;
     MOCKER_CPP(&AicpuEventProcess::ProcessLoadOpMappingEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
@@ -5115,10 +5014,11 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventDatadumpLoadInfo) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventFftsDatadumpReport) {
+TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventFftsDatadumpReport)
+{
     event_info eventInfo = g_event;
     eventInfo.priv.msg_len = sizeof(ts_aicpu_sqe_t);
-    ts_aicpu_sqe_t *ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t *>(eventInfo.priv.msg);
+    ts_aicpu_sqe_t* ctrlMsg = reinterpret_cast<ts_aicpu_sqe_t*>(eventInfo.priv.msg);
     ctrlMsg->cmd_type = AICPU_FFTS_PLUS_DATADUMP_REPORT;
     ctrlMsg->u.ts_to_aicpu_info.length = 0U;
     MOCKER_CPP(&AicpuEventProcess::ProcessDumpFFTSPlusDataEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
@@ -5126,7 +5026,8 @@ TEST_F(AICPUScheduleTEST, ProcessHWTSControlEventFftsDatadumpReport) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteProcessSycHwtsKernel) {
+TEST_F(AICPUScheduleTEST, ExecuteProcessSycHwtsKernel)
+{
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_TS_HWTS_KERNEL;
@@ -5135,7 +5036,8 @@ TEST_F(AICPUScheduleTEST, ExecuteProcessSycHwtsKernel) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteProcessSycCtrlMsg) {
+TEST_F(AICPUScheduleTEST, ExecuteProcessSycCtrlMsg)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_TS_CTRL_MSG;
     event_ack eventAck = {};
@@ -5143,7 +5045,8 @@ TEST_F(AICPUScheduleTEST, ExecuteProcessSycCtrlMsg) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteProcessSycDefault) {
+TEST_F(AICPUScheduleTEST, ExecuteProcessSycDefault)
+{
     event_info eventInfo = g_event;
     eventInfo.comm.event_id = EVENT_RANDOM_KERNEL;
     event_ack eventAck = {};
@@ -5151,7 +5054,8 @@ TEST_F(AICPUScheduleTEST, ExecuteProcessSycDefault) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ExecuteHWTSEventTaskDatadumpEnable) {
+TEST_F(AICPUScheduleTEST, ExecuteHWTSEventTaskDatadumpEnable)
+{
     uint32_t threadIndex = 0U;
     uint32_t streamId = 0U;
     uint32_t taskId = 0U;
@@ -5162,12 +5066,14 @@ TEST_F(AICPUScheduleTEST, ExecuteHWTSEventTaskDatadumpEnable) {
     hwts_response_t hwtsResp = {};
     uint16_t dataDumpEnableMode = 1U;
     MOCKER_CPP(&AicpuEventProcess::ExecuteTsKernelTask).stubs().will(returnValue(AICPU_SCHEDULE_OK));
-    int ret = AicpuEventManager::GetInstance().ExecuteHWTSEventTask(threadIndex, streamId, taskId,
-        serialNo, aicpufwKernelInfo, drvEventInfo, mailboxId, hwtsResp, dataDumpEnableMode);
+    int ret = AicpuEventManager::GetInstance().ExecuteHWTSEventTask(
+        threadIndex, streamId, taskId, serialNo, aicpufwKernelInfo, drvEventInfo, mailboxId, hwtsResp,
+        dataDumpEnableMode);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, ProcProxyEventSuccess) {
+TEST_F(AICPUScheduleTEST, ProcProxyEventSuccess)
+{
     event_info eventInfo = g_event;
     uint32_t threadIndex = 0U;
     MOCKER_CPP(&AicpuQueueEventProcess::ProcessProxyMsg).stubs().will(returnValue(AICPU_SCHEDULE_OK));
@@ -5175,13 +5081,14 @@ TEST_F(AICPUScheduleTEST, ProcProxyEventSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, DoOnceMsqSuccess) {
+TEST_F(AICPUScheduleTEST, DoOnceMsqSuccess)
+{
     MOCKER_CPP(&MessageQueue::WaitMsqInfoOnce).stubs().will(returnValue(true));
     int ret = AicpuEventManager::GetInstance().DoOnceMsq(0, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-bool WaitMsqInfoOnceFake(MsqDatas &datas)
+bool WaitMsqInfoOnceFake(MsqDatas& datas)
 {
     AicpuTopicMailbox mb = {};
     mb.pid = 0;
@@ -5190,7 +5097,7 @@ bool WaitMsqInfoOnceFake(MsqDatas &datas)
     return true;
 }
 
-bool WaitMsqDrvEventFake(MsqDatas &datas)
+bool WaitMsqDrvEventFake(MsqDatas& datas)
 {
     AicpuTopicMailbox mb = {};
     mb.pid = 1;
@@ -5209,17 +5116,15 @@ TEST_F(AICPUScheduleTEST, DoOnceMsqRescueOpSuccess)
 
 TEST_F(AICPUScheduleTEST, DoOnceMsqLoopOwnerSendResponse)
 {
-    MOCKER_CPP(&AicpuQueueEventProcess::ProcessDrvMsg)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&MessageQueue::SendResponse)
-        .expects(once());
+    MOCKER_CPP(&AicpuQueueEventProcess::ProcessDrvMsg).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&MessageQueue::SendResponse).expects(once());
     MOCKER_CPP(&MessageQueue::WaitMsqInfoOnce).stubs().will(invoke(WaitMsqDrvEventFake));
     int ret = AicpuEventManager::GetInstance().DoOnceMsq(0, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, FillHwtsEventSuccess) {
+TEST_F(AICPUScheduleTEST, FillHwtsEventSuccess)
+{
     const AicpuTopicMailbox mb = {
         .mailboxId = 1,
         .vfid = 0,
@@ -5235,22 +5140,22 @@ TEST_F(AICPUScheduleTEST, FillHwtsEventSuccess) {
         .qos = 1,
         .res0 = 1,
         .pid = 1134,
-        .userData = {0,1,2,3,4,5,6,7,8,9},
+        .userData = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
         .subtopicId = 0,
         .topicId = 3,
         .gid = 10,
         .userDataLen = 10,
         .hacSn = 2,
         .res1 = 2,
-        .tqId= 3
-    };
+        .tqId = 3};
     event_info info = {};
     int ret = AicpuEventManager::GetInstance().FillEvent(mb, info);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     EXPECT_EQ(info.comm.event_id, 3);
 }
 
-TEST_F(AICPUScheduleTEST, FillEventFail) {
+TEST_F(AICPUScheduleTEST, FillEventFail)
+{
     const AicpuTopicMailbox mb = {
         .mailboxId = 1,
         .vfid = 0,
@@ -5266,15 +5171,14 @@ TEST_F(AICPUScheduleTEST, FillEventFail) {
         .qos = 1,
         .res0 = 1,
         .pid = 1134,
-        .userData = {0,1,2,3,4,5,6,7,8,9},
+        .userData = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
         .subtopicId = 0,
         .topicId = 4,
         .gid = 10,
         .userDataLen = 10,
         .hacSn = 2,
         .res1 = 2,
-        .tqId= 3
-    };
+        .tqId = 3};
     event_info info = {};
 
     MOCKER(memcpy_s).stubs().will(returnValue(1));
@@ -5282,14 +5186,16 @@ TEST_F(AICPUScheduleTEST, FillEventFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, SendMsqResponseSuccess) {
+TEST_F(AICPUScheduleTEST, SendMsqResponseSuccess)
+{
     hwts_response_t rsp = {};
     MOCKER_CPP(&MessageQueue::SendResponse).stubs();
     int ret = AicpuEventManager::GetInstance().ResponseMsq(0, 1, rsp);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, SendMsqResponseCompleteSkipSend) {
+TEST_F(AICPUScheduleTEST, SendMsqResponseCompleteSkipSend)
+{
     hwts_response_t rsp = {};
     MOCKER_CPP(&MessageQueue::IsMsqRspComplete).stubs().will(returnValue(true));
     MOCKER_CPP(&MessageQueue::SendResponse).expects(never());
@@ -5298,7 +5204,8 @@ TEST_F(AICPUScheduleTEST, SendMsqResponseCompleteSkipSend) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, SendMsqResponseIncompleteDoSend) {
+TEST_F(AICPUScheduleTEST, SendMsqResponseIncompleteDoSend)
+{
     hwts_response_t rsp = {};
     rsp.result = 1U;
     rsp.status = 2U;
@@ -5309,7 +5216,8 @@ TEST_F(AICPUScheduleTEST, SendMsqResponseIncompleteDoSend) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessStart_LoadKernelSo_extend) {
+TEST_F(AICPUScheduleTEST, ComputeProcessStart_LoadKernelSo_extend)
+{
     MOCKER_CPP(&FeatureCtrl::ShouldLoadExtendKernelSo).stubs().will(returnValue(false));
     MOCKER(aeBatchLoadKernelSo).stubs().will(returnValue(0));
     ComputeProcess::GetInstance().LoadExtendKernelSo();
@@ -5317,39 +5225,36 @@ TEST_F(AICPUScheduleTEST, ComputeProcessStart_LoadKernelSo_extend) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest1) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
+TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest1)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PARA_ERR));
     int32_t ret = AicpuSdCustDumpProcess::GetInstance().ProcessMessage(0);
     EXPECT_EQ(ret, DRV_ERROR_SCHED_PARA_ERR);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest2) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
+TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest2)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
     int32_t ret = AicpuSdCustDumpProcess::GetInstance().ProcessMessage(0);
     EXPECT_EQ(ret, DRV_ERROR_SCHED_PROCESS_EXIT);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest3) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest3)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(1));
     int32_t ret = AicpuSdCustDumpProcess::GetInstance().ProcessMessage(0);
     EXPECT_EQ(ret, 1);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest4AicpuIllegalCPU) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
+TEST_F(AICPUScheduleTEST, Ut_ProcessMessageTest4AicpuIllegalCPU)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU));
     int32_t ret = AicpuSdCustDumpProcess::GetInstance().ProcessMessage(0);
     EXPECT_EQ(ret, DRV_ERROR_SCHED_RUN_IN_ILLEGAL_CPU);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_UnitCustDataDumpProcess) {
+TEST_F(AICPUScheduleTEST, Ut_UnitCustDataDumpProcess)
+{
     AicpuSdCustDumpProcess::GetInstance().initFlag_ = false;
     AicpuSdCustDumpProcess::GetInstance().UnitCustDataDumpProcess();
     AicpuSdCustDumpProcess::GetInstance().initFlag_ = true;
@@ -5357,7 +5262,8 @@ TEST_F(AICPUScheduleTEST, Ut_UnitCustDataDumpProcess) {
     EXPECT_EQ(AicpuSdCustDumpProcess::GetInstance().initFlag_, false);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_DoCustDatadumpTask) {
+TEST_F(AICPUScheduleTEST, Ut_DoCustDatadumpTask)
+{
     bool flag = false;
     AicpuSdCustDumpProcess::GetInstance().GetCustDumpProcessInitFlag(flag);
     EXPECT_TRUE(flag == false);
@@ -5367,9 +5273,9 @@ TEST_F(AICPUScheduleTEST, Ut_DoCustDatadumpTask) {
     drvEventInfo.priv.msg_len = 0;
     ret = AicpuSdCustDumpProcess::GetInstance().DoCustDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
-    
+
     drvEventInfo.priv.msg_len = sizeof(AICPUDumpCustInfo);
-    drvEventInfo.comm.subevent_id = AICPU_SUB_EVENT_REPORT_CUST_DUMPDATA+1;
+    drvEventInfo.comm.subevent_id = AICPU_SUB_EVENT_REPORT_CUST_DUMPDATA + 1;
     ret = AicpuSdCustDumpProcess::GetInstance().DoCustDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
@@ -5377,14 +5283,12 @@ TEST_F(AICPUScheduleTEST, Ut_DoCustDatadumpTask) {
     ret = AicpuSdCustDumpProcess::GetInstance().DoCustDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INNER_ERR));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
     ret = AicpuSdCustDumpProcess::GetInstance().DoCustDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (moduleType == 1 && infoType == 3) {
         *value = 1;
@@ -5394,7 +5298,8 @@ drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t inf
     }
     return DRV_ERROR_NONE;
 }
-TEST_F(AICPUScheduleTEST, Ut_SetDataDumpThreadAffinity_test1) {
+TEST_F(AICPUScheduleTEST, Ut_SetDataDumpThreadAffinity_test1)
+{
     int32_t ret = 0;
     ret = AicpuSdCustDumpProcess::GetInstance().SetDataDumpThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -5405,134 +5310,115 @@ TEST_F(AICPUScheduleTEST, Ut_SetDataDumpThreadAffinity_test1) {
     setenv("PROCMGR_AICPU_CPUSET", "1", 1);
     ret = AicpuSdCustDumpProcess::GetInstance().SetDataDumpThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(ProcMgrBindThread)
-        .stubs()
-        .will(returnValue(2));
+    MOCKER(ProcMgrBindThread).stubs().will(returnValue(2));
     ret = AicpuSdCustDumpProcess::GetInstance().SetDataDumpThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     setenv("PROCMGR_AICPU_CPUSET", "0", 1);
     ret = AicpuSdCustDumpProcess::GetInstance().SetDataDumpThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(pthread_setaffinity_np)
-        .stubs()
-        .will(returnValue(2));
+    MOCKER(pthread_setaffinity_np).stubs().will(returnValue(2));
     ret = AicpuSdCustDumpProcess::GetInstance().SetDataDumpThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_LoopProcessEventTest4DRV_ERROR_SCHED_PROCESS_EXIT) {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
+TEST_F(AICPUScheduleTEST, Ut_LoopProcessEventTest4DRV_ERROR_SCHED_PROCESS_EXIT)
+{
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(DRV_ERROR_SCHED_PROCESS_EXIT));
     AicpuSdCustDumpProcess::GetInstance().runningFlag_ = true;
     AicpuSdCustDumpProcess::GetInstance().LoopProcessEvent();
     EXPECT_EQ(AicpuSdCustDumpProcess::GetInstance().runningFlag_, false);
 }
-TEST_F(AICPUScheduleTEST, Ut_StartProcessEvent_test1) {
+TEST_F(AICPUScheduleTEST, Ut_StartProcessEvent_test1)
+{
     int32_t ret = 0;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&AicpuSdCustDumpProcess::LoopProcessEvent)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuSdCustDumpProcess::LoopProcessEvent).stubs().will(returnValue(0));
     AicpuSdCustDumpProcess::GetInstance().StartProcessEvent();
-    MOCKER(halEschedSubscribeEvent)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halEschedSubscribeEvent).stubs().will(returnValue(1));
     AicpuSdCustDumpProcess::GetInstance().StartProcessEvent();
-    MOCKER_CPP(&AicpuSdCustDumpProcess::SetDataDumpThreadAffinity)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&AicpuSdCustDumpProcess::SetDataDumpThreadAffinity).stubs().will(returnValue(1));
     AicpuSdCustDumpProcess::GetInstance().StartProcessEvent();
-    MOCKER(halEschedCreateGrp)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halEschedCreateGrp).stubs().will(returnValue(1));
     AicpuSdCustDumpProcess::GetInstance().StartProcessEvent();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
-TEST_F(AICPUScheduleTEST, Ut_InitDumpProcess_test1) {
+TEST_F(AICPUScheduleTEST, Ut_InitDumpProcess_test1)
+{
     int32_t ret = 0;
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
     ret = AicpuSdCustDumpProcess::GetInstance().InitCustDumpProcess(2, 2);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(sem_init).stubs().will(returnValue(-1));
     ret = AicpuSdCustDumpProcess::GetInstance().InitCustDumpProcess(2, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
     ret = AicpuSdCustDumpProcess::GetInstance().InitCustDumpProcess(2, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_NumElementsFail0) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_NumElementsFail0)
+{
     const int64_t dimSize = 2;
-    const int64_t * const shape = nullptr;
+    const int64_t* const shape = nullptr;
     int64_t elementNum = 4;
     int32_t ret = AicpuUtil::NumElements(shape, dimSize, elementNum);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_NumElementsFail1) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_NumElementsFail1)
+{
     const int64_t value = -1;
-    const int64_t * const shape = &value;
+    const int64_t* const shape = &value;
     const int64_t dimSize = 1;
     int64_t elementNum = 1;
     int32_t ret = AicpuUtil::NumElements(shape, dimSize, elementNum);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_CalcDataSizeByShape_Fail0) {
-    const int64_t * const shape = nullptr;
+TEST_F(AICPUScheduleTEST, AicpuUtil_CalcDataSizeByShape_Fail0)
+{
+    const int64_t* const shape = nullptr;
     int64_t dataSize = 1;
     int32_t ret = AicpuUtil::CalcDataSizeByShape(shape, 1, 1, dataSize);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_CalcDataSizeByShape_Fail1) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_CalcDataSizeByShape_Fail1)
+{
     const int64_t value = 22;
-    const int64_t * const shape = &value;
+    const int64_t* const shape = &value;
     MOCKER(ge::GetSizeByDataType).stubs().will(returnValue(-1));
     int64_t dataSize = 1;
     int32_t ret = AicpuUtil::CalcDataSizeByShape(shape, 1, 1, dataSize);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_IsUint64MulOverflow) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_IsUint64MulOverflow)
+{
     bool ret = AicpuUtil::IsUint64MulOverflow(0, 0);
     EXPECT_EQ(ret, false);
     ret = AicpuUtil::IsUint64MulOverflow(1000, UINT64_MAX);
     EXPECT_EQ(ret, true);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_ValidateStrFail0) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_ValidateStrFail0)
+{
     bool ret = AicpuUtil::ValidateStr("hello", "***world");
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_ValidateStrFail1) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_ValidateStrFail1)
+{
     bool ret = AicpuUtil::ValidateStr("^***hello", "world");
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuUtil_ExecuteCmdFail0) {
+TEST_F(AICPUScheduleTEST, AicpuUtil_ExecuteCmdFail0)
+{
     int32_t ret = AicpuUtil::ExecuteCmd("");
     EXPECT_EQ(ret, -1);
     MOCKER(vfork).stubs().will(returnValue(-1));
@@ -5546,16 +5432,10 @@ TEST_F(AICPUScheduleTEST, DTypeName)
     EXPECT_EQ(unkownName, "DT_UNDEFINED");
 }
 
-void func111(void *param)
-{
-  return;
-}
- 
-void stopfunc111(void *param)
-{
-  return;
-}
-aicpu::status_t GetAicpuRunModeSOCKET1(aicpu::AicpuRunMode &runMode)
+void func111(void* param) { return; }
+
+void stopfunc111(void* param) { return; }
+aicpu::status_t GetAicpuRunModeSOCKET1(aicpu::AicpuRunMode& runMode)
 {
     static uint32_t ret = 0;
     runMode = aicpu::AicpuRunMode::PROCESS_SOCKET_MODE;
@@ -5563,30 +5443,23 @@ aicpu::status_t GetAicpuRunModeSOCKET1(aicpu::AicpuRunMode &runMode)
 }
 void SendMc2CreateThreadMsgToMain_stub()
 {
-    struct TsdSubEventInfo *msg = nullptr;
+    struct TsdSubEventInfo* msg = nullptr;
     CreateMc2MantenanceThread(msg);
 }
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThreadUt) {
-    MOCKER(sem_init)
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThreadUt)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuMc2MaintenanceThread::SendMc2CreateThreadMsgToMain)
         .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&AicpuMc2MaintenanceThread::SendMc2CreateThreadMsgToMain).stubs().will(invoke(SendMc2CreateThreadMsgToMain_stub));
+        .will(invoke(SendMc2CreateThreadMsgToMain_stub));
     int ret = 0;
     ret = StartMC2MaintenanceThread(&func111, nullptr, &stopfunc111, nullptr);
     EXPECT_EQ(ret, AicpuSchedule::AICPU_SCHEDULE_OK);
     ret = StartMC2MaintenanceThread(&func111, nullptr, &stopfunc111, nullptr);
-    MOCKER(pthread_setaffinity_np)
-        .stubs()
-        .will(returnValue(2));
+    MOCKER(pthread_setaffinity_np).stubs().will(returnValue(2));
     AicpuMc2MaintenanceThread::GetInstance(0).StartProcessEvent();
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).initFlag_ = false;
     ret = StartMC2MaintenanceThread(nullptr, nullptr, &stopfunc111, nullptr);
@@ -5594,9 +5467,7 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThreadUt) {
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).initFlag_ = false;
     ret = StartMC2MaintenanceThread(&func111, nullptr, nullptr, nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_PARAMETER_IS_NULL);
-    MOCKER(aicpu::GetAicpuRunMode)
-        .stubs()
-        .will(invoke(GetAicpuRunModeSOCKET1));
+    MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuRunModeSOCKET1));
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).initFlag_ = false;
     ret = StartMC2MaintenanceThread(&func111, nullptr, &stopfunc111, nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_NOT_SUPPORT);
@@ -5614,7 +5485,8 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThreadUt) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, SetMc2MantenanceThreadAffinityUt) {
+TEST_F(AICPUScheduleTEST, SetMc2MantenanceThreadAffinityUt)
+{
     int32_t ret = 0;
     ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -5625,9 +5497,7 @@ TEST_F(AICPUScheduleTEST, SetMc2MantenanceThreadAffinityUt) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
     setenv("PROCMGR_AICPU_CPUSET", "0", 1);
     ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
-    MOCKER(pthread_setaffinity_np)
-        .stubs()
-        .will(returnValue(2));
+    MOCKER(pthread_setaffinity_np).stubs().will(returnValue(2));
     ret = AicpuMc2MaintenanceThread::GetInstance(0).SetMc2MantenanceThreadAffinity();
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     AicpuDrvManager::GetInstance().ccpuIdVec_.clear();
@@ -5636,8 +5506,9 @@ TEST_F(AICPUScheduleTEST, SetMc2MantenanceThreadAffinityUt) {
     AicpuDrvManager::GetInstance().ccpuIdVec_.clear();
 }
 
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5651,8 +5522,9 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_Ut) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_PARAMETER_IS_NULL);
 }
 
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_stopNotifyFunIsNULL_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_stopNotifyFunIsNULL_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5666,8 +5538,9 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_stopNotifyFunIsNULL_Ut) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_PARAMETER_IS_NULL);
 }
 
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_stopNotifyFunIsNULL_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_stopNotifyFunIsNULL_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5681,8 +5554,9 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_loopFunIsNULL_stopNotifyFunI
     EXPECT_EQ(ret, AICPU_SCHEDULE_PARAMETER_IS_NULL);
 }
 
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_AICPU_SCHEDULE_THREAD_ALREADY_EXISTS_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_AICPU_SCHEDULE_THREAD_ALREADY_EXISTS_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5698,21 +5572,20 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_AICPU_SCHEDULE_THREAD_ALREAD
         AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).processThread_.join();
     }
 }
-aicpu::status_t GetAicpuRunModeSOCKET2(aicpu::AicpuRunMode &runMode)
+aicpu::status_t GetAicpuRunModeSOCKET2(aicpu::AicpuRunMode& runMode)
 {
     static uint32_t ret = 0;
     runMode = aicpu::AicpuRunMode::PROCESS_SOCKET_MODE;
     return ret;
 }
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_AICPU_SCHEDULE_NOT_SUPPORT_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_AICPU_SCHEDULE_NOT_SUPPORT_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     int ret = 0;
-    MOCKER(aicpu::GetAicpuRunMode)
-        .stubs()
-        .will(invoke(GetAicpuRunModeSOCKET2));
+    MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuRunModeSOCKET2));
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).initFlag_ = false;
     ret = StartMC2MaintenanceThread(&func111, nullptr, &stopfunc111, nullptr);
     if (AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).processThread_.joinable()) {
@@ -5721,7 +5594,8 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_AICPU_SCHEDULE_NOT_SUPPORT_U
     EXPECT_EQ(ret, AICPU_SCHEDULE_NOT_SUPPORT);
 }
 
-TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_already_init_Ut) {
+TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_already_init_Ut)
+{
     int ret = 0;
     MOCKER(pthread_setaffinity_np).stubs().will(returnValue(2));
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).initFlag_ = true;
@@ -5729,15 +5603,17 @@ TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_already_init_Ut) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_failed_Ut) {
+TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_failed_Ut)
+{
     MOCKER_CPP(&AicpuMc2MaintenanceThread::CreateMc2MantenanceThread).stubs().will(returnValue(1));
     int ret = 0;
     struct TsdSubEventInfo msg;
     ret = CreateMc2MantenanceThread(&msg);
     EXPECT_EQ(ret, 1);
 }
-TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_Start_thread_multiple_times_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_Start_thread_multiple_times_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5752,8 +5628,9 @@ TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_Start_thread_multiple_times_
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_destructor_Ut) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_destructor_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5771,19 +5648,12 @@ TEST_F(AICPUScheduleTEST, CreateMc2MantenanceThread_destructor_Ut) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_sem_wait_failed_Ut) {
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_sem_wait_failed_Ut)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(-1));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
     int ret = 0;
     AicpuSchedule::AicpuMc2MaintenanceThread::GetInstance(0).initFlag_ = false;
     ret = StartMC2MaintenanceThread(&func111, nullptr, &stopfunc111, nullptr);
@@ -5796,7 +5666,8 @@ TEST_F(AICPUScheduleTEST, StartMC2MaintenanceThread_sem_wait_failed_Ut) {
     }
 }
 
-TEST_F(AICPUScheduleTEST, NeedDump_return_false_Ut) {
+TEST_F(AICPUScheduleTEST, NeedDump_return_false_Ut)
+{
     OpDumpTask opDumpTask(0, 0);
     opDumpTask.optionalParam_.hasStepId = 0;
     opDumpTask.dumpStep_.singleStep.insert(0U);
@@ -5804,82 +5675,67 @@ TEST_F(AICPUScheduleTEST, NeedDump_return_false_Ut) {
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuGetOpTaskInfo_fail) {
+TEST_F(AICPUScheduleTEST, AicpuGetOpTaskInfo_fail)
+{
     AicpuSchedule::OpDumpTaskManager taskManager;
     const KfcDumpTask taskKey(0, 0, 0);
     int32_t ret = AicpuGetOpTaskInfo(taskKey, nullptr);
     EXPECT_EQ(ret, AicpuSchedule::AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuGetOpTaskInfo) {
-    KfcDumpInfo *dumpInfo = nullptr;
+TEST_F(AICPUScheduleTEST, AicpuGetOpTaskInfo)
+{
+    KfcDumpInfo* dumpInfo = nullptr;
     const KfcDumpTask taskKey(0, 0, 0);
     int32_t ret = AicpuGetOpTaskInfo(taskKey, &dumpInfo);
     EXPECT_EQ(ret, AicpuSchedule::AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuDumpOpTaskData_fail) {
+TEST_F(AICPUScheduleTEST, AicpuDumpOpTaskData_fail)
+{
     const KfcDumpTask taskKey(0, 0, 0);
     int32_t ret = AicpuDumpOpTaskData(taskKey, nullptr, 0);
     EXPECT_EQ(ret, AicpuSchedule::AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, AicpuDumpOpTaskData) {
+TEST_F(AICPUScheduleTEST, AicpuDumpOpTaskData)
+{
     std::string data = "testdumpinfo";
     const KfcDumpTask taskKey(0, 0, 0);
-    int32_t ret = AicpuDumpOpTaskData(taskKey, (void *)data.c_str(), 20);
+    int32_t ret = AicpuDumpOpTaskData(taskKey, (void*)data.c_str(), 20);
     EXPECT_EQ(ret, AicpuSchedule::AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, ProcOnPreprocessEvent_001) {
+TEST_F(AICPUScheduleTEST, ProcOnPreprocessEvent_001)
+{
     event_info eventInfo = g_event;
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
     auto ret = AicpuEventManager::GetInstance().ProcOnPreprocessEvent(eventInfo, 0);
     EXPECT_EQ(ret, 0);
 }
-  
-TEST_F(AICPUScheduleTEST, Start_002) {
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+
+TEST_F(AICPUScheduleTEST, Start_002)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
-    MOCKER_CPP(&ComputeProcess::StartTdtServer)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&ComputeProcess::StartTdtServer).stubs().will(returnValue(0));
     int ret = ComputeProcess::GetInstance().Start(deviceVec, 100, ch, PROFILING_OPEN, 0, aicpu::PROCESS_PCIE_MODE);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, Start_003) {
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+TEST_F(AICPUScheduleTEST, Start_003)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -5888,22 +5744,13 @@ TEST_F(AICPUScheduleTEST, Start_003) {
     ComputeProcess::GetInstance().Stop();
 }
 
-TEST_F(AICPUScheduleTEST, Start_004) {
-    MOCKER_CPP(&ThreadPool::CreateWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen)
-        .stubs()
-        .will(invoke(DlopenMsqOperatorStub));
-    MOCKER(dlsym)
-        .stubs()
-        .will(invoke(DlsymMsqOperatorStub));
-    MOCKER(dlclose)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halResAddrMap)
-        .stubs()
-        .will(invoke(HalResAddrMapMsqStub));
+TEST_F(AICPUScheduleTEST, Start_004)
+{
+    MOCKER_CPP(&ThreadPool::CreateWorker).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(invoke(DlopenMsqOperatorStub));
+    MOCKER(dlsym).stubs().will(invoke(DlsymMsqOperatorStub));
+    MOCKER(dlclose).stubs().will(returnValue(0));
+    MOCKER(halResAddrMap).stubs().will(invoke(HalResAddrMapMsqStub));
     std::string ch = "000000000000000000000000000000000000000000000000";
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -5912,18 +5759,20 @@ TEST_F(AICPUScheduleTEST, Start_004) {
     EXPECT_EQ(ret, 1);
 }
 
-TEST_F(AICPUScheduleTEST, ComputeProcessDebugString) {
+TEST_F(AICPUScheduleTEST, ComputeProcessDebugString)
+{
     ComputeProcess inst;
     const AICPUSharderTaskInfo taskInfo = {.parallelId = 4U};
-    const aicpu::Closure task = [](){};
+    const aicpu::Closure task = []() {};
     std::queue<aicpu::Closure> queue;
     queue.push(task);
     inst.splitKernelTask_.BatchAddTask(taskInfo, queue);
     EXPECT_STREQ(inst.DebugString().c_str(), "Split kernel TaskMapSize=1. task=0, parallelId=4, size=1, shardNum=0");
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoToCust) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoToCust)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5933,8 +5782,9 @@ TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoToCust) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoToCust_failed1) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoToCust_failed1)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
@@ -5945,73 +5795,80 @@ TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoToCust_failed1) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     MOCKER(halEschedSubmitEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     struct TsdSubEventInfo msg;
-    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void *)(&msg), sizeof(msg));
+    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void*)(&msg), sizeof(msg));
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed1) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed1)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     MOCKER(halEschedSubmitEvent).stubs().will(returnValue(1));
     struct TsdSubEventInfo msg;
-    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void *)(&msg), sizeof(msg));
+    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void*)(&msg), sizeof(msg));
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed2) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed2)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(-1));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     MOCKER(halEschedSubmitEvent).stubs().will(returnValue(0));
     struct TsdSubEventInfo msg;
-    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void *)(&msg), sizeof(msg));
+    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void*)(&msg), sizeof(msg));
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed3) {
-    MOCKER(sem_init) .stubs().will(returnValue(-1));
+TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed3)
+{
+    MOCKER(sem_init).stubs().will(returnValue(-1));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     MOCKER(halEschedSubmitEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     struct TsdSubEventInfo msg;
-    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void *)(&msg), sizeof(msg));
+    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void*)(&msg), sizeof(msg));
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed4) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendMsgToMain_failed4)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     MOCKER(halEschedSubmitEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER(memcpy_s).stubs().will(returnValue(1));
     struct TsdSubEventInfo msg;
-    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void *)(&msg), sizeof(msg));
+    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void*)(&msg), sizeof(msg));
     EXPECT_EQ(ret, 1);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoMessageToCustSync) {
-    MOCKER(sem_init) .stubs().will(returnValue(0));
+TEST_F(AICPUScheduleTEST, Ut_SendLoadPlatformInfoMessageToCustSync)
+{
+    MOCKER(sem_init).stubs().will(returnValue(0));
     MOCKER(sem_wait).stubs().will(returnValue(0));
     MOCKER(sem_post).stubs().will(returnValue(0));
     MOCKER(sem_destroy).stubs().will(returnValue(0));
     struct TsdSubEventInfo msg;
-    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void *)(&msg), sizeof(msg));
+    int32_t ret = AicpuSdLoadPlatformInfoProcess::GetInstance().SendMsgToMain((void*)(&msg), sizeof(msg));
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleTEST, Ut_DoUdfDatadumpTask) {
+TEST_F(AICPUScheduleTEST, Ut_DoUdfDatadumpTask)
+{
     bool flag = false;
     AicpuSdCustDumpProcess::GetInstance().GetCustDumpProcessInitFlag(flag);
 
@@ -6023,15 +5880,15 @@ TEST_F(AICPUScheduleTEST, Ut_DoUdfDatadumpTask) {
     drvEventInfo.priv.msg_len = 48;
     ret = AicpuSdCustDumpProcess::GetInstance().DoUdfDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, 0);
-    char * a[10];
+    char* a[10];
     ::toolkit::dumpdata::DumpData dumpData;
     {
-        ::toolkit::dumpdata::OpInput * const opInput = dumpData.add_input();
+        ::toolkit::dumpdata::OpInput* const opInput = dumpData.add_input();
         opInput->set_size(10);
         opInput->set_address(&a);
     }
     {
-        ::toolkit::dumpdata::OpOutput * const opOutput = dumpData.add_output();
+        ::toolkit::dumpdata::OpOutput* const opOutput = dumpData.add_output();
         opOutput->set_size(10);
         opOutput->set_address(&a);
     }
@@ -6040,12 +5897,12 @@ TEST_F(AICPUScheduleTEST, Ut_DoUdfDatadumpTask) {
     std::unique_ptr<char[]> buff_;
     buff_.reset(new (std::nothrow) char[size]);
     uint64_t offset_ = 0;
-    uint64_t * const sizePtr = reinterpret_cast<uint64_t *>(buff_.get() + offset_);
+    uint64_t* const sizePtr = reinterpret_cast<uint64_t*>(buff_.get() + offset_);
     offset_ += sizeof(uint64_t);
     *sizePtr = dumpData.ByteSizeLong();
     dumpData.SerializeToArray(buff_.get() + offset_, static_cast<int32_t>(dumpData.ByteSizeLong()));
     offset_ += dumpData.ByteSizeLong();
-    uint64_t * const pathSizePtr = reinterpret_cast<uint64_t *>(buff_.get() + offset_);
+    uint64_t* const pathSizePtr = reinterpret_cast<uint64_t*>(buff_.get() + offset_);
     *pathSizePtr = path.size();
     offset_ += sizeof(uint64_t);
     memcpy_s(buff_.get() + offset_, size - offset_, path.c_str(), path.size());
@@ -6062,9 +5919,7 @@ TEST_F(AICPUScheduleTEST, Ut_DoUdfDatadumpTask) {
     MOCKER_CPP(&OpDumpTask::ProcessDumpTensor).stubs().will(returnValue(1));
     ret = AicpuSdCustDumpProcess::GetInstance().DoUdfDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, 0);
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INNER_ERR));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
     ret = AicpuSdCustDumpProcess::GetInstance().DoUdfDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 
@@ -6082,7 +5937,8 @@ TEST_F(AICPUScheduleTEST, Ut_DoUdfDatadumpTask) {
     ret = AicpuSdCustDumpProcess::GetInstance().DoUdfDatadumpTask(drvEventInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
-TEST_F(AICPUScheduleTEST, UT_CreateUdfDatadumpThread) {
+TEST_F(AICPUScheduleTEST, UT_CreateUdfDatadumpThread)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(0));
     char b[128];
     auto ret = AicpuSdCustDumpProcess::GetInstance().CreateUdfDatadumpThread(b, 128);
@@ -6100,7 +5956,8 @@ TEST_F(AICPUScheduleTEST, UT_CreateUdfDatadumpThread) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DUMP_FAILED);
 }
 
-TEST_F(AICPUScheduleTEST, UT_CreateDatadumpThread) {
+TEST_F(AICPUScheduleTEST, UT_CreateDatadumpThread)
+{
     MOCKER_CPP(&AicpuSdCustDumpProcess::InitCustDumpProcess).stubs().will(returnValue(1));
     auto ret = CreateDatadumpThread(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -6113,7 +5970,8 @@ TEST_F(AICPUScheduleTEST, UT_CreateDatadumpThread) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleTEST, dumpHostPidInvalid) {
+TEST_F(AICPUScheduleTEST, dumpHostPidInvalid)
+{
     bool flag = false;
     AicpuSdCustDumpProcess::GetInstance().GetCustDumpProcessInitFlag(flag);
 

@@ -33,27 +33,20 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class EventTest : public testing::Test
-{
+class EventTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"event test start"<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "event test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"event test start end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "event test start end" << std::endl; }
 
     virtual void SetUp()
     {
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
-    GlobalContainer::SetRtChipType(CHIP_CLOUD);
+        GlobalContainer::SetRtChipType(CHIP_CLOUD);
         MOCKER_CPP(&Event::NotifierSync).stubs().will(returnValue(RT_REPORT_TIMEOUT_TIME));
         (void)rtSetDevice(0);
     }
@@ -62,8 +55,8 @@ protected:
     {
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
     }
 };
 
@@ -113,18 +106,16 @@ TEST_F(EventTest, query)
     error = rtEventCreateWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-
     error = rtEventQueryStatus(event, &status);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(status, RT_EVENT_INIT);
-
 
     error = rtEventRecord(event, stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     error = rtEventQuery(event);
     if (error == RT_ERROR_EVENT_NOT_COMPLETE) {
-    EXPECT_EQ(error, RT_ERROR_NONE);
+        EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
     error = rtStreamSynchronize(stream);
@@ -151,10 +142,12 @@ TEST_F(EventTest, eventfornotify)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Driver* driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL(driver_,
-            &Driver::EventIdAlloc).stubs().with(mockcpp::any()(), mockcpp::any()(), mockcpp::any()())
-    .will(returnValue(RT_ERROR_DRV_NO_EVENT_RESOURCES)).then(returnValue(RT_ERROR_NONE));
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL(driver_, &Driver::EventIdAlloc)
+        .stubs()
+        .with(mockcpp::any()(), mockcpp::any()(), mockcpp::any()())
+        .will(returnValue(RT_ERROR_DRV_NO_EVENT_RESOURCES))
+        .then(returnValue(RT_ERROR_NONE));
 
     error = rtNotifyCreate(0, &notify);
     EXPECT_EQ(error, ACL_ERROR_RT_NO_EVENT_RESOURCE);
@@ -165,7 +158,7 @@ TEST_F(EventTest, eventfornotify)
     error = rtNotifyCreate(0, &notify);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Device *device = ((Runtime *)Runtime::Instance())->GetDevice(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->GetDevice(0, 0);
     MOCKER_CPP_VIRTUAL(device, &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_STREAM_FULL));
 
     error = rtNotifyRecord(notify, stream);
@@ -188,10 +181,10 @@ TEST_F(EventTest, TestInsertToNotifierMapAndDeleteFromNotifierMap)
     rtEvent_t event;
 
     error = rtEventCreate(&event);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Notifier *notifier;
+    Notifier* notifier;
     error = eventObj->CreateEventNotifier(notifier);
     EXPECT_EQ(error, RT_ERROR_NONE);
     eventObj->InsertToNotifierMap(0, 0, notifier);
@@ -206,7 +199,7 @@ TEST_F(EventTest, TestInsertToNotifierMapAndDeleteFromNotifierMap)
 TEST_F(EventTest, TaskReclaimAllForNoRes)
 {
     uint32_t taskId;
-    Device *device = ((Runtime *)Runtime::Instance())->GetDevice(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->GetDevice(0, 0);
     auto error = device->TaskReclaimAllForNoRes(false, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -215,11 +208,9 @@ TEST_F(EventTest, UpdateEventOfCntNotifyInfo)
 {
     Event evt;
     int32_t newEventId = 0;
-    RawDevice *stub = new RawDevice(0);
-    Stream *stm = new Stream(stub, 0);
-    MOCKER_CPP_VIRTUAL(stm, &Stream::ApplyCntNotifyId)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
+    RawDevice* stub = new RawDevice(0);
+    Stream* stm = new Stream(stub, 0);
+    MOCKER_CPP_VIRTUAL(stm, &Stream::ApplyCntNotifyId).stubs().will(returnValue(RT_ERROR_NONE));
     rtError_t error = evt.UpdateEventOfCntNotifyInfo(stm, newEventId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete stub;
@@ -229,10 +220,10 @@ TEST_F(EventTest, UpdateEventOfCntNotifyInfo)
 
 TEST_F(EventTest, AllocEventIdResourceNoEventResource)
 {
-    Runtime *rtInstance = Runtime::Instance();
-    Device *device = rtInstance->GetDevice(0, 0);
+    Runtime* rtInstance = Runtime::Instance();
+    Device* device = rtInstance->GetDevice(0, 0);
     ASSERT_NE(device, nullptr);
-    Context *ctx = rtInstance->CurrentContext();
+    Context* ctx = rtInstance->CurrentContext();
     ASSERT_NE(ctx, nullptr);
     const bool oldDisableThread = rtInstance->GetDisableThread();
     rtInstance->SetDisableThread(true);
@@ -240,22 +231,12 @@ TEST_F(EventTest, AllocEventIdResourceNoEventResource)
     stm.SetContext(ctx);
     Event evt(device, RT_EVENT_DEFAULT, ctx);
     int32_t newEventId = INVALID_EVENT_ID;
-    Driver *driver = device->Driver_();
-    MOCKER_CPP_VIRTUAL(device, &Device::IsSupportEventPool)
-        .stubs()
-        .will(returnValue(false));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::EventIdAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_EVENT_RESOURCES));
-    MOCKER_CPP_VIRTUAL(device, &Device::TaskReclaimAllForNoRes)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&stm, &Stream::CheckContextStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device, &Device::GetDevStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    Driver* driver = device->Driver_();
+    MOCKER_CPP_VIRTUAL(device, &Device::IsSupportEventPool).stubs().will(returnValue(false));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::EventIdAlloc).stubs().will(returnValue(RT_ERROR_DRV_NO_EVENT_RESOURCES));
+    MOCKER_CPP_VIRTUAL(device, &Device::TaskReclaimAllForNoRes).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&stm, &Stream::CheckContextStatus).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device, &Device::GetDevStatus).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(evt.AllocEventIdResource(&stm, newEventId), RT_ERROR_DRV_NO_EVENT_RESOURCES);
     rtInstance->SetDisableThread(oldDisableThread);

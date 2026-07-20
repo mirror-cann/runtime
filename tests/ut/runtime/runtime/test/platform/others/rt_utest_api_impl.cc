@@ -59,34 +59,28 @@ using namespace cce::runtime;
 
 extern bool g_init_platform_info_flag;
 extern bool g_get_platform_info_flag;
-class ApiImplTest : public testing::Test
-{
+class ApiImplTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
-        std::cout<<"ApiImplTest test start start. "<<std::endl;
-
+        std::cout << "ApiImplTest test start start. " << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"ApiImplTest test start end. "<<std::endl;
-
-    }
+    static void TearDownTestCase() { std::cout << "ApiImplTest test start end. " << std::endl; }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         oldChipType_ = rtInstance->GetChipType();
         oldSocVersion_ = rtInstance->GetSocVersion();
         oldIsUserSetSocVersion_ = rtInstance->GetIsUserSetSocVersion();
         oldDisableThread_ = rtInstance->GetDisableThread();
         rtInstance->SetIsUserSetSocVersion(false);
         (void)rtSetDevice(0);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
@@ -95,13 +89,14 @@ protected:
     {
         GlobalMockObject::verify();
         rtDeviceReset(0);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(oldChipType_);
         GlobalContainer::SetRtChipType(oldChipType_);
         rtInstance->SetSocVersion(oldSocVersion_);
         rtInstance->SetIsUserSetSocVersion(oldIsUserSetSocVersion_);
         rtInstance->SetDisableThread(oldDisableThread_);
     }
+
 private:
     bool isErrorNone_ = true;
     rtChipType_t oldChipType_ = CHIP_CLOUD;
@@ -110,29 +105,26 @@ private:
     bool oldDisableThread_ = false;
 };
 
-static void ApiImplTest_Stream_Cb(void *arg)
-{
-}
-
+static void ApiImplTest_Stream_Cb(void* arg) {}
 
 TEST_F(ApiImplTest, apiImpl_ts_model_abort_as31xm1)
 {
     rtError_t error;
-    Model *model = NULL;
+    Model* model = NULL;
     ApiImpl apiImpl;
     uint32_t flag = 1;
     uint64_t addr = 0x1000;
     uint32_t streamId;
     uint32_t taskId;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     rtChipType_t oldDeviceChipType = device->GetChipType();
     device->SetTschVersion(TS_VERSION_TS_MODEL_ABORT);
     error = apiImpl.ModelCreate(&model, 0);
     model->SetModelExecutorType(EXECUTOR_TS);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
@@ -148,27 +140,27 @@ TEST_F(ApiImplTest, apiImpl_ts_model_abort_as31xm1)
 
     error = apiImpl.ModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiImplTest, apiImpl_ts_model_abort_610lite)
 {
     rtError_t error;
-    Model *model = NULL;
+    Model* model = NULL;
     ApiImpl apiImpl;
     uint32_t flag = 1;
     uint64_t addr = 0x1000;
     uint32_t streamId;
     uint32_t taskId;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     rtChipType_t oldDeviceChipType = device->GetChipType();
     device->SetTschVersion(TS_VERSION_TS_MODEL_ABORT);
     error = apiImpl.ModelCreate(&model, 0);
     model->SetModelExecutorType(EXECUTOR_TS);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_610LITE);
     GlobalContainer::SetRtChipType(CHIP_610LITE);
@@ -184,25 +176,25 @@ TEST_F(ApiImplTest, apiImpl_ts_model_abort_610lite)
 
     error = apiImpl.ModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiImplTest, apiImpl_ts_model_abort_old_ver)
 {
     rtError_t error;
-    Model *model = NULL;
+    Model* model = NULL;
     ApiImpl apiImpl;
     uint32_t flag = 1;
     uint64_t addr = 0x1000;
     uint32_t streamId;
     uint32_t taskId;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     rtChipType_t oldDeviceChipType = device->GetChipType();
     error = apiImpl.ModelCreate(&model, 0);
     model->SetModelExecutorType(EXECUTOR_TS);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
@@ -217,12 +209,12 @@ TEST_F(ApiImplTest, apiImpl_ts_model_abort_old_ver)
 
     error = apiImpl.ModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiImplTest, PROCESS_REPORT)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance()); // 这里又想用回默认的g_runtimeKeeper
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance()); // 这里又想用回默认的g_runtimeKeeper
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
     ApiImpl apiImpl;
@@ -233,7 +225,7 @@ TEST_F(ApiImplTest, PROCESS_REPORT)
     rtStreamCreate(&stream, 0);
     rtSubscribeReport(123, stream);
     MOCKER_CPP(&Stream::IsHostFuncCbReg).stubs().will(returnValue(true));
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     stm->IsHostFuncCbReg();
     rtCallback_t stub_func = (rtCallback_t)0x12345;
     rtCallbackLaunch(stub_func, nullptr, stream, true);
@@ -244,7 +236,7 @@ TEST_F(ApiImplTest, PROCESS_REPORT)
     Event evt;
     MOCKER_CPP_VIRTUAL(evt, &Event::TryFreeEventIdAndCheckCanBeDelete).stubs().will(returnValue(true));
     MOCKER_CPP(&Runtime::GetGroupIdByThreadId).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rtInstance, &Runtime::GetPriCtxByDeviceId).stubs().will(returnValue((Context *)NULL));
+    MOCKER_CPP_VIRTUAL(rtInstance, &Runtime::GetPriCtxByDeviceId).stubs().will(returnValue((Context*)NULL));
     rtUnSubscribeReport(123, stream);
     rtStreamDestroy(stream);
     rtChipType_t chipType = rtInstance->GetChipType();
@@ -262,25 +254,24 @@ TEST_F(ApiImplTest, PROCESS_REPORT)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = apiImpl.GetDeviceCapability(0, RT_MODULE_TYPE_TSCPU, FEATURE_TYPE_MODEL_TASK_UPDATE, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    MOCKER(halGetAPIVersion)
-    .stubs()
-    .will(returnValue(DRV_ERROR_RESERVED));
+    MOCKER(halGetAPIVersion).stubs().will(returnValue(DRV_ERROR_RESERVED));
     error = apiImpl.GetDeviceCapability(0, RT_MODULE_TYPE_SYSTEM, INFO_TYPE_CORE_NUM, &value);
 }
 
-rtError_t GetRunModeStubExt(cce::runtime::ApiImpl *api, rtRunMode *mode)
+rtError_t GetRunModeStubExt(cce::runtime::ApiImpl* api, rtRunMode* mode)
 {
     *mode = RT_RUN_MODE_ONLINE;
     return RT_ERROR_NONE;
 }
 
-rtError_t GetRunModeOfflineStub(cce::runtime::ApiImpl *api, rtRunMode *mode)
+rtError_t GetRunModeOfflineStub(cce::runtime::ApiImpl* api, rtRunMode* mode)
 {
     *mode = RT_RUN_MODE_OFFLINE;
     return RT_ERROR_NONE;
 }
 
-void GetErrorMessage(const char *msg, uint32_t len) {
+void GetErrorMessage(const char* msg, uint32_t len)
+{
     if (msg != nullptr && len != 0) {
         RT_LOG(RT_LOG_ERROR, "rtGetDeviceErrorMessage get msg:%s, length=%u.", msg, len);
     } else {
@@ -292,11 +283,11 @@ TEST_F(ApiImplTest, rtGetDevMsg)
 {
     ApiImpl apiImpl;
     rtError_t error;
-    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(returnValue((Context *)NULL));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(returnValue((Context*)NULL));
     MOCKER(ContextManage::CheckContextIsValid).stubs().will(returnValue(false));
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetRunMode).stubs().will(invoke(GetRunModeStubExt));
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -310,7 +301,8 @@ TEST_F(ApiImplTest, rtGetDevMsg)
     GlobalMockObject::verify();
 }
 
-rtError_t MemCopySyncStubDavid(Driver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size, rtMemcpyKind_t kind)
+rtError_t MemCopySyncStubDavid(
+    Driver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
     memcpy_s(dst, destMax, src, size);
     return DRV_ERROR_NONE;
@@ -320,11 +312,11 @@ TEST_F(ApiImplTest, rtGetDevMsgOffline)
 {
     ApiImpl apiImpl;
     rtError_t error;
-    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(returnValue((Context *)NULL));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(returnValue((Context*)NULL));
     MOCKER(ContextManage::CheckContextIsValid).stubs().will(returnValue(false));
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetRunMode).stubs().will(invoke(GetRunModeOfflineStub));
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -341,21 +333,21 @@ TEST_F(ApiImplTest, rtGetDevMsgOffline)
 TEST_F(ApiImplTest, IPC_ADAPT)
 {
     ApiImpl apiImpl;
-    void *ptr = nullptr;
-    void **ptrNull = nullptr;
+    void* ptr = nullptr;
+    void** ptrNull = nullptr;
     char* name = nullptr;
     rtNotify_t notify;
-    int32_t pid[]={1};
+    int32_t pid[] = {1};
     rtError_t error;
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     Device* device = rtInstance->DeviceRetain(0, 0);
     rtChipType_t chipType = rtInstance->GetChipType();
     rtChipType_t oldDeviceChipType = device->GetChipType();
-    auto oldFeatureSet = static_cast<RawDevice *>(device)->featureSet_;
+    auto oldFeatureSet = static_cast<RawDevice*>(device)->featureSet_;
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     device->SetChipType(CHIP_CLOUD);
-    EXPECT_EQ(GET_CHIP_FEATURE_SET(CHIP_CLOUD, static_cast<RawDevice *>(device)->featureSet_), RT_ERROR_NONE);
+    EXPECT_EQ(GET_CHIP_FEATURE_SET(CHIP_CLOUD, static_cast<RawDevice*>(device)->featureSet_), RT_ERROR_NONE);
     error = apiImpl.SetIpcNotifyPid(name, pid, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -366,16 +358,16 @@ TEST_F(ApiImplTest, IPC_ADAPT)
     rtInstance->SetChipType(chipType);
     GlobalContainer::SetRtChipType(chipType);
     device->SetChipType(oldDeviceChipType);
-    static_cast<RawDevice *>(device)->featureSet_ = oldFeatureSet;
+    static_cast<RawDevice*>(device)->featureSet_ = oldFeatureSet;
     rtInstance->DeviceRelease(device);
 }
 
-rtError_t GetDevMsgTaskInitStubDavid(TaskInfo *task, const void *devMemAddr, uint32_t devMemSize,
-                                rtGetDevMsgType_t msgType)
+rtError_t GetDevMsgTaskInitStubDavid(
+    TaskInfo* task, const void* devMemAddr, uint32_t devMemSize, rtGetDevMsgType_t msgType)
 {
     task->type = TS_TASK_TYPE_GET_DEVICE_MSG;
     if (devMemAddr != nullptr && devMemSize > sizeof(rtGetDevMsgCtrlInfo_t)) {
-        rtGetDevMsgCtrlInfo_t *ctrlInfo = (rtGetDevMsgCtrlInfo_t *)devMemAddr;
+        rtGetDevMsgCtrlInfo_t* ctrlInfo = (rtGetDevMsgCtrlInfo_t*)devMemAddr;
         ctrlInfo->magic = DeviceMsgHandler::DEVICE_GET_MSG_MAGIC;
         ctrlInfo->pid = 0;
         ctrlInfo->bufferLen = sizeof(rtGetDevMsgCtrlInfo_t) + sizeof(rtStreamSnapshot_t);
@@ -383,7 +375,7 @@ rtError_t GetDevMsgTaskInitStubDavid(TaskInfo *task, const void *devMemAddr, uin
     return RT_ERROR_NONE;
 }
 
-rtError_t GetDevMsgSubmitTaskStubDavid(Device *dev, TaskInfo *task, rtTaskGenCallback callback)
+rtError_t GetDevMsgSubmitTaskStubDavid(Device* dev, TaskInfo* task, rtTaskGenCallback callback)
 {
     Complete(task, dev->Id_());
     task->stream->pendingNum_.Set(0U);
@@ -391,17 +383,17 @@ rtError_t GetDevMsgSubmitTaskStubDavid(Device *dev, TaskInfo *task, rtTaskGenCal
     return RT_ERROR_NONE;
 }
 
-void GetMsgCallbackStubDavid(const char *msg, uint32_t len) {}
+void GetMsgCallbackStubDavid(const char* msg, uint32_t len) {}
 
 TEST_F(ApiImplTest, GetDevRunningStreamSnapshotMsg_david)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
 
     ApiImpl apiImpl;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_GET_DEV_MSG);
     MOCKER(GetDevMsgTaskInit).stubs().will(invoke(GetDevMsgTaskInitStubDavid));
     MOCKER(SyncGetDeviceMsg).stubs().will(returnValue(RT_ERROR_NONE));
@@ -425,12 +417,12 @@ TEST_F(ApiImplTest, apiimpl_stream_test)
     rtStream_t rt_stream;
 
     rtStreamCreate(&rt_stream, 0);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(rt_stream);
-    Context *context = (Context *)stream->Context_();
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(rt_stream);
+    Context* context = (Context*)stream->Context_();
     sleep(1);
     error = rtStreamQuery(rt_stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     std::string originSocVersion = rtInstance->GetSocVersion();
     if (originSocVersion.empty()) {
@@ -491,16 +483,15 @@ TEST_F(ApiImplTest, get_priority_range_coverage_with_nullptr)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
 TEST_F(ApiImplTest, stream_create_with_priority_out_of_range)
 {
     ApiImpl impl;
-	ApiErrorDecorator api(&impl);
+    ApiErrorDecorator api(&impl);
     rtError_t error;
-    Stream *stream = nullptr;
-	int32_t priority = -1;
+    Stream* stream = nullptr;
+    int32_t priority = -1;
 
-	error = api.StreamCreate(&stream, priority, 0, nullptr);
+    error = api.StreamCreate(&stream, priority, 0, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamDestroy(reinterpret_cast<rtStream_t>(stream->GetInnerHandle()));
@@ -518,13 +509,13 @@ TEST_F(ApiImplTest, stream_create_with_priority_out_of_range)
 
 TEST_F(ApiImplTest, ModelSetSchGroupId_test)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int16_t schGrpId = 1;
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
 
-    rtModel_t  model;
+    rtModel_t model;
     rtError_t error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -544,21 +535,21 @@ TEST_F(ApiImplTest, ModelSetSchGroupId_test)
 TEST_F(ApiImplTest, apiImpl_ts_model_abort_adc)
 {
     rtError_t error;
-    Model *model = NULL;
+    Model* model = NULL;
     ApiImpl apiImpl;
     uint32_t flag = 1;
     uint64_t addr = 0x1000;
     uint32_t streamId;
     uint32_t taskId;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     rtChipType_t oldDeviceChipType = device->GetChipType();
     device->SetTschVersion(TS_VERSION_TS_MODEL_ABORT);
     error = apiImpl.ModelCreate(&model, 0);
     model->SetModelExecutorType(EXECUTOR_TS);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
@@ -574,14 +565,14 @@ TEST_F(ApiImplTest, apiImpl_ts_model_abort_adc)
 
     error = apiImpl.ModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiImplTest, decorator_david)
 {
     rtError_t error;
-    Api *oldApi_= const_cast<Api *>(Runtime::runtime_->api_);
-    ApiDecorator *apiDecorator_ = new ApiDecorator(oldApi_);
+    Api* oldApi_ = const_cast<Api*>(Runtime::runtime_->api_);
+    ApiDecorator* apiDecorator_ = new ApiDecorator(oldApi_);
     error = apiDecorator_->WriteValuePtr(nullptr, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
@@ -620,11 +611,11 @@ TEST_F(ApiImplTest, decorator_david)
 
     error = apiDecorator_->UbDbSend(nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-    
+
     error = apiDecorator_->UbDirectSend(nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-    
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t originChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
@@ -635,34 +626,32 @@ TEST_F(ApiImplTest, decorator_david)
     rtInstance->SetChipType(originChipType);
     GlobalContainer::SetRtChipType(originChipType);
 
-
     error = apiDecorator_->DeviceResourceClean(0);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     delete apiDecorator_;
 }
 
-
 TEST_F(ApiImplTest, rts_api_impl_test5)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     ApiImpl impl;
     ApiErrorDecorator apiError(&impl);
 
     RtArgsWithType argsWithType;
     argsWithType.args.argHandle = nullptr;
     argsWithType.type = RT_ARGS_MAX;
-    
+
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
-    Kernel *k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
+    Program* program = &stubProg;
+    Kernel* k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
     k1->userParaNum_ = 0;
     k1->systemParaNum_ = 0;
     k1->isSupportOverFlow_ = false;
     k1->isNeedSetFftsAddrInArg_ = false;
     k1->SetKernelRegisterType(RT_KERNEL_REG_TYPE_NON_CPU);
     k1->mixType_ = MIX_AIV;
-    
+
     rtError_t error = apiError.CheckArgsWithType(k1, &argsWithType);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
@@ -682,11 +671,11 @@ TEST_F(ApiImplTest, rts_api_impl_test5)
     attrs[1].value.blockDimOffset = 1;
     cfg.attrs = attrs;
     cfg.numAttrs = 2;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     error = apiError.LaunchKernelV2(k1, 1, &argsWithType, stream, &cfg);
     EXPECT_NE(error, RT_ERROR_NONE);
 
@@ -697,7 +686,7 @@ TEST_F(ApiImplTest, rts_api_impl_test5)
 
     attrs[1].id = RT_LAUNCH_KERNEL_ATTR_TIMEOUT_US;
     attrs[1].value.timeoutUs.timeoutLow = 123U; // us
-    attrs[1].value.timeoutUs.timeoutHigh = 0U; // us
+    attrs[1].value.timeoutUs.timeoutHigh = 0U;  // us
     error = apiError.LaunchKernelV2(k1, 1, &argsWithType, stream, &cfg);
     EXPECT_NE(error, RT_ERROR_NONE);
 
@@ -708,7 +697,7 @@ TEST_F(ApiImplTest, rts_api_impl_test5)
 
     rtInstance->SetChipType(chipType);
     GlobalContainer::SetRtChipType(chipType);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 
     delete k1;
     delete stream;
@@ -720,11 +709,11 @@ TEST_F(ApiImplTest, api_StreamSetMode_test1)
     rtStream_t rtStream;
     error = rtStreamCreate(&rtStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(rtStream);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(rtStream);
     ASSERT_NE(stream, nullptr);
-    Context *context = stream->Context_();
+    Context* context = stream->Context_();
     ASSERT_NE(context, nullptr);
-    Device *device = stream->Device_();
+    Device* device = stream->Device_();
     ASSERT_NE(device, nullptr);
     const int32_t version = device->GetTschVersion();
     ApiImpl impl;
@@ -743,7 +732,7 @@ TEST_F(ApiImplTest, api_StreamSetMode_test1)
     stream->SetBindFlag(true);
     error = impl.StreamSetMode(stream, STOP_ON_FAILURE);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
-    stream->SetBindFlag(false);  // restore bind flag
+    stream->SetBindFlag(false); // restore bind flag
 
     // mode-to-be-set is same with old
     stream->SetFailureMode(STOP_ON_FAILURE);
@@ -765,11 +754,11 @@ TEST_F(ApiImplTest, api_StreamSetMode_test2)
     rtStream_t rtStream;
     error = rtStreamCreate(&rtStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(rtStream);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(rtStream);
     ASSERT_NE(stream, nullptr);
-    Context *context = stream->Context_();
+    Context* context = stream->Context_();
     ASSERT_NE(context, nullptr);
-    Device *device = stream->Device_();
+    Device* device = stream->Device_();
     ASSERT_NE(device, nullptr);
     const int32_t version = device->GetTschVersion();
     ApiImpl impl;
@@ -794,10 +783,10 @@ TEST_F(ApiImplTest, api_CheckCurCtxValid_test)
 {
     MOCKER(&RtIsHeterogenous).stubs().will(returnValue(true));
     rtError_t error;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtInstance->SetDefaultDeviceId(0);
 
-    ApiImpl *impl = new ApiImpl();
+    ApiImpl* impl = new ApiImpl();
     error = impl->CheckCurCtxValid(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -809,7 +798,7 @@ TEST_F(ApiImplTest, api_DvppGroupCreate)
 {
     rtError_t error;
 
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -827,7 +816,7 @@ TEST_F(ApiImplTest, api_rtStarsTaskLaunch)
 {
     rtError_t error;
 
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -855,7 +844,7 @@ TEST_F(ApiImplTest, stub_david_test_SendTopicMsgVersionToAicpuDavid)
     uint32_t streamId = 0U;
     (rt_ut::UnwrapOrNull<Stream>(stream))->JudgeTaskFinish(0, isFinished);
 
-    Runtime *rtInstance = (Runtime *) Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t originChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     error = rtGetTaskIdAndStreamID(&taskId, &streamId);

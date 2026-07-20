@@ -18,26 +18,17 @@
 
 class AICPUScheduleStubHelper710TEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleStubHelper710TEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleStubHelper710TEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleStubHelper710TEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleStubHelper710TEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleStubHelper710TEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleStubHelper710TEST SetUP" << std::endl; }
 
-    virtual void TearDown()
-    {
-        std::cout << "AICPUScheduleStubHelper710TEST TearDown" << std::endl;
-    }
+    virtual void TearDown() { std::cout << "AICPUScheduleStubHelper710TEST TearDown" << std::endl; }
 };
 
-TEST_F(AICPUScheduleStubHelper710TEST, stubTest) {
+TEST_F(AICPUScheduleStubHelper710TEST, stubTest)
+{
     DataPreprocess::TaskQueueMgr::GetInstance().OnPreprocessEvent(0);
     std::list<uint32_t> list = {0};
     tdt::StatusFactory::GetInstance()->RegisterErrorNo(0, "helper710");
@@ -46,14 +37,15 @@ TEST_F(AICPUScheduleStubHelper710TEST, stubTest) {
     EXPECT_STREQ(ret.c_str(), "");
 }
 
- 
-TEST_F(AICPUScheduleStubHelper710TEST, TDTServerInit) {
+TEST_F(AICPUScheduleStubHelper710TEST, TDTServerInit)
+{
     std::list<uint32_t> a = {0};
     int32_t ret = tdt::TDTServerInit(0, a);
     EXPECT_EQ(ret, 0);
 }
- 
-TEST_F(AICPUScheduleStubHelper710TEST, TDTServerStop) {
+
+TEST_F(AICPUScheduleStubHelper710TEST, TDTServerStop)
+{
     int32_t ret = tdt::TDTServerStop();
     EXPECT_EQ(ret, 0);
 }

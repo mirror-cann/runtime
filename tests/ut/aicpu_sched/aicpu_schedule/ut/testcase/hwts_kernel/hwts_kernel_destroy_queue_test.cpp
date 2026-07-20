@@ -31,23 +31,25 @@ protected:
     DestroyQueueTsKernel kernel_;
 };
 
-TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_success) {
+TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    char *p = args + sizeof(aicpu::AicpuParamHead);
+    char* p = args + sizeof(aicpu::AicpuParamHead);
     uint32_t qid = 1;
-    p = (char *)&qid;
+    p = (char*)&qid;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_failed) {
+TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_failed)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     cceKernel.paramBase = 0;
@@ -56,12 +58,13 @@ TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_failed) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_failed2) {
+TEST_F(DestroyQueueKernelTest, TsKernelDestroyQueue_failed2)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t) + 100;
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t) + 100;
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;

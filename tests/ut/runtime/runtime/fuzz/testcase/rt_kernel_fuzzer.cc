@@ -15,25 +15,24 @@
 #include "runtime/rt.h"
 #include "rt_comm_testcase.hpp"
 
-typedef struct tagRtKernelFuzzer
-{
-    int32_t     priority;
-    uint64_t    size;
-    uint32_t    magic;
-    uint32_t    version;
-    uint32_t    funcMode;
-    int32_t     device;
-    uint32_t    blockDim;
-    uint32_t    argsSize;
-    rtL2Ctrl_t  l2ctrl;
+typedef struct tagRtKernelFuzzer {
+    int32_t priority;
+    uint64_t size;
+    uint32_t magic;
+    uint32_t version;
+    uint32_t funcMode;
+    int32_t device;
+    uint32_t blockDim;
+    uint32_t argsSize;
+    rtL2Ctrl_t l2ctrl;
 } rtKernelFuzzer;
 
-int rt_kernel_fuzzer(const uint8_t *Data, size_t DataSize)
+int rt_kernel_fuzzer(const uint8_t* Data, size_t DataSize)
 {
-    rtKernelFuzzer *fuzzer = (rtKernelFuzzer *)Data;
+    rtKernelFuzzer* fuzzer = (rtKernelFuzzer*)Data;
     if (DataSize <= sizeof(rtKernelFuzzer))
         return 0;
-    
+
     rtDevBinary_t binary;
     binary.magic = fuzzer->magic;
     binary.version = fuzzer->version;
@@ -81,12 +80,8 @@ int main() {
 }
 #else
 
-extern "C" int LLVMFuzzerTestOneInput(uint8_t *Data, size_t Size) {
-    return rt_kernel_fuzzer(Data, Size);
-}
+extern "C" int LLVMFuzzerTestOneInput(uint8_t* Data, size_t Size) { return rt_kernel_fuzzer(Data, Size); }
 
-extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
-    return 0;
-}
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) { return 0; }
 
 #endif

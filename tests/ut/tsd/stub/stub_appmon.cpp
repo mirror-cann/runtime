@@ -15,13 +15,13 @@
 extern "C" {
 #endif /*__cplusplus*/
 
-#define APPMON_SERVER_PATH  "/usr/appmond/appmon.socket"
+#define APPMON_SERVER_PATH "/usr/appmond/appmon.socket"
 
-typedef struct client_info_s{
+typedef struct client_info_s {
     /**
      *  内部维护信息。主要包括注册信息、进程间通信配置等。不对用户开放。
      */
-    void *info;
+    void* info;
 } client_info_t;
 
 /** 应用程序客户端初始化
@@ -37,10 +37,7 @@ typedef struct client_info_s{
  *  @attention  无
  */
 
-int appmon_client_init(client_info_t *clnt, const char *serv_addr)
-{
-    return 0;
-}
+int appmon_client_init(client_info_t* clnt, const char* serv_addr) { return 0; }
 
 /* * 应用程序客户端退出
  *
@@ -53,10 +50,7 @@ int appmon_client_init(client_info_t *clnt, const char *serv_addr)
  *
  *  @attention  无
  */
-void appmon_client_exit(client_info_t *clnt)
-{
-    return;
-}
+void appmon_client_exit(client_info_t* clnt) { return; }
 
 /* * 应用程序注册
  *
@@ -73,10 +67,7 @@ void appmon_client_exit(client_info_t *clnt)
  *
  *  @attention  脚本路径字符串长度不能超过255个字符
  */
-int appmon_client_register(client_info_t *clnt, unsigned long timeout, const char *timeout_action)
-{
-    return 0;
-}
+int appmon_client_register(client_info_t* clnt, unsigned long timeout, const char* timeout_action) { return 0; }
 
 /** 应用程序注销
  *
@@ -91,10 +82,7 @@ int appmon_client_register(client_info_t *clnt, unsigned long timeout, const cha
  *
  *  @attention  无
  */
-int appmon_client_deregister(client_info_t *clnt, const char *reason)
-{
-    return 0;
-}
+int appmon_client_deregister(client_info_t* clnt, const char* reason) { return 0; }
 
 /* * 应用程序客户端心跳发送函数
  *
@@ -108,10 +96,7 @@ int appmon_client_deregister(client_info_t *clnt, const char *reason)
  *
  *  @attention  无
  */
-int appmon_client_heartbeat(client_info_t *clnt)
-{
-    return 0;
-}
+int appmon_client_heartbeat(client_info_t* clnt) { return 0; }
 
 /* * 应用程序主动宣称死亡
  *
@@ -126,10 +111,7 @@ int appmon_client_heartbeat(client_info_t *clnt)
  *
  *  @attention  无
  */
-int appmon_client_declare_death(client_info_t *clnt, const char *last_words)
-{
-    return 0;
-}
+int appmon_client_declare_death(client_info_t* clnt, const char* last_words) { return 0; }
 
 #ifdef __cplusplus
 }

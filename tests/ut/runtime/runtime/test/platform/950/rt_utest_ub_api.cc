@@ -56,7 +56,7 @@ protected:
     static void SetUpTestCase()
     {
         std::cout << "UbApiTest SetUP" << std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         originType_ = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
@@ -66,7 +66,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         rtInstance->SetDisableThread(false);
@@ -77,12 +77,12 @@ protected:
     {
         GlobalMockObject::reset();
         int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -102,30 +102,30 @@ protected:
         rtSetDevice(0);
 
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         device_->SetChipType(CHIP_DAVID);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
 
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
         stream_->SetSqMemAttr(false);
-        davidSqe_ = static_cast<rtDavidSqe_t *>(malloc(sizeof(rtDavidSqe_t)));
+        davidSqe_ = static_cast<rtDavidSqe_t*>(malloc(sizeof(rtDavidSqe_t)));
         oldSqAddr_ = stream_->GetSqBaseAddr();
         uint64_t sqeAddr = reinterpret_cast<uint64_t>(davidSqe_);
         stream_->SetSqBaseAddr(sqeAddr);
         MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
 
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+        TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
             .will(returnValue(RT_ERROR_NONE));
 
         grp_ = new DvppGrp(device_, 0);
-        rtDvppGrp_t grp_t = (rtDvppGrp_t *)grp_;
+        rtDvppGrp_t grp_t = (rtDvppGrp_t*)grp_;
         rtError_t ret = rtStreamCreateByGrp(&streamHandleDvpp_, 0, 0, grp_t);
         streamDvpp_ = rt_ut::UnwrapOrNull<Stream>(streamHandleDvpp_);
         streamDvpp_->SetLimitFlag(true);
@@ -161,34 +161,34 @@ protected:
         stream_ = nullptr;
         streamDvpp_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtDeviceReset(0);
         GlobalMockObject::reset();
     }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Stream *streamDvpp_ = nullptr;
-    Engine *engine_ = nullptr;
-    DvppGrp *grp_ = nullptr;
-    rtDavidSqe_t *davidSqe_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Stream* streamDvpp_ = nullptr;
+    Engine* engine_ = nullptr;
+    DvppGrp* grp_ = nullptr;
+    rtDavidSqe_t* davidSqe_ = nullptr;
     rtStream_t streamHandle_ = 0;
     rtStream_t streamHandleDvpp_ = 0;
     uint64_t oldSqAddr_ = 0;
     static rtChipType_t originType_;
-    static void *binHandle_;
+    static void* binHandle_;
     static char function_;
     static uint32_t binary_[32];
 };
 
 rtChipType_t ApiTestUb::originType_ = CHIP_MINI;
-void *ApiTestUb::binHandle_ = nullptr;
+void* ApiTestUb::binHandle_ = nullptr;
 char ApiTestUb::function_ = 'a';
 uint32_t ApiTestUb::binary_[32] = {};
 
-static void ApiTest_Stream_Cb(void *arg) {}
+static void ApiTest_Stream_Cb(void* arg) {}
 
 TEST_F(ApiTestUb, ub_doorbell_send_test_submit)
 {
@@ -208,7 +208,7 @@ TEST_F(ApiTestUb, ub_doorbell_send_test_submit)
     dbSendInfo.info[1].piValue = 20;
     error = rtUbDbSend(&dbSendInfo, streamHandle_);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
 }
 
@@ -230,9 +230,9 @@ TEST_F(ApiTestUb, ub_direct_wqe_send_test_submit)
     wqeInfo.dieId = 0;
     wqeInfo.functionId = 1;
     wqeInfo.jettyId = 10;
-    wqeInfo.wqe = (uint8_t *)malloc(64 * sizeof(uint8_t));
+    wqeInfo.wqe = (uint8_t*)malloc(64 * sizeof(uint8_t));
     wqeInfo.wqePtrLen = 64U;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(5 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(5 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -243,7 +243,7 @@ TEST_F(ApiTestUb, ub_direct_wqe_send_test_submit)
     free(sqe);
     free(wqeInfo.wqe);
     wqeInfo.wqe = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
 }
 
@@ -256,9 +256,9 @@ TEST_F(ApiTestUb, ub_direct_wqe_send_test_submit_wqe2)
     wqeInfo.dieId = 0;
     wqeInfo.functionId = 1;
     wqeInfo.jettyId = 10;
-    wqeInfo.wqe = (uint8_t *)malloc(128 * sizeof(uint8_t));
+    wqeInfo.wqe = (uint8_t*)malloc(128 * sizeof(uint8_t));
     wqeInfo.wqePtrLen = 128U;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(3 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(3 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -269,7 +269,7 @@ TEST_F(ApiTestUb, ub_direct_wqe_send_test_submit_wqe2)
     free(sqe);
     free(wqeInfo.wqe);
     wqeInfo.wqe = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
 }
 
@@ -277,7 +277,7 @@ TEST_F(ApiTestUb, cmo_addr_send_test_submit)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
     rtDavidCmoAddrInfo info = {};
     info.num_outer = 2;
     info.num_inner = 16;
@@ -292,17 +292,17 @@ TEST_F(ApiTestUb, cmo_addr_cmotype_isinValid)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     rtDavidCmoAddrInfo info = {};
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     error = rtCmoAddrTaskLaunch(cmoAddrPtr, infoSize, RT_CMO_RESERVED, streamHandle_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -314,22 +314,22 @@ TEST_F(ApiTestUb, cmo_addr_test_submit_01)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     rtDavidCmoAddrInfo info = {};
     rtModel_t model;
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     stream_->SetModel(realModel);
     stream_->SetLatestModlId(realModel->Id_());
 
@@ -349,26 +349,29 @@ TEST_F(ApiTestUb, cmo_addr_test_submit_02)
     rtError_t error;
     rtModel_t model;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     uint32_t pos = 5;
 
     rtDavidCmoAddrInfo info = {};
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     stream_->SetModel(realModel);
     stream_->SetLatestModlId(realModel->Id_());
-    MOCKER(AllocTaskInfo).stubs().with(mockcpp::any(), mockcpp::any(), outBound(pos)).will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER(AllocTaskInfo)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBound(pos))
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtCmoAddrTaskLaunch(cmoAddrPtr, infoSize, RT_CMO_INVALID, streamHandle_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     error = rtModelDestroy(model);
@@ -383,10 +386,10 @@ TEST_F(ApiTestUb, allocTaskInfo_stream_full)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -394,11 +397,11 @@ TEST_F(ApiTestUb, allocTaskInfo_stream_full)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_PERSISTENT);
     EXPECT_EQ(res, RT_ERROR_NONE);
@@ -406,7 +409,7 @@ TEST_F(ApiTestUb, allocTaskInfo_stream_full)
     task->type = TS_TASK_TYPE_CMO;
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -425,26 +428,26 @@ TEST_F(ApiTestUb, allocTaskInfo_device_down)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtModel_t model;
 
     rtDavidCmoAddrInfo info = {};
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     InitByStream(task, stream_);
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     stream_->SetModel(realModel);
     stream_->SetLatestModlId(realModel->Id_());
 
@@ -469,10 +472,10 @@ TEST_F(ApiTestUb, allocTaskInfo_abort_on_fail)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -480,11 +483,11 @@ TEST_F(ApiTestUb, allocTaskInfo_abort_on_fail)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
@@ -492,7 +495,7 @@ TEST_F(ApiTestUb, allocTaskInfo_abort_on_fail)
     task->type = TS_TASK_TYPE_CMO;
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -518,10 +521,10 @@ TEST_F(ApiTestUb, allocTaskInfo_abortStatus)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -529,11 +532,11 @@ TEST_F(ApiTestUb, allocTaskInfo_abortStatus)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
@@ -542,7 +545,7 @@ TEST_F(ApiTestUb, allocTaskInfo_abortStatus)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -565,10 +568,10 @@ TEST_F(ApiTestUb, allocTaskInfo_taskResMang_null)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -576,18 +579,18 @@ TEST_F(ApiTestUb, allocTaskInfo_taskResMang_null)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
     task->type = TS_TASK_TYPE_CMO;
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -611,10 +614,10 @@ TEST_F(ApiTestUb, test_allocTaskInfo)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -622,11 +625,11 @@ TEST_F(ApiTestUb, test_allocTaskInfo)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
@@ -635,7 +638,7 @@ TEST_F(ApiTestUb, test_allocTaskInfo)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -661,10 +664,10 @@ TEST_F(ApiTestUb, davidSendTask_addTaskToPublicQueue_fail)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -672,11 +675,11 @@ TEST_F(ApiTestUb, davidSendTask_addTaskToPublicQueue_fail)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
@@ -684,7 +687,7 @@ TEST_F(ApiTestUb, davidSendTask_addTaskToPublicQueue_fail)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -692,8 +695,10 @@ TEST_F(ApiTestUb, davidSendTask_addTaskToPublicQueue_fail)
     (rt_ut::UnwrapOrNull<Stream>(stream))->Context_()->SetCtxMode(STOP_ON_FAILURE);
     (rt_ut::UnwrapOrNull<Stream>(stream))->Context_()->SetFailureError(ACL_ERROR_RT_INTERNAL_ERROR);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetFailureMode(STOP_ON_FAILURE);
-    MOCKER_CPP_VIRTUAL(rt_ut::UnwrapOrNull<Stream>(stream), &Stream::StarsAddTaskToStream).stubs().will(returnValue(RT_ERROR_TASK_NULL));
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    MOCKER_CPP_VIRTUAL(rt_ut::UnwrapOrNull<Stream>(stream), &Stream::StarsAddTaskToStream)
+        .stubs()
+        .will(returnValue(RT_ERROR_TASK_NULL));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = (rt_ut::UnwrapOrNull<Stream>(stream))->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqBaseAddr(newSqAddr);
@@ -713,10 +718,10 @@ TEST_F(ApiTestUb, davidSendTask_halSqTaskSend)
 {
     rtError_t error;
     uint32_t infoSize = 64U;
-    uint8_t *cmoAddrPtr = nullptr;
-    uint8_t *src = nullptr;
+    uint8_t* cmoAddrPtr = nullptr;
+    uint8_t* src = nullptr;
     TaskInfo taskInfo = {};
-    TaskInfo *task = &taskInfo;
+    TaskInfo* task = &taskInfo;
     rtStream_t stream = 0;
     rtModel_t model;
 
@@ -724,11 +729,11 @@ TEST_F(ApiTestUb, davidSendTask_halSqTaskSend)
     info.num_outer = 2;
     info.num_inner = 16;
     info.len_inner = 2;
-    rtMalloc((void **)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&src, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     info.src = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
     info.stride_outer = 0;
     info.stride_inner = 0;
-    rtMalloc((void **)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    rtMalloc((void**)&cmoAddrPtr, infoSize, RT_MEMORY_HBM, DEFAULT_MODULEID);
     rtMemcpy(cmoAddrPtr, infoSize, &info, infoSize, RT_MEMCPY_HOST_TO_DEVICE);
     rtError_t res = rtStreamCreateWithFlags(&stream, 0, RT_STREAM_DEFAULT);
     EXPECT_EQ(res, RT_ERROR_NONE);
@@ -736,7 +741,7 @@ TEST_F(ApiTestUb, davidSendTask_halSqTaskSend)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *realModel = rt_ut::UnwrapOrNull<Model>(model);
+    Model* realModel = rt_ut::UnwrapOrNull<Model>(model);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetModel(realModel);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetLatestModlId(realModel->Id_());
 
@@ -745,9 +750,9 @@ TEST_F(ApiTestUb, davidSendTask_halSqTaskSend)
     (rt_ut::UnwrapOrNull<Stream>(stream))->Context_()->SetFailureError(ACL_ERROR_RT_DRV_INTERNAL_ERROR);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetFailureMode(STOP_ON_FAILURE);
     MOCKER(halSqTaskSend).stubs().will(returnValue(DRV_ERROR_NO_RESOURCES));
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     MOCKER_CPP_VIRTUAL(stm, &Stream::PrintStmDfxAndCheckDevice).stubs().will(returnValue(RT_ERROR_DRV_ERR));
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = (rt_ut::UnwrapOrNull<Stream>(stream))->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqBaseAddr(newSqAddr);
@@ -768,7 +773,7 @@ protected:
     static void SetUpTestCase()
     {
         std::cout << "ApiTestUb1 SetUP" << std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         originType_ = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
@@ -780,7 +785,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         rtInstance->SetDisableThread(false);
@@ -792,12 +797,12 @@ protected:
     {
         GlobalMockObject::reset();
         int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -816,11 +821,11 @@ protected:
         rtSetDevice(0);
 
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         device_->SetChipType(CHIP_DAVID);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
 
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
@@ -828,14 +833,14 @@ protected:
         stream_->SetSqMemAttr(false);
         MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
 
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+        TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
             .will(returnValue(RT_ERROR_NONE));
 
         grp_ = new DvppGrp(device_, 0);
-        rtDvppGrp_t grp_t = (rtDvppGrp_t *)grp_;
+        rtDvppGrp_t grp_t = (rtDvppGrp_t*)grp_;
         rtError_t ret = rtStreamCreateByGrp(&streamHandleDvpp_, 0, 0, grp_t);
         streamDvpp_ = rt_ut::UnwrapOrNull<Stream>(streamHandleDvpp_);
         streamDvpp_->SetLimitFlag(true);
@@ -866,34 +871,34 @@ protected:
         stream_ = nullptr;
         streamDvpp_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtDeviceReset(0);
         GlobalMockObject::reset();
     }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Stream *streamDvpp_ = nullptr;
-    Engine *engine_ = nullptr;
-    DvppGrp *grp_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Stream* streamDvpp_ = nullptr;
+    Engine* engine_ = nullptr;
+    DvppGrp* grp_ = nullptr;
     rtStream_t streamHandle_ = 0;
     rtStream_t streamHandleDvpp_ = 0;
     static rtChipType_t originType_;
-    static void *binHandle_;
+    static void* binHandle_;
     static char function_;
     static uint32_t binary_[32];
 };
 
 rtChipType_t ApiTestUb1::originType_ = CHIP_MINI;
-void *ApiTestUb1::binHandle_ = nullptr;
+void* ApiTestUb1::binHandle_ = nullptr;
 char ApiTestUb1::function_ = 'a';
 uint32_t ApiTestUb1::binary_[32] = {};
-static drvError_t halAsyncDmaCreateStub(uint32_t devId, struct halAsyncDmaInputPara *in,
-                                        struct halAsyncDmaOutputPara *out)
+static drvError_t halAsyncDmaCreateStub(
+    uint32_t devId, struct halAsyncDmaInputPara* in, struct halAsyncDmaOutputPara* out)
 {
-    out->wqe = (uint8_t *)malloc(64);
+    out->wqe = (uint8_t*)malloc(64);
     out->dieId = 1;
     out->functionId = 10;
     out->jettyId = 12;
@@ -901,7 +906,7 @@ static drvError_t halAsyncDmaCreateStub(uint32_t devId, struct halAsyncDmaInputP
     return DRV_ERROR_NONE;
 }
 
-static drvError_t halAsyncDmaDestoryStub(uint32_t devId, halAsyncDmaDestoryPara *para)
+static drvError_t halAsyncDmaDestoryStub(uint32_t devId, halAsyncDmaDestoryPara* para)
 {
     para->size = 64;
     free(para->wqe);
@@ -909,12 +914,12 @@ static drvError_t halAsyncDmaDestoryStub(uint32_t devId, halAsyncDmaDestoryPara 
     return DRV_ERROR_NONE;
 }
 
-DVresult drvMemGetAttribute_DEV(DVdeviceptr vptr, struct DVattribute *attr)
+DVresult drvMemGetAttribute_DEV(DVdeviceptr vptr, struct DVattribute* attr)
 {
     attr->memType = DV_MEM_LOCK_DEV;
     return DRV_ERROR_NONE;
 }
-DVresult drvMemGetAttribute_HOST(DVdeviceptr vptr, struct DVattribute *attr)
+DVresult drvMemGetAttribute_HOST(DVdeviceptr vptr, struct DVattribute* attr)
 {
     attr->memType = DV_MEM_LOCK_HOST;
     return DRV_ERROR_NONE;
@@ -923,8 +928,8 @@ DVresult drvMemGetAttribute_HOST(DVdeviceptr vptr, struct DVattribute *attr)
 TEST_F(ApiTestUb1, ub_async_h2d_dma_submit)
 {
     rtError_t error;
-    void *src;
-    void *dst;
+    void* src;
+    void* dst;
     uint64_t count = 100;
     rtMemcpyKind_t kind = RT_MEMCPY_HOST_TO_DEVICE;
     error = rtMalloc(&dst, 100, RT_MEMORY_HBM, DEFAULT_MODULEID);
@@ -934,14 +939,14 @@ TEST_F(ApiTestUb1, ub_async_h2d_dma_submit)
     MOCKER_CPP_VIRTUAL(device_->Driver_(), &Driver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
     MOCKER(halAsyncDmaCreate).stubs().will(invoke(halAsyncDmaCreateStub));
     MOCKER(halAsyncDmaDestory).stubs().will(invoke(halAsyncDmaDestoryStub));
-    TaskInfo *task = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
+    TaskInfo* task = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
     EXPECT_NE(task, nullptr);
     InitByStream(task, stream_);
     MemcpyAsyncTaskInitV3(task, kind, src, dst, count, 0, NULL);
 
     rtDavidSqe_t sqe[2];
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(task, static_cast<void *>(sqe), sqeInfo);
+    ToConstructDavidSqe(task, static_cast<void*>(sqe), sqeInfo);
     auto taskNum = GetSendDavidSqeNum(task);
     EXPECT_EQ(taskNum, 2);
     TaskUnInitProc(task);
@@ -956,8 +961,8 @@ extern int32_t drv_trans_type;
 TEST_F(ApiTestUb1, ub_async_d2d_dma_submit)
 {
     rtError_t error;
-    void *src;
-    void *dst;
+    void* src;
+    void* dst;
     uint64_t count = 100;
     rtMemcpyKind_t kind = RT_MEMCPY_DEVICE_TO_DEVICE;
     error = rtMalloc(&dst, 100, RT_MEMORY_HBM, DEFAULT_MODULEID);
@@ -968,14 +973,14 @@ TEST_F(ApiTestUb1, ub_async_d2d_dma_submit)
     MOCKER_CPP_VIRTUAL(device_->Driver_(), &Driver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
     MOCKER(halAsyncDmaCreate).stubs().will(invoke(halAsyncDmaCreateStub));
     MOCKER(halAsyncDmaDestory).stubs().will(invoke(halAsyncDmaDestoryStub));
-    TaskInfo *task = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
+    TaskInfo* task = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MEMCPY, error);
     EXPECT_NE(task, nullptr);
     InitByStream(task, stream_);
     MemcpyAsyncTaskInitV3(task, kind, src, dst, count, 0, NULL);
 
     rtDavidSqe_t sqe[2];
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(task, static_cast<void *>(sqe), sqeInfo);
+    ToConstructDavidSqe(task, static_cast<void*>(sqe), sqeInfo);
     auto taskNum = GetSendDavidSqeNum(task);
     EXPECT_EQ(taskNum, 2);
     drv_trans_type = RT_MEMCPY_CHANNEL_TYPE_PCIe;
@@ -983,7 +988,7 @@ TEST_F(ApiTestUb1, ub_async_d2d_dma_submit)
 
     drv_trans_type = RT_MEMCPY_CHANNEL_TYPE_HCCs;
     MemcpyAsyncTaskInitV3(task, kind, src, dst, count, 0, NULL);
-    
+
     TaskUnInitProc(task);
     error = rtFreeHost(src);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -998,7 +1003,7 @@ protected:
     static void SetUpTestCase()
     {
         std::cout << "ApiTestUb2 SetUP" << std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         originType_ = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
@@ -1010,7 +1015,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         rtInstance->SetDisableThread(false);
@@ -1022,12 +1027,12 @@ protected:
     {
         GlobalMockObject::reset();
         int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -1048,16 +1053,16 @@ protected:
         MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq).stubs().will(returnValue(RT_ERROR_NONE));
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         device_->SetChipType(CHIP_DAVID);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
 
         rtError_t res = rtStreamCreateWithFlags(&streamHandle_, 0, RT_STREAM_FAST_LAUNCH | RT_STREAM_FAST_SYNC);
         EXPECT_EQ(res, RT_ERROR_NONE);
 
-        Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-        DavidStream *str = new (std::nothrow) DavidStream(dev, 0, RT_STREAM_DEFAULT, nullptr);
+        Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+        DavidStream* str = new (std::nothrow) DavidStream(dev, 0, RT_STREAM_DEFAULT, nullptr);
         str->argManage_ = new (std::nothrow) UbArgManage(str);
         MOCKER_CPP_VIRTUAL(str->ArgManagePtr(), &StarsArgManager::CreateArgRes).stubs().will(returnValue(true));
 
@@ -1065,7 +1070,7 @@ protected:
         stream_->SetSqMemAttr(false);
         MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
 
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+        TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
@@ -1094,14 +1099,14 @@ protected:
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_OFFLINE));
 
-        Device *dev = ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-        DavidStream *str = new (std::nothrow) DavidStream(dev, 0, RT_STREAM_DEFAULT, nullptr);
+        Device* dev = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+        DavidStream* str = new (std::nothrow) DavidStream(dev, 0, RT_STREAM_DEFAULT, nullptr);
         str->argManage_ = new (std::nothrow) UbArgManage(str);
         MOCKER_CPP_VIRTUAL(str->ArgManagePtr(), &StarsArgManager::CreateArgRes).stubs().will(returnValue(false));
 
@@ -1111,19 +1116,19 @@ protected:
     }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
     rtStream_t streamHandleDvpp_ = 0;
     static rtChipType_t originType_;
-    static void *binHandle_;
+    static void* binHandle_;
     static char function_;
     static uint32_t binary_[32];
 };
 
 rtChipType_t ApiTestUb2::originType_ = CHIP_MINI;
-void *ApiTestUb2::binHandle_ = nullptr;
+void* ApiTestUb2::binHandle_ = nullptr;
 char ApiTestUb2::function_ = 'a';
 uint32_t ApiTestUb2::binary_[32] = {};
 TEST_F(ApiTestUb2, ub_doorbell_send_test_submit3)
@@ -1139,7 +1144,7 @@ TEST_F(ApiTestUb2, ub_doorbell_send_test_submit3)
     dbSendInfo.info[1].functionId = 1;
     dbSendInfo.info[1].jettyId = 10;
     dbSendInfo.info[1].piValue = 20;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -1147,7 +1152,7 @@ TEST_F(ApiTestUb2, ub_doorbell_send_test_submit3)
     EXPECT_EQ(error, RT_ERROR_NONE);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
 }
 
@@ -1163,21 +1168,21 @@ TEST_F(ApiTestUb2, ub_direct_wqe_send_test_normal)
     wqeInfo.wqeSize = 0;
     wqeInfo.functionId = 1;
     wqeInfo.jettyId = 10;
-    wqeInfo.wqe = (uint8_t *)malloc(64 * sizeof(uint8_t));
+    wqeInfo.wqe = (uint8_t*)malloc(64 * sizeof(uint8_t));
     wqeInfo.wqePtrLen = 64U;
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqMemAttr(false);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
         .will(returnValue(RT_ERROR_NONE));
 
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = (rt_ut::UnwrapOrNull<Stream>(stream))->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqBaseAddr(newSqAddr);
@@ -1186,14 +1191,14 @@ TEST_F(ApiTestUb2, ub_direct_wqe_send_test_normal)
     taskResMang->ResetTaskRes();
     (rt_ut::UnwrapOrNull<Stream>(stream))->Context_()->DefaultStream_()->SetSqMemAttr(false);
 
-    Context *curCtx = Runtime::Instance()->CurrentContext();
-    Stream *defaultStm = curCtx->DefaultStream_();
+    Context* curCtx = Runtime::Instance()->CurrentContext();
+    Stream* defaultStm = curCtx->DefaultStream_();
     defaultStm->SetSqBaseAddr(newSqAddr);
     error = rtUbDirectSend(&wqeInfo, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
     defaultStm->SetSqBaseAddr(oldSqAddr);
     stream_->SetSqBaseAddr(oldSqAddr);
-    taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(defaultStm)->taskResMang_));
+    taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(defaultStm)->taskResMang_));
     taskResMang->ResetTaskRes();
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1227,7 +1232,7 @@ TEST_F(ApiTestUb2, ub_doorbell_send_test_die_id_invalid)
     dbSendInfo.info[1].functionId = 1;
     dbSendInfo.info[1].jettyId = 10;
     dbSendInfo.info[1].piValue = 20;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -1238,7 +1243,7 @@ TEST_F(ApiTestUb2, ub_doorbell_send_test_die_id_invalid)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
     props.ioDieNum = 0U;
     stream_->Device_()->RefreshDevProperties(props);
@@ -1255,9 +1260,9 @@ TEST_F(ApiTestUb2, ub_direct_wqe_send_test_submit3)
     wqeInfo.dieId = 0;
     wqeInfo.functionId = 1;
     wqeInfo.jettyId = 10;
-    wqeInfo.wqe = (uint8_t *)malloc(64 * sizeof(uint8_t));
+    wqeInfo.wqe = (uint8_t*)malloc(64 * sizeof(uint8_t));
     wqeInfo.wqePtrLen = 64U;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -1268,7 +1273,7 @@ TEST_F(ApiTestUb2, ub_direct_wqe_send_test_submit3)
     free(sqe);
     free(wqeInfo.wqe);
     wqeInfo.wqe = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
 }
 
@@ -1282,9 +1287,9 @@ TEST_F(ApiTestUb2, ub_direct_wqe_send_test_die_id_invalid)
     wqeInfo.dieId = 1;
     wqeInfo.functionId = 1;
     wqeInfo.jettyId = 10;
-    wqeInfo.wqe = (uint8_t *)malloc(64 * sizeof(uint8_t));
+    wqeInfo.wqe = (uint8_t*)malloc(64 * sizeof(uint8_t));
     wqeInfo.wqePtrLen = 64U;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -1300,7 +1305,7 @@ TEST_F(ApiTestUb2, ub_direct_wqe_send_test_die_id_invalid)
     free(sqe);
     free(wqeInfo.wqe);
     wqeInfo.wqe = nullptr;
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
 }
 
@@ -1321,32 +1326,32 @@ TEST_F(ApiTestUb2, ub_doorbell_send_test_normal)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqMemAttr(false);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
-    Driver *driver;
-    driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    Driver* driver;
+    driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
         .will(returnValue(RT_ERROR_NONE));
 
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = (rt_ut::UnwrapOrNull<Stream>(stream))->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqBaseAddr(newSqAddr);
     error = rtUbDbSend(&dbSendInfo, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    taskResMang = ((TaskResManageDavid *)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
+    taskResMang = ((TaskResManageDavid*)(rt_ut::UnwrapOrNull<Stream>(stream)->taskResMang_));
     taskResMang->ResetTaskRes();
     (rt_ut::UnwrapOrNull<Stream>(stream))->Context_()->DefaultStream_()->SetSqMemAttr(false);
-    Context *curCtx = Runtime::Instance()->CurrentContext();
-    Stream *defaultStm = curCtx->DefaultStream_();
+    Context* curCtx = Runtime::Instance()->CurrentContext();
+    Stream* defaultStm = curCtx->DefaultStream_();
     defaultStm->SetSqBaseAddr(newSqAddr);
     error = rtUbDbSend(&dbSendInfo, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
     (rt_ut::UnwrapOrNull<Stream>(stream))->SetSqBaseAddr(oldSqAddr);
     defaultStm->SetSqBaseAddr(oldSqAddr);
     free(sqe);
-    taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(defaultStm)->taskResMang_));
+    taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(defaultStm)->taskResMang_));
     taskResMang->ResetTaskRes();
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1375,7 +1380,7 @@ TEST_F(ApiTestUb1, host_shared_memory_david00)
     rtMallocHostSharedMemoryOut output = {fd, &sharedMemAddr, &devSharedMemAddr};
     rtFreeHostSharedMemoryIn inputPara = {"abcd", 100, fd, &sharedMemAddr, &devSharedMemAddr};
 
-    NpuDriver *rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MallocHostSharedMemory).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::FreeHostSharedMemory).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -1399,9 +1404,7 @@ TEST_F(ApiTestUb1, host_shared_memory_david_stub_hal)
     /* fd, ptr, devPtr */
     rtMallocHostSharedMemoryOut output = {fd, &sharedMemAddr, &devSharedMemAddr};
 
-    MOCKER(halHostRegister)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halHostRegister).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtMallocHostSharedMemory(&input, &output);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1418,9 +1421,7 @@ TEST_F(ApiTestUb1, host_shared_memory_david_stub_stat)
     /* fd, ptr, devPtr */
     rtMallocHostSharedMemoryOut output = {fd, &sharedMemAddr, &devSharedMemAddr};
 
-    MOCKER(stat)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(stat).stubs().will(returnValue(0));
 
     error = rtMallocHostSharedMemory(&input, &output);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1433,9 +1434,7 @@ TEST_F(ApiTestUb1, free_host_shared_memory_david_stub_hal)
     int sharedMemAddr;
     int devSharedMemAddr;
 
-    MOCKER(halHostUnregister)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halHostUnregister).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     rtFreeHostSharedMemoryIn inputPara = {"abcd", 100, fd, &sharedMemAddr, &devSharedMemAddr};
     error = rtFreeHostSharedMemory(&inputPara);
@@ -1471,7 +1470,7 @@ TEST_F(ApiTestUb1, PROCESS_REPORT_DAVID)
     MOCKER_CPP(&Stream::IsHostFuncCbReg).stubs().will(returnValue(true));
     stream_->IsHostFuncCbReg();
     rtCallback_t stub_func = (rtCallback_t)0x12345;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -1479,7 +1478,7 @@ TEST_F(ApiTestUb1, PROCESS_REPORT_DAVID)
     EXPECT_EQ(error, RT_ERROR_NONE);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
     error = rtUnSubscribeReport(123, streamHandle_);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1500,7 +1499,7 @@ TEST_F(ApiTestUb1, callbackLaunch_noblock)
     MOCKER_CPP(&Stream::IsHostFuncCbReg).stubs().will(returnValue(true));
     stream_->IsHostFuncCbReg();
     rtCallback_t stub_func = (rtCallback_t)0x12345;
-    rtDavidSqe_t *sqe = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+    rtDavidSqe_t* sqe = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
     uint64_t oldSqAddr = stream_->GetSqBaseAddr();
     uint64_t newSqAddr = reinterpret_cast<uint64_t>(sqe);
     stream_->SetSqBaseAddr(newSqAddr);
@@ -1508,7 +1507,7 @@ TEST_F(ApiTestUb1, callbackLaunch_noblock)
     EXPECT_EQ(error, RT_ERROR_NONE);
     stream_->SetSqBaseAddr(oldSqAddr);
     free(sqe);
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+    TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
     taskResMang->ResetTaskRes();
     error = rtUnSubscribeReport(123, streamHandle_);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1526,13 +1525,9 @@ TEST_F(ApiTestUb1, api_rts_rtsCallbackLaunch_david2)
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP(&Runtime::SubscribeCallback)
-        .stubs()
-        .will(returnValue(1));
-    
-    MOCKER(cce::runtime::CallbackLaunchForDavidWithBlock)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Runtime::SubscribeCallback).stubs().will(returnValue(1));
+
+    MOCKER(cce::runtime::CallbackLaunchForDavidWithBlock).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = rtsLaunchHostFunc(stream, ApiTest_Stream_Cb, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);

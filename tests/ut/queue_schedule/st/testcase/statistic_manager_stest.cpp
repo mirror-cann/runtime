@@ -18,74 +18,67 @@
 #include "server/bind_relation.h"
 
 namespace bqs {
-    class StatisticManagerSTest : public testing::Test {
-    protected:
-        static void SetUpTestCase()
-        {
-        }
+class StatisticManagerSTest : public testing::Test {
+protected:
+    static void SetUpTestCase() {}
 
-        virtual void SetUp()
-        {
-        }
+    virtual void SetUp() {}
 
-        virtual void TearDown()
-        {
-            GlobalMockObject::verify();
-        }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
-        StatisticManager instance;
-    };
+    StatisticManager instance;
+};
 
-    TEST_F(StatisticManagerSTest, StatisticManagerSTest_TEST)
-    {
-        instance.StartStatisticManager(10, 10);
-        instance.EventScheduleStat();
-        instance.DataScheduleFailedStat();
-        instance.RelationEnqueueStat();
-        instance.RelationDequeueStat();
-        instance.GetRelationEnqueCnt();
-        instance.GetRelationDequeCnt();
-        instance.F2nfEnqueueStat();
-        instance.DataQueueEnqueueFailStat();
-        instance.DataQueueEnqueueFullStat();
-        instance.F2nfDequeueStat();
-        instance.BindStat();
-        instance.UnbindStat();
-        instance.GetBindStat();
-        instance.GetAllBindStat();
-        instance.ResponseStat();
-        instance.SubscribeNum(2);
-        instance.BindNum(4);
-        instance.PauseSubscribe();
-        instance.ResumeSubscribe();
-        instance.DumpStatistic();
-        instance.StopStatisticManager();
-        instance.AddScheduleEmpty();
-        instance.HcclMpiRecvReqFalseAwakenStat();
-        instance.HcclMpiRecvReqEmptySchedStat();
-        instance.HcclMpiSendCompFalseAwakenStat();
-        instance.HcclMpiSendCompEmptySchedStat();
-        instance.HcclMpiRecvCompFalseAwakenStat();
-        instance.HcclMpiRecvCompEmptySchedStat();
-        instance.F2nfEventStat();
-        instance.F2nfEventFalseAwakenStat();
-        instance.HcclMpiRecvFailStat();
-        instance.HcclMpiSendFullStat();
-        instance.HcclMpiSendFailStat();
-        instance.HcclMpiF2nfEventStat();
-        instance.RecvReqEventSupplyStat();
-        EXPECT_EQ(instance.bindNum_.load(), 4U);
-        EXPECT_EQ(instance.abnormalBindNum_.load(), 0U);
-        EXPECT_EQ(instance.subscribeNum_.load(), 2U);
-        EXPECT_EQ(instance.pauseSubscribeNum_.load(), 0U);
-    }
-
-    TEST_F(StatisticManagerSTest, StatisticManagerSTest_StartStop_TEST)
-    {
-        instance.StartStatisticManager(10, 10, true, 1, 1);
-        EXPECT_EQ(instance.abnormalInterval_, 10U);
-        sleep(2);
-        instance.DumpChannelStatistic();
-        instance.StopStatisticManager();
-    }
+TEST_F(StatisticManagerSTest, StatisticManagerSTest_TEST)
+{
+    instance.StartStatisticManager(10, 10);
+    instance.EventScheduleStat();
+    instance.DataScheduleFailedStat();
+    instance.RelationEnqueueStat();
+    instance.RelationDequeueStat();
+    instance.GetRelationEnqueCnt();
+    instance.GetRelationDequeCnt();
+    instance.F2nfEnqueueStat();
+    instance.DataQueueEnqueueFailStat();
+    instance.DataQueueEnqueueFullStat();
+    instance.F2nfDequeueStat();
+    instance.BindStat();
+    instance.UnbindStat();
+    instance.GetBindStat();
+    instance.GetAllBindStat();
+    instance.ResponseStat();
+    instance.SubscribeNum(2);
+    instance.BindNum(4);
+    instance.PauseSubscribe();
+    instance.ResumeSubscribe();
+    instance.DumpStatistic();
+    instance.StopStatisticManager();
+    instance.AddScheduleEmpty();
+    instance.HcclMpiRecvReqFalseAwakenStat();
+    instance.HcclMpiRecvReqEmptySchedStat();
+    instance.HcclMpiSendCompFalseAwakenStat();
+    instance.HcclMpiSendCompEmptySchedStat();
+    instance.HcclMpiRecvCompFalseAwakenStat();
+    instance.HcclMpiRecvCompEmptySchedStat();
+    instance.F2nfEventStat();
+    instance.F2nfEventFalseAwakenStat();
+    instance.HcclMpiRecvFailStat();
+    instance.HcclMpiSendFullStat();
+    instance.HcclMpiSendFailStat();
+    instance.HcclMpiF2nfEventStat();
+    instance.RecvReqEventSupplyStat();
+    EXPECT_EQ(instance.bindNum_.load(), 4U);
+    EXPECT_EQ(instance.abnormalBindNum_.load(), 0U);
+    EXPECT_EQ(instance.subscribeNum_.load(), 2U);
+    EXPECT_EQ(instance.pauseSubscribeNum_.load(), 0U);
 }
+
+TEST_F(StatisticManagerSTest, StatisticManagerSTest_StartStop_TEST)
+{
+    instance.StartStatisticManager(10, 10, true, 1, 1);
+    EXPECT_EQ(instance.abnormalInterval_, 10U);
+    sleep(2);
+    instance.DumpChannelStatistic();
+    instance.StopStatisticManager();
+}
+} // namespace bqs

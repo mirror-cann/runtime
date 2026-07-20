@@ -62,35 +62,40 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiCloudDisableThreadTest : public testing::Test
-{
+class ApiCloudDisableThreadTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetSocVersion("Ascend910B1");
-        flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetSocVersion("Ascend910B1");
+        flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         originType_ = Runtime::Instance()->GetChipType();
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
 
         int64_t hardwareVersion = CHIP_CLOUD << 8;
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL(driver_,
-            &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
 
         (void)rtSetDevice(0);
         (void)rtSetTSDevice(0);
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -103,7 +108,7 @@ protected:
 
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 0);
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<< error4 << std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
@@ -111,46 +116,43 @@ protected:
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         GlobalContainer::SetRtChipType(originType_);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
-        rtInstance->SetDisableThread(flag);      // Recover.
+        rtInstance->SetDisableThread(flag); // Recover.
     }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
     static rtChipType_t originType_;
-    static Driver    *driver_;
+    static Driver* driver_;
     static bool flag;
 };
 
 rtStream_t ApiCloudDisableThreadTest::stream_ = NULL;
 rtEvent_t ApiCloudDisableThreadTest::event_ = NULL;
 void* ApiCloudDisableThreadTest::binHandle_ = nullptr;
-char  ApiCloudDisableThreadTest::function_ = 'a';
+char ApiCloudDisableThreadTest::function_ = 'a';
 uint32_t ApiCloudDisableThreadTest::binary_[32] = {};
 rtChipType_t ApiCloudDisableThreadTest::originType_ = CHIP_CLOUD;
 Driver* ApiCloudDisableThreadTest::driver_ = nullptr;
@@ -159,15 +161,15 @@ bool ApiCloudDisableThreadTest::flag = false;
 TEST_F(ApiCloudDisableThreadTest, kernel_launch)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtGetFunctionByName("foo", &stubFunc);
@@ -204,10 +206,10 @@ TEST_F(ApiCloudDisableThreadTest, SysParamOpt_test)
     EXPECT_EQ(val, 1);
 
     // abnormal test
-    error =rtCtxSetSysParamOpt(SYS_OPT_RESERVED, 1);
+    error = rtCtxSetSysParamOpt(SYS_OPT_RESERVED, 1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    error =rtCtxGetSysParamOpt(SYS_OPT_RESERVED, &val);
+    error = rtCtxGetSysParamOpt(SYS_OPT_RESERVED, &val);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
@@ -228,7 +230,7 @@ TEST_F(ApiCloudDisableThreadTest, SysParamOpt_test_1)
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(val, 0);
 
-    //normal test
+    // normal test
     error = rtSetSysParamOpt(SYS_OPT_DETERMINISTIC, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -250,16 +252,16 @@ TEST_F(ApiCloudDisableThreadTest, SysParamOpt_test_1)
     error = rtGetSysParamOpt(SYS_OPT_ENABLE_DEBUG_KERNEL, NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    error =rtSetSysParamOpt(SYS_OPT_RESERVED, 1);
+    error = rtSetSysParamOpt(SYS_OPT_RESERVED, 1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    error =rtGetSysParamOpt(SYS_OPT_RESERVED, &val);
+    error = rtGetSysParamOpt(SYS_OPT_RESERVED, &val);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    error =rtsSetSysParamOpt(SYS_OPT_RESERVED, 1);
+    error = rtsSetSysParamOpt(SYS_OPT_RESERVED, 1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    error =rtsGetSysParamOpt(SYS_OPT_RESERVED, &val);
+    error = rtsGetSysParamOpt(SYS_OPT_RESERVED, &val);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
@@ -270,15 +272,15 @@ TEST_F(ApiCloudDisableThreadTest, overflow_test)
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    void *overflowAddr = nullptr;
+    void* overflowAddr = nullptr;
     // normal test
     error = rtCtxGetOverflowAddr(&overflowAddr);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(overflowAddr, nullptr);
 
     uint64_t buff_size = 64;
-    uint32_t *devMemSrc;
-    error = rtMalloc((void **)&devMemSrc, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    uint32_t* devMemSrc;
+    error = rtMalloc((void**)&devMemSrc, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtGetDeviceSatStatus(devMemSrc, 512, nullptr);
@@ -294,22 +296,21 @@ TEST_F(ApiCloudDisableThreadTest, overflow_test)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
 TEST_F(ApiCloudDisableThreadTest, kernel_launch_success_dfx)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream_);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream_);
     stm->SetLimitFlag(true);
     stm->SetRecycleFlag(false);
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtGetFunctionByName("foo", &stubFunc);
@@ -323,56 +324,48 @@ TEST_F(ApiCloudDisableThreadTest, kernel_launch_success_dfx)
 TEST_F(ApiCloudDisableThreadTest, kernel_launch_sq_task_send_error)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream_);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream_);
     Device* dev = stm->Device_();
-    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState)
-    .stubs()
-    .will(returnValue((uint32_t)DEV_RUNNING_DOWN));
+    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState).stubs().will(returnValue((uint32_t)DEV_RUNNING_DOWN));
 
     int32_t errCode = 8888;
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::CommandOccupy)
-        .stubs().will(returnValue(errCode));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::CommandOccupy).stubs().will(returnValue(errCode));
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, errCode);
 
     error = rtStreamSynchronize(stream_);
-    
+
     EXPECT_EQ(error, errCode);
 }
 
 TEST_F(ApiCloudDisableThreadTest, kernel_launch_stream_full)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream_);
-    MOCKER_CPP(&Stream::AddTaskToStream)
-    .stubs()
-    .will(returnValue(RT_ERROR_STREAM_FULL));
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream_);
+    MOCKER_CPP(&Stream::AddTaskToStream).stubs().will(returnValue(RT_ERROR_STREAM_FULL));
 
     Device* dev = stm->Device_();
-    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState)
-    .stubs()
-    .will(returnValue((uint32_t)DEV_RUNNING_DOWN));
+    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState).stubs().will(returnValue((uint32_t)DEV_RUNNING_DOWN));
 
     uint32_t errCode = 8888;
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::CommandOccupy)
-        .stubs().will(returnValue(errCode));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::CommandOccupy).stubs().will(returnValue(errCode));
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
     dev->SetDevStatus(RT_ERROR_LOST_HEARTBEAT);
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, ACL_ERROR_RT_LOST_HEARTBEAT);
 
     dev->SetDevStatus(RT_ERROR_LOST_HEARTBEAT);
@@ -381,7 +374,6 @@ TEST_F(ApiCloudDisableThreadTest, kernel_launch_stream_full)
     dev->SetDevStatus(RT_ERROR_NONE);
 }
 
-
 TEST_F(ApiCloudDisableThreadTest, rtsoverflow_test)
 {
     rtError_t error;
@@ -389,15 +381,15 @@ TEST_F(ApiCloudDisableThreadTest, rtsoverflow_test)
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    void *overflowAddr = nullptr;
+    void* overflowAddr = nullptr;
     // normal test
     error = rtsCtxGetFloatOverflowAddr(&overflowAddr);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(overflowAddr, nullptr);
 
     uint64_t buff_size = 64;
-    uint32_t *devMemSrc;
-    error = rtMalloc((void **)&devMemSrc, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    uint32_t* devMemSrc;
+    error = rtMalloc((void**)&devMemSrc, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsGetFloatOverflowStatus(devMemSrc, 512, nullptr);

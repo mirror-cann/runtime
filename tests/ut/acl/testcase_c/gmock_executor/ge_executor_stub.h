@@ -18,16 +18,17 @@
 
 class GeExecutorStubMock {
 public:
-  static GeExecutorStubMock& GetInstance() {
-    static GeExecutorStubMock mock;
-    return mock;
-  }
+    static GeExecutorStubMock& GetInstance()
+    {
+        static GeExecutorStubMock mock;
+        return mock;
+    }
 
-  MOCK_METHOD0(GeInitialize, Status());
-  MOCK_METHOD0(GeFinalize, Status());
-  MOCK_METHOD1(GeDbgInit, Status(const char *configPath));
-  MOCK_METHOD0(GeDbgDeInit, Status());
-  MOCK_METHOD2(GeNofifySetDevice, Status(uint32_t chipId, uint32_t deviceId));
+    MOCK_METHOD0(GeInitialize, Status());
+    MOCK_METHOD0(GeFinalize, Status());
+    MOCK_METHOD1(GeDbgInit, Status(const char* configPath));
+    MOCK_METHOD0(GeDbgDeInit, Status());
+    MOCK_METHOD2(GeNofifySetDevice, Status(uint32_t chipId, uint32_t deviceId));
 };
 
 #endif

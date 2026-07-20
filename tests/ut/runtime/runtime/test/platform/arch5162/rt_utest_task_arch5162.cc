@@ -35,22 +35,13 @@ using namespace cce::runtime;
 
 class Arch5162TaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "Arch5162TaskTest test start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "Arch5162TaskTest test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "Arch5162TaskTest test start end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "Arch5162TaskTest test start end" << std::endl; }
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(Arch5162TaskTest, StubTask)
@@ -136,8 +127,8 @@ TEST_F(Arch5162TaskTest, StubTask)
 TEST_F(Arch5162TaskTest, ConstructAICoreSqeForDavinciTask)
 {
     MOCKER(GetAicoreKernelCredit).stubs().will(returnValue((uint16_t)0));
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo taskInfo = {};
     taskInfo.stream = stream;
@@ -153,8 +144,8 @@ TEST_F(Arch5162TaskTest, ConstructAICoreSqeForDavinciTask)
 
 TEST_F(Arch5162TaskTest, SetStarsResultForDavinciTask_aicpu)
 {
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo task = {};
     task.stream = stream;
@@ -174,8 +165,8 @@ TEST_F(Arch5162TaskTest, SetStarsResultForDavinciTask_aicpu)
 
 TEST_F(Arch5162TaskTest, SetStarsResultForDavinciTask_aicore)
 {
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo task = {};
     task.stream = stream;
@@ -199,8 +190,8 @@ TEST_F(Arch5162TaskTest, DoCompleteSuccessForDavinciTask)
     MOCKER_CPP(&Stream::SetArgHandle).stubs();
     uint32_t descBuf = 1;
     std::shared_ptr<PCTrace> pcTrace;
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo task = {};
     task.stream = stream;
@@ -218,8 +209,8 @@ TEST_F(Arch5162TaskTest, DoCompleteSuccessForDavinciTask)
 TEST_F(Arch5162TaskTest, SetResultForDavinciTask)
 {
     MOCKER_CPP(&H2DCopyMgr::H2DMemCopyWaitFinish).stubs().will(returnValue(RT_ERROR_NONE));
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo task = {};
     task.stream = stream;
@@ -227,12 +218,12 @@ TEST_F(Arch5162TaskTest, SetResultForDavinciTask)
     uint32_t data[3] = {0x10000001, 0x00000002, 0x00000003};
     uint32_t errorcode = 10;
     PfnTaskSetResult setResultFunc = g_taskFuncArrays[CHIP_5162A].setResultFunc[task.type];
-    setResultFunc(&task, (const uint32_t *)&errorcode, 1);
+    setResultFunc(&task, (const uint32_t*)&errorcode, 1);
     EXPECT_EQ(task.errorCode, 10);
 
     Handle argHdl = {};
     argHdl.freeArgs = true;
-    task.u.aicTaskInfo.comm.argHandle = static_cast<void *>(&argHdl);
+    task.u.aicTaskInfo.comm.argHandle = static_cast<void*>(&argHdl);
     PfnWaitAsyncCpCompleteFunc waitFunc = g_taskFuncArrays[CHIP_5162A].waitAsyncCpCompleteFunc[task.type];
     waitFunc(&task);
     delete stream;
@@ -241,8 +232,8 @@ TEST_F(Arch5162TaskTest, SetResultForDavinciTask)
 
 TEST_F(Arch5162TaskTest, DavinciTaskUnInit_aicore)
 {
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo taskInfo = {};
     taskInfo.stream = stream;
@@ -250,7 +241,8 @@ TEST_F(Arch5162TaskTest, DavinciTaskUnInit_aicore)
     taskInfo.u.aicTaskInfo.comm.argHandle = nullptr;
     taskInfo.u.aicTaskInfo.descBuf = nullptr;
     taskInfo.u.aicTaskInfo.sqeDevBuf = nullptr;
-    taskInfo.u.aicTaskInfo.launchParam.placeHoderPtr = new (std::nothrow) rtHostInputInfo_t[2];;
+    taskInfo.u.aicTaskInfo.launchParam.placeHoderPtr = new (std::nothrow) rtHostInputInfo_t[2];
+    ;
     DavinciTaskUnInit(&taskInfo);
     EXPECT_EQ(taskInfo.u.aicTaskInfo.comm.argHandle, nullptr);
     EXPECT_EQ(taskInfo.u.aicTaskInfo.descBuf, nullptr);
@@ -262,8 +254,8 @@ TEST_F(Arch5162TaskTest, DavinciTaskUnInit_aicore)
 
 TEST_F(Arch5162TaskTest, DavinciTaskUnInit_aicpu)
 {
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo taskInfo = {};
     taskInfo.stream = stream;
@@ -295,8 +287,8 @@ TEST_F(Arch5162TaskTest, DavinciKernelTaskRegister)
 TEST_F(Arch5162TaskTest, ConstructSqeForMemcpyAsyncTask)
 {
     MOCKER(PrintSqe).stubs();
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo taskInfo = {};
     taskInfo.stream = stream;
@@ -313,8 +305,8 @@ TEST_F(Arch5162TaskTest, MemcpyAsyncTaskUnInitAndDoComplete)
     MOCKER(TaskFailCallBack).stubs();
     MOCKER(RecycleTaskResourceForMemcpyAsyncTask).stubs();
     MOCKER(PrintErrorInfoForMemcpyAsyncTask).stubs();
-    RawDevice *device = new RawDevice(0);
-    Stream *stream = new Stream(device, 0);
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo task = {};
     task.stream = stream;

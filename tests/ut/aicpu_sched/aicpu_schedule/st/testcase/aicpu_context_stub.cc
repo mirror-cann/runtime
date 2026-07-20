@@ -24,11 +24,9 @@ using namespace std;
 
 class AiCPUContextStubSt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(AiCPUContextStubSt, AiCPUContextStubStSuccess)

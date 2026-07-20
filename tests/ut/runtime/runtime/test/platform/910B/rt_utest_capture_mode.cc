@@ -47,13 +47,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-Notify *CreateStubNotifyForCondHandle(Context *ctx, uint32_t flag)
+Notify* CreateStubNotifyForCondHandle(Context* ctx, uint32_t flag)
 {
     if ((ctx == nullptr) || (ctx->Device_() == nullptr)) {
         return nullptr;
     }
-    Device *device = ctx->Device_();
-    Notify *notify = new (std::nothrow) Notify(device->Id_(), device->DevGetTsId());
+    Device* device = ctx->Device_();
+    Notify* notify = new (std::nothrow) Notify(device->Id_(), device->DevGetTsId());
     if (notify == nullptr) {
         return nullptr;
     }
@@ -67,7 +67,7 @@ Notify *CreateStubNotifyForCondHandle(Context *ctx, uint32_t flag)
     return notify;
 }
 
-rtError_t StubCreateNotifyForCondHandle(Context *ctx, Notify **notify, uint32_t flag)
+rtError_t StubCreateNotifyForCondHandle(Context* ctx, Notify** notify, uint32_t flag)
 {
     *notify = CreateStubNotifyForCondHandle(ctx, flag);
     if (*notify == nullptr) {
@@ -78,21 +78,19 @@ rtError_t StubCreateNotifyForCondHandle(Context *ctx, Notify **notify, uint32_t 
 
 class CloudV2CaptureModelTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         isCfgOpWaitTaskTimeout = rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout;
         isCfgOpExcTaskTimeout = rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = false;
         rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = false;
         rtSetDevice(0);
-        Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         MOCKER_CPP_VIRTUAL(device, &Device::CheckFeatureSupport)
             .stubs()
             .with(eq(TS_FEATURE_SOFTWARE_SQ_ENABLE))
@@ -102,7 +100,7 @@ protected:
     virtual void TearDown()
     {
         rtDeviceReset(0);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = isCfgOpWaitTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = isCfgOpExcTaskTimeout;
         GlobalMockObject::verify();
@@ -114,10 +112,9 @@ private:
     bool isCfgOpExcTaskTimeout{false};
 };
 
-
 TEST_F(CloudV2CaptureModelTest, SUBMIT_RDMA_PI_VALUE_MODIFY_TASK)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER_CPP(&Model::LoadCompleteByStreamPostp).stubs().will(returnValue(RT_ERROR_NONE));
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
@@ -142,7 +139,7 @@ TEST_F(CloudV2CaptureModelTest, SUBMIT_RDMA_PI_VALUE_MODIFY_TASK)
     fftsPlusTaskInfo.descBufLen = sizeof(rtFftsPlusWriteValueCtx_t);
     fftsPlusTaskInfo.descAddrType = RT_FFTS_PLUS_CTX_DESC_ADDR_TYPE_HOST;
     int32_t deviceDescAlignBuf = 1;
-    Context *curCtx = static_cast<Context *>(ctx);
+    Context* curCtx = static_cast<Context*>(ctx);
     MOCKER_CPP_VIRTUAL(curCtx->device_, &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
     ret = SubmitRdmaPiValueModifyTask(rt_ut::UnwrapOrNull<Stream>(stream), &fftsPlusTaskInfo, &deviceDescAlignBuf);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -165,7 +162,7 @@ TEST_F(CloudV2CaptureModelTest, SUBMIT_RDMA_PI_VALUE_MODIFY_TASK)
 
 TEST_F(CloudV2CaptureModelTest, PRINT_DFX_INFO)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -189,12 +186,17 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_INFO)
     TaskInfo piValueModifyTask = {};
     piValueModifyTask.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
     piValueModifyTask.u.rdmaPiValueModifyInfo.rdmaSubContextCount = 1;
-    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&piValueModifyTask));
+    MOCKER_CPP(&TaskFactory::GetTask)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any())
+        .will(returnValue(&piValueModifyTask));
 
     std::vector<uint64_t> rdmaPiValueInfo{1};
     MOCKER_CPP_VIRTUAL(stm->Device_()->Driver_(), &Driver::MemCopySync)
         .stubs()
-        .with(outBoundP(static_cast<void*>(rdmaPiValueInfo.data()), sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(static_cast<void*>(rdmaPiValueInfo.data()), sizeof(void*)), mockcpp::any(), mockcpp::any(),
+            mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
     Notify notify(0, 0);
@@ -231,7 +233,7 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_INFO)
 
 TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -255,12 +257,17 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO)
     TaskInfo piValueModifyTask = {};
     piValueModifyTask.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
     piValueModifyTask.u.rdmaPiValueModifyInfo.rdmaSubContextCount = 1;
-    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&piValueModifyTask));
+    MOCKER_CPP(&TaskFactory::GetTask)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any())
+        .will(returnValue(&piValueModifyTask));
 
     std::vector<uint64_t> rdmaPiValueInfo{1};
     MOCKER_CPP_VIRTUAL(stm->Device_()->Driver_(), &Driver::MemCopySync)
         .stubs()
-        .with(outBoundP(static_cast<void*>(rdmaPiValueInfo.data()), sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(static_cast<void*>(rdmaPiValueInfo.data()), sizeof(void*)), mockcpp::any(), mockcpp::any(),
+            mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
     Notify notify(0, 0);
@@ -287,7 +294,7 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO)
 
 TEST_F(CloudV2CaptureModelTest, PRINT_DFX_INFO_FAIL)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -330,7 +337,7 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_INFO_FAIL)
 
 TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO_NONE)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -376,7 +383,7 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO_NONE)
 
 TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_ZERO)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -400,7 +407,10 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_ZERO)
     TaskInfo piValueModifyTask = {};
     piValueModifyTask.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
     piValueModifyTask.u.rdmaPiValueModifyInfo.rdmaSubContextCount = 0;
-    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&piValueModifyTask));
+    MOCKER_CPP(&TaskFactory::GetTask)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any())
+        .will(returnValue(&piValueModifyTask));
 
     Notify notify(0, 0);
     notify.endGraphModel_ = captureModel;
@@ -426,7 +436,7 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_ZERO)
 
 TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO_COPY_FAIL)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -450,7 +460,10 @@ TEST_F(CloudV2CaptureModelTest, PRINT_DFX_DEBUG_INFO_COPY_FAIL)
     TaskInfo piValueModifyTask = {};
     piValueModifyTask.type = TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY;
     piValueModifyTask.u.rdmaPiValueModifyInfo.rdmaSubContextCount = 1;
-    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&piValueModifyTask));
+    MOCKER_CPP(&TaskFactory::GetTask)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any())
+        .will(returnValue(&piValueModifyTask));
 
     MOCKER_CPP_VIRTUAL(stm->Device_()->Driver_(), &Driver::MemCopySync)
         .stubs()
@@ -485,7 +498,7 @@ TEST_F(CloudV2CaptureModelTest, RDMA_PI_VALUE_MODIFY_TASK_INIT_FAILED)
     rtStream_t stream;
     auto ret = rtStreamCreate(&stream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
     std::vector<uint64_t> rdmaPiValueDeviceAddrVec{1};
@@ -508,7 +521,7 @@ TEST_F(CloudV2CaptureModelTest, RDMA_PI_VALUE_MODIFY_TASK_INIT_FAILED_2)
     rtStream_t stream;
     auto ret = rtStreamCreate(&stream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
     std::vector<uint64_t> rdmaPiValueDeviceAddrVec{1};
@@ -527,7 +540,7 @@ TEST_F(CloudV2CaptureModelTest, RDMA_PI_VALUE_MODIFY_TASK_INIT_FAILED_3)
     rtStream_t stream;
     auto ret = rtStreamCreate(&stream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
     std::vector<uint64_t> rdmaPiValueDeviceAddrVec{1};
@@ -547,7 +560,7 @@ TEST_F(CloudV2CaptureModelTest, RDMA_PI_VALUE_MODIFY_TASK_INIT_FAILED_4)
     rtStream_t stream;
     auto ret = rtStreamCreate(&stream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
     std::vector<uint64_t> rdmaPiValueDeviceAddrVec{1};
@@ -617,13 +630,12 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_01)
     error = rtThreadExchangeCaptureMode(&mode);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(mode, RT_STREAM_CAPTURE_MODE_RELAXED);
-
 }
 
 TEST_F(CloudV2CaptureModelTest, capture_mode_api_02)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -672,10 +684,10 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_03)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model1;
-    rtModel_t  model2;
-    rtModel_t  model3;
-    void * devPtr;
+    rtModel_t model1;
+    rtModel_t model2;
+    rtModel_t model3;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -746,16 +758,16 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_04)
     rtStream_t stream1;
     rtStream_t stream2;
     rtStream_t stream3;
-    rtModel_t  model1;
-    rtModel_t  model2;
-    rtModel_t  model3;
+    rtModel_t model1;
+    rtModel_t model2;
+    rtModel_t model3;
 
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail).stubs().will(returnValue(1));
 
     error = rtStreamCreate(&stream1, 0);
@@ -825,16 +837,16 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_05)
     rtStream_t stream1;
     rtStream_t stream2;
     rtStream_t stream3;
-    rtModel_t  model1;
-    rtModel_t  model2;
-    rtModel_t  model3;
+    rtModel_t model1;
+    rtModel_t model2;
+    rtModel_t model3;
 
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail).stubs().will(returnValue(1));
 
     error = rtStreamCreate(&stream1, 0);
@@ -896,21 +908,20 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_05)
 
     error = rtFree(devPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(CloudV2CaptureModelTest, capture_mode_api_06)
 {
     rtError_t error;
     rtStream_t stream1;
-    rtModel_t  model1;
-    void * devPtr;
+    rtModel_t model1;
+    void* devPtr;
     rtStreamCaptureMode mode;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     MOCKER_CPP(&Model::LoadCompleteByStreamPostp).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -953,15 +964,14 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_06)
 
     error = rtFree(devPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(CloudV2CaptureModelTest, capture_mode_api_07)
 {
     rtError_t error;
     rtStream_t stream1;
-    rtModel_t  model1;
-    void * devPtr;
+    rtModel_t model1;
+    void* devPtr;
     rtStreamCaptureMode mode;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
@@ -1014,7 +1024,7 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_hardsq)
 {
     rtError_t error;
     rtStream_t stream1;
-    rtModel_t  model1;
+    rtModel_t model1;
 
     error = rtStreamCreate(&stream1, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1038,10 +1048,10 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_normal)
     rtStream_t stream1;
     rtStream_t stream2;
     rtStream_t streamExe;
-    rtModel_t  model1;
-    void *srcPtr;
-    void *dstPtr;
-    void *devPtr;
+    rtModel_t model1;
+    void* srcPtr;
+    void* dstPtr;
+    void* devPtr;
 
     error = rtMalloc(&srcPtr, 64, RT_MEMORY_DEFAULT, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1051,15 +1061,15 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_normal)
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     rtPointerAttributes_t rtAttributes;
     rtAttributes.deviceID = 0;
     rtAttributes.memoryType = RT_MEMORY_TYPE_DEVICE;
     rtAttributes.locationType = RT_MEMORY_LOC_DEVICE;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PointerGetAttributes)
-                    .stubs()
-                    .with(outBoundP(&rtAttributes, sizeof(rtAttributes)), mockcpp::any())
-                    .will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .with(outBoundP(&rtAttributes, sizeof(rtAttributes)), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
 
     error = rtStreamCreate(&streamExe, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1098,7 +1108,7 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_normal)
     error = rtsModelExecuteAsync(model1, streamExe);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    CaptureModel *captureMdl1 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1));
+    CaptureModel* captureMdl1 = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1));
     captureMdl1->CaptureModelExecuteFinish(RT_ERROR_NONE);
     uint32_t releaseSqNum = 0U;
     uint32_t releaseNtyNum = 0;
@@ -1116,17 +1126,15 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_api_normal)
     rtFree(srcPtr);
     rtFree(dstPtr);
     rtFree(devPtr);
-
 }
 #include "stream_task.h"
 TEST_F(CloudV2CaptureModelTest, capture_activestream)
 {
     rtError_t error;
-    CaptureModel  cmodel(RT_MODEL_NORMAL);
+    CaptureModel cmodel(RT_MODEL_NORMAL);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_STREAM_ACTIVE;
-    StreamActiveTaskInfo *streamActiveTask = &(task.u.streamactiveTask);
-
+    StreamActiveTaskInfo* streamActiveTask = &(task.u.streamactiveTask);
 
     rtStream_t stream;
     error = rtStreamCreate(&stream, 0);
@@ -1164,7 +1172,7 @@ protected:
         rtSetDevice(0);
         socVersion_ = GlobalContainer::GetSocVersion();
         GlobalContainer::SetSocVersion("Ascend910B2");
-        Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         MOCKER_CPP_VIRTUAL(device, &Device::CheckFeatureSupport)
             .stubs()
             .with(eq(TS_FEATURE_SOFTWARE_SQ_ENABLE))
@@ -1173,12 +1181,8 @@ protected:
             .stubs()
             .with(eq(TS_FEATURE_ACLGRAPH_COND_OP))
             .will(returnValue(true));
-        MOCKER(CheckCaptureModelSupportSoftwareSq)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
-        MOCKER_CPP(&Model::LoadCompleteByStreamPostp)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
+        MOCKER(CheckCaptureModelSupportSoftwareSq).stubs().will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP(&Model::LoadCompleteByStreamPostp).stubs().will(returnValue(RT_ERROR_NONE));
     }
 
     virtual void TearDown()
@@ -1216,7 +1220,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleWhileE2E)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_NE(condHandle, nullptr);
 
-    uint64_t *condDevPtr = nullptr;
+    uint64_t* condDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(condHandle, &condDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_NE(condDevPtr, nullptr);
@@ -1247,25 +1251,19 @@ TEST_F(CloudV2CondHandleTest, CondHandleWhileE2E)
     ret = rtStreamCreate(&exeStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *rawDrv = new NpuDriver();
-    void *memBase = (void *)0x1000;
+    NpuDriver* rawDrv = new NpuDriver();
+    void* memBase = (void*)0x1000;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(RT_ERROR_NONE));
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
     captureMdl->isModelComplete_ = true;
-    Notify *endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
+    Notify* endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
     ASSERT_NE(endGraphNotify, nullptr);
     endGraphNotify->SetEndGraphModel(captureMdl);
     captureMdl->SetEndGraphNotify(endGraphNotify);
@@ -1317,7 +1315,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleWhileWithAssignDefault)
     ret = rtModelCondHandleCreate(parentModel, 1, RT_COND_HANDLE_ASSIGN_DEFAULT, &condHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint64_t *condDevPtr = nullptr;
+    uint64_t* condDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(condHandle, &condDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -1346,25 +1344,19 @@ TEST_F(CloudV2CondHandleTest, CondHandleWhileWithAssignDefault)
     ret = rtStreamCreate(&exeStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *rawDrv = new NpuDriver();
-    void *memBase = (void *)0x1000;
+    NpuDriver* rawDrv = new NpuDriver();
+    void* memBase = (void*)0x1000;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(RT_ERROR_NONE));
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
     captureMdl->isModelComplete_ = true;
-    Notify *endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
+    Notify* endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
     ASSERT_NE(endGraphNotify, nullptr);
     endGraphNotify->SetEndGraphModel(captureMdl);
     captureMdl->SetEndGraphNotify(endGraphNotify);
@@ -1420,7 +1412,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfE2E)
     ret = rtModelCondHandleCreate(parentModel, 0, static_cast<rtCondHandleFlag_t>(0), &condHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint64_t *condDevPtr = nullptr;
+    uint64_t* condDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(condHandle, &condDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -1454,25 +1446,19 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfE2E)
     ret = rtStreamCreate(&exeStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *rawDrv = new NpuDriver();
-    void *memBase = (void *)0x1000;
+    NpuDriver* rawDrv = new NpuDriver();
+    void* memBase = (void*)0x1000;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(RT_ERROR_NONE));
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
     captureMdl->isModelComplete_ = true;
-    Notify *endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
+    Notify* endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
     ASSERT_NE(endGraphNotify, nullptr);
     endGraphNotify->SetEndGraphModel(captureMdl);
     captureMdl->SetEndGraphNotify(endGraphNotify);
@@ -1526,7 +1512,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfSizeOneE2E)
     ret = rtModelCondHandleCreate(parentModel, 0, static_cast<rtCondHandleFlag_t>(0), &condHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint64_t *condDevPtr = nullptr;
+    uint64_t* condDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(condHandle, &condDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -1554,25 +1540,19 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfSizeOneE2E)
     ret = rtStreamCreate(&exeStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *rawDrv = new NpuDriver();
-    void *memBase = (void *)0x1000;
+    NpuDriver* rawDrv = new NpuDriver();
+    void* memBase = (void*)0x1000;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(RT_ERROR_NONE));
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
     captureMdl->isModelComplete_ = true;
-    Notify *endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
+    Notify* endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
     ASSERT_NE(endGraphNotify, nullptr);
     endGraphNotify->SetEndGraphModel(captureMdl);
     captureMdl->SetEndGraphNotify(endGraphNotify);
@@ -1627,7 +1607,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleSwitchE2E)
     ret = rtModelCondHandleCreate(parentModel, 0, static_cast<rtCondHandleFlag_t>(0), &condHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint64_t *condDevPtr = nullptr;
+    uint64_t* condDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(condHandle, &condDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -1657,25 +1637,19 @@ TEST_F(CloudV2CondHandleTest, CondHandleSwitchE2E)
     ret = rtStreamCreate(&exeStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *rawDrv = new NpuDriver();
-    void *memBase = (void *)0x1000;
+    NpuDriver* rawDrv = new NpuDriver();
+    void* memBase = (void*)0x1000;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(RT_ERROR_NONE));
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
     captureMdl->isModelComplete_ = true;
-    Notify *endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
+    Notify* endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
     ASSERT_NE(endGraphNotify, nullptr);
     endGraphNotify->SetEndGraphModel(captureMdl);
     captureMdl->SetEndGraphNotify(endGraphNotify);
@@ -1737,7 +1711,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfNestedIfE2E)
     ret = rtModelCondHandleCreate(parentModel, 0, static_cast<rtCondHandleFlag_t>(0), &outerCondHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint64_t *outerCondDevPtr = nullptr;
+    uint64_t* outerCondDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(outerCondHandle, &outerCondDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -1762,7 +1736,7 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfNestedIfE2E)
     ret = rtModelCondHandleCreate(ifTrueModel, 0, static_cast<rtCondHandleFlag_t>(0), &innerCondHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    uint64_t *innerCondDevPtr = nullptr;
+    uint64_t* innerCondDevPtr = nullptr;
     ret = rtModelCondHandleGetCondPtr(innerCondHandle, &innerCondDevPtr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -1800,27 +1774,21 @@ TEST_F(CloudV2CondHandleTest, CondHandleIfNestedIfE2E)
     ret = rtStreamCreate(&exeStream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver *rawDrv = new NpuDriver();
-    void *memBase = (void *)0x1000;
+    NpuDriver* rawDrv = new NpuDriver();
+    void* memBase = (void*)0x1000;
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::SqSwitchStreamBatch).stubs().will(returnValue(RT_ERROR_NONE));
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(parentModelResult));
     captureMdl->isModelComplete_ = true;
 
-    Stream *origCaptureStream = rt_ut::UnwrapOrNull<Stream>(parentStream);
-    Notify *endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
+    Stream* origCaptureStream = rt_ut::UnwrapOrNull<Stream>(parentStream);
+    Notify* endGraphNotify = CreateStubNotifyForCondHandle(captureMdl->Context_(), RT_NOTIFY_DEFAULT);
     ASSERT_NE(endGraphNotify, nullptr);
     endGraphNotify->SetEndGraphModel(captureMdl);
     captureMdl->SetEndGraphNotify(endGraphNotify);
@@ -1854,10 +1822,10 @@ TEST_F(CloudV2CaptureModelTest, capture_activestream_nulltask)
 {
     rtError_t error;
     rtContext_t currentCtx;
-    CaptureModel  cmodel(RT_MODEL_NORMAL);
+    CaptureModel cmodel(RT_MODEL_NORMAL);
 
     error = rtCtxGetCurrent(&currentCtx);
-    cmodel.context_ = static_cast<Context *>(currentCtx);
+    cmodel.context_ = static_cast<Context*>(currentCtx);
     cmodel.MarkStreamActiveTask(nullptr);
     error = cmodel.UpdateStreamActiveTaskFuncCallMem();
 }
@@ -1867,9 +1835,9 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_try_recycle)
     rtError_t error;
     rtStream_t stream1;
     rtStream_t streamExe;
-    rtModel_t  model1, model2, model3;
-    void *srcPtr;
-    void *dstPtr;
+    rtModel_t model1, model2, model3;
+    void* srcPtr;
+    void* dstPtr;
 
     error = rtMalloc(&srcPtr, 64, RT_MEMORY_DEFAULT, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1920,19 +1888,19 @@ TEST_F(CloudV2CaptureModelTest, capture_mode_try_recycle)
     error = rtCtxGetCurrent(&ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = (RtPtrToPtr<Context *>(ctx))->TryRecycleCaptureModelResource(1, 1,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)));
+    error = (RtPtrToPtr<Context*>(ctx))
+                ->TryRecycleCaptureModelResource(1, 1, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model3)));
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = (RtPtrToPtr<Context *>(ctx))->TryRecycleCaptureModelJettyResource(
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)),
-        JettyType::JETTY_TYPE_H2D);
+    error = (RtPtrToPtr<Context*>(ctx))
+                ->TryRecycleCaptureModelJettyResource(
+                    static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model3)), JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    CaptureModel *captureMdl1 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1));
+    CaptureModel* captureMdl1 = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1));
     captureMdl1->CaptureModelExecuteFinish(RT_ERROR_NONE);
 
-    CaptureModel *captureMdl2 = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model2));
+    CaptureModel* captureMdl2 = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model2));
     captureMdl2->CaptureModelExecuteFinish(RT_ERROR_NONE);
 
     error = rtModelDestroy(model1);
@@ -1955,7 +1923,7 @@ TEST_F(CloudV2CaptureModelTest, poll_end_graph_notify)
     rtError_t error;
     rtStream_t stream1;
     rtStream_t streamExe;
-    rtModel_t  model1, model2, model3;
+    rtModel_t model1, model2, model3;
 
     error = rtStreamCreate(&streamExe, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1981,36 +1949,36 @@ TEST_F(CloudV2CaptureModelTest, poll_end_graph_notify)
     error = rtStreamEndCapture(stream1, &model3);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     Device* device = rtInstance->DeviceRetain(0, 0);
-    RawDevice* rawDevice = RtPtrToPtr<RawDevice *>(device);
+    RawDevice* rawDevice = RtPtrToPtr<RawDevice*>(device);
 
     rt_ut::UnwrapOrNull<Stream>(streamExe)->taskPosTail_.Set(5000);
     uint32_t streamId = (rt_ut::UnwrapOrNull<Stream>(streamExe))->Id_();
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 10);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 10);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 100);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 100);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model2)), 2);
+    error =
+        rawDevice->StoreEndGraphNotifyInfo(streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model2)), 2);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model2)), 20);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model2)), 20);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 3);
+    error =
+        rawDevice->StoreEndGraphNotifyInfo(streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model3)), 3);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 30);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model3)), 30);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 3, 0);
+    error = rawDevice->DeleteEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model3)), 3, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model3)), 30, 0);
+    error = rawDevice->DeleteEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model3)), 30, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rawDevice->ClearEndGraphNotifyInfoByModel(rt_ut::UnwrapOrNull<Model>(model2));
@@ -2025,11 +1993,11 @@ TEST_F(CloudV2CaptureModelTest, poll_end_graph_notify)
     rawDevice->PollEndGraphNotifyInfo();
 
     rt_ut::UnwrapOrNull<Stream>(streamExe)->taskPosTail_.Set(5);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 10);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 10);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 100);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 100);
     EXPECT_EQ(error, RT_ERROR_NONE);
     uint32_t modelId;
     error = rtModelGetId(model1, &modelId);
@@ -2038,21 +2006,21 @@ TEST_F(CloudV2CaptureModelTest, poll_end_graph_notify)
     rawDevice->PollEndGraphNotifyInfoByModelId(modelId);
     rawDevice->PollEndGraphNotifyInfo();
 
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 120);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 120);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error = rawDevice->StoreEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49);
+    error = rawDevice->StoreEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 49);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rt_ut::UnwrapOrNull<Stream>(streamExe)->taskPosTail_.Set(50);
     rawDevice->PollEndGraphNotifyInfo();
 
-    error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49, 0);
+    error = rawDevice->DeleteEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 49, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rawDevice->DeleteEndGraphNotifyInfo(streamId,
-        static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model1)), 49, 0);
+    error = rawDevice->DeleteEndGraphNotifyInfo(
+        streamId, static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model1)), 49, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelDestroy(model1);
@@ -2081,7 +2049,7 @@ void StubAddCaptureSqeNum(Stream* ptr, uint32_t sqeNum)
 
 TEST_F(CloudV2CaptureModelTest, cascade_stream)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = GlobalContainer::GetSocVersion();
     GlobalContainer::SetSocVersion("Ascend910B2");
 
@@ -2109,7 +2077,7 @@ TEST_F(CloudV2CaptureModelTest, cascade_stream)
     fftsPlusTaskInfo.descBufLen = sizeof(rtFftsPlusWriteValueCtx_t);
     fftsPlusTaskInfo.descAddrType = RT_FFTS_PLUS_CTX_DESC_ADDR_TYPE_HOST;
     int32_t deviceDescAlignBuf = 1;
-    Context *curCtx = static_cast<Context *>(ctx);
+    Context* curCtx = static_cast<Context*>(ctx);
     MOCKER_CPP_VIRTUAL(curCtx->device_, &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP(&Stream::AddCaptureSqeNum).stubs().will(invoke(StubAddCaptureSqeNum));
@@ -2130,7 +2098,7 @@ TEST_F(CloudV2CaptureModelTest, cascade_stream)
     ret = curCtx->ModelDelStream(rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Stream>(streamExe));
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    CaptureModel *captureMdl = static_cast<CaptureModel *>(rt_ut::UnwrapOrNull<Model>(model));
+    CaptureModel* captureMdl = static_cast<CaptureModel*>(rt_ut::UnwrapOrNull<Model>(model));
     captureMdl->CaptureModelExecuteFinish(RT_ERROR_NONE);
 
     ret = rtModelDestroy(model);
@@ -2148,7 +2116,7 @@ TEST_F(CloudV2CaptureModelTest, cascade_stream)
     GlobalMockObject::verify();
 }
 
-rtStream_t *createModelAndGetStreams(rtModel_t *model, rtStream_t *stream)
+rtStream_t* createModelAndGetStreams(rtModel_t* model, rtStream_t* stream)
 {
     rtError_t error;
     rtStreamCaptureStatus status;
@@ -2157,7 +2125,7 @@ rtStream_t *createModelAndGetStreams(rtModel_t *model, rtStream_t *stream)
     error = rtCtxGetCurrent(&current);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtCtxSetCurrent(static_cast<Context *>(current));
+    error = rtCtxSetCurrent(static_cast<Context*>(current));
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamBeginCapture(*stream, RT_STREAM_CAPTURE_MODE_GLOBAL);
@@ -2187,7 +2155,7 @@ rtStream_t *createModelAndGetStreams(rtModel_t *model, rtStream_t *stream)
     error = rtModelGetStreams(*model, nullptr, &numStreams);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    rtStream_t *inputStreams = (rtStream_t *)malloc(sizeof(rtStream_t) * numStreams);
+    rtStream_t* inputStreams = (rtStream_t*)malloc(sizeof(rtStream_t) * numStreams);
     error = rtModelGetStreams(*model, inputStreams, &numStreams);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(numStreams, 2);
@@ -2204,7 +2172,7 @@ TEST_F(CloudV2CaptureModelTest, model_get_streams_abnormal)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    rtStream_t *inputStreams = createModelAndGetStreams(&model, &stream);
+    rtStream_t* inputStreams = createModelAndGetStreams(&model, &stream);
 
     uint32_t numStreams = 0;
     error = rtModelGetStreams(nullptr, inputStreams, &numStreams);
@@ -2215,7 +2183,7 @@ TEST_F(CloudV2CaptureModelTest, model_get_streams_abnormal)
 
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -2231,7 +2199,7 @@ TEST_F(CloudV2CaptureModelTest, model_get_streams_normal)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    rtStream_t *inputStreams = createModelAndGetStreams(&model, &stream);
+    rtStream_t* inputStreams = createModelAndGetStreams(&model, &stream);
 
     // input numStreams = actual stream num
     uint32_t numStreams = 2;
@@ -2241,21 +2209,21 @@ TEST_F(CloudV2CaptureModelTest, model_get_streams_normal)
 
     // input numStreams < actual stream num
     uint32_t numStreamsLess = 1;
-    rtStream_t *inputStreamsLess = (rtStream_t *)malloc(sizeof(rtStream_t) * numStreamsLess);
+    rtStream_t* inputStreamsLess = (rtStream_t*)malloc(sizeof(rtStream_t) * numStreamsLess);
     error = rtModelGetStreams(model, inputStreamsLess, &numStreamsLess);
     EXPECT_EQ(error, ACL_ERROR_RT_INSUFFICIENT_INPUT_ARRAY);
     EXPECT_EQ(numStreamsLess, 1);
 
     // input numStreams > actual stream num
     uint32_t numStreamsLarger = 5;
-    rtStream_t *inputLargerStreams = (rtStream_t *)malloc(sizeof(rtStream_t) * numStreamsLarger);
+    rtStream_t* inputLargerStreams = (rtStream_t*)malloc(sizeof(rtStream_t) * numStreamsLarger);
     error = rtModelGetStreams(model, inputLargerStreams, &numStreamsLarger);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(numStreamsLarger, 2);
 
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -2278,9 +2246,9 @@ TEST_F(CloudV2CaptureModelTest, stream_get_tasks_abnormal)
     error = rtStreamGetTasks(stream, nullptr, &numTasks);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    rtStream_t *inputStreams = createModelAndGetStreams(&model, &stream);
+    rtStream_t* inputStreams = createModelAndGetStreams(&model, &stream);
 
-    rtTask_t *tasks = (rtTask_t *)malloc(sizeof(rtTask_t));
+    rtTask_t* tasks = (rtTask_t*)malloc(sizeof(rtTask_t));
     error = rtStreamGetTasks(nullptr, tasks, &numTasks);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -2306,7 +2274,7 @@ TEST_F(CloudV2CaptureModelTest, stream_get_tasks_normal)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    rtStream_t *inputStreams = createModelAndGetStreams(&model, &stream);
+    rtStream_t* inputStreams = createModelAndGetStreams(&model, &stream);
 
     uint32_t numTasks = 0;
     error = rtStreamGetTasks(inputStreams[1], nullptr, &numTasks);
@@ -2314,21 +2282,21 @@ TEST_F(CloudV2CaptureModelTest, stream_get_tasks_normal)
     EXPECT_EQ(numTasks, 1);
 
     // input numTasks = actual task num
-    rtTask_t *tasks = (rtTask_t *)malloc(sizeof(rtTask_t) * numTasks);
+    rtTask_t* tasks = (rtTask_t*)malloc(sizeof(rtTask_t) * numTasks);
     error = rtStreamGetTasks(inputStreams[1], tasks, &numTasks);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(numTasks, 1);
-    
+
     // input numTasks < actual task num
     uint32_t numTasksLess = 0;
-    rtTask_t *inputTasksLess = (rtTask_t *)malloc(sizeof(rtTask_t) * numTasksLess);
+    rtTask_t* inputTasksLess = (rtTask_t*)malloc(sizeof(rtTask_t) * numTasksLess);
     error = rtStreamGetTasks(inputStreams[1], inputTasksLess, &numTasksLess);
     EXPECT_EQ(error, ACL_ERROR_RT_INSUFFICIENT_INPUT_ARRAY);
     EXPECT_EQ(numTasksLess, 0);
 
     // input numTasks > actual task num
     uint32_t numTasksLarger = 5;
-    rtTask_t *inputTasksLarger = (rtTask_t *)malloc(sizeof(rtTask_t) * numTasksLarger);
+    rtTask_t* inputTasksLarger = (rtTask_t*)malloc(sizeof(rtTask_t) * numTasksLarger);
     error = rtStreamGetTasks(inputStreams[1], inputTasksLarger, &numTasksLarger);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(numTasksLarger, 1);
@@ -2345,7 +2313,7 @@ TEST_F(CloudV2CaptureModelTest, stream_get_tasks_normal)
     free(inputTasksLarger);
 }
 
-TaskInfo *createTaskInfo()
+TaskInfo* createTaskInfo()
 {
     rtError_t error;
     rtContext_t current = NULL;
@@ -2354,13 +2322,13 @@ TaskInfo *createTaskInfo()
     error = rtCtxGetCurrent(&current);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtCtxSetCurrent(static_cast<Context *>(current));
+    error = rtCtxSetCurrent(static_cast<Context*>(current));
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    TaskInfo *taskInfo = (TaskInfo *)malloc(sizeof(TaskInfo));
+    TaskInfo* taskInfo = (TaskInfo*)malloc(sizeof(TaskInfo));
     taskInfo->id = 0;
     taskInfo->stream = rt_ut::UnwrapOrNull<Stream>(stream);
     taskInfo->taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_USER);
@@ -2371,9 +2339,9 @@ TaskInfo *createTaskInfo()
 TEST_F(CloudV2CaptureModelTest, task_get_type_abnormal)
 {
     rtError_t error;
-    rtTaskType *type = (rtTaskType *)malloc(sizeof(rtTaskType));
+    rtTaskType* type = (rtTaskType*)malloc(sizeof(rtTaskType));
 
-    TaskInfo *taskInfo = createTaskInfo();
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->type = TS_TASK_TYPE_KERNEL_AICORE;
     taskInfo->typeName = "KERNEL_AICORE";
 
@@ -2392,9 +2360,9 @@ TEST_F(CloudV2CaptureModelTest, task_get_type_abnormal)
 TEST_F(CloudV2CaptureModelTest, task_get_type_normal_01)
 {
     rtError_t error;
-    rtTaskType *type = (rtTaskType *)malloc(sizeof(rtTaskType));
-    
-    TaskInfo *taskInfo = createTaskInfo();
+    rtTaskType* type = (rtTaskType*)malloc(sizeof(rtTaskType));
+
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->type = TS_TASK_TYPE_KERNEL_AICORE;
     taskInfo->typeName = "KERNEL_AICORE";
 
@@ -2434,9 +2402,9 @@ TEST_F(CloudV2CaptureModelTest, task_get_type_normal_01)
 TEST_F(CloudV2CaptureModelTest, task_get_type_normal_02)
 {
     rtError_t error;
-    rtTaskType *type = (rtTaskType *)malloc(sizeof(rtTaskType));
-    
-    TaskInfo *taskInfo = createTaskInfo();
+    rtTaskType* type = (rtTaskType*)malloc(sizeof(rtTaskType));
+
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->type = TS_TASK_TYPE_EVENT_RECORD;
     taskInfo->typeName = "EVENT_RECORD";
 
@@ -2481,7 +2449,7 @@ TEST_F(CloudV2CaptureModelTest, task_get_type_normal_02)
 
 TEST_F(CloudV2CaptureModelTest, task_get_seq_id)
 {
-    TaskInfo *taskInfo = createTaskInfo();
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->modelSeqId = 2;
 
     rtStream_t stream;
@@ -2494,7 +2462,7 @@ TEST_F(CloudV2CaptureModelTest, task_get_seq_id)
 
     uint32_t id = 0;
     auto error = rtTaskGetSeqId(nullptr, &id);
-    EXPECT_EQ(error,  ACL_ERROR_RT_PARAM_INVALID);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     rtTask_t task = (rtTask_t)taskInfo;
     error = rtTaskGetSeqId(task, nullptr);
@@ -2517,33 +2485,25 @@ TEST_F(CloudV2CaptureModelTest, RecordSoftwareEvent_Success)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     error = rtStreamCreate(&captureStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *capStm = rt_ut::UnwrapOrNull<Stream>(captureStream);
+    Stream* capStm = rt_ut::UnwrapOrNull<Stream>(captureStream);
 
     rtEvent_t event;
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
 
     evt->SetCaptureStream(capStm);
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
-    MOCKER_CPP(&Stream::AllocTask)
-        .stubs()
-        .will(returnValue(&taskInfo));
-    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::AllocExpandingPoolEvent)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::SubmitTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFactory::Recycle)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(&taskInfo));
+    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::AllocExpandingPoolEvent).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&TaskFactory::Recycle).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = evt->RecordSoftwareEvent(stm);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2565,30 +2525,26 @@ TEST_F(CloudV2CaptureModelTest, RecordSoftwareEvent_AllocEventFail)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     error = rtStreamCreate(&captureStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *capStm = rt_ut::UnwrapOrNull<Stream>(captureStream);
+    Stream* capStm = rt_ut::UnwrapOrNull<Stream>(captureStream);
 
     rtEvent_t event;
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
 
     evt->SetCaptureStream(capStm);
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
-    MOCKER_CPP(&Stream::AllocTask)
-        .stubs()
-        .will(returnValue(&taskInfo));
+    MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(&taskInfo));
     MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::AllocExpandingPoolEvent)
         .stubs()
         .will(returnValue(RT_ERROR_INVALID_VALUE));
-    MOCKER_CPP(&TaskFactory::Recycle)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&TaskFactory::Recycle).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = evt->RecordSoftwareEvent(stm);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -2610,33 +2566,25 @@ TEST_F(CloudV2CaptureModelTest, RecordSoftwareEvent_SubmitTaskFail)
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     error = rtStreamCreate(&captureStream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *capStm = rt_ut::UnwrapOrNull<Stream>(captureStream);
+    Stream* capStm = rt_ut::UnwrapOrNull<Stream>(captureStream);
 
     rtEvent_t event;
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
 
     evt->SetCaptureStream(capStm);
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stm;
-    MOCKER_CPP(&Stream::AllocTask)
-        .stubs()
-        .will(returnValue(&taskInfo));
-    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::AllocExpandingPoolEvent)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::SubmitTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_STREAM_FULL));
-    MOCKER_CPP(&TaskFactory::Recycle)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(&taskInfo));
+    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::AllocExpandingPoolEvent).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(stm->Device_(), &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_STREAM_FULL));
+    MOCKER_CPP(&TaskFactory::Recycle).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = evt->RecordSoftwareEvent(stm);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -2660,9 +2608,9 @@ TEST_F(CloudV2CaptureModelTest, GetCaptureRecordTaskParams_Success)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
 
-    TaskInfo *taskInfo = createTaskInfo();
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->type = TS_TASK_TYPE_CAPTURE_RECORD;
     taskInfo->typeName = "CAPTURE_RECORD";
     taskInfo->u.memWriteValueTask.event = evt;
@@ -2690,9 +2638,9 @@ TEST_F(CloudV2CaptureModelTest, GetCaptureWaitTaskParams_Success)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
 
-    TaskInfo *taskInfo = createTaskInfo();
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->type = TS_TASK_TYPE_CAPTURE_WAIT;
     taskInfo->typeName = "CAPTURE_WAIT";
     taskInfo->u.memWaitValueTask.event = evt;
@@ -2720,9 +2668,9 @@ TEST_F(CloudV2CaptureModelTest, GetCaptureResetTaskParams_Success)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
 
-    TaskInfo *taskInfo = createTaskInfo();
+    TaskInfo* taskInfo = createTaskInfo();
     taskInfo->type = TS_TASK_TYPE_MEM_WRITE_VALUE;
     taskInfo->typeName = "MEM_WRITE_VALUE";
     taskInfo->u.memWriteValueTask.event = evt;
@@ -2742,21 +2690,19 @@ TEST_F(CloudV2CaptureModelTest, GetCaptureResetTaskParams_Success)
 
 TEST_F(CloudV2CaptureModelTest, CaptureModelEndGraphInnerError)
 {
-    Runtime *rtInstance = Runtime::Instance();
-    Context *ctx = rtInstance->CurrentContext();
+    Runtime* rtInstance = Runtime::Instance();
+    Context* ctx = rtInstance->CurrentContext();
     ASSERT_NE(ctx, nullptr);
     CaptureModel model;
     model.context_ = ctx;
-    Stream stream(static_cast<Device *>(nullptr), 0U);
+    Stream stream(static_cast<Device*>(nullptr), 0U);
     stream.streamId_ = 1;
     stream.SetContext(ctx);
     stream.MarkOrigCaptureStream(true);
     model.streams_.push_back(&stream);
-    Api *api = rtInstance->ApiImpl_();
+    Api* api = rtInstance->ApiImpl_();
     ASSERT_NE(api, nullptr);
-    MOCKER_CPP_VIRTUAL(api, &Api::ModelEndGraph)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(api, &Api::ModelEndGraph).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     EXPECT_EQ(model.ModelEndGraph(), RT_ERROR_INVALID_VALUE);
 
@@ -2765,13 +2711,11 @@ TEST_F(CloudV2CaptureModelTest, CaptureModelEndGraphInnerError)
 
 TEST_F(CloudV2CaptureModelTest, CreateNotifySetupNoResource)
 {
-    Runtime *rtInstance = Runtime::Instance();
-    Context *ctx = rtInstance->CurrentContext();
+    Runtime* rtInstance = Runtime::Instance();
+    Context* ctx = rtInstance->CurrentContext();
     ASSERT_NE(ctx, nullptr);
-    Notify *notify = nullptr;
-    MOCKER_CPP(&Notify::Setup)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    Notify* notify = nullptr;
+    MOCKER_CPP(&Notify::Setup).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     EXPECT_EQ(ctx->CreateNotify(&notify, RT_NOTIFY_DEFAULT), RT_ERROR_DRV_NO_RESOURCES);
     EXPECT_EQ(notify, nullptr);
@@ -2779,23 +2723,21 @@ TEST_F(CloudV2CaptureModelTest, CreateNotifySetupNoResource)
 
 TEST_F(CloudV2CaptureModelTest, BuildSqCqStreamResourceCapacityExceeded)
 {
-    Runtime *rtInstance = Runtime::Instance();
-    Context *ctx = rtInstance->CurrentContext();
+    Runtime* rtInstance = Runtime::Instance();
+    Context* ctx = rtInstance->CurrentContext();
     ASSERT_NE(ctx, nullptr);
-    Device *device = ctx->Device_();
+    Device* device = ctx->Device_();
     ASSERT_NE(device, nullptr);
     CaptureModel model;
     model.context_ = ctx;
     model.SetSoftwareSqEnable();
-    Stream exeStream(static_cast<Device *>(nullptr), 0U);
+    Stream exeStream(static_cast<Device*>(nullptr), 0U);
     exeStream.streamId_ = 1;
     exeStream.SetContext(ctx);
     for (uint32_t i = 0U; i <= RT_DEVICE_SQCQ_RES_MAX_NUM; ++i) {
         model.streams_.push_back(&exeStream);
     }
-    MOCKER_CPP(&CaptureModel::BindJettyForUbdma)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&CaptureModel::BindJettyForUbdma).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_EQ(model.BuildSqCq(&exeStream), RT_ERROR_DRV_NO_RESOURCES);
 
@@ -2804,19 +2746,17 @@ TEST_F(CloudV2CaptureModelTest, BuildSqCqStreamResourceCapacityExceeded)
 
 TEST_F(CloudV2CaptureModelTest, AllocSqCqAndBindInternalNoResource)
 {
-    Runtime *rtInstance = Runtime::Instance();
-    Context *ctx = rtInstance->CurrentContext();
+    Runtime* rtInstance = Runtime::Instance();
+    Context* ctx = rtInstance->CurrentContext();
     ASSERT_NE(ctx, nullptr);
-    Device *device = ctx->Device_();
+    Device* device = ctx->Device_();
     ASSERT_NE(device, nullptr);
     CaptureModel model;
     model.context_ = ctx;
-    Stream stream(static_cast<Device *>(nullptr), 0U);
+    Stream stream(static_cast<Device*>(nullptr), 0U);
     stream.SetContext(ctx);
     model.streams_.push_back(&stream);
-    MOCKER_CPP(&CaptureModel::AllocSqCqProc)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
+    MOCKER_CPP(&CaptureModel::AllocSqCqProc).stubs().will(returnValue(RT_ERROR_DRV_NO_RESOURCES));
 
     EXPECT_EQ(model.AllocSqCqAndBindInternal(), RT_ERROR_DRV_NO_RESOURCES);
 

@@ -32,10 +32,6 @@
 #include "tsd.h"
 #include "toolchain/slog.h"
 
-
 #define DEVDRV_DRV_INFO printf
 
-pid_t drvDeviceGetBareTgid(void)
-{
-    return getpid();
-}
+pid_t drvDeviceGetBareTgid(void) { return getpid(); }

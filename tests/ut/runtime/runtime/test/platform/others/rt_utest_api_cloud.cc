@@ -60,14 +60,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiTest2 : public testing::Test
-{
+class ApiTest2 : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910A");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
         (void)rtSetDevice(0);
@@ -78,22 +77,18 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
-
 
 TEST_F(ApiTest2, notify_record_error)
 {
@@ -102,22 +97,22 @@ TEST_F(ApiTest2, notify_record_error)
     rtError_t error;
     int32_t device_id = 0;
     uint32_t notify_id;
-    Api *api = Api::Instance();
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Api* api = Api::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyCreate).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtNotifyCreate(device_id, &notify);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::NotifyRecord).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyRecord).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtNotifyRecord(notify, NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::NotifyWait).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyWait).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtNotifyWait(notify, NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::GetNotifyID).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyID).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtGetNotifyID(notify, &notify_id);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -126,22 +121,22 @@ TEST_F(ApiTest2, notify_record_error)
 
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::GetNotifyID).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyID).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtGetNotifyID(notify, &notify_id);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     rtInstance->SetChipType(chipType);
     GlobalContainer::SetRtChipType(rtChipType);
 
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::NotifyDestroy).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyDestroy).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtNotifyDestroy(notify);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::IpcSetNotifyName).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
-    error = rtIpcSetNotifyName(notify,  "test_ipc", 8);
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::IpcSetNotifyName).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    error = rtIpcSetNotifyName(notify, "test_ipc", 8);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER_CPP_VIRTUAL(apiImpl,&ApiImpl::IpcOpenNotify).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::IpcOpenNotify).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtIpcOpenNotify(&notify, "test_ipc");
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -151,7 +146,7 @@ TEST_F(ApiTest2, ipc_open_with_flag_chip_type_unsupport)
     ApiImpl apiImpl;
     rtNotify_t notify;
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_ADC);
@@ -159,8 +154,7 @@ TEST_F(ApiTest2, ipc_open_with_flag_chip_type_unsupport)
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
 
-rtError_t GetNotifyPhyInfo_stub_succ(cce::runtime::ApiImpl *api,
-    Notify *const inNotify, rtNotifyPhyInfo* notifyInfo)
+rtError_t GetNotifyPhyInfo_stub_succ(cce::runtime::ApiImpl* api, Notify* const inNotify, rtNotifyPhyInfo* notifyInfo)
 {
     notifyInfo->phyId = 1;
     notifyInfo->tsId = 2;
@@ -175,11 +169,10 @@ TEST_F(ApiTest2, ipc_open_with_flag_succ)
     uint32_t tsId;
     uint32_t notifyId;
     rtNotifyPhyInfo notifyInfo;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::IpcOpenNotify).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyPhyInfo).stubs()
-        .will(invoke(GetNotifyPhyInfo_stub_succ));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyPhyInfo).stubs().will(invoke(GetNotifyPhyInfo_stub_succ));
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyDestroy).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtNotify_t notify2 = new (std::nothrow) Notify(0, 0);
@@ -207,7 +200,7 @@ TEST_F(ApiTest2, notify_get_phyinfo_invalid_1)
     rtError_t error;
     uint32_t phyDevId;
     uint32_t tsId;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     error = rtNotifyGetPhyInfo(notify, &phyDevId, &tsId);
@@ -222,12 +215,11 @@ TEST_F(ApiTest2, ipc_open_with_flag_chiptype_mini)
     uint32_t phyDevId;
     uint32_t tsId;
     uint32_t notifyId;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::IpcOpenNotify).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyPhyInfo).stubs()
-        .then(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::GetNotifyPhyInfo).stubs().then(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::NotifyDestroy).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtIpcOpenNotifyWithFlag(&notify, "abc", 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -240,7 +232,7 @@ TEST_F(ApiTest2, set_device_not_support_adc_01)
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtSetDefaultDeviceId(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     rtStream_t stream;
@@ -253,10 +245,10 @@ TEST_F(ApiTest2, set_device_not_support_adc_01)
 
 TEST_F(ApiTest2, set_device_not_support_adc_02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
-     rtStream_t stream;
+    rtStream_t stream;
     EXPECT_NE(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -264,10 +256,10 @@ TEST_F(ApiTest2, set_device_not_support_adc_02)
 
 TEST_F(ApiTest2, set_device_not_support_adc_03)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_610LITE);
     GlobalContainer::SetRtChipType(CHIP_610LITE);
-     rtStream_t stream;
+    rtStream_t stream;
     EXPECT_NE(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -297,12 +289,12 @@ TEST_F(ApiTest2, set_default_device_heterogenous_scene)
     rtError_t error = rtMemQueueDestroy(0, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *value = nullptr;
+    void* value = nullptr;
     error = rtMemQueueDeQueue(0, 0, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtMemQueueBuff_t buff = {nullptr};
-     error = rtMemQueueDeQueueBuff(0, 0, &buff, 0);
+    error = rtMemQueueDeQueueBuff(0, 0, &buff, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     int32_t device = 0;

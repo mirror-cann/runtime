@@ -21,9 +21,6 @@ protected:
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
-}
+} // namespace AicpuSchedule

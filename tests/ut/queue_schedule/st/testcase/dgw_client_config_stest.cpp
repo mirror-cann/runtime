@@ -37,140 +37,126 @@ using namespace bqs;
 using namespace dgw;
 
 namespace {
-    // buffer_[0]: record length of used data buffer
-    uint64_t g_buffer[1025];
-    // retRsp
-    QsProcMsgRsp retRsp;
-    // hccl handle
-    uint64_t hcclHandle = 100UL;
+// buffer_[0]: record length of used data buffer
+uint64_t g_buffer[1025];
+// retRsp
+QsProcMsgRsp retRsp;
+// hccl handle
+uint64_t hcclHandle = 100UL;
 
-    drvError_t halEschedSubmitEventSyncFake(unsigned int devId, struct event_summary *event,
-                                            int timeout, struct event_reply *reply)
-    {
-        struct event_info eventInfo;
-        eventInfo.comm.event_id = EVENT_QS_MSG;
-        eventInfo.comm.subevent_id = event->subevent_id;
-        bqs::RouterServer::GetInstance().HandleBqsMsg(eventInfo);
-        if (reply != nullptr) {
-            memcpy(reply->buf, &retRsp, sizeof(QsProcMsgRsp));
-            reply->buf_len = sizeof(QsProcMsgRsp);
-            reply->reply_len = sizeof(QsProcMsgRsp);
-        }
-        return DRV_ERROR_NONE;
+drvError_t halEschedSubmitEventSyncFake(
+    unsigned int devId, struct event_summary* event, int timeout, struct event_reply* reply)
+{
+    struct event_info eventInfo;
+    eventInfo.comm.event_id = EVENT_QS_MSG;
+    eventInfo.comm.subevent_id = event->subevent_id;
+    bqs::RouterServer::GetInstance().HandleBqsMsg(eventInfo);
+    if (reply != nullptr) {
+        memcpy(reply->buf, &retRsp, sizeof(QsProcMsgRsp));
+        reply->buf_len = sizeof(QsProcMsgRsp);
+        reply->reply_len = sizeof(QsProcMsgRsp);
     }
-
-    int halMbufSetDataLenFake(Mbuf *mbuf, uint64_t len)
-    {
-        g_buffer[0] = len;
-        return static_cast<int>(DRV_ERROR_NONE);
-    }
-
-    int halMbufGetDataLenFake(Mbuf *mbuf, uint64_t *len)
-    {
-        *len = g_buffer[0];
-        return static_cast<int>(DRV_ERROR_NONE);
-    }
-
-    errno_t CopyStub(void *dest, size_t destMax, const void *src, size_t count)
-    {
-        printf("Dst addr:%p, size:%zu, src addr:%p, size:%zu\n", dest, destMax, src, count);
-        memcpy(dest, src, count);
-        return EOK;
-    }
-
-    BqsStatus WaitSyncMsgProcFake()
-    {
-        printf("Begin to simulate wait sync msg proc.\n");
-        bqs::RouterServer::GetInstance().BindMsgProc();
-        if (GlobalCfg::GetInstance().GetNumaFlag()) {
-            bqs::RouterServer::GetInstance().BindMsgProc(1U);
-        }
-        auto ret = static_cast<BqsStatus>(bqs::RouterServer::GetInstance().retCode_);
-        bqs::RouterServer::GetInstance().retCode_ = BQS_STATUS_OK;
-        return ret;
-    }
-
-    drvError_t halEschedSubmitEventFake(unsigned int devId, struct event_summary *event)
-    {
-        memcpy(&retRsp, event->msg, event->msg_len);
-        cout << "retRsp retCode=" << retRsp.retCode << endl;
-        return DRV_ERROR_NONE;
-    }
-
-    drvError_t halQueueQueryFake(unsigned int devId, QueueQueryCmdType cmd,
-                                 QueueQueryInputPara *inPut, QueueQueryOutputPara *outPut)
-    {
-        QueueQueryOutput *output = reinterpret_cast<QueueQueryOutput *>(outPut->outBuff);
-        output->queQueryQueueAttrInfo.attr.read = 1;
-        output->queQueryQueueAttrInfo.attr.write = 1;
-        return DRV_ERROR_NONE;
-    }
-
-    drvError_t fake_drvGetDevNum(uint32_t *num_dev)
-    {
-        *num_dev = 8;
-        return DRV_ERROR_NONE;
-    }
+    return DRV_ERROR_NONE;
 }
+
+int halMbufSetDataLenFake(Mbuf* mbuf, uint64_t len)
+{
+    g_buffer[0] = len;
+    return static_cast<int>(DRV_ERROR_NONE);
+}
+
+int halMbufGetDataLenFake(Mbuf* mbuf, uint64_t* len)
+{
+    *len = g_buffer[0];
+    return static_cast<int>(DRV_ERROR_NONE);
+}
+
+errno_t CopyStub(void* dest, size_t destMax, const void* src, size_t count)
+{
+    printf("Dst addr:%p, size:%zu, src addr:%p, size:%zu\n", dest, destMax, src, count);
+    memcpy(dest, src, count);
+    return EOK;
+}
+
+BqsStatus WaitSyncMsgProcFake()
+{
+    printf("Begin to simulate wait sync msg proc.\n");
+    bqs::RouterServer::GetInstance().BindMsgProc();
+    if (GlobalCfg::GetInstance().GetNumaFlag()) {
+        bqs::RouterServer::GetInstance().BindMsgProc(1U);
+    }
+    auto ret = static_cast<BqsStatus>(bqs::RouterServer::GetInstance().retCode_);
+    bqs::RouterServer::GetInstance().retCode_ = BQS_STATUS_OK;
+    return ret;
+}
+
+drvError_t halEschedSubmitEventFake(unsigned int devId, struct event_summary* event)
+{
+    memcpy(&retRsp, event->msg, event->msg_len);
+    cout << "retRsp retCode=" << retRsp.retCode << endl;
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halQueueQueryFake(
+    unsigned int devId, QueueQueryCmdType cmd, QueueQueryInputPara* inPut, QueueQueryOutputPara* outPut)
+{
+    QueueQueryOutput* output = reinterpret_cast<QueueQueryOutput*>(outPut->outBuff);
+    output->queQueryQueueAttrInfo.attr.read = 1;
+    output->queQueryQueueAttrInfo.attr.write = 1;
+    return DRV_ERROR_NONE;
+}
+
+drvError_t fake_drvGetDevNum(uint32_t* num_dev)
+{
+    *num_dev = 8;
+    return DRV_ERROR_NONE;
+}
+} // namespace
 
 class DgwClientConfigStest : public testing::Test {
 protected:
     virtual void SetUp()
     {
         std::cout << "DgwClientConfigStest SetUp" << std::endl;
-        Mbuf *mbuf = (Mbuf *)g_buffer;
+        Mbuf* mbuf = (Mbuf*)g_buffer;
         MOCKER(halMbufAlloc)
-            .stubs().with(mockcpp::any(), outBoundP((Mbuf **)&mbuf))
+            .stubs()
+            .with(mockcpp::any(), outBoundP((Mbuf**)&mbuf))
             .will(returnValue(static_cast<int>(DRV_ERROR_NONE)));
 
-        void *dataAddr = (void *)(&g_buffer[1]);
+        void* dataAddr = (void*)(&g_buffer[1]);
         MOCKER(halMbufGetBuffAddr)
-            .stubs().with(mockcpp::any(), outBoundP((void **)(&dataAddr)))
+            .stubs()
+            .with(mockcpp::any(), outBoundP((void**)(&dataAddr)))
             .will(returnValue(static_cast<int>(DRV_ERROR_NONE)));
 
-        MOCKER(halEschedSubmitEventSync)
-            .stubs()
-            .will(invoke(halEschedSubmitEventSyncFake));
+        MOCKER(halEschedSubmitEventSync).stubs().will(invoke(halEschedSubmitEventSyncFake));
 
-        MOCKER(halMbufSetDataLen)
-            .stubs()
-            .will(invoke(halMbufSetDataLenFake));
+        MOCKER(halMbufSetDataLen).stubs().will(invoke(halMbufSetDataLenFake));
 
         MOCKER(halQueueDeQueue)
-            .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP((void **)&mbuf))
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), outBoundP((void**)&mbuf))
             .will(returnValue(DRV_ERROR_NONE));
 
-        MOCKER(halMbufGetDataLen)
-            .stubs()
-            .will(invoke(halMbufGetDataLenFake));
+        MOCKER(halMbufGetDataLen).stubs().will(invoke(halMbufGetDataLenFake));
 
-        MOCKER(memcpy_s)
-            .stubs()
-            .will(invoke(CopyStub));
+        MOCKER(memcpy_s).stubs().will(invoke(CopyStub));
 
-        MOCKER_CPP(&bqs::RouterServer::WaitSyncMsgProc)
-            .stubs()
-            .will(invoke(WaitSyncMsgProcFake));
+        MOCKER_CPP(&bqs::RouterServer::WaitSyncMsgProc).stubs().will(invoke(WaitSyncMsgProcFake));
 
-        MOCKER(halEschedSubmitEvent)
-            .stubs()
-            .will(invoke(halEschedSubmitEventFake));
+        MOCKER(halEschedSubmitEvent).stubs().will(invoke(halEschedSubmitEventFake));
 
-        MOCKER(halQueueQuery)
-            .stubs()
-            .will(invoke(halQueueQueryFake));
+        MOCKER(halQueueQuery).stubs().will(invoke(halQueueQueryFake));
 
         MOCKER(HcclInitComm)
-            .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((HcclComm *)&hcclHandle))
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((HcclComm*)&hcclHandle))
             .will(returnValue(0));
 
-        MOCKER(HcclFinalizeComm)
-            .stubs()
-            .will(returnValue(0));
+        MOCKER(HcclFinalizeComm).stubs().will(returnValue(0));
 
-        MOCKER(HcclIsend)
-            .stubs()
-            .will(returnValue((int)HCCL_SUCCESS));
+        MOCKER(HcclIsend).stubs().will(returnValue((int)HCCL_SUCCESS));
     }
 
     virtual void TearDown()
@@ -237,16 +223,14 @@ TEST_F(DgwClientConfigStest, CreateHcomHandle_Success_RegisterMem)
     GrpQueryGroupAddrInfo queryResult = {};
     auto resultSize = sizeof(queryResult);
     MOCKER(halGrpQuery)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),
+        .stubs()
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(),
             outBoundP(reinterpret_cast<void*>(&queryResult), sizeof(queryResult)),
             outBoundP(reinterpret_cast<unsigned int*>(&resultSize)))
         .will(returnValue(0));
-    MOCKER(HcclRegisterMemory)
-        .stubs()
-        .will(returnValue(HCCL_SUCCESS));
-    MOCKER(HcclUnregisterMemory)
-        .stubs()
-        .will(returnValue(HCCL_SUCCESS));
+    MOCKER(HcclRegisterMemory).stubs().will(returnValue(HCCL_SUCCESS));
+    MOCKER(HcclUnregisterMemory).stubs().will(returnValue(HCCL_SUCCESS));
     auto ret = dgwClient->CreateHcomHandle(rankTable, 0, nullptr, handle);
     EXPECT_EQ(bqs::BQS_STATUS_OK, ret);
     EXPECT_EQ(handle, hcclHandle);
@@ -269,13 +253,13 @@ TEST_F(DgwClientConfigStest, CreateHcomHandle_Failed_RegisterMem)
     GrpQueryGroupAddrInfo queryResult = {};
     auto resultSize = sizeof(queryResult);
     MOCKER(halGrpQuery)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),
+        .stubs()
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(),
             outBoundP(reinterpret_cast<void*>(&queryResult), sizeof(queryResult)),
             outBoundP(reinterpret_cast<unsigned int*>(&resultSize)))
         .will(returnValue(0));
-    MOCKER(HcclRegisterMemory)
-        .stubs()
-        .will(returnValue(HCCL_E_RESERVED));
+    MOCKER(HcclRegisterMemory).stubs().will(returnValue(HCCL_E_RESERVED));
     auto ret = dgwClient->CreateHcomHandle(rankTable, 0, nullptr, handle);
     EXPECT_NE(bqs::BQS_STATUS_OK, ret);
     bqs::RouterServer::GetInstance().cfgInfoOperator_->groupNames_ = "";
@@ -294,16 +278,14 @@ TEST_F(DgwClientConfigStest, CreateHcomHandle_Failed_UnregisterMem)
     GrpQueryGroupAddrInfo queryResult = {};
     auto resultSize = sizeof(queryResult);
     MOCKER(halGrpQuery)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),
+        .stubs()
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(),
             outBoundP(reinterpret_cast<void*>(&queryResult), sizeof(queryResult)),
             outBoundP(reinterpret_cast<unsigned int*>(&resultSize)))
         .will(returnValue(0));
-    MOCKER(HcclRegisterMemory)
-        .stubs()
-        .will(returnValue(HCCL_SUCCESS));
-    MOCKER(HcclUnregisterMemory)
-        .stubs()
-        .will(returnValue(HCCL_E_RESERVED));
+    MOCKER(HcclRegisterMemory).stubs().will(returnValue(HCCL_SUCCESS));
+    MOCKER(HcclUnregisterMemory).stubs().will(returnValue(HCCL_E_RESERVED));
     auto ret = dgwClient->CreateHcomHandle(rankTable, 0, nullptr, handle);
     EXPECT_EQ(bqs::BQS_STATUS_OK, ret);
     EXPECT_EQ(handle, hcclHandle);
@@ -993,7 +975,7 @@ TEST_F(DgwClientConfigStest, UpdateRouteWithGroup_Success01)
     int32_t groupId2 = config.cfg.groupCfg.groupId;
     printf("create group id is %d.\n", groupId2);
 
-    auto &allGroupConfig = bqs::BindRelation::GetInstance().allGroupConfig_;
+    auto& allGroupConfig = bqs::BindRelation::GetInstance().allGroupConfig_;
     EXPECT_EQ(2, allGroupConfig.size());
 
     // create routes
@@ -1021,7 +1003,7 @@ TEST_F(DgwClientConfigStest, UpdateRouteWithGroup_Success01)
     EXPECT_EQ(static_cast<int32_t>(bqs::BQS_STATUS_OK), cfgRets[0]);
     EXPECT_EQ(static_cast<int32_t>(bqs::BQS_STATUS_OK), cfgRets[1]);
 
-    auto &groupEntityMap = dgw::EntityManager::Instance().groupEntityMap_;
+    auto& groupEntityMap = dgw::EntityManager::Instance().groupEntityMap_;
     EXPECT_EQ(groupEntityMap.size(), 2);
 
     // query all route
@@ -1044,7 +1026,7 @@ TEST_F(DgwClientConfigStest, UpdateRouteWithGroup_Success01)
     EXPECT_EQ(qryRoutes[1].dst.attr.groupAttr.groupId, groupId1);
 
     // check entity number
-    auto &idToEntityMap = dgw::EntityManager::Instance().idToEntity_;
+    auto& idToEntityMap = dgw::EntityManager::Instance().idToEntity_;
     EXPECT_EQ(idToEntityMap[0][bqs::LOCAL_Q][dgw::EntityType::ENTITY_GROUP].size(), 2);
     EXPECT_EQ(idToEntityMap[0][bqs::LOCAL_Q][dgw::EntityType::ENTITY_QUEUE].size(), 7);
 
@@ -1199,7 +1181,7 @@ TEST_F(DgwClientConfigStest, UpdateRoute_Success02)
     EXPECT_EQ(1, cfgRets.size());
     EXPECT_EQ(static_cast<int32_t>(bqs::BQS_STATUS_OK), cfgRets[0]);
 
-    auto &idToEntityMap = dgw::EntityManager::Instance().idToEntity_;
+    auto& idToEntityMap = dgw::EntityManager::Instance().idToEntity_;
     EXPECT_EQ(idToEntityMap[0][bqs::LOCAL_Q][dgw::EntityType::ENTITY_GROUP].size(), 1);
     EXPECT_EQ(idToEntityMap[0][bqs::LOCAL_Q][dgw::EntityType::ENTITY_TAG].size(), 3);
 
@@ -1411,14 +1393,14 @@ TEST_F(DgwClientConfigStest, StopSchedule_Success)
     bqs::ConfigInfo config;
     config.cmd = bqs::ConfigCmd::DGW_CFG_CMD_STOP_SCHEDULE;
     config.cfg.reDeployCfg = reDeployCfg;
- 
+
     std::vector<int32_t> cfgRets;
     int32_t ret = dgwClient->UpdateConfig(config, cfgRets);
     EXPECT_EQ(bqs::BQS_STATUS_OK, ret);
     EXPECT_EQ(1, cfgRets.size());
     EXPECT_EQ(static_cast<int32_t>(bqs::BQS_STATUS_OK), cfgRets[0]);
 }
- 
+
 TEST_F(DgwClientConfigStest, RestartSchedule_Success)
 {
     std::shared_ptr<bqs::DgwClient> dgwClient = bqs::DgwClient::GetInstance(0U);
@@ -1431,7 +1413,7 @@ TEST_F(DgwClientConfigStest, RestartSchedule_Success)
     bqs::ConfigInfo config;
     config.cmd = bqs::ConfigCmd::DGW_CFG_CMD_CLEAR_AND_RESTART_SCHEDULE;
     config.cfg.reDeployCfg = reDeployCfg;
- 
+
     std::vector<int32_t> cfgRets;
     int32_t ret = dgwClient->UpdateConfig(config, cfgRets);
     EXPECT_EQ(bqs::BQS_STATUS_OK, ret);
@@ -1458,18 +1440,18 @@ TEST_F(DgwClientConfigStest, UpdateConfig_Failed00)
     std::shared_ptr<bqs::DgwClient> dgwClient = bqs::DgwClient::GetInstance(0U);
     dgwClient->initFlag_ = true;
     dgwClient->isServerOldVersion_ = true;
- 
+
     // create group1
     bqs::Endpoint endpoints[1UL];
     endpoints[0].type = bqs::EndpointType::MEM_QUEUE;
     endpoints[0].attr.memQueueAttr.queueId = 1103;
     endpoints[0].attr.memQueueAttr.queueType = 1;
- 
+
     bqs::ConfigInfo config;
     config.cmd = bqs::ConfigCmd::DGW_CFG_CMD_ADD_GROUP;
     config.cfg.groupCfg.endpointNum = 1U;
     config.cfg.groupCfg.endpoints = endpoints;
- 
+
     std::vector<int32_t> cfgRets;
     EXPECT_EQ(static_cast<int32_t>(BQS_STATUS_ENDPOINT_MEM_TYPE_NOT_SUPPORT), dgwClient->UpdateConfig(config, cfgRets));
 }
@@ -1484,12 +1466,12 @@ TEST_F(DgwClientConfigStest, InitDynamicSched03)
     std::shared_ptr<bqs::DgwClient> dgwClient = bqs::DgwClient::GetInstance(0U, 1234, true);
     dgwClient->initFlag_ = true;
     dgwClient->isServerOldVersion_ = false;
- 
+
     DynamicSchedConfigV2 dynamicConfigV2 = {};
     bqs::ConfigInfo config;
     config.cmd = bqs::ConfigCmd::DGW_CFG_CMD_INIT_DYNAMIC_SCHEDULE;
     config.cfg.dynamicSchedCfgV2 = &dynamicConfigV2;
- 
+
     MOCKER(halQueueAttach).stubs().will(returnObjectList(DRV_ERROR_QUEUE_INNER_ERROR));
     std::vector<int32_t> cfgRets;
     int32_t ret = dgwClient->UpdateConfig(config, cfgRets);

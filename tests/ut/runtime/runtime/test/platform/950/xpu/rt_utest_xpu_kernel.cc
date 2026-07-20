@@ -44,34 +44,22 @@ protected:
         GlobalMockObject::verify();
     }
 
-    void SetUp() override
-    {
-    }
+    void SetUp() override {}
 
-    void TearDown() override
-    {
-        GlobalMockObject::verify();
-    }
+    void TearDown() override { GlobalMockObject::verify(); }
 };
-
 
 TEST_F(XpuKernelTest, rtsBinaryLoadFromFile_JsonAndSo_fail)
 {
     char* binPath = "stub";
-    void *binHandle = &binPath;
-    MOCKER(mmDlopen)
-    .stubs()
-    .will(returnValue(binHandle));
+    void* binHandle = &binPath;
+    MOCKER(mmDlopen).stubs().will(returnValue(binHandle));
 
-    void *funcPc = &binPath;
-    MOCKER(mmDlsym)
-    .stubs()
-    .will(returnValue(funcPc));
+    void* funcPc = &binPath;
+    MOCKER(mmDlsym).stubs().will(returnValue(funcPc));
 
-    MOCKER(mmDlclose)
-    .stubs()
-    .will(returnValue(EN_OK));
-    char *path = "../tests/ut/runtime/runtime/test/data/libcust_aicpu_kernels.json";
+    MOCKER(mmDlclose).stubs().will(returnValue(EN_OK));
+    char* path = "../tests/ut/runtime/runtime/test/data/libcust_aicpu_kernels.json";
     rtLoadBinaryConfig_t cfg;
     rtLoadBinaryOption_t option;
     option.optionId = RT_LOAD_BINARY_OPT_CPU_KERNEL_MODE;
@@ -86,7 +74,7 @@ TEST_F(XpuKernelTest, rtsBinaryLoadFromFile_JsonAndSo_fail)
 TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_kernel_null)
 {
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
 
     rtError_t error = program->XpuSetKernelLiteralNameDevAddr(nullptr, 0);
     EXPECT_EQ(error, RT_ERROR_KERNEL_NULL);
@@ -95,25 +83,19 @@ TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_kernel_null)
 TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_funcPc_null)
 {
     char* binPath = "stub";
-    void *binHandle = &binPath;
+    void* binHandle = &binPath;
 
-    MOCKER(mmDlopen)
-    .stubs()
-    .will(returnValue(binHandle));
+    MOCKER(mmDlopen).stubs().will(returnValue(binHandle));
 
-    void *funcPc = nullptr;
-    MOCKER(mmDlsym)
-    .stubs()
-    .will(returnValue(funcPc));
+    void* funcPc = nullptr;
+    MOCKER(mmDlsym).stubs().will(returnValue(funcPc));
 
-    MOCKER(mmDlclose)
-    .stubs()
-    .will(returnValue(EN_OK));
+    MOCKER(mmDlclose).stubs().will(returnValue(EN_OK));
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
 
     rtError_t error = program->XpuSetKernelLiteralNameDevAddr(kernel, 0);
@@ -124,25 +106,19 @@ TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_funcPc_null)
 TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_binhandle_null)
 {
     char* binPath = "stub";
-    void *binHandle = nullptr;
+    void* binHandle = nullptr;
 
-    MOCKER(mmDlopen)
-    .stubs()
-    .will(returnValue(binHandle));
+    MOCKER(mmDlopen).stubs().will(returnValue(binHandle));
 
-    void *funcPc = &binPath;
-    MOCKER(mmDlsym)
-    .stubs()
-    .will(returnValue(funcPc));
+    void* funcPc = &binPath;
+    MOCKER(mmDlsym).stubs().will(returnValue(funcPc));
 
-    MOCKER(mmDlclose)
-    .stubs()
-    .will(returnValue(EN_OK));
+    MOCKER(mmDlclose).stubs().will(returnValue(EN_OK));
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
 
     rtError_t error = program->XpuSetKernelLiteralNameDevAddr(kernel, 0);
@@ -153,25 +129,19 @@ TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_binhandle_null)
 TEST_F(XpuKernelTest, rtsXpuSetKernelLiteralNameDevAddr_funcPc_not_null)
 {
     char* binPath = "stub";
-    void *binHandle = &binPath;
+    void* binHandle = &binPath;
 
-    MOCKER(mmDlopen)
-    .stubs()
-    .will(returnValue(binHandle));
+    MOCKER(mmDlopen).stubs().will(returnValue(binHandle));
 
-    void *funcPc = &binPath;
-    MOCKER(mmDlsym)
-    .stubs()
-    .will(returnValue(funcPc));
+    void* funcPc = &binPath;
+    MOCKER(mmDlsym).stubs().will(returnValue(funcPc));
 
-    MOCKER(mmDlclose)
-    .stubs()
-    .will(returnValue(EN_OK));
+    MOCKER(mmDlclose).stubs().will(returnValue(EN_OK));
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
 
     rtError_t error = program->XpuSetKernelLiteralNameDevAddr(kernel, 0);

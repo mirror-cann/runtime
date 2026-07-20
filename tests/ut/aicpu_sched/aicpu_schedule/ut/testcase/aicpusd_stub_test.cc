@@ -16,33 +16,23 @@
 
 class AICPUScheduleStubTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleStubTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleStubTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleStubTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleStubTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleStubTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleStubTEST SetUP" << std::endl; }
 
-    virtual void TearDown()
-    {
-        std::cout << "AICPUScheduleStubTEST TearDown" << std::endl;
-    }
+    virtual void TearDown() { std::cout << "AICPUScheduleStubTEST TearDown" << std::endl; }
 };
 
-TEST_F(AICPUScheduleStubTEST, stubTest) {
-    Mbuf *mbuf = nullptr;
+TEST_F(AICPUScheduleStubTEST, stubTest)
+{
+    Mbuf* mbuf = nullptr;
     halMbufChainGetMbuf(mbuf, 0, &mbuf);
     unsigned int num;
     halMbufChainGetMbufNum(mbuf, &num);
     halMbufChainAppend(mbuf, mbuf);
     halQueueInit(0);
     halMbufSetDataLen(mbuf, 0);
-    EXPECT_EQ(halMbufAllocEx(0,0,0,0,&mbuf), 0);
+    EXPECT_EQ(halMbufAllocEx(0, 0, 0, 0, &mbuf), 0);
 }
-

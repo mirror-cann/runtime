@@ -11,6 +11,6 @@
 #define TSD_UT_COMMON_UTIL_FUNC_H
 #include <string>
 namespace tsd {
-    bool WriteTmpFile(const std::string &filePath, const std::string &fileName);
+bool WriteTmpFile(const std::string& filePath, const std::string& fileName);
 }
 #endif

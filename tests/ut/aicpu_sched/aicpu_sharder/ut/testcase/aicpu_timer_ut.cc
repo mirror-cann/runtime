@@ -18,10 +18,7 @@
 
 using namespace aicpu;
 
-void CallbackFuncStub(const TimerHandle val)
-{
-    return;
-}
+void CallbackFuncStub(const TimerHandle val) { return; }
 
 class AicpuOpTimeoutTest : public ::testing::Test {
 public:
@@ -47,9 +44,7 @@ TEST_F(AicpuOpTimeoutTest, RegistEventFuncTest)
         return CallbackFuncStub(timerHandle);
     };
 
-    const auto stopTimerCbk = [this](const aicpu::TimerHandle timerHandle) {
-        return CallbackFuncStub(timerHandle);
-    };
+    const auto stopTimerCbk = [this](const aicpu::TimerHandle timerHandle) { return CallbackFuncStub(timerHandle); };
     AicpuTimer::GetInstance().RegistMonitorFunc(startTimerCbk, stopTimerCbk);
     EXPECT_NE(AicpuTimer::GetInstance().startTimerFunc_, nullptr);
     EXPECT_NE(AicpuTimer::GetInstance().stopTimerFunc_, nullptr);
@@ -57,9 +52,7 @@ TEST_F(AicpuOpTimeoutTest, RegistEventFuncTest)
 
 TEST_F(AicpuOpTimeoutTest, StartTimerTest)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     const auto ret = AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -75,9 +68,7 @@ TEST_F(AicpuOpTimeoutTest, StartTimerErrTest1)
 
 TEST_F(AicpuOpTimeoutTest, StopTimerTest)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     (void)AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -87,9 +78,7 @@ TEST_F(AicpuOpTimeoutTest, StopTimerTest)
 
 TEST_F(AicpuOpTimeoutTest, StartOpTimerErrTest2)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     const auto ret = AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -98,9 +87,7 @@ TEST_F(AicpuOpTimeoutTest, StartOpTimerErrTest2)
 
 TEST_F(AicpuOpTimeoutTest, StartOpTimerErrTest3)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     AicpuTimer timer;
     timer.SetSupportTimer(false);
@@ -115,14 +102,10 @@ TEST_F(AicpuOpTimeoutTest, CallOpTimeoutCallbackTest)
         return CallbackFuncStub(timerHandle);
     };
 
-    const auto stopTimerCbk = [this](const aicpu::TimerHandle timerHandle) {
-        return CallbackFuncStub(timerHandle);
-    };
+    const auto stopTimerCbk = [this](const aicpu::TimerHandle timerHandle) { return CallbackFuncStub(timerHandle); };
     AicpuTimer::GetInstance().RegistMonitorFunc(startTimerCbk, stopTimerCbk);
 
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     const auto ret = AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -132,9 +115,7 @@ TEST_F(AicpuOpTimeoutTest, CallOpTimeoutCallbackTest)
 
 TEST_F(AicpuOpTimeoutTest, StopOpTimerTestErr3)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     (void)AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -172,9 +153,7 @@ TEST_F(AicpuOpTimeoutTest, StopOpTimerInMonitorTestErr1)
 
 TEST_F(AicpuOpTimeoutTest, StopOpTimerInMonitorTestErr2)
 {
-    const auto stopTimerCbk = [this](const aicpu::TimerHandle timerHandle) {
-        return CallbackFuncStub(timerHandle);
-    };
+    const auto stopTimerCbk = [this](const aicpu::TimerHandle timerHandle) { return CallbackFuncStub(timerHandle); };
 
     AicpuTimer::GetInstance().stopTimerFunc_ = stopTimerCbk;
     const auto ret = AicpuTimer::GetInstance().StopTimerInMonitor(0);
@@ -183,9 +162,7 @@ TEST_F(AicpuOpTimeoutTest, StopOpTimerInMonitorTestErr2)
 
 TEST_F(AicpuOpTimeoutTest, StopOpTimerTestErr1)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     (void)AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -195,9 +172,7 @@ TEST_F(AicpuOpTimeoutTest, StopOpTimerTestErr1)
 
 TEST_F(AicpuOpTimeoutTest, StopOpTimerTestErr2)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     (void)AicpuTimer::GetInstance().StartTimer(timerId, timeoutCallback, 0UL);
@@ -218,9 +193,7 @@ TEST_F(AicpuOpTimeoutTest, StopOpTimerTestErr4)
 
 TEST_F(AicpuOpTimeoutTest, AicpuStartOpTimerTest)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     auto ret = aicpu::StartTimer(timerId, timeoutCallback, 0UL);
@@ -230,9 +203,7 @@ TEST_F(AicpuOpTimeoutTest, AicpuStartOpTimerTest)
 
 TEST_F(AicpuOpTimeoutTest, RegistTimeoutCallback)
 {
-    const std::function<void ()> timeoutCallback = [this]() {
-        return;
-    };
+    const std::function<void()> timeoutCallback = [this]() { return; };
 
     TimerHandle timerId = 0;
     AicpuTimer timer;

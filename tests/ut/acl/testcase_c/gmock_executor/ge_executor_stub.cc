@@ -12,20 +12,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-Status GeInitialize() {
-  return GeExecutorStubMock::GetInstance().GeInitialize();
-}
-Status GeFinalize() {
-  return GeExecutorStubMock::GetInstance().GeFinalize();
-}
-Status GeDbgInit(const char *configPath) {
-  return GeExecutorStubMock::GetInstance().GeDbgInit(configPath);
-}
-Status GeDbgDeInit(void) {
-  return GeExecutorStubMock::GetInstance().GeDbgDeInit();
-}
-Status GeNofifySetDevice(uint32_t chipId, uint32_t deviceId) {
-  return GeExecutorStubMock::GetInstance().GeNofifySetDevice(chipId, deviceId);
+Status GeInitialize() { return GeExecutorStubMock::GetInstance().GeInitialize(); }
+Status GeFinalize() { return GeExecutorStubMock::GetInstance().GeFinalize(); }
+Status GeDbgInit(const char* configPath) { return GeExecutorStubMock::GetInstance().GeDbgInit(configPath); }
+Status GeDbgDeInit(void) { return GeExecutorStubMock::GetInstance().GeDbgDeInit(); }
+Status GeNofifySetDevice(uint32_t chipId, uint32_t deviceId)
+{
+    return GeExecutorStubMock::GetInstance().GeNofifySetDevice(chipId, deviceId);
 }
 #ifdef __cplusplus
 }

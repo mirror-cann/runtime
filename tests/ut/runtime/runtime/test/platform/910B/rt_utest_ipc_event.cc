@@ -36,82 +36,75 @@ using namespace cce::runtime;
 
 class IpcEventTest910B : public testing::Test {
 public:
-    Device *device_ = nullptr;
+    Device* device_ = nullptr;
     rtChipType_t oldChipType;
-protected:
-    static void SetUpTestCase()
-    {
-    }
 
-    static void TearDownTestCase()
-    {
-    }
+protected:
+    static void SetUpTestCase() {}
+
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         (void)rtSetDevice(0);
         ut::ClearCurrentContextStatusForReset();
         ut::ClearCurrentDefaultStreamPending();
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     }
 
     virtual void TearDown()
     {
-        RawDevice *rd = (RawDevice *)device_;
-        while (rd->IsNeedFreeEventId()) {rd->PopNextPoolFreeEventId();}
+        RawDevice* rd = (RawDevice*)device_;
+        while (rd->IsNeedFreeEventId()) {
+            rd->PopNextPoolFreeEventId();
+        }
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
         ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         GlobalMockObject::verify();
     }
 };
 
-drvError_t halMemExportToShareableHandleStub(drv_mem_handle_t *handle, drv_mem_handle_type handle_type,
-    uint64_t flags, uint64_t *shareable_handle)
+drvError_t halMemExportToShareableHandleStub(
+    drv_mem_handle_t* handle, drv_mem_handle_type handle_type, uint64_t flags, uint64_t* shareable_handle)
 {
     *shareable_handle = 1;
     return DRV_ERROR_NONE;
 }
 
 IpcHandleVa eventAddr = {0, RtValueToPtr<void*>(1), 0, 0};
-drvError_t halMemAddressReserveStub(void **ptr, size_t size, size_t alignment, void *addr, uint64_t flag)
+drvError_t halMemAddressReserveStub(void** ptr, size_t size, size_t alignment, void* addr, uint64_t flag)
 {
     *ptr = &eventAddr;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halMemAddressReserveStub1(void **ptr, size_t size, size_t alignment, void *addr, uint64_t flag)
+drvError_t halMemAddressReserveStub1(void** ptr, size_t size, size_t alignment, void* addr, uint64_t flag)
 {
     return DRV_ERROR_NOT_SUPPORT;
 }
 
 int tmp[6] = {1, 2, 3, 4, 5, 6};
-drvError_t halMemCreateStub(drv_mem_handle_t **handle, size_t size, const struct drv_mem_prop *prop, uint64_t flag)
+drvError_t halMemCreateStub(drv_mem_handle_t** handle, size_t size, const struct drv_mem_prop* prop, uint64_t flag)
 {
     *handle = reinterpret_cast<drv_mem_handle_t*>(&tmp);
     return DRV_ERROR_NONE;
 }
 
-drvError_t halMemCreateStub1(drv_mem_handle_t **handle, size_t size, const struct drv_mem_prop *prop, uint64_t flag)
+drvError_t halMemCreateStub1(drv_mem_handle_t** handle, size_t size, const struct drv_mem_prop* prop, uint64_t flag)
 {
     return DRV_ERROR_NOT_SUPPORT;
 }
 
-void IpcVaLockStub()
-{
-}
+void IpcVaLockStub() {}
 
-void IpcVaUnLockStub()
-{
-}
+void IpcVaUnLockStub() {}
 
-void IpcVaLockInitStub()
-{
-}
+void IpcVaLockInitStub() {}
 
 uint8_t value = 0U;
 uint8_t* GetCurrentHostMemStub()
@@ -257,7 +250,6 @@ TEST_F(IpcEventTest910B, ipcEventBase2)
     error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
-
 
 TEST_F(IpcEventTest910B, ipcEventBase3)
 {

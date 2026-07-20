@@ -42,9 +42,7 @@ void ResetStaticState()
     MsqOperatorManager::waitFunc_ = nullptr;
 }
 
-void FakeReset()
-{
-}
+void FakeReset() {}
 
 MsqStatus FakeReadStatus()
 {
@@ -55,7 +53,7 @@ MsqStatus FakeReadStatus()
     return status;
 }
 
-void FakeReadData(uint32_t msgSize, MsqDatas *datas)
+void FakeReadData(uint32_t msgSize, MsqDatas* datas)
 {
     if (datas == nullptr) {
         return;
@@ -64,47 +62,37 @@ void FakeReadData(uint32_t msgSize, MsqDatas *datas)
     datas->data1 = msgSize + 1U;
 }
 
-void FakeSendRsp()
-{
-}
+void FakeSendRsp() {}
 
-void FakeWait()
-{
-}
+void FakeWait() {}
 
-void *FakeDlopen(const char *, int)
-{
-    return reinterpret_cast<void *>(0x1234);
-}
+void* FakeDlopen(const char*, int) { return reinterpret_cast<void*>(0x1234); }
 
-void *FakeDlsymSuccess(void *, const char *name)
+void* FakeDlsymSuccess(void*, const char* name)
 {
     if ((std::strcmp(name, "MsqV1ResetT0Status") == 0) || (std::strcmp(name, "MsqV1ResetT1Status") == 0) ||
         (std::strcmp(name, "MsqV2ResetT0Status") == 0) || (std::strcmp(name, "MsqV2ResetT1Status") == 0)) {
-        return reinterpret_cast<void *>(&FakeReset);
+        return reinterpret_cast<void*>(&FakeReset);
     }
     if ((std::strcmp(name, "MsqV1ReadT0Status") == 0) || (std::strcmp(name, "MsqV1ReadT1Status") == 0) ||
         (std::strcmp(name, "MsqV2ReadT1Status") == 0)) {
-        return reinterpret_cast<void *>(&FakeReadStatus);
+        return reinterpret_cast<void*>(&FakeReadStatus);
     }
     if ((std::strcmp(name, "MsqV1ReadT0Data") == 0) || (std::strcmp(name, "MsqV1ReadT1Data") == 0) ||
         (std::strcmp(name, "MsqV2ReadT1Data") == 0)) {
-        return reinterpret_cast<void *>(&FakeReadData);
+        return reinterpret_cast<void*>(&FakeReadData);
     }
     if ((std::strcmp(name, "MsqV1SendT0Response") == 0) || (std::strcmp(name, "MsqV1SendT1Response") == 0) ||
         (std::strcmp(name, "MsqV2SendT1Response") == 0)) {
-        return reinterpret_cast<void *>(&FakeSendRsp);
+        return reinterpret_cast<void*>(&FakeSendRsp);
     }
     if (std::strcmp(name, "Wait") == 0) {
-        return reinterpret_cast<void *>(&FakeWait);
+        return reinterpret_cast<void*>(&FakeWait);
     }
-    return static_cast<void *>(nullptr);
+    return static_cast<void*>(nullptr);
 }
 
-void *FakeDlsymFail(void *, const char *)
-{
-    return static_cast<void *>(nullptr);
-}
+void* FakeDlsymFail(void*, const char*) { return static_cast<void*>(nullptr); }
 
 bool g_resetCalled = false;
 bool g_resetT1Called = false;
@@ -116,15 +104,9 @@ uint32_t g_readStatusT1Called = 0U;
 uint32_t g_lastMsgSize = 0U;
 uint32_t g_lastMsgSizeT1 = 0U;
 
-void MarkReset()
-{
-    g_resetCalled = true;
-}
+void MarkReset() { g_resetCalled = true; }
 
-void MarkResetT1()
-{
-    g_resetT1Called = true;
-}
+void MarkResetT1() { g_resetT1Called = true; }
 
 MsqStatus MarkReadStatus()
 {
@@ -146,7 +128,7 @@ MsqStatus MarkReadStatusT1()
     return status;
 }
 
-void MarkReadData(uint32_t msgSize, MsqDatas *datas)
+void MarkReadData(uint32_t msgSize, MsqDatas* datas)
 {
     g_lastMsgSize = msgSize;
     if (datas != nullptr) {
@@ -154,7 +136,7 @@ void MarkReadData(uint32_t msgSize, MsqDatas *datas)
     }
 }
 
-void MarkReadDataT1(uint32_t msgSize, MsqDatas *datas)
+void MarkReadDataT1(uint32_t msgSize, MsqDatas* datas)
 {
     g_lastMsgSizeT1 = msgSize;
     if (datas != nullptr) {
@@ -162,20 +144,11 @@ void MarkReadDataT1(uint32_t msgSize, MsqDatas *datas)
     }
 }
 
-void MarkSend()
-{
-    g_sendCalled = true;
-}
+void MarkSend() { g_sendCalled = true; }
 
-void MarkSendT1()
-{
-    g_sendT1Called = true;
-}
+void MarkSendT1() { g_sendT1Called = true; }
 
-void MarkWait()
-{
-    g_waitCalled = true;
-}
+void MarkWait() { g_waitCalled = true; }
 
 void PrepareForwardLoadedSymbolState()
 {
@@ -194,19 +167,13 @@ void PrepareForwardLoadedSymbolState()
     MsqOperatorManager::v2SendT1Response_ = &MarkSendT1;
     MsqOperatorManager::waitFunc_ = &MarkWait;
 }
-}  // namespace
+} // namespace
 
 class AicpusdMsqOperatorManagerTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        ResetStaticState();
-    }
+    static void SetUpTestCase() { ResetStaticState(); }
 
-    static void TearDownTestCase()
-    {
-        ResetStaticState();
-    }
+    static void TearDownTestCase() { ResetStaticState(); }
 
     void SetUp() override
     {
@@ -231,7 +198,7 @@ protected:
 
 TEST_F(AicpusdMsqOperatorManagerTest, InitFailWhenDlopenFails)
 {
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     EXPECT_EQ(MsqOperatorManager::Init(), AICPU_SCHEDULE_ERROR_INNER_ERROR);
     EXPECT_EQ(MsqOperatorManager::handle_, nullptr);
     EXPECT_FALSE(MsqOperatorManager::inited_);
@@ -260,7 +227,7 @@ TEST_F(AicpusdMsqOperatorManagerTest, InitSuccessAndAlreadyInited)
 
 TEST_F(AicpusdMsqOperatorManagerTest, FinalizeClosesHandleAndClearsState)
 {
-    MsqOperatorManager::handle_ = reinterpret_cast<void *>(0x1234);
+    MsqOperatorManager::handle_ = reinterpret_cast<void*>(0x1234);
     MsqOperatorManager::inited_ = true;
     MsqOperatorManager::v1ResetT0Status_ = &FakeReset;
     MsqOperatorManager::v1ReadT0Status_ = &FakeReadStatus;

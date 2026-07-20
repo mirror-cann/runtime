@@ -43,36 +43,37 @@ using namespace cce::runtime;
 
 class DcacheDeviceTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         int64_t hardwareVersion = CHIP_910_B_93 << 8;
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(DcacheDeviceTest, AllocStackPhyBase_01)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     int32_t temp;
     dev->stackPhyBase32k_ = &temp;
@@ -83,10 +84,10 @@ TEST_F(DcacheDeviceTest, AllocStackPhyBase_01)
 
 TEST_F(DcacheDeviceTest, AllocStackPhyBase_02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     rtError_t ret = dev->AllocStackPhyBase();
@@ -96,10 +97,10 @@ TEST_F(DcacheDeviceTest, AllocStackPhyBase_02)
 
 TEST_F(DcacheDeviceTest, AllocStackPhyBase_03)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     rtError_t ret = dev->AllocStackPhyBase();
@@ -109,16 +110,18 @@ TEST_F(DcacheDeviceTest, AllocStackPhyBase_03)
 
 TEST_F(DcacheDeviceTest, AllocStackPhyBase_04)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     uint32_t tmp = 0;
-    void *addr = &tmp;
+    void* addr = &tmp;
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     dev->stackPhyBase16k_ = &tmp;
     rtError_t ret = dev->AllocStackPhyBase();
@@ -128,16 +131,18 @@ TEST_F(DcacheDeviceTest, AllocStackPhyBase_04)
 
 TEST_F(DcacheDeviceTest, AllocStackPhyBase_05)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     uint32_t tmp = 0;
-    void *addr = &tmp;
+    void* addr = &tmp;
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_INVALID_VALUE));
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));

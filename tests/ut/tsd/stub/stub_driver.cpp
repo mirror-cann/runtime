@@ -19,44 +19,34 @@
 
 static const int32_t PHYSICAL_ID = 15;
 
-extern "C" int tsDevSendMsgAsync (unsigned int devId, unsigned int tsId, char *msg, unsigned int msgLen, unsigned int handleId);
+extern "C" int tsDevSendMsgAsync(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId);
 static struct event_info g_event = {
-    .comm = {
-        .event_id = EVENT_DVPP_MSG,
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
+    .comm =
+        {.event_id = EVENT_DVPP_MSG,
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
 
-drvError_t halEschedSubmitEvent(unsigned int devId, struct event_summary *event)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halEschedSubmitEvent(unsigned int devId, struct event_summary* event) { return DRV_ERROR_NONE; }
 
-int tsDevSendMsgAsync (unsigned int devId, unsigned int tsId, char *msg, unsigned int msgLen, unsigned int handleId)
+int tsDevSendMsgAsync(unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
 {
     return 0;
 }
-int eSchedSubmitEvent(unsigned int devId, struct event_summary *event)
-{
-    return 0;
-}
+int eSchedSubmitEvent(unsigned int devId, struct event_summary* event) { return 0; }
 
-drvError_t halGetChipFromDevice(int device_id, int *chip_id)
+drvError_t halGetChipFromDevice(int device_id, int* chip_id)
 {
     *chip_id = 0;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halGetDeviceCountFromChip(int chip_id, int *device_count)
+drvError_t halGetDeviceCountFromChip(int chip_id, int* device_count)
 {
     *device_count = 1;
     return DRV_ERROR_NONE;
@@ -70,23 +60,21 @@ drvError_t halGetDeviceFromChip(int chip_id, int device_list[], int count)
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvHdcGetTrustedBasePath(int peer_node, int peer_devid, char *base_path, unsigned int path_len)
+drvError_t drvHdcGetTrustedBasePath(int peer_node, int peer_devid, char* base_path, unsigned int path_len)
 {
     return DRV_ERROR_NONE;
 }
 
-int halVerifyImg(HAL_VERIFY_TYPE verify_type, HAL_IMG_ID image_id, const char *img_path, int mode)
-{
-    return 0;
-}
+int halVerifyImg(HAL_VERIFY_TYPE verify_type, HAL_IMG_ID image_id, const char* img_path, int mode) { return 0; }
 
-drvError_t drvHdcSendFile(int peer_node, int peer_devid, const char *file, const char *dst_path,
-                                    void (*progress_notifier)(struct drvHdcProgInfo *))
+drvError_t drvHdcSendFile(
+    int peer_node, int peer_devid, const char* file, const char* dst_path,
+    void (*progress_notifier)(struct drvHdcProgInfo*))
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+drvError_t halGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value == nullptr) {
         return DRV_ERROR_INVALID_VALUE;
@@ -103,116 +91,75 @@ drvError_t halGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedAttachDevice(unsigned int devId)
+drvError_t halEschedAttachDevice(unsigned int devId) { return DRV_ERROR_NONE; }
+
+drvError_t halEschedCreateGrp(unsigned int devId, unsigned int grpId, GROUP_TYPE type) { return DRV_ERROR_NONE; }
+
+drvError_t halEschedDettachDevice(unsigned int devId) { return DRV_ERROR_NONE; }
+
+drvError_t halEschedSubscribeEvent(
+    unsigned int devId, unsigned int grpId, unsigned int threadId, unsigned long long eventBitmap)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedCreateGrp(unsigned int devId, unsigned int grpId, GROUP_TYPE type)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halEschedDettachDevice(unsigned int devId)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halEschedSubscribeEvent(unsigned int devId, unsigned int grpId,
-                    unsigned int threadId, unsigned long long eventBitmap)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halEschedWaitEvent(unsigned int devId, unsigned int grpId,
-                    unsigned int threadId, int timeout, struct event_info *event)
+drvError_t halEschedWaitEvent(
+    unsigned int devId, unsigned int grpId, unsigned int threadId, int timeout, struct event_info* event)
 {
     sleep(1);
     *event = g_event;
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvBindHostPid(struct drvBindHostpidInfo info)
+drvError_t drvBindHostPid(struct drvBindHostpidInfo info) { return DRV_ERROR_NONE; }
+
+drvError_t drvUnbindHostPid(struct drvBindHostpidInfo info) { return DRV_ERROR_NONE; }
+
+int halRegisterVmngClient() { return DRV_ERROR_NONE; }
+
+drvError_t halEschedAckEvent(
+    unsigned int devId, EVENT_ID eventId, unsigned int subeventId, char* msg, unsigned int msgLen)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvUnbindHostPid(struct drvBindHostpidInfo info)
+drvError_t halQueueGrant(unsigned int devId, int qid, int pid, QueueShareAttr attr) { return DRV_ERROR_NONE; }
+
+drvError_t halQueryDevpid(struct halQueryDevpidInfo info, pid_t* dev_pid) { return DRV_ERROR_NONE; }
+
+drvError_t halQueueQuery(
+    unsigned int devId, QueueQueryCmdType cmd, QueueQueryInputPara* inPut, QueueQueryOutputPara* outPut)
 {
     return DRV_ERROR_NONE;
 }
 
-int halRegisterVmngClient()
+drvError_t halQueueInit(unsigned int devId) { return DRV_ERROR_NONE; }
+
+int halGrpQuery(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halEschedAckEvent(unsigned int devId, EVENT_ID eventId, unsigned int subeventId,
-                   char *msg, unsigned int msgLen)
+int halGrpAttach(const char* name, int timeout) { return DRV_ERROR_NONE; }
+
+int halBuffInit(BuffCfg* cfg) { return DRV_ERROR_NONE; }
+
+int halGrpAddProc(const char* name, int pid, GroupShareAttr attr) { return DRV_ERROR_NONE; }
+
+drvError_t halEschedSubmitEventSync(
+    unsigned int devId, struct event_summary* event, int timeout, struct event_reply* reply)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halQueueGrant(unsigned int devId, int qid, int pid, QueueShareAttr attr)
+drvError_t halGetVdevNum(uint32_t* devNum) { return DRV_ERROR_NONE; }
+
+drvError_t halSensorNodeRegister(uint32_t devId, struct halSensorNodeCfg* Cfg, uint64_t* Handle)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halQueryDevpid(struct halQueryDevpidInfo info, pid_t *dev_pid)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halQueueQuery(unsigned int devId, QueueQueryCmdType cmd, QueueQueryInputPara *inPut, QueueQueryOutputPara *outPut)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halQueueInit(unsigned int devId)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halGrpQuery(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halGrpAttach(const char *name, int timeout)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halBuffInit(BuffCfg *cfg)
-{
-    return DRV_ERROR_NONE;
-}
-
-int halGrpAddProc(const char *name, int pid, GroupShareAttr attr)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halEschedSubmitEventSync(unsigned int devId,
-                                    struct event_summary *event, int timeout, struct event_reply *reply)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halGetVdevNum(uint32_t *devNum)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halSensorNodeRegister(uint32_t devId, struct halSensorNodeCfg *Cfg, uint64_t *Handle)
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halSensorNodeUnregister(uint32_t devId, uint64_t Handle)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halSensorNodeUnregister(uint32_t devId, uint64_t Handle) { return DRV_ERROR_NONE; }
 
 drvError_t halSensorNodeUpdateState(uint32_t devId, uint64_t Handle, int val, halGeneralEventType_t flag)
 {
@@ -228,7 +175,7 @@ drvError_t halSensorNodeUpdateState(uint32_t devId, uint64_t Handle, int val, ha
     return DRV_ERROR_NONE;
 }
 
-DLLEXPORT DVresult halMemGetInfo(DVdevice device, unsigned int type, struct MemInfo *info)
+DLLEXPORT DVresult halMemGetInfo(DVdevice device, unsigned int type, struct MemInfo* info)
 {
     if (device == 5) {
         info->numa_info.node_cnt = 1U;
@@ -237,8 +184,8 @@ DLLEXPORT DVresult halMemGetInfo(DVdevice device, unsigned int type, struct MemI
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvQueryProcessHostPid(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                  unsigned int *host_pid, unsigned int *cp_type)
+drvError_t drvQueryProcessHostPid(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
 {
     (void)chip_id;
     (void)vfid;
@@ -253,43 +200,40 @@ drvError_t drvQueryProcessHostPid(int pid, unsigned int *chip_id, unsigned int *
     return DRV_ERROR_NONE;
 }
 
-drvError_t halSetDeviceInfoByBuff(uint32_t deviceId, int32_t moduleType, int32_t infoType, void* buf, int32_t size) {
-  (void)moduleType;
-  (void)infoType;
-  (void)buf;
-  (void)size;
-  if (deviceId < 2) {
+drvError_t halSetDeviceInfoByBuff(uint32_t deviceId, int32_t moduleType, int32_t infoType, void* buf, int32_t size)
+{
+    (void)moduleType;
+    (void)infoType;
+    (void)buf;
+    (void)size;
+    if (deviceId < 2) {
+        return DRV_ERROR_NONE;
+    } else if (deviceId == 3) {
+        return DRV_ERROR_BUSY;
+    } else {
+        return DRV_ERROR_NO_DEVICE;
+    }
+}
+
+drvError_t halRepairFault(uint32_t devid, halRepairFaultInfo* info)
+{
+    (void)devid;
+    (void)info;
     return DRV_ERROR_NONE;
-  } else if (deviceId == 3) {
-    return DRV_ERROR_BUSY;
-  } else {
-    return DRV_ERROR_NO_DEVICE;
-  }
 }
 
-drvError_t halRepairFault(uint32_t devid, halRepairFaultInfo *info) {
-  (void)devid;
-  (void)info;
-  return DRV_ERROR_NONE;
-}
+drvError_t halTsCmdlistMemMap(unsigned int devId, unsigned int tsId) { return DRV_ERROR_NONE; }
 
-drvError_t halTsCmdlistMemMap(unsigned int devId, unsigned int tsId)
+drvError_t drvHdcGetTrustedBasePathV2(int peer_node, int peer_devid, char* base_path, unsigned int path_len)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvHdcGetTrustedBasePathV2(int peer_node, int peer_devid, char *base_path, unsigned int path_len)
+drvError_t drvHdcSendFileV2(
+    int peer_node, int peer_devid, const char* file, const char* dst_path,
+    void (*progress_notifier)(struct drvHdcProgInfo*))
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvHdcSendFileV2(int peer_node, int peer_devid, const char *file, const char *dst_path,
-                            void (*progress_notifier)(struct drvHdcProgInfo *))
-{
-    return DRV_ERROR_NONE;
-}
-
-drvError_t halGetSocVersion(uint32_t devId, char *socVersion, uint32_t len)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halGetSocVersion(uint32_t devId, char* socVersion, uint32_t len) { return DRV_ERROR_NONE; }

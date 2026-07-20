@@ -36,7 +36,7 @@ using namespace cce::runtime;
 
 class XpuRecycleTest : public ut::XpuRuntimeMockTest {};
 
-rtError_t GetSqState1(const uint32_t deviceId, const uint32_t sqId, uint32_t &status)
+rtError_t GetSqState1(const uint32_t deviceId, const uint32_t sqId, uint32_t& status)
 {
     status = TPRT_SQ_STATE_IS_QUITTED;
 }
@@ -48,20 +48,20 @@ TEST_F(XpuRecycleTest, xpu_recycle_test_01)
 
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
-    
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    XpuStream *stream = static_cast<XpuStream *>(context->StreamList_().front());
+    XpuStream* stream = static_cast<XpuStream*>(context->StreamList_().front());
     XpuTaskReclaimAllStream(context->Device_());
 
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
- }
+}
 
 TEST_F(XpuRecycleTest, xpu_recycle_test_02)
 {
@@ -69,22 +69,22 @@ TEST_F(XpuRecycleTest, xpu_recycle_test_02)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     TaskInfo taskInfo = TaskInfo{};
-    TaskInfo *taskInfoPtr = &taskInfo;
+    TaskInfo* taskInfoPtr = &taskInfo;
     taskInfoPtr->u.aicpuTaskInfo = AicpuTaskInfo{};
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     TaskCfg taskCfg{};
@@ -99,9 +99,11 @@ TEST_F(XpuRecycleTest, xpu_recycle_test_02)
     argsInfo.baseArgs.soNameAddrOffset = 1U;
     argsWithType.args.cpuArgsInfo = &argsInfo;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    MOCKER_CPP_VIRTUAL((XpuDriver *)context->Device_()->Driver_(), &XpuDriver::LogicCqReportV2).stubs().will(returnValue(RT_ERROR_LOST_HEARTBEAT));
-    error = XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs,
-        context->StreamList_().front(), &taskCfg);
+    MOCKER_CPP_VIRTUAL((XpuDriver*)context->Device_()->Driver_(), &XpuDriver::LogicCqReportV2)
+        .stubs()
+        .will(returnValue(RT_ERROR_LOST_HEARTBEAT));
+    error =
+        XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs, context->StreamList_().front(), &taskCfg);
     context->StreamList_().front()->SetFailureMode(ABORT_ON_FAILURE);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
@@ -109,7 +111,9 @@ TEST_F(XpuRecycleTest, xpu_recycle_test_02)
     delete kernel;
 }
 
-rtError_t mockState(XpuDriver* xpuDrive, const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head, bool needLog)
+rtError_t mockState(
+    XpuDriver* xpuDrive, const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head,
+    bool needLog)
 {
     head = 1;
     return RT_ERROR_NONE;
@@ -121,14 +125,16 @@ TEST_F(XpuRecycleTest, xpu_recycle_test_03)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    MOCKER_CPP_VIRTUAL((XpuDriver *)context->Device_()->Driver_(), &XpuDriver::GetSqHead).stubs().will(invoke(mockState));
+    MOCKER_CPP_VIRTUAL((XpuDriver*)context->Device_()->Driver_(), &XpuDriver::GetSqHead)
+        .stubs()
+        .will(invoke(mockState));
     error = XpuRecycleTaskBySqHead(context->StreamList_().front());
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
@@ -136,7 +142,7 @@ TEST_F(XpuRecycleTest, xpu_recycle_test_03)
 
 TEST_F(XpuRecycleTest, XpuDriver_LogicCqReportV2_error)
 {
-    XpuDriver *driver = new XpuDriver();
+    XpuDriver* driver = new XpuDriver();
     constexpr uint32_t allocCnt = RT_MILAN_MAX_QUERY_CQE_NUM;
     const uint32_t streamId = 0U;
 
@@ -153,7 +159,7 @@ TEST_F(XpuRecycleTest, XpuDriver_LogicCqReportV2_error)
 
     MOCKER(TprtCqReportRecv).stubs().will(returnValue((uint32_t)TPRT_CQ_HANDLE_INVALID));
     rtError_t error =
-        driver->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t *, TprtLogicCqReport_t *>(reportInfo), allocCnt, cnt);
+        driver->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t*, TprtLogicCqReport_t*>(reportInfo), allocCnt, cnt);
     EXPECT_EQ(error, RT_ERROR_DRV_INVALID_HANDLE);
     DELETE_O(driver)
 }

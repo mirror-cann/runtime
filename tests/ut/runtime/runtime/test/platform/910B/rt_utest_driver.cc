@@ -17,26 +17,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-
-class DriverTest : public testing::Test
-{
+class DriverTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"Driver test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "Driver test start" << std::endl; }
 
-    }
+    static void TearDownTestCase() { std::cout << "Driver test start end" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"Driver test start end"<<std::endl;
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -49,30 +36,29 @@ TEST_F(DriverTest, bitmap)
 {
     Bitmap map(70);
     int id = -1;
-    for (int i = 0; i < 70; i++)
-    {
+    for (int i = 0; i < 70; i++) {
         id = map.AllocId();
         EXPECT_NE(id, -1);
     }
     id = map.AllocId();
     EXPECT_EQ(id, -1);
 
-    uint32_t numOfRes = 15*1024;
-    uint32_t curMaxNumOfRes = 11*1024;
+    uint32_t numOfRes = 15 * 1024;
+    uint32_t curMaxNumOfRes = 11 * 1024;
     Bitmap map2(numOfRes);
     for (int i = 0; i < curMaxNumOfRes; i++) {
         id = map2.AllocId(curMaxNumOfRes);
         EXPECT_NE(id, -1);
     }
 
-    for (int i =0; i < 1025; i++) {     // utilization: 11*1024 - 1025, available: 1025
+    for (int i = 0; i < 1025; i++) { // utilization: 11*1024 - 1025, available: 1025
         map2.FreeId(i);
     }
 
-    id = map2.AllocId(curMaxNumOfRes);  // available: 1024
+    id = map2.AllocId(curMaxNumOfRes); // available: 1024
     EXPECT_NE(id, -1);
 
-    id = map2.AllocId(curMaxNumOfRes);  // available: 1023
+    id = map2.AllocId(curMaxNumOfRes); // available: 1023
     EXPECT_NE(id, -1);
 
     id = map2.AllocId(curMaxNumOfRes);
@@ -83,11 +69,9 @@ TEST_F(DriverTest, get_plat_info_succ)
 {
     uint32_t info = 0;
 
-    MOCKER(drvGetPlatformInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetPlatformInfo).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     info = rawDrv->RtGetRunMode();
     EXPECT_EQ(info, RT_RUN_MODE_RESERVED);
@@ -100,21 +84,18 @@ TEST_F(DriverTest, get_plat_info_fail)
 {
     uint32_t info = 0;
 
-    MOCKER(drvGetPlatformInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvGetPlatformInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     info = rawDrv->RtGetRunMode();
     EXPECT_EQ(info, RT_RUN_MODE_RESERVED);
     delete rawDrv;
 }
 
-
 TEST_F(DriverTest, register_driver_fail)
 {
-    DriverFactory * rawDrv = new DriverFactory();
+    DriverFactory* rawDrv = new DriverFactory();
     bool ret = rawDrv->RegDriver(NPU_DRIVER, nullptr);
     EXPECT_EQ(ret, false);
     delete rawDrv;
@@ -123,12 +104,10 @@ TEST_F(DriverTest, register_driver_fail)
 TEST_F(DriverTest, get_topology_type_fail)
 {
     rtError_t error;
-    MOCKER(drvDeviceGetPhyIdByIndex)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvDeviceGetPhyIdByIndex).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     int64_t val;
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     error = rawDrv->GetTopologyType(0, 0, 0, &val);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
     delete rawDrv;
@@ -138,9 +117,7 @@ TEST_F(DriverTest, test_HostGetDevPointer_succ)
 {
     rtError_t error;
     NpuDriver* rawDrv = new NpuDriver();
-    MOCKER(halMemHostGetDevPointer)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemHostGetDevPointer).stubs().will(returnValue(DRV_ERROR_NONE));
 
     error = rawDrv->HostGetDevPointer(nullptr, 0, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -152,9 +129,7 @@ TEST_F(DriverTest, test_HostGetDevPointer_fail)
     rtError_t error;
     NpuDriver* rawDrv = new NpuDriver();
 
-    MOCKER(halMemHostGetDevPointer)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemHostGetDevPointer).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rawDrv->HostGetDevPointer(nullptr, 0, nullptr);
     EXPECT_EQ(error, RT_ERROR_DRV_INPUT);
     delete rawDrv;
@@ -165,9 +140,7 @@ TEST_F(DriverTest, test_HostGetDevPointer_not_exist)
     rtError_t error;
     NpuDriver* rawDrv = new NpuDriver();
 
-    MOCKER(halMemHostGetDevPointer)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NOT_EXIST));
+    MOCKER(halMemHostGetDevPointer).stubs().will(returnValue(DRV_ERROR_NOT_EXIST));
     error = rawDrv->HostGetDevPointer(nullptr, 0, nullptr);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     delete rawDrv;

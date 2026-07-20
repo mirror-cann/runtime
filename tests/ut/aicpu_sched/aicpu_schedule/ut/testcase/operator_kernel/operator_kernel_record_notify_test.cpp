@@ -46,7 +46,7 @@ TEST_F(OperatorKernelRecordNotifyTest, ModelRecord_failed)
 {
     MOCKER(&OperatorKernelRecordNotify::DoCompute).stubs().will(returnValue(0));
 
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;

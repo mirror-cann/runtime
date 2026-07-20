@@ -36,7 +36,8 @@ using namespace cce::runtime;
 // 测试 MemsetD32Optimized 对齐地址填充
 class MemsetTaskTest : public testing::Test {};
 
-TEST(SimdUtilsTest, OptimizedAligned) {
+TEST(SimdUtilsTest, OptimizedAligned)
+{
     const size_t count = 1024;
     uint32_t* buf = (uint32_t*)aligned_alloc(32, count * sizeof(uint32_t));
     ASSERT_NE(buf, nullptr);
@@ -49,11 +50,12 @@ TEST(SimdUtilsTest, OptimizedAligned) {
 }
 
 // 测试 MemsetD32Optimized 非对齐地址（32字节未对齐）
-TEST(SimdUtilsTest, OptimizedUnaligned) {
+TEST(SimdUtilsTest, OptimizedUnaligned)
+{
     const size_t count = 1024;
     uint32_t* aligned = (uint32_t*)aligned_alloc(32, (count + 2) * sizeof(uint32_t));
     ASSERT_NE(aligned, nullptr);
-    uint32_t* unaligned = aligned + 1;  // 偏移4字节，相对32字节未对齐
+    uint32_t* unaligned = aligned + 1; // 偏移4字节，相对32字节未对齐
     uint32_t value = 0x12345678;
     MemsetD32Optimized(unaligned, value, count);
     for (size_t i = 0; i < count; ++i) {
@@ -63,7 +65,8 @@ TEST(SimdUtilsTest, OptimizedUnaligned) {
 }
 
 // 测试 count = 0
-TEST(SimdUtilsTest, OptimizedZeroCount) {
+TEST(SimdUtilsTest, OptimizedZeroCount)
+{
     uint32_t buf[4] = {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
     uint32_t original = buf[0];
     MemsetD32Optimized(buf, 0xDEADBEEF, 0);
@@ -71,8 +74,10 @@ TEST(SimdUtilsTest, OptimizedZeroCount) {
 }
 
 // 测试各种 count 值，覆盖 SIMD 循环尾部逻辑
-TEST(SimdUtilsTest, OptimizedVariousCounts) {
-    std::vector<size_t> counts = {1, 3, 4, 5, 7, 8, 9, 12, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 1023, 1024};
+TEST(SimdUtilsTest, OptimizedVariousCounts)
+{
+    std::vector<size_t> counts = {1,  3,  4,  5,  7,  8,  9,   12,  15,  16,   17,
+                                  31, 32, 33, 63, 64, 65, 127, 128, 129, 1023, 1024};
     size_t maxCount = *std::max_element(counts.begin(), counts.end());
     uint32_t* buf = (uint32_t*)aligned_alloc(32, (maxCount + 64) * sizeof(uint32_t));
     ASSERT_NE(buf, nullptr);
@@ -87,7 +92,8 @@ TEST(SimdUtilsTest, OptimizedVariousCounts) {
 }
 
 // 大块内存压力测试
-TEST(SimdUtilsTest, OptimizedLarge) {
+TEST(SimdUtilsTest, OptimizedLarge)
+{
     const size_t count = 64 * 1024 * 1024 / sizeof(uint32_t); // 64MB
     uint32_t* buf = (uint32_t*)aligned_alloc(32, count * sizeof(uint32_t));
     if (buf == nullptr) {
@@ -96,18 +102,14 @@ TEST(SimdUtilsTest, OptimizedLarge) {
     uint32_t value = 0x5A5A5A5A;
     MemsetD32Optimized(buf, value, count);
     EXPECT_EQ(buf[0], value);
-    EXPECT_EQ(buf[count/2], value);
-    EXPECT_EQ(buf[count-1], value);
+    EXPECT_EQ(buf[count / 2], value);
+    EXPECT_EQ(buf[count - 1], value);
     free(buf);
 }
 
-TEST_F(MemsetTaskTest, ExpandByteToU32_ff) {
-    EXPECT_EQ(ExpandByteToU32(0xFF), 0xFFFFFFFFU);
-}
+TEST_F(MemsetTaskTest, ExpandByteToU32_ff) { EXPECT_EQ(ExpandByteToU32(0xFF), 0xFFFFFFFFU); }
 
-TEST_F(MemsetTaskTest, ExpandByteToU32_01) {
-    EXPECT_EQ(ExpandByteToU32(0x01), 0x01010101U);
-}
+TEST_F(MemsetTaskTest, ExpandByteToU32_01) { EXPECT_EQ(ExpandByteToU32(0x01), 0x01010101U); }
 
 struct IsSupportParam {
     MemsetTaskSupportType support;
@@ -116,27 +118,28 @@ struct IsSupportParam {
     bool expected;
 };
 
-class MemsetTaskIsSupportParamTest : public MemsetTaskTest,
-    public testing::WithParamInterface<IsSupportParam> {};
+class MemsetTaskIsSupportParamTest : public MemsetTaskTest, public testing::WithParamInterface<IsSupportParam> {};
 
-TEST_P(MemsetTaskIsSupportParamTest, IsSupportMemsetTask) {
-    const auto &p = GetParam();
+TEST_P(MemsetTaskIsSupportParamTest, IsSupportMemsetTask)
+{
+    const auto& p = GetParam();
     DevProperties props{};
     props.memsetTaskSupport = p.support;
     EXPECT_EQ(IsSupportMemsetTask(p.memDevId, p.curDevId, props), p.expected);
 }
 
-INSTANTIATE_TEST_SUITE_P(IsSupportMemsetTask, MemsetTaskIsSupportParamTest,
+INSTANTIATE_TEST_SUITE_P(
+    IsSupportMemsetTask, MemsetTaskIsSupportParamTest,
     testing::Values(
         // Same device
         IsSupportParam{MemsetTaskSupportType::MEMSET_TASK_NOT_SUPPORT, 0U, 0U, false},
         IsSupportParam{MemsetTaskSupportType::MEMSET_TASK_SUPPORT, 0U, 0U, true},
         // Cross device - always false regardless of support type
         IsSupportParam{MemsetTaskSupportType::MEMSET_TASK_SUPPORT, 0U, 1U, false},
-        IsSupportParam{MemsetTaskSupportType::MEMSET_TASK_NOT_SUPPORT, 1U, 0U, false}
-    ));
+        IsSupportParam{MemsetTaskSupportType::MEMSET_TASK_NOT_SUPPORT, 1U, 0U, false}));
 
-TEST_F(MemsetTaskTest, MemsetD32OnHost_basic) {
+TEST_F(MemsetTaskTest, MemsetD32OnHost_basic)
+{
     uint32_t buf[64] = {};
     rtError_t error = MemsetD32OnHost(buf, sizeof(buf), 0xA5A5A5A5U, 64);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -145,7 +148,8 @@ TEST_F(MemsetTaskTest, MemsetD32OnHost_basic) {
     }
 }
 
-TEST_F(MemsetTaskTest, MemsetD32OnHost_zero_count) {
+TEST_F(MemsetTaskTest, MemsetD32OnHost_zero_count)
+{
     uint32_t buf[16] = {};
     rtError_t error = MemsetD32OnHost(buf, sizeof(buf), 0xDEADBEEFU, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -154,8 +158,8 @@ TEST_F(MemsetTaskTest, MemsetD32OnHost_zero_count) {
     }
 }
 
-TEST_F(MemsetTaskTest, MemsetD32OnDevice_totalBytes_exceeds_destMax) {
+TEST_F(MemsetTaskTest, MemsetD32OnDevice_totalBytes_exceeds_destMax)
+{
     rtError_t error = MemsetD32OnDevice(nullptr, 8U, 0xABABABABU, 10U, nullptr, false);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
-

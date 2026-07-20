@@ -15,8 +15,8 @@ extern "C" {
 #endif
 
 extern void dlog_init();
-extern int  dlog_getlevel(int module_id, int* enable_event);
-extern int  CheckLogLevel(int moduleId, int logLevel);
+extern int dlog_getlevel(int module_id, int* enable_event);
+extern int CheckLogLevel(int moduleId, int logLevel);
 extern uint64_t GetCurTsdVersion();
 #ifdef __cplusplus
 }

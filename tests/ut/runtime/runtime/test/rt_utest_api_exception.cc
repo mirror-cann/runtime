@@ -11,20 +11,13 @@
 #include "rt_unwrap.h"
 #include "common/rt_utest_context_reset_helper.hpp"
 
-class ApiExceptionTest : public testing::Test
-{
+class ApiExceptionTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
     virtual void TearDown()
     {
@@ -34,14 +27,11 @@ protected:
     }
 };
 
-void MyOpExceptionCallback(rtExceptionInfo_t *exceptionInfo, void *userData)
-{
-    EXPECT_EQ(exceptionInfo->retcode, 100);
-}
+void MyOpExceptionCallback(rtExceptionInfo_t* exceptionInfo, void* userData) { EXPECT_EQ(exceptionInfo->retcode, 100); }
 
 uint32_t g_opExceptionCallbackCount = 0U;
 
-void CountOpExceptionCallback(rtExceptionInfo_t *exceptionInfo, void *userData)
+void CountOpExceptionCallback(rtExceptionInfo_t* exceptionInfo, void* userData)
 {
     MyOpExceptionCallback(exceptionInfo, userData);
     ++g_opExceptionCallbackCount;
@@ -50,7 +40,7 @@ void CountOpExceptionCallback(rtExceptionInfo_t *exceptionInfo, void *userData)
 TEST_F(ApiExceptionTest, rtBinarySetExceptionCallback)
 {
     ElfProgram bin_handle;
-    Program *programBase = &bin_handle;
+    Program* programBase = &bin_handle;
     rtBinHandle binHandle = rt_ut::InitAndExportHandle<rtBinHandle>(programBase);
     rtError_t error;
 
@@ -67,10 +57,10 @@ TEST_F(ApiExceptionTest, rtBinarySetExceptionCallback)
 TEST_F(ApiExceptionTest, rtGetFuncHandleFromExceptionInfo)
 {
     ElfProgram bin_handle;
-    Program *programBase = &bin_handle;
+    Program* programBase = &bin_handle;
     rtBinHandle binHandle = rt_ut::InitAndExportHandle<rtBinHandle>(programBase);
     // bin_handle析构会释放内存
-    Kernel *kernel = new Kernel("kernel.so", "kernel_func", "op_type");
+    Kernel* kernel = new Kernel("kernel.so", "kernel_func", "op_type");
     kernel->SetCpuOpType("test");
     bin_handle.KernelNameMapAdd(kernel);
     rtError_t error;
@@ -145,7 +135,7 @@ TEST_F(ApiExceptionTest, OpTaskFailCallbackNotifyAicpuInvalidInputs)
     exceptionInfo.expandInfo.u.aicpuInfo.funcHandle = reinterpret_cast<rtFuncHandle>(&invalidInnerHandle);
     OpTaskFailCallbackNotify(&exceptionInfo);
 
-    Kernel *kernel = new Kernel("aicpu_test", 0U, nullptr, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
+    Kernel* kernel = new Kernel("aicpu_test", 0U, nullptr, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
     exceptionInfo.expandInfo.u.aicpuInfo.funcHandle = rt_ut::InitAndExportHandle<rtFuncHandle>(kernel);
     OpTaskFailCallbackNotify(&exceptionInfo);
     delete kernel;
@@ -160,7 +150,7 @@ TEST_F(ApiExceptionTest, OpTaskFailCallbackNotifyAicpuInvalidInputs)
 TEST_F(ApiExceptionTest, OpTaskFailCallbackNotify)
 {
     ElfProgram bin_handle;
-    Program *programBase = &bin_handle;
+    Program* programBase = &bin_handle;
     rtBinHandle apiBinHandle = rt_ut::InitAndExportHandle<rtBinHandle>(programBase);
     rtBinHandle exceptionBinHandle = apiBinHandle;
     rtError_t error;
@@ -187,7 +177,7 @@ TEST_F(ApiExceptionTest, OpTaskFailCallbackNotify)
     OpTaskFailCallbackNotify(&exceptionInfo);
     EXPECT_EQ(g_opExceptionCallbackCount, 2U);
 
-    Kernel *kernel = new Kernel("aicpu_test", 0U, programBase, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
+    Kernel* kernel = new Kernel("aicpu_test", 0U, programBase, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
     exceptionInfo.expandInfo.type = RT_EXCEPTION_AICPU;
     exceptionInfo.expandInfo.u.aicpuInfo.funcHandle = rt_ut::InitAndExportHandle<rtFuncHandle>(kernel);
     OpTaskFailCallbackNotify(&exceptionInfo);

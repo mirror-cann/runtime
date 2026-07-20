@@ -25,53 +25,42 @@ using namespace cce::runtime;
 
 class AicpuErrMsgTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AicpuErrMsgTest SetUP" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpuErrMsgTest SetUP" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "AicpuErrMsgTest Tear Down" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AicpuErrMsgTest Tear Down" << std::endl; }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(AicpuErrMsgTest, SetAddr)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     aicpuErrObj->SetErrMsgBufAddr();
     aicpuErrObj->SetErrMsgBufAddr();
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ResetAddr)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, TearDownIsIdempotent)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
 
     // DELETE_O invokes the destructor, which calls TearDown again and covers repeated cleanup.
@@ -84,53 +73,50 @@ TEST_F(AicpuErrMsgTest, TearDownIsIdempotent)
     EXPECT_EQ(aicpuErrObj->device_, nullptr);
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ResetAddrErr_1)
 {
-
-    Device * device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, SetErrMsgBufAddr_1)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ParseErrMsg_1)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     uint8_t bufTmp[256 + 1] = {0};
-    aicpu::AicpuErrMsgInfo *aicpuErrMsg = (aicpu::AicpuErrMsgInfo *)bufTmp;
+    aicpu::AicpuErrMsgInfo* aicpuErrMsg = (aicpu::AicpuErrMsgInfo*)bufTmp;
     aicpuErrMsg->errType = 0;
     aicpuErrMsg->errorCode = TS_SUCCESS;
 
     aicpuErrObj->SetErrMsgBufAddr();
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, FillKernelLaunchPara_1)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
-    char *soName = "stub.so";
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    char* soName = "stub.so";
     rtKernelLaunchNames_t launchNames;
     launchNames.soName = soName;
     launchNames.kernelName = nullptr;
@@ -142,181 +128,165 @@ TEST_F(AicpuErrMsgTest, FillKernelLaunchPara_1)
     const rtError_t ret = aicpuErrObj->FillKernelLaunchPara(launchNames, kernTask);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, FillKernelLaunchPara_2)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
-    char *soName = "stub.so";
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    char* soName = "stub.so";
     rtKernelLaunchNames_t launchNames;
     launchNames.soName = soName;
     launchNames.kernelName = nullptr;
     launchNames.opName = nullptr;
     TaskInfo* kernTask = nullptr;
     rtError_t error = RT_ERROR_NONE;
-    MOCKER_CPP_VIRTUAL(device->ArgLoader_(), &ArgLoader::GetKernelInfoDevAddr)
-       .stubs()
-       .will(returnValue(1));
+    MOCKER_CPP_VIRTUAL(device->ArgLoader_(), &ArgLoader::GetKernelInfoDevAddr).stubs().will(returnValue(1));
     kernTask = device->GetTaskFactory()->Alloc(device->PrimaryStream_(), TS_TASK_TYPE_KERNEL_AICORE, error);
     error = aicpuErrObj->FillKernelLaunchPara(launchNames, kernTask);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, FillKernelLaunchPara_3)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
-    char *KernelName = "stub.so";
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    char* KernelName = "stub.so";
     rtKernelLaunchNames_t launchNames;
     launchNames.soName = nullptr;
     launchNames.kernelName = KernelName;
     launchNames.opName = nullptr;
     TaskInfo* kernTask = nullptr;
     rtError_t error = RT_ERROR_NONE;
-    MOCKER_CPP_VIRTUAL(device->ArgLoader_(), &ArgLoader::GetKernelInfoDevAddr)
-       .stubs()
-       .will(returnValue(1));
+    MOCKER_CPP_VIRTUAL(device->ArgLoader_(), &ArgLoader::GetKernelInfoDevAddr).stubs().will(returnValue(1));
     kernTask = device->GetTaskFactory()->Alloc(device->PrimaryStream_(), TS_TASK_TYPE_KERNEL_AICORE, error);
     error = aicpuErrObj->FillKernelLaunchPara(launchNames, kernTask);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, UnsetAddr)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
     aicpuErrObj->SetErrMsgBufAddr();
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, FreeResource_1)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
     aicpuErrObj->SetErrMsgBufAddr();
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFree)
-       .stubs()
-       .will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     aicpuErrObj->FreeResource();
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ParseErrMsg_aicore)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
     uint8_t bufTmp[256 + 1] = {0};
-    aicpu::AicoreErrMsgInfo *aicoreErrMsg = (aicpu::AicoreErrMsgInfo *)bufTmp;
+    aicpu::AicoreErrMsgInfo* aicoreErrMsg = (aicpu::AicoreErrMsgInfo*)bufTmp;
     aicoreErrMsg->errType = static_cast<uint8_t>(aicpu::AicpuErrMsgType::ERR_MSG_TYPE_AICORE);
     aicoreErrMsg->errorCode = TS_ERROR_AICORE_EXCEPTION;
 
     aicpuErrObj->SetErrMsgBufAddr();
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ParseErrMsg_aicpu)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
     uint8_t bufTmp[256 + 1] = {0};
-    aicpu::AicpuErrMsgInfo *aicpuErrMsg = (aicpu::AicpuErrMsgInfo *)bufTmp;
+    aicpu::AicpuErrMsgInfo* aicpuErrMsg = (aicpu::AicpuErrMsgInfo*)bufTmp;
     aicpuErrMsg->errType = static_cast<uint8_t>(aicpu::AicpuErrMsgType::ERR_MSG_TYPE_AICPU);
     aicpuErrMsg->errorCode = TS_ERROR_AICPU_EXCEPTION;
 
     aicpuErrObj->SetErrMsgBufAddr();
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ParseErrMsg_empty)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
     uint8_t bufTmp[256 + 1] = {0};
     bufTmp[0] = static_cast<uint8_t>(aicpu::AicpuErrMsgType::ERR_MSG_TYPE_NULL);
 
     aicpuErrObj->SetErrMsgBufAddr();
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, ParseErrMsg_abnormal)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
     uint8_t bufTmp[256 + 1] = {0};
-    aicpu::AicpuErrMsgInfo *aicpuErrMsg = (aicpu::AicpuErrMsgInfo *)bufTmp;
+    aicpu::AicpuErrMsgInfo* aicpuErrMsg = (aicpu::AicpuErrMsgInfo*)bufTmp;
     aicpuErrMsg->errType = static_cast<uint8_t>(aicpu::AicpuErrMsgType::ERR_MSG_TYPE_AICPU);
     aicpuErrMsg->errorCode = RT_ERROR_NONE;
 
     aicpuErrObj->SetErrMsgBufAddr();
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
-       .stubs()
-       .will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
     aicpuErrObj->SetErrMsgBufAddr();
 
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, RecordErrMsg_test)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    AicpuErrMsg *aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    AicpuErrMsg* aicpuErrObj = new (std::nothrow) AicpuErrMsg(device);
     EXPECT_NE(aicpuErrObj, nullptr);
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     EXPECT_NE(stm, nullptr);
-    const void *stubFunc = (void *)0x02;
+    const void* stubFunc = (void*)0x02;
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
     EXPECT_NE(kernTask, nullptr);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(kernTask, kernel, kernel->GetKernelAttrType(), (uint16_t)1, nullptr);
     delete kernel;
     EXPECT_EQ(kernTask->type, TS_TASK_TYPE_KERNEL_AICORE);
 
     uint8_t bufTmp[256 + 1] = {0};
-    aicpu::AicoreErrMsgInfo *aicoreErrMsg = (aicpu::AicoreErrMsgInfo *)bufTmp;
+    aicpu::AicoreErrMsgInfo* aicoreErrMsg = (aicpu::AicoreErrMsgInfo*)bufTmp;
     aicoreErrMsg->errType = static_cast<uint8_t>(aicpu::AicpuErrMsgType::ERR_MSG_TYPE_AICORE);
     aicoreErrMsg->errorCode = TS_ERROR_AICORE_EXCEPTION;
     aicoreErrMsg->streamId = stm->Id_();
@@ -325,49 +295,42 @@ TEST_F(AicpuErrMsgTest, RecordErrMsg_test)
     device->GetTaskFactory()->Recycle(kernTask);
     DELETE_O(stm);
     DELETE_O(aicpuErrObj);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-bool GetDefaultFlag()
-{
-    return true;
-}
+bool GetDefaultFlag() { return true; }
 
 TEST_F(AicpuErrMsgTest, FaultForAiCore1)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    const void *stubFunc = (void *)0x03;
-    const char *stubName = "abcd";
+    const void* stubFunc = (void*)0x03;
+    const char* stubName = "abcd";
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'a', 'b', 'c', '\0'};
 
-    MOCKER_CPP(&Runtime::GetProgram)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&Runtime::PutProgram)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP(&Runtime::GetProgram).stubs().will(returnValue(true));
+    MOCKER_CPP(&Runtime::PutProgram).stubs().will(ignoreReturnValue());
 
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
 
-    Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(kernTask, aicKernel, aicKernel->GetKernelAttrType(), (uint16_t)1, nullptr);
     delete aicKernel;
     EXPECT_EQ(kernTask->type, TS_TASK_TYPE_KERNEL_AICORE);
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 0);
     kernel->SetStub_(stubFunc);
     kernTask->u.aicTaskInfo.kernel = kernel;
 
-    MOCKER_CPP_VIRTUAL(Runtime::Instance(), &Runtime::GetPriCtxByDeviceId).stubs().will(returnValue((Context *)(0x02)));
+    MOCKER_CPP_VIRTUAL(Runtime::Instance(), &Runtime::GetPriCtxByDeviceId).stubs().will(returnValue((Context*)(0x02)));
     // 1. kernelInfoExt_ is empty
     PrintErrorInfo(kernTask, 0);
     bool exceptFlag = false;
-    for (const auto &errMsg : stm->errorMsg_) {
+    for (const auto& errMsg : stm->errorMsg_) {
         std::string errmsg = errMsg.second.c_str();
         size_t pos = errmsg.find("module is nullptr");
         if (pos == std::string::npos) {
@@ -384,10 +347,10 @@ TEST_F(AicpuErrMsgTest, FaultForAiCore1)
     EXPECT_EQ(exceptFlag, true);
 
     // 2. kernelInfoExt_ is not empty
-    kernel->SetKernelInfoExt(reinterpret_cast<const char_t *>("infoext"));
+    kernel->SetKernelInfoExt(reinterpret_cast<const char_t*>("infoext"));
     PrintErrorInfo(kernTask, 0);
     bool exceptFlag2 = false;
-    for (const auto &errMsg : stm->errorMsg_) {
+    for (const auto& errMsg : stm->errorMsg_) {
         std::string errmsg = errMsg.second.c_str();
         size_t pos = errmsg.find("module is nullptr");
         if (pos == std::string::npos) {
@@ -406,30 +369,30 @@ TEST_F(AicpuErrMsgTest, FaultForAiCore1)
     device->GetTaskFactory()->Recycle(kernTask);
     DELETE_O(stm);
     DELETE_O(kernel);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, PrintAicpuErrorInfo_SQEFieldsInErrorMsg)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     EXPECT_NE(device, nullptr);
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const task = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICPU, errCode);
+    TaskInfo* const task = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICPU, errCode);
     EXPECT_NE(task, nullptr);
 
     AicpuTaskInit(task, 1, 1);
-    Kernel *kernel = new (std::nothrow) Kernel("libmc2_server.so", "Mc2ServerKernel", "AlltoAllvQuantGroupedMatMul");
+    Kernel* kernel = new (std::nothrow) Kernel("libmc2_server.so", "Mc2ServerKernel", "AlltoAllvQuantGroupedMatMul");
     EXPECT_NE(kernel, nullptr);
     InitEmbeddedInnerHandle<Kernel>(kernel);
     task->u.aicpuTaskInfo.kernel = kernel;
     task->u.aicpuTaskInfo.kernelInnerHandle = kernel->GetInnerHandle();
     task->u.aicpuTaskInfo.aicpuKernelType = static_cast<uint8_t>(TS_AICPU_KERNEL_AICPU);
-    task->u.aicpuTaskInfo.comm.args = reinterpret_cast<void *>(0x1000);
+    task->u.aicpuTaskInfo.comm.args = reinterpret_cast<void*>(0x1000);
     task->u.aicpuTaskInfo.comm.argsSize = 256U;
-    task->u.aicpuTaskInfo.soName = reinterpret_cast<void *>(0x2000);
-    task->u.aicpuTaskInfo.funcName = reinterpret_cast<void *>(0x3000);
+    task->u.aicpuTaskInfo.soName = reinterpret_cast<void*>(0x2000);
+    task->u.aicpuTaskInfo.funcName = reinterpret_cast<void*>(0x3000);
     task->u.aicpuTaskInfo.headParamOffset = 64U;
     task->errorCode = TS_ERROR_AICPU_EXCEPTION;
 
@@ -441,14 +404,26 @@ TEST_F(AicpuErrMsgTest, PrintAicpuErrorInfo_SQEFieldsInErrorMsg)
     bool foundFuncNameDevAddr = false;
     bool foundHeadParamOffset = false;
     bool foundAicpuKernelType = false;
-    for (const auto &errMsg : stm->errorMsg_) {
+    for (const auto& errMsg : stm->errorMsg_) {
         std::string msg = errMsg.second;
-        if (msg.find("paramAddr=0x1040") != std::string::npos) { foundParamAddr = true; }
-        if (msg.find("argsSize=256") != std::string::npos) { foundArgsSize = true; }
-        if (msg.find("soNameDevAddr=0x2000") != std::string::npos) { foundSoNameDevAddr = true; }
-        if (msg.find("funcNameDevAddr=0x3000") != std::string::npos) { foundFuncNameDevAddr = true; }
-        if (msg.find("headParamOffset=64") != std::string::npos) { foundHeadParamOffset = true; }
-        if (msg.find("aicpuKernelType=2") != std::string::npos) { foundAicpuKernelType = true; }
+        if (msg.find("paramAddr=0x1040") != std::string::npos) {
+            foundParamAddr = true;
+        }
+        if (msg.find("argsSize=256") != std::string::npos) {
+            foundArgsSize = true;
+        }
+        if (msg.find("soNameDevAddr=0x2000") != std::string::npos) {
+            foundSoNameDevAddr = true;
+        }
+        if (msg.find("funcNameDevAddr=0x3000") != std::string::npos) {
+            foundFuncNameDevAddr = true;
+        }
+        if (msg.find("headParamOffset=64") != std::string::npos) {
+            foundHeadParamOffset = true;
+        }
+        if (msg.find("aicpuKernelType=2") != std::string::npos) {
+            foundAicpuKernelType = true;
+        }
     }
     EXPECT_EQ(foundParamAddr, true);
     EXPECT_EQ(foundArgsSize, true);
@@ -460,12 +435,12 @@ TEST_F(AicpuErrMsgTest, PrintAicpuErrorInfo_SQEFieldsInErrorMsg)
     device->GetTaskFactory()->Recycle(task);
     DELETE_O(stm);
     delete kernel;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(AicpuErrMsgTest, GetError)
 {
-    Device *dev = nullptr;
+    Device* dev = nullptr;
     Stream stm(dev, 0);
     stm.errCode_ = TS_ERROR_AICPU_HCCL_OP_RETRY_FAILED;
     auto error = stm.GetError();

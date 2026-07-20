@@ -36,18 +36,11 @@ using namespace aicpu;
 
 class AICPUDrvManagerTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUDrvManagerTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUDrvManagerTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUDrvManagerTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUDrvManagerTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUDrvManagerTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUDrvManagerTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -57,149 +50,151 @@ protected:
 };
 
 namespace {
-    constexpr uint64_t CHIP_ADC = 2U;
-    constexpr uint64_t CHIP_ASCEND_910B = 5U;
-    const std::map<EVENT_ID, SCHEDULE_PRIORITY> eventPriority = {
-        {EVENT_ID::EVENT_RANDOM_KERNEL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_SPLIT_KERNEL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_DVPP_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_DVPP_MPI_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_FR_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_TS_HWTS_KERNEL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_AICPU_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_TS_CTRL_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_QUEUE_EMPTY_TO_NOT_EMPTY, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_QUEUE_FULL_TO_NOT_FULL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
-        {EVENT_ID::EVENT_TDT_ENQUEUE, SCHEDULE_PRIORITY::PRIORITY_LEVEL2},
-        {EVENT_ID::EVENT_ACPU_MSG_TYPE1, SCHEDULE_PRIORITY::PRIORITY_LEVEL1}
-    };
+constexpr uint64_t CHIP_ADC = 2U;
+constexpr uint64_t CHIP_ASCEND_910B = 5U;
+const std::map<EVENT_ID, SCHEDULE_PRIORITY> eventPriority = {
+    {EVENT_ID::EVENT_RANDOM_KERNEL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_SPLIT_KERNEL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_DVPP_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_DVPP_MPI_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_FR_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_TS_HWTS_KERNEL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_AICPU_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_TS_CTRL_MSG, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_QUEUE_EMPTY_TO_NOT_EMPTY, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_QUEUE_FULL_TO_NOT_FULL, SCHEDULE_PRIORITY::PRIORITY_LEVEL0},
+    {EVENT_ID::EVENT_TDT_ENQUEUE, SCHEDULE_PRIORITY::PRIORITY_LEVEL2},
+    {EVENT_ID::EVENT_ACPU_MSG_TYPE1, SCHEDULE_PRIORITY::PRIORITY_LEVEL1}};
 
-    drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
-    {
-        if (moduleType == 1 && infoType == 20) {
-            *value = 14;
-        }
-        if (moduleType == 1 && infoType == 21) {
-            *value = 65532;
-        }
-
-        if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_VERSION)) {
-            *value = CHIP_ADC << 8;
-        }
-        return DRV_ERROR_NONE;
+drvError_t halGetDeviceInfoFake1(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
+{
+    if (moduleType == 1 && infoType == 20) {
+        *value = 14;
+    }
+    if (moduleType == 1 && infoType == 21) {
+        *value = 65532;
     }
 
-    StatusCode GetAicpuDeployContextOnHost(DeployContext &deployCtx)
-    {
-        deployCtx = DeployContext::HOST;
-        return AICPU_SCHEDULE_OK;
+    if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_VERSION)) {
+        *value = CHIP_ADC << 8;
+    }
+    return DRV_ERROR_NONE;
+}
+
+StatusCode GetAicpuDeployContextOnHost(DeployContext& deployCtx)
+{
+    deployCtx = DeployContext::HOST;
+    return AICPU_SCHEDULE_OK;
+}
+
+drvError_t halGetDeviceInfoFake1OnHost(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
+{
+    if (moduleType == 1 && infoType == 20) {
+        *value = 64;
+    }
+    if (moduleType == 1 && infoType == 21) {
+        *value = 0;
+    }
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halGetDeviceInfoFake2(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
+{
+    if (moduleType == 1 && infoType == 3) {
+        *value = 8;
+    }
+    if (moduleType == 1 && infoType == 8) {
+        *value = 1020;
+    }
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halGetDeviceInfoFakeAicpuBitmapMismatch(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
+{
+    if (moduleType == 1 && (infoType == 20 || infoType == 3)) {
+        *value = 2;
+    }
+    if (moduleType == 1 && (infoType == 21 || infoType == 8)) {
+        *value = 1;
+    }
+    return DRV_ERROR_NONE;
+}
+
+drvError_t halGetDeviceInfoFakeNotSupportVerify(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
+{
+    (void)devId;
+    (void)value;
+    if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_CUST_OP_ENHANCE)) {
+        return DRV_ERROR_NOT_SUPPORT;
+    }
+    return DRV_ERROR_NONE;
+}
+
+drvError_t drvQueryProcessHostPidFake1(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
+{
+    *host_pid = 1;
+    *cp_type = DEVDRV_PROCESS_CP1;
+    return DRV_ERROR_NONE;
+}
+
+drvError_t drvQueryProcessHostPidFake2(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
+{
+    static uint32_t cnt = 0U;
+    if (cnt == 0U) {
+        ++cnt;
+        return DRV_ERROR_NO_PROCESS;
     }
 
-    drvError_t halGetDeviceInfoFake1OnHost(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
-    {
-        if (moduleType == 1 && infoType == 20) {
-            *value = 64;
-        }
-        if (moduleType == 1 && infoType == 21) {
-            *value = 0;
-        }
-        return DRV_ERROR_NONE;
-    }
+    return DRV_ERROR_UNINIT;
+}
 
-    drvError_t halGetDeviceInfoFake2(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
-    {
-        if (moduleType == 1 && infoType == 3) {
-            *value = 8;
-        }
-        if (moduleType == 1 && infoType == 8) {
-            *value = 1020;
-        }
-        return DRV_ERROR_NONE;
-    }
+drvError_t drvQueryProcessHostPidFake3(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
+{
+    return DRV_ERROR_INNER_ERR;
+}
 
-    drvError_t halGetDeviceInfoFakeAicpuBitmapMismatch(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
-    {
-        if (moduleType == 1 && (infoType == 20 || infoType == 3)) {
-            *value = 2;
-        }
-        if (moduleType == 1 && (infoType == 21 || infoType == 8)) {
-            *value = 1;
-        }
-        return DRV_ERROR_NONE;
-    }
-
-    drvError_t halGetDeviceInfoFakeNotSupportVerify(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
-    {
-        (void)devId;
-        (void)value;
-        if ((moduleType == MODULE_TYPE_SYSTEM) && (infoType == INFO_TYPE_CUST_OP_ENHANCE)) {
-            return DRV_ERROR_NOT_SUPPORT;
-        }
-        return DRV_ERROR_NONE;
-    }
-
-    drvError_t drvQueryProcessHostPidFake1(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                           unsigned int *host_pid, unsigned int *cp_type)
-    {
+drvError_t drvQueryProcessHostPidFake4(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
+{
+    static uint32_t cnt = 0U;
+    if (cnt == 0) {
+        ++cnt;
         *host_pid = 1;
         *cp_type = DEVDRV_PROCESS_CP1;
         return DRV_ERROR_NONE;
     }
-
-    drvError_t drvQueryProcessHostPidFake2(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                           unsigned int *host_pid, unsigned int *cp_type)
-    {
-        static uint32_t cnt = 0U;
-        if (cnt == 0U) {
-            ++cnt;
-            return DRV_ERROR_NO_PROCESS;
-        }
-
-        return DRV_ERROR_UNINIT;
-    }
-
-    drvError_t drvQueryProcessHostPidFake3(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                           unsigned int *host_pid, unsigned int *cp_type)
-    {
-        return DRV_ERROR_INNER_ERR;
-    }
-
-    drvError_t drvQueryProcessHostPidFake4(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                           unsigned int *host_pid, unsigned int *cp_type)
-    {
-        static uint32_t cnt = 0U;
-        if (cnt == 0) {
-            ++cnt;
-            *host_pid = 1;
-            *cp_type = DEVDRV_PROCESS_CP1;
-            return DRV_ERROR_NONE;
-        }
-        *host_pid = 2;
-        *cp_type = DEVDRV_PROCESS_CP1;
-        return DRV_ERROR_NONE;
-    }
-
-    drvError_t drvQueryProcessHostPidFake5(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                           unsigned int *host_pid, unsigned int *cp_type)
-    {
-        return DRV_ERROR_NO_PROCESS;
-    }
+    *host_pid = 2;
+    *cp_type = DEVDRV_PROCESS_CP1;
+    return DRV_ERROR_NONE;
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgr) {
+drvError_t drvQueryProcessHostPidFake5(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
+{
+    return DRV_ERROR_NO_PROCESS;
+}
+} // namespace
+
+TEST_F(AICPUDrvManagerTEST, InitDrvMgr)
+{
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     int ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgr_fail) {
+TEST_F(AICPUDrvManagerTEST, InitDrvMgr_fail)
+{
     std::vector<uint32_t> deviceVec;
     int ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgr_fail2) {
+TEST_F(AICPUDrvManagerTEST, InitDrvMgr_fail2)
+{
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     deviceVec.push_back(64);
@@ -207,24 +202,24 @@ TEST_F(AICPUDrvManagerTEST, InitDrvMgr_fail2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvZone) {
+TEST_F(AICPUDrvManagerTEST, InitDrvZone)
+{
     int32_t ret = AicpuDrvManager::GetInstance().InitDrvZone();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule) {
+TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule)
+{
     const uint32_t groupId = CP_DEFAULT_GROUP_ID;
     AicpuDrvManager drvMgr;
     int32_t ret = drvMgr.InitDrvSchedModule(groupId, eventPriority);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-
-TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail2) {
+TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail2)
+{
     const uint32_t groupId = CP_DEFAULT_GROUP_ID;
-    MOCKER(halEschedAttachDevice)
-        .stubs()
-        .will(returnValue(200));
+    MOCKER(halEschedAttachDevice).stubs().will(returnValue(200));
 
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -234,11 +229,10 @@ TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail3) {
+TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail3)
+{
     const uint32_t groupId = CP_DEFAULT_GROUP_ID;
-    MOCKER(halEschedCreateGrp)
-        .stubs()
-        .will(returnValue(200));
+    MOCKER(halEschedCreateGrp).stubs().will(returnValue(200));
 
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -248,11 +242,10 @@ TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail3) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail4) {
+TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail4)
+{
     const uint32_t groupId = CP_DEFAULT_GROUP_ID;
-    MOCKER(halEschedSetEventPriority)
-        .stubs()
-        .will(returnValue(200));
+    MOCKER(halEschedSetEventPriority).stubs().will(returnValue(200));
 
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -262,101 +255,103 @@ TEST_F(AICPUDrvManagerTEST, InitDrvSchedModule_fail4) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotEmptyEvent) {
+TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotEmptyEvent)
+{
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().SubscribeQueueNotEmptyEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotEmptyEvent_failed2) {
-    MOCKER(halQueueSubscribe)
-        .stubs()
-        .will(returnValue(200));
+TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotEmptyEvent_failed2)
+{
+    MOCKER(halQueueSubscribe).stubs().will(returnValue(200));
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().SubscribeQueueNotEmptyEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotEmptyEvent) {
+TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotEmptyEvent)
+{
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().UnSubscribeQueueNotEmptyEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotEmptyEvent_failed) {
-    MOCKER(halQueueUnsubscribe)
-        .stubs()
-        .will(returnValue(200));
+TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotEmptyEvent_failed)
+{
+    MOCKER(halQueueUnsubscribe).stubs().will(returnValue(200));
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().UnSubscribeQueueNotEmptyEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotFullEvent) {
+TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotFullEvent)
+{
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().SubscribeQueueNotFullEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotFullEvent_failed) {
-    MOCKER(halQueueSubF2NFEvent)
-        .stubs()
-        .will(returnValue(200));
+TEST_F(AICPUDrvManagerTEST, SubscribeQueueNotFullEvent_failed)
+{
+    MOCKER(halQueueSubF2NFEvent).stubs().will(returnValue(200));
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().SubscribeQueueNotFullEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotFullEvent) {
+TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotFullEvent)
+{
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().UnSubscribeQueueNotFullEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotFullEvent_failed) {
-    MOCKER(halQueueUnsubF2NFEvent)
-        .stubs()
-        .will(returnValue(200));
+TEST_F(AICPUDrvManagerTEST, UnSubscribeQueueNotFullEvent_failed)
+{
+    MOCKER(halQueueUnsubF2NFEvent).stubs().will(returnValue(200));
     uint32_t queueId = 1;
     int ret = AicpuDrvManager::GetInstance().UnSubscribeQueueNotFullEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(AICPUDrvManagerTEST, BindHostPid) {
+TEST_F(AICPUDrvManagerTEST, BindHostPid)
+{
     AicpuPlat mode = AicpuPlat::AICPU_ONLINE_PLAT;
     uint32_t vfId = 0;
     char pidSign[] = "12345A";
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
     int32_t bindPidRet = drvMgr.BindHostPid(pidSign, static_cast<int32_t>(mode), vfId, DEVDRV_PROCESS_CP2);
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, BindHostPid_fail) {
+TEST_F(AICPUDrvManagerTEST, BindHostPid_fail)
+{
     AicpuPlat mode = AicpuPlat::AICPU_MAX_PLAT;
     uint32_t vfId = 0;
     char pidSign[] = "12345A";
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
     int32_t bindPidRet = drvMgr.BindHostPid(pidSign, static_cast<int32_t>(mode), vfId, DEVDRV_PROCESS_CP2);
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUDrvManagerTEST, BindHostPid_fail2) {
+TEST_F(AICPUDrvManagerTEST, BindHostPid_fail2)
+{
     AicpuPlat mode = AicpuPlat::AICPU_ONLINE_PLAT;
     uint32_t vfId = 0;
     char pidSign[] = "12345A";
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
     int32_t bindPidRet = drvMgr.BindHostPid(pidSign, static_cast<int32_t>(mode), vfId, DEVDRV_PROCESS_CPTYPE_MAX);
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUDrvManagerTEST, BindHostPid_fail3) {
-    MOCKER(drvBindHostPid)
-        .stubs()
-        .will(returnValue(200));
+TEST_F(AICPUDrvManagerTEST, BindHostPid_fail3)
+{
+    MOCKER(drvBindHostPid).stubs().will(returnValue(200));
     AicpuPlat mode = AicpuPlat::AICPU_ONLINE_PLAT;
     uint32_t vfId = 0;
     char pidSign[] = "12345A";
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
 
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -366,68 +361,68 @@ TEST_F(AICPUDrvManagerTEST, BindHostPid_fail3) {
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUDrvManagerTEST, CheckBindHostPid001) {
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake1));
+TEST_F(AICPUDrvManagerTEST, CheckBindHostPid001)
+{
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake1));
     drvMgr.hostPid_ = 1;
     int32_t bindPidRet = drvMgr.CheckBindHostPid();
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, CheckBindHostPid002) {
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
+TEST_F(AICPUDrvManagerTEST, CheckBindHostPid002)
+{
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
     MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake2));
     drvMgr.hostPid_ = 1;
     int32_t bindPidRet = drvMgr.CheckBindHostPid();
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUDrvManagerTEST, CheckBindHostPid003) {
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake3));
+TEST_F(AICPUDrvManagerTEST, CheckBindHostPid003)
+{
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake3));
     int32_t bindPidRet = drvMgr.CheckBindHostPid();
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUDrvManagerTEST, CheckBindHostPid004) {
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake1));
+TEST_F(AICPUDrvManagerTEST, CheckBindHostPid004)
+{
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake1));
     drvMgr.hostPid_ = 2;
     int32_t bindPidRet = drvMgr.CheckBindHostPid();
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUDrvManagerTEST, CheckBindHostPid005) {
-    AicpuDrvManager &drvMgr = AicpuDrvManager::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake5));
+TEST_F(AICPUDrvManagerTEST, CheckBindHostPid005)
+{
+    AicpuDrvManager& drvMgr = AicpuDrvManager::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake5));
     drvMgr.hostPid_ = 2;
     int32_t bindPidRet = drvMgr.CheckBindHostPid();
     EXPECT_EQ(bindPidRet, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetThreadVfAicpuDCpuInfo) {
+TEST_F(AICPUDrvManagerTEST, GetThreadVfAicpuDCpuInfo)
+{
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     int ret = AicpuDrvManager::GetInstance().GetThreadVfAicpuDCpuInfo(deviceVec);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoInVf) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoInVf)
+{
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     int ret = AicpuDrvManager::GetInstance().GetNormalAicpuInfo(deviceVec);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess1) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess1)
+{
     std::vector<uint32_t> device_vec;
     device_vec.push_back(32U);
     int64_t expect_aicpuNum = 14;
@@ -441,7 +436,8 @@ TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess1) {
     }
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess1OnHost) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess1OnHost)
+{
     std::vector<uint32_t> device_vec;
     device_vec.push_back(32U);
     int64_t expect_aicpuNum = 64;
@@ -455,7 +451,8 @@ TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess1OnHost) {
     }
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess2) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess2)
+{
     std::vector<uint32_t> device_vec;
     device_vec.push_back(31U);
     int64_t expect_aicpuNum = 8;
@@ -486,7 +483,8 @@ TEST_F(AICPUDrvManagerTEST, GetCcpuPhysIndexInvalidIndex)
     EXPECT_EQ(ret, 0U);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess3) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess3)
+{
     std::vector<uint32_t> device_vec;
     device_vec.push_back(0U);
     int64_t expect_aicpuNum = 8;
@@ -500,7 +498,8 @@ TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess3) {
     }
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess4) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess4)
+{
     std::vector<uint32_t> device_vec;
     device_vec.push_back(0U);
     int64_t expect_aicpuNum = 8;
@@ -515,44 +514,43 @@ TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoSuccess4) {
     }
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoInVfFail) {
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuInfoInVfFail)
+{
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(1));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     int ret = AicpuDrvManager::GetInstance().GetNormalAicpuInfo(deviceVec);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgrVf32) {
+TEST_F(AICPUDrvManagerTEST, InitDrvMgrVf32)
+{
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(32);
     int ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgrDevice1Vf1) {
+TEST_F(AICPUDrvManagerTEST, InitDrvMgrDevice1Vf1)
+{
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     int ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 1, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgrVf32GetVfFail) {
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUDrvManagerTEST, InitDrvMgrVf32GetVfFail)
+{
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(1));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(32);
     int ret = AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgr_001) {
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUDrvManagerTEST, InitDrvMgr_001)
+{
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(1));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(32);
     MOCKER_CPP(&AicpuDrvManager::GetNormalAicpuInfo).stubs().will(returnValue(0));
@@ -561,7 +559,8 @@ TEST_F(AICPUDrvManagerTEST, InitDrvMgr_001) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitSocType_CHIP_ASCEND_910B) {
+TEST_F(AICPUDrvManagerTEST, InitSocType_CHIP_ASCEND_910B)
+{
     AicpuDrvManager inst;
     int64_t deviceInfo = CHIP_ASCEND_910B << 8;
     MOCKER(halGetDeviceInfo)
@@ -585,7 +584,8 @@ TEST_F(AICPUDrvManagerTEST, InitSocType_CHIP_ASCEND_910B) {
     FeatureCtrl::aicpuFeatureCheckEventSender_ = false;
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_001) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_001)
+{
     AicpuDrvManager inst;
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -594,31 +594,30 @@ TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_001) {
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_002) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_002)
+{
     AicpuDrvManager inst;
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(48);
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(0));
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
     auto ret = inst.GetNormalAicpuDCpuInfo(deviceVec);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_003) {
+TEST_F(AICPUDrvManagerTEST, GetNormalAicpuDCpuInfo_003)
+{
     AicpuDrvManager inst;
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(48);
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(1));
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
     auto ret = inst.GetNormalAicpuDCpuInfo(deviceVec);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUDrvManagerTEST, GetThreadVfAicpuDCpuInfo_001) {
+TEST_F(AICPUDrvManagerTEST, GetThreadVfAicpuDCpuInfo_001)
+{
     AicpuDrvManager inst;
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -627,7 +626,8 @@ TEST_F(AICPUDrvManagerTEST, GetThreadVfAicpuDCpuInfo_001) {
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUDrvManagerTEST, InitDrvMgrCaluniqueVfId_001) {
+TEST_F(AICPUDrvManagerTEST, InitDrvMgrCaluniqueVfId_001)
+{
     AicpuDrvManager inst;
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -635,7 +635,8 @@ TEST_F(AICPUDrvManagerTEST, InitDrvMgrCaluniqueVfId_001) {
     inst.InitDrvMgrCaluniqueVfId(deviceVec, 1);
     EXPECT_EQ(inst.uniqueVfId_, 1);
 }
-TEST_F(AICPUDrvManagerTEST, GetAicpuPhysIndexSuccess) {
+TEST_F(AICPUDrvManagerTEST, GetAicpuPhysIndexSuccess)
+{
     AicpuDrvManager inst;
     inst.aicpuIdVec_ = {1, 2};
     inst.coreNumPerDev_ = 3;

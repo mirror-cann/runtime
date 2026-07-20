@@ -29,22 +29,11 @@ using namespace cce::runtime;
 
 class XpuPoolTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"xpuPool test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "xpuPool test start" << std::endl; }
 
-    }
+    static void TearDownTestCase() { std::cout << "xpuPool test start end" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"xpuPool test start end"<<std::endl;
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -55,11 +44,11 @@ protected:
 
 TEST_F(XpuPoolTest, Xpu_Pool_Fail_01)
 {
-    H2HCopyMgr* h2hCopyMgr = new (std::nothrow) H2HCopyMgr(10, 10,
-    100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_POLICY_DEFAULT);
+    H2HCopyMgr* h2hCopyMgr =
+        new (std::nothrow) H2HCopyMgr(10, 10, 100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_POLICY_DEFAULT);
     void* tmp = h2hCopyMgr->AllocHostMem();
     EXPECT_EQ(tmp, nullptr);
-    MOCKER(malloc).stubs().will(returnValue((void *)NULL));
+    MOCKER(malloc).stubs().will(returnValue((void*)NULL));
     const uint32_t size = 100;
     void* tmp1 = h2hCopyMgr->AllocHostMem(size);
     EXPECT_EQ(tmp1, nullptr);
@@ -68,31 +57,31 @@ TEST_F(XpuPoolTest, Xpu_Pool_Fail_01)
 
 TEST_F(XpuPoolTest, Xpu_Pool_Fail_02)
 {
-    H2HCopyMgr* h2hCopyMgr = new (std::nothrow) H2HCopyMgr(10, 10,
-    100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
-    void *item = nullptr;
+    H2HCopyMgr* h2hCopyMgr =
+        new (std::nothrow) H2HCopyMgr(10, 10, 100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
+    void* item = nullptr;
     h2hCopyMgr->FreeHostMem(item);
     delete h2hCopyMgr;
 }
 
 TEST_F(XpuPoolTest, Xpu_Pool_Fail_03)
 {
-    H2HCopyMgr* h2hCopyMgr = new (std::nothrow) H2HCopyMgr(10, 10,
-    100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
-    void *item = nullptr;
-    MOCKER(malloc).stubs().will(returnValue((void *)NULL));
+    H2HCopyMgr* h2hCopyMgr =
+        new (std::nothrow) H2HCopyMgr(10, 10, 100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
+    void* item = nullptr;
+    MOCKER(malloc).stubs().will(returnValue((void*)NULL));
     const size_t size = 100;
-    void * const para = (void*)100;
+    void* const para = (void*)100;
     h2hCopyMgr->MallocBuffer(size, para);
     delete h2hCopyMgr;
 }
 
 TEST_F(XpuPoolTest, Xpu_Pool_Fail_04)
 {
-    H2HCopyMgr* h2hCopyMgr = new (std::nothrow) H2HCopyMgr(10, 10,
-    100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
-    void *dst = nullptr;
-    const void * const src = (void*)100;
+    H2HCopyMgr* h2hCopyMgr =
+        new (std::nothrow) H2HCopyMgr(10, 10, 100, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
+    void* dst = nullptr;
+    const void* const src = (void*)100;
     const uint32_t size = 100;
     h2hCopyMgr->H2DMemCopy(dst, src, size);
     MOCKER(memcpy_s).stubs().will(returnValue(1));
@@ -100,6 +89,6 @@ TEST_F(XpuPoolTest, Xpu_Pool_Fail_04)
     void* b = malloc(10);
     h2hCopyMgr->H2DMemCopy(a, b, 10);
     free(a);
-    free(b);  
+    free(b);
     delete h2hCopyMgr;
 }

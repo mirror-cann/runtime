@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     // 屏蔽 MOCK WARNING, 部分未调用的接口没有设置 EXPECT_CALL

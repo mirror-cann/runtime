@@ -25,23 +25,16 @@ protected:
         std::cout << "TprtCqHandleTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TprtCqHandleTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TprtCqHandleTest end" << std::endl; }
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TprtCqHandleTest, create_TprtCqHandle_Success)
 {
-    TprtCqHandle *cqHdl = new TprtCqHandle(0, 0);
+    TprtCqHandle* cqHdl = new TprtCqHandle(0, 0);
     EXPECT_EQ(cqHdl->devId_, 0);
     DELETE_O(cqHdl);
 }
@@ -49,9 +42,9 @@ TEST_F(TprtCqHandleTest, create_TprtCqHandle_Success)
 TEST_F(TprtCqHandleTest, when_sqHandle_is_nullptr_TprtCqWriteCqe_should_be_Failed)
 {
     cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 10U;
-    TprtCqHandle *cqHdl = new TprtCqHandle(0, 0);
+    TprtCqHandle* cqHdl = new TprtCqHandle(0, 0);
     TprtSqe_t headTask = {};
     uint32_t error = cqHdl->TprtCqWriteCqe(TPRT_EXIST_ERROR, TPRT_SQE_TYPE_IS_INVALID, &headTask, nullptr);
     EXPECT_EQ(error, TPRT_SQ_HANDLE_INVALID);
@@ -62,11 +55,11 @@ TEST_F(TprtCqHandleTest, when_sqHandle_is_nullptr_TprtCqWriteCqe_should_be_Faile
 TEST_F(TprtCqHandleTest, when_queue_is_full_TprtCqWriteCqe_should_be_Failed)
 {
     cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
-    TprtManage *manage = TprtManage::Instance();
+    TprtManage* manage = TprtManage::Instance();
     manage->sqcqMaxDepth_ = 10U;
-    TprtCqHandle *cqHdl = new TprtCqHandle(0, 0);
-    TprtSqHandle *sqHdl = new TprtSqHandle(0, 0);
-    cqHdl->cqHead_=1U;
+    TprtCqHandle* cqHdl = new TprtCqHandle(0, 0);
+    TprtSqHandle* sqHdl = new TprtSqHandle(0, 0);
+    cqHdl->cqHead_ = 1U;
     TprtSqe_t headTask = {};
     uint32_t error = cqHdl->TprtCqWriteCqe(TPRT_EXIST_ERROR, TPRT_SQE_TYPE_IS_INVALID, &headTask, sqHdl);
     EXPECT_EQ(error, TPRT_SQ_QUEUE_FULL);

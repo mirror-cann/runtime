@@ -12,16 +12,14 @@
 #include "ascend_inpackage_hal.h"
 #include "tsd.h"
 #include "gtest/gtest.h"
- 
+
 class HostCpuDriverStubUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
- 
-    virtual void TearDown()
-    {}
+    virtual void SetUp() {}
+
+    virtual void TearDown() {}
 };
- 
+
 TEST_F(HostCpuDriverStubUt, HostCpuDriverStubUtSuccess)
 {
     drvBindHostpidInfo info;
@@ -37,23 +35,23 @@ TEST_F(HostCpuDriverStubUt, HostCpuDriverStubUtSuccess)
     auto ret = halGetDeviceVfList(0, &vfList, 1, &vfNum);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
 }
- 
+
 TEST_F(HostCpuDriverStubUt, drvQueryProcessHostPid)
 {
     int pid = 2343;
-    unsigned int *chip_id;
-    unsigned int *vfid;
-    unsigned int *host_pid;
-    unsigned int *cp_type;
+    unsigned int* chip_id;
+    unsigned int* vfid;
+    unsigned int* host_pid;
+    unsigned int* cp_type;
     auto ret = drvQueryProcessHostPid(pid, chip_id, vfid, host_pid, cp_type);
     EXPECT_EQ(ret, DRV_ERROR_NONE);
 }
 
-extern int32_t SetSubProcScheduleMode(const uint32_t deviceId, const uint32_t waitType,
-                                      const uint32_t hostPid, const uint32_t vfId,
-                                      const struct SubProcScheduleModeInfo *scheInfo);
+extern int32_t SetSubProcScheduleMode(
+    const uint32_t deviceId, const uint32_t waitType, const uint32_t hostPid, const uint32_t vfId,
+    const struct SubProcScheduleModeInfo* scheInfo);
 TEST_F(HostCpuDriverStubUt, SetSubProcScheduleMode)
 {
-  int ret = SetSubProcScheduleMode(0U, 0U, 0U, 0U, nullptr);
-  EXPECT_EQ(ret, 0);
+    int ret = SetSubProcScheduleMode(0U, 0U, 0U, 0U, nullptr);
+    EXPECT_EQ(ret, 0);
 }

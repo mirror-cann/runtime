@@ -11,16 +11,10 @@
 #include "stub/aicpusd_context.h"
 
 namespace aicpu {
-    // have cust pid flag
-    bool g_isHaveCustPid = false;
+// have cust pid flag
+bool g_isHaveCustPid = false;
 
-    void SetHaveCustPid(bool isHaveCustPid)
-    {
-        g_isHaveCustPid = isHaveCustPid;
-    }
+void SetHaveCustPid(bool isHaveCustPid) { g_isHaveCustPid = isHaveCustPid; }
 
-    bool IsHaveCustPid()
-    {
-        return g_isHaveCustPid;
-    }
-}
+bool IsHaveCustPid() { return g_isHaveCustPid; }
+} // namespace aicpu

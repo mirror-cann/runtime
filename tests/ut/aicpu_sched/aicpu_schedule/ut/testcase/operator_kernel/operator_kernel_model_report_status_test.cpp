@@ -35,8 +35,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Success01)
     halMbufGetBuffAddrFakeAddr = malloc(200);
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake2));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -54,8 +54,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Success02)
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake2));
     MOCKER(halQueueEnQueue).stubs().will(returnValue(DRV_ERROR_QUEUE_FULL));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -77,11 +77,11 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail01)
 TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail02)
 {
     BUILD_SUCC_PREPARE_INFO();
-    AicpuModel *aicpuModel1 = nullptr;
+    AicpuModel* aicpuModel1 = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel1));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -95,8 +95,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail03)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halMbufAlloc).stubs().will(returnValue(10));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -110,8 +110,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail04)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halMbufSetDataLen).stubs().will(returnValue(10));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -125,8 +125,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail05)
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(10));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -142,8 +142,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail06)
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake2));
     MOCKER(halQueueEnQueue).stubs().will(returnValue(10));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     auto ret = kernel_.Compute(taskT, runContextT);
@@ -161,8 +161,8 @@ TEST_F(OperatorKernelModelReportStatusTest, ModelReportStatus_Fail07)
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake2));
     MOCKER(halQueueEnQueue).stubs().will(returnValue(10));
     AicpuTaskInfo taskT;
-    uint32_t *paraMem = (uint32_t *)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
-    ReportStatusInfo *reportStatusInfo = reinterpret_cast<ReportStatusInfo *>(paraMem);
+    uint32_t* paraMem = (uint32_t*)malloc(sizeof(ReportStatusInfo) + sizeof(QueueAttrs));
+    ReportStatusInfo* reportStatusInfo = reinterpret_cast<ReportStatusInfo*>(paraMem);
     reportStatusInfo->inputNum = 1U;
     taskT.paraBase = (uintptr_t)paraMem;
     MOCKER(halQueueQueryInfo).stubs().will(returnValue(10));

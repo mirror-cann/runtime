@@ -42,10 +42,8 @@
 
 #define DEVDRV_DRV_INFO printf
 
-int32_t TsdWaitForShutdown(const uint32_t deviceId, const TsdWaitType waitType,
-                           const uint32_t hostPid, const uint32_t vfId)
+int32_t TsdWaitForShutdown(
+    const uint32_t deviceId, const TsdWaitType waitType, const uint32_t hostPid, const uint32_t vfId)
 {
     return 20;
 }
-
-

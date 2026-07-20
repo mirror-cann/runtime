@@ -20,27 +20,27 @@
 #include "aicpusd_model_execute.h"
 #include "operator_kernel_stub.h"
 
-
 using namespace AicpuSchedule;
-
 
 namespace {
 std::vector<MbufHeadMsg> g_mbufHeads[3];
 size_t g_dequeCursor[3] = {0};
-void GenerateMbufHead(uint64_t transId, uint32_t routeLabel, std::vector<MbufHeadMsg> &heads) {
+void GenerateMbufHead(uint64_t transId, uint32_t routeLabel, std::vector<MbufHeadMsg>& heads)
+{
     MbufHeadMsg mbufhead = {};
     mbufhead.transId = transId;
     mbufhead.dataLabel = routeLabel;
     heads.emplace_back(mbufhead);
 }
-void ClearMbufHeads() {
+void ClearMbufHeads()
+{
     for (size_t i = 0; i < 3U; ++i) {
         g_mbufHeads[i].clear();
         g_dequeCursor[i] = 0U;
     }
 }
 
-drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void **mbuf)
+drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void** mbuf)
 {
     std::cout << "try to dequed mbuf from queue: " << qid << std::endl;
     if (qid >= 3U) {
@@ -51,9 +51,9 @@ drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void **mbuf
         return DRV_ERROR_QUEUE_EMPTY;
     }
 
-    auto &head = g_mbufHeads[qid][g_dequeCursor[qid]];
-    *mbuf = (Mbuf *)(&head);
-    std::cout << "dequed mbuf: "<< *mbuf << " from queue: " << qid << std::endl;
+    auto& head = g_mbufHeads[qid][g_dequeCursor[qid]];
+    *mbuf = (Mbuf*)(&head);
+    std::cout << "dequed mbuf: " << *mbuf << " from queue: " << qid << std::endl;
     g_dequeCursor[qid]++;
     if ((head.transId == 0U) && (head.routeLabel == 0U)) {
         return DRV_ERROR_QUEUE_EMPTY;
@@ -61,27 +61,28 @@ drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void **mbuf
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetPrivInfoFakeHead(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFakeHead(Mbuf* mbuf, void** priv, unsigned int* size)
 {
-    *priv = (void *)mbuf;
+    *priv = (void*)mbuf;
     *size = sizeof(MbufHeadMsg);
     return DRV_ERROR_NONE;
 }
 
-int32_t halMbufGetBuffAddrFakeHead(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFakeHead(Mbuf* mbuf, void** buf)
 {
     std::cout << "aicpusd_interface_process_test halMbufGetBuffAddrFakeHead begin" << std::endl;
-    *buf = (void*)((char*)mbuf+sizeof(MbufHeadMsg));
+    *buf = (void*)((char*)mbuf + sizeof(MbufHeadMsg));
     return 0;
 }
-}
+} // namespace
 
 class OperatorKernelGatherDequeueTest : public OperatorKernelTest {
 protected:
     OperatorKernelGatherDequeue kernel_;
 };
 
-TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_success) {
+TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_success)
+{
     GenerateMbufHead(1U, 1U, g_mbufHeads[0]);
     GenerateMbufHead(2U, 2U, g_mbufHeads[0]);
     GenerateMbufHead(0U, 0U, g_mbufHeads[0]); // use (0,0) to mock data-break
@@ -106,20 +107,21 @@ TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_success) {
     batchDeqInfo.inputNums = 3U;
     uint32_t queueIds[3] = {0U, 1U, 2U};
     batchDeqInfo.queueIdsAddr = (uint64_t)(&queueIds[0U]);
-    MbufHeadMsg *placeHolder[3] = {nullptr};
-    MbufHeadMsg **mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
+    MbufHeadMsg* placeHolder[3] = {nullptr};
+    MbufHeadMsg** mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
     batchDeqInfo.mbufAddrsAddr = (uint64_t)(&mbufAddrsAddr[0U]);
     uint32_t deviceTypes[3] = {0U};
     batchDeqInfo.deviceTypeAddr = (uint64_t)(&deviceTypes[0U]);
     batchDeqInfo.deviceIdAddr = (uint64_t)(&deviceTypes[0U]);
     taskT.paraBase = (uint64_t)&batchDeqInfo;
 
-    RunContext runContextLocal = {.modelId = stubId,
-                                  .modelTsId = stubId,
-                                  .streamId = stubId,
-                                  .pending = false,
-                                  .executeInline = true,
-                                  .gotoTaskIndex = -1};
+    RunContext runContextLocal = {
+        .modelId = stubId,
+        .modelTsId = stubId,
+        .streamId = stubId,
+        .pending = false,
+        .executeInline = true,
+        .gotoTaskIndex = -1};
     int ret = kernel_.Compute(taskT, runContextLocal);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     EXPECT_EQ(runContextLocal.pending, true);
@@ -136,11 +138,11 @@ TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_success) {
     std::cout << "fake selected and not allow to drop out" << std::endl;
     uint64_t dataLen = sizeof(RuntimeTensorDesc);
     char mbufStub[dataLen + sizeof(MbufHeadMsg)] = {};
-    MOCKER_CPP(&BufManager::MallocAndGuardBufU64)
-        .stubs()
-        .will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
+    MOCKER_CPP(&BufManager::MallocAndGuardBufU64).stubs().will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFakeHead));
-    MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen))
+    MOCKER(halMbufGetBuffSize)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     batchDeqInfo.inputsAlignMaxCacheNum = 1U;
     EXPECT_EQ(kernel_.Compute(taskT, runContextLocal), AICPU_SCHEDULE_ERROR_DISCARD_DATA);
@@ -156,7 +158,8 @@ TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_success) {
     ClearMbufHeads();
 }
 
-TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_fail) {
+TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_fail)
+{
     AicpuTaskInfo taskT = {};
     EXPECT_EQ(kernel_.Compute(taskT, runContextT), AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
@@ -167,18 +170,15 @@ TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_fail) {
 
     uint32_t queueIds[3] = {0U, 1U, 2U};
     batchDeqInfo.queueIdsAddr = (uint64_t)(&queueIds[0U]);
-    MbufHeadMsg *placeHolder[3] = {nullptr};
-    MbufHeadMsg **mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
+    MbufHeadMsg* placeHolder[3] = {nullptr};
+    MbufHeadMsg** mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
     batchDeqInfo.mbufAddrsAddr = (uint64_t)(&mbufAddrsAddr[0U]);
     uint32_t deviceTypes[3] = {0U};
     batchDeqInfo.deviceTypeAddr = (uint64_t)(&deviceTypes[0U]);
     batchDeqInfo.deviceIdAddr = (uint64_t)(&deviceTypes[0U]);
-    AicpuModel *aicpuModelPtr = nullptr;
+    AicpuModel* aicpuModelPtr = nullptr;
     AicpuModel aicpuModel;
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(aicpuModelPtr))
-        .then(returnValue(&aicpuModel));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModelPtr)).then(returnValue(&aicpuModel));
     EXPECT_EQ(kernel_.Compute(taskT, runContextT), AICPU_SCHEDULE_ERROR_INNER_ERROR);
     MOCKER_CPP(&AicpuModel::SelectGatheredMbuf)
         .stubs()
@@ -187,28 +187,29 @@ TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_fail) {
 
     uint64_t dataLen = sizeof(RuntimeTensorDesc);
     char mbufStub[dataLen + sizeof(MbufHeadMsg)] = {};
-    MOCKER_CPP(&BufManager::MallocAndGuardBufU64)
-        .stubs()
-        .will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
+    MOCKER_CPP(&BufManager::MallocAndGuardBufU64).stubs().will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFakeHead));
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFakeHead));
-    MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen))
+    MOCKER(halMbufGetBuffSize)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
 
     MOCKER_CPP(&BufManager::GuardBuf).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     EXPECT_EQ(kernel_.Compute(taskT, runContextT), AICPU_SCHEDULE_OK);
     EXPECT_EQ(kernel_.Compute(taskT, runContextT), AICPU_SCHEDULE_ERROR_DISCARD_DATA);
-    MbufHeadMsg *headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufStub[0U]);
+    MbufHeadMsg* headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufStub[0U]);
     EXPECT_EQ(headMsg->retCode, INNER_ERROR_BASE + AICPU_SCHEDULE_ERROR_DISCARD_DATA);
 }
 
-TEST_F(OperatorKernelGatherDequeueTest, DequeAndCheckIfReady_ForClientQ_OnDestroy) {
+TEST_F(OperatorKernelGatherDequeueTest, DequeAndCheckIfReady_ForClientQ_OnDestroy)
+{
     GatherDequeParam batchDeqInfo = {};
     batchDeqInfo.inputNums = 3U;
     uint32_t queueIds[3] = {0U, 1U, 2U};
     batchDeqInfo.queueIdsAddr = (uint64_t)(&queueIds[0U]);
-    MbufHeadMsg *placeHolder[3] = {nullptr};
-    MbufHeadMsg **mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
+    MbufHeadMsg* placeHolder[3] = {nullptr};
+    MbufHeadMsg** mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
     batchDeqInfo.mbufAddrsAddr = (uint64_t)(&mbufAddrsAddr[0U]);
     uint32_t deviceTypes[3] = {0U};
     batchDeqInfo.deviceTypeAddr = (uint64_t)(&deviceTypes[0U]);
@@ -216,9 +217,7 @@ TEST_F(OperatorKernelGatherDequeueTest, DequeAndCheckIfReady_ForClientQ_OnDestro
 
     AicpuModel aicpuModel;
     aicpuModel.isDestroyModel_ = true;
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(&aicpuModel));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
 
     MOCKER(GetAicpuDeployContext).stubs().with(outBound(DeployContext::HOST)).will(returnValue(AICPU_SCHEDULE_OK));
     int32_t ret = AICPU_SCHEDULE_OK;
@@ -227,51 +226,50 @@ TEST_F(OperatorKernelGatherDequeueTest, DequeAndCheckIfReady_ForClientQ_OnDestro
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_UNLOAD);
 }
 
-TEST_F(OperatorKernelGatherDequeueTest, MakeUpPassedMbuf_Fail) {
+TEST_F(OperatorKernelGatherDequeueTest, MakeUpPassedMbuf_Fail)
+{
     // fail for malloc
     EXPECT_EQ(kernel_.MakeUpPassedMbuf(0U), nullptr);
 
     // fail for head
     uint64_t dataLen = sizeof(RuntimeTensorDesc);
     char mbufStub[dataLen + sizeof(MbufHeadMsg)] = {};
-    MOCKER_CPP(&BufManager::MallocAndGuardBufU64)
-        .stubs()
-        .will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
+    MOCKER_CPP(&BufManager::MallocAndGuardBufU64).stubs().will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
     EXPECT_EQ(kernel_.MakeUpPassedMbuf(0U), nullptr);
     // fail for body
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFakeHead));
     EXPECT_EQ(kernel_.MakeUpPassedMbuf(0U), nullptr);
     // success
-    MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen))
+    MOCKER(halMbufGetBuffSize)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFakeHead));
     EXPECT_EQ(PtrToValue(kernel_.MakeUpPassedMbuf(0U)), PtrToValue(&mbufStub));
 }
 
-TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_EmptyOnClientQ) {
+TEST_F(OperatorKernelGatherDequeueTest, ModelGatherDeque_EmptyOnClientQ)
+{
     AicpuTaskInfo taskT = {};
     GatherDequeParam batchDeqInfo = {};
     batchDeqInfo.inputNums = 3U;
 
     uint32_t queueIds[3] = {0U, 1U, 2U};
     batchDeqInfo.queueIdsAddr = (uint64_t)(&queueIds[0U]);
-    MbufHeadMsg *placeHolder[3] = {nullptr};
-    MbufHeadMsg **mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
+    MbufHeadMsg* placeHolder[3] = {nullptr};
+    MbufHeadMsg** mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
     batchDeqInfo.mbufAddrsAddr = (uint64_t)(&mbufAddrsAddr[0U]);
     uint32_t deviceTypes[3] = {0U};
     batchDeqInfo.deviceTypeAddr = (uint64_t)(&deviceTypes[0U]);
     batchDeqInfo.deviceIdAddr = (uint64_t)(&deviceTypes[0U]);
     taskT.paraBase = (uint64_t)&batchDeqInfo;
     AicpuModel aicpuModel;
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(&aicpuModel));
-    MOCKER_CPP(&AicpuModel::SelectGatheredMbuf)
-        .stubs()
-        .will(returnValue(GatherResult::UN_SELECTED));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
+    MOCKER_CPP(&AicpuModel::SelectGatheredMbuf).stubs().will(returnValue(GatherResult::UN_SELECTED));
     MOCKER(GetAicpuDeployContext).stubs().with(outBound(DeployContext::HOST)).will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelModelBatchDequeueBuff::ModelAttachAndDequeueBuff)
-        .stubs().will(returnValue(AICPU_SCHEDULE_OK));
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_OK));
 
     EXPECT_EQ(kernel_.Compute(taskT, runContextT), AICPU_SCHEDULE_OK);
 }

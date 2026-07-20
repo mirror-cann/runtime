@@ -27,7 +27,8 @@ protected:
     ProcessDataExceptionTsKernel kernel_;
 };
 
-TEST_F(ProcessDataExceptionKernelTest, TsKernelProcessDataException_success) {
+TEST_F(ProcessDataExceptionKernelTest, TsKernelProcessDataException_success)
+{
     DataFlowExceptionNotify notify = {};
     notify.modelIdNum = 2U;
     std::vector<uint32_t> modelIds = {0U, 1U};
@@ -37,9 +38,7 @@ TEST_F(ProcessDataExceptionKernelTest, TsKernelProcessDataException_success) {
     aicpuModel0.modelId_ = 0U;
     AicpuModel aicpuModel1;
     aicpuModel1.modelId_ = 0U;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs()
-        .will(returnValue(&aicpuModel0))
-        .then(returnValue(&aicpuModel1));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel0)).then(returnValue(&aicpuModel1));
 
     aicpu::HwtsTsKernel tskenrel = {};
     tskenrel.kernelBase.cceKernel.paramBase = PtrToValue(&notify);

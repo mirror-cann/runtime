@@ -41,7 +41,8 @@ TEST_F(OperatorKernelStreamRepeatTest, ModelRepeatStream_Success)
     AicpuTaskInfo taskT;
     taskT.paraBase = (uint64_t)&param;
 
-    RunContext runContextLocal = {.modelId = stubId,
+    RunContext runContextLocal = {
+        .modelId = stubId,
         .modelTsId = stubId,
         .streamId = stubId,
         .pending = false,
@@ -67,7 +68,8 @@ TEST_F(OperatorKernelStreamRepeatTest, ModelRepeatStream_fail_ModelDisMatch)
     AicpuTaskInfo taskT;
     taskT.paraBase = (uint64_t)&param;
 
-    RunContext runContextLocal = {.modelId = 2U,
+    RunContext runContextLocal = {
+        .modelId = 2U,
         .modelTsId = stubId,
         .streamId = stubId,
         .pending = false,
@@ -91,7 +93,8 @@ TEST_F(OperatorKernelStreamRepeatTest, ModelRepeatStream_fail_AbnormalBreak)
     AicpuTaskInfo taskT;
     taskT.paraBase = (uint64_t)&param;
 
-    RunContext runContextLocal = {.modelId = stubId,
+    RunContext runContextLocal = {
+        .modelId = stubId,
         .modelTsId = stubId,
         .streamId = stubId,
         .pending = false,

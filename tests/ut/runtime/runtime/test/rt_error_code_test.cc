@@ -20,23 +20,16 @@ using namespace testing;
 using namespace cce::runtime;
 class RtErrorCodeTest : public Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
-TEST_F(RtErrorCodeTest, RtFmtMsgNullPtr)
-{
-    EXPECT_EQ(RtFmtMsg(nullptr), "");
-}
+TEST_F(RtErrorCodeTest, RtFmtMsgNullPtr) { EXPECT_EQ(RtFmtMsg(nullptr), ""); }
 
 TEST_F(RtErrorCodeTest, RtFmtMsgBasic)
 {
@@ -46,15 +39,12 @@ TEST_F(RtErrorCodeTest, RtFmtMsgBasic)
 
 TEST_F(RtErrorCodeTest, RtFmtMsgPointer)
 {
-    void *ptr = reinterpret_cast<void *>(0x1234);
+    void* ptr = reinterpret_cast<void*>(0x1234);
     std::string result = RtFmtMsg("ptr=%p", ptr);
     EXPECT_TRUE(result.find("0x1234") != std::string::npos);
 }
 
-TEST_F(RtErrorCodeTest, GetTsErrModuleType)
-{
-    EXPECT_EQ(GetTsErrModuleType(TS_SUCCESS), ERR_MODULE_RTS);
-}
+TEST_F(RtErrorCodeTest, GetTsErrModuleType) { EXPECT_EQ(GetTsErrModuleType(TS_SUCCESS), ERR_MODULE_RTS); }
 
 TEST_F(RtErrorCodeTest, GetTsErrModuleTypeNotFind)
 {
@@ -63,15 +53,15 @@ TEST_F(RtErrorCodeTest, GetTsErrModuleTypeNotFind)
 
 TEST_F(RtErrorCodeTest, GetTsErrCodeDescNotFind)
 {
-    RecordErrorLog(__FILE__, __LINE__, __FUNCTION__,  "%s", "unknown error");
-    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__,  "%s", "unknown error");
+    RecordErrorLog(__FILE__, __LINE__, __FUNCTION__, "%s", "unknown error");
+    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__, "%s", "unknown error");
     EXPECT_EQ(strcmp(GetTsErrCodeDesc(TS_ERROR_RESERVED + 1), "unknown error"), 0);
 }
 
 TEST_F(RtErrorCodeTest, GetTsErrDescByRtErr)
 {
     RecordErrorLog(__FILE__, __LINE__, __FUNCTION__, nullptr);
-    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__,  nullptr);
+    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__, nullptr);
     EXPECT_EQ(strcmp(GetTsErrDescByRtErr(RT_ERROR_NONE), "success"), 0);
 }
 
@@ -79,33 +69,34 @@ TEST_F(RtErrorCodeTest, PrintErrMsgToLog)
 {
     std::vector<std::string> values1001 = {"The argument is invalid"};
     PrintErrMsgToLog(ErrorCode::EE1001, "file", 1000, "func", values1001);
- 
+
     std::vector<std::string> values1002 = {"Stream synchronize timeout"};
     PrintErrMsgToLog(ErrorCode::EE1002, "file", 1000, "func", values1002);
- 
+
     std::vector<std::string> values1 = {"rtMemCpy", "0", "size", "[0, 255]"};
     PrintErrMsgToLog(ErrorCode::EE1003, "file", 1000, "func", values1);
- 
+
     std::vector<std::string> values2 = {"rtMemCpy", "src"};
     PrintErrMsgToLog(ErrorCode::EE1004, "file", 1000, "func", values2);
- 
+
     std::vector<std::string> values3 = {"rtMemCpy"};
     PrintErrMsgToLog(ErrorCode::EE1005, "file", 1000, "func", values3);
 
-    std::vector<std::string> values101 = {"set the saturation mode", "only the Inf/NaN mode can be set and the saturation mode"};
+    std::vector<std::string> values101 = {
+        "set the saturation mode", "only the Inf/NaN mode can be set and the saturation mode"};
     PrintErrMsgToLog(ErrorCode::WE0001, "file", 1000, "func", values101);
- 
+
     std::vector<std::string> values4 = {"rtMemCpy", "d2d", "The current device does not support d2d memory copy"};
     PrintErrMsgToLog(ErrorCode::EE1006, "file", 1000, "func", values4);
- 
+
     std::vector<std::string> values5 = {"10", "repeat bind"};
     PrintErrMsgToLog(ErrorCode::EE1007, "file", 1000, "func", values5);
- 
+
     std::vector<std::string> values7 = {"10", "model invalid"};
     PrintErrMsgToLog(ErrorCode::EE1009, "file", 1000, "func", values7);
- 
-    std::vector<std::string> values8 = {"rtModelExecute", "stream",
-        "stream_id=123, stream_ctx=0x7f8a0001, cur_ctx=0x7f8a0002."};
+
+    std::vector<std::string> values8 = {
+        "rtModelExecute", "stream", "stream_id=123, stream_ctx=0x7f8a0001, cur_ctx=0x7f8a0002."};
     PrintErrMsgToLog(ErrorCode::EE1010, "file", 1000, "func", values8);
 
     std::vector<std::string> values1011 = {"rtMemCpy", "0", "size", "size is not 0"};
@@ -114,39 +105,46 @@ TEST_F(RtErrorCodeTest, PrintErrMsgToLog)
 
 TEST_F(RtErrorCodeTest, PrintErrMsgToLog2)
 {
-    std::vector<std::string> values1012 = {"NotifyWait", "0", "current deviceId", "The current device cannot deliver Notify Wait"};
+    std::vector<std::string> values1012 = {
+        "NotifyWait", "0", "current deviceId", "The current device cannot deliver Notify Wait"};
     PrintErrMsgToLog(ErrorCode::EE1012, "file", 1000, "func", values1012);
 
     std::vector<std::string> values1013 = {"100", "malloc"};
     PrintErrMsgToLog(ErrorCode::EE1013, "file", 1000, "func", values1013);
 
-    std::vector<std::string> values1014 = {"The ELF section header address in the operator binary ELF file header cannot be empty"};
+    std::vector<std::string> values1014 = {
+        "The ELF section header address in the operator binary ELF file header cannot be empty"};
     PrintErrMsgToLog(ErrorCode::EE1014, "file", 1000, "func", values1014);
 
-    std::vector<std::string> values1015 = {"rtsIpcMemImportByKey", "The driver interface halShmemInfoGet does not exist."};
+    std::vector<std::string> values1015 = {
+        "rtsIpcMemImportByKey", "The driver interface halShmemInfoGet does not exist."};
     PrintErrMsgToLog(ErrorCode::EE1015, "file", 1000, "func", values1015);
 
-    std::vector<std::string> values1016 = {"MemCopySync", "Other threads of the current context are in the capture state"};
+    std::vector<std::string> values1016 = {
+        "MemCopySync", "Other threads of the current context are in the capture state"};
     PrintErrMsgToLog(ErrorCode::EE1016, "file", 1000, "func", values1016);
 
     std::vector<std::string> values1017 = {"rtMemCpy", "size", "size is not 0"};
     PrintErrMsgToLog(ErrorCode::EE1017, "file", 1000, "func", values1017);
 
-    std::vector<std::string> values1018 = {"aclrtSetLabel", "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list"};
+    std::vector<std::string> values1018 = {
+        "aclrtSetLabel",
+        "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list"};
     PrintErrMsgToLog(ErrorCode::EE1018, "file", 1000, "func", values1018);
 
     std::vector<std::string> values1019 = {"AddTaskToList", "stream task public buffer is full"};
     PrintErrMsgToLog(ErrorCode::EE1019, "file", 1000, "func", values1019);
 
-    std::vector<std::string> values1020 = {"rtGetSocVersion", "memcpy_s", "1", "count is greater than dest_max",
+    std::vector<std::string> values1020 = {
+        "rtGetSocVersion", "memcpy_s", "1", "count is greater than dest_max",
         "src=0x1, dest=0x2, dest_max=10, count=11."};
     PrintErrMsgToLog(ErrorCode::EE1020, "file", 1000, "func", values1020);
 
     std::vector<std::string> values1021 = {"semaphore", "aclrtCreateStream"};
     PrintErrMsgToLog(ErrorCode::EE1021, "file", 1000, "func", values1021);
 
-    std::vector<std::string> values1022 = {"rtUbDbSend", "nullptr and nullptr", "pbase and psize",
-        "Parameters pbase and psize cannot both be nullptr"};
+    std::vector<std::string> values1022 = {
+        "rtUbDbSend", "nullptr and nullptr", "pbase and psize", "Parameters pbase and psize cannot both be nullptr"};
     PrintErrMsgToLog(ErrorCode::EE1022, "file", 1000, "func", values1022);
 
     std::vector<std::string> values9 = {"1, 2, 2", "SetVisible", "not repeat"};
@@ -154,7 +152,7 @@ TEST_F(RtErrorCodeTest, PrintErrMsgToLog2)
 
     PrintErrMsgToLog(ErrorCode::EE_NO_ERROR, "file", 1000, "func", values9);
     PrintErrMsgToLog(ErrorCode::EE_NO_ERROR, "file", 1000, "func", {});
-    ProcessErrorCodeImpl(ErrorCode::EE_NO_ERROR,  "file", 1000, "func", std::move(values9));
+    ProcessErrorCodeImpl(ErrorCode::EE_NO_ERROR, "file", 1000, "func", std::move(values9));
 }
 
 TEST_F(RtErrorCodeTest, RePortErrCode)
@@ -167,22 +165,33 @@ TEST_F(RtErrorCodeTest, RePortErrCode)
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1006, "rtMemCpy", "d2d", "The current device does not support d2d memory copy");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1007, "10", "repeat bind");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1009, "10", "model invalid");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1010, "rtModelExecute", "stream",
-        "stream_id=123, stream_ctx=0x7f8a0001, cur_ctx=0x7f8a0002.");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1010, "rtModelExecute", "stream", "stream_id=123, stream_ctx=0x7f8a0001, cur_ctx=0x7f8a0002.");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1011, "rtMemCpy", "0", "size", "size is not 0");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1012, "NotifyWait", "0", "current deviceId", "The current device cannot deliver Notify Wait");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1012, "NotifyWait", "0", "current deviceId", "The current device cannot deliver Notify Wait");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, "100", "malloc");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1014, "The ELF section header address in the operator binary ELF file header cannot be empty");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1015, "rtsIpcMemImportByKey", "The driver interface halShmemInfoGet does not exist.");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1016, "MemCopySync", "Other threads of the current context are in the capture state");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1014, "The ELF section header address in the operator binary ELF file header cannot be empty");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1015, "rtsIpcMemImportByKey", "The driver interface halShmemInfoGet does not exist.");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1016, "MemCopySync", "Other threads of the current context are in the capture state");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, "rtMemCpy", "size", "size is not 0");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1018, "aclrtSetLabel", "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1018, "aclrtSetLabel",
+        "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1019, "Adding task to stream", "stream task public buffer is full");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, "rtGetSocVersion", "memcpy_s", "1", "count is greater than dest_max", "src=0x1, dest=0x2, dest_max=10, count=11.");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1020, "rtGetSocVersion", "memcpy_s", "1", "count is greater than dest_max",
+        "src=0x1, dest=0x2, dest_max=10, count=11.");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1021, "semaphore", "aclrtCreateStream");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1022, "rtUbDbSend", "nullptr and nullptr", "pbase and psize", "Parameters pbase and psize cannot both be nullptr");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::EE1022, "rtUbDbSend", "nullptr and nullptr", "pbase and psize",
+        "Parameters pbase and psize cannot both be nullptr");
     RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, "1, 2, 2", "SetVisible", "not repeat");
-    RT_LOG_OUTER_MSG_IMPL(ErrorCode::WE0001, "set the saturation mode", "only the Inf/NaN mode can be set and the saturation mode");
+    RT_LOG_OUTER_MSG_IMPL(
+        ErrorCode::WE0001, "set the saturation mode", "only the Inf/NaN mode can be set and the saturation mode");
 }
 
 TEST_F(RtErrorCodeTest, CheckErrCodeParams)
@@ -250,13 +259,11 @@ TEST_F(RtErrorCodeTest, ErrorCodeTableParamCountMatchesMessageFormat)
         size_t expectedParamCount;
     };
     std::vector<CodeInfo> allCodes = {
-        {ErrorCode::EE1001, 1}, {ErrorCode::EE1002, 1}, {ErrorCode::EE1003, 4},
-        {ErrorCode::EE1004, 2}, {ErrorCode::EE1005, 1}, {ErrorCode::EE1006, 3},
-        {ErrorCode::EE1007, 2}, {ErrorCode::EE1009, 2},
-        {ErrorCode::EE1010, 3}, {ErrorCode::EE1011, 4}, {ErrorCode::EE1012, 4},
-        {ErrorCode::EE1013, 2}, {ErrorCode::EE1014, 1}, {ErrorCode::EE1015, 2},
-        {ErrorCode::EE1016, 2}, {ErrorCode::EE1017, 3}, {ErrorCode::EE1018, 2},
-        {ErrorCode::EE1019, 2}, {ErrorCode::EE1020, 5}, {ErrorCode::EE1021, 2},
+        {ErrorCode::EE1001, 1}, {ErrorCode::EE1002, 1}, {ErrorCode::EE1003, 4}, {ErrorCode::EE1004, 2},
+        {ErrorCode::EE1005, 1}, {ErrorCode::EE1006, 3}, {ErrorCode::EE1007, 2}, {ErrorCode::EE1009, 2},
+        {ErrorCode::EE1010, 3}, {ErrorCode::EE1011, 4}, {ErrorCode::EE1012, 4}, {ErrorCode::EE1013, 2},
+        {ErrorCode::EE1014, 1}, {ErrorCode::EE1015, 2}, {ErrorCode::EE1016, 2}, {ErrorCode::EE1017, 3},
+        {ErrorCode::EE1018, 2}, {ErrorCode::EE1019, 2}, {ErrorCode::EE1020, 5}, {ErrorCode::EE1021, 2},
         {ErrorCode::EE1022, 4}, {ErrorCode::EE1023, 2}, {ErrorCode::EE2002, 3}, {ErrorCode::WE0001, 2},
     };
     for (const auto& info : allCodes) {
@@ -324,35 +331,31 @@ static int CountFormatSpec(const char* msg)
     }
     return count;
 }
-}
+} // namespace
 
 #define RT_UNPAREN(...) __VA_ARGS__
-#define RT_COUNT(...)   RT_COUNT_IMPL(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
+#define RT_COUNT(...) RT_COUNT_IMPL(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
 #define RT_COUNT_IMPL(_1, _2, _3, _4, _5, _6, N, ...) N
 
 TEST_F(RtErrorCodeTest, XMacroTableFormatSelfCheck)
 {
 #undef RT_CHECK
-#define RT_CHECK(code, name, params, msg, level) \
-    {name, msg, RT_COUNT(RT_UNPAREN params)},
+#define RT_CHECK(code, name, params, msg, level) {name, msg, RT_COUNT(RT_UNPAREN params)},
 
     struct Entry {
         const char* name;
         const char* msg;
         int paramCount;
     };
-    static const Entry kEntries[] = {
-        RUNTIME_ERROR_CODE_TABLE(RT_CHECK)
-    };
+    static const Entry kEntries[] = {RUNTIME_ERROR_CODE_TABLE(RT_CHECK)};
 #undef RT_CHECK
 
     int total = static_cast<int>(sizeof(kEntries) / sizeof(kEntries[0]));
     for (int i = 0; i < total; i++) {
         int fmtCount = CountFormatSpec(kEntries[i].msg);
         EXPECT_EQ(fmtCount, kEntries[i].paramCount)
-            << "[" << kEntries[i].name << "] message has " << fmtCount
-            << " format specifiers but param list has " << kEntries[i].paramCount
-            << " entries";
+            << "[" << kEntries[i].name << "] message has " << fmtCount << " format specifiers but param list has "
+            << kEntries[i].paramCount << " entries";
     }
 }
 #undef RT_COUNT_IMPL
@@ -367,7 +370,7 @@ TEST_F(RtErrorCodeTest, ValidateInnerObjectMagicMismatch)
     int dummyObj = 0;
     InitializeInnerObject(inner, RT_STREAM_MAGIC, &dummyObj);
 
-    void *out = nullptr;
+    void* out = nullptr;
     // 期望 EVENT，实际是 STREAM -> magic 不匹配 -> 上报 EE1017
     EXPECT_EQ(GetValidatedObjectImpl(&inner, RT_EVENT_MAGIC, out), RT_ERROR_INVALID_HANDLE);
     EXPECT_EQ(out, nullptr);
@@ -381,7 +384,7 @@ TEST_F(RtErrorCodeTest, ValidateInnerObjectDestroyed)
     InitializeInnerObject(inner, RT_STREAM_MAGIC, &dummyObj);
     ResetInnerObject(inner); // magic 置 0 -> 已销毁
 
-    void *out = nullptr;
+    void* out = nullptr;
     EXPECT_EQ(GetValidatedObjectImpl(&inner, RT_STREAM_MAGIC, out), RT_ERROR_INVALID_HANDLE);
 }
 
@@ -390,14 +393,19 @@ TEST_F(RtErrorCodeTest, ValidateInnerObjectDestroyed)
 TEST_F(RtErrorCodeTest, ValidateInnerObjectAllResourceNames)
 {
     const uint64_t expectedMagics[] = {
-        RT_MODEL_MAGIC, RT_LABEL_MAGIC, RT_STREAM_MAGIC, RT_EVENT_MAGIC,
-        RT_NOTIFY_MAGIC, RT_CNTNOTIFY_MAGIC, 0xDEADBEEFull /* unknown */,
+        RT_MODEL_MAGIC,
+        RT_LABEL_MAGIC,
+        RT_STREAM_MAGIC,
+        RT_EVENT_MAGIC,
+        RT_NOTIFY_MAGIC,
+        RT_CNTNOTIFY_MAGIC,
+        0xDEADBEEFull /* unknown */,
     };
     for (uint64_t expected : expectedMagics) {
         rtInnerObject inner;
         int dummyObj = 0;
         InitializeInnerObject(inner, expected + 1U, &dummyObj); // 实际 magic 必不匹配
-        void *out = nullptr;
+        void* out = nullptr;
         EXPECT_EQ(GetValidatedObjectImpl(&inner, expected, out), RT_ERROR_INVALID_HANDLE);
     }
 }
@@ -409,12 +417,12 @@ TEST_F(RtErrorCodeTest, ValidateInnerObjectSuccessAndNull)
     int dummyObj = 0;
     InitializeInnerObject(inner, RT_STREAM_MAGIC, &dummyObj);
 
-    void *out = nullptr;
+    void* out = nullptr;
     EXPECT_EQ(GetValidatedObjectImpl(&inner, RT_STREAM_MAGIC, out), RT_ERROR_NONE);
     EXPECT_EQ(out, &dummyObj);
 
     // 空句柄 -> 直接返回 NONE 且出参置空
-    void *outNull = reinterpret_cast<void *>(0x1);
+    void* outNull = reinterpret_cast<void*>(0x1);
     EXPECT_EQ(GetValidatedObjectImpl(nullptr, RT_STREAM_MAGIC, outNull), RT_ERROR_NONE);
     EXPECT_EQ(outNull, nullptr);
 }
@@ -424,7 +432,7 @@ TEST_F(RtErrorCodeTest, ValidateArgsHandleForApiAcceptsLegacyObjectAddress)
     RtArgsHandle legacyArgsHandle = {};
     InitEmbeddedInnerHandle<RtArgsHandle>(&legacyArgsHandle);
 
-    RtArgsHandle *out = nullptr;
+    RtArgsHandle* out = nullptr;
     const rtError_t ret = ValidateArgsHandleForApi(RtPtrToPtr<rtArgsHandle>(&legacyArgsHandle), out, __func__);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(out, &legacyArgsHandle);
@@ -435,7 +443,7 @@ TEST_F(RtErrorCodeTest, ValidateLaunchArgsHandleForApiAcceptsLegacyObjectAddress
     rtLaunchArgs_t legacyLaunchArgs = {};
     InitEmbeddedInnerHandle<rtLaunchArgs_t>(&legacyLaunchArgs);
 
-    rtLaunchArgs_t *out = nullptr;
+    rtLaunchArgs_t* out = nullptr;
     const rtError_t ret =
         ValidateLaunchArgsHandleForApi(RtPtrToPtr<rtLaunchArgsHandle>(&legacyLaunchArgs), out, __func__);
     EXPECT_EQ(ret, RT_ERROR_NONE);

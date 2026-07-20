@@ -25,66 +25,51 @@
 #include "common/rt_utest_context_reset_helper.hpp"
 #undef private
 
-
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiDeviceTest : public testing::Test
-{
+class ApiDeviceTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"ApiDeviceTest test start start. "<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "ApiDeviceTest test start start. " << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"ApiDeviceTest test start end. "<<std::endl;
+    static void TearDownTestCase() { std::cout << "ApiDeviceTest test start end. " << std::endl; }
 
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
-
-    virtual void TearDown()
-    {
-        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
-    }
+    virtual void TearDown() { ut::ResetPrimaryDeviceIfActiveWithDeviceDown(); }
 };
 
-drvError_t drvGetPlatformInfo_rts1(uint32_t *info)
+drvError_t drvGetPlatformInfo_rts1(uint32_t* info)
 {
     *info = RT_RUN_MODE_ONLINE;
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvGetPlatformInfo_rts2(uint32_t *info)
+drvError_t drvGetPlatformInfo_rts2(uint32_t* info)
 {
     *info = RT_RUN_MODE_AICPU_SCHED;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halGetDeviceSplitMode_rts1(unsigned int dev_id, unsigned int *split_mode)
+drvError_t halGetDeviceSplitMode_rts1(unsigned int dev_id, unsigned int* split_mode)
 {
     *split_mode = 0;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halGetDeviceSplitMode_rts2(unsigned int dev_id, unsigned int *split_mode)
+drvError_t halGetDeviceSplitMode_rts2(unsigned int dev_id, unsigned int* split_mode)
 {
     *split_mode = 1;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halGetDeviceSplitMode_rts3(unsigned int dev_id, unsigned int *split_mode)
+drvError_t halGetDeviceSplitMode_rts3(unsigned int dev_id, unsigned int* split_mode)
 {
     *split_mode = 2;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halGetDeviceSplitMode_rts4(unsigned int dev_id, unsigned int *split_mode)
+drvError_t halGetDeviceSplitMode_rts4(unsigned int dev_id, unsigned int* split_mode)
 {
     *split_mode = 3;
     return DRV_ERROR_NONE;
@@ -114,13 +99,13 @@ public:
     }
 
 private:
-    Runtime *rt_{nullptr};
+    Runtime* rt_{nullptr};
     DevProperties origProps_{};
     DevProperties testProps_{};
     bool valid_{false};
 };
 
-void CheckDeviceInfoCommonAttrs(int32_t devid, int64_t &val)
+void CheckDeviceInfoCommonAttrs(int32_t devid, int64_t& val)
 {
     rtError_t error = rtsDeviceGetInfo(devid, RT_DEV_ATTR_AICPU_CORE_NUM, &val);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -135,8 +120,9 @@ void CheckDeviceInfoCommonAttrs(int32_t devid, int64_t &val)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     std::string literalStr = "20";
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &, const std::string &, std::string &))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string&, const std::string&, std::string&))
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), outBound(literalStr))
         .will(returnValue(true));
@@ -155,15 +141,14 @@ void CheckDeviceInfoCommonAttrs(int32_t devid, int64_t &val)
         RT_DEV_ATTR_SUPER_POD_SERVER_ID,
         RT_DEV_ATTR_SUPER_POD_ID,
         RT_DEV_ATTR_CUST_OP_PRIVILEGE,
-        RT_DEV_ATTR_MAINBOARD_ID
-    };
+        RT_DEV_ATTR_MAINBOARD_ID};
     for (const auto attr : attrs) {
         error = rtsDeviceGetInfo(devid, attr, &val);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 }
 
-void CheckDeviceInfoNpuArch(int32_t devid, int64_t &val)
+void CheckDeviceInfoNpuArch(int32_t devid, int64_t& val)
 {
     ScopedNpuArchProps propsGuard(2201);
     const rtError_t error = rtsDeviceGetInfo(devid, RT_DEV_ATTR_NPU_ARCH, &val);
@@ -171,7 +156,7 @@ void CheckDeviceInfoNpuArch(int32_t devid, int64_t &val)
     EXPECT_GT(val, static_cast<int64_t>(0));
 }
 
-void CheckDeviceInfoVirtualAttrs(int32_t devid, int64_t &val)
+void CheckDeviceInfoVirtualAttrs(int32_t devid, int64_t& val)
 {
     MOCKER(halGetDeviceSplitMode).stubs().will(invoke(halGetDeviceSplitMode_rts1));
     rtError_t error = rtsDeviceGetInfo(devid, RT_DEV_ATTR_IS_VIRTUAL, &val);
@@ -211,9 +196,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_abnormal_1)
     int32_t devid = 0;
     int64_t val = 0;
 
-    MOCKER_CPP(&fe::PlatformInfoManager::InitRuntimePlatformInfos)
-        .stubs()
-        .will(returnValue(0xFFFFFFFF));
+    MOCKER_CPP(&fe::PlatformInfoManager::InitRuntimePlatformInfos).stubs().will(returnValue(0xFFFFFFFF));
 
     error = rtsDeviceGetInfo(devid, RT_DEV_ATTR_L2_CACHE_SIZE, &val);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -226,9 +209,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_abnormal_2)
     int64_t val = 0;
 
     std::string literalStr = "20";
-    MOCKER_CPP(&fe::PlatformInfoManager::GetRuntimePlatformInfosByDevice)
-        .stubs()
-        .will(returnValue(0xFFFFFFFF));
+    MOCKER_CPP(&fe::PlatformInfoManager::GetRuntimePlatformInfosByDevice).stubs().will(returnValue(0xFFFFFFFF));
 
     error = rtsDeviceGetInfo(devid, RT_DEV_ATTR_L2_CACHE_SIZE, &val);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -241,8 +222,9 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_abnormal_3)
     int64_t val = 0;
 
     std::string literalStr = "20";
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &, const std::string &, std::string &))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string&, const std::string&, std::string&))
         .stubs()
         .will(returnValue(false));
 
@@ -255,10 +237,11 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_abnormal_4)
     rtError_t error;
     int32_t devid = 0;
     int64_t val = 0;
-    
+
     std::string literalStr = "xyz";
-    MOCKER_CPP(&fe::PlatFormInfos::GetPlatformResWithLock,
-        bool(fe::PlatFormInfos::*)(const std::string &, const std::string &, std::string &))
+    MOCKER_CPP(
+        &fe::PlatFormInfos::GetPlatformResWithLock,
+        bool(fe::PlatFormInfos::*)(const std::string&, const std::string&, std::string&))
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), outBound(literalStr))
         .will(returnValue(true));
@@ -292,7 +275,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_npu_arch_without_set_device)
 
 TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_npu_arch_not_initialized)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
     ASSERT_NE(rt, nullptr);
     DevProperties origProps;
     ASSERT_EQ(GET_DEV_PROPERTIES(rt->GetChipType(), origProps), RT_ERROR_NONE);
@@ -324,7 +307,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_SimtAttrs_KirinChip)
     int32_t devid = 0;
     int64_t val = 0;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t originalType = rtInstance->chipType_;
     rtInstance->chipType_ = CHIP_X90;
     GlobalContainer::SetRtChipType(CHIP_X90);
@@ -355,7 +338,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetInfo_SimtAttrs_NoPropertiesChip)
     int32_t devid = 0;
     int64_t val = 0;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t originalType = rtInstance->chipType_;
     rtInstance->chipType_ = CHIP_NO_DEVICE;
     GlobalContainer::SetRtChipType(CHIP_NO_DEVICE);
@@ -380,7 +363,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityUpdate)
 {
     rtError_t error;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
 
     error = rtsDeviceGetCapability(0, RT_FEATURE_TSCPU_TASK_UPDATE_SUPPORT_AIC_AIV, &value);
@@ -392,7 +375,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityCross)
 {
     rtError_t error;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
 
     error = rtsDeviceGetCapability(0, RT_FEATURE_SYSTEM_MEMQ_EVENT_CROSS_DEV, &value);
@@ -402,7 +385,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityCross)
 
 TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityTaskIdBitWidth)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
 
     rtError_t error = rtsDeviceGetCapability(0, RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH, &value);
@@ -414,7 +397,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityInvalied)
 {
     rtError_t error;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
 
     error = rtsDeviceGetCapability(0, 20, &value);
@@ -425,7 +408,7 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityFailed)
 {
     rtError_t error;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
 
     error = rtsDeviceGetCapability(0, -1, &value);
@@ -444,9 +427,9 @@ TEST_F(ApiDeviceTest, TestRtsDeviceGetStreamPriorityRange)
 
 TEST_F(ApiDeviceTest, TestRtsDeviceGetCapabilityTaskIdBitWidthOnDavid)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
- 
+
     rtError_t error = rtsDeviceGetCapability(0, RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH, &value);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(value, 16);
@@ -494,9 +477,7 @@ TEST_F(ApiDeviceTest, TestRtsGetDeviceUtilizations)
 {
     rtError_t error;
     uint8_t utilValue = 0;
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_NONE));
     error = rtsGetDeviceUtilizations(0, RT_UTIL_TYPE_AICORE, &utilValue);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -506,7 +487,7 @@ TEST_F(ApiDeviceTest, TestRtsGetDeviceUtilizations)
     error = rtsGetDeviceUtilizations(0, RT_UTIL_TYPE_AICPU, &utilValue);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->chipType_;
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     error = rtsGetDeviceUtilizations(0, RT_UTIL_TYPE_MAX, &utilValue);

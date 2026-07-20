@@ -36,47 +36,29 @@
 
 using namespace cce::runtime;
 
-rtError_t aclStub::rtSetDevice(int32_t device)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetDevice(int32_t device) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetDevice(int32_t *device)
+rtError_t aclStub::rtGetDevice(int32_t* device)
 {
     *device = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetDevice(int32_t *device)
+rtError_t aclStub::rtsGetDevice(int32_t* device)
 {
     *device = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDeviceReset(int32_t device)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtDeviceReset(int32_t device) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtDeviceResetForce(int32_t device)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtDeviceResetForce(int32_t device) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSetDeviceWithoutTsd(int32_t device)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetDeviceWithoutTsd(int32_t device) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtDeviceResetWithoutTsd(int32_t device)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtDeviceResetWithoutTsd(int32_t device) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtDeviceSynchronize(void)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtDeviceSynchronize(void) { return RT_ERROR_NONE; }
 
 rtError_t aclStub::rtDeviceSynchronizeWithTimeout(int32_t timeout)
 {
@@ -84,71 +66,47 @@ rtError_t aclStub::rtDeviceSynchronizeWithTimeout(int32_t timeout)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSetTSDevice(uint32_t tsId)
+rtError_t aclStub::rtSetTSDevice(uint32_t tsId) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtStreamCreate(rtStream_t* stream, int32_t priority) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtStreamCreateWithFlags(rtStream_t* stream, int32_t priority, uint32_t flags)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamCreate(rtStream_t *stream, int32_t priority)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtStreamCreateWithFlags(rtStream_t *stream, int32_t priority, uint32_t flags)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtsStreamCreate(rtStream_t *stream, rtStreamCreateConfig_t *config)
+rtError_t aclStub::rtsStreamCreate(rtStream_t* stream, rtStreamCreateConfig_t* config)
 {
     if ((config == nullptr) || (config->numAttrs == 0)) {
         return ACL_ERROR_RT_PARAM_INVALID;
     }
-    
+
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamDestroy(rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamDestroy(rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtStreamDestroyForce(rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamDestroyForce(rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtStreamSynchronize(rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamSynchronize(rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtStreamSynchronizeWithTimeout(rtStream_t stream, const int32_t timeout)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamSynchronizeWithTimeout(rtStream_t stream, const int32_t timeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtStreamQuery(rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamQuery(rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtStreamGetPriority(rtStream_t stream, uint32_t *priority)
+rtError_t aclStub::rtStreamGetPriority(rtStream_t stream, uint32_t* priority)
 {
     *priority = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamGetFlags(rtStream_t stream, uint32_t *flags)
+rtError_t aclStub::rtStreamGetFlags(rtStream_t stream, uint32_t* flags)
 {
     *flags = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamWaitEvent(rtStream_t stream, rtEvent_t event)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamWaitEvent(rtStream_t stream, rtEvent_t event) { return RT_ERROR_NONE; }
 
 rtError_t aclStub::rtStreamWaitEventWithFlag(rtStream_t stream, rtEvent_t event, uint32_t timeout, uint32_t flag)
 {
@@ -160,55 +118,25 @@ rtError_t aclStub::rtStreamWaitEventWithTimeout(rtStream_t stream, rtEvent_t eve
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamAbort(rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamAbort(rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxCreateEx(rtContext_t *ctx, uint32_t flags, int32_t device)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtCtxCreateEx(rtContext_t* ctx, uint32_t flags, int32_t device) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxDestroyEx(rtContext_t ctx)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtCtxDestroyEx(rtContext_t ctx) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxSetCurrent(rtContext_t ctx)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtCtxSetCurrent(rtContext_t ctx) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxSynchronize()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtCtxSynchronize() { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxGetCurrent(rtContext_t *ctx)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtCtxGetCurrent(rtContext_t* ctx) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetPriCtxByDeviceId(int32_t device, rtContext_t *ctx)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtGetPriCtxByDeviceId(int32_t device, rtContext_t* ctx) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventCreateWithFlag(rtEvent_t *event_, uint32_t flag)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventCreateWithFlag(rtEvent_t* event_, uint32_t flag) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventCreateExWithFlag(rtEvent_t *event_, uint32_t flag)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventCreateExWithFlag(rtEvent_t* event_, uint32_t flag) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventCreate(rtEvent_t *event)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventCreate(rtEvent_t* event) { return RT_ERROR_NONE; }
 
 rtError_t aclStub::rtsEventWait(rtStream_t stream, rtEvent_t event, uint32_t timeout)
 {
@@ -218,211 +146,164 @@ rtError_t aclStub::rtsEventWait(rtStream_t stream, rtEvent_t event, uint32_t tim
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetEventID(rtEvent_t event, uint32_t *eventId)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtGetEventID(rtEvent_t event, uint32_t* eventId) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventDestroy(rtEvent_t event)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventDestroy(rtEvent_t event) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventRecord(rtEvent_t event, rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventRecord(rtEvent_t event, rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventRecordWithFlag(rtEvent_t event, rtStream_t stream, uint32_t flag)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventRecordWithFlag(rtEvent_t event, rtStream_t stream, uint32_t flag) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventReset(rtEvent_t event, rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventReset(rtEvent_t event, rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventSynchronize(rtEvent_t event)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventSynchronize(rtEvent_t event) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventSynchronizeWithTimeout(rtEvent_t event, int32_t timeout)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventSynchronizeWithTimeout(rtEvent_t event, int32_t timeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventQuery(rtEvent_t event)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventQuery(rtEvent_t event) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventQueryStatus(rtEvent_t event, rtEventStatus_t *status)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventQueryStatus(rtEvent_t event, rtEventStatus_t* status) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtEventQueryWaitStatus(rtEvent_t event, rtEventWaitStatus *status)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEventQueryWaitStatus(rtEvent_t event, rtEventWaitStatus* status) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtNotifyCreate(int32_t device_id, rtNotify_t *notify_)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtNotifyCreate(int32_t device_id, rtNotify_t* notify_) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtNotifyDestroy(rtNotify_t notify_)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtNotifyDestroy(rtNotify_t notify_) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtNotifyRecord(rtNotify_t notify_, rtStream_t stream_)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtNotifyRecord(rtNotify_t notify_, rtStream_t stream_) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetNotifyID(rtNotify_t notify_, uint32_t *notify_id)
+rtError_t aclStub::rtGetNotifyID(rtNotify_t notify_, uint32_t* notify_id)
 {
     *notify_id = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtNotifyWait(rtNotify_t notify_, rtStream_t stream_)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtNotifyWait(rtNotify_t notify_, rtStream_t stream_) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMalloc(void **devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
+rtError_t aclStub::rtMalloc(void** devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
 {
     *devPtr = malloc(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMallocCached(void **devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
+rtError_t aclStub::rtMallocCached(void** devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
 {
     *devPtr = malloc(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFlushCache(void *devPtr, size_t size)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtFlushCache(void* devPtr, size_t size) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtInvalidCache(void *devPtr, size_t size)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtInvalidCache(void* devPtr, size_t size) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtFree(void *devPtr)
+rtError_t aclStub::rtFree(void* devPtr)
 {
     free(devPtr);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDvppMalloc(void **devPtr, uint64_t size, uint16_t moduleId)
+rtError_t aclStub::rtDvppMalloc(void** devPtr, uint64_t size, uint16_t moduleId)
 {
     *devPtr = malloc(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDvppMallocWithFlag(void **devPtr, uint64_t size, uint32_t flag, uint16_t moduleId)
+rtError_t aclStub::rtDvppMallocWithFlag(void** devPtr, uint64_t size, uint32_t flag, uint16_t moduleId)
 {
     *devPtr = malloc(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDvppFree(void *devPtr)
+rtError_t aclStub::rtDvppFree(void* devPtr)
 {
     free(devPtr);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMallocHost(void **hostPtr,  uint64_t size, uint16_t moduleId)
+rtError_t aclStub::rtMallocHost(void** hostPtr, uint64_t size, uint16_t moduleId)
 {
     *hostPtr = malloc(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFreeHost(void *hostPtr)
+rtError_t aclStub::rtFreeHost(void* hostPtr)
 {
     free(hostPtr);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFreeWithDevSync(void *devPtr)
+rtError_t aclStub::rtFreeWithDevSync(void* devPtr)
 {
     free(devPtr);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFreeHostWithDevSync(void *hostPtr)
+rtError_t aclStub::rtFreeHostWithDevSync(void* hostPtr)
 {
     free(hostPtr);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemset(void *devPtr, uint64_t destMax, uint32_t value, uint64_t count)
+rtError_t aclStub::rtMemset(void* devPtr, uint64_t destMax, uint32_t value, uint64_t count)
 {
     memset(devPtr, value, count);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemcpy(void *dst,  uint64_t destMax, const void *src, uint64_t count, rtMemcpyKind_t kind)
+rtError_t aclStub::rtMemcpy(void* dst, uint64_t destMax, const void* src, uint64_t count, rtMemcpyKind_t kind)
 {
     memcpy(dst, src, count);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemcpyAsync(void *dst,  uint64_t destMax, const void *src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream)
+rtError_t aclStub::rtMemcpyAsync(
+    void* dst, uint64_t destMax, const void* src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemsetD32(void *dst, uint64_t destMax, uint32_t value, uint64_t count)
+rtError_t aclStub::rtMemsetD32(void* dst, uint64_t destMax, uint32_t value, uint64_t count)
 {
-    (void)dst; 
-    (void)destMax; 
-    (void)value; 
+    (void)dst;
+    (void)destMax;
+    (void)value;
     (void)count;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemsetD32Async(void *dst, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stm)
+rtError_t aclStub::rtMemsetD32Async(void* dst, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stm)
 {
-    (void)dst; 
-    (void)destMax; 
-    (void)value; 
-    (void)count; 
+    (void)dst;
+    (void)destMax;
+    (void)value;
+    (void)count;
     (void)stm;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemcpyAsyncEx(void *dst, uint64_t destMax, const void *src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream, rtMemcpyConfig_t *memcpyConfig)
+rtError_t aclStub::rtMemcpyAsyncEx(
+    void* dst, uint64_t destMax, const void* src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream,
+    rtMemcpyConfig_t* memcpyConfig)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemsetAsync(void *ptr, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stream)
+rtError_t aclStub::rtMemsetAsync(void* ptr, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stream)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCpuKernelLaunchWithFlag(const void *soName, const void *kernelName, uint32_t numBlocks,
-                                             const rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm,
-                                             uint32_t flags)
+rtError_t aclStub::rtCpuKernelLaunchWithFlag(
+    const void* soName, const void* kernelName, uint32_t numBlocks, const rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc,
+    rtStream_t stm, uint32_t flags)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemGetInfoEx(rtMemInfoType_t memInfoType, size_t *free, size_t *total)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtMemGetInfoEx(rtMemInfoType_t memInfoType, size_t* free, size_t* total) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetMemUsageInfo(uint32_t deviceId, rtMemUsageInfo_t *memUsageInfo, size_t inputNum, size_t *outputNum)
+rtError_t aclStub::rtGetMemUsageInfo(
+    uint32_t deviceId, rtMemUsageInfo_t* memUsageInfo, size_t inputNum, size_t* outputNum)
 {
     (void)deviceId;
     (void)memUsageInfo;
@@ -431,22 +312,20 @@ rtError_t aclStub::rtGetMemUsageInfo(uint32_t deviceId, rtMemUsageInfo_t *memUsa
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSubscribeReport(uint64_t threadId, rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSubscribeReport(uint64_t threadId, rtStream_t stream) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMemAllocManaged(void **ptr, uint64_t size, uint32_t flag, const uint16_t moduleId)
+rtError_t aclStub::rtMemAllocManaged(void** ptr, uint64_t size, uint32_t flag, const uint16_t moduleId)
 {
     const uint64_t MAX_SIZE_LIMIT = 8ULL * 1024 * 1024 * 1024 * 1024;
     if (size == 0 || size > MAX_SIZE_LIMIT) {
-        return ACL_ERROR_INVALID_PARAM; 
+        return ACL_ERROR_INVALID_PARAM;
     }
     *ptr = malloc(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
+rtError_t aclStub::rtMemManagedAdvise(
+    const void* const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
 {
     (void)ptr;
     (void)size;
@@ -455,7 +334,8 @@ rtError_t aclStub::rtMemManagedAdvise(const void *const ptr, uint64_t size, uint
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *ptr, size_t size, void *data, size_t dataSize)
+rtError_t aclStub::rtMemManagedGetAttr(
+    rtMemManagedRangeAttribute attribute, const void* ptr, size_t size, void* data, size_t dataSize)
 {
     (void)attribute;
     (void)ptr;
@@ -465,8 +345,9 @@ rtError_t aclStub::rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, con
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t numAttributes, const void *ptr, 
-                            size_t size, void **data, size_t *dataSizes)
+rtError_t aclStub::rtMemManagedGetAttrs(
+    rtMemManagedRangeAttribute* attributes, size_t numAttributes, const void* ptr, size_t size, void** data,
+    size_t* dataSizes)
 {
     (void)attributes;
     (void)numAttributes;
@@ -477,115 +358,98 @@ rtError_t aclStub::rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCallbackLaunch(rtCallback_t callBackFunc, void *fnData, rtStream_t stream, bool isBlock)
+rtError_t aclStub::rtCallbackLaunch(rtCallback_t callBackFunc, void* fnData, rtStream_t stream, bool isBlock)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t rtMemAllocManaged(void **ptr, uint64_t size, uint32_t flag, const uint16_t moduleId)
+rtError_t rtMemAllocManaged(void** ptr, uint64_t size, uint32_t flag, const uint16_t moduleId)
 {
     return MockFunctionTest::aclStubInstance().rtMemAllocManaged(ptr, size, flag, moduleId);
 }
 
-rtError_t rtMemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
+rtError_t rtMemManagedAdvise(const void* const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
 {
     return MockFunctionTest::aclStubInstance().rtMemManagedAdvise(ptr, size, advise, location);
 }
 
-rtError_t rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *ptr, size_t size, void *data, size_t dataSize)
+rtError_t rtMemManagedGetAttr(
+    rtMemManagedRangeAttribute attribute, const void* ptr, size_t size, void* data, size_t dataSize)
 {
     return MockFunctionTest::aclStubInstance().rtMemManagedGetAttr(attribute, ptr, size, data, dataSize);
 }
 
-rtError_t rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t numAttributes, const void *ptr,
-                            size_t size, void **data, size_t *dataSizes)
+rtError_t rtMemManagedGetAttrs(
+    rtMemManagedRangeAttribute* attributes, size_t numAttributes, const void* ptr, size_t size, void** data,
+    size_t* dataSizes)
 {
-    return MockFunctionTest::aclStubInstance().rtMemManagedGetAttrs(attributes, numAttributes, ptr, size, data, dataSizes);
+    return MockFunctionTest::aclStubInstance().rtMemManagedGetAttrs(
+        attributes, numAttributes, ptr, size, data, dataSizes);
 }
 
-rtError_t aclStub::rtsLaunchHostFunc(rtStream_t stm, const rtCallback_t callBackFunc, void * const fnData)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtProcessReport(int32_t timeout)
+rtError_t aclStub::rtsLaunchHostFunc(rtStream_t stm, const rtCallback_t callBackFunc, void* const fnData)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtUnSubscribeReport(uint64_t threadId, rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtProcessReport(int32_t timeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetRunMode(rtRunMode *mode)
+rtError_t aclStub::rtUnSubscribeReport(uint64_t threadId, rtStream_t stream) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtGetRunMode(rtRunMode* mode)
 {
     *mode = RT_RUN_MODE_ONLINE;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetDeviceCount(int32_t *count)
+rtError_t aclStub::rtGetDeviceCount(int32_t* count)
 {
     *count = 1;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtEventElapsedTime(float *time, rtEvent_t start, rtEvent_t end)
+rtError_t aclStub::rtEventElapsedTime(float* time, rtEvent_t start, rtEvent_t end)
 {
     *time = 1.0f;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDevBinaryUnRegister(void *handle)
+rtError_t aclStub::rtDevBinaryUnRegister(void* handle) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtDevBinaryRegister(const rtDevBinary_t* bin, void** handle) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtFunctionRegister(
+    void* binHandle, const void* stubFunc, const char* stubName, const void* devFunc, uint32_t funcMode)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDevBinaryRegister(const rtDevBinary_t *bin, void **handle)
+rtError_t aclStub::rtKernelLaunch(
+    const void* stubFunc, uint32_t numBlocks, void* args, uint32_t argsSize, rtSmDesc_t* smDesc, rtStream_t stream)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFunctionRegister(void *binHandle,
-                            const void *stubFunc,
-                            const char *stubName,
-                            const void *devFunc,
-                            uint32_t funcMode)
+rtError_t aclStub::rtRegTaskFailCallbackByModule(const char* moduleName, rtTaskFailCallback callback)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtKernelLaunch(const void *stubFunc,
-                        uint32_t numBlocks,
-                        void *args,
-                        uint32_t argsSize,
-                        rtSmDesc_t *smDesc,
-                        rtStream_t stream)
+rtError_t aclStub::rtGetSocVersion(char* version, const uint32_t maxLen)
 {
-    return RT_ERROR_NONE;
-}
-
-
-rtError_t aclStub::rtRegTaskFailCallbackByModule(const char *moduleName, rtTaskFailCallback callback)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtGetSocVersion(char *version, const uint32_t maxLen)
-{
-    const char *socVersion = "Ascend910B1";
+    const char* socVersion = "Ascend910B1";
     memcpy_s(version, maxLen, socVersion, strlen(socVersion) + 1);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetSocSpec(const char *label, const char *key, char *value, uint32_t maxLen)
+rtError_t aclStub::rtGetSocSpec(const char* label, const char* key, char* value, uint32_t maxLen)
 {
-    const char *attrValue = "1";
+    const char* attrValue = "1";
     memcpy_s(value, maxLen, attrValue, strlen(attrValue) + 1);
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetGroupCount(uint32_t *count)
+rtError_t aclStub::rtGetGroupCount(uint32_t* count)
 {
     *count = 2;
     return RT_ERROR_NONE;
@@ -605,31 +469,19 @@ rtError_t aclStub::rtGetGroupInfo(int32_t groupid, rtGroupInfo_t* groupInfo, uin
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSetGroup(int32_t groupid)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetGroup(int32_t groupid) { return RT_ERROR_NONE; }
 
-rtError_t rtProfRegisterCtrlCallback(uint32_t logId, rtProfCtrlHandle callback)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t rtProfRegisterCtrlCallback(uint32_t logId, rtProfCtrlHandle callback) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t *phyId)
+rtError_t aclStub::rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t* phyId)
 {
     *phyId = 10;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtEnableP2P(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t flag)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtEnableP2P(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t flag) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtDisableP2P(uint32_t devIdDes, uint32_t phyIdSrc)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtDisableP2P(uint32_t devIdDes, uint32_t phyIdSrc) { return RT_ERROR_NONE; }
 
 rtError_t aclStub::rtDeviceCanAccessPeer(int32_t* canAccessPeer, uint32_t device, uint32_t peerDevice)
 {
@@ -637,122 +489,84 @@ rtError_t aclStub::rtDeviceCanAccessPeer(int32_t* canAccessPeer, uint32_t device
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetStreamId(rtStream_t stream_, int32_t *streamId)
+rtError_t aclStub::rtGetStreamId(rtStream_t stream_, int32_t* streamId)
 {
     *streamId = 1;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtRegDeviceStateCallback(const char *regName, rtDeviceStateCallback callback)
+rtError_t aclStub::rtRegDeviceStateCallback(const char* regName, rtDeviceStateCallback callback)
 {
     return RT_ERROR_NONE;
 }
-rtError_t aclStub::rtRegDeviceStateCallbackEx(const char *regName, rtDeviceStateCallback callback,
-                                                const rtDevCallBackDir_t notifyPos) {
+rtError_t aclStub::rtRegDeviceStateCallbackEx(
+    const char* regName, rtDeviceStateCallback callback, const rtDevCallBackDir_t notifyPos)
+{
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDeviceGetStreamPriorityRange(int32_t *leastPriority, int32_t *greatestPriority)
+rtError_t aclStub::rtDeviceGetStreamPriorityRange(int32_t* leastPriority, int32_t* greatestPriority)
 {
     *leastPriority = 7;
     *greatestPriority = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetDeviceCapability(int32_t device, int32_t moduleType, int32_t featureType, int32_t *value)
+rtError_t aclStub::rtGetDeviceCapability(int32_t device, int32_t moduleType, int32_t featureType, int32_t* value)
 {
     *value = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSetOpWaitTimeOut(uint32_t timeout)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetOpWaitTimeOut(uint32_t timeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSetOpExecuteTimeOut(uint32_t timeout)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetOpExecuteTimeOut(uint32_t timeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSetOpExecuteTimeOutWithMs(uint32_t timeout)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetOpExecuteTimeOutWithMs(uint32_t timeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSetOpExecuteTimeOutV2(uint64_t timeout, uint64_t *actualTimeout)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetOpExecuteTimeOutV2(uint64_t timeout, uint64_t* actualTimeout) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetOpTimeOutInterval(uint64_t *interval)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtGetOpTimeOutInterval(uint64_t* interval) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtCtxSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtCtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t aclStub::rtCtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
     *configVal = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t aclStub::rtGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
     *configVal = 0;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetDeviceSatStatus(void * const outputAddrPtr, const uint64_t outputSize, rtStream_t stm)
+rtError_t aclStub::rtGetDeviceSatStatus(void* const outputAddrPtr, const uint64_t outputSize, rtStream_t stm)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCleanDeviceSatStatus(rtStream_t stm)
+rtError_t aclStub::rtCleanDeviceSatStatus(rtStream_t stm) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemQueueInitQS(int32_t devId, const char* groupName) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemQueueCreate(int32_t devId, const rtMemQueueAttr_t* queAttr, uint32_t* qid)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueInitQS(int32_t devId, const char* groupName)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtMemQueueDestroy(int32_t devId, uint32_t qid) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMemQueueCreate(int32_t devId, const rtMemQueueAttr_t *queAttr, uint32_t *qid)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtMemQueueInit(int32_t devId) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMemQueueDestroy(int32_t devId, uint32_t qid)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtMemQueueEnQueue(int32_t devId, uint32_t qid, void* mbuf) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMemQueueInit(int32_t devId)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtMemQueueDeQueue(int32_t devId, uint32_t qid, void** mbuf) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMemQueueEnQueue(int32_t devId, uint32_t qid, void *mbuf)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemQueueDeQueue(int32_t devId, uint32_t qid, void **mbuf)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemQueuePeek(int32_t devId, uint32_t qid, size_t *bufLen, int32_t timeout)
+rtError_t aclStub::rtMemQueuePeek(int32_t devId, uint32_t qid, size_t* bufLen, int32_t timeout)
 {
     *bufLen = 100;
     if (*bufLen == 1) {
@@ -761,24 +575,24 @@ rtError_t aclStub::rtMemQueuePeek(int32_t devId, uint32_t qid, size_t *bufLen, i
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueEnQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t *inBuf, int32_t timeout)
+rtError_t aclStub::rtMemQueueEnQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t* inBuf, int32_t timeout)
 
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueDeQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t *outBuf, int32_t timeout)
+rtError_t aclStub::rtMemQueueDeQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t* outBuf, int32_t timeout)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueQuery(int32_t devId, rtMemQueueQueryCmd_t cmd, void *inBuff, uint32_t inLen,
-                                  void *outBuff, uint32_t *outLen)
+rtError_t aclStub::rtMemQueueQuery(
+    int32_t devId, rtMemQueueQueryCmd_t cmd, void* inBuff, uint32_t inLen, void* outBuff, uint32_t* outLen)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueQueryInfo(int32_t device, uint32_t qid, rtMemQueueInfo_t *queueInfo)
+rtError_t aclStub::rtMemQueueQueryInfo(int32_t device, uint32_t qid, rtMemQueueInfo_t* queueInfo)
 {
     if (queueInfo != nullptr) {
         queueInfo->size = 4;
@@ -786,100 +600,68 @@ rtError_t aclStub::rtMemQueueQueryInfo(int32_t device, uint32_t qid, rtMemQueueI
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueGrant(int32_t devId, uint32_t qid, int32_t pid, rtMemQueueShareAttr_t *attr)
+rtError_t aclStub::rtMemQueueGrant(int32_t devId, uint32_t qid, int32_t pid, rtMemQueueShareAttr_t* attr)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemQueueAttach(int32_t devId, uint32_t qid, int32_t timeout)
+rtError_t aclStub::rtMemQueueAttach(int32_t devId, uint32_t qid, int32_t timeout) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtEschedSubmitEventSync(int32_t devId, rtEschedEventSummary_t* event, rtEschedEventReply_t* ack)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtEschedSubmitEventSync(int32_t devId, rtEschedEventSummary_t *event, rtEschedEventReply_t *ack)
+rtError_t aclStub::rtQueryDevPid(rtBindHostpidInfo_t* info, pid_t* devPid) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMbufInit(rtMemBuffCfg_t* cfg) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMbufAlloc(rtMbufPtr_t* mbuf, uint64_t size) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMbufAllocEx(rtMbufPtr_t* mbuf, uint64_t size, uint64_t flag, int32_t grpId)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtQueryDevPid(rtBindHostpidInfo_t *info, pid_t *devPid)
+rtError_t aclStub::rtMbufGetBuffAddr(rtMbufPtr_t mbuf, void** databuf) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMbufGetBuffSize(rtMbufPtr_t mbuf, uint64_t* size) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMbufGetPrivInfo(rtMbufPtr_t mbuf, void** priv, uint64_t* size) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMbufCopyBufRef(rtMbufPtr_t mbuf, rtMbufPtr_t* newMbuf) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemGrpCreate(const char* name, const rtMemGrpConfig_t* cfg) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemGrpAddProc(const char* name, int32_t pid, const rtMemGrpShareAttr_t* attr)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMbufInit(rtMemBuffCfg_t *cfg)
+rtError_t aclStub::rtMemGrpAttach(const char* name, int32_t timeout) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemGrpQuery(rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* output)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMbufAlloc(rtMbufPtr_t *mbuf, uint64_t size)
+rtError_t aclStub::rtMemcpy2d(
+    void* dst, uint64_t dpitch, const void* src, uint64_t spitch, uint64_t width, uint64_t height, rtMemcpyKind_t kind)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMbufAllocEx(rtMbufPtr_t *mbuf, uint64_t size, uint64_t flag, int32_t grpId)
+rtError_t aclStub::rtMemcpy2dAsync(
+    void* dst, uint64_t dpitch, const void* src, uint64_t spitch, uint64_t width, uint64_t height, rtMemcpyKind_t kind,
+    rtStream_t stream)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMbufGetBuffAddr(rtMbufPtr_t mbuf, void **databuf)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtGetDevMsg(rtGetDevMsgType_t getMsgType, rtGetMsgCallback callback) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMbufGetBuffSize(rtMbufPtr_t mbuf, uint64_t *size)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMbufGetPrivInfo(rtMbufPtr_t mbuf, void **priv, uint64_t *size)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMbufCopyBufRef(rtMbufPtr_t mbuf, rtMbufPtr_t *newMbuf)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemGrpCreate(const char *name, const rtMemGrpConfig_t *cfg)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemGrpAddProc(const char *name, int32_t pid, const rtMemGrpShareAttr_t *attr)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemGrpAttach(const char *name, int32_t timeout)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemGrpQuery(rtMemGrpQueryInput_t * const input, rtMemGrpQueryOutput_t *output)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemcpy2d(void *dst, uint64_t dpitch, const void *src, uint64_t spitch, uint64_t width,
-    uint64_t height, rtMemcpyKind_t kind)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemcpy2dAsync(void *dst, uint64_t dpitch, const void *src, uint64_t spitch, uint64_t width,
-    uint64_t height, rtMemcpyKind_t kind, rtStream_t stream)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtGetDevMsg(rtGetDevMsgType_t getMsgType, rtGetMsgCallback callback)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtGetFaultEvent(const int32_t deviceId, rtDmsEventFilter *filter, rtDmsFaultEvent *dmsEvent,
-                                   uint32_t len, uint32_t *eventCount)
+rtError_t aclStub::rtGetFaultEvent(
+    const int32_t deviceId, rtDmsEventFilter* filter, rtDmsFaultEvent* dmsEvent, uint32_t len, uint32_t* eventCount)
 {
     (void)deviceId;
     (void)filter;
@@ -894,137 +676,100 @@ rtError_t aclStub::rtGetFaultEvent(const int32_t deviceId, rtDmsEventFilter *fil
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t *handle)
-{
-  return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t* handle) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t *event)
-{
-  return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t* event) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtStreamSetMode(rtStream_t stm, const uint64_t mode)
-{
-  return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtStreamSetMode(rtStream_t stm, const uint64_t mode) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSetStreamOverflowSwitch(rtStream_t stm, uint32_t flags)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSetStreamOverflowSwitch(rtStream_t stm, uint32_t flags) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t *flags)
+rtError_t aclStub::rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t* flags) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtSetDeviceSatMode(rtFloatOverflowMode_t floatOverflowMode) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtGetDeviceSatMode(rtFloatOverflowMode_t* floatOverflowMode) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtGetAiCoreCount(uint32_t* aiCoreCnt) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtGetDeviceInfo(uint32_t deviceId, int32_t moduleType, int32_t infoType, int64_t* val)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSetDeviceSatMode(rtFloatOverflowMode_t floatOverflowMode)
+rtError_t aclStub::rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t* const util)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetDeviceSatMode(rtFloatOverflowMode_t *floatOverflowMode)
+rtError_t aclStub::rtDeviceGetHostAtomicCapabilities(
+    uint32_t* caps, const rtAtomicOperation* ops, const uint32_t count, int32_t deviceId)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetAiCoreCount(uint32_t *aiCoreCnt)
+rtError_t aclStub::rtDeviceGetP2PAtomicCapabilities(
+    uint32_t* caps, const rtAtomicOperation* ops, const uint32_t count, int32_t srcDeviceId, int32_t dstDeviceId)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetDeviceInfo(uint32_t deviceId, int32_t moduleType, int32_t infoType, int64_t *val)
+rtError_t aclStub::rtReserveMemAddress(void** devPtr, size_t size, size_t alignment, void* devAddr, uint64_t flags)
 {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t* const util){
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtDeviceGetHostAtomicCapabilities(uint32_t *caps, const rtAtomicOperation *ops, const uint32_t count, int32_t deviceId) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtDeviceGetP2PAtomicCapabilities(uint32_t *caps, const rtAtomicOperation *ops, const uint32_t count, int32_t srcDeviceId, int32_t dstDeviceId) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtReserveMemAddress(void **devPtr, size_t size, size_t alignment, void *devAddr, uint64_t flags) {
     *devPtr = (void*)0x01U;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtReleaseMemAddress(void *devPtr) {
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtReleaseMemAddress(void* devPtr) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMallocPhysical(rtDrvMemHandle *handle, size_t size, rtDrvMemProp_t *prop, uint64_t flags) {     
+rtError_t aclStub::rtMallocPhysical(rtDrvMemHandle* handle, size_t size, rtDrvMemProp_t* prop, uint64_t flags)
+{
     *handle = (rtDrvMemHandle)0x01U;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFreePhysical(rtDrvMemHandle handle) {
+rtError_t aclStub::rtFreePhysical(rtDrvMemHandle handle) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemRetainAllocationHandle(void* virPtr, rtDrvMemHandle* handle) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, rtDrvMemProp_t* prop)
+{
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemRetainAllocationHandle(void* virPtr, rtDrvMemHandle *handle) {
+rtError_t aclStub::rtMemGetAddressRange(void* ptr, void** pbase, size_t* psize) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemPrefetchToDevice(void* devPtr, uint64_t len, int32_t devId) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemPoolCreate(rtMemPool_t* memPool, const rtMemPoolProps* poolProps) { return RT_ERROR_NONE; }
+rtError_t aclStub::rtMemPoolDestroy(const rtMemPool_t memPool) { return RT_ERROR_NONE; }
+rtError_t aclStub::rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value) { return RT_ERROR_NONE; }
+rtError_t aclStub::rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemPoolFreeAsync(void* ptr, rtStream_t stm) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMemPoolMallocAsync(
+    void** devPtr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
+{
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, rtDrvMemProp_t* prop) {
+rtError_t aclStub::rtMemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtMapMem(void* devPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
+{
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemGetAddressRange(void *ptr, void **pbase, size_t *psize) {
+rtError_t aclStub::rtMemMapNoAccess(void* virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
+{
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemPrefetchToDevice(void *devPtr, uint64_t len, int32_t devId) {
- 	return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtUnmapMem(void* devPtr) { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps) {
-    return RT_ERROR_NONE;
-}
-rtError_t aclStub::rtMemPoolDestroy(const rtMemPool_t memPool) {
-    return RT_ERROR_NONE;
-}
-rtError_t aclStub::rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value) {
-    return RT_ERROR_NONE;
-}
-rtError_t aclStub::rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemPoolFreeAsync(void* ptr, rtStream_t stm) {
-  return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemPoolMallocAsync(void **devPtr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm) {
-  return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMapMem(void *devPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemMapNoAccess(
-    void *virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtUnmapMem(void *devPtr) {
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLocation location,
-    uint32_t flags, rtStream_t stream)
+rtError_t aclStub::rtMemManagedPrefetchAsync(
+    const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, rtStream_t stream)
 {
     (void)ptr;
     (void)size;
@@ -1034,9 +779,9 @@ rtError_t aclStub::rtMemManagedPrefetchAsync(const void* ptr, size_t size, rtMem
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_t count,
-    rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags,
-    rtStream_t stream)
+rtError_t aclStub::rtMemManagedPrefetchBatchAsync(
+    const void** ptrs, size_t* sizes, size_t count, rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs,
+    size_t numPrefetchLocs, uint64_t flags, rtStream_t stream)
 {
     (void)ptrs;
     (void)sizes;
@@ -1049,7 +794,7 @@ rtError_t aclStub::rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* siz
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemMapSelectedLink(void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx)
+rtError_t aclStub::rtMemMapSelectedLink(void* virPtrDst, size_t size, void* virPtrSrc, uint32_t linkIdx)
 {
     (void)virPtrDst;
     (void)size;
@@ -1058,45 +803,45 @@ rtError_t aclStub::rtMemMapSelectedLink(void *virPtrDst, size_t size, void *virP
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, rtBinHandle *binHandle)
+rtError_t aclStub::rtBinaryLoadWithoutTilingKey(const void* data, const uint64_t length, rtBinHandle* binHandle)
 {
-  (void)data;
-  (void)length;
-  (void)binHandle;
-  return RT_ERROR_NONE;
+    (void)data;
+    (void)length;
+    (void)binHandle;
+    return RT_ERROR_NONE;
 }
 
 rtError_t aclStub::rtBinaryUnLoad(rtBinHandle binHandle)
 {
-  (void)binHandle;
-  return RT_ERROR_NONE;
+    (void)binHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsFuncGetByName(const rtBinHandle binHandle, const char_t *kernelName, rtFuncHandle *funcHandle)
+rtError_t aclStub::rtsFuncGetByName(const rtBinHandle binHandle, const char_t* kernelName, rtFuncHandle* funcHandle)
 {
-  (void)binHandle;
-  (void)kernelName;
-  (void)funcHandle;
-  return RT_ERROR_NONE;
+    (void)binHandle;
+    (void)kernelName;
+    (void)funcHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtBinaryGetGlobal(const rtBinHandle binHandle, const char_t *name, void **dptr, size_t *size)
+rtError_t aclStub::rtBinaryGetGlobal(const rtBinHandle binHandle, const char_t* name, void** dptr, size_t* size)
 {
-  (void)binHandle;
-  (void)name;
-  (void)dptr;
-  (void)size;
-  return RT_ERROR_NONE;
+    (void)binHandle;
+    (void)name;
+    (void)dptr;
+    (void)size;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetFuncBySymbol(const void *symbol, rtFuncHandle *funcHandle)
+rtError_t aclStub::rtGetFuncBySymbol(const void* symbol, rtFuncHandle* funcHandle)
 {
-  (void)symbol;
-  (void)funcHandle;
-  return RT_ERROR_NONE;
+    (void)symbol;
+    (void)funcHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSymbolLookup(const void *hostVar, void **devPtr, size_t *size)
+rtError_t aclStub::rtSymbolLookup(const void* hostVar, void** devPtr, size_t* size)
 {
     (void)hostVar;
     (void)devPtr;
@@ -1104,239 +849,234 @@ rtError_t aclStub::rtSymbolLookup(const void *hostVar, void **devPtr, size_t *si
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCreateLaunchArgs(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum,
-    void* argsData, rtLaunchArgsHandle* argsHandle)
+rtError_t aclStub::rtCreateLaunchArgs(
+    size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum, void* argsData, rtLaunchArgsHandle* argsHandle)
 {
-  (void)argsSize;
-  (void)hostInfoTotalSize;
-  (void)hostInfoNum;
-  (void)argsData;
-  (void)argsHandle;
-  return RT_ERROR_NONE;
+    (void)argsSize;
+    (void)hostInfoTotalSize;
+    (void)hostInfoNum;
+    (void)argsData;
+    (void)argsHandle;
+    return RT_ERROR_NONE;
 }
 
 rtError_t aclStub::rtDestroyLaunchArgs(rtLaunchArgsHandle argsHandle)
 {
-  (void)argsHandle;
-  return RT_ERROR_NONE;
+    (void)argsHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtLaunchKernelByFuncHandleV3(rtFuncHandle funcHandle, uint32_t numBlocks,
-                                                const rtArgsEx_t * const argsInfo,
-                                                rtStream_t stm, const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t aclStub::rtLaunchKernelByFuncHandleV3(
+    rtFuncHandle funcHandle, uint32_t numBlocks, const rtArgsEx_t* const argsInfo, rtStream_t stm,
+    const rtTaskCfgInfo_t* const cfgInfo)
 {
-  (void)funcHandle;
-  (void)numBlocks;
-  (void)argsInfo;
-  (void)stm;
-  (void)cfgInfo;
-  return RT_ERROR_NONE;
+    (void)funcHandle;
+    (void)numBlocks;
+    (void)argsInfo;
+    (void)stm;
+    (void)cfgInfo;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchKernelWithDevArgs(rtFuncHandle funcHandle, uint32_t numBlocks,
-                                              rtStream_t stm, rtKernelLaunchCfg_t *cfg,
-                                              const void *args, uint32_t argsSize, void *reserve)
+rtError_t aclStub::rtsLaunchKernelWithDevArgs(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, const void* args,
+    uint32_t argsSize, void* reserve)
 {
-  (void)funcHandle;
-  (void)numBlocks;
-  (void)stm;
-  (void)cfg;
-  (void)args;
-  (void)argsSize;
-  (void)reserve;
-  return RT_ERROR_NONE;
+    (void)funcHandle;
+    (void)numBlocks;
+    (void)stm;
+    (void)cfg;
+    (void)args;
+    (void)argsSize;
+    (void)reserve;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchKernelWithHostArgs(rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm,
-                                               rtKernelLaunchCfg_t *cfg, void *hostArgs, uint32_t argsSize,
-                                               rtPlaceHolderInfo_t *placeHolderArray, uint32_t placeHolderNum)
+rtError_t aclStub::rtsLaunchKernelWithHostArgs(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, void* hostArgs,
+    uint32_t argsSize, rtPlaceHolderInfo_t* placeHolderArray, uint32_t placeHolderNum)
 {
-  (void)funcHandle;
-  (void)numBlocks;
-  (void)stm;
-  (void)cfg;
-  (void)hostArgs;
-  (void)argsSize;
-  (void)placeHolderArray;
-  (void)placeHolderNum;
-  return RT_ERROR_NONE;
+    (void)funcHandle;
+    (void)numBlocks;
+    (void)stm;
+    (void)cfg;
+    (void)hostArgs;
+    (void)argsSize;
+    (void)placeHolderArray;
+    (void)placeHolderNum;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t stream,
-                                               rtKernelLaunchCfg_t *cfg, void **argsArray)
+rtError_t aclStub::rtLaunchKernelWithArgsArray(
+    void* func, uint32_t numBlocks, rtStream_t stream, rtKernelLaunchCfg_t* cfg, void** argsArray)
 {
-  (void)func;
-  (void)numBlocks;
-  (void)stream;
-  (void)cfg;
-  (void)argsArray;
-  return RT_ERROR_NONE;
+    (void)func;
+    (void)numBlocks;
+    (void)stream;
+    (void)cfg;
+    (void)argsArray;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtLaunchSIMTKernelWithArgsArray(void *func, rtDim3 gridDim, rtDim3 blockDim,
-                                                   size_t dynUbufSize, rtStream_t stream,
-                                                   rtKernelLaunchCfg_t *cfg, void **argsArray)
+rtError_t aclStub::rtLaunchSIMTKernelWithArgsArray(
+    void* func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize, rtStream_t stream, rtKernelLaunchCfg_t* cfg,
+    void** argsArray)
 {
-  (void)func;
-  (void)gridDim;
-  (void)blockDim;
-  (void)dynUbufSize;
-  (void)stream;
-  (void)cfg;
-  (void)argsArray;
-  return RT_ERROR_NONE;
+    (void)func;
+    (void)gridDim;
+    (void)blockDim;
+    (void)dynUbufSize;
+    (void)stream;
+    (void)cfg;
+    (void)argsArray;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtLaunchSIMTKernelWithHostArgs(void *func, rtDim3 gridDim, rtDim3 blockDim,
-                                                  size_t dynUbufSize, rtStream_t stream,
-                                                  rtKernelLaunchCfg_t *cfg, void *hostArgs,
-                                                  uint32_t argsSize, rtPlaceHolderInfo_t *placeHolderArray,
-                                                  uint32_t placeHolderNum)
+rtError_t aclStub::rtLaunchSIMTKernelWithHostArgs(
+    void* func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize, rtStream_t stream, rtKernelLaunchCfg_t* cfg,
+    void* hostArgs, uint32_t argsSize, rtPlaceHolderInfo_t* placeHolderArray, uint32_t placeHolderNum)
 {
-  (void)func;
-  (void)gridDim;
-  (void)blockDim;
-  (void)dynUbufSize;
-  (void)stream;
-  (void)cfg;
-  (void)hostArgs;
-  (void)argsSize;
-  (void)placeHolderArray;
-  (void)placeHolderNum;
-  return RT_ERROR_NONE;
+    (void)func;
+    (void)gridDim;
+    (void)blockDim;
+    (void)dynUbufSize;
+    (void)stream;
+    (void)cfg;
+    (void)hostArgs;
+    (void)argsSize;
+    (void)placeHolderArray;
+    (void)placeHolderNum;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-                                                uint64_t flag, uint64_t *shareableHandle)
+rtError_t aclStub::rtMemExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flag, uint64_t* shareableHandle)
 {
-  (void)handle;
-  (void)handleType;
-  (void)flag;
-  (void)shareableHandle;
-  return RT_ERROR_NONE;
+    (void)handle;
+    (void)handleType;
+    (void)flag;
+    (void)shareableHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsMemExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-    uint64_t flag, uint64_t *shareableHandle)
+rtError_t aclStub::rtsMemExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flag, uint64_t* shareableHandle)
 {
-  (void)handle;
-  (void)handleType;
-  (void)flag;
-  (void)shareableHandle;
-  return RT_ERROR_NONE;
+    (void)handle;
+    (void)handleType;
+    (void)flag;
+    (void)shareableHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemExportToShareableHandleV2(rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, 
-    void *shareableHandle)
+rtError_t aclStub::rtMemExportToShareableHandleV2(
+    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void* shareableHandle)
 {
-  (void)handle;
-  (void)handleType;
-  (void)flags;
-  (void)shareableHandle;
-  return RT_ERROR_NONE;
+    (void)handle;
+    (void)handleType;
+    (void)flags;
+    (void)shareableHandle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId,
-                                                  rtDrvMemHandle *handle)
+rtError_t aclStub::rtMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId, rtDrvMemHandle* handle)
 {
-  (void)shareableHandle;
-  (void)deviceId;
-  (void)handle;
-  return RT_ERROR_NONE;
+    (void)shareableHandle;
+    (void)deviceId;
+    (void)handle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId,
-    rtDrvMemHandle *handle)
+rtError_t aclStub::rtsMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId, rtDrvMemHandle* handle)
 {
-  (void)shareableHandle;
-  (void)deviceId;
-  (void)handle;
-  return RT_ERROR_NONE;
+    (void)shareableHandle;
+    (void)deviceId;
+    (void)handle;
+    return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemImportFromShareableHandleV2(const void *shareableHandle, rtMemSharedHandleType handleType, uint64_t flags,
-    int32_t devId, rtDrvMemHandle *handle)
+rtError_t aclStub::rtMemImportFromShareableHandleV2(
+    const void* shareableHandle, rtMemSharedHandleType handleType, uint64_t flags, int32_t devId,
+    rtDrvMemHandle* handle)
 {
-  (void)shareableHandle;
-  (void)handleType;
-  (void)flags;
-  (void)devId;
-  (void)handle;
-  return RT_ERROR_NONE;
+    (void)shareableHandle;
+    (void)handleType;
+    (void)flags;
+    (void)devId;
+    (void)handle;
+    return RT_ERROR_NONE;
 }
 
 rtError_t aclStub::rtMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], uint32_t pidNum)
 {
-  (void)shareableHandle;
-  (void)pid;
-  (void)pidNum;
-  return RT_ERROR_NONE;
+    (void)shareableHandle;
+    (void)pid;
+    (void)pidNum;
+    return RT_ERROR_NONE;
 }
 
 rtError_t aclStub::rtsMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], uint32_t pidNum)
 {
-  (void)shareableHandle;
-  (void)pid;
-  (void)pidNum;
-  return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemSetPidToShareableHandleV2(const void *shareableHandle, rtMemSharedHandleType handleType, int pid[], uint32_t pidNum)
-{
-  (void)shareableHandle;
-  (void)handleType;
-  (void)pid;
-  (void)pidNum;
-  return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtMemGetAllocationGranularity(rtDrvMemProp_t *prop,
-                                                 rtDrvMemGranularityOptions option, size_t *granularity)
-{
-  (void)prop;
-  (void)option;
-  (void)granularity;
-  return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtDeviceGetBareTgid(uint32_t *pid)
-{
-  (void)pid;
-  return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus *deviceStatus)
-{
+    (void)shareableHandle;
+    (void)pid;
+    (void)pidNum;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetL2CacheOffset(uint32_t deivceId, uint64_t *offset)
+rtError_t aclStub::rtMemSetPidToShareableHandleV2(
+    const void* shareableHandle, rtMemSharedHandleType handleType, int pid[], uint32_t pidNum)
+{
+    (void)shareableHandle;
+    (void)handleType;
+    (void)pid;
+    (void)pidNum;
+    return RT_ERROR_NONE;
+}
+
+rtError_t aclStub::rtMemGetAllocationGranularity(
+    rtDrvMemProp_t* prop, rtDrvMemGranularityOptions option, size_t* granularity)
+{
+    (void)prop;
+    (void)option;
+    (void)granularity;
+    return RT_ERROR_NONE;
+}
+
+rtError_t aclStub::rtDeviceGetBareTgid(uint32_t* pid)
+{
+    (void)pid;
+    return RT_ERROR_NONE;
+}
+
+rtError_t aclStub::rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus* deviceStatus) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtGetL2CacheOffset(uint32_t deivceId, uint64_t* offset)
 {
     (void)offset;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtRegKernelLaunchFillFunc(const char *symbol, rtKernelLaunchFillFunc func)
+rtError_t aclStub::rtRegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc func)
 {
     (void)symbol;
     (void)func;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtUnRegKernelLaunchFillFunc(const char *symbol)
+rtError_t aclStub::rtUnRegKernelLaunchFillFunc(const char* symbol)
 {
     (void)symbol;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t aclStub::rtGetMemUceInfo(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     (void)deviceId;
     memUceInfo->count = RT_MAX_RECORD_PA_NUM_PER_DEV;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t aclStub::rtMemUceRepair(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     (void)deviceId;
     (void)memUceInfo;
@@ -1371,7 +1111,7 @@ rtError_t aclStub::rtDeviceSetLimit(int32_t devId, rtLimitType_t type, uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtDeviceGetLimit(rtLimitType_t type, uint32_t *val)
+rtError_t aclStub::rtDeviceGetLimit(rtLimitType_t type, uint32_t* val)
 {
     (void)type;
     if (val != nullptr) {
@@ -1386,7 +1126,7 @@ rtError_t aclStub::rtEventWorkModeSet(uint8_t event_mode)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtRegStreamStateCallback(const char *regName, rtStreamStateCallback callback)
+rtError_t aclStub::rtRegStreamStateCallback(const char* regName, rtStreamStateCallback callback)
 {
     (void)regName;
     (void)callback;
@@ -1400,7 +1140,7 @@ rtError_t aclStub::rtCtxGetCurrentDefaultStream(rtStream_t* stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmpType, rtStream_t stm)
+rtError_t aclStub::rtCmoAsync(void* srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmpType, rtStream_t stm)
 {
     (void)srcAddrPtr;
     (void)srcLen;
@@ -1409,7 +1149,7 @@ rtError_t aclStub::rtCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmp
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtStream_t stm)
+rtError_t aclStub::rtsCmoAsync(void* srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtStream_t stm)
 {
     (void)srcAddrPtr;
     (void)srcLen;
@@ -1425,7 +1165,7 @@ rtError_t aclStub::rtStreamBeginCapture(rtStream_t stm, const rtStreamCaptureMod
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus *const status, rtModel_t *captureMdl)
+rtError_t aclStub::rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus* const status, rtModel_t* captureMdl)
 {
     (void)stm;
     (void)status;
@@ -1433,14 +1173,14 @@ rtError_t aclStub::rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamEndCapture(rtStream_t stm, rtModel_t *captureMdl)
+rtError_t aclStub::rtStreamEndCapture(rtStream_t stm, rtModel_t* captureMdl)
 {
     (void)stm;
     (void)captureMdl;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
+rtError_t aclStub::rtCacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize)
 {
     (void)infoPtr;
     (void)infoSize;
@@ -1454,7 +1194,7 @@ rtError_t aclStub::rtCacheLastTaskExtendInfo(const char* const extendInfoPtr, co
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t *attrValue)
+rtError_t aclStub::rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t* attrValue)
 {
     (void)funcHandle;
     (void)attrType;
@@ -1462,14 +1202,14 @@ rtError_t aclStub::rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribu
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle *binHandle)
+rtError_t aclStub::rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle* binHandle)
 {
     (void)funcHandle;
     (void)binHandle;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFunctionGetParamCount(const void *func, size_t *paramCount)
+rtError_t aclStub::rtFunctionGetParamCount(const void* func, size_t* paramCount)
 {
     (void)func;
     if (paramCount != nullptr) {
@@ -1478,7 +1218,7 @@ rtError_t aclStub::rtFunctionGetParamCount(const void *func, size_t *paramCount)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize)
+rtError_t aclStub::rtFunctionGetParamInfo(const void* func, size_t paramIndex, size_t* paramOffset, size_t* paramSize)
 {
     (void)func;
     (void)paramIndex;
@@ -1491,7 +1231,7 @@ rtError_t aclStub::rtFunctionGetParamInfo(const void *func, size_t paramIndex, s
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+rtError_t aclStub::rtFunctionGetAvailDynUbufPerBlock(void* func, uint32_t flags, size_t* dynamicUbufSize)
 {
     (void)func;
     (void)flags;
@@ -1507,7 +1247,7 @@ rtError_t aclStub::rtModelDebugDotPrint(rtModel_t mdl)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelDebugJsonPrint(rtModel_t mdl, const char *path, uint32_t flags)
+rtError_t aclStub::rtModelDebugJsonPrint(rtModel_t mdl, const char* path, uint32_t flags)
 {
     (void)mdl;
     (void)path;
@@ -1515,7 +1255,7 @@ rtError_t aclStub::rtModelDebugJsonPrint(rtModel_t mdl, const char *path, uint32
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtThreadExchangeCaptureMode(rtStreamCaptureMode *mode)
+rtError_t aclStub::rtThreadExchangeCaptureMode(rtStreamCaptureMode* mode)
 {
     (void)mode;
     return RT_ERROR_NONE;
@@ -1535,7 +1275,7 @@ rtError_t aclStub::rtModelDestroy(rtModel_t mdl)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelDestroyRegisterCallback(rtModel_t const mdl, rtCallback_t fn, void *ptr)
+rtError_t aclStub::rtModelDestroyRegisterCallback(rtModel_t const mdl, rtCallback_t fn, void* ptr)
 {
     (void)mdl;
     (void)fn;
@@ -1550,13 +1290,15 @@ rtError_t aclStub::rtModelDestroyUnregisterCallback(rtModel_t const mdl, rtCallb
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsMemcpyAsyncWithDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, rtMemcpyConfig_t *config, rtStream_t stream)
+rtError_t aclStub::rtsMemcpyAsyncWithDesc(
+    rtMemcpyDesc_t desc, rtMemcpyKind kind, rtMemcpyConfig_t* config, rtStream_t stream)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemcpyAsyncWithOffset(void **dst, uint64_t dstMax, uint64_t dstDataOffset, const void **src,
-    uint64_t count, uint64_t srcDataOffset, rtMemcpyKind kind, rtStream_t stream)
+rtError_t aclStub::rtMemcpyAsyncWithOffset(
+    void** dst, uint64_t dstMax, uint64_t dstDataOffset, const void** src, uint64_t count, uint64_t srcDataOffset,
+    rtMemcpyKind kind, rtStream_t stream)
 {
     (void)dst;
     (void)dstMax;
@@ -1569,23 +1311,21 @@ rtError_t aclStub::rtMemcpyAsyncWithOffset(void **dst, uint64_t dstMax, uint64_t
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetMemcpyDescSize(rtMemcpyKind kind, size_t *size)
+rtError_t aclStub::rtsGetMemcpyDescSize(rtMemcpyKind kind, size_t* size) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtsSetMemcpyDesc(
+    rtMemcpyDesc_t desc, rtMemcpyKind kind, void* srcAddr, void* dstAddr, size_t count, rtMemcpyConfig_t* config)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsSetMemcpyDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, void *srcAddr, void *dstAddr, size_t count, rtMemcpyConfig_t *config)
+rtError_t aclStub::rtsBinaryLoadFromFile(
+    const char* const binPath, const rtLoadBinaryConfig_t* const optionalCfg, rtBinHandle* handle)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsBinaryLoadFromFile(const char * const binPath, const rtLoadBinaryConfig_t * const optionalCfg,
-                                         rtBinHandle *handle)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtsBinaryGetDevAddress(const rtBinHandle binHandle, void **bin, uint32_t *binSize)
+rtError_t aclStub::rtsBinaryGetDevAddress(const rtBinHandle binHandle, void** bin, uint32_t* binSize)
 {
     (void)binHandle;
     (void)bin;
@@ -1593,76 +1333,69 @@ rtError_t aclStub::rtsBinaryGetDevAddress(const rtBinHandle binHandle, void **bi
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsFuncGetByEntry(const rtBinHandle binHandle, const uint64_t funcEntry, rtFuncHandle *funcHandle)
+rtError_t aclStub::rtsFuncGetByEntry(const rtBinHandle binHandle, const uint64_t funcEntry, rtFuncHandle* funcHandle)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsFuncGetAddr(const rtFuncHandle funcHandle, void **aicAddr, void **aivAddr)
+rtError_t aclStub::rtsFuncGetAddr(const rtFuncHandle funcHandle, void** aicAddr, void** aivAddr)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtFuncGetSize(const rtFuncHandle funcHandle, size_t *aicSize, size_t *aivSize)
+rtError_t aclStub::rtFuncGetSize(const rtFuncHandle funcHandle, size_t* aicSize, size_t* aivSize)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchKernelWithConfig(rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm,
-                                             rtKernelLaunchCfg_t *cfg, rtArgsHandle argsHandle, void *reserve)
+rtError_t aclStub::rtsLaunchKernelWithConfig(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, rtArgsHandle argsHandle,
+    void* reserve)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsInit(rtFuncHandle funcHandle, rtArgsHandle *handle)
+rtError_t aclStub::rtsKernelArgsInit(rtFuncHandle funcHandle, rtArgsHandle* handle) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtsKernelArgsFinalize(rtArgsHandle argsHandle) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtsKernelArgsAppend(rtArgsHandle handle, void* para, size_t paraSize, rtParaHandle* paraHandle)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsFinalize(rtArgsHandle argsHandle)
+rtError_t aclStub::rtsKernelArgsAppendPlaceHolder(rtArgsHandle handle, rtParaHandle* paraHandle)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsAppend(rtArgsHandle handle, void *para, size_t paraSize, rtParaHandle *paraHandle)
+rtError_t aclStub::rtsKernelArgsParaUpdate(
+    rtArgsHandle argsHandle, rtParaHandle paraHandle, void* para, size_t paraSize)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsAppendPlaceHolder(rtArgsHandle handle, rtParaHandle *paraHandle)
+rtError_t aclStub::rtsKernelArgsInitByUserMem(
+    rtFuncHandle funcHandle, rtArgsHandle argsHandle, void* userHostMem, size_t actualArgsSize)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsParaUpdate(rtArgsHandle argsHandle, rtParaHandle paraHandle, void *para,
-                                           size_t paraSize)
+rtError_t aclStub::rtsKernelArgsGetMemSize(rtFuncHandle funcHandle, size_t userArgsSize, size_t* actualArgsSize)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsInitByUserMem(rtFuncHandle funcHandle, rtArgsHandle argsHandle, void *userHostMem,
-                                              size_t actualArgsSize)
+rtError_t aclStub::rtsKernelArgsGetHandleMemSize(rtFuncHandle funcHandle, size_t* memSize) { return RT_ERROR_NONE; }
+
+rtError_t aclStub::rtsKernelArgsGetPlaceHolderBuffer(
+    rtArgsHandle argsHandle, rtParaHandle paraHandle, size_t dataSize, void** bufferAddr)
 {
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsKernelArgsGetMemSize(rtFuncHandle funcHandle, size_t userArgsSize, size_t *actualArgsSize)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtsKernelArgsGetHandleMemSize(rtFuncHandle funcHandle, size_t *memSize)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtsKernelArgsGetPlaceHolderBuffer(rtArgsHandle argsHandle, rtParaHandle paraHandle,
-                                                     size_t dataSize, void **bufferAddr)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t aclStub::rtsMalloc(void **devPtr, uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise, rtMallocConfig_t *cfg)
+rtError_t aclStub::rtsMalloc(
+    void** devPtr, uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise, rtMallocConfig_t* cfg)
 {
     (void)devPtr;
     (void)size;
@@ -1672,7 +1405,7 @@ rtError_t aclStub::rtsMalloc(void **devPtr, uint64_t size, rtMallocPolicy policy
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsMallocHost(void **hostPtr, uint64_t size, const rtMallocConfig_t *cfg)
+rtError_t aclStub::rtsMallocHost(void** hostPtr, uint64_t size, const rtMallocConfig_t* cfg)
 {
     (void)hostPtr;
     (void)size;
@@ -1680,14 +1413,14 @@ rtError_t aclStub::rtsMallocHost(void **hostPtr, uint64_t size, const rtMallocCo
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsPointerGetAttributes(const void *ptr, rtPtrAttributes_t *attributes)
+rtError_t aclStub::rtsPointerGetAttributes(const void* ptr, rtPtrAttributes_t* attributes)
 {
     (void)ptr;
     (void)attributes;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsHostRegister(void *ptr, uint64_t size, rtHostRegisterType type, void **devPtr)
+rtError_t aclStub::rtsHostRegister(void* ptr, uint64_t size, rtHostRegisterType type, void** devPtr)
 {
     (void)ptr;
     (void)size;
@@ -1696,7 +1429,7 @@ rtError_t aclStub::rtsHostRegister(void *ptr, uint64_t size, rtHostRegisterType 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtHostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
+rtError_t aclStub::rtHostRegisterV2(void* ptr, uint64_t size, uint32_t flag)
 {
     (void)ptr;
     (void)size;
@@ -1704,7 +1437,7 @@ rtError_t aclStub::rtHostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtHostGetDevicePointer(void *pHost, void **pDevice, uint32_t flag)
+rtError_t aclStub::rtHostGetDevicePointer(void* pHost, void** pDevice, uint32_t flag)
 {
     (void)pHost;
     (void)pDevice;
@@ -1712,13 +1445,13 @@ rtError_t aclStub::rtHostGetDevicePointer(void *pHost, void **pDevice, uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsHostUnregister(void *ptr)
+rtError_t aclStub::rtsHostUnregister(void* ptr)
 {
     (void)ptr;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability *capabilities)
+rtError_t aclStub::rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability* capabilities)
 {
     (void)deviceId;
     (void)hacType;
@@ -1726,13 +1459,13 @@ rtError_t aclStub::rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetThreadLastTaskId(uint32_t *taskId)
+rtError_t aclStub::rtsGetThreadLastTaskId(uint32_t* taskId)
 {
     (void)taskId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsStreamGetId(rtStream_t stm, int32_t *streamId)
+rtError_t aclStub::rtsStreamGetId(rtStream_t stm, int32_t* streamId)
 {
     (void)stm;
     (void)streamId;
@@ -1745,7 +1478,7 @@ rtError_t aclStub::rtsStreamBeginTaskGrp(rtStream_t stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsStreamEndTaskGrp(rtStream_t stm, rtTaskGrp_t *handle)
+rtError_t aclStub::rtsStreamEndTaskGrp(rtStream_t stm, rtTaskGrp_t* handle)
 {
     (void)stm;
     (void)handle;
@@ -1765,7 +1498,7 @@ rtError_t aclStub::rtsStreamEndTaskUpdate(rtStream_t stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsValueWrite(const void * const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
+rtError_t aclStub::rtsValueWrite(const void* const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
 {
     (void)devAddr;
     (void)value;
@@ -1774,7 +1507,7 @@ rtError_t aclStub::rtsValueWrite(const void * const devAddr, const uint64_t valu
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsValueWait(const void * const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
+rtError_t aclStub::rtsValueWait(const void* const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
 {
     (void)devAddr;
     (void)value;
@@ -1783,13 +1516,13 @@ rtError_t aclStub::rtsValueWait(const void * const devAddr, const uint64_t value
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsStreamGetAvailableNum(uint32_t *streamCount)
+rtError_t aclStub::rtsStreamGetAvailableNum(uint32_t* streamCount)
 {
     (void)streamCount;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t *attrValue)
+rtError_t aclStub::rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t* attrValue)
 {
     (void)stm;
     (void)stmAttrId;
@@ -1797,7 +1530,7 @@ rtError_t aclStub::rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId,
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t *attrValue)
+rtError_t aclStub::rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t* attrValue)
 {
     (void)stm;
     (void)stmAttrId;
@@ -1805,7 +1538,7 @@ rtError_t aclStub::rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId,
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsNotifyCreate(rtNotify_t *notify, uint64_t flag)
+rtError_t aclStub::rtsNotifyCreate(rtNotify_t* notify, uint64_t flag)
 {
     (void)notify;
     (void)flag;
@@ -1818,7 +1551,7 @@ rtError_t aclStub::rtsNotifyDestroy(rtNotify_t notify)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtCntNotifyCreateServer(rtCntNotify_t *cntNotify, uint64_t flag)
+rtError_t aclStub::rtCntNotifyCreateServer(rtCntNotify_t* cntNotify, uint64_t flag)
 {
     (void)cntNotify;
     (void)flag;
@@ -1846,27 +1579,27 @@ rtError_t aclStub::rtsNotifyWaitAndReset(rtNotify_t notify, rtStream_t stream, u
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsNotifyGetId(rtNotify_t notify, uint32_t *notifyId)
+rtError_t aclStub::rtsNotifyGetId(rtNotify_t notify, uint32_t* notifyId)
 {
     (void)notify;
     (void)notifyId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsEventGetId(rtEvent_t event, uint32_t *eventId)
+rtError_t aclStub::rtsEventGetId(rtEvent_t event, uint32_t* eventId)
 {
     (void)event;
     (void)eventId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsEventGetAvailNum(uint32_t *eventCount)
+rtError_t aclStub::rtsEventGetAvailNum(uint32_t* eventCount)
 {
     (void)eventCount;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsDeviceGetInfo(uint32_t deviceId, rtDevAttr attr, int64_t *val)
+rtError_t aclStub::rtsDeviceGetInfo(uint32_t deviceId, rtDevAttr attr, int64_t* val)
 {
     (void)deviceId;
     (void)attr;
@@ -1874,14 +1607,14 @@ rtError_t aclStub::rtsDeviceGetInfo(uint32_t deviceId, rtDevAttr attr, int64_t *
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsDeviceGetStreamPriorityRange(int32_t *leastPriority, int32_t *greatestPriority)
+rtError_t aclStub::rtsDeviceGetStreamPriorityRange(int32_t* leastPriority, int32_t* greatestPriority)
 {
     (void)leastPriority;
     (void)greatestPriority;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureType, int32_t *val)
+rtError_t aclStub::rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureType, int32_t* val)
 {
     (void)deviceId;
     (void)devFeatureType;
@@ -1889,20 +1622,20 @@ rtError_t aclStub::rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureTy
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetDeviceUuid(int32_t deviceId, rtUuid_t *uuid)
+rtError_t aclStub::rtGetDeviceUuid(int32_t deviceId, rtUuid_t* uuid)
 {
     (void)deviceId;
     (void)uuid;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCtxGetCurrentDefaultStream(rtStream_t *stm)
+rtError_t aclStub::rtsCtxGetCurrentDefaultStream(rtStream_t* stm)
 {
     (void)stm;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active)
+rtError_t aclStub::rtsGetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active)
 {
     (void)devId;
     (void)flags;
@@ -1910,7 +1643,7 @@ rtError_t aclStub::rtsGetPrimaryCtxState(const int32_t devId, uint32_t *flags, i
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsModelCreate(rtModel_t *mdl, uint32_t flag)
+rtError_t aclStub::rtsModelCreate(rtModel_t* mdl, uint32_t flag)
 {
     (void)mdl;
     (void)flag;
@@ -1932,7 +1665,7 @@ rtError_t aclStub::rtsEndGraph(rtModel_t mdl, rtStream_t stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsModelLoadComplete(rtModel_t mdl, void *reserve)
+rtError_t aclStub::rtsModelLoadComplete(rtModel_t mdl, void* reserve)
 {
     (void)mdl;
     (void)reserve;
@@ -1953,7 +1686,7 @@ rtError_t aclStub::rtsModelExecute(rtModel_t mdl, int32_t timeout)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchReduceAsyncTask(const rtReduceInfo_t *reduceInfo, const rtStream_t stm, const void *reserve)
+rtError_t aclStub::rtsLaunchReduceAsyncTask(const rtReduceInfo_t* reduceInfo, const rtStream_t stm, const void* reserve)
 {
     (void)reduceInfo;
     (void)stm;
@@ -1961,7 +1694,7 @@ rtError_t aclStub::rtsLaunchReduceAsyncTask(const rtReduceInfo_t *reduceInfo, co
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetDeviceResLimit(const int32_t deviceId, const rtDevResLimitType_t type, uint32_t *value)
+rtError_t aclStub::rtsGetDeviceResLimit(const int32_t deviceId, const rtDevResLimitType_t type, uint32_t* value)
 {
     (void)deviceId;
     (void)type;
@@ -1983,7 +1716,7 @@ rtError_t aclStub::rtsResetDeviceResLimit(const int32_t deviceId)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetStreamResLimit(rtStream_t stream, const rtDevResLimitType_t type, uint32_t *value)
+rtError_t aclStub::rtsGetStreamResLimit(rtStream_t stream, const rtDevResLimitType_t type, uint32_t* value)
 {
     (void)stream;
     (void)type;
@@ -2017,15 +1750,16 @@ rtError_t aclStub::rtsNotUseStreamResInCurrentThread(rtStream_t stream)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetResInCurrentThread(const rtDevResLimitType_t type, uint32_t *value)
+rtError_t aclStub::rtsGetResInCurrentThread(const rtDevResLimitType_t type, uint32_t* value)
 {
     (void)type;
     (void)value;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsMemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t count, rtMemcpyBatchAttr *attrs,
-    size_t *attrsIdxs, size_t numAttrs, size_t *failIdx)
+rtError_t aclStub::rtsMemcpyBatch(
+    void** dsts, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs, size_t* attrsIdxs, size_t numAttrs,
+    size_t* failIdx)
 {
     (void)dsts;
     (void)srcs;
@@ -2038,8 +1772,9 @@ rtError_t aclStub::rtsMemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsMemcpyBatchAsync(void **dsts, size_t *destMaxs, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx, rtStream_t stream)
+rtError_t aclStub::rtsMemcpyBatchAsync(
+    void** dsts, size_t* destMaxs, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs,
+    size_t* attrsIdxs, size_t numAttrs, size_t* failIdx, rtStream_t stream)
 {
     (void)dsts;
     (void)destMaxs;
@@ -2054,7 +1789,7 @@ rtError_t aclStub::rtsMemcpyBatchAsync(void **dsts, size_t *destMaxs, void **src
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLabelCreate(rtLabel_t *lbl)
+rtError_t aclStub::rtsLabelCreate(rtLabel_t* lbl)
 {
     (void)lbl;
     return RT_ERROR_NONE;
@@ -2073,7 +1808,7 @@ rtError_t aclStub::rtsLabelDestroy(rtLabel_t lbl)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLabelSwitchListCreate(rtLabel_t *labels, size_t num, void **labelList)
+rtError_t aclStub::rtsLabelSwitchListCreate(rtLabel_t* labels, size_t num, void** labelList)
 {
     (void)labels;
     (void)num;
@@ -2081,13 +1816,13 @@ rtError_t aclStub::rtsLabelSwitchListCreate(rtLabel_t *labels, size_t num, void 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLabelSwitchListDestroy(void *labelList)
+rtError_t aclStub::rtsLabelSwitchListDestroy(void* labelList)
 {
     (void)labelList;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLabelSwitchByIndex(void *ptr, uint32_t maxValue, void *labelInfoPtr, rtStream_t stm)
+rtError_t aclStub::rtsLabelSwitchByIndex(void* ptr, uint32_t maxValue, void* labelInfoPtr, rtStream_t stm)
 {
     (void)ptr;
     (void)maxValue;
@@ -2103,7 +1838,9 @@ rtError_t aclStub::rtsActiveStream(rtStream_t activeStream, rtStream_t stream)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsSwitchStream(void *leftValue, rtCondition_t cond, void *rightValue, rtSwitchDataType_t dataType, rtStream_t trueStream, rtStream_t falseStream, rtStream_t stream)
+rtError_t aclStub::rtsSwitchStream(
+    void* leftValue, rtCondition_t cond, void* rightValue, rtSwitchDataType_t dataType, rtStream_t trueStream,
+    rtStream_t falseStream, rtStream_t stream)
 {
     (void)leftValue;
     (void)cond;
@@ -2115,7 +1852,7 @@ rtError_t aclStub::rtsSwitchStream(void *leftValue, rtCondition_t cond, void *ri
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsFuncGetName(const rtFuncHandle funcHandle, const uint32_t maxLen, char_t * const name)
+rtError_t aclStub::rtsFuncGetName(const rtFuncHandle funcHandle, const uint32_t maxLen, char_t* const name)
 {
     (void)funcHandle;
     (void)maxLen;
@@ -2123,14 +1860,14 @@ rtError_t aclStub::rtsFuncGetName(const rtFuncHandle funcHandle, const uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsModelSetName(rtModel_t mdl, const char_t *mdlName)
+rtError_t aclStub::rtsModelSetName(rtModel_t mdl, const char_t* mdlName)
 {
     (void)mdl;
     (void)mdlName;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t * const mdlName)
+rtError_t aclStub::rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t* const mdlName)
 {
     (void)mdl;
     (void)maxLen;
@@ -2138,7 +1875,8 @@ rtError_t aclStub::rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsBinaryLoadFromData(const void *const data, const uint64_t length, const rtLoadBinaryConfig_t *const optionalCfg, rtBinHandle *handle)
+rtError_t aclStub::rtsBinaryLoadFromData(
+    const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg, rtBinHandle* handle)
 {
     (void)data;
     (void)length;
@@ -2147,7 +1885,8 @@ rtError_t aclStub::rtsBinaryLoadFromData(const void *const data, const uint64_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsRegisterCpuFunc(rtBinHandle binHandle, const char_t *const funcName, const char_t *const kernelName, rtFuncHandle *funcHandle)
+rtError_t aclStub::rtsRegisterCpuFunc(
+    rtBinHandle binHandle, const char_t* const funcName, const char_t* const kernelName, rtFuncHandle* funcHandle)
 {
     (void)binHandle;
     (void)funcName;
@@ -2156,7 +1895,8 @@ rtError_t aclStub::rtsRegisterCpuFunc(rtBinHandle binHandle, const char_t *const
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCmoAsyncWithBarrier(void *srcAddrPtr, size_t srcLen, rtCmoOpCode cmoType, uint32_t logicId, rtStream_t stm)
+rtError_t aclStub::rtsCmoAsyncWithBarrier(
+    void* srcAddrPtr, size_t srcLen, rtCmoOpCode cmoType, uint32_t logicId, rtStream_t stm)
 {
     (void)srcAddrPtr;
     (void)srcLen;
@@ -2166,7 +1906,7 @@ rtError_t aclStub::rtsCmoAsyncWithBarrier(void *srcAddrPtr, size_t srcLen, rtCmo
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchBarrierTask(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag)
+rtError_t aclStub::rtsLaunchBarrierTask(rtBarrierTaskInfo_t* taskInfo, rtStream_t stm, uint32_t flag)
 {
     (void)taskInfo;
     (void)stm;
@@ -2174,7 +1914,7 @@ rtError_t aclStub::rtsLaunchBarrierTask(rtBarrierTaskInfo_t *taskInfo, rtStream_
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetPairDevicesInfo(uint32_t devId, uint32_t otherDevId, int32_t infoType, uint64_t *val)
+rtError_t aclStub::rtsGetPairDevicesInfo(uint32_t devId, uint32_t otherDevId, int32_t infoType, uint64_t* val)
 {
     (void)devId;
     (void)otherDevId;
@@ -2183,7 +1923,7 @@ rtError_t aclStub::rtsGetPairDevicesInfo(uint32_t devId, uint32_t otherDevId, in
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsIpcMemGetExportKey(const void *ptr, size_t size, char_t *key, uint32_t len, uint64_t flags)
+rtError_t aclStub::rtsIpcMemGetExportKey(const void* ptr, size_t size, char_t* key, uint32_t len, uint64_t flags)
 {
     (void)ptr;
     (void)size;
@@ -2193,13 +1933,13 @@ rtError_t aclStub::rtsIpcMemGetExportKey(const void *ptr, size_t size, char_t *k
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsIpcMemClose(const char_t *key)
+rtError_t aclStub::rtsIpcMemClose(const char_t* key)
 {
     (void)key;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsIpcMemImportByKey(void **ptr, const char_t *key, uint64_t flags)
+rtError_t aclStub::rtsIpcMemImportByKey(void** ptr, const char_t* key, uint64_t flags)
 {
     (void)ptr;
     (void)key;
@@ -2207,7 +1947,7 @@ rtError_t aclStub::rtsIpcMemImportByKey(void **ptr, const char_t *key, uint64_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsIpcMemSetImportPid(const char_t *key, int32_t pid[], int num)
+rtError_t aclStub::rtsIpcMemSetImportPid(const char_t* key, int32_t pid[], int num)
 {
     (void)key;
     (void)pid;
@@ -2215,7 +1955,7 @@ rtError_t aclStub::rtsIpcMemSetImportPid(const char_t *key, int32_t pid[], int n
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtIpcSetMemoryAttr(const char *key, uint32_t type, uint64_t attr)
+rtError_t aclStub::rtIpcSetMemoryAttr(const char* key, uint32_t type, uint64_t attr)
 {
     (void)key;
     (void)type;
@@ -2223,7 +1963,7 @@ rtError_t aclStub::rtIpcSetMemoryAttr(const char *key, uint32_t type, uint64_t a
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtIpcMemImportPidInterServer(const char *key, const rtServerPid *serverPids, size_t num)
+rtError_t aclStub::rtIpcMemImportPidInterServer(const char* key, const rtServerPid* serverPids, size_t num)
 {
     (void)key;
     (void)serverPids;
@@ -2231,14 +1971,14 @@ rtError_t aclStub::rtIpcMemImportPidInterServer(const char *key, const rtServerP
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsNotifyBatchReset(rtNotify_t *notifies, uint32_t num)
+rtError_t aclStub::rtsNotifyBatchReset(rtNotify_t* notifies, uint32_t num)
 {
     (void)notifies;
     (void)num;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsNotifyGetExportKey(rtNotify_t notify, char_t *key, uint32_t len, uint64_t flags)
+rtError_t aclStub::rtsNotifyGetExportKey(rtNotify_t notify, char_t* key, uint32_t len, uint64_t flags)
 {
     (void)notify;
     (void)key;
@@ -2247,7 +1987,7 @@ rtError_t aclStub::rtsNotifyGetExportKey(rtNotify_t notify, char_t *key, uint32_
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsNotifyImportByKey(rtNotify_t *notify, const char_t *key, uint64_t flags)
+rtError_t aclStub::rtsNotifyImportByKey(rtNotify_t* notify, const char_t* key, uint64_t flags)
 {
     (void)notify;
     (void)key;
@@ -2263,7 +2003,7 @@ rtError_t aclStub::rtsNotifySetImportPid(rtNotify_t notify, int32_t pid[], int n
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid *serverPids, size_t num)
+rtError_t aclStub::rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid* serverPids, size_t num)
 {
     (void)notify;
     (void)serverPids;
@@ -2271,7 +2011,8 @@ rtError_t aclStub::rtNotifySetImportPidInterServer(rtNotify_t notify, const rtSe
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCheckMemType(void** addrList, uint32_t size, uint32_t memType, uint32_t *checkResult, uint32_t reserve)
+rtError_t aclStub::rtsCheckMemType(
+    void** addrList, uint32_t size, uint32_t memType, uint32_t* checkResult, uint32_t reserve)
 {
     (void)addrList;
     (void)size;
@@ -2281,35 +2022,35 @@ rtError_t aclStub::rtsCheckMemType(void** addrList, uint32_t size, uint32_t memT
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetLogicDevIdByUserDevId(const int32_t userDevid, int32_t *const logicDevId)
+rtError_t aclStub::rtsGetLogicDevIdByUserDevId(const int32_t userDevid, int32_t* const logicDevId)
 {
     (void)userDevid;
     (void)logicDevId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t *const userDevid)
+rtError_t aclStub::rtsGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t* const userDevid)
 {
     (void)logicDevId;
     (void)userDevid;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetLogicDevIdByPhyDevId(int32_t phyDevId, int32_t *const logicDevId)
+rtError_t aclStub::rtsGetLogicDevIdByPhyDevId(int32_t phyDevId, int32_t* const logicDevId)
 {
     (void)phyDevId;
     (void)logicDevId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetPhyDevIdByLogicDevId(int32_t logicDevId, int32_t *const phyDevId)
+rtError_t aclStub::rtsGetPhyDevIdByLogicDevId(int32_t logicDevId, int32_t* const phyDevId)
 {
     (void)logicDevId;
     (void)phyDevId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsProfTrace(void *userdata, int32_t length, rtStream_t stream)
+rtError_t aclStub::rtsProfTrace(void* userdata, int32_t length, rtStream_t stream)
 {
     (void)userdata;
     (void)length;
@@ -2317,13 +2058,13 @@ rtError_t aclStub::rtsProfTrace(void *userdata, int32_t length, rtStream_t strea
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCtxGetFloatOverflowAddr(void **overflowAddr)
+rtError_t aclStub::rtsCtxGetFloatOverflowAddr(void** overflowAddr)
 {
     (void)overflowAddr;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetFloatOverflowStatus(void *const outputAddr, const uint64_t outputSize, rtStream_t stm)
+rtError_t aclStub::rtsGetFloatOverflowStatus(void* const outputAddr, const uint64_t outputSize, rtStream_t stm)
 {
     (void)outputAddr;
     (void)outputSize;
@@ -2337,8 +2078,8 @@ rtError_t aclStub::rtsResetFloatOverflowStatus(rtStream_t stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsNpuGetFloatOverFlowStatus(void *const outputAddr, const uint64_t outputSize, uint32_t checkMode,
-                                                rtStream_t stm)
+rtError_t aclStub::rtsNpuGetFloatOverFlowStatus(
+    void* const outputAddr, const uint64_t outputSize, uint32_t checkMode, rtStream_t stm)
 {
     (void)outputAddr;
     (void)outputSize;
@@ -2354,13 +2095,13 @@ rtError_t aclStub::rtsNpuClearFloatOverFlowStatus(uint32_t checkMode, rtStream_t
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetHardwareSyncAddr(void **addr)
+rtError_t aclStub::rtsGetHardwareSyncAddr(void** addr)
 {
     (void)addr;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, const rtStream_t stream, void *reserve)
+rtError_t aclStub::rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t* taskInfo, const rtStream_t stream, void* reserve)
 {
     (void)taskInfo;
     (void)stream;
@@ -2368,7 +2109,7 @@ rtError_t aclStub::rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo,
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsRegStreamStateCallback(const char_t *regName, rtsStreamStateCallback callback, void *args)
+rtError_t aclStub::rtsRegStreamStateCallback(const char_t* regName, rtsStreamStateCallback callback, void* args)
 {
     (void)regName;
     (void)callback;
@@ -2376,7 +2117,7 @@ rtError_t aclStub::rtsRegStreamStateCallback(const char_t *regName, rtsStreamSta
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsRegDeviceStateCallback(const char_t *regName, rtsDeviceStateCallback callback, void *args)
+rtError_t aclStub::rtsRegDeviceStateCallback(const char_t* regName, rtsDeviceStateCallback callback, void* args)
 {
     (void)regName;
     (void)callback;
@@ -2384,7 +2125,7 @@ rtError_t aclStub::rtsRegDeviceStateCallback(const char_t *regName, rtsDeviceSta
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsSetDeviceTaskAbortCallback(const char_t *regName, rtsDeviceTaskAbortCallback callback, void *args)
+rtError_t aclStub::rtsSetDeviceTaskAbortCallback(const char_t* regName, rtsDeviceTaskAbortCallback callback, void* args)
 {
     (void)regName;
     (void)callback;
@@ -2392,13 +2133,13 @@ rtError_t aclStub::rtsSetDeviceTaskAbortCallback(const char_t *regName, rtsDevic
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetOpExecuteTimeoutV2(uint32_t * const timeoutMs)
+rtError_t aclStub::rtGetOpExecuteTimeoutV2(uint32_t* const timeoutMs)
 {
     (void)timeoutMs;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetP2PStatus(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t *status)
+rtError_t aclStub::rtsGetP2PStatus(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t* status)
 {
     (void)devIdDes;
     (void)phyIdSrc;
@@ -2412,7 +2153,8 @@ rtError_t aclStub::rtsStreamStop(rtStream_t stream)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchUpdateTask(rtStream_t taskStream, uint32_t taskId, rtStream_t execStream, rtTaskUpdateCfg_t *info)
+rtError_t aclStub::rtsLaunchUpdateTask(
+    rtStream_t taskStream, uint32_t taskId, rtStream_t execStream, rtTaskUpdateCfg_t* info)
 {
     (void)taskStream;
     (void)taskId;
@@ -2421,13 +2163,13 @@ rtError_t aclStub::rtsLaunchUpdateTask(rtStream_t taskStream, uint32_t taskId, r
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsGetCmoDescSize(size_t *size)
+rtError_t aclStub::rtsGetCmoDescSize(size_t* size)
 {
     (void)size;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void *memAddr, size_t memLen)
+rtError_t aclStub::rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void* memAddr, size_t memLen)
 {
     (void)cmoDesc;
     (void)memAddr;
@@ -2435,7 +2177,8 @@ rtError_t aclStub::rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void *memAddr, size_t memL
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsLaunchCmoAddrTask(rtCmoDesc_t cmoDesc, rtStream_t stream, rtCmoOpCode cmoType, const void *reserve)
+rtError_t aclStub::rtsLaunchCmoAddrTask(
+    rtCmoDesc_t cmoDesc, rtStream_t stream, rtCmoOpCode cmoType, const void* reserve)
 {
     (void)cmoDesc;
     (void)stream;
@@ -2457,8 +2200,7 @@ rtError_t aclStub::rtCheckArchCompatibility(const char_t* socVersion, int32_t* c
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stream,
-                                      rtCntNotifyRecordInfo_t *info)
+rtError_t aclStub::rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stream, rtCntNotifyRecordInfo_t* info)
 {
     (void)cntNotify;
     (void)stream;
@@ -2466,8 +2208,7 @@ rtError_t aclStub::rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stream
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stream,
-                                               rtCntNotifyWaitInfo_t *info)
+rtError_t aclStub::rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stream, rtCntNotifyWaitInfo_t* info)
 {
     (void)cntNotify;
     (void)stream;
@@ -2482,7 +2223,7 @@ rtError_t aclStub::rtsCntNotifyReset(rtCntNotify_t cntNotify, rtStream_t stream)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t *notifyId)
+rtError_t aclStub::rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t* notifyId)
 {
     (void)cntNotify;
     (void)notifyId;
@@ -2509,7 +2250,7 @@ rtError_t aclStub::rtsRepairError(uint32_t deviceId, const rtErrorInfo* errorInf
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *desc, size_t count)
+rtError_t aclStub::rtMemSetAccess(void* virPtr, size_t size, rtMemAccessDesc* desc, size_t count)
 {
     (void)virPtr;
     (void)size;
@@ -2518,7 +2259,7 @@ rtError_t aclStub::rtMemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *de
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtMemGetAccess(void *virPtr, rtMemLocation *location, uint64_t *flag)
+rtError_t aclStub::rtMemGetAccess(void* virPtr, rtMemLocation* location, uint64_t* flag)
 {
     (void)virPtr;
     (void)location;
@@ -2526,25 +2267,13 @@ rtError_t aclStub::rtMemGetAccess(void *virPtr, rtMemLocation *location, uint64_
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtSnapShotProcessLock()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSnapShotProcessLock() { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSnapShotProcessUnlock()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSnapShotProcessUnlock() { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSnapShotProcessBackup()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSnapShotProcessBackup() { return RT_ERROR_NONE; }
 
-rtError_t aclStub::rtSnapShotProcessRestore()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t aclStub::rtSnapShotProcessRestore() { return RT_ERROR_NONE; }
 
 rtError_t aclStub::rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args)
 {
@@ -2562,7 +2291,7 @@ rtError_t aclStub::rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapSho
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtBinarySetExceptionCallback(rtBinHandle binHandle, rtOpExceptionCallback callback, void *userData)
+rtError_t aclStub::rtBinarySetExceptionCallback(rtBinHandle binHandle, rtOpExceptionCallback callback, void* userData)
 {
     (void)binHandle;
     (void)callback;
@@ -2570,14 +2299,14 @@ rtError_t aclStub::rtBinarySetExceptionCallback(rtBinHandle binHandle, rtOpExcep
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, rtFuncHandle *func)
+rtError_t aclStub::rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t* info, rtFuncHandle* func)
 {
     (void)info;
     (void)func;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelGetStreams(rtModel_t const mdl, rtStream_t *streams, uint32_t *numStreams)
+rtError_t aclStub::rtModelGetStreams(rtModel_t const mdl, rtStream_t* streams, uint32_t* numStreams)
 {
     (void)mdl;
     (void)streams;
@@ -2585,14 +2314,14 @@ rtError_t aclStub::rtModelGetStreams(rtModel_t const mdl, rtStream_t *streams, u
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelGetId(rtModel_t mdl, uint32_t *modelId)
+rtError_t aclStub::rtModelGetId(rtModel_t mdl, uint32_t* modelId)
 {
     (void)mdl;
     (void)modelId;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtStreamGetTasks(rtStream_t const stm, rtTask_t *tasks, uint32_t *numTasks)
+rtError_t aclStub::rtStreamGetTasks(rtStream_t const stm, rtTask_t* tasks, uint32_t* numTasks)
 {
     (void)stm;
     (void)tasks;
@@ -2600,14 +2329,14 @@ rtError_t aclStub::rtStreamGetTasks(rtStream_t const stm, rtTask_t *tasks, uint3
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtTaskGetType(rtTask_t task, rtTaskType *type)
+rtError_t aclStub::rtTaskGetType(rtTask_t task, rtTaskType* type)
 {
     (void)task;
     (void)type;
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtTaskGetSeqId(rtTask_t task, uint32_t *id)
+rtError_t aclStub::rtTaskGetSeqId(rtTask_t task, uint32_t* id)
 {
     (void)task;
     (void)id;
@@ -2628,7 +2357,8 @@ rtError_t aclStub::rtModelTaskSetParams(rtTask_t task, rtTaskParams* params)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t *attrValue)
+rtError_t aclStub::rtModelKernelTaskGetAttribute(
+    rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
     (void)task;
     (void)attrId;
@@ -2648,7 +2378,8 @@ rtError_t aclStub::rtModelUpdate(rtModel_t mdl)
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelCondHandleCreate(rtModel_t mdl, uint32_t defaultLaunchValue, rtCondHandleFlag_t flag, rtCondHandle_t *handle)
+rtError_t aclStub::rtModelCondHandleCreate(
+    rtModel_t mdl, uint32_t defaultLaunchValue, rtCondHandleFlag_t flag, rtCondHandle_t* handle)
 {
     (void)mdl;
     (void)defaultLaunchValue;
@@ -2659,11 +2390,11 @@ rtError_t aclStub::rtModelCondHandleCreate(rtModel_t mdl, uint32_t defaultLaunch
     return RT_ERROR_NONE;
 }
 
-rtError_t aclStub::rtModelCondHandleGetCondPtr(rtCondHandle_t handle, uint64_t **devPtr)
+rtError_t aclStub::rtModelCondHandleGetCondPtr(rtCondHandle_t handle, uint64_t** devPtr)
 {
     (void)handle;
     if (devPtr != nullptr) {
-        *devPtr = (uint64_t *)0x01;
+        *devPtr = (uint64_t*)0x01;
     }
     return RT_ERROR_NONE;
 }
@@ -2700,25 +2431,13 @@ rtError_t rtsRepairError(uint32_t deviceId, const rtErrorInfo* errorInfo)
     return MockFunctionTest::aclStubInstance().rtsRepairError(deviceId, errorInfo);
 }
 
-rtError_t rtSnapShotProcessLock()
-{
-  return MockFunctionTest::aclStubInstance().rtSnapShotProcessLock();
-}
+rtError_t rtSnapShotProcessLock() { return MockFunctionTest::aclStubInstance().rtSnapShotProcessLock(); }
 
-rtError_t rtSnapShotProcessUnlock()
-{
-  return MockFunctionTest::aclStubInstance().rtSnapShotProcessUnlock();
-}
+rtError_t rtSnapShotProcessUnlock() { return MockFunctionTest::aclStubInstance().rtSnapShotProcessUnlock(); }
 
-rtError_t rtSnapShotProcessBackup()
-{
-  return MockFunctionTest::aclStubInstance().rtSnapShotProcessBackup();
-}
+rtError_t rtSnapShotProcessBackup() { return MockFunctionTest::aclStubInstance().rtSnapShotProcessBackup(); }
 
-rtError_t rtSnapShotProcessRestore()
-{
-  return MockFunctionTest::aclStubInstance().rtSnapShotProcessRestore();
-}
+rtError_t rtSnapShotProcessRestore() { return MockFunctionTest::aclStubInstance().rtSnapShotProcessRestore(); }
 
 rtError_t rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args)
 {
@@ -2730,20 +2449,11 @@ rtError_t rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapShotCallBack
     return MockFunctionTest::aclStubInstance().rtSnapShotCallbackUnregister(stage, callback);
 }
 
-rtError_t rtSetDevice(int32_t device)
-{
-    return MockFunctionTest::aclStubInstance().rtSetDevice(device);
-}
+rtError_t rtSetDevice(int32_t device) { return MockFunctionTest::aclStubInstance().rtSetDevice(device); }
 
-rtError_t rtDeviceReset(int32_t device)
-{
-    return MockFunctionTest::aclStubInstance().rtDeviceReset(device);
-}
+rtError_t rtDeviceReset(int32_t device) { return MockFunctionTest::aclStubInstance().rtDeviceReset(device); }
 
-rtError_t rtDeviceResetForce(int32_t device)
-{
-    return MockFunctionTest::aclStubInstance().rtDeviceResetForce(device);
-}
+rtError_t rtDeviceResetForce(int32_t device) { return MockFunctionTest::aclStubInstance().rtDeviceResetForce(device); }
 
 rtError_t rtSetDeviceWithoutTsd(int32_t device)
 {
@@ -2755,52 +2465,43 @@ rtError_t rtDeviceResetWithoutTsd(int32_t device)
     return MockFunctionTest::aclStubInstance().rtDeviceResetWithoutTsd(device);
 }
 
-rtError_t rtDeviceSynchronize(void)
-{
-    return MockFunctionTest::aclStubInstance().rtDeviceSynchronize();
-}
+rtError_t rtDeviceSynchronize(void) { return MockFunctionTest::aclStubInstance().rtDeviceSynchronize(); }
 
 rtError_t rtDeviceSynchronizeWithTimeout(int32_t timeout)
 {
     return MockFunctionTest::aclStubInstance().rtDeviceSynchronizeWithTimeout(timeout);
 }
 
-rtError_t rtGetDevice(int32_t *device)
+rtError_t rtGetDevice(int32_t* device)
 {
     *device = 0;
     return MockFunctionTest::aclStubInstance().rtGetDevice(device);
 }
 
-rtError_t rtsGetDevice(int32_t *device)
+rtError_t rtsGetDevice(int32_t* device)
 {
     *device = 0;
     return MockFunctionTest::aclStubInstance().rtsGetDevice(device);
 }
 
-rtError_t rtSetTSDevice(uint32_t tsId)
-{
-    return MockFunctionTest::aclStubInstance().rtSetTSDevice(tsId);
-}
+rtError_t rtSetTSDevice(uint32_t tsId) { return MockFunctionTest::aclStubInstance().rtSetTSDevice(tsId); }
 
-rtError_t rtStreamCreate(rtStream_t *stream, int32_t priority)
+rtError_t rtStreamCreate(rtStream_t* stream, int32_t priority)
 {
     return MockFunctionTest::aclStubInstance().rtStreamCreate(stream, priority);
 }
 
-rtError_t rtStreamCreateWithFlags(rtStream_t *stream, int32_t priority, uint32_t flags)
+rtError_t rtStreamCreateWithFlags(rtStream_t* stream, int32_t priority, uint32_t flags)
 {
     return MockFunctionTest::aclStubInstance().rtStreamCreateWithFlags(stream, priority, flags);
 }
 
-rtError_t rtsStreamCreate(rtStream_t *stream, rtStreamCreateConfig_t *config)
+rtError_t rtsStreamCreate(rtStream_t* stream, rtStreamCreateConfig_t* config)
 {
     return MockFunctionTest::aclStubInstance().rtsStreamCreate(stream, config);
 }
 
-rtError_t rtStreamDestroy(rtStream_t stream)
-{
-    return MockFunctionTest::aclStubInstance().rtStreamDestroy(stream);
-}
+rtError_t rtStreamDestroy(rtStream_t stream) { return MockFunctionTest::aclStubInstance().rtStreamDestroy(stream); }
 
 rtError_t rtStreamDestroyForce(rtStream_t stream)
 {
@@ -2817,17 +2518,14 @@ rtError_t rtStreamSynchronizeWithTimeout(rtStream_t stream, const int32_t timeou
     return MockFunctionTest::aclStubInstance().rtStreamSynchronizeWithTimeout(stream, timeout);
 }
 
-rtError_t rtStreamQuery(rtStream_t stream)
-{
-    return MockFunctionTest::aclStubInstance().rtStreamQuery(stream);
-}
+rtError_t rtStreamQuery(rtStream_t stream) { return MockFunctionTest::aclStubInstance().rtStreamQuery(stream); }
 
-rtError_t rtStreamGetPriority(rtStream_t stream, uint32_t *priority)
+rtError_t rtStreamGetPriority(rtStream_t stream, uint32_t* priority)
 {
     return MockFunctionTest::aclStubInstance().rtStreamGetPriority(stream, priority);
 }
 
-rtError_t rtStreamGetFlags(rtStream_t stream, uint32_t *flags)
+rtError_t rtStreamGetFlags(rtStream_t stream, uint32_t* flags)
 {
     return MockFunctionTest::aclStubInstance().rtStreamGetFlags(stream, flags);
 }
@@ -2847,65 +2545,44 @@ rtError_t rtStreamWaitEventWithTimeout(rtStream_t stream, rtEvent_t event, uint3
     return MockFunctionTest::aclStubInstance().rtStreamWaitEventWithTimeout(stream, event, timeout);
 }
 
-rtError_t rtStreamAbort(rtStream_t stream)
-{
-    return MockFunctionTest::aclStubInstance().rtStreamAbort(stream);
-}
+rtError_t rtStreamAbort(rtStream_t stream) { return MockFunctionTest::aclStubInstance().rtStreamAbort(stream); }
 
-rtError_t rtCtxCreateEx(rtContext_t *ctx, uint32_t flags, int32_t device)
+rtError_t rtCtxCreateEx(rtContext_t* ctx, uint32_t flags, int32_t device)
 {
     return MockFunctionTest::aclStubInstance().rtCtxCreateEx(ctx, flags, device);
 }
 
-rtError_t rtCtxDestroyEx(rtContext_t ctx)
-{
-    return MockFunctionTest::aclStubInstance().rtCtxDestroyEx(ctx);
-}
+rtError_t rtCtxDestroyEx(rtContext_t ctx) { return MockFunctionTest::aclStubInstance().rtCtxDestroyEx(ctx); }
 
-rtError_t rtCtxSetCurrent(rtContext_t ctx)
-{
-    return MockFunctionTest::aclStubInstance().rtCtxSetCurrent(ctx);
-}
+rtError_t rtCtxSetCurrent(rtContext_t ctx) { return MockFunctionTest::aclStubInstance().rtCtxSetCurrent(ctx); }
 
-rtError_t rtCtxSynchronize()
-{
-    return MockFunctionTest::aclStubInstance().rtCtxSynchronize();
-}
+rtError_t rtCtxSynchronize() { return MockFunctionTest::aclStubInstance().rtCtxSynchronize(); }
 
-rtError_t rtCtxGetCurrent(rtContext_t *ctx)
-{
-    return MockFunctionTest::aclStubInstance().rtCtxGetCurrent(ctx);
-}
+rtError_t rtCtxGetCurrent(rtContext_t* ctx) { return MockFunctionTest::aclStubInstance().rtCtxGetCurrent(ctx); }
 
-rtError_t rtGetPriCtxByDeviceId(int32_t device, rtContext_t *ctx)
+rtError_t rtGetPriCtxByDeviceId(int32_t device, rtContext_t* ctx)
 {
     return MockFunctionTest::aclStubInstance().rtGetPriCtxByDeviceId(device, ctx);
 }
 
-rtError_t rtEventCreateWithFlag(rtEvent_t *event_, uint32_t flag)
+rtError_t rtEventCreateWithFlag(rtEvent_t* event_, uint32_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtEventCreateWithFlag(event_, flag);
 }
 
-rtError_t rtEventCreateExWithFlag(rtEvent_t *event_, uint32_t flag)
+rtError_t rtEventCreateExWithFlag(rtEvent_t* event_, uint32_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtEventCreateExWithFlag(event_, flag);
 }
 
-rtError_t rtEventCreate(rtEvent_t *event)
-{
-    return MockFunctionTest::aclStubInstance().rtEventCreate(event);
-}
+rtError_t rtEventCreate(rtEvent_t* event) { return MockFunctionTest::aclStubInstance().rtEventCreate(event); }
 
-rtError_t rtGetEventID(rtEvent_t event, uint32_t *eventId)
+rtError_t rtGetEventID(rtEvent_t event, uint32_t* eventId)
 {
     return MockFunctionTest::aclStubInstance().rtGetEventID(event, eventId);
 }
 
-rtError_t rtEventDestroy(rtEvent_t event)
-{
-    return MockFunctionTest::aclStubInstance().rtEventDestroy(event);
-}
+rtError_t rtEventDestroy(rtEvent_t event) { return MockFunctionTest::aclStubInstance().rtEventDestroy(event); }
 
 rtError_t rtEventRecord(rtEvent_t event, rtStream_t stream)
 {
@@ -2927,47 +2604,38 @@ rtError_t rtEventReset(rtEvent_t event, rtStream_t stream)
     return MockFunctionTest::aclStubInstance().rtEventReset(event, stream);
 }
 
-rtError_t rtEventSynchronize(rtEvent_t event)
-{
-    return MockFunctionTest::aclStubInstance().rtEventSynchronize(event);
-}
+rtError_t rtEventSynchronize(rtEvent_t event) { return MockFunctionTest::aclStubInstance().rtEventSynchronize(event); }
 
 rtError_t rtEventSynchronizeWithTimeout(rtEvent_t event, const int32_t timeout)
 {
     return MockFunctionTest::aclStubInstance().rtEventSynchronizeWithTimeout(event, timeout);
 }
 
-rtError_t rtEventQuery(rtEvent_t event)
-{
-    return MockFunctionTest::aclStubInstance().rtEventQuery(event);
-}
+rtError_t rtEventQuery(rtEvent_t event) { return MockFunctionTest::aclStubInstance().rtEventQuery(event); }
 
-rtError_t rtEventQueryStatus(rtEvent_t event, rtEventStatus_t *status)
+rtError_t rtEventQueryStatus(rtEvent_t event, rtEventStatus_t* status)
 {
     return MockFunctionTest::aclStubInstance().rtEventQueryStatus(event, status);
 }
 
-rtError_t rtEventQueryWaitStatus(rtEvent_t event, rtEventWaitStatus *status)
+rtError_t rtEventQueryWaitStatus(rtEvent_t event, rtEventWaitStatus* status)
 {
     return MockFunctionTest::aclStubInstance().rtEventQueryWaitStatus(event, status);
 }
 
-rtError_t rtNotifyCreate(int32_t device_id, rtNotify_t *notify_)
+rtError_t rtNotifyCreate(int32_t device_id, rtNotify_t* notify_)
 {
     return MockFunctionTest::aclStubInstance().rtNotifyCreate(device_id, notify_);
 }
 
-rtError_t rtNotifyDestroy(rtNotify_t notify_)
-{
-    return MockFunctionTest::aclStubInstance().rtNotifyDestroy(notify_);
-}
+rtError_t rtNotifyDestroy(rtNotify_t notify_) { return MockFunctionTest::aclStubInstance().rtNotifyDestroy(notify_); }
 
 rtError_t rtNotifyRecord(rtNotify_t notify_, rtStream_t stream_)
 {
     return MockFunctionTest::aclStubInstance().rtNotifyRecord(notify_, stream_);
 }
 
-rtError_t rtGetNotifyID(rtNotify_t notify_, uint32_t *notify_id)
+rtError_t rtGetNotifyID(rtNotify_t notify_, uint32_t* notify_id)
 {
     return MockFunctionTest::aclStubInstance().rtGetNotifyID(notify_, notify_id);
 }
@@ -2977,116 +2645,106 @@ rtError_t rtNotifyWait(rtNotify_t notify_, rtStream_t stream_)
     return MockFunctionTest::aclStubInstance().rtNotifyWait(notify_, stream_);
 }
 
-rtError_t rtMalloc(void **devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
+rtError_t rtMalloc(void** devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
 {
     return MockFunctionTest::aclStubInstance().rtMalloc(devPtr, size, type, moduleId);
 }
 
-rtError_t rtMallocCached(void **devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
+rtError_t rtMallocCached(void** devPtr, uint64_t size, rtMemType_t type, uint16_t moduleId)
 {
     return MockFunctionTest::aclStubInstance().rtMallocCached(devPtr, size, type, moduleId);
 }
 
-rtError_t rtFlushCache(void *devPtr, size_t size)
+rtError_t rtFlushCache(void* devPtr, size_t size)
 {
     return MockFunctionTest::aclStubInstance().rtFlushCache(devPtr, size);
 }
 
-rtError_t rtInvalidCache(void *devPtr, size_t size)
+rtError_t rtInvalidCache(void* devPtr, size_t size)
 {
     return MockFunctionTest::aclStubInstance().rtInvalidCache(devPtr, size);
 }
 
-rtError_t rtFree(void *devPtr)
-{
-    return MockFunctionTest::aclStubInstance().rtFree(devPtr);
-}
+rtError_t rtFree(void* devPtr) { return MockFunctionTest::aclStubInstance().rtFree(devPtr); }
 
-rtError_t rtDvppMalloc(void **devPtr, uint64_t size, uint16_t moduleId)
+rtError_t rtDvppMalloc(void** devPtr, uint64_t size, uint16_t moduleId)
 {
     return MockFunctionTest::aclStubInstance().rtDvppMalloc(devPtr, size, moduleId);
 }
 
-rtError_t rtDvppMallocWithFlag(void **devPtr, uint64_t size, uint32_t flag, uint16_t moduleId)
+rtError_t rtDvppMallocWithFlag(void** devPtr, uint64_t size, uint32_t flag, uint16_t moduleId)
 {
     return MockFunctionTest::aclStubInstance().rtDvppMallocWithFlag(devPtr, size, flag, moduleId);
 }
 
-rtError_t rtDvppFree(void *devPtr)
-{
-    return MockFunctionTest::aclStubInstance().rtDvppFree(devPtr);
-}
+rtError_t rtDvppFree(void* devPtr) { return MockFunctionTest::aclStubInstance().rtDvppFree(devPtr); }
 
-rtError_t rtMallocHost(void **hostPtr,  uint64_t size, uint16_t moduleId)
+rtError_t rtMallocHost(void** hostPtr, uint64_t size, uint16_t moduleId)
 {
     return MockFunctionTest::aclStubInstance().rtMallocHost(hostPtr, size, moduleId);
 }
 
-rtError_t rtFreeHost(void *hostPtr)
-{
-    return MockFunctionTest::aclStubInstance().rtFreeHost(hostPtr);
-}
+rtError_t rtFreeHost(void* hostPtr) { return MockFunctionTest::aclStubInstance().rtFreeHost(hostPtr); }
 
-rtError_t rtFreeWithDevSync(void *devPtr)
-{
-    return MockFunctionTest::aclStubInstance().rtFreeWithDevSync(devPtr);
-}
+rtError_t rtFreeWithDevSync(void* devPtr) { return MockFunctionTest::aclStubInstance().rtFreeWithDevSync(devPtr); }
 
-rtError_t rtFreeHostWithDevSync(void *hostPtr)
+rtError_t rtFreeHostWithDevSync(void* hostPtr)
 {
     return MockFunctionTest::aclStubInstance().rtFreeHostWithDevSync(hostPtr);
 }
 
-rtError_t rtMemset(void *devPtr, uint64_t destMax, uint32_t value, uint64_t count)
+rtError_t rtMemset(void* devPtr, uint64_t destMax, uint32_t value, uint64_t count)
 {
     return MockFunctionTest::aclStubInstance().rtMemset(devPtr, destMax, value, count);
 }
 
-rtError_t rtMemcpy(void *dst,  uint64_t destMax, const void *src, uint64_t count, rtMemcpyKind_t kind)
+rtError_t rtMemcpy(void* dst, uint64_t destMax, const void* src, uint64_t count, rtMemcpyKind_t kind)
 {
     return MockFunctionTest::aclStubInstance().rtMemcpy(dst, destMax, src, count, kind);
 }
 
-rtError_t rtMemcpyAsync(void *dst,  uint64_t destMax, const void *src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream)
+rtError_t rtMemcpyAsync(
+    void* dst, uint64_t destMax, const void* src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtMemcpyAsync(dst, destMax, src, count, kind, stream);
 }
 
-rtError_t rtMemsetD32(void *dst, uint64_t destMax, uint32_t value, uint64_t count)
+rtError_t rtMemsetD32(void* dst, uint64_t destMax, uint32_t value, uint64_t count)
 {
     return MockFunctionTest::aclStubInstance().rtMemsetD32(dst, destMax, value, count);
 }
 
-rtError_t rtMemsetD32Async(void *dst, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stm)
+rtError_t rtMemsetD32Async(void* dst, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtMemsetD32Async(dst, destMax, value, count, stm);
 }
 
-rtError_t rtMemcpyAsyncEx(void *dst,  uint64_t destMax, const void *src, uint64_t count, rtMemcpyKind_t kind,
-                          rtStream_t stream, rtMemcpyConfig_t *memcpyConfig)
+rtError_t rtMemcpyAsyncEx(
+    void* dst, uint64_t destMax, const void* src, uint64_t count, rtMemcpyKind_t kind, rtStream_t stream,
+    rtMemcpyConfig_t* memcpyConfig)
 {
     return MockFunctionTest::aclStubInstance().rtMemcpyAsyncEx(dst, destMax, src, count, kind, stream, memcpyConfig);
 }
 
-rtError_t rtMemsetAsync(void *ptr, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stream)
+rtError_t rtMemsetAsync(void* ptr, uint64_t destMax, uint32_t value, uint64_t count, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtMemsetAsync(ptr, destMax, value, count, stream);
 }
 
-rtError_t rtCpuKernelLaunchWithFlag(const void *soName, const void *kernelName, uint32_t numBlocks,
-                                    const rtArgsEx_t *argsInfo, rtSmDesc_t *smDesc, rtStream_t stm,
-                                    uint32_t flags)
+rtError_t rtCpuKernelLaunchWithFlag(
+    const void* soName, const void* kernelName, uint32_t numBlocks, const rtArgsEx_t* argsInfo, rtSmDesc_t* smDesc,
+    rtStream_t stm, uint32_t flags)
 {
-    return MockFunctionTest::aclStubInstance().rtCpuKernelLaunchWithFlag(soName, kernelName, numBlocks, argsInfo,
-        smDesc, stm, flags);
+    return MockFunctionTest::aclStubInstance().rtCpuKernelLaunchWithFlag(
+        soName, kernelName, numBlocks, argsInfo, smDesc, stm, flags);
 }
 
-rtError_t rtMemGetInfoEx(rtMemInfoType_t memInfoType, size_t *free, size_t *total)
+rtError_t rtMemGetInfoEx(rtMemInfoType_t memInfoType, size_t* free, size_t* total)
 {
     return MockFunctionTest::aclStubInstance().rtMemGetInfoEx(memInfoType, free, total);
 }
 
-rtError_t rtGetMemUsageInfo(uint32_t deviceId, rtMemUsageInfo_t *memUsageInfo, size_t inputNum, size_t *outputNum)
+rtError_t rtGetMemUsageInfo(uint32_t deviceId, rtMemUsageInfo_t* memUsageInfo, size_t inputNum, size_t* outputNum)
 {
     return MockFunctionTest::aclStubInstance().rtGetMemUsageInfo(deviceId, memUsageInfo, inputNum, outputNum);
 }
@@ -3096,98 +2754,81 @@ rtError_t rtSubscribeReport(uint64_t threadId, rtStream_t stream)
     return MockFunctionTest::aclStubInstance().rtSubscribeReport(threadId, stream);
 }
 
-rtError_t rtCallbackLaunch(rtCallback_t callBackFunc, void *fnData, rtStream_t stream, bool isBlock)
+rtError_t rtCallbackLaunch(rtCallback_t callBackFunc, void* fnData, rtStream_t stream, bool isBlock)
 {
     return MockFunctionTest::aclStubInstance().rtCallbackLaunch(callBackFunc, fnData, stream, isBlock);
 }
 
-rtError_t rtsLaunchHostFunc(rtStream_t stm, const rtCallback_t callBackFunc, void * const fnData)
+rtError_t rtsLaunchHostFunc(rtStream_t stm, const rtCallback_t callBackFunc, void* const fnData)
 {
     return MockFunctionTest::aclStubInstance().rtsLaunchHostFunc(stm, callBackFunc, fnData);
 }
 
-rtError_t rtProcessReport(int32_t timeout)
-{
-    return MockFunctionTest::aclStubInstance().rtProcessReport(timeout);
-}
+rtError_t rtProcessReport(int32_t timeout) { return MockFunctionTest::aclStubInstance().rtProcessReport(timeout); }
 
 rtError_t rtUnSubscribeReport(uint64_t threadId, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtUnSubscribeReport(threadId, stream);
 }
 
-rtError_t rtGetRunMode(rtRunMode *mode)
-{
-    return MockFunctionTest::aclStubInstance().rtGetRunMode(mode);
-}
+rtError_t rtGetRunMode(rtRunMode* mode) { return MockFunctionTest::aclStubInstance().rtGetRunMode(mode); }
 
-rtError_t rtGetDeviceCount(int32_t *count)
+rtError_t rtGetDeviceCount(int32_t* count)
 {
     *count = 1;
     return MockFunctionTest::aclStubInstance().rtGetDeviceCount(count);
 }
 
-rtError_t rtEventElapsedTime(float *time, rtEvent_t start, rtEvent_t end)
+rtError_t rtEventElapsedTime(float* time, rtEvent_t start, rtEvent_t end)
 {
     *time = 1.0f;
     return MockFunctionTest::aclStubInstance().rtEventElapsedTime(time, start, end);
 }
 
-rtError_t rtEventGetTimeStamp(uint64_t *timestamp, rtEvent_t evt)
-{
-    return ACL_RT_SUCCESS;
-}
+rtError_t rtEventGetTimeStamp(uint64_t* timestamp, rtEvent_t evt) { return ACL_RT_SUCCESS; }
 
-rtError_t rtDevBinaryUnRegister(void *handle)
+rtError_t rtDevBinaryUnRegister(void* handle)
 {
     return MockFunctionTest::aclStubInstance().rtDevBinaryUnRegister(handle);
 }
 
-rtError_t rtDevBinaryRegister(const rtDevBinary_t *bin, void **handle)
+rtError_t rtDevBinaryRegister(const rtDevBinary_t* bin, void** handle)
 {
     return MockFunctionTest::aclStubInstance().rtDevBinaryRegister(bin, handle);
 }
 
-rtError_t rtFunctionRegister(void *binHandle,
-                            const void *stubFunc,
-                            const char *stubName,
-                            const void *devFunc,
-                            uint32_t funcMode)
+rtError_t rtFunctionRegister(
+    void* binHandle, const void* stubFunc, const char* stubName, const void* devFunc, uint32_t funcMode)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionRegister(binHandle, stubFunc, stubName, devFunc, funcMode);
 }
 
-rtError_t rtKernelLaunch(const void *stubFunc,
-                        uint32_t numBlocks,
-                        void *args,
-                        uint32_t argsSize,
-                        rtSmDesc_t *smDesc,
-                        rtStream_t stream)
+rtError_t rtKernelLaunch(
+    const void* stubFunc, uint32_t numBlocks, void* args, uint32_t argsSize, rtSmDesc_t* smDesc, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtKernelLaunch(stubFunc, numBlocks, args, argsSize, smDesc, stream);
 }
 
-
-rtError_t rtRegTaskFailCallbackByModule(const char *moduleName, rtTaskFailCallback callback)
+rtError_t rtRegTaskFailCallbackByModule(const char* moduleName, rtTaskFailCallback callback)
 {
     return MockFunctionTest::aclStubInstance().rtRegTaskFailCallbackByModule(moduleName, callback);
 }
 
-rtError_t rtGetSocVersion(char *version, const uint32_t maxLen)
+rtError_t rtGetSocVersion(char* version, const uint32_t maxLen)
 {
-    const char *socVersion = "Ascend910_9391";
+    const char* socVersion = "Ascend910_9391";
     memcpy_s(version, maxLen, socVersion, strlen(socVersion) + 1);
     return MockFunctionTest::aclStubInstance().rtGetSocVersion(version, maxLen);
 }
 
-rtError_t rtGetSocSpec(const char *label, const char *key, char *value, uint32_t maxLen)
+rtError_t rtGetSocSpec(const char* label, const char* key, char* value, uint32_t maxLen)
 {
-    const char *attrValue = "1";
+    const char* attrValue = "1";
     memcpy_s(value, maxLen, attrValue, strlen(attrValue) + 1);
     return MockFunctionTest::aclStubInstance().rtGetSocSpec(label, key, value, maxLen);
 }
 
-rtError_t rtGetGroupCount(uint32_t *count)
+rtError_t rtGetGroupCount(uint32_t* count)
 {
     *count = 2;
     return MockFunctionTest::aclStubInstance().rtGetGroupCount(count);
@@ -3207,12 +2848,9 @@ rtError_t rtGetGroupInfo(int32_t groupid, rtGroupInfo_t* groupInfo, uint32_t cou
     return MockFunctionTest::aclStubInstance().rtGetGroupInfo(groupid, groupInfo, count);
 }
 
-rtError_t rtSetGroup(int32_t groupid)
-{
-    return MockFunctionTest::aclStubInstance().rtSetGroup(groupid);
-}
+rtError_t rtSetGroup(int32_t groupid) { return MockFunctionTest::aclStubInstance().rtSetGroup(groupid); }
 
-rtError_t rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t *phyId)
+rtError_t rtGetDevicePhyIdByIndex(uint32_t devIndex, uint32_t* phyId)
 {
     *phyId = 10;
     return MockFunctionTest::aclStubInstance().rtGetDevicePhyIdByIndex(devIndex, phyId);
@@ -3234,31 +2872,31 @@ rtError_t rtDeviceCanAccessPeer(int32_t* canAccessPeer, uint32_t device, uint32_
     return MockFunctionTest::aclStubInstance().rtDeviceCanAccessPeer(canAccessPeer, device, peerDevice);
 }
 
-rtError_t rtGetStreamId(rtStream_t stream_, int32_t *streamId)
+rtError_t rtGetStreamId(rtStream_t stream_, int32_t* streamId)
 {
     *streamId = 1;
     return MockFunctionTest::aclStubInstance().rtGetStreamId(stream_, streamId);
 }
 
-rtError_t rtRegDeviceStateCallback(const char *regName, rtDeviceStateCallback callback)
+rtError_t rtRegDeviceStateCallback(const char* regName, rtDeviceStateCallback callback)
 {
     return MockFunctionTest::aclStubInstance().rtRegDeviceStateCallback(regName, callback);
 }
 
-rtError_t rtRegDeviceStateCallbackEx(const char *regName, rtDeviceStateCallback callback,
-                                     const rtDevCallBackDir_t notifyPos)
+rtError_t rtRegDeviceStateCallbackEx(
+    const char* regName, rtDeviceStateCallback callback, const rtDevCallBackDir_t notifyPos)
 {
     return MockFunctionTest::aclStubInstance().rtRegDeviceStateCallbackEx(regName, callback, notifyPos);
 }
 
-rtError_t rtDeviceGetStreamPriorityRange(int32_t *leastPriority, int32_t *greatestPriority)
+rtError_t rtDeviceGetStreamPriorityRange(int32_t* leastPriority, int32_t* greatestPriority)
 {
     *leastPriority = 7;
     *greatestPriority = 0;
     return MockFunctionTest::aclStubInstance().rtDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
 }
 
-rtError_t rtGetDeviceCapability(int32_t device, int32_t moduleType, int32_t featureType, int32_t *value)
+rtError_t rtGetDeviceCapability(int32_t device, int32_t moduleType, int32_t featureType, int32_t* value)
 {
     *value = 0;
     return MockFunctionTest::aclStubInstance().rtGetDeviceCapability(device, moduleType, featureType, value);
@@ -3279,12 +2917,12 @@ rtError_t rtSetOpExecuteTimeOutWithMs(uint32_t timeout)
     return MockFunctionTest::aclStubInstance().rtSetOpExecuteTimeOutWithMs(timeout);
 }
 
-rtError_t rtSetOpExecuteTimeOutV2(uint64_t timeout, uint64_t *actualTimeout)
+rtError_t rtSetOpExecuteTimeOutV2(uint64_t timeout, uint64_t* actualTimeout)
 {
     return MockFunctionTest::aclStubInstance().rtSetOpExecuteTimeOutV2(timeout, actualTimeout);
 }
 
-rtError_t rtGetOpTimeOutInterval(uint64_t *interval)
+rtError_t rtGetOpTimeOutInterval(uint64_t* interval)
 {
     return MockFunctionTest::aclStubInstance().rtGetOpTimeOutInterval(interval);
 }
@@ -3294,7 +2932,7 @@ rtError_t rtCtxSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t confi
     return MockFunctionTest::aclStubInstance().rtCtxSetSysParamOpt(configOpt, configVal);
 }
 
-rtError_t rtCtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t rtCtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
     return MockFunctionTest::aclStubInstance().rtCtxGetSysParamOpt(configOpt, configVal);
 }
@@ -3304,12 +2942,12 @@ rtError_t rtSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVa
     return MockFunctionTest::aclStubInstance().rtSetSysParamOpt(configOpt, configVal);
 }
 
-rtError_t rtGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t rtGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
     return MockFunctionTest::aclStubInstance().rtGetSysParamOpt(configOpt, configVal);
 }
 
-rtError_t rtGetDeviceSatStatus(void * const outputAddrPtr, const uint64_t outputSize, rtStream_t stm)
+rtError_t rtGetDeviceSatStatus(void* const outputAddrPtr, const uint64_t outputSize, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtGetDeviceSatStatus(outputAddrPtr, outputSize, stm);
 }
@@ -3324,7 +2962,7 @@ rtError_t rtMemQueueInitQS(int32_t devId, const char* groupName)
     return MockFunctionTest::aclStubInstance().rtMemQueueInitQS(devId, groupName);
 }
 
-rtError_t rtMemQueueCreate(int32_t devId, const rtMemQueueAttr_t *queAttr, uint32_t *qid)
+rtError_t rtMemQueueCreate(int32_t devId, const rtMemQueueAttr_t* queAttr, uint32_t* qid)
 {
     return MockFunctionTest::aclStubInstance().rtMemQueueCreate(devId, queAttr, qid);
 }
@@ -3334,17 +2972,14 @@ rtError_t rtMemQueueDestroy(int32_t devId, uint32_t qid)
     return MockFunctionTest::aclStubInstance().rtMemQueueDestroy(devId, qid);
 }
 
-rtError_t rtMemQueueInit(int32_t devId)
-{
-    return MockFunctionTest::aclStubInstance().rtMemQueueInit(devId);
-}
+rtError_t rtMemQueueInit(int32_t devId) { return MockFunctionTest::aclStubInstance().rtMemQueueInit(devId); }
 
-rtError_t rtMemQueueEnQueue(int32_t devId, uint32_t qid, void *mbuf)
+rtError_t rtMemQueueEnQueue(int32_t devId, uint32_t qid, void* mbuf)
 {
     return MockFunctionTest::aclStubInstance().rtMemQueueEnQueue(devId, qid, mbuf);
 }
 
-rtError_t rtMemQueueDeQueue(int32_t devId, uint32_t qid, void **mbuf)
+rtError_t rtMemQueueDeQueue(int32_t devId, uint32_t qid, void** mbuf)
 {
     return MockFunctionTest::aclStubInstance().rtMemQueueDeQueue(devId, qid, mbuf);
 }
@@ -3365,39 +3000,38 @@ struct ItemInfo {
 };
 #pragma pack(pop)
 
-
-rtError_t rtMemQueuePeek(int32_t devId, uint32_t qid, size_t *bufLen, int32_t timeout)
+rtError_t rtMemQueuePeek(int32_t devId, uint32_t qid, size_t* bufLen, int32_t timeout)
 {
     *bufLen = sizeof(ItemInfo);
     return MockFunctionTest::aclStubInstance().rtMemQueuePeek(devId, qid, bufLen, timeout);
 }
 
-rtError_t rtMemQueueEnQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t *inBuf, int32_t timeout)
+rtError_t rtMemQueueEnQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t* inBuf, int32_t timeout)
 
 {
     return MockFunctionTest::aclStubInstance().rtMemQueueEnQueueBuff(devId, qid, inBuf, timeout);
 }
 
-rtError_t rtMemQueueQueryInfo(int32_t device, uint32_t qid, rtMemQueueInfo_t *queueInfo)
+rtError_t rtMemQueueQueryInfo(int32_t device, uint32_t qid, rtMemQueueInfo_t* queueInfo)
 {
     return MockFunctionTest::aclStubInstance().rtMemQueueQueryInfo(device, qid, queueInfo);
 }
 
-rtError_t rtMemQueueDeQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t *outBuf, int32_t timeout)
+rtError_t rtMemQueueDeQueueBuff(int32_t devId, uint32_t qid, rtMemQueueBuff_t* outBuf, int32_t timeout)
 {
     if (outBuf->buffCount == 1) {
         memset_s(outBuf->buffInfo[0].addr, outBuf->buffInfo[0].len, 0, outBuf->buffInfo[0].len);
     }
-    return MockFunctionTest::aclStubInstance().rtMemQueueDeQueueBuff(devId, qid,outBuf, timeout);
+    return MockFunctionTest::aclStubInstance().rtMemQueueDeQueueBuff(devId, qid, outBuf, timeout);
 }
 
-rtError_t rtMemQueueQuery(int32_t devId, rtMemQueueQueryCmd_t cmd, void *inBuff, uint32_t inLen,
-                                  void *outBuff, uint32_t *outLen)
+rtError_t rtMemQueueQuery(
+    int32_t devId, rtMemQueueQueryCmd_t cmd, void* inBuff, uint32_t inLen, void* outBuff, uint32_t* outLen)
 {
-    return MockFunctionTest::aclStubInstance().rtMemQueueQuery( devId, cmd, inBuff, inLen, outBuff, outLen);
+    return MockFunctionTest::aclStubInstance().rtMemQueueQuery(devId, cmd, inBuff, inLen, outBuff, outLen);
 }
 
-rtError_t rtMemQueueGrant(int32_t devId, uint32_t qid, int32_t pid, rtMemQueueShareAttr_t *attr)
+rtError_t rtMemQueueGrant(int32_t devId, uint32_t qid, int32_t pid, rtMemQueueShareAttr_t* attr)
 {
     return MockFunctionTest::aclStubInstance().rtMemQueueGrant(devId, qid, pid, attr);
 }
@@ -3407,28 +3041,25 @@ rtError_t rtMemQueueAttach(int32_t devId, uint32_t qid, int32_t timeout)
     return MockFunctionTest::aclStubInstance().rtMemQueueAttach(devId, qid, timeout);
 }
 
-rtError_t rtEschedSubmitEventSync(int32_t devId, rtEschedEventSummary_t *event, rtEschedEventReply_t *ack)
+rtError_t rtEschedSubmitEventSync(int32_t devId, rtEschedEventSummary_t* event, rtEschedEventReply_t* ack)
 {
     return MockFunctionTest::aclStubInstance().rtEschedSubmitEventSync(devId, event, ack);
 }
 
-rtError_t rtQueryDevPid(rtBindHostpidInfo_t *info, pid_t *devPid)
+rtError_t rtQueryDevPid(rtBindHostpidInfo_t* info, pid_t* devPid)
 {
     return MockFunctionTest::aclStubInstance().rtQueryDevPid(info, devPid);
 }
 
-rtError_t rtMbufInit(rtMemBuffCfg_t *cfg)
-{
-    return MockFunctionTest::aclStubInstance().rtMbufInit(cfg);
-}
+rtError_t rtMbufInit(rtMemBuffCfg_t* cfg) { return MockFunctionTest::aclStubInstance().rtMbufInit(cfg); }
 
-rtError_t rtMbufAlloc(rtMbufPtr_t *mbuf, uint64_t size)
+rtError_t rtMbufAlloc(rtMbufPtr_t* mbuf, uint64_t size)
 {
     *mbuf = malloc(size);
     return MockFunctionTest::aclStubInstance().rtMbufAlloc(mbuf, size);
 }
 
-rtError_t rtMbufAllocEx(rtMbufPtr_t *mbuf, uint64_t size, uint64_t flag, int32_t grpId)
+rtError_t rtMbufAllocEx(rtMbufPtr_t* mbuf, uint64_t size, uint64_t flag, int32_t grpId)
 {
     *mbuf = malloc(size);
     return MockFunctionTest::aclStubInstance().rtMbufAllocEx(mbuf, size, flag, grpId);
@@ -3440,89 +3071,78 @@ rtError_t rtMbufFree(rtMbufPtr_t mbuf)
     return RT_ERROR_NONE;
 }
 
-RTS_API rtError_t rtMbufSetDataLen(rtMbufPtr_t mbuf, uint64_t len)
-{
-    return RT_ERROR_NONE;
-}
+RTS_API rtError_t rtMbufSetDataLen(rtMbufPtr_t mbuf, uint64_t len) { return RT_ERROR_NONE; }
 
-RTS_API rtError_t rtMbufGetDataLen(rtMbufPtr_t mbuf, uint64_t *len)
-{
-    return RT_ERROR_NONE;
-}
+RTS_API rtError_t rtMbufGetDataLen(rtMbufPtr_t mbuf, uint64_t* len) { return RT_ERROR_NONE; }
 
-rtError_t rtMbufGetBuffAddr(rtMbufPtr_t mbuf, void **databuf)
+rtError_t rtMbufGetBuffAddr(rtMbufPtr_t mbuf, void** databuf)
 {
     *databuf = mbuf;
     return MockFunctionTest::aclStubInstance().rtMbufGetBuffAddr(mbuf, databuf);
 }
 
-rtError_t rtMbufGetBuffSize(rtMbufPtr_t mbuf, uint64_t *size)
+rtError_t rtMbufGetBuffSize(rtMbufPtr_t mbuf, uint64_t* size)
 {
     *size = 0;
     return MockFunctionTest::aclStubInstance().rtMbufGetBuffSize(mbuf, size);
 }
 
-rtError_t rtMbufGetPrivInfo(rtMbufPtr_t mbuf, void **priv, uint64_t *size)
+rtError_t rtMbufGetPrivInfo(rtMbufPtr_t mbuf, void** priv, uint64_t* size)
 {
     *priv = mbuf;
     *size = 96UL;
     return MockFunctionTest::aclStubInstance().rtMbufGetPrivInfo(mbuf, priv, size);
 }
 
-rtError_t rtMbufCopyBufRef(rtMbufPtr_t mbuf, rtMbufPtr_t *newMbuf)
+rtError_t rtMbufCopyBufRef(rtMbufPtr_t mbuf, rtMbufPtr_t* newMbuf)
 {
     return MockFunctionTest::aclStubInstance().rtMbufCopyBufRef(mbuf, newMbuf);
 }
 
-RTS_API rtError_t rtMbufChainAppend(rtMbufPtr_t mbufChainHead, rtMbufPtr_t memBuf)
+RTS_API rtError_t rtMbufChainAppend(rtMbufPtr_t mbufChainHead, rtMbufPtr_t memBuf) { return RT_ERROR_NONE; }
+
+RTS_API rtError_t rtMbufChainGetMbufNum(rtMbufPtr_t mbufChainHead, uint32_t* num) { return RT_ERROR_NONE; }
+
+RTS_API rtError_t rtMbufChainGetMbuf(rtMbufPtr_t mbufChainHead, uint32_t index, rtMbufPtr_t* memBuf)
 {
     return RT_ERROR_NONE;
 }
 
-RTS_API rtError_t rtMbufChainGetMbufNum(rtMbufPtr_t mbufChainHead, uint32_t *num)
+RTS_API rtError_t rtMemQueueQuery(
+    int32_t devId, rtMemQueueQueryCmd_t cmd, const void* inBuff, uint32_t inLen, void* outBuff, uint32_t* outLen)
 {
     return RT_ERROR_NONE;
 }
 
-RTS_API rtError_t rtMbufChainGetMbuf(rtMbufPtr_t mbufChainHead, uint32_t index, rtMbufPtr_t *memBuf)
-{
-    return RT_ERROR_NONE;
-}
-
-RTS_API rtError_t rtMemQueueQuery(int32_t devId, rtMemQueueQueryCmd_t cmd, const void *inBuff, uint32_t inLen,
-    void *outBuff, uint32_t *outLen)
-{
-    return RT_ERROR_NONE;
-}
-
-rtError_t rtMemGrpCreate(const char *name, const rtMemGrpConfig_t *cfg)
+rtError_t rtMemGrpCreate(const char* name, const rtMemGrpConfig_t* cfg)
 {
     return MockFunctionTest::aclStubInstance().rtMemGrpCreate(name, cfg);
 }
 
-rtError_t rtMemGrpAddProc(const char *name, int32_t pid, const rtMemGrpShareAttr_t *attr)
+rtError_t rtMemGrpAddProc(const char* name, int32_t pid, const rtMemGrpShareAttr_t* attr)
 {
     return MockFunctionTest::aclStubInstance().rtMemGrpAddProc(name, pid, attr);
 }
 
-rtError_t rtMemGrpAttach(const char *name, int32_t timeout)
+rtError_t rtMemGrpAttach(const char* name, int32_t timeout)
 {
     return MockFunctionTest::aclStubInstance().rtMemGrpAttach(name, timeout);
 }
 
-rtError_t rtMemGrpQuery(rtMemGrpQueryInput_t * const input, rtMemGrpQueryOutput_t *output)
+rtError_t rtMemGrpQuery(rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* output)
 {
     return MockFunctionTest::aclStubInstance().rtMemGrpQuery(input, output);
 }
 
-rtError_t rtMemcpy2d(void *dst, uint64_t dpitch, const void *src, uint64_t spitch, uint64_t width,
-    uint64_t height, rtMemcpyKind_t kind)
+rtError_t rtMemcpy2d(
+    void* dst, uint64_t dpitch, const void* src, uint64_t spitch, uint64_t width, uint64_t height, rtMemcpyKind_t kind)
 {
     return MockFunctionTest::aclStubInstance().rtMemcpy2d(dst, dpitch, src, spitch, width, height, kind);
 }
 
-rtError_t rtMemcpy2dAsync(void *dst, uint64_t dpitch, const void *src, uint64_t spitch, uint64_t width,
-    uint64_t height, rtMemcpyKind_t kind, rtStream_t stream)
+rtError_t rtMemcpy2dAsync(
+    void* dst, uint64_t dpitch, const void* src, uint64_t spitch, uint64_t width, uint64_t height, rtMemcpyKind_t kind,
+    rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtMemcpy2dAsync(dst, dpitch, src, spitch, width, height, kind, stream);
 }
@@ -3532,25 +3152,25 @@ rtError_t rtGetDevMsg(rtGetDevMsgType_t getMsgType, rtGetMsgCallback callback)
     return MockFunctionTest::aclStubInstance().rtGetDevMsg(getMsgType, callback);
 }
 
-rtError_t rtGetFaultEvent(const int32_t deviceId, rtDmsEventFilter *filter, rtDmsFaultEvent *dmsEvent,
-                          uint32_t len, uint32_t *eventCount)
+rtError_t rtGetFaultEvent(
+    const int32_t deviceId, rtDmsEventFilter* filter, rtDmsFaultEvent* dmsEvent, uint32_t len, uint32_t* eventCount)
 {
     return MockFunctionTest::aclStubInstance().rtGetFaultEvent(deviceId, filter, dmsEvent, len, eventCount);
 }
 
-rtError_t rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t *handle)
+rtError_t rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t* handle)
 {
-  return  MockFunctionTest::aclStubInstance().rtIpcGetEventHandle(event, handle);
+    return MockFunctionTest::aclStubInstance().rtIpcGetEventHandle(event, handle);
 }
 
-rtError_t rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t *event)
+rtError_t rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t* event)
 {
-  return  MockFunctionTest::aclStubInstance().rtIpcOpenEventHandle(handle, event);
+    return MockFunctionTest::aclStubInstance().rtIpcOpenEventHandle(handle, event);
 }
 
 rtError_t rtStreamSetMode(rtStream_t stm, const uint64_t mode)
 {
-  return MockFunctionTest::aclStubInstance().rtStreamSetMode(stm, mode);
+    return MockFunctionTest::aclStubInstance().rtStreamSetMode(stm, mode);
 }
 
 rtError_t rtSetStreamOverflowSwitch(rtStream_t stm, uint32_t flags)
@@ -3558,7 +3178,7 @@ rtError_t rtSetStreamOverflowSwitch(rtStream_t stm, uint32_t flags)
     return MockFunctionTest::aclStubInstance().rtSetStreamOverflowSwitch(stm, flags);
 }
 
-rtError_t rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t *flags)
+rtError_t rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t* flags)
 {
     return MockFunctionTest::aclStubInstance().rtGetStreamOverflowSwitch(stm, flags);
 }
@@ -3568,288 +3188,302 @@ rtError_t rtSetDeviceSatMode(rtFloatOverflowMode_t floatOverflowMode)
     return MockFunctionTest::aclStubInstance().rtSetDeviceSatMode(floatOverflowMode);
 }
 
-rtError_t rtGetDeviceSatMode(rtFloatOverflowMode_t *floatOverflowMode)
+rtError_t rtGetDeviceSatMode(rtFloatOverflowMode_t* floatOverflowMode)
 {
     return MockFunctionTest::aclStubInstance().rtGetDeviceSatMode(floatOverflowMode);
 }
 
-rtError_t rtGetAiCoreCount(uint32_t *aiCoreCnt)
+rtError_t rtGetAiCoreCount(uint32_t* aiCoreCnt)
 {
     return MockFunctionTest::aclStubInstance().rtGetAiCoreCount(aiCoreCnt);
 }
 
-rtError_t rtGetDeviceInfo(uint32_t deviceId, int32_t moduleType, int32_t infoType, int64_t *val)
+rtError_t rtGetDeviceInfo(uint32_t deviceId, int32_t moduleType, int32_t infoType, int64_t* val)
 {
     return MockFunctionTest::aclStubInstance().rtGetDeviceInfo(deviceId, moduleType, infoType, val);
 }
 
-rtError_t rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t* const util){
+rtError_t rtGetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t* const util)
+{
     return MockFunctionTest::aclStubInstance().rtGetAllUtilizations(devId, kind, util);
 }
 
-rtError_t rtDeviceGetHostAtomicCapabilities(uint32_t *caps, const rtAtomicOperation *ops, const uint32_t count, int32_t deviceId) {
+rtError_t rtDeviceGetHostAtomicCapabilities(
+    uint32_t* caps, const rtAtomicOperation* ops, const uint32_t count, int32_t deviceId)
+{
     return MockFunctionTest::aclStubInstance().rtDeviceGetHostAtomicCapabilities(caps, ops, count, deviceId);
 }
 
-rtError_t rtDeviceGetP2PAtomicCapabilities(uint32_t *caps, const rtAtomicOperation *ops, const uint32_t count, int32_t srcDeviceId, int32_t dstDeviceId) {
-    return MockFunctionTest::aclStubInstance().rtDeviceGetP2PAtomicCapabilities(caps, ops, count, srcDeviceId, dstDeviceId);
+rtError_t rtDeviceGetP2PAtomicCapabilities(
+    uint32_t* caps, const rtAtomicOperation* ops, const uint32_t count, int32_t srcDeviceId, int32_t dstDeviceId)
+{
+    return MockFunctionTest::aclStubInstance().rtDeviceGetP2PAtomicCapabilities(
+        caps, ops, count, srcDeviceId, dstDeviceId);
 }
 
-rtError_t rtReserveMemAddress(void **devPtr, size_t size, size_t alignment, void *devAddr, uint64_t flags) {
+rtError_t rtReserveMemAddress(void** devPtr, size_t size, size_t alignment, void* devAddr, uint64_t flags)
+{
     *devPtr = (void*)0x01U;
     return MockFunctionTest::aclStubInstance().rtReserveMemAddress(devPtr, size, alignment, devAddr, flags);
 }
 
-rtError_t rtReleaseMemAddress(void *devPtr) {
-    return MockFunctionTest::aclStubInstance().rtReleaseMemAddress(devPtr);
-}
+rtError_t rtReleaseMemAddress(void* devPtr) { return MockFunctionTest::aclStubInstance().rtReleaseMemAddress(devPtr); }
 
-rtError_t rtMemRetainAllocationHandle(void* virPtr, rtDrvMemHandle *handle) {
+rtError_t rtMemRetainAllocationHandle(void* virPtr, rtDrvMemHandle* handle)
+{
     return MockFunctionTest::aclStubInstance().rtMemRetainAllocationHandle(virPtr, handle);
 }
 
-rtError_t rtMemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, rtDrvMemProp_t* prop) {
+rtError_t rtMemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, rtDrvMemProp_t* prop)
+{
     return MockFunctionTest::aclStubInstance().rtMemGetAllocationPropertiesFromHandle(handle, prop);
 }
 
-rtError_t rtMemGetAddressRange(void *ptr, void **pbase, size_t *psize) {
+rtError_t rtMemGetAddressRange(void* ptr, void** pbase, size_t* psize)
+{
     return MockFunctionTest::aclStubInstance().rtMemGetAddressRange(ptr, pbase, psize);
 }
 
-rtError_t rtMemPrefetchToDevice(void *devPtr, uint64_t len, int32_t devId) {
-    return MockFunctionTest::aclStubInstance().rtMemPrefetchToDevice(devPtr, len, devId) ;
+rtError_t rtMemPrefetchToDevice(void* devPtr, uint64_t len, int32_t devId)
+{
+    return MockFunctionTest::aclStubInstance().rtMemPrefetchToDevice(devPtr, len, devId);
 }
 
-rtError_t rtMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps) {
+rtError_t rtMemPoolCreate(rtMemPool_t* memPool, const rtMemPoolProps* poolProps)
+{
     return MockFunctionTest::aclStubInstance().rtMemPoolCreate(memPool, poolProps);
 }
 
-rtError_t rtMemPoolDestroy(const rtMemPool_t memPool) {
+rtError_t rtMemPoolDestroy(const rtMemPool_t memPool)
+{
     return MockFunctionTest::aclStubInstance().rtMemPoolDestroy(memPool);
 }
 
-rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value) {
+rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
+{
     return MockFunctionTest::aclStubInstance().rtMemPoolSetAttr(memPool, attr, value);
 }
 
-rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value) {
+rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
+{
     return MockFunctionTest::aclStubInstance().rtMemPoolGetAttr(memPool, attr, value);
 }
 
-rtError_t rtMemPoolFreeAsync(void* ptr, rtStream_t stm) {
-  return MockFunctionTest::aclStubInstance().rtMemPoolFreeAsync(ptr, stm);
+rtError_t rtMemPoolFreeAsync(void* ptr, rtStream_t stm)
+{
+    return MockFunctionTest::aclStubInstance().rtMemPoolFreeAsync(ptr, stm);
 }
 
-rtError_t rtMemPoolMallocAsync(void **devPtr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm) {
-  return MockFunctionTest::aclStubInstance().rtMemPoolMallocAsync(devPtr, size, memPoolId, stm);
+rtError_t rtMemPoolMallocAsync(void** devPtr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
+{
+    return MockFunctionTest::aclStubInstance().rtMemPoolMallocAsync(devPtr, size, memPoolId, stm);
 }
 
-rtError_t rtMemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep) {
+rtError_t rtMemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep)
+{
     return MockFunctionTest::aclStubInstance().rtMemPoolTrimTo(memPool, minBytesToKeep);
 }
 
-rtError_t rtMallocPhysical(rtDrvMemHandle *handle, size_t size, rtDrvMemProp_t *prop, uint64_t flags) {
+rtError_t rtMallocPhysical(rtDrvMemHandle* handle, size_t size, rtDrvMemProp_t* prop, uint64_t flags)
+{
     *handle = (rtDrvMemHandle)0x01U;
     return MockFunctionTest::aclStubInstance().rtMallocPhysical(handle, size, prop, flags);
 }
 
-rtError_t rtFreePhysical(rtDrvMemHandle handle) {
-    return MockFunctionTest::aclStubInstance().rtFreePhysical(handle);
-}
+rtError_t rtFreePhysical(rtDrvMemHandle handle) { return MockFunctionTest::aclStubInstance().rtFreePhysical(handle); }
 
-rtError_t rtMapMem(void *devPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags) {
+rtError_t rtMapMem(void* devPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
+{
     return MockFunctionTest::aclStubInstance().rtMapMem(devPtr, size, offset, handle, flags);
 }
 
-rtError_t rtMemMapNoAccess(
-    void *virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags) {
+rtError_t rtMemMapNoAccess(void* virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
+{
     return MockFunctionTest::aclStubInstance().rtMemMapNoAccess(virPtr, size, offset, handle, flags);
 }
 
-rtError_t rtUnmapMem(void *devPtr) {
-    return MockFunctionTest::aclStubInstance().rtUnmapMem(devPtr);
-}
+rtError_t rtUnmapMem(void* devPtr) { return MockFunctionTest::aclStubInstance().rtUnmapMem(devPtr); }
 
-rtError_t rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus *deviceStatus)
+rtError_t rtDeviceStatusQuery(const uint32_t devId, rtDeviceStatus* deviceStatus)
 {
     return MockFunctionTest::aclStubInstance().rtDeviceStatusQuery(devId, deviceStatus);
 }
 
-rtError_t rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, rtBinHandle *binHandle)
+rtError_t rtBinaryLoadWithoutTilingKey(const void* data, const uint64_t length, rtBinHandle* binHandle)
 {
-  *binHandle = (rtBinHandle)0x01U;
-  return MockFunctionTest::aclStubInstance().rtBinaryLoadWithoutTilingKey(data, length, binHandle);
+    *binHandle = (rtBinHandle)0x01U;
+    return MockFunctionTest::aclStubInstance().rtBinaryLoadWithoutTilingKey(data, length, binHandle);
 }
 
 rtError_t rtBinaryUnLoad(rtBinHandle binHandle)
 {
-  return MockFunctionTest::aclStubInstance().rtBinaryUnLoad(binHandle);
+    return MockFunctionTest::aclStubInstance().rtBinaryUnLoad(binHandle);
 }
 
-rtError_t rtsFuncGetByName(const rtBinHandle binHandle, const char_t *kernelName, rtFuncHandle *funcHandle)
+rtError_t rtsFuncGetByName(const rtBinHandle binHandle, const char_t* kernelName, rtFuncHandle* funcHandle)
 {
-  *funcHandle = (rtFuncHandle)0x01U;
-  return MockFunctionTest::aclStubInstance().rtsFuncGetByName(binHandle, kernelName, funcHandle);
+    *funcHandle = (rtFuncHandle)0x01U;
+    return MockFunctionTest::aclStubInstance().rtsFuncGetByName(binHandle, kernelName, funcHandle);
 }
 
-rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char_t *name, void **dptr, size_t *size)
+rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char_t* name, void** dptr, size_t* size)
 {
     return MockFunctionTest::aclStubInstance().rtBinaryGetGlobal(binHandle, name, dptr, size);
 }
 
-rtError_t rtGetFuncBySymbol(const void *symbol, rtFuncHandle *funcHandle)
+rtError_t rtGetFuncBySymbol(const void* symbol, rtFuncHandle* funcHandle)
 {
     *funcHandle = (rtFuncHandle)0x01U;
     return MockFunctionTest::aclStubInstance().rtGetFuncBySymbol(symbol, funcHandle);
 }
 
-rtError_t rtSymbolLookup(const void *hostVar, void **devPtr, size_t *size)
+rtError_t rtSymbolLookup(const void* hostVar, void** devPtr, size_t* size)
 {
     return MockFunctionTest::aclStubInstance().rtSymbolLookup(hostVar, devPtr, size);
 }
 
-rtError_t rtCreateLaunchArgs(size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum,
-                             void* argsData, rtLaunchArgsHandle* argsHandle)
+rtError_t rtCreateLaunchArgs(
+    size_t argsSize, size_t hostInfoTotalSize, size_t hostInfoNum, void* argsData, rtLaunchArgsHandle* argsHandle)
 {
-  *argsHandle = (rtLaunchArgsHandle)0x01U;
-  return MockFunctionTest::aclStubInstance().rtCreateLaunchArgs(argsSize, hostInfoTotalSize, hostInfoNum,
-                                                                argsData, argsHandle);
+    *argsHandle = (rtLaunchArgsHandle)0x01U;
+    return MockFunctionTest::aclStubInstance().rtCreateLaunchArgs(
+        argsSize, hostInfoTotalSize, hostInfoNum, argsData, argsHandle);
 }
 
 rtError_t rtDestroyLaunchArgs(rtLaunchArgsHandle argsHandle)
 {
-  return MockFunctionTest::aclStubInstance().rtDestroyLaunchArgs(argsHandle);
+    return MockFunctionTest::aclStubInstance().rtDestroyLaunchArgs(argsHandle);
 }
 
-rtError_t rtLaunchKernelByFuncHandleV3(rtFuncHandle funcHandle, uint32_t numBlocks, const rtArgsEx_t * const argsInfo,
-                                       rtStream_t stm, const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t rtLaunchKernelByFuncHandleV3(
+    rtFuncHandle funcHandle, uint32_t numBlocks, const rtArgsEx_t* const argsInfo, rtStream_t stm,
+    const rtTaskCfgInfo_t* const cfgInfo)
 {
-  return MockFunctionTest::aclStubInstance().rtLaunchKernelByFuncHandleV3(funcHandle, numBlocks,
-                                                                          argsInfo, stm, nullptr);
+    return MockFunctionTest::aclStubInstance().rtLaunchKernelByFuncHandleV3(
+        funcHandle, numBlocks, argsInfo, stm, nullptr);
 }
 
-rtError_t rtsLaunchKernelWithDevArgs(rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm,
-                                     rtKernelLaunchCfg_t *cfg, const void *args, uint32_t argsSize, void *reserve)
+rtError_t rtsLaunchKernelWithDevArgs(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, const void* args,
+    uint32_t argsSize, void* reserve)
 {
-  return MockFunctionTest::aclStubInstance().rtsLaunchKernelWithDevArgs(funcHandle, numBlocks,
-                                                                        stm, cfg, args, argsSize, reserve);
+    return MockFunctionTest::aclStubInstance().rtsLaunchKernelWithDevArgs(
+        funcHandle, numBlocks, stm, cfg, args, argsSize, reserve);
 }
 
-rtError_t rtsLaunchKernelWithHostArgs(rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm,
-                                      rtKernelLaunchCfg_t *cfg, void *hostArgs, uint32_t argsSize,
-                                      rtPlaceHolderInfo_t *placeHolderArray, uint32_t placeHolderNum)
+rtError_t rtsLaunchKernelWithHostArgs(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, void* hostArgs,
+    uint32_t argsSize, rtPlaceHolderInfo_t* placeHolderArray, uint32_t placeHolderNum)
 {
-  return MockFunctionTest::aclStubInstance().rtsLaunchKernelWithHostArgs(funcHandle, numBlocks, stm, cfg, hostArgs, argsSize,
-                                                                         placeHolderArray, placeHolderNum);
+    return MockFunctionTest::aclStubInstance().rtsLaunchKernelWithHostArgs(
+        funcHandle, numBlocks, stm, cfg, hostArgs, argsSize, placeHolderArray, placeHolderNum);
 }
 
-rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t stream,
-                                      rtKernelLaunchCfg_t *cfg, void **argsArray)
+rtError_t rtLaunchKernelWithArgsArray(
+    void* func, uint32_t numBlocks, rtStream_t stream, rtKernelLaunchCfg_t* cfg, void** argsArray)
 {
-  return MockFunctionTest::aclStubInstance().rtLaunchKernelWithArgsArray(func, numBlocks, stream, cfg, argsArray);
+    return MockFunctionTest::aclStubInstance().rtLaunchKernelWithArgsArray(func, numBlocks, stream, cfg, argsArray);
 }
 
-rtError_t rtLaunchSIMTKernelWithArgsArray(void *func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize,
-                                          rtStream_t stream, rtKernelLaunchCfg_t *cfg, void **argsArray)
+rtError_t rtLaunchSIMTKernelWithArgsArray(
+    void* func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize, rtStream_t stream, rtKernelLaunchCfg_t* cfg,
+    void** argsArray)
 {
-  return MockFunctionTest::aclStubInstance().rtLaunchSIMTKernelWithArgsArray(
-      func, gridDim, blockDim, dynUbufSize, stream, cfg, argsArray);
+    return MockFunctionTest::aclStubInstance().rtLaunchSIMTKernelWithArgsArray(
+        func, gridDim, blockDim, dynUbufSize, stream, cfg, argsArray);
 }
 
-rtError_t rtLaunchSIMTKernelWithHostArgs(void *func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize,
-                                         rtStream_t stream, rtKernelLaunchCfg_t *cfg, void *hostArgs,
-                                         uint32_t argsSize, rtPlaceHolderInfo_t *placeHolderArray,
-                                         uint32_t placeHolderNum)
+rtError_t rtLaunchSIMTKernelWithHostArgs(
+    void* func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize, rtStream_t stream, rtKernelLaunchCfg_t* cfg,
+    void* hostArgs, uint32_t argsSize, rtPlaceHolderInfo_t* placeHolderArray, uint32_t placeHolderNum)
 {
-  return MockFunctionTest::aclStubInstance().rtLaunchSIMTKernelWithHostArgs(
-      func, gridDim, blockDim, dynUbufSize, stream, cfg, hostArgs, argsSize, placeHolderArray, placeHolderNum);
+    return MockFunctionTest::aclStubInstance().rtLaunchSIMTKernelWithHostArgs(
+        func, gridDim, blockDim, dynUbufSize, stream, cfg, hostArgs, argsSize, placeHolderArray, placeHolderNum);
 }
 
-rtError_t rtMemExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-                                       uint64_t flag, uint64_t *shareableHandle)
+rtError_t rtMemExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flag, uint64_t* shareableHandle)
 {
-  *shareableHandle = 0x1111;
-  return MockFunctionTest::aclStubInstance().rtMemExportToShareableHandle(handle, handleType, flag, shareableHandle);
+    *shareableHandle = 0x1111;
+    return MockFunctionTest::aclStubInstance().rtMemExportToShareableHandle(handle, handleType, flag, shareableHandle);
 }
 
-rtError_t rtsMemExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-    uint64_t flag, uint64_t *shareableHandle)
+rtError_t rtsMemExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flag, uint64_t* shareableHandle)
 {
-  *shareableHandle = 0x1111;
-  return MockFunctionTest::aclStubInstance().rtsMemExportToShareableHandle(handle, handleType, flag, shareableHandle);
+    *shareableHandle = 0x1111;
+    return MockFunctionTest::aclStubInstance().rtsMemExportToShareableHandle(handle, handleType, flag, shareableHandle);
 }
 
-rtError_t rtMemExportToShareableHandleV2(rtDrvMemHandle handle, rtMemSharedHandleType handleType,
-    uint64_t flags, void *shareableHandle)
+rtError_t rtMemExportToShareableHandleV2(
+    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void* shareableHandle)
 {
-  return MockFunctionTest::aclStubInstance().rtMemExportToShareableHandleV2(handle, handleType, flags, shareableHandle);
+    return MockFunctionTest::aclStubInstance().rtMemExportToShareableHandleV2(
+        handle, handleType, flags, shareableHandle);
 }
 
-rtError_t rtMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId,
-                                         rtDrvMemHandle *handle)
+rtError_t rtMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId, rtDrvMemHandle* handle)
 {
-  return MockFunctionTest::aclStubInstance().rtMemImportFromShareableHandle(shareableHandle, deviceId, handle);
+    return MockFunctionTest::aclStubInstance().rtMemImportFromShareableHandle(shareableHandle, deviceId, handle);
 }
 
-rtError_t rtsMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId,
-    rtDrvMemHandle *handle)
+rtError_t rtsMemImportFromShareableHandle(uint64_t shareableHandle, int32_t deviceId, rtDrvMemHandle* handle)
 {
-  return MockFunctionTest::aclStubInstance().rtsMemImportFromShareableHandle(shareableHandle, deviceId, handle);
+    return MockFunctionTest::aclStubInstance().rtsMemImportFromShareableHandle(shareableHandle, deviceId, handle);
 }
 
-rtError_t rtMemImportFromShareableHandleV2(const void *shareableHandle, rtMemSharedHandleType handleType,
-    uint64_t flags, int32_t devId, rtDrvMemHandle *handle)
+rtError_t rtMemImportFromShareableHandleV2(
+    const void* shareableHandle, rtMemSharedHandleType handleType, uint64_t flags, int32_t devId,
+    rtDrvMemHandle* handle)
 {
-  return MockFunctionTest::aclStubInstance().rtMemImportFromShareableHandleV2(shareableHandle, handleType, flags, devId, handle);
+    return MockFunctionTest::aclStubInstance().rtMemImportFromShareableHandleV2(
+        shareableHandle, handleType, flags, devId, handle);
 }
 
 rtError_t rtMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], uint32_t pidNum)
 {
-  return MockFunctionTest::aclStubInstance().rtMemSetPidToShareableHandle(shareableHandle, pid, pidNum);
+    return MockFunctionTest::aclStubInstance().rtMemSetPidToShareableHandle(shareableHandle, pid, pidNum);
 }
 
 rtError_t rtsMemSetPidToShareableHandle(uint64_t shareableHandle, int pid[], uint32_t pidNum)
 {
-  return MockFunctionTest::aclStubInstance().rtsMemSetPidToShareableHandle(shareableHandle, pid, pidNum);
+    return MockFunctionTest::aclStubInstance().rtsMemSetPidToShareableHandle(shareableHandle, pid, pidNum);
 }
 
-rtError_t rtMemSetPidToShareableHandleV2(const void *shareableHandle, rtMemSharedHandleType handleType, int pid[], 
-    uint32_t pidNum)
+rtError_t rtMemSetPidToShareableHandleV2(
+    const void* shareableHandle, rtMemSharedHandleType handleType, int pid[], uint32_t pidNum)
 {
-  return MockFunctionTest::aclStubInstance().rtMemSetPidToShareableHandleV2(shareableHandle, handleType, pid, pidNum);
+    return MockFunctionTest::aclStubInstance().rtMemSetPidToShareableHandleV2(shareableHandle, handleType, pid, pidNum);
 }
 
-rtError_t rtMemGetAllocationGranularity(rtDrvMemProp_t *prop, rtDrvMemGranularityOptions option, size_t *granularity)
+rtError_t rtMemGetAllocationGranularity(rtDrvMemProp_t* prop, rtDrvMemGranularityOptions option, size_t* granularity)
 {
-  return MockFunctionTest::aclStubInstance().rtMemGetAllocationGranularity(prop, option, granularity);
+    return MockFunctionTest::aclStubInstance().rtMemGetAllocationGranularity(prop, option, granularity);
 }
 
-rtError_t rtDeviceGetBareTgid(uint32_t *pid)
-{
-  return MockFunctionTest::aclStubInstance().rtDeviceGetBareTgid(pid);
-}
+rtError_t rtDeviceGetBareTgid(uint32_t* pid) { return MockFunctionTest::aclStubInstance().rtDeviceGetBareTgid(pid); }
 
-rtError_t rtGetL2CacheOffset(uint32_t deviceId, uint64_t *offset)
+rtError_t rtGetL2CacheOffset(uint32_t deviceId, uint64_t* offset)
 {
     return MockFunctionTest::aclStubInstance().rtGetL2CacheOffset(deviceId, offset);
 }
 
-rtError_t rtRegKernelLaunchFillFunc(const char *symbol, rtKernelLaunchFillFunc func)
+rtError_t rtRegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc func)
 {
     return MockFunctionTest::aclStubInstance().rtRegKernelLaunchFillFunc(symbol, func);
 }
 
-rtError_t rtUnRegKernelLaunchFillFunc(const char *symbol)
+rtError_t rtUnRegKernelLaunchFillFunc(const char* symbol)
 {
     return MockFunctionTest::aclStubInstance().rtUnRegKernelLaunchFillFunc(symbol);
 }
 
-rtError_t rtGetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t rtGetMemUceInfo(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     return MockFunctionTest::aclStubInstance().rtGetMemUceInfo(deviceId, memUceInfo);
 }
 
-rtError_t rtMemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t rtMemUceRepair(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     return MockFunctionTest::aclStubInstance().rtMemUceRepair(deviceId, memUceInfo);
 }
@@ -3874,7 +3508,7 @@ rtError_t rtDeviceSetLimit(int32_t devId, rtLimitType_t type, uint32_t val)
     return MockFunctionTest::aclStubInstance().rtDeviceSetLimit(devId, type, val);
 }
 
-rtError_t rtDeviceGetLimit(rtLimitType_t type, uint32_t *val)
+rtError_t rtDeviceGetLimit(rtLimitType_t type, uint32_t* val)
 {
     return MockFunctionTest::aclStubInstance().rtDeviceGetLimit(type, val);
 }
@@ -3884,39 +3518,36 @@ rtError_t rtEventWorkModeSet(uint8_t event_mode)
     return MockFunctionTest::aclStubInstance().rtEventWorkModeSet(event_mode);
 }
 
-rtError_t rtRegStreamStateCallback(const char *regName, rtStreamStateCallback callback)
+rtError_t rtRegStreamStateCallback(const char* regName, rtStreamStateCallback callback)
 {
     return MockFunctionTest::aclStubInstance().rtRegStreamStateCallback(regName, callback);
 }
 
-rtError_t rtCtxGetCurrentDefaultStream(rtStream_t* stm) {
-  return MockFunctionTest::aclStubInstance().rtCtxGetCurrentDefaultStream(stm);
-}
-
-rtError_t rtCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmpType, rtStream_t stm) {
-  return MockFunctionTest::aclStubInstance().rtCmoAsync(srcAddrPtr, srcLen, cmpType, stm);
-}
-
-rtError_t rtsCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtStream_t stm) {
-  return MockFunctionTest::aclStubInstance().rtsCmoAsync(srcAddrPtr, srcLen, cmoType, stm);
-}
-
-rtError_t rtPeekAtLastError(rtLastErrLevel_t level)
+rtError_t rtCtxGetCurrentDefaultStream(rtStream_t* stm)
 {
-    return ACL_ERROR_RT_FAILURE;
+    return MockFunctionTest::aclStubInstance().rtCtxGetCurrentDefaultStream(stm);
 }
 
-rtError_t rtGetLastError(rtLastErrLevel_t level)
+rtError_t rtCmoAsync(void* srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmpType, rtStream_t stm)
 {
-    return ACL_ERROR_RT_FAILURE;
+    return MockFunctionTest::aclStubInstance().rtCmoAsync(srcAddrPtr, srcLen, cmpType, stm);
 }
+
+rtError_t rtsCmoAsync(void* srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtStream_t stm)
+{
+    return MockFunctionTest::aclStubInstance().rtsCmoAsync(srcAddrPtr, srcLen, cmoType, stm);
+}
+
+rtError_t rtPeekAtLastError(rtLastErrLevel_t level) { return ACL_ERROR_RT_FAILURE; }
+
+rtError_t rtGetLastError(rtLastErrLevel_t level) { return ACL_ERROR_RT_FAILURE; }
 
 rtError_t rtStreamBeginCapture(rtStream_t stm, const rtStreamCaptureMode mode)
 {
     return MockFunctionTest::aclStubInstance().rtStreamBeginCapture(stm, mode);
 }
 
-rtError_t rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus *const status, rtModel_t *captureMdl)
+rtError_t rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus* const status, rtModel_t* captureMdl)
 {
     if (status != nullptr) {
         *status = RT_STREAM_CAPTURE_STATUS_ACTIVE;
@@ -3927,13 +3558,13 @@ rtError_t rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus *const st
     return MockFunctionTest::aclStubInstance().rtStreamGetCaptureInfo(stm, status, captureMdl);
 }
 
-rtError_t rtStreamEndCapture(rtStream_t stm, rtModel_t *captureMdl)
+rtError_t rtStreamEndCapture(rtStream_t stm, rtModel_t* captureMdl)
 {
     *captureMdl = (rtModel_t)(0x12345678);
     return MockFunctionTest::aclStubInstance().rtStreamEndCapture(stm, captureMdl);
 }
 
-rtError_t rtCacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
+rtError_t rtCacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize)
 {
     return MockFunctionTest::aclStubInstance().rtCacheLastTaskOpInfo(infoPtr, infoSize);
 }
@@ -3943,42 +3574,39 @@ rtError_t rtCacheLastTaskExtendInfo(const char* const extendInfoPtr, const size_
     return MockFunctionTest::aclStubInstance().rtCacheLastTaskExtendInfo(extendInfoPtr, infoSize);
 }
 
-rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t *attrValue)
+rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t* attrValue)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionGetAttribute(funcHandle, attrType, attrValue);
 }
 
-rtError_t rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle *binHandle)
+rtError_t rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle* binHandle)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionGetBinary(funcHandle, binHandle);
 }
 
-rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount)
+rtError_t rtFunctionGetParamCount(const void* func, size_t* paramCount)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionGetParamCount(func, paramCount);
 }
 
-rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex, size_t *paramOffset, size_t *paramSize)
+rtError_t rtFunctionGetParamInfo(const void* func, size_t paramIndex, size_t* paramOffset, size_t* paramSize)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionGetParamInfo(func, paramIndex, paramOffset, paramSize);
 }
 
-rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+rtError_t rtFunctionGetAvailDynUbufPerBlock(void* func, uint32_t flags, size_t* dynamicUbufSize)
 {
     return MockFunctionTest::aclStubInstance().rtFunctionGetAvailDynUbufPerBlock(func, flags, dynamicUbufSize);
 }
 
-rtError_t rtModelDebugDotPrint(rtModel_t mdl)
-{
-    return MockFunctionTest::aclStubInstance().rtModelDebugDotPrint(mdl);
-}
+rtError_t rtModelDebugDotPrint(rtModel_t mdl) { return MockFunctionTest::aclStubInstance().rtModelDebugDotPrint(mdl); }
 
-rtError_t rtModelDebugJsonPrint(rtModel_t mdl, const char *path, uint32_t flags)
+rtError_t rtModelDebugJsonPrint(rtModel_t mdl, const char* path, uint32_t flags)
 {
     return MockFunctionTest::aclStubInstance().rtModelDebugJsonPrint(mdl, path, flags);
 }
 
-rtError_t rtThreadExchangeCaptureMode(rtStreamCaptureMode *mode)
+rtError_t rtThreadExchangeCaptureMode(rtStreamCaptureMode* mode)
 {
     *mode = RT_STREAM_CAPTURE_MODE_RELAXED;
     return MockFunctionTest::aclStubInstance().rtThreadExchangeCaptureMode(mode);
@@ -3989,12 +3617,9 @@ rtError_t rtModelExecute(rtModel_t mdl, rtStream_t stm, uint32_t flag)
     return MockFunctionTest::aclStubInstance().rtModelExecute(mdl, stm, flag);
 }
 
-rtError_t rtModelDestroy(rtModel_t mdl)
-{
-    return MockFunctionTest::aclStubInstance().rtModelDestroy(mdl);
-}
+rtError_t rtModelDestroy(rtModel_t mdl) { return MockFunctionTest::aclStubInstance().rtModelDestroy(mdl); }
 
-rtError_t rtModelDestroyRegisterCallback(rtModel_t const mdl, rtCallback_t fn, void *ptr)
+rtError_t rtModelDestroyRegisterCallback(rtModel_t const mdl, rtCallback_t fn, void* ptr)
 {
     return MockFunctionTest::aclStubInstance().rtModelDestroyRegisterCallback(mdl, fn, ptr);
 }
@@ -4004,59 +3629,65 @@ rtError_t rtModelDestroyUnregisterCallback(rtModel_t const mdl, rtCallback_t fn)
     return MockFunctionTest::aclStubInstance().rtModelDestroyUnregisterCallback(mdl, fn);
 }
 
-rtError_t rtsMemcpyAsyncWithDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, rtMemcpyConfig_t *config, rtStream_t stream)
+rtError_t rtsMemcpyAsyncWithDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, rtMemcpyConfig_t* config, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtsMemcpyAsyncWithDesc(desc, kind, config, stream);
 }
 
-rtError_t rtMemcpyAsyncWithOffset(void **dst, uint64_t dstMax, uint64_t dstDataOffset, const void **src,
-    uint64_t count, uint64_t srcDataOffset, rtMemcpyKind kind, rtStream_t stream)
+rtError_t rtMemcpyAsyncWithOffset(
+    void** dst, uint64_t dstMax, uint64_t dstDataOffset, const void** src, uint64_t count, uint64_t srcDataOffset,
+    rtMemcpyKind kind, rtStream_t stream)
 {
-    return MockFunctionTest::aclStubInstance().rtMemcpyAsyncWithOffset(dst, dstMax, dstDataOffset, src, count, srcDataOffset, kind, stream);
+    return MockFunctionTest::aclStubInstance().rtMemcpyAsyncWithOffset(
+        dst, dstMax, dstDataOffset, src, count, srcDataOffset, kind, stream);
 }
 
-rtError_t rtsGetMemcpyDescSize(rtMemcpyKind kind, size_t *size)
+rtError_t rtsGetMemcpyDescSize(rtMemcpyKind kind, size_t* size)
 {
     return MockFunctionTest::aclStubInstance().rtsGetMemcpyDescSize(kind, size);
 }
 
-rtError_t rtsSetMemcpyDesc(rtMemcpyDesc_t desc, rtMemcpyKind kind, void *srcAddr, void *dstAddr, size_t count, rtMemcpyConfig_t *config)
+rtError_t rtsSetMemcpyDesc(
+    rtMemcpyDesc_t desc, rtMemcpyKind kind, void* srcAddr, void* dstAddr, size_t count, rtMemcpyConfig_t* config)
 {
     return MockFunctionTest::aclStubInstance().rtsSetMemcpyDesc(desc, kind, srcAddr, dstAddr, count, config);
 }
 
-rtError_t rtsBinaryLoadFromFile(const char * const binPath, const rtLoadBinaryConfig_t * const optionalCfg, rtBinHandle *handle)
+rtError_t rtsBinaryLoadFromFile(
+    const char* const binPath, const rtLoadBinaryConfig_t* const optionalCfg, rtBinHandle* handle)
 {
     return MockFunctionTest::aclStubInstance().rtsBinaryLoadFromFile(binPath, optionalCfg, handle);
 }
 
-rtError_t rtsBinaryGetDevAddress(const rtBinHandle binHandle, void **bin, uint32_t *binSize)
+rtError_t rtsBinaryGetDevAddress(const rtBinHandle binHandle, void** bin, uint32_t* binSize)
 {
     return MockFunctionTest::aclStubInstance().rtsBinaryGetDevAddress(binHandle, bin, binSize);
 }
 
-rtError_t rtsFuncGetByEntry(const rtBinHandle binHandle, const uint64_t funcEntry, rtFuncHandle *funcHandle)
+rtError_t rtsFuncGetByEntry(const rtBinHandle binHandle, const uint64_t funcEntry, rtFuncHandle* funcHandle)
 {
     return MockFunctionTest::aclStubInstance().rtsFuncGetByEntry(binHandle, funcEntry, funcHandle);
 }
 
-rtError_t rtsFuncGetAddr(const rtFuncHandle funcHandle, void **aicAddr, void **aivAddr)
+rtError_t rtsFuncGetAddr(const rtFuncHandle funcHandle, void** aicAddr, void** aivAddr)
 {
     return MockFunctionTest::aclStubInstance().rtsFuncGetAddr(funcHandle, aicAddr, aivAddr);
 }
 
-rtError_t rtFuncGetSize(const rtFuncHandle funcHandle, size_t *aicSize, size_t *aivSize)
+rtError_t rtFuncGetSize(const rtFuncHandle funcHandle, size_t* aicSize, size_t* aivSize)
 {
     return MockFunctionTest::aclStubInstance().rtFuncGetSize(funcHandle, aicSize, aivSize);
 }
 
-rtError_t rtsLaunchKernelWithConfig(rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm,
-                                    rtKernelLaunchCfg_t *cfg, rtArgsHandle argsHandle, void* reserve)
+rtError_t rtsLaunchKernelWithConfig(
+    rtFuncHandle funcHandle, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, rtArgsHandle argsHandle,
+    void* reserve)
 {
-    return MockFunctionTest::aclStubInstance().rtsLaunchKernelWithConfig(funcHandle, numBlocks, stm, cfg, argsHandle, reserve);
+    return MockFunctionTest::aclStubInstance().rtsLaunchKernelWithConfig(
+        funcHandle, numBlocks, stm, cfg, argsHandle, reserve);
 }
 
-rtError_t rtsKernelArgsInit(rtFuncHandle funcHandle, rtArgsHandle *handle)
+rtError_t rtsKernelArgsInit(rtFuncHandle funcHandle, rtArgsHandle* handle)
 {
     return MockFunctionTest::aclStubInstance().rtsKernelArgsInit(funcHandle, handle);
 }
@@ -4066,87 +3697,88 @@ rtError_t rtsKernelArgsFinalize(rtArgsHandle argsHandle)
     return MockFunctionTest::aclStubInstance().rtsKernelArgsFinalize(argsHandle);
 }
 
-rtError_t rtsKernelArgsAppend(rtArgsHandle handle, void *para, size_t paraSize, rtParaHandle *paraHandle)
+rtError_t rtsKernelArgsAppend(rtArgsHandle handle, void* para, size_t paraSize, rtParaHandle* paraHandle)
 {
     return MockFunctionTest::aclStubInstance().rtsKernelArgsAppend(handle, para, paraSize, paraHandle);
 }
 
-rtError_t rtsKernelArgsAppendPlaceHolder(rtArgsHandle handle, rtParaHandle *paraHandle)
+rtError_t rtsKernelArgsAppendPlaceHolder(rtArgsHandle handle, rtParaHandle* paraHandle)
 {
     return MockFunctionTest::aclStubInstance().rtsKernelArgsAppendPlaceHolder(handle, paraHandle);
 }
 
-rtError_t rtsKernelArgsParaUpdate(rtArgsHandle argsHandle, rtParaHandle paraHandle, void *para, size_t paraSize)
+rtError_t rtsKernelArgsParaUpdate(rtArgsHandle argsHandle, rtParaHandle paraHandle, void* para, size_t paraSize)
 {
     return MockFunctionTest::aclStubInstance().rtsKernelArgsParaUpdate(argsHandle, paraHandle, para, paraSize);
 }
 
-rtError_t rtsKernelArgsInitByUserMem(rtFuncHandle funcHandle, rtArgsHandle argsHandle, void *userHostMem, size_t actualArgsSize)
+rtError_t rtsKernelArgsInitByUserMem(
+    rtFuncHandle funcHandle, rtArgsHandle argsHandle, void* userHostMem, size_t actualArgsSize)
 {
-    return MockFunctionTest::aclStubInstance().rtsKernelArgsInitByUserMem(funcHandle, argsHandle, userHostMem, actualArgsSize);
+    return MockFunctionTest::aclStubInstance().rtsKernelArgsInitByUserMem(
+        funcHandle, argsHandle, userHostMem, actualArgsSize);
 }
 
-rtError_t rtsKernelArgsGetMemSize(rtFuncHandle funcHandle, size_t userArgsSize, size_t *actualArgsSize)
+rtError_t rtsKernelArgsGetMemSize(rtFuncHandle funcHandle, size_t userArgsSize, size_t* actualArgsSize)
 {
     return MockFunctionTest::aclStubInstance().rtsKernelArgsGetMemSize(funcHandle, userArgsSize, actualArgsSize);
 }
 
-rtError_t rtsKernelArgsGetHandleMemSize(rtFuncHandle funcHandle, size_t *memSize)
+rtError_t rtsKernelArgsGetHandleMemSize(rtFuncHandle funcHandle, size_t* memSize)
 {
     return MockFunctionTest::aclStubInstance().rtsKernelArgsGetHandleMemSize(funcHandle, memSize);
 }
 
-rtError_t rtsKernelArgsGetPlaceHolderBuffer(rtArgsHandle argsHandle, rtParaHandle paraHandle, size_t dataSize, void **bufferAddr)
+rtError_t rtsKernelArgsGetPlaceHolderBuffer(
+    rtArgsHandle argsHandle, rtParaHandle paraHandle, size_t dataSize, void** bufferAddr)
 {
-    return MockFunctionTest::aclStubInstance().rtsKernelArgsGetPlaceHolderBuffer(argsHandle, paraHandle, dataSize, bufferAddr);
+    return MockFunctionTest::aclStubInstance().rtsKernelArgsGetPlaceHolderBuffer(
+        argsHandle, paraHandle, dataSize, bufferAddr);
 }
 
-rtError_t rtsMalloc(void **devPtr, uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise, rtMallocConfig_t *cfg)
+rtError_t rtsMalloc(void** devPtr, uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise, rtMallocConfig_t* cfg)
 {
     return MockFunctionTest::aclStubInstance().rtsMalloc(devPtr, size, policy, advise, cfg);
 }
 
-rtError_t rtsMallocHost(void **hostPtr, uint64_t size, const rtMallocConfig_t *cfg)
+rtError_t rtsMallocHost(void** hostPtr, uint64_t size, const rtMallocConfig_t* cfg)
 {
     return MockFunctionTest::aclStubInstance().rtsMallocHost(hostPtr, size, cfg);
 }
 
-rtError_t rtsPointerGetAttributes(const void *ptr, rtPtrAttributes_t *attributes)
+rtError_t rtsPointerGetAttributes(const void* ptr, rtPtrAttributes_t* attributes)
 {
     return MockFunctionTest::aclStubInstance().rtsPointerGetAttributes(ptr, attributes);
 }
 
-rtError_t rtsHostRegister(void *ptr, uint64_t size, rtHostRegisterType type, void **devPtr)
+rtError_t rtsHostRegister(void* ptr, uint64_t size, rtHostRegisterType type, void** devPtr)
 {
     return MockFunctionTest::aclStubInstance().rtsHostRegister(ptr, size, type, devPtr);
 }
 
-rtError_t rtHostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
+rtError_t rtHostRegisterV2(void* ptr, uint64_t size, uint32_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtHostRegisterV2(ptr, size, flag);
 }
 
-rtError_t rtHostGetDevicePointer(void *pHost, void **pDevice, uint32_t flag)
+rtError_t rtHostGetDevicePointer(void* pHost, void** pDevice, uint32_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtHostGetDevicePointer(pHost, pDevice, flag);
 }
 
-rtError_t rtsHostUnregister(void *ptr)
-{
-    return MockFunctionTest::aclStubInstance().rtsHostUnregister(ptr);
-}
+rtError_t rtsHostUnregister(void* ptr) { return MockFunctionTest::aclStubInstance().rtsHostUnregister(ptr); }
 
-rtError_t rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability *capabilities)
+rtError_t rtHostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability* capabilities)
 {
     return MockFunctionTest::aclStubInstance().rtHostMemMapCapabilities(deviceId, hacType, capabilities);
 }
 
-rtError_t rtsGetThreadLastTaskId(uint32_t *taskId)
+rtError_t rtsGetThreadLastTaskId(uint32_t* taskId)
 {
     return MockFunctionTest::aclStubInstance().rtsGetThreadLastTaskId(taskId);
 }
 
-rtError_t rtsStreamGetId(rtStream_t stm, int32_t *streamId)
+rtError_t rtsStreamGetId(rtStream_t stm, int32_t* streamId)
 {
     return MockFunctionTest::aclStubInstance().rtsStreamGetId(stm, streamId);
 }
@@ -4156,7 +3788,7 @@ rtError_t rtsStreamBeginTaskGrp(rtStream_t stm)
     return MockFunctionTest::aclStubInstance().rtsStreamBeginTaskGrp(stm);
 }
 
-rtError_t rtsStreamEndTaskGrp(rtStream_t stm, rtTaskGrp_t *handle)
+rtError_t rtsStreamEndTaskGrp(rtStream_t stm, rtTaskGrp_t* handle)
 {
     *handle = (rtTaskGrp_t)(0x12345678);
     return MockFunctionTest::aclStubInstance().rtsStreamEndTaskGrp(stm, handle);
@@ -4172,42 +3804,39 @@ rtError_t rtsStreamEndTaskUpdate(rtStream_t stm)
     return MockFunctionTest::aclStubInstance().rtsStreamEndTaskUpdate(stm);
 }
 
-rtError_t rtsValueWrite(const void * const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
+rtError_t rtsValueWrite(const void* const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsValueWrite(devAddr, value, flag, stm);
 }
 
-rtError_t rtsValueWait(const void * const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
+rtError_t rtsValueWait(const void* const devAddr, const uint64_t value, const uint32_t flag, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsValueWait(devAddr, value, flag, stm);
 }
 
-rtError_t rtsStreamGetAvailableNum(uint32_t *streamCount)
+rtError_t rtsStreamGetAvailableNum(uint32_t* streamCount)
 {
     return MockFunctionTest::aclStubInstance().rtsStreamGetAvailableNum(streamCount);
 }
 
-rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t *attrValue)
+rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t* attrValue)
 {
     return MockFunctionTest::aclStubInstance().rtsStreamSetAttribute(stm, stmAttrId, attrValue);
 }
 
-rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t *attrValue)
+rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t* attrValue)
 {
     return MockFunctionTest::aclStubInstance().rtsStreamGetAttribute(stm, stmAttrId, attrValue);
 }
 
-rtError_t rtsNotifyCreate(rtNotify_t *notify, uint64_t flag)
+rtError_t rtsNotifyCreate(rtNotify_t* notify, uint64_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtsNotifyCreate(notify, flag);
 }
 
-rtError_t rtsNotifyDestroy(rtNotify_t notify)
-{
-    return MockFunctionTest::aclStubInstance().rtsNotifyDestroy(notify);
-}
+rtError_t rtsNotifyDestroy(rtNotify_t notify) { return MockFunctionTest::aclStubInstance().rtsNotifyDestroy(notify); }
 
-rtError_t rtCntNotifyCreateServer(rtCntNotify_t *cntNotify, uint64_t flag)
+rtError_t rtCntNotifyCreateServer(rtCntNotify_t* cntNotify, uint64_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtCntNotifyCreateServer(cntNotify, flag);
 }
@@ -4227,52 +3856,52 @@ rtError_t rtsNotifyWaitAndReset(rtNotify_t notify, rtStream_t stream, uint32_t t
     return MockFunctionTest::aclStubInstance().rtsNotifyWaitAndReset(notify, stream, timeout);
 }
 
-rtError_t rtsNotifyGetId(rtNotify_t notify, uint32_t *notifyId)
+rtError_t rtsNotifyGetId(rtNotify_t notify, uint32_t* notifyId)
 {
     return MockFunctionTest::aclStubInstance().rtsNotifyGetId(notify, notifyId);
 }
 
-rtError_t rtsEventGetId(rtEvent_t event, uint32_t *eventId)
+rtError_t rtsEventGetId(rtEvent_t event, uint32_t* eventId)
 {
     return MockFunctionTest::aclStubInstance().rtsEventGetId(event, eventId);
 }
 
-rtError_t rtsEventGetAvailNum(uint32_t *eventCount)
+rtError_t rtsEventGetAvailNum(uint32_t* eventCount)
 {
     return MockFunctionTest::aclStubInstance().rtsEventGetAvailNum(eventCount);
 }
 
-rtError_t rtsDeviceGetInfo(uint32_t deviceId, rtDevAttr attr, int64_t *val)
+rtError_t rtsDeviceGetInfo(uint32_t deviceId, rtDevAttr attr, int64_t* val)
 {
     return MockFunctionTest::aclStubInstance().rtsDeviceGetInfo(deviceId, attr, val);
 }
 
-rtError_t rtsDeviceGetStreamPriorityRange(int32_t *leastPriority, int32_t *greatestPriority)
+rtError_t rtsDeviceGetStreamPriorityRange(int32_t* leastPriority, int32_t* greatestPriority)
 {
     return MockFunctionTest::aclStubInstance().rtsDeviceGetStreamPriorityRange(leastPriority, greatestPriority);
 }
 
-rtError_t rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureType, int32_t *val)
+rtError_t rtsDeviceGetCapability(int32_t deviceId, int32_t devFeatureType, int32_t* val)
 {
     return MockFunctionTest::aclStubInstance().rtsDeviceGetCapability(deviceId, devFeatureType, val);
 }
 
-rtError_t rtGetDeviceUuid(int32_t deviceId, rtUuid_t *uuid)
+rtError_t rtGetDeviceUuid(int32_t deviceId, rtUuid_t* uuid)
 {
     return MockFunctionTest::aclStubInstance().rtGetDeviceUuid(deviceId, uuid);
 }
 
-rtError_t rtsCtxGetCurrentDefaultStream(rtStream_t *stm)
+rtError_t rtsCtxGetCurrentDefaultStream(rtStream_t* stm)
 {
     return MockFunctionTest::aclStubInstance().rtsCtxGetCurrentDefaultStream(stm);
 }
 
-rtError_t rtsGetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active)
+rtError_t rtsGetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active)
 {
     return MockFunctionTest::aclStubInstance().rtsGetPrimaryCtxState(devId, flags, active);
 }
 
-rtError_t rtsModelCreate(rtModel_t *mdl, uint32_t flag)
+rtError_t rtsModelCreate(rtModel_t* mdl, uint32_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtsModelCreate(mdl, flag);
 }
@@ -4287,7 +3916,7 @@ rtError_t rtsEndGraph(rtModel_t mdl, rtStream_t stm)
     return MockFunctionTest::aclStubInstance().rtsEndGraph(mdl, stm);
 }
 
-rtError_t rtsModelLoadComplete(rtModel_t mdl, void *reserve)
+rtError_t rtsModelLoadComplete(rtModel_t mdl, void* reserve)
 {
     return MockFunctionTest::aclStubInstance().rtsModelLoadComplete(mdl, reserve);
 }
@@ -4302,17 +3931,17 @@ rtError_t rtsModelExecute(rtModel_t mdl, int32_t timeout)
     return MockFunctionTest::aclStubInstance().rtsModelExecute(mdl, timeout);
 }
 
-rtError_t rtsLaunchReduceAsyncTask(const rtReduceInfo_t *reduceInfo, const rtStream_t stm, const void *reserve)
+rtError_t rtsLaunchReduceAsyncTask(const rtReduceInfo_t* reduceInfo, const rtStream_t stm, const void* reserve)
 {
     return MockFunctionTest::aclStubInstance().rtsLaunchReduceAsyncTask(reduceInfo, stm, reserve);
 }
 
-rtError_t rtsGetDeviceResLimit(const int32_t deviceId, const rtDevResLimitType_t type, uint32_t *value)
+rtError_t rtsGetDeviceResLimit(const int32_t deviceId, const rtDevResLimitType_t type, uint32_t* value)
 {
     return MockFunctionTest::aclStubInstance().rtsGetDeviceResLimit(deviceId, type, value);
 }
 
-rtError_t rtsGetStreamResLimit(const rtStream_t stream, const rtDevResLimitType_t type, uint32_t *value)
+rtError_t rtsGetStreamResLimit(const rtStream_t stream, const rtDevResLimitType_t type, uint32_t* value)
 {
     return MockFunctionTest::aclStubInstance().rtsGetStreamResLimit(stream, type, value);
 }
@@ -4337,7 +3966,7 @@ rtError_t rtsNotUseStreamResInCurrentThread(const rtStream_t stream)
     return MockFunctionTest::aclStubInstance().rtsNotUseStreamResInCurrentThread(stream);
 }
 
-rtError_t rtsGetResInCurrentThread(rtDevResLimitType_t type, uint32_t *value)
+rtError_t rtsGetResInCurrentThread(rtDevResLimitType_t type, uint32_t* value)
 {
     return MockFunctionTest::aclStubInstance().rtsGetResInCurrentThread(type, value);
 }
@@ -4352,32 +3981,26 @@ rtError_t rtsResetDeviceResLimit(const int32_t deviceId)
     return MockFunctionTest::aclStubInstance().rtsResetDeviceResLimit(deviceId);
 }
 
-rtError_t rtsLabelCreate(rtLabel_t *lbl)
-{
-    return MockFunctionTest::aclStubInstance().rtsLabelCreate(lbl);
-}
+rtError_t rtsLabelCreate(rtLabel_t* lbl) { return MockFunctionTest::aclStubInstance().rtsLabelCreate(lbl); }
 
 rtError_t rtsLabelSet(rtLabel_t lbl, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsLabelSet(lbl, stm);
 }
 
-rtError_t rtsLabelDestroy(rtLabel_t lbl)
-{
-    return MockFunctionTest::aclStubInstance().rtsLabelDestroy(lbl);
-}
+rtError_t rtsLabelDestroy(rtLabel_t lbl) { return MockFunctionTest::aclStubInstance().rtsLabelDestroy(lbl); }
 
-rtError_t rtsLabelSwitchListCreate(rtLabel_t *labels, size_t num, void **labelList)
+rtError_t rtsLabelSwitchListCreate(rtLabel_t* labels, size_t num, void** labelList)
 {
     return MockFunctionTest::aclStubInstance().rtsLabelSwitchListCreate(labels, num, labelList);
 }
 
-rtError_t rtsLabelSwitchListDestroy(void *labelList)
+rtError_t rtsLabelSwitchListDestroy(void* labelList)
 {
     return MockFunctionTest::aclStubInstance().rtsLabelSwitchListDestroy(labelList);
 }
 
-rtError_t rtsLabelSwitchByIndex(void *ptr, uint32_t maxValue, void *labelInfoPtr, rtStream_t stm)
+rtError_t rtsLabelSwitchByIndex(void* ptr, uint32_t maxValue, void* labelInfoPtr, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsLabelSwitchByIndex(ptr, maxValue, labelInfoPtr, stm);
 }
@@ -4387,105 +4010,110 @@ rtError_t rtsActiveStream(rtStream_t activeStream, rtStream_t stream)
     return MockFunctionTest::aclStubInstance().rtsActiveStream(activeStream, stream);
 }
 
-rtError_t rtsSwitchStream(void *leftValue, rtCondition_t cond, void *rightValue, rtSwitchDataType_t dataType, rtStream_t trueStream, rtStream_t falseStream, rtStream_t stream)
+rtError_t rtsSwitchStream(
+    void* leftValue, rtCondition_t cond, void* rightValue, rtSwitchDataType_t dataType, rtStream_t trueStream,
+    rtStream_t falseStream, rtStream_t stream)
 {
-    return MockFunctionTest::aclStubInstance().rtsSwitchStream(leftValue, cond, rightValue, dataType, trueStream, falseStream, stream);
+    return MockFunctionTest::aclStubInstance().rtsSwitchStream(
+        leftValue, cond, rightValue, dataType, trueStream, falseStream, stream);
 }
 
-rtError_t rtsFuncGetName(const rtFuncHandle funcHandle, const uint32_t maxLen, char_t * const name)
+rtError_t rtsFuncGetName(const rtFuncHandle funcHandle, const uint32_t maxLen, char_t* const name)
 {
     return MockFunctionTest::aclStubInstance().rtsFuncGetName(funcHandle, maxLen, name);
 }
 
-rtError_t rtsModelSetName(rtModel_t mdl, const char_t *mdlName)
+rtError_t rtsModelSetName(rtModel_t mdl, const char_t* mdlName)
 {
     return MockFunctionTest::aclStubInstance().rtsModelSetName(mdl, mdlName);
 }
 
-rtError_t rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t * const mdlName)
+rtError_t rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t* const mdlName)
 {
     return MockFunctionTest::aclStubInstance().rtsModelGetName(mdl, maxLen, mdlName);
 }
 
-rtError_t rtsBinaryLoadFromData(const void *const data, const uint64_t length, const rtLoadBinaryConfig_t *const optionalCfg, rtBinHandle *handle)
+rtError_t rtsBinaryLoadFromData(
+    const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg, rtBinHandle* handle)
 {
     return MockFunctionTest::aclStubInstance().rtsBinaryLoadFromData(data, length, optionalCfg, handle);
 }
 
-rtError_t rtsRegisterCpuFunc(rtBinHandle binHandle, const char_t *const funcName, const char_t *const kernelName, rtFuncHandle *funcHandle)
+rtError_t rtsRegisterCpuFunc(
+    rtBinHandle binHandle, const char_t* const funcName, const char_t* const kernelName, rtFuncHandle* funcHandle)
 {
     return MockFunctionTest::aclStubInstance().rtsRegisterCpuFunc(binHandle, funcName, kernelName, funcHandle);
 }
 
-rtError_t rtsCmoAsyncWithBarrier(void *srcAddrPtr, size_t srcLen, rtCmoOpCode cmoType, uint32_t logicId, rtStream_t stm)
+rtError_t rtsCmoAsyncWithBarrier(void* srcAddrPtr, size_t srcLen, rtCmoOpCode cmoType, uint32_t logicId, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsCmoAsyncWithBarrier(srcAddrPtr, srcLen, cmoType, logicId, stm);
 }
 
-rtError_t rtsLaunchBarrierTask(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag)
+rtError_t rtsLaunchBarrierTask(rtBarrierTaskInfo_t* taskInfo, rtStream_t stm, uint32_t flag)
 {
     return MockFunctionTest::aclStubInstance().rtsLaunchBarrierTask(taskInfo, stm, flag);
 }
 
-rtError_t rtsGetPairDevicesInfo(uint32_t devId, uint32_t otherDevId, int32_t infoType, uint64_t *val)
+rtError_t rtsGetPairDevicesInfo(uint32_t devId, uint32_t otherDevId, int32_t infoType, uint64_t* val)
 {
     return MockFunctionTest::aclStubInstance().rtsGetPairDevicesInfo(devId, otherDevId, infoType, val);
 }
 
-rtError_t rtsMemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t count, rtMemcpyBatchAttr *attrs,
-    size_t *attrsIdxs, size_t numAttrs, size_t *failIdx)
+rtError_t rtsMemcpyBatch(
+    void** dsts, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs, size_t* attrsIdxs, size_t numAttrs,
+    size_t* failIdx)
 {
-    return MockFunctionTest::aclStubInstance().rtsMemcpyBatch(dsts, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx);
+    return MockFunctionTest::aclStubInstance().rtsMemcpyBatch(
+        dsts, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx);
 }
 
-rtError_t rtsMemcpyBatchAsync(void **dsts, size_t *destMaxs, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx, rtStream_t stream)
+rtError_t rtsMemcpyBatchAsync(
+    void** dsts, size_t* destMaxs, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs,
+    size_t* attrsIdxs, size_t numAttrs, size_t* failIdx, rtStream_t stream)
 {
-    return MockFunctionTest::aclStubInstance().rtsMemcpyBatchAsync(dsts, destMaxs, srcs, sizes, count,
-        attrs, attrsIdxs, numAttrs, failIdx, stream);
+    return MockFunctionTest::aclStubInstance().rtsMemcpyBatchAsync(
+        dsts, destMaxs, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx, stream);
 }
 
-rtError_t rtsIpcMemGetExportKey(const void *ptr, size_t size, char_t *key, uint32_t len, uint64_t flags)
+rtError_t rtsIpcMemGetExportKey(const void* ptr, size_t size, char_t* key, uint32_t len, uint64_t flags)
 {
     return MockFunctionTest::aclStubInstance().rtsIpcMemGetExportKey(ptr, size, key, len, flags);
 }
 
-rtError_t rtsIpcMemClose(const char_t *key)
-{
-    return MockFunctionTest::aclStubInstance().rtsIpcMemClose(key);
-}
+rtError_t rtsIpcMemClose(const char_t* key) { return MockFunctionTest::aclStubInstance().rtsIpcMemClose(key); }
 
-rtError_t rtsIpcMemImportByKey(void **ptr, const char_t *key, uint64_t flags)
+rtError_t rtsIpcMemImportByKey(void** ptr, const char_t* key, uint64_t flags)
 {
     return MockFunctionTest::aclStubInstance().rtsIpcMemImportByKey(ptr, key, flags);
 }
 
-rtError_t rtsIpcMemSetImportPid(const char_t *key, int32_t pid[], int num)
+rtError_t rtsIpcMemSetImportPid(const char_t* key, int32_t pid[], int num)
 {
     return MockFunctionTest::aclStubInstance().rtsIpcMemSetImportPid(key, pid, num);
 }
 
-rtError_t rtIpcSetMemoryAttr(const char *key, uint32_t type, uint64_t attr)
+rtError_t rtIpcSetMemoryAttr(const char* key, uint32_t type, uint64_t attr)
 {
     return MockFunctionTest::aclStubInstance().rtIpcSetMemoryAttr(key, type, attr);
 }
 
-rtError_t rtIpcMemImportPidInterServer(const char *key, const rtServerPid *serverPids, size_t num)
+rtError_t rtIpcMemImportPidInterServer(const char* key, const rtServerPid* serverPids, size_t num)
 {
     return MockFunctionTest::aclStubInstance().rtIpcMemImportPidInterServer(key, serverPids, num);
 }
 
-rtError_t rtsNotifyBatchReset(rtNotify_t *notifies, uint32_t num)
+rtError_t rtsNotifyBatchReset(rtNotify_t* notifies, uint32_t num)
 {
     return MockFunctionTest::aclStubInstance().rtsNotifyBatchReset(notifies, num);
 }
 
-rtError_t rtsNotifyGetExportKey(rtNotify_t notify, char_t *key, uint32_t len, uint64_t flags)
+rtError_t rtsNotifyGetExportKey(rtNotify_t notify, char_t* key, uint32_t len, uint64_t flags)
 {
     return MockFunctionTest::aclStubInstance().rtsNotifyGetExportKey(notify, key, len, flags);
 }
 
-rtError_t rtsNotifyImportByKey(rtNotify_t *notify, const char_t *key, uint64_t flags)
+rtError_t rtsNotifyImportByKey(rtNotify_t* notify, const char_t* key, uint64_t flags)
 {
     return MockFunctionTest::aclStubInstance().rtsNotifyImportByKey(notify, key, flags);
 }
@@ -4495,47 +4123,47 @@ rtError_t rtsNotifySetImportPid(rtNotify_t notify, int32_t pid[], int num)
     return MockFunctionTest::aclStubInstance().rtsNotifySetImportPid(notify, pid, num);
 }
 
-rtError_t rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid *serverPids, size_t num)
+rtError_t rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid* serverPids, size_t num)
 {
     return MockFunctionTest::aclStubInstance().rtNotifySetImportPidInterServer(notify, serverPids, num);
 }
 
-rtError_t rtsCheckMemType(void** addrList, uint32_t size, uint32_t memType, uint32_t *checkResult, uint32_t reserve)
+rtError_t rtsCheckMemType(void** addrList, uint32_t size, uint32_t memType, uint32_t* checkResult, uint32_t reserve)
 {
     return MockFunctionTest::aclStubInstance().rtsCheckMemType(addrList, size, memType, checkResult, reserve);
 }
 
-rtError_t rtsGetLogicDevIdByUserDevId(const int32_t userDevid, int32_t *const logicDevId)
+rtError_t rtsGetLogicDevIdByUserDevId(const int32_t userDevid, int32_t* const logicDevId)
 {
     return MockFunctionTest::aclStubInstance().rtsGetLogicDevIdByUserDevId(userDevid, logicDevId);
 }
 
-rtError_t rtsGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t *const userDevid)
+rtError_t rtsGetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t* const userDevid)
 {
     return MockFunctionTest::aclStubInstance().rtsGetUserDevIdByLogicDevId(logicDevId, userDevid);
 }
 
-rtError_t rtsGetLogicDevIdByPhyDevId(int32_t phyDevId, int32_t *const logicDevId)
+rtError_t rtsGetLogicDevIdByPhyDevId(int32_t phyDevId, int32_t* const logicDevId)
 {
     return MockFunctionTest::aclStubInstance().rtsGetLogicDevIdByPhyDevId(phyDevId, logicDevId);
 }
 
-rtError_t rtsGetPhyDevIdByLogicDevId(int32_t logicDevId, int32_t *const phyDevId)
+rtError_t rtsGetPhyDevIdByLogicDevId(int32_t logicDevId, int32_t* const phyDevId)
 {
     return MockFunctionTest::aclStubInstance().rtsGetPhyDevIdByLogicDevId(logicDevId, phyDevId);
 }
 
-rtError_t rtsProfTrace(void *userdata, int32_t length, rtStream_t stream)
+rtError_t rtsProfTrace(void* userdata, int32_t length, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtsProfTrace(userdata, length, stream);
 }
 
-rtError_t rtsCtxGetFloatOverflowAddr(void **overflowAddr)
+rtError_t rtsCtxGetFloatOverflowAddr(void** overflowAddr)
 {
     return MockFunctionTest::aclStubInstance().rtsCtxGetFloatOverflowAddr(overflowAddr);
 }
 
-rtError_t rtsGetFloatOverflowStatus(void *const outputAddr, const uint64_t outputSize, rtStream_t stm)
+rtError_t rtsGetFloatOverflowStatus(void* const outputAddr, const uint64_t outputSize, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsGetFloatOverflowStatus(outputAddr, outputSize, stm);
 }
@@ -4545,8 +4173,8 @@ rtError_t rtsResetFloatOverflowStatus(rtStream_t stm)
     return MockFunctionTest::aclStubInstance().rtsResetFloatOverflowStatus(stm);
 }
 
-rtError_t rtsNpuGetFloatOverFlowStatus(void *const outputAddr, const uint64_t outputSize, uint32_t checkMode,
-    rtStream_t stm)
+rtError_t rtsNpuGetFloatOverFlowStatus(
+    void* const outputAddr, const uint64_t outputSize, uint32_t checkMode, rtStream_t stm)
 {
     return MockFunctionTest::aclStubInstance().rtsNpuGetFloatOverFlowStatus(outputAddr, outputSize, checkMode, stm);
 }
@@ -4556,82 +4184,73 @@ rtError_t rtsNpuClearFloatOverFlowStatus(uint32_t checkMode, rtStream_t stm)
     return MockFunctionTest::aclStubInstance().rtsNpuClearFloatOverFlowStatus(checkMode, stm);
 }
 
-rtError_t rtsGetHardwareSyncAddr(void **addr)
+rtError_t rtsGetHardwareSyncAddr(void** addr)
 {
     return MockFunctionTest::aclStubInstance().rtsGetHardwareSyncAddr(addr);
 }
 
-rtError_t rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, const rtStream_t stream, void *reserve)
+rtError_t rtsLaunchRandomNumTask(const rtRandomNumTaskInfo_t* taskInfo, const rtStream_t stream, void* reserve)
 {
     return MockFunctionTest::aclStubInstance().rtsLaunchRandomNumTask(taskInfo, stream, reserve);
 }
 
-rtError_t rtsRegStreamStateCallback(const char_t *regName, rtsStreamStateCallback callback, void *args)
+rtError_t rtsRegStreamStateCallback(const char_t* regName, rtsStreamStateCallback callback, void* args)
 {
     return MockFunctionTest::aclStubInstance().rtsRegStreamStateCallback(regName, callback, args);
 }
 
-rtError_t rtsRegDeviceStateCallback(const char_t *regName, rtsDeviceStateCallback callback, void *args)
+rtError_t rtsRegDeviceStateCallback(const char_t* regName, rtsDeviceStateCallback callback, void* args)
 {
     return MockFunctionTest::aclStubInstance().rtsRegDeviceStateCallback(regName, callback, args);
 }
 
-rtError_t rtsSetDeviceTaskAbortCallback(const char_t *regName, rtsDeviceTaskAbortCallback callback, void *args)
+rtError_t rtsSetDeviceTaskAbortCallback(const char_t* regName, rtsDeviceTaskAbortCallback callback, void* args)
 {
     return MockFunctionTest::aclStubInstance().rtsSetDeviceTaskAbortCallback(regName, callback, args);
 }
 
-rtError_t rtGetOpExecuteTimeoutV2(uint32_t * const timeoutMs)
+rtError_t rtGetOpExecuteTimeoutV2(uint32_t* const timeoutMs)
 {
     return MockFunctionTest::aclStubInstance().rtGetOpExecuteTimeoutV2(timeoutMs);
 }
 
-rtError_t rtsGetP2PStatus(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t *status)
+rtError_t rtsGetP2PStatus(uint32_t devIdDes, uint32_t phyIdSrc, uint32_t* status)
 {
     return MockFunctionTest::aclStubInstance().rtsGetP2PStatus(devIdDes, phyIdSrc, status);
 }
 
-rtError_t rtsStreamStop(rtStream_t stream)
-{
-    return MockFunctionTest::aclStubInstance().rtsStreamStop(stream);
-}
+rtError_t rtsStreamStop(rtStream_t stream) { return MockFunctionTest::aclStubInstance().rtsStreamStop(stream); }
 
-rtError_t rtsLaunchUpdateTask(rtStream_t taskStream, uint32_t taskId, rtStream_t execStream, rtTaskUpdateCfg_t *info)
+rtError_t rtsLaunchUpdateTask(rtStream_t taskStream, uint32_t taskId, rtStream_t execStream, rtTaskUpdateCfg_t* info)
 {
     return MockFunctionTest::aclStubInstance().rtsLaunchUpdateTask(taskStream, taskId, execStream, info);
 }
 
-rtError_t rtsGetCmoDescSize(size_t *size)
-{
-    return MockFunctionTest::aclStubInstance().rtsGetCmoDescSize(size);
-}
+rtError_t rtsGetCmoDescSize(size_t* size) { return MockFunctionTest::aclStubInstance().rtsGetCmoDescSize(size); }
 
-rtError_t rtsLaunchCmoAddrTask(rtCmoDesc_t cmoDesc, rtStream_t stream, rtCmoOpCode cmoType, const void *reserve)
+rtError_t rtsLaunchCmoAddrTask(rtCmoDesc_t cmoDesc, rtStream_t stream, rtCmoOpCode cmoType, const void* reserve)
 {
     return MockFunctionTest::aclStubInstance().rtsLaunchCmoAddrTask(cmoDesc, stream, cmoType, reserve);
 }
 
-rtError_t rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void *memAddr, size_t memLen)
+rtError_t rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void* memAddr, size_t memLen)
 {
     return MockFunctionTest::aclStubInstance().rtsSetCmoDesc(cmoDesc, memAddr, memLen);
 }
 
-rtError_t rtsModelAbort(rtModel_t modelRI)
-{
-    return MockFunctionTest::aclStubInstance().rtsModelAbort(modelRI);
-}
+rtError_t rtsModelAbort(rtModel_t modelRI) { return MockFunctionTest::aclStubInstance().rtsModelAbort(modelRI); }
 
-rtError_t rtCheckArchCompatibility(const char_t *socVersion, int32_t *canCompatible)
+rtError_t rtCheckArchCompatibility(const char_t* socVersion, int32_t* canCompatible)
 {
     return MockFunctionTest::aclStubInstance().rtCheckArchCompatibility(socVersion, canCompatible);
 }
 
-rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stream, rtCntNotifyRecordInfo_t *info)
+rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stream, rtCntNotifyRecordInfo_t* info)
 {
     return MockFunctionTest::aclStubInstance().rtsCntNotifyRecord(cntNotify, stream, info);
 }
 
-rtError_t rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stream, rtCntNotifyWaitInfo_t *info)
+rtError_t rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stream, rtCntNotifyWaitInfo_t* info)
 {
     return MockFunctionTest::aclStubInstance().rtsCntNotifyWaitWithTimeout(cntNotify, stream, info);
 }
@@ -4641,7 +4260,7 @@ rtError_t rtsCntNotifyReset(rtCntNotify_t cntNotify, rtStream_t stream)
     return MockFunctionTest::aclStubInstance().rtsCntNotifyReset(cntNotify, stream);
 }
 
-rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t *notifyId)
+rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t* notifyId)
 {
     return MockFunctionTest::aclStubInstance().rtsCntNotifyGetId(cntNotify, notifyId);
 }
@@ -4651,48 +4270,47 @@ rtError_t rtsPersistentTaskClean(rtStream_t stream)
     return MockFunctionTest::aclStubInstance().rtsPersistentTaskClean(stream);
 }
 
-rtError_t rtMemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *desc, size_t count)
+rtError_t rtMemSetAccess(void* virPtr, size_t size, rtMemAccessDesc* desc, size_t count)
 {
     return MockFunctionTest::aclStubInstance().rtMemSetAccess(virPtr, size, desc, count);
 }
 
-rtError_t rtMemGetAccess(void *virPtr, rtMemLocation *location, uint64_t *flag)
+rtError_t rtMemGetAccess(void* virPtr, rtMemLocation* location, uint64_t* flag)
 {
     return MockFunctionTest::aclStubInstance().rtMemGetAccess(virPtr, location, flag);
 }
 
-rtError_t rtBinarySetExceptionCallback(rtBinHandle binHandle, rtOpExceptionCallback callback, void *userData)
+rtError_t rtBinarySetExceptionCallback(rtBinHandle binHandle, rtOpExceptionCallback callback, void* userData)
 {
-
     return MockFunctionTest::aclStubInstance().rtBinarySetExceptionCallback(binHandle, callback, userData);
 }
 
-rtError_t rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, rtFuncHandle *func)
+rtError_t rtGetFuncHandleFromExceptionInfo(const rtExceptionInfo_t* info, rtFuncHandle* func)
 {
     return MockFunctionTest::aclStubInstance().rtGetFuncHandleFromExceptionInfo(info, func);
 }
 
-rtError_t rtModelGetStreams(rtModel_t const mdl, rtStream_t *streams, uint32_t *numStreams)
+rtError_t rtModelGetStreams(rtModel_t const mdl, rtStream_t* streams, uint32_t* numStreams)
 {
     return MockFunctionTest::aclStubInstance().rtModelGetStreams(mdl, streams, numStreams);
 }
 
-rtError_t rtModelGetId(rtModel_t mdl, uint32_t *modelId)
+rtError_t rtModelGetId(rtModel_t mdl, uint32_t* modelId)
 {
     return MockFunctionTest::aclStubInstance().rtModelGetId(mdl, modelId);
 }
 
-rtError_t rtStreamGetTasks(rtStream_t const stm, rtTask_t *tasks, uint32_t *numTasks)
+rtError_t rtStreamGetTasks(rtStream_t const stm, rtTask_t* tasks, uint32_t* numTasks)
 {
     return MockFunctionTest::aclStubInstance().rtStreamGetTasks(stm, tasks, numTasks);
 }
 
-rtError_t rtTaskGetType(rtTask_t task, rtTaskType *type)
+rtError_t rtTaskGetType(rtTask_t task, rtTaskType* type)
 {
     return MockFunctionTest::aclStubInstance().rtTaskGetType(task, type);
 }
 
-rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t *id)
+rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t* id)
 {
     return MockFunctionTest::aclStubInstance().rtTaskGetSeqId(task, id);
 }
@@ -4707,22 +4325,17 @@ rtError_t rtModelTaskSetParams(rtTask_t task, rtTaskParams* params)
     return MockFunctionTest::aclStubInstance().rtModelTaskSetParams(task, params);
 }
 
-rtError_t rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t *attrValue)
+rtError_t rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
     return MockFunctionTest::aclStubInstance().rtModelKernelTaskGetAttribute(task, attrId, attrValue);
 }
 
-rtError_t rtModelTaskDisable(rtTask_t task)
-{
-    return MockFunctionTest::aclStubInstance().rtModelTaskDisable(task);
-}
+rtError_t rtModelTaskDisable(rtTask_t task) { return MockFunctionTest::aclStubInstance().rtModelTaskDisable(task); }
 
-rtError_t rtModelUpdate(rtModel_t mdl)
-{
-    return MockFunctionTest::aclStubInstance().rtModelUpdate(mdl);
-}
+rtError_t rtModelUpdate(rtModel_t mdl) { return MockFunctionTest::aclStubInstance().rtModelUpdate(mdl); }
 
-rtError_t rtModelCondHandleCreate(rtModel_t mdl, uint32_t defaultLaunchValue, rtCondHandleFlag_t flag, rtCondHandle_t *handle)
+rtError_t rtModelCondHandleCreate(
+    rtModel_t mdl, uint32_t defaultLaunchValue, rtCondHandleFlag_t flag, rtCondHandle_t* handle)
 {
     if (handle != nullptr) {
         *handle = (rtCondHandle_t)0x01;
@@ -4730,10 +4343,10 @@ rtError_t rtModelCondHandleCreate(rtModel_t mdl, uint32_t defaultLaunchValue, rt
     return MockFunctionTest::aclStubInstance().rtModelCondHandleCreate(mdl, defaultLaunchValue, flag, handle);
 }
 
-rtError_t rtModelCondHandleGetCondPtr(rtCondHandle_t handle, uint64_t **devPtr)
+rtError_t rtModelCondHandleGetCondPtr(rtCondHandle_t handle, uint64_t** devPtr)
 {
     if (devPtr != nullptr) {
-        *devPtr = (uint64_t *)0x01;
+        *devPtr = (uint64_t*)0x01;
     }
     return MockFunctionTest::aclStubInstance().rtModelCondHandleGetCondPtr(handle, devPtr);
 }
@@ -4748,20 +4361,21 @@ rtError_t rtStreamBeginCaptureToModel(rtStream_t stm, rtModel_t mdl, const rtStr
     return MockFunctionTest::aclStubInstance().rtStreamBeginCaptureToModel(stm, mdl, mode);
 }
 
-rtError_t rtMemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, rtStream_t stream)
+rtError_t rtMemManagedPrefetchAsync(
+    const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, rtStream_t stream)
 {
     return MockFunctionTest::aclStubInstance().rtMemManagedPrefetchAsync(ptr, size, location, flags, stream);
 }
 
-rtError_t rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_t count,
-    rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags,
-    rtStream_t stream)
+rtError_t rtMemManagedPrefetchBatchAsync(
+    const void** ptrs, size_t* sizes, size_t count, rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs,
+    size_t numPrefetchLocs, uint64_t flags, rtStream_t stream)
 {
-    return MockFunctionTest::aclStubInstance().rtMemManagedPrefetchBatchAsync(ptrs, sizes, count, prefetchLocs, prefetchLocIdxs,
-        numPrefetchLocs, flags, stream);
+    return MockFunctionTest::aclStubInstance().rtMemManagedPrefetchBatchAsync(
+        ptrs, sizes, count, prefetchLocs, prefetchLocIdxs, numPrefetchLocs, flags, stream);
 }
 
-rtError_t rtMemMapSelectedLink(void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx)
+rtError_t rtMemMapSelectedLink(void* virPtrDst, size_t size, void* virPtrSrc, uint32_t linkIdx)
 {
     return MockFunctionTest::aclStubInstance().rtMemMapSelectedLink(virPtrDst, size, virPtrSrc, linkIdx);
 }

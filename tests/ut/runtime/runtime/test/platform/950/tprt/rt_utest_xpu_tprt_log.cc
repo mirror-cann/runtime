@@ -23,18 +23,11 @@ protected:
         std::cout << "TprtLogTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TprtLogTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TprtLogTest end" << std::endl; }
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TprtLogTest, tprt_log_1)

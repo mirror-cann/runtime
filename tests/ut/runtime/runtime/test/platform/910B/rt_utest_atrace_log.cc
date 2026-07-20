@@ -33,17 +33,13 @@ using namespace testing;
 using namespace cce::runtime;
 class CloudV2AtraceLog : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(CloudV2AtraceLog, TrySaveAtraceLogsFailed)

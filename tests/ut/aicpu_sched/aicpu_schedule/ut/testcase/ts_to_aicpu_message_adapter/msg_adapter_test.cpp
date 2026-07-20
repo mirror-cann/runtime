@@ -32,7 +32,7 @@ void SendResponseCapture(const uint32_t errCode, const uint32_t status)
     ++g_sendResponseCount;
 }
 
-drvError_t HalGetDeviceInfoMsgqStub(const uint32_t, const uint32_t, const uint32_t, int64_t *cpuSchedMode)
+drvError_t HalGetDeviceInfoMsgqStub(const uint32_t, const uint32_t, const uint32_t, int64_t* cpuSchedMode)
 {
     *cpuSchedMode = HAL_HIGH_PERFORMANCE_MODE;
     return DRV_ERROR_NONE;
@@ -48,7 +48,8 @@ void InitMsgqSchedMode()
 class TestAdapter : public TsMsgAdapter {
 public:
     TestAdapter(uint32_t pid, uint8_t cmdType, uint8_t vfId, uint8_t tid, uint8_t tsId)
-        : TsMsgAdapter(pid, cmdType, vfId, tid, tsId) {}
+        : TsMsgAdapter(pid, cmdType, vfId, tid, tsId)
+    {}
     TestAdapter() : TsMsgAdapter() {}
     bool IsAdapterInvaildParameter() const override { return false; }
     void GetAicpuDataDumpInfo(AicpuDataDumpInfo& info) override {}
@@ -75,15 +76,9 @@ public:
 
 class TsMsgAdapterTEST : public ::testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "TsMsgAdapterTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "TsMsgAdapterTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TsMsgAdapterTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TsMsgAdapterTEST TearDownTestCase" << std::endl; }
 
     virtual void SetUp()
     {
@@ -105,7 +100,7 @@ TEST_F(TsMsgAdapterTEST, ConstructorWithParams)
     uint8_t vfId = 2;
     uint8_t tid = 3;
     uint8_t tsId = 4;
-    
+
     TestAdapter adapter(pid, cmdType, vfId, tid, tsId);
     EXPECT_EQ(adapter.pid_, pid);
     EXPECT_EQ(adapter.cmdType_, cmdType);
@@ -127,7 +122,7 @@ TEST_F(TsMsgAdapterTEST, DefaultConstructor)
 TEST_F(TsMsgAdapterTEST, ResponseToTsSqe)
 {
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));
-    
+
     TestAdapter adapter;
     TsAicpuSqe aicpuSqe = {};
     int32_t ret = adapter.ResponseToTs(aicpuSqe, 0, 0, 0);
@@ -137,7 +132,7 @@ TEST_F(TsMsgAdapterTEST, ResponseToTsSqe)
 TEST_F(TsMsgAdapterTEST, ResponseToTsMsgInfo)
 {
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));
-    
+
     TestAdapter adapter;
     TsAicpuMsgInfo aicpuMsgInfo = {};
     int32_t ret = adapter.ResponseToTs(aicpuMsgInfo, 0, 0, 0);
@@ -147,7 +142,7 @@ TEST_F(TsMsgAdapterTEST, ResponseToTsMsgInfo)
 TEST_F(TsMsgAdapterTEST, ResponseToTsHwts)
 {
     MOCKER(halEschedAckEvent).stubs().will(returnValue(DRV_ERROR_NONE));
-    
+
     TestAdapter adapter;
     hwts_response_t hwtsResp = {};
     int32_t ret = adapter.ResponseToTs(hwtsResp, 0, EVENT_TS_CTRL_MSG, 0);

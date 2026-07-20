@@ -18,7 +18,6 @@
 #undef private
 #undef protected
 
-
 using namespace bqs;
 
 class BqsMsprofManagerUTest : public testing::Test {
@@ -26,13 +25,13 @@ protected:
     virtual void SetUp()
     {
         const qstest::FuncNamePtrMap funcMap = {
-            {"MsprofInit", reinterpret_cast<void *>(&MsprofInit)},
-            {"MsprofFinalize", reinterpret_cast<void *>(&MsprofFinalize)},
-            {"MsprofRegTypeInfo", reinterpret_cast<void *>(&MsprofRegTypeInfo)},
-            {"MsprofRegisterCallback", reinterpret_cast<void *>(&MsprofRegisterCallback)},
-            {"MsprofReportApi", reinterpret_cast<void *>(&MsprofReportApi)},
-            {"MsprofReportEvent", reinterpret_cast<void *>(&MsprofReportEvent)},
-            {"MsprofSysCycleTime", reinterpret_cast<void *>(&MsprofSysCycleTime)},
+            {"MsprofInit", reinterpret_cast<void*>(&MsprofInit)},
+            {"MsprofFinalize", reinterpret_cast<void*>(&MsprofFinalize)},
+            {"MsprofRegTypeInfo", reinterpret_cast<void*>(&MsprofRegTypeInfo)},
+            {"MsprofRegisterCallback", reinterpret_cast<void*>(&MsprofRegisterCallback)},
+            {"MsprofReportApi", reinterpret_cast<void*>(&MsprofReportApi)},
+            {"MsprofReportEvent", reinterpret_cast<void*>(&MsprofReportEvent)},
+            {"MsprofSysCycleTime", reinterpret_cast<void*>(&MsprofSysCycleTime)},
         };
 
         qstest::DlopenStub::GetInstance().RegDlopenFuncPtr("libprofapi.so", funcMap);
@@ -293,7 +292,7 @@ TEST_F(BqsMsprofManagerUTest, ReportEventPerfSuccess02)
 TEST_F(BqsMsprofManagerUTest, MsprofFinalizeNullptr)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     BqsMsprofApiAdapter apiAdapter;
     EXPECT_EQ(apiAdapter.MsprofFinalize(), ProfStatus::PROF_MSPROF_API_NULLPTR);
 }
@@ -301,7 +300,7 @@ TEST_F(BqsMsprofManagerUTest, MsprofFinalizeNullptr)
 TEST_F(BqsMsprofManagerUTest, MsprofRegTypeInfoNullptr)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     BqsMsprofApiAdapter apiAdapter;
     EXPECT_EQ(apiAdapter.MsprofRegTypeInfo(0, 0, "typename"), ProfStatus::PROF_MSPROF_API_NULLPTR);
 }
@@ -309,7 +308,7 @@ TEST_F(BqsMsprofManagerUTest, MsprofRegTypeInfoNullptr)
 TEST_F(BqsMsprofManagerUTest, MsprofRegisterCallbackNullptr)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     BqsMsprofApiAdapter apiAdapter;
     EXPECT_EQ(apiAdapter.MsprofRegisterCallback(0, nullptr), ProfStatus::PROF_MSPROF_API_NULLPTR);
 }
@@ -317,7 +316,7 @@ TEST_F(BqsMsprofManagerUTest, MsprofRegisterCallbackNullptr)
 TEST_F(BqsMsprofManagerUTest, MsprofReportApiNullptr)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     BqsMsprofApiAdapter apiAdapter;
     EXPECT_EQ(apiAdapter.MsprofReportApi(0, nullptr), ProfStatus::PROF_MSPROF_API_NULLPTR);
 }
@@ -325,7 +324,7 @@ TEST_F(BqsMsprofManagerUTest, MsprofReportApiNullptr)
 TEST_F(BqsMsprofManagerUTest, MsprofReportEventNullptr)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     BqsMsprofApiAdapter apiAdapter;
     EXPECT_EQ(apiAdapter.MsprofReportEvent(0, nullptr), ProfStatus::PROF_MSPROF_API_NULLPTR);
 }
@@ -333,7 +332,7 @@ TEST_F(BqsMsprofManagerUTest, MsprofReportEventNullptr)
 TEST_F(BqsMsprofManagerUTest, MsprofSysCycleTimeNullptr)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     BqsMsprofApiAdapter apiAdapter;
     EXPECT_EQ(apiAdapter.MsprofSysCycleTime(), 0U);
 }

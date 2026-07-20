@@ -15,20 +15,11 @@ using namespace aicpu;
 
 class TsAicpuSqeAdapterTEST : public ::testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "TsAicpuSqeAdapterTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "TsAicpuSqeAdapterTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TsAicpuSqeAdapterTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TsAicpuSqeAdapterTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "TsAicpuSqeAdapterTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "TsAicpuSqeAdapterTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -45,7 +36,7 @@ TEST_F(TsAicpuSqeAdapterTEST, ConstructorWithSqe)
     sqe.vf_id = 2;
     sqe.tid = 3;
     sqe.ts_id = 4;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     EXPECT_EQ(adapter.pid_, 1);
     EXPECT_EQ(adapter.cmdType_, AICPU_MODEL_OPERATE);
@@ -70,11 +61,11 @@ TEST_F(TsAicpuSqeAdapterTEST, GetAicpuModelOperateInfo)
     sqe.u.aicpu_model_operate.model_id = 63;
     sqe.u.aicpu_model_operate.sq_id = 1;
     sqe.u.aicpu_model_operate.task_id = 2;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuModelOperateInfo info = {};
     adapter.GetAicpuModelOperateInfo(info);
-    
+
     EXPECT_EQ(info.arg_ptr, 0x5A5A);
     EXPECT_EQ(info.cmd_type, TS_AICPU_MODEL_LOAD);
     EXPECT_EQ(info.model_id, 63);
@@ -90,11 +81,11 @@ TEST_F(TsAicpuSqeAdapterTEST, GetAicpuTaskReportInfo)
     sqe.u.ts_to_aicpu_task_report.model_id = 8;
     sqe.u.ts_to_aicpu_task_report.result_code = 8;
     sqe.u.ts_to_aicpu_task_report.stream_id = 8;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuTaskReportInfo info = {};
     adapter.GetAicpuTaskReportInfo(info);
-    
+
     EXPECT_EQ(info.task_id, 8);
     EXPECT_EQ(info.model_id, 8);
     EXPECT_EQ(info.result_code, 8);
@@ -110,11 +101,11 @@ TEST_F(TsAicpuSqeAdapterTEST, GetAicpuDataDumpInfo)
     sqe.u.ts_to_aicpu_datadump.task_id = 8;
     sqe.u.ts_to_aicpu_datadump.stream_id1 = 9;
     sqe.u.ts_to_aicpu_datadump.task_id1 = 9;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuDataDumpInfo info = {};
     adapter.GetAicpuDataDumpInfo(info);
-    
+
     EXPECT_EQ(info.dump_task_id, 8);
     EXPECT_EQ(info.dump_stream_id, 8);
     EXPECT_EQ(info.debug_dump_task_id, 9);
@@ -127,10 +118,10 @@ TEST_F(TsAicpuSqeAdapterTEST, IsOpMappingDumpTaskInfoVaild)
 {
     TsAicpuSqe sqe = {};
     TsAicpuSqeAdapter adapter(sqe);
-    
+
     AicpuOpMappingDumpTaskInfo info(1, 2, 3, 4);
     EXPECT_TRUE(adapter.IsOpMappingDumpTaskInfoVaild(info));
-    
+
     AicpuOpMappingDumpTaskInfo infoInvalid(0xFFFF + 1, 2, 3, 4);
     EXPECT_FALSE(adapter.IsOpMappingDumpTaskInfoVaild(infoInvalid));
 }
@@ -143,11 +134,11 @@ TEST_F(TsAicpuSqeAdapterTEST, GetAicpuDataDumpInfoLoad)
     sqe.u.ts_to_aicpu_datadumploadinfo.length = 8;
     sqe.u.ts_to_aicpu_datadumploadinfo.task_id = 8;
     sqe.u.ts_to_aicpu_datadumploadinfo.stream_id = 8;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuDataDumpInfoLoad info = {};
     adapter.GetAicpuDataDumpInfoLoad(info);
-    
+
     EXPECT_EQ(info.dumpinfoPtr, 8);
     EXPECT_EQ(info.length, 8);
     EXPECT_EQ(info.task_id, 8);
@@ -160,11 +151,11 @@ TEST_F(TsAicpuSqeAdapterTEST, TsAicpuSqeTimeOutConfigInfo)
     sqe.cmd_type = AICPU_TIMEOUT_CONFIG;
     sqe.u.ts_to_aicpu_timeout_cfg.op_execute_timeout_en = 1;
     sqe.u.ts_to_aicpu_timeout_cfg.op_execute_timeout = 500;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuTimeOutConfigInfo info = {};
     adapter.GetAicpuTimeOutConfigInfo(info);
-    
+
     EXPECT_EQ((uint32_t)info.i.op_execute_timeout_en, 1);
     EXPECT_EQ((uint32_t)info.i.op_execute_timeout, 500);
 }
@@ -177,11 +168,11 @@ TEST_F(TsAicpuSqeAdapterTEST, GetAicpuInfoLoad)
     sqe.u.ts_to_aicpu_info.length = 1;
     sqe.u.ts_to_aicpu_info.stream_id = 8;
     sqe.u.ts_to_aicpu_info.task_id = 8;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuInfoLoad info = {};
     adapter.GetAicpuInfoLoad(info);
-    
+
     EXPECT_EQ(info.aicpuInfoPtr, 1);
     EXPECT_EQ(info.length, 1);
     EXPECT_EQ(info.stream_id, 8);
@@ -194,11 +185,11 @@ TEST_F(TsAicpuSqeAdapterTEST, GetAicpuMsgVersionInfo)
     sqe.cmd_type = AICPU_MSG_VERSION;
     sqe.u.aicpu_msg_version.magic_num = 0x5A5A;
     sqe.u.aicpu_msg_version.version = 1;
-    
+
     TsAicpuSqeAdapter adapter(sqe);
     AicpuMsgVersionInfo info = {};
     adapter.GetAicpuMsgVersionInfo(info);
-    
+
     EXPECT_EQ(info.magic_num, 0x5A5A);
     EXPECT_EQ(info.version, 1);
 }
@@ -297,7 +288,7 @@ TEST_F(TsAicpuSqeAdapterTEST, ErrorMsgResponseToTs)
 {
     TsAicpuSqe sqe = {};
     TsAicpuSqeAdapter adapter(sqe);
-    
+
     ErrMsgRspInfo rspInfo = {};
     rspInfo.ts_id = 3;
     rspInfo.err_code = 1;
@@ -342,7 +333,7 @@ TEST_F(TsAicpuSqeAdapterTEST, AicpuRecordResponseToTsWithError)
 {
     TsAicpuSqe sqe = {};
     TsAicpuSqeAdapter adapter(sqe);
-    
+
     AicpuRecordInfo info = {};
     info.ts_id = 3;
     info.record_type = 1;
@@ -360,7 +351,7 @@ TEST_F(TsAicpuSqeAdapterTEST, AicpuRecordResponseToTsSuccess)
 {
     TsAicpuSqe sqe = {};
     TsAicpuSqeAdapter adapter(sqe);
-    
+
     AicpuRecordInfo info = {};
     info.ts_id = 3;
     info.record_type = 1;

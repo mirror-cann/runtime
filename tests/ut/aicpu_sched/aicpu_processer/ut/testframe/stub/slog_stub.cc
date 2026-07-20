@@ -11,37 +11,16 @@
 #include "toolchain/slog.h"
 #include "aicpu_context.h"
 
-void DlogErrorInner(int module_id, const char *fmt, ...)
-{
-    return;
-}
+void DlogErrorInner(int module_id, const char* fmt, ...) { return; }
 
-void DlogWarnInner(int module_id, const char *fmt, ...)
-{
-    return;
-}
+void DlogWarnInner(int module_id, const char* fmt, ...) { return; }
 
-void DlogInfoInner(int module_id, const char *fmt, ...)
-{
-    return;
-}
+void DlogInfoInner(int module_id, const char* fmt, ...) { return; }
 
-void DlogWrite(int module_id, int level, const char *fmt, ...)
-{
-    return;
-}
+void DlogWrite(int module_id, int level, const char* fmt, ...) { return; }
 
-void DlogRecord(int module_id, int level, const char *fmt, ...)
-{
-    return;
-}
+void DlogRecord(int module_id, int level, const char* fmt, ...) { return; }
 
-void DlogDebugInner(int module_id, const char *fmt, ...)
-{
-    return;
-}
+void DlogDebugInner(int module_id, const char* fmt, ...) { return; }
 
-void DlogInner(int module_id, int level, const char *fmt, ...)
-{
-    return;
-}
+void DlogInner(int module_id, int level, const char* fmt, ...) { return; }

@@ -27,49 +27,38 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class NpuDriverTest : public testing::Test
-{
+class NpuDriverTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetDevice(0);
-        std::cout<<"Driver test start -- david"<<std::endl;
+        std::cout << "Driver test start -- david" << std::endl;
     }
 
     static void TearDownTestCase()
     {
         GlobalMockObject::verify();
         rtDeviceReset(0);
-        std::cout<<"Driver test end -- david"<<std::endl;
+        std::cout << "Driver test end -- david" << std::endl;
     }
 
-    virtual void SetUp()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void SetUp() { GlobalMockObject::verify(); }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(NpuDriverTest, host_register)
 {
     rtError_t error;
     int ptr = 10;
-    void **devPtr;
-    NpuDriver *rawDrv = new NpuDriver();
+    void** devPtr;
+    NpuDriver* rawDrv = new NpuDriver();
 
-    MOCKER(halHostRegister)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halHostRegister).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    MOCKER(halHostUnregisterEx)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halHostUnregisterEx).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    error = rawDrv->HostRegister(&ptr, 100 ,RT_HOST_REGISTER_MAPPED, devPtr, 0);
+    error = rawDrv->HostRegister(&ptr, 100, RT_HOST_REGISTER_MAPPED, devPtr, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rawDrv->HostUnregister(&ptr, 0);

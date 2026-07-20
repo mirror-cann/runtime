@@ -47,52 +47,49 @@ typedef FILE mmFileHandle;
 #define MM_SEEK_FILE_END SEEK_END
 #define MM_TASK_ID_INVALID 0
 
-typedef enum {
-  FILE_READ = 0,
-  FILE_READ_BIN,
-  FILE_MODE_BUTT
-} MM_FILE_MODE;
+typedef enum { FILE_READ = 0, FILE_READ_BIN, FILE_MODE_BUTT } MM_FILE_MODE;
 
 typedef pthread_mutex_t mmMutex_t;
 typedef uint32_t mmAtomicType;
 typedef uint64_t mmAtomicType64;
 
-uint32_t mmSetData(mmAtomicType *ptr, uint32_t value);
-uint64_t mmSetData64(mmAtomicType64 *ptr, uint64_t value);
-uint32_t mmValueInc(mmAtomicType *ptr, uint32_t value);
-bool mmCompareAndSwap(mmAtomicType *ptr, uint32_t oldval, uint32_t newval);
-bool mmCompareAndSwap64(mmAtomicType64 *ptr, uint32_t oldval, uint32_t newval);
-void mmValueStore(mmAtomicType *ptr, uint32_t value);
-int32_t mmMutexInit(mmMutex_t *mutex);
-int32_t mmMutexLock(mmMutex_t *mutex);
-int32_t mmMutexUnLock(mmMutex_t *mutex);
-int32_t mmMutexDestroy(mmMutex_t *mutex);
+uint32_t mmSetData(mmAtomicType* ptr, uint32_t value);
+uint64_t mmSetData64(mmAtomicType64* ptr, uint64_t value);
+uint32_t mmValueInc(mmAtomicType* ptr, uint32_t value);
+bool mmCompareAndSwap(mmAtomicType* ptr, uint32_t oldval, uint32_t newval);
+bool mmCompareAndSwap64(mmAtomicType64* ptr, uint32_t oldval, uint32_t newval);
+void mmValueStore(mmAtomicType* ptr, uint32_t value);
+int32_t mmMutexInit(mmMutex_t* mutex);
+int32_t mmMutexLock(mmMutex_t* mutex);
+int32_t mmMutexUnLock(mmMutex_t* mutex);
+int32_t mmMutexDestroy(mmMutex_t* mutex);
 void mmSchedYield(void);
 uint64_t mmGetTaskId(void);
-size_t mmReadFile(void *ptr, int32_t size, int32_t nitems, mmFileHandle *fd);
-mmFileHandle *mmOpenFile(const char *fileName, int32_t mode);
-int32_t mmCloseFile(mmFileHandle *fd);
-int32_t mmRealPath(const char *path, char *realPath, int32_t realPathLen);
-int32_t mmAccess(const char *pathName, int32_t mode);
-int32_t mmSeekFile(mmFileHandle *fd, int64_t offset, int32_t seekFlag);
-long mmTellFile(mmFileHandle *fd);
-void *mmMalloc(unsigned long long size);
-void mmFree(void *ptr);
+size_t mmReadFile(void* ptr, int32_t size, int32_t nitems, mmFileHandle* fd);
+mmFileHandle* mmOpenFile(const char* fileName, int32_t mode);
+int32_t mmCloseFile(mmFileHandle* fd);
+int32_t mmRealPath(const char* path, char* realPath, int32_t realPathLen);
+int32_t mmAccess(const char* pathName, int32_t mode);
+int32_t mmSeekFile(mmFileHandle* fd, int64_t offset, int32_t seekFlag);
+long mmTellFile(mmFileHandle* fd);
+void* mmMalloc(unsigned long long size);
+void mmFree(void* ptr);
 #ifdef __cplusplus
 #if __cplusplus
 }
 
 class MmpaStubMock {
 public:
-  static MmpaStubMock& GetInstance() {
-    static MmpaStubMock mock;
-    return mock;
-  }
-  MOCK_METHOD1(mmMalloc, void*(unsigned long long size));
+    static MmpaStubMock& GetInstance()
+    {
+        static MmpaStubMock mock;
+        return mock;
+    }
+    MOCK_METHOD1(mmMalloc, void*(unsigned long long size));
 };
 
-void *mmMalloc_Normal_Invoke(unsigned long long size);
-void *mmMalloc_Abnormal_Invoke(unsigned long long size);
+void* mmMalloc_Normal_Invoke(unsigned long long size);
+void* mmMalloc_Abnormal_Invoke(unsigned long long size);
 #endif /* __cplusplus */
 #endif // __cplusplus
 

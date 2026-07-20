@@ -50,9 +50,7 @@ protected:
     virtual void SetUp()
     {
         backUpVariable();
-        MOCKER(bqs::GetRunContext)
-            .stubs()
-            .will(invoke(GetRunContextFake));
+        MOCKER(bqs::GetRunContext).stubs().will(invoke(GetRunContextFake));
     }
 
     virtual void TearDown()
@@ -60,26 +58,14 @@ protected:
         recoverVariable();
         GlobalMockObject::verify();
     }
-    static void SetUpTestCase()
-    {
-        std::cout << "QsInterfaceUtest SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "QsInterfaceUtest SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "QsInterfaceUtest TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "QsInterfaceUtest TearDownTestCase" << std::endl; }
 
 public:
-    void backUpVariable()
-    {
-        is_product_device_ = g_product_device_side;
-    }
+    void backUpVariable() { is_product_device_ = g_product_device_side; }
 
-    void recoverVariable()
-    {
-        g_product_device_side = is_product_device_;
-    }
+    void recoverVariable() { g_product_device_side = is_product_device_; }
 
 private:
     bool is_product_device_;
@@ -89,12 +75,8 @@ extern int32_t QueueScheduleMain(int32_t argc, char* argv[]);
 
 TEST_F(QsInterfaceUtest, InitSucc)
 {
-    MOCKER_CPP(&QueueSchedule::WaitForStop)
-    .stubs()
-    .will(ignoreReturnValue());
-    MOCKER_CPP(&QueueSchedule::StartQueueSchedule)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER_CPP(&QueueSchedule::WaitForStop).stubs().will(ignoreReturnValue());
+    MOCKER_CPP(&QueueSchedule::StartQueueSchedule).stubs().will(returnValue(0));
 
     InitQsParams initQsParams = {};
     initQsParams.reschedInterval = 100U;
@@ -108,15 +90,9 @@ TEST_F(QsInterfaceUtest, InitSucc)
 
 TEST_F(QsInterfaceUtest, InitSuccWithProf)
 {
-    MOCKER_CPP(&QueueSchedule::WaitForStop)
-    .stubs()
-    .will(ignoreReturnValue());
-    MOCKER_CPP(&QueueSchedule::StartQueueSchedule)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&BqsMsprofManager::InitBqsMsprofManager)
-    .stubs()
-    .will(ignoreReturnValue());
+    MOCKER_CPP(&QueueSchedule::WaitForStop).stubs().will(ignoreReturnValue());
+    MOCKER_CPP(&QueueSchedule::StartQueueSchedule).stubs().will(returnValue(0));
+    MOCKER_CPP(&BqsMsprofManager::InitBqsMsprofManager).stubs().will(ignoreReturnValue());
 
     InitQsParams initQsParams = {};
     initQsParams.reschedInterval = 100U;
@@ -130,14 +106,14 @@ TEST_F(QsInterfaceUtest, InitSuccWithProf)
     QueueScheduleInterface::GetInstance().WaitForStop();
 }
 
-TEST_F(QsInterfaceUtest, ThreadModeQsInterfaceSucc) {
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(QsInterfaceUtest, ThreadModeQsInterfaceSucc)
+{
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     EXPECT_EQ(InitQueueScheduler(0, 100), 0);
 }
 
-TEST_F(QsInterfaceUtest, MainTestSucc) {
+TEST_F(QsInterfaceUtest, MainTestSucc)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -151,23 +127,19 @@ TEST_F(QsInterfaceUtest, MainTestSucc) {
     char paramAbnormalInterval[] = "--abnormalInterval=20";
     char paramResIdOk[] = "--resIds=1,2";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk, paramLogLevelOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk, paramStarter, paramAbnormalInterval,
-                    paramResIdOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,    paramPidSignOk, paramLogLevelOk,       paramReschedOk,
+                    paramModeOk, paraVfIdOk,      paraGrpNameOk, paramStarter,   paramAbnormalInterval, paramResIdOk};
     int32_t argc = 12;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, MainTestSuccess02) {
+TEST_F(QsInterfaceUtest, MainTestSuccess02)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -180,18 +152,13 @@ TEST_F(QsInterfaceUtest, MainTestSuccess02) {
     char paramAbnormalInterval[] = "--abnormalInterval=20";
     char paramResIdOk[] = "--resIds=1,2";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk, paramStarter, paramAbnormalInterval,
-                    paramResIdOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,   paramPidSignOk,        paramReschedOk, paramModeOk,
+                    paraVfIdOk,  paraGrpNameOk,   paramStarter, paramAbnormalInterval, paramResIdOk};
     int32_t argc = 11;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 
@@ -200,7 +167,8 @@ TEST_F(QsInterfaceUtest, MainTestSuccess02) {
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_starter) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_starter)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -211,13 +179,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_starter) {
     char paraGrpNameOk[] = "";
     char paramStarter[] = "--starter=a";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk, paramStarter};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,    paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraVfIdOk,      paraGrpNameOk, paramStarter};
     int32_t argc = 9;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=a";
     char paramPidErr[] = "--pid=b";
@@ -227,13 +196,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidErr, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidErr, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk,  paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_pid) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_pid)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=-10";
@@ -243,13 +213,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_pid) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedErr, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedErr, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_reschedInterval) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_reschedInterval)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=10";
@@ -259,13 +230,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_reschedInterval) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedErr, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedErr, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_deployMode) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_deployMode)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=10";
@@ -275,13 +247,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_deployMode) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeErr, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeErr,    paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_vfId) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_vfId)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=10";
@@ -291,17 +264,16 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_vfId) {
     char paraVfIdErr[] = "--vfId=e";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdErr, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk,  paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdErr, paraGrpNameOk};
     int32_t argc = 8;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_negative) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_negative)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdErr[] = "--deviceId=-1";
     char paramPidOk[] = "--pid=10";
@@ -311,13 +283,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_negative) {
     char paraVfIdOk[] = "--vfId=e";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdErr, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdErr, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,      paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_vfId_negative) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_vfId_negative)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=10";
@@ -327,13 +300,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_vfId_negative) {
     char paraVfIdErr[] = "--vfId=-10";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdErr, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk,  paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdErr, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_undigital) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_undigital)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=mm";
@@ -343,13 +317,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_undigital) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedErr, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,     paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedErr, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_deployMode_negative) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_deployMode_negative)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=0";
     char paramPidOk[] = "--pid=10000";
@@ -359,13 +334,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_deployMode_negative) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeErr, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeErr,    paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_missing) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_missing)
+{
     char processName[] = "queue_schedule";
     char paramPidOk[] = "--pid=2";
     char paramPidSignOk[] = "--pidSign=12345A";
@@ -374,13 +350,13 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_deviceId_missing) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
 
-    char* argv[] = {processName, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName, paramPidOk, paramPidSignOk, paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
     int32_t argc = 7;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgsFail_pid_missing) {
+TEST_F(QsInterfaceUtest, ParseArgsFail_pid_missing)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidSignOk[] = "--pidSign=12345A";
@@ -389,13 +365,14 @@ TEST_F(QsInterfaceUtest, ParseArgsFail_pid_missing) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraVfIdOk,      paraGrpNameOk};
     int32_t argc = 7;
     EXPECT_EQ(QueueScheduleMain(argc, argv), -1);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgs_resIds_succ) {
+TEST_F(QsInterfaceUtest, ParseArgs_resIds_succ)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -406,23 +383,20 @@ TEST_F(QsInterfaceUtest, ParseArgs_resIds_succ) {
     char paraResIdsOk[] = "--resIds=0";
     char paraDevIdsOk[] = "--devIds=0,1";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
     g_product_device_side = true;
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraGrpNameOk, paraResIdsOk, paraDevIdsOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,   paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraGrpNameOk,   paraResIdsOk, paraDevIdsOk};
     int32_t argc = 9;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgs_resIds_fail) {
+TEST_F(QsInterfaceUtest, ParseArgs_resIds_fail)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -433,23 +407,20 @@ TEST_F(QsInterfaceUtest, ParseArgs_resIds_fail) {
     char paraResIdsOk[] = "--resIds=0,1";
     char paraDevIdsOk[] = "--devIds=0,11111111111111111111111111111111";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
     g_product_device_side = true;
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraGrpNameOk, paraResIdsOk, paraDevIdsOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,   paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraGrpNameOk,   paraResIdsOk, paraDevIdsOk};
     int32_t argc = 9;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, ParseArgs_resIds_deviceIds_succ) {
+TEST_F(QsInterfaceUtest, ParseArgs_resIds_deviceIds_succ)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -460,23 +431,20 @@ TEST_F(QsInterfaceUtest, ParseArgs_resIds_deviceIds_succ) {
     char paraResIdsOk[] = "--resIds=0,1";
     char paraDevIdsOk[] = "--devIds=0,2,3";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
     g_product_device_side = true;
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraGrpNameOk, paraResIdsOk, paraDevIdsOk};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,   paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraGrpNameOk,   paraResIdsOk, paraDevIdsOk};
     int32_t argc = 9;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, MainTestSuccess01) {
+TEST_F(QsInterfaceUtest, MainTestSuccess01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -485,23 +453,20 @@ TEST_F(QsInterfaceUtest, MainTestSuccess01) {
     char paramModeOk[] = "--deployMode=2";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
     g_product_device_side = true;
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk,   paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraGrpNameOk};
     int32_t argc = 7;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, MainTestSuccessWithProf01) {
+TEST_F(QsInterfaceUtest, MainTestSuccessWithProf01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -512,27 +477,21 @@ TEST_F(QsInterfaceUtest, MainTestSuccessWithProf01) {
     char paraProfFlagOk[] = "--profFlag=1";
     char paraProfCfgDataOk[] = "--profCfgData={}";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
     g_product_device_side = true;
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraGrpNameOk, paraProfCfgDataOk, paraProfFlagOk
-                    };
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,        paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraGrpNameOk,   paraProfCfgDataOk, paraProfFlagOk};
     int32_t argc = 9;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&BqsMsprofManager::InitBqsMsprofManager)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
+    MOCKER_CPP(&BqsMsprofManager::InitBqsMsprofManager).stubs().will(ignoreReturnValue());
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, MainAttachGroupFail) {
+TEST_F(QsInterfaceUtest, MainAttachGroupFail)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -543,22 +502,19 @@ TEST_F(QsInterfaceUtest, MainAttachGroupFail) {
     char paraGrpNameOk[] = "--qsInitGroupName=";
     char schedPolicy[] = "--schedPolicy=18446744073709551615";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk, schedPolicy};
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,    paramPidSignOk, paramReschedOk,
+                    paramModeOk, paraVfIdOk,      paraGrpNameOk, schedPolicy};
     int32_t argc = 9;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, error_report_00) {
+TEST_F(QsInterfaceUtest, error_report_00)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -567,21 +523,18 @@ TEST_F(QsInterfaceUtest, error_report_00) {
     char paramModeOk[] = "--deployMode=2";
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(nullptr)));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(nullptr)));
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, error_report_01) {
+TEST_F(QsInterfaceUtest, error_report_01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -590,21 +543,17 @@ TEST_F(QsInterfaceUtest, error_report_01) {
     char paramModeOk[] = "--deployMode=2";
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    MOCKER(system).stubs().will(returnValue(0));
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(3));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(3));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-
-TEST_F(QsInterfaceUtest, error_report_02) {
+TEST_F(QsInterfaceUtest, error_report_02)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -614,46 +563,45 @@ TEST_F(QsInterfaceUtest, error_report_02) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
 
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
 
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-int32_t QsSubModuleProcessFake(const struct TsdSubEventInfo * const eventInfo)
+int32_t QsSubModuleProcessFake(const struct TsdSubEventInfo* const eventInfo)
 {
     std::cout << "enter AicpuSchedulerSubModuleProcessFake" << std::endl;
     return 0;
 }
 
-void *dlsymStubQsMain(void *const soHandle, const char_t * const funcName)
+void* dlsymStubQsMain(void* const soHandle, const char_t* const funcName)
 {
     std::cout << "enter dlsymStub" << std::endl;
-    return (reinterpret_cast<void *>(QsSubModuleProcessFake));
+    return (reinterpret_cast<void*>(QsSubModuleProcessFake));
 }
- 
-void *dlsymStubQsMainNull(void *const soHandle, const char_t * const funcName)
+
+void* dlsymStubQsMainNull(void* const soHandle, const char_t* const funcName)
 {
     std::cout << "enter dlsymStub null" << std::endl;
     return nullptr;
 }
 
-void *dlsymStubQsMain2(void *const soHandle, const char_t * const funcName)
+void* dlsymStubQsMain2(void* const soHandle, const char_t* const funcName)
 {
     if (strncmp(funcName, "StartAicpuSchedulerModule", strlen("StartAicpuSchedulerModule")) == 0) {
-        return (reinterpret_cast<void *>(QsSubModuleProcessFake));
+        return (reinterpret_cast<void*>(QsSubModuleProcessFake));
     } else {
         return nullptr;
     }
 }
 
-TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_01) {
+TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -665,20 +613,21 @@ TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_01) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(0));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubQsMain));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_02) {
+TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_02)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -690,20 +639,21 @@ TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_02) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(0)).then(returnValue(-1));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubQsMain));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_03) {
+TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_03)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -715,20 +665,21 @@ TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_03) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(0));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubQsMain2));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_04) {
+TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_04)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -740,20 +691,21 @@ TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_04) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(-1));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubQsMain));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_05) {
+TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_05)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -765,20 +717,21 @@ TEST_F(QsInterfaceUtest, RegAicpuSchedulerModuleCallBack_05) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(-1));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubQsMainNull));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, StopAiCpuSubModuleInQs_01) {
+TEST_F(QsInterfaceUtest, StopAiCpuSubModuleInQs_01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -790,13 +743,13 @@ TEST_F(QsInterfaceUtest, StopAiCpuSubModuleInQs_01) {
     uint64_t rest = 0;
     MOCKER(system).stubs().will(returnValue(0));
     MOCKER(halGrpAttach).stubs().will(returnValue(1));
-    MOCKER(dlopen).stubs().will(returnValue((void *)(&rest)));
+    MOCKER(dlopen).stubs().will(returnValue((void*)(&rest)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER(RegEventMsgCallBackFunc).stubs().will(returnValue(0));
     MOCKER(dlsym).stubs().will(invoke(dlsymStubQsMain));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk, paramPidSignOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk};
+    char* argv[] = {processName,    paramDeviceIdOk, paramPidOk, paramPidSignOk,
+                    paramReschedOk, paramModeOk,     paraVfIdOk, paraGrpNameOk};
     int32_t argc = 8;
     MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
 
@@ -804,7 +757,8 @@ TEST_F(QsInterfaceUtest, StopAiCpuSubModuleInQs_01) {
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, MainParseArgsFail01) {
+TEST_F(QsInterfaceUtest, MainParseArgsFail01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -813,20 +767,17 @@ TEST_F(QsInterfaceUtest, MainParseArgsFail01) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
     char paraProfFlagOk[] = "--profFlag=1";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk, paraProfFlagOk};
+    MOCKER(system).stubs().will(returnValue(0));
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,    paramReschedOk,
+                    paramModeOk, paraVfIdOk,      paraGrpNameOk, paraProfFlagOk};
     int32_t argc = 8;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(3));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(3));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, MainTsdWaitForShutdownFail01) {
+TEST_F(QsInterfaceUtest, MainTsdWaitForShutdownFail01)
+{
     char processName[] = "queue_schedule";
     char paramDeviceIdOk[] = "--deviceId=1";
     char paramPidOk[] = "--pid=2";
@@ -835,24 +786,19 @@ TEST_F(QsInterfaceUtest, MainTsdWaitForShutdownFail01) {
     char paraVfIdOk[] = "--vfId=0";
     char paraGrpNameOk[] = "--qsInitGroupName=DEAFAULT";
     char paramStarter[] = "--starter=0";
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,
-                    paramReschedOk, paramModeOk, paraVfIdOk, paraGrpNameOk, paramStarter};
+    MOCKER(system).stubs().will(returnValue(0));
+    char* argv[] = {processName, paramDeviceIdOk, paramPidOk,    paramReschedOk,
+                    paramModeOk, paraVfIdOk,      paraGrpNameOk, paramStarter};
     int32_t argc = 8;
     g_product_device_side = true;
-    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(TsdWaitForShutdown)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&QueueScheduleInterface::InitQueueScheduler).stubs().will(returnValue(0));
+    MOCKER_CPP(TsdWaitForShutdown).stubs().will(returnValue(-1));
     int32_t ret = QueueScheduleMain(argc, argv);
     EXPECT_EQ(ret, -1);
 }
 
-TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithStartQueueScheduleFail) {
+TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithStartQueueScheduleFail)
+{
     MOCKER_CPP(&QueueSchedule::StartQueueSchedule).stubs().will(returnValue(1));
     InitQsParams initQsParams = {};
     initQsParams.reschedInterval = 100U;
@@ -863,54 +809,52 @@ TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithStartQueueScheduleFail) {
     EXPECT_NE(ret, 0);
 }
 
-drvError_t drvQueryProcessHostPidFake1(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                       unsigned int *host_pid, unsigned int *cp_type)
+drvError_t drvQueryProcessHostPidFake1(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
 {
     *host_pid = 1;
     *cp_type = DEVDRV_PROCESS_QS;
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvQueryProcessHostPidFake2(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                       unsigned int *host_pid, unsigned int *cp_type)
+drvError_t drvQueryProcessHostPidFake2(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
 {
     return DRV_ERROR_NO_PROCESS;
 }
 
-drvError_t drvQueryProcessHostPidFake3(int pid, unsigned int *chip_id, unsigned int *vfid,
-                                       unsigned int *host_pid, unsigned int *cp_type)
+drvError_t drvQueryProcessHostPidFake3(
+    int pid, unsigned int* chip_id, unsigned int* vfid, unsigned int* host_pid, unsigned int* cp_type)
 {
     return DRV_ERROR_INNER_ERR;
 }
 
-TEST_F(QsInterfaceUtest, CheckBindHostPid001) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake1));
+TEST_F(QsInterfaceUtest, CheckBindHostPid001)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake1));
     int32_t bindPidRet = qsInterface.CheckBindHostPid(1);
     EXPECT_EQ(bindPidRet, bqs::BQS_STATUS_OK);
 }
 
-TEST_F(QsInterfaceUtest, CheckBindHostPid002) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake2));
+TEST_F(QsInterfaceUtest, CheckBindHostPid002)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake2));
     int32_t bindPidRet = qsInterface.CheckBindHostPid(1);
     EXPECT_EQ(bindPidRet, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
-TEST_F(QsInterfaceUtest, CheckBindHostPid003) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
-    MOCKER(drvQueryProcessHostPid)
-        .stubs()
-        .will(invoke(drvQueryProcessHostPidFake3));
+TEST_F(QsInterfaceUtest, CheckBindHostPid003)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
+    MOCKER(drvQueryProcessHostPid).stubs().will(invoke(drvQueryProcessHostPidFake3));
     int32_t bindPidRet = qsInterface.CheckBindHostPid(1);
     EXPECT_EQ(bindPidRet, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
-TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithBindHostPidFail) {
+TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithBindHostPidFail)
+{
     g_product_device_side = true;
     InitQsParams initQsParams = {};
     initQsParams.reschedInterval = 100U;
@@ -921,7 +865,8 @@ TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithBindHostPidFail) {
     EXPECT_NE(ret, 0);
 }
 
-TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithGetDevCpuInfoFail) {
+TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithGetDevCpuInfoFail)
+{
     g_product_device_side = true;
     InitQsParams initQsParams = {};
     initQsParams.reschedInterval = 100U;
@@ -929,9 +874,7 @@ TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithGetDevCpuInfoFail) {
     initQsParams.pid = 1000;
     initQsParams.starter = bqs::QsStartType::START_BY_TSD;
     initQsParams.numaFlag = true;
-    MOCKER_CPP(&BindCpuUtils::GetDevCpuInfo)
-    .stubs()
-    .will(returnValue(bqs::BQS_STATUS_PARAM_INVALID));
+    MOCKER_CPP(&BindCpuUtils::GetDevCpuInfo).stubs().will(returnValue(bqs::BQS_STATUS_PARAM_INVALID));
     int32_t ret = QueueScheduleInterface::GetInstance().InitQueueScheduler(initQsParams);
     EXPECT_EQ(ret, 1);
     g_product_device_side = false;
@@ -939,8 +882,9 @@ TEST_F(QsInterfaceUtest, InitQueueSchedulerFailWithGetDevCpuInfoFail) {
     EXPECT_EQ(ret, 1);
 }
 
-TEST_F(QsInterfaceUtest, GetAicpuPhysIndex001) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
+TEST_F(QsInterfaceUtest, GetAicpuPhysIndex001)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
     qsInterface.aiCpuIds_ = {12, 34};
     uint32_t getResult = qsInterface.GetAicpuPhysIndexInVfMode(3, 0);
     EXPECT_EQ(getResult, 0);
@@ -948,8 +892,9 @@ TEST_F(QsInterfaceUtest, GetAicpuPhysIndex001) {
     EXPECT_EQ(getResult, 34);
 }
 
-TEST_F(QsInterfaceUtest, GetAicpuPhysIndex002) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
+TEST_F(QsInterfaceUtest, GetAicpuPhysIndex002)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
     qsInterface.aiCpuIdsExtra_ = {56, 78};
     uint32_t getResult = qsInterface.GetExtraAicpuPhysIndexInVfMode(4, 0);
     EXPECT_EQ(getResult, 0);
@@ -960,8 +905,9 @@ TEST_F(QsInterfaceUtest, GetAicpuPhysIndex002) {
     EXPECT_EQ(getResult, 99);
 }
 
-TEST_F(QsInterfaceUtest, GetAicpuPhysIndex003) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
+TEST_F(QsInterfaceUtest, GetAicpuPhysIndex003)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
     qsInterface.aiCpuIdsExtra_ = {89, 91};
     uint32_t getResult = qsInterface.GetExtraAicpuPhysIndex(0, 4);
     EXPECT_EQ(getResult, 0);
@@ -969,25 +915,26 @@ TEST_F(QsInterfaceUtest, GetAicpuPhysIndex003) {
     EXPECT_EQ(getResult, 91);
 }
 
-TEST_F(QsInterfaceUtest, ReportAbnormal001) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
-    MOCKER_CPP(&QueueSchedule::ReportAbnormal)
-    .stubs()
-    .will(returnValue(1));
+TEST_F(QsInterfaceUtest, ReportAbnormal001)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
+    MOCKER_CPP(&QueueSchedule::ReportAbnormal).stubs().will(returnValue(1));
     qsInterface.ReportAbnormal();
     EXPECT_NE(qsInterface.queueSchedule_, nullptr);
 }
 
-TEST_F(QsInterfaceUtest, GetAicpuPhysIndex_001) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
+TEST_F(QsInterfaceUtest, GetAicpuPhysIndex_001)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
     uint32_t ret = qsInterface.GetAicpuPhysIndex(0, 1);
-    EXPECT_EQ(ret, 1); 
+    EXPECT_EQ(ret, 1);
 }
 
-TEST_F(QsInterfaceUtest, GetAicpuPhysIndex_002) {
-    QueueScheduleInterface &qsInterface = QueueScheduleInterface::GetInstance();
+TEST_F(QsInterfaceUtest, GetAicpuPhysIndex_002)
+{
+    QueueScheduleInterface& qsInterface = QueueScheduleInterface::GetInstance();
     MOCKER_CPP(&FeatureCtrl::BindCpuOnlyOneDevice).stubs().will(returnValue(true));
     uint32_t ret = qsInterface.GetAicpuPhysIndex(0, 1);
-    EXPECT_EQ(ret, 34); 
+    EXPECT_EQ(ret, 34);
 }

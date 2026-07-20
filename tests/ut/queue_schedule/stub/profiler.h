@@ -12,17 +12,17 @@
 #include <vector>
 #include <sys/types.h>
 
-int shm_open(const char *name, int oflag, mode_t mode);
+int shm_open(const char* name, int oflag, mode_t mode);
 namespace Hiva {
 class ProfilerAgent {
-  public:
+public:
     ProfilerAgent();
     ~ProfilerAgent();
 };
 namespace Utility {
-static int CreateSharedRegion(const std::string& name, const std::size_t size,
-    uint32_t op, uint32_t mode, void *&start, int &handle);
+static int CreateSharedRegion(
+    const std::string& name, const std::size_t size, uint32_t op, uint32_t mode, void*& start, int& handle);
 }
-}
+} // namespace Hiva
 
 uint64_t GetCntVct();

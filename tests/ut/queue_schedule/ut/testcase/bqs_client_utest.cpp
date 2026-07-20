@@ -24,104 +24,99 @@
 
 using namespace std;
 
-
 namespace {
-    /**
-    * Exception function when pipe is broken.
-    * @return NA
-    */
-    void PipBrokenException(int fd, void* data)
-    {
-        if (data == nullptr) {
-            BQS_LOG_ERROR("Pip of client and server has been closed. fd:%d\n", fd);
-        }
+/**
+ * Exception function when pipe is broken.
+ * @return NA
+ */
+void PipBrokenException(int fd, void* data)
+{
+    if (data == nullptr) {
+        BQS_LOG_ERROR("Pip of client and server has been closed. fd:%d\n", fd);
     }
 }
+} // namespace
 
 namespace {
-    void GetOneRelation(struct EzcomResponse *resp)
-    {
-        bqs::BQSMsg bqsResp;
-        auto bqsBindQueueInfo = bqsResp.mutable_bind_queue_msgs()->add_bind_queue_vec();
-        bqsBindQueueInfo->set_src_queue_id(0U);
-        bqsBindQueueInfo->set_dst_queue_id(1U);
-        bqsResp.mutable_paged_msg()->set_total(1u);
+void GetOneRelation(struct EzcomResponse* resp)
+{
+    bqs::BQSMsg bqsResp;
+    auto bqsBindQueueInfo = bqsResp.mutable_bind_queue_msgs()->add_bind_queue_vec();
+    bqsBindQueueInfo->set_src_queue_id(0U);
+    bqsBindQueueInfo->set_dst_queue_id(1U);
+    bqsResp.mutable_paged_msg()->set_total(1u);
 
-        const uint32_t msgLen = static_cast<uint32_t>(bqsResp.ByteSizeLong());
-        const uint32_t respLength = msgLen + bqs::BQS_MSG_HEAD_SIZE;
-        char *respData = new (std::nothrow) char[respLength];
-        *(reinterpret_cast<uint32_t *>(respData)) = respLength;
-        (void)bqsResp.SerializePartialToArray(respData + bqs::BQS_MSG_HEAD_SIZE, static_cast<int>(msgLen));
+    const uint32_t msgLen = static_cast<uint32_t>(bqsResp.ByteSizeLong());
+    const uint32_t respLength = msgLen + bqs::BQS_MSG_HEAD_SIZE;
+    char* respData = new (std::nothrow) char[respLength];
+    *(reinterpret_cast<uint32_t*>(respData)) = respLength;
+    (void)bqsResp.SerializePartialToArray(respData + bqs::BQS_MSG_HEAD_SIZE, static_cast<int>(msgLen));
 
-        resp->size = respLength;
-        resp->data = reinterpret_cast<uint8_t *>(respData);
+    resp->size = respLength;
+    resp->data = reinterpret_cast<uint8_t*>(respData);
+}
+
+void GenerateBindResult(struct EzcomResponse* resp, int32_t size)
+{
+    bqs::BQSMsg bqsResp;
+    for (int32_t i = 0; i < size; ++i) {
+        auto bqsBindRes = bqsResp.mutable_resp_msgs()->add_bind_result_vec();
+        bqsBindRes->set_bind_result(0);
     }
 
+    const uint32_t msgLen = static_cast<uint32_t>(bqsResp.ByteSizeLong());
+    const uint32_t respLength = msgLen + bqs::BQS_MSG_HEAD_SIZE;
+    char* respData = new (std::nothrow) char[respLength];
+    *(reinterpret_cast<uint32_t*>(respData)) = respLength;
+    (void)bqsResp.SerializePartialToArray(respData + bqs::BQS_MSG_HEAD_SIZE, static_cast<int>(msgLen));
 
-    void GenerateBindResult(struct EzcomResponse *resp, int32_t size)
-    {
-        bqs::BQSMsg bqsResp;
-        for (int32_t i = 0; i < size; ++i) {
-            auto bqsBindRes = bqsResp.mutable_resp_msgs()->add_bind_result_vec();
-            bqsBindRes->set_bind_result(0);
-        }
+    resp->size = respLength;
+    resp->data = reinterpret_cast<uint8_t*>(respData);
+}
+int EzcomRPCSyncFake(int fd, struct EzcomRequest* req, struct EzcomResponse* resp)
+{
+    std::cout << "EzcomRPCSync stub begin" << std::endl;
+    const uint32_t currMsgSize = *(reinterpret_cast<uint32_t*>(req->data));
+    char_t* const reqData = reinterpret_cast<char_t*>(req->data);
+    const uint32_t parseLength = currMsgSize - bqs::BQS_MSG_HEAD_SIZE;
+    bqs::BQSMsg bqsReq;
+    (void)bqsReq.ParseFromArray(
+        reinterpret_cast<char_t*>(reqData) + bqs::BQS_MSG_HEAD_SIZE, static_cast<int32_t>(parseLength));
 
-        const uint32_t msgLen = static_cast<uint32_t>(bqsResp.ByteSizeLong());
-        const uint32_t respLength = msgLen + bqs::BQS_MSG_HEAD_SIZE;
-        char *respData = new (std::nothrow) char[respLength];
-        *(reinterpret_cast<uint32_t *>(respData)) = respLength;
-        (void)bqsResp.SerializePartialToArray(respData + bqs::BQS_MSG_HEAD_SIZE, static_cast<int>(msgLen));
-
-        resp->size = respLength;
-        resp->data = reinterpret_cast<uint8_t *>(respData);
-    }
-    int EzcomRPCSyncFake(int fd, struct EzcomRequest *req, struct EzcomResponse *resp)
-    {
-        std::cout << "EzcomRPCSync stub begin" << std::endl;
-        const uint32_t currMsgSize = *(reinterpret_cast<uint32_t *>(req->data));
-        char_t * const reqData = reinterpret_cast<char_t *>(req->data);
-        const uint32_t parseLength = currMsgSize - bqs::BQS_MSG_HEAD_SIZE;
-        bqs::BQSMsg bqsReq;
-        (void)bqsReq.ParseFromArray(reinterpret_cast<char_t *>(reqData) + bqs::BQS_MSG_HEAD_SIZE,
-            static_cast<int32_t>(parseLength));
-
-        if (bqsReq.msg_type() == bqs::BQSMsg::GET_ALL_BIND) {
-            GetOneRelation(resp);
-        } else if (bqsReq.msg_type() == bqs::BQSMsg::BIND)  {
-            const auto size = bqsReq.bind_queue_msgs().bind_queue_vec_size();
-            GenerateBindResult(resp, size);
-        }  else if (bqsReq.msg_type() == bqs::BQSMsg::UNBIND)  {
-            const auto size = bqsReq.query_msgs().query_msg_vec_size();
-            GenerateBindResult(resp, size);
-        } else {
-            resp->size = req->size;
-            char *respData = new (std::nothrow) char[req->size];
-            memcpy(respData, (char*)req->data, resp->size);
-            resp->data = (uint8_t*)respData;
-        }
-
-        std::cout << "EzcomRPCSync stub end" << std::endl;
-        return 0;
-    }
-
-    int EzcomRPCSyncFailedFake(int fd, struct EzcomRequest *req, struct EzcomResponse *resp)
-    {
-        std::cout << "EzcomRPCSync stub failed begin" << std::endl;
-        resp->size = req->size + 1;
-        char *respData = new (std::nothrow) char[req->size];
-        memcpy(respData, (char*)req->data, req->size);
+    if (bqsReq.msg_type() == bqs::BQSMsg::GET_ALL_BIND) {
+        GetOneRelation(resp);
+    } else if (bqsReq.msg_type() == bqs::BQSMsg::BIND) {
+        const auto size = bqsReq.bind_queue_msgs().bind_queue_vec_size();
+        GenerateBindResult(resp, size);
+    } else if (bqsReq.msg_type() == bqs::BQSMsg::UNBIND) {
+        const auto size = bqsReq.query_msgs().query_msg_vec_size();
+        GenerateBindResult(resp, size);
+    } else {
+        resp->size = req->size;
+        char* respData = new (std::nothrow) char[req->size];
+        memcpy(respData, (char*)req->data, resp->size);
         resp->data = (uint8_t*)respData;
-        std::cout << "EzcomRPCSync stub end" << std::endl;
-        return 0;
     }
+
+    std::cout << "EzcomRPCSync stub end" << std::endl;
+    return 0;
 }
 
-class BQS_CLIENT_UTest :public testing::Test {
+int EzcomRPCSyncFailedFake(int fd, struct EzcomRequest* req, struct EzcomResponse* resp)
+{
+    std::cout << "EzcomRPCSync stub failed begin" << std::endl;
+    resp->size = req->size + 1;
+    char* respData = new (std::nothrow) char[req->size];
+    memcpy(respData, (char*)req->data, req->size);
+    resp->data = (uint8_t*)respData;
+    std::cout << "EzcomRPCSync stub end" << std::endl;
+    return 0;
+}
+} // namespace
+
+class BQS_CLIENT_UTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before bqs_client_utest" << endl;
-    }
+    virtual void SetUp() { cout << "Before bqs_client_utest" << endl; }
 
     virtual void TearDown()
     {
@@ -130,63 +125,57 @@ protected:
     }
 
 public:
-    void AddBindRelation(const std::multimap<uint32_t, uint32_t>& srcDstMap, const int32_t expectRet,
+    void AddBindRelation(
+        const std::multimap<uint32_t, uint32_t>& srcDstMap, const int32_t expectRet,
         std::vector<bqs::BQSBindQueueResult>& bindResultVec)
     {
         std::vector<bqs::BQSBindQueueItem> bindQueueVec;
         for (auto iter = srcDstMap.begin(); iter != srcDstMap.end(); ++iter) {
-            bqs::BQSBindQueueItem tmp = {
-                srcQueueId_: iter->first,
-                dstQueueId_: iter->second
-            };
+            bqs::BQSBindQueueItem tmp = {srcQueueId_ : iter->first, dstQueueId_ : iter->second};
             bindQueueVec.push_back(tmp);
         }
 
-        uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            BindQueue(bindQueueVec, bindResultVec);
+        uint32_t result =
+            bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->BindQueue(bindQueueVec, bindResultVec);
         EXPECT_EQ(result, expectRet);
     }
 
-    void DelBindRelation(const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap, const int32_t expectRet,
+    void DelBindRelation(
+        const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap, const int32_t expectRet,
         std::vector<bqs::BQSBindQueueResult>& bindResultVec)
     {
         std::vector<bqs::BQSQueryPara> bqsQueryParaVec;
         for (auto iter = keySrcDstMap.begin(); iter != keySrcDstMap.end(); ++iter) {
             bqs::BQSBindQueueItem tmpItem = iter->second;
-            bqs::BQSQueryPara tmpPara = {
-                keyType_: iter->first,
-                bqsBindQueueItem_: tmpItem
-            };
+            bqs::BQSQueryPara tmpPara = {keyType_ : iter->first, bqsBindQueueItem_ : tmpItem};
             bqsQueryParaVec.push_back(tmpPara);
         }
-        uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            UnbindQueue(bqsQueryParaVec, bindResultVec);
+        uint32_t result =
+            bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->UnbindQueue(bqsQueryParaVec, bindResultVec);
         EXPECT_EQ(result, expectRet);
     }
 
-    void GetBindRelation(const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap, const int32_t expectRet,
+    void GetBindRelation(
+        const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap, const int32_t expectRet,
         std::vector<bqs::BQSBindQueueItem>& getBindQueueResult)
     {
         std::vector<bqs::BQSQueryPara> bqsQueryParaVec;
         for (auto iter = keySrcDstMap.begin(); iter != keySrcDstMap.end(); ++iter) {
             bqs::BQSBindQueueItem tmpItem = iter->second;
-            bqs::BQSQueryPara tmpPara = {
-                keyType_: iter->first,
-                bqsBindQueueItem_: tmpItem
-            };
+            bqs::BQSQueryPara tmpPara = {keyType_ : iter->first, bqsBindQueueItem_ : tmpItem};
             bqsQueryParaVec.push_back(tmpPara);
         }
 
-        uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            GetBindQueue(bqsQueryParaVec[0], getBindQueueResult);
+        uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)
+                              ->GetBindQueue(bqsQueryParaVec[0], getBindQueueResult);
         EXPECT_EQ(getBindQueueResult.size(), expectRet);
         EXPECT_EQ(result, expectRet);
     }
 
     void GetAllBindRelation(const int32_t expectRet, std::vector<bqs::BQSBindQueueItem>& getBindQueueResult)
     {
-        uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            GetAllBindQueue(getBindQueueResult);
+        uint32_t result =
+            bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->GetAllBindQueue(getBindQueueResult);
         EXPECT_EQ(result, expectRet);
         EXPECT_EQ(getBindQueueResult.size(), expectRet);
     }
@@ -200,18 +189,14 @@ TEST_F(BQS_CLIENT_UTest, GetInstanceCheckFailed)
 
 TEST_F(BQS_CLIENT_UTest, GetInstanceConnectFailed)
 {
-    MOCKER(EzcomCreateClient)
-    .stubs()
-    .will(returnValue(-1));
+    MOCKER(EzcomCreateClient).stubs().will(returnValue(-1));
     bqs::BqsClient* bqsClient = bqs::BqsClient::GetInstance("test", 4, PipBrokenException);
     EXPECT_EQ(bqsClient, nullptr);
 }
 
 TEST_F(BQS_CLIENT_UTest, BindQueueSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::multimap<uint32_t, uint32_t> srcDstMap;
     for (int32_t i = 0; i < 10; ++i) {
@@ -224,9 +209,7 @@ TEST_F(BQS_CLIENT_UTest, BindQueueSuccess1)
 
 TEST_F(BQS_CLIENT_UTest, BindQueuePagedSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::multimap<uint32_t, uint32_t> srcDstMap;
     for (int32_t i = 0; i < 500; ++i) {
@@ -239,9 +222,7 @@ TEST_F(BQS_CLIENT_UTest, BindQueuePagedSuccess1)
 
 TEST_F(BQS_CLIENT_UTest, BindQueuePagedSuccess2)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::multimap<uint32_t, uint32_t> srcDstMap;
 
@@ -266,9 +247,7 @@ TEST_F(BQS_CLIENT_UTest, BindQueueSerializeBindMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, BindQueueSendBqsMsgFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFailedFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFailedFake));
 
     std::multimap<uint32_t, uint32_t> srcDstMap;
     std::vector<bqs::BQSBindQueueResult> bindResultVec;
@@ -277,9 +256,7 @@ TEST_F(BQS_CLIENT_UTest, BindQueueSendBqsMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, UnbindQueueSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem> keySrcDstMap;
     keySrcDstMap.insert(std::make_pair(bqs::BQS_QUERY_TYPE_SRC, bqs::BQSBindQueueItem{1, 0}));
@@ -289,9 +266,7 @@ TEST_F(BQS_CLIENT_UTest, UnbindQueueSuccess1)
 
 TEST_F(BQS_CLIENT_UTest, UnbindQueuePagedSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem> keySrcDstMap;
     for (int32_t i = 0; i < 500; ++i) {
@@ -311,9 +286,7 @@ TEST_F(BQS_CLIENT_UTest, UnbindQueueSerializeUnbindMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, UnbindQueueSendBqsMsgFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFailedFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFailedFake));
 
     std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem> keySrcDstMap;
     keySrcDstMap.insert(std::make_pair(bqs::BQS_QUERY_TYPE_SRC, bqs::BQSBindQueueItem{1, 0}));
@@ -323,9 +296,7 @@ TEST_F(BQS_CLIENT_UTest, UnbindQueueSendBqsMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, GetBindQueueSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem> keySrcDstMap;
     keySrcDstMap.insert(std::make_pair(bqs::BQS_QUERY_TYPE_SRC, bqs::BQSBindQueueItem{1, 0}));
@@ -343,9 +314,7 @@ TEST_F(BQS_CLIENT_UTest, GetBindQueueSerializeGetBindMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, GetBindQueueSendBqsMsgFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFailedFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFailedFake));
 
     std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem> keySrcDstMap;
     keySrcDstMap.insert(std::make_pair(bqs::BQS_QUERY_TYPE_SRC, bqs::BQSBindQueueItem{1, 0}));
@@ -355,9 +324,7 @@ TEST_F(BQS_CLIENT_UTest, GetBindQueueSendBqsMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, GetAllBindQueueSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::vector<bqs::BQSBindQueueItem> getBindQueueResult;
     GetAllBindRelation(1, getBindQueueResult);
@@ -365,9 +332,7 @@ TEST_F(BQS_CLIENT_UTest, GetAllBindQueueSuccess1)
 
 TEST_F(BQS_CLIENT_UTest, GetAllBindQueueSerializeGetBindMsgFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFailedFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFailedFake));
 
     std::vector<bqs::BQSBindQueueItem> getBindQueueResult;
     GetAllBindRelation(0, getBindQueueResult);
@@ -375,13 +340,10 @@ TEST_F(BQS_CLIENT_UTest, GetAllBindQueueSerializeGetBindMsgFailed)
 
 TEST_F(BQS_CLIENT_UTest, GetAllBindQueueOverflowFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
 
     std::vector<bqs::BQSBindQueueItem> getBindQueueResult;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            GetAllBindQueue(getBindQueueResult);
+    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->GetAllBindQueue(getBindQueueResult);
     EXPECT_EQ(result, 1);
 }
 
@@ -414,8 +376,8 @@ TEST_F(BQS_CLIENT_UTest, BindQueueMbufPool)
 {
     std::vector<bqs::BQSBindQueueMbufPoolItem> bindQueueVec;
     std::vector<bqs::BQSBindQueueResult> bindResultVec;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            BindQueueMbufPool(bindQueueVec, bindResultVec);
+    uint32_t result =
+        bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->BindQueueMbufPool(bindQueueVec, bindResultVec);
     EXPECT_EQ(result, 0);
 }
 
@@ -423,22 +385,20 @@ TEST_F(BQS_CLIENT_UTest, UnbindQueueMbufPool)
 {
     std::vector<bqs::BQSUnbindQueueMbufPoolItem> bindQueueVec;
     std::vector<bqs::BQSBindQueueResult> bindResultVec;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            UnbindQueueMbufPool(bindQueueVec, bindResultVec);
+    uint32_t result =
+        bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->UnbindQueueMbufPool(bindQueueVec, bindResultVec);
     EXPECT_EQ(result, 0);
 }
 
 TEST_F(BQS_CLIENT_UTest, BindQueueInterChip)
 {
     bqs::BindQueueInterChipInfo interChipInfo;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            BindQueueInterChip(interChipInfo);
+    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->BindQueueInterChip(interChipInfo);
     EXPECT_EQ(result, 0);
 }
 
 TEST_F(BQS_CLIENT_UTest, UnbindQueueInterChip)
 {
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            UnbindQueueInterChip(0);
+    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->UnbindQueueInterChip(0);
     EXPECT_EQ(result, 0);
 }

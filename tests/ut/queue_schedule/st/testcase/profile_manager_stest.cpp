@@ -19,7 +19,7 @@
 using namespace std;
 using namespace bqs;
 
-class BQS_PROFILE_MANAGER_STest :public testing::Test {
+class BQS_PROFILE_MANAGER_STest : public testing::Test {
 protected:
     virtual void SetUp()
     {

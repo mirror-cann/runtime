@@ -41,15 +41,13 @@ using namespace cce::runtime;
 
 class CloudV2StreamResLimitTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         isCfgOpWaitTaskTimeout = rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout;
         isCfgOpExcTaskTimeout = rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = false;
@@ -60,7 +58,7 @@ protected:
     virtual void TearDown()
     {
         rtDeviceReset(0);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = isCfgOpWaitTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = isCfgOpExcTaskTimeout;
         GlobalMockObject::verify();
@@ -78,11 +76,11 @@ TEST_F(CloudV2StreamResLimitTest, TestSetStreamResLimit)
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Api * oldApi = Runtime::Instance()->api_;
-    ApiDecorator *apiDeco = new ApiDecorator(oldApi);
+    Api* oldApi = Runtime::Instance()->api_;
+    ApiDecorator* apiDeco = new ApiDecorator(oldApi);
     Runtime::Instance()->api_ = apiDeco;
 
-    uint32_t value = 2U; 
+    uint32_t value = 2U;
     error = rtsSetStreamResLimit(stream, RT_DEV_RES_CUBE_CORE, value);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -122,12 +120,10 @@ TEST_F(CloudV2StreamResLimitTest, TestSetStreamResLimit)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(resultValue, 48);
 
-    MOCKER(&InnerThreadLocalContainer::GetDevice)
-    .stubs()
-    .will(returnValue((cce::runtime::Device*)nullptr));
+    MOCKER(&InnerThreadLocalContainer::GetDevice).stubs().will(returnValue((cce::runtime::Device*)nullptr));
     error = rtsGetResInCurrentThread(RT_DEV_RES_CUBE_CORE, &resultValue);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    EXPECT_EQ(resultValue, 24); 
+    EXPECT_EQ(resultValue, 24);
 
     error = rtsSetStreamResLimit(0, RT_DEV_RES_VECTOR_CORE, 2048);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -145,7 +141,7 @@ TEST_F(CloudV2StreamResLimitTest, TestSetStreamResLimit)
 
 TEST_F(CloudV2StreamResLimitTest, TestSetStreamResLimitNull)
 {
-    uint32_t value = 2U; 
+    uint32_t value = 2U;
     auto error = rtsSetStreamResLimit(NULL, RT_DEV_RES_CUBE_CORE, value);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 

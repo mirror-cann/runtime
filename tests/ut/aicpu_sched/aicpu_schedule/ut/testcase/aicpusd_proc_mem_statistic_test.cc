@@ -17,18 +17,11 @@
 using namespace AicpuSchedule;
 class AicpuSdProcMemStatisticTest : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AicpuSdProcMemStatisticTest SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpuSdProcMemStatisticTest SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AicpuSdProcMemStatisticTest TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AicpuSdProcMemStatisticTest TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AicpuSdProcMemStatisticTest SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AicpuSdProcMemStatisticTest SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -37,12 +30,12 @@ protected:
     }
 };
 
-bool WriteStatFile(const std::string &fileName, const std::string &fileInfo)
+bool WriteStatFile(const std::string& fileName, const std::string& fileInfo)
 {
     std::ofstream ofFile;
     ofFile.open(fileName, std::ios::app);
     if (!ofFile) {
-        std::cout << "open "<< fileName << "failed" << std::endl;
+        std::cout << "open " << fileName << "failed" << std::endl;
         return false;
     }
     ofFile << fileInfo << std::endl;
@@ -50,7 +43,8 @@ bool WriteStatFile(const std::string &fileName, const std::string &fileInfo)
     return true;
 }
 
-TEST_F(AicpuSdProcMemStatisticTest, SvmMemStatDevice) {
+TEST_F(AicpuSdProcMemStatisticTest, SvmMemStatDevice)
+{
     std::string svmFile = "/tmp/svmstat";
     std::string fileInfo = "peak_page_cnt=1234; peak_hpage_cnt=456";
     if (WriteStatFile(svmFile, fileInfo)) {
@@ -65,12 +59,12 @@ TEST_F(AicpuSdProcMemStatisticTest, SvmMemStatDevice) {
     }
 }
 
-bool WriteStatFileTwo(const std::string &fileName, const std::string &fileInfo, const std::string &fileInfo2)
+bool WriteStatFileTwo(const std::string& fileName, const std::string& fileInfo, const std::string& fileInfo2)
 {
     std::ofstream ofFile;
     ofFile.open(fileName, std::ios::app);
     if (!ofFile) {
-        std::cout << "open "<< fileName << "failed" << std::endl;
+        std::cout << "open " << fileName << "failed" << std::endl;
         return false;
     }
     ofFile << fileInfo << std::endl;
@@ -79,7 +73,8 @@ bool WriteStatFileTwo(const std::string &fileName, const std::string &fileInfo, 
     return true;
 }
 
-TEST_F(AicpuSdProcMemStatisticTest, xsMemStat) {
+TEST_F(AicpuSdProcMemStatisticTest, xsMemStat)
+{
     std::string xsmFile = "/tmp/xsmstat";
     std::string fileInfo = "summary: 1234 1234";
     if (WriteStatFile(xsmFile, fileInfo)) {
@@ -93,7 +88,8 @@ TEST_F(AicpuSdProcMemStatisticTest, xsMemStat) {
     }
 }
 
-TEST_F(AicpuSdProcMemStatisticTest, rssStatFailed1) {
+TEST_F(AicpuSdProcMemStatisticTest, rssStatFailed1)
+{
     std::string rssFile = "/tmp/rsstat";
     std::string fileInfo = "summary: 1234";
     if (WriteStatFile(rssFile, fileInfo)) {

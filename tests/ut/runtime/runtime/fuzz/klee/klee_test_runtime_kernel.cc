@@ -11,7 +11,8 @@
 #include "runtime/rt.h"
 #include "rt_comm_testcase.hpp"
 
-int main() {
+int main()
+{
     rtDevBinary_t binary;
     uint32_t magic;
     klee_make_symbolic(&magic, sizeof(magic), "magic");

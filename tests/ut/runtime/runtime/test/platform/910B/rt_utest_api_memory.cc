@@ -35,37 +35,34 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class RtMemoryApiTest : public testing::Test
-{
+class RtMemoryApiTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+        Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
         rtInstance->SetIsUserSetSocVersion(false);
         rtInstance->SetSocVersion("Ascend910B2");
         GlobalContainer::SetRtChipType(CHIP_910_B_93);
         GlobalContainer::SetSocVersion("Ascend910B2");
         GlobalContainer::SetHardwareSocVersion("Ascend910B2");
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
-        std::cout<<"engine test start"<<std::endl;
+        std::cout << "engine test start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+        Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
         rtInstance->SetIsUserSetSocVersion(false);
         rtInstance->SetSocVersion("Ascend910B2");
         GlobalContainer::SetRtChipType(CHIP_910_B_93);
         GlobalContainer::SetSocVersion("Ascend910B2");
         GlobalContainer::SetHardwareSocVersion("Ascend910B2");
         EXPECT_EQ(rtSetDevice(0), RT_ERROR_NONE);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
@@ -82,13 +79,11 @@ private:
 
 TEST_F(RtMemoryApiTest, rtReserveMemAddress)
 {
-    void *devPtr = nullptr;
+    void* devPtr = nullptr;
     rtError_t error = rtReserveMemAddress(&devPtr, 0, 0, nullptr, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halMemAddressReserve)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemAddressReserve).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtReserveMemAddress(&devPtr, 0, 0, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -98,9 +93,7 @@ TEST_F(RtMemoryApiTest, rtReleaseMemAddress)
     rtError_t error = rtReleaseMemAddress(nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halMemAddressFree)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemAddressFree).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtReleaseMemAddress(nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -109,16 +102,14 @@ TEST_F(RtMemoryApiTest, rtMallocPhysical)
 {
     rtDrvMemHandle handle = nullptr;
     rtDrvMemProp_t prop = {};
-    prop.mem_type = RT_MEMORY_DEFAULT;  // HBM 内存，当前只支持申请HBM内存
+    prop.mem_type = RT_MEMORY_DEFAULT; // HBM 内存，当前只支持申请HBM内存
     prop.pg_type = 1;
     prop.side = 1;
     prop.devid = 0;
     prop.module_id = 0;
     size_t size = 32;
 
-    MOCKER(halMemCreate)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemCreate).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     rtError_t error = rtMallocPhysical(&handle, size, &prop, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -135,9 +126,7 @@ TEST_F(RtMemoryApiTest, testHostNumaAlloc)
     int32_t deviceId = 0;
     rtError_t error = rtSetDevice(deviceId);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    MOCKER(halMemCreate)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemCreate).stubs().will(returnValue(DRV_ERROR_NONE));
     error = rtMallocPhysical(&handle, 1, &prop, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtDeviceReset(deviceId);
@@ -151,9 +140,7 @@ TEST_F(RtMemoryApiTest, testGetAllocationGranularity)
     prop.pg_type = 0;
     prop.mem_type = 0;
 
-    MOCKER(halMemGetAllocationGranularity)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemGetAllocationGranularity).stubs().will(returnValue(DRV_ERROR_NONE));
     size_t granularity;
     rtError_t error = rtMemGetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_MINIMUM, &granularity);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -174,16 +161,14 @@ TEST_F(RtMemoryApiTest, testMemSetAccess)
     std::vector<rtMemAccessDesc> accessDescs;
     rtMemAccessDesc desc;
     int32_t deviceId = 0;
-    void *virptr = (void *)10;
-    size_t size = 2 * 1024 *1024;
+    void* virptr = (void*)10;
+    size_t size = 2 * 1024 * 1024;
     desc.location.type = static_cast<rtMemLocationType>(4);
-    desc.location.id = deviceId; 
+    desc.location.id = deviceId;
     desc.flags = RT_MEM_ACCESS_FLAGS_READWRITE;
     accessDescs.push_back(desc);
 
-    MOCKER(halMemSetAccess)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemSetAccess).stubs().will(returnValue(DRV_ERROR_NONE));
 
     rtError_t error = rtMemSetAccess(virptr, size, accessDescs.data(), accessDescs.size());
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -195,9 +180,7 @@ TEST_F(RtMemoryApiTest, rtFreePhysical)
     rtError_t error = rtFreePhysical(handle);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halMemRelease)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemRelease).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtFreePhysical(handle);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -207,9 +190,7 @@ TEST_F(RtMemoryApiTest, rtMapMem)
     rtError_t error = rtMapMem(nullptr, 0, 0, nullptr, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halMemMap)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemMap).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMapMem(nullptr, 0, 0, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -217,17 +198,18 @@ TEST_F(RtMemoryApiTest, rtMapMem)
 TEST_F(RtMemoryApiTest, NpuDriverMemMapNoAccessPassesAllArgumentsToHal)
 {
     uint8_t virPtrToken = 0U;
-    void *virPtr = static_cast<void *>(&virPtrToken);
+    void* virPtr = static_cast<void*>(&virPtrToken);
     constexpr size_t size = 0x200000U;
     constexpr size_t offset = 0x1000U;
     uint8_t handleToken = 0U;
-    rtDrvMemHandle handle = static_cast<void *>(&handleToken);
+    rtDrvMemHandle handle = static_cast<void*>(&handleToken);
     constexpr uint64_t flags = 0U;
 
     MOCKER(halMemMapNoAccess)
         .expects(once())
-        .with(mockcpp::eq(virPtr), mockcpp::eq(size), mockcpp::eq(offset),
-            mockcpp::eq(reinterpret_cast<drv_mem_handle_t *>(handle)), mockcpp::eq(flags))
+        .with(
+            mockcpp::eq(virPtr), mockcpp::eq(size), mockcpp::eq(offset),
+            mockcpp::eq(reinterpret_cast<drv_mem_handle_t*>(handle)), mockcpp::eq(flags))
         .will(returnValue(DRV_ERROR_NONE));
 
     const rtError_t error = NpuDriver::MemMapNoAccess(virPtr, size, offset, handle, flags);
@@ -238,10 +220,8 @@ TEST_F(RtMemoryApiTest, NpuDriverMemMapNoAccessReturnsFeatureNotSupport)
 {
     uint8_t virPtrToken = 0U;
     uint8_t handleToken = 0U;
-    rtDrvMemHandle handle = static_cast<void *>(&handleToken);
-    MOCKER(halMemMapNoAccess)
-        .expects(once())
-        .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+    rtDrvMemHandle handle = static_cast<void*>(&handleToken);
+    MOCKER(halMemMapNoAccess).expects(once()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
 
     const rtError_t error = NpuDriver::MemMapNoAccess(&virPtrToken, 1U, 0U, handle, 0U);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
@@ -251,10 +231,8 @@ TEST_F(RtMemoryApiTest, NpuDriverMemMapNoAccessConvertsDriverError)
 {
     uint8_t virPtrToken = 0U;
     uint8_t handleToken = 0U;
-    rtDrvMemHandle handle = static_cast<void *>(&handleToken);
-    MOCKER(halMemMapNoAccess)
-        .expects(once())
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    rtDrvMemHandle handle = static_cast<void*>(&handleToken);
+    MOCKER(halMemMapNoAccess).expects(once()).will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     const rtError_t error = NpuDriver::MemMapNoAccess(&virPtrToken, 1U, 0U, handle, 0U);
     EXPECT_EQ(error, RT_GET_DRV_ERRCODE(DRV_ERROR_INVALID_VALUE));
@@ -263,17 +241,18 @@ TEST_F(RtMemoryApiTest, NpuDriverMemMapNoAccessConvertsDriverError)
 TEST_F(RtMemoryApiTest, RtMemMapNoAccessPassesAllArgumentsToHal)
 {
     uint8_t virPtrToken = 0U;
-    void *virPtr = static_cast<void *>(&virPtrToken);
+    void* virPtr = static_cast<void*>(&virPtrToken);
     constexpr size_t size = 0x200000U;
     constexpr size_t offset = 0x1000U;
     uint8_t handleToken = 0U;
-    rtDrvMemHandle handle = static_cast<void *>(&handleToken);
+    rtDrvMemHandle handle = static_cast<void*>(&handleToken);
     constexpr uint64_t flags = 0U;
 
     MOCKER(halMemMapNoAccess)
         .expects(once())
-        .with(mockcpp::eq(virPtr), mockcpp::eq(size), mockcpp::eq(offset),
-            mockcpp::eq(reinterpret_cast<drv_mem_handle_t *>(handle)), mockcpp::eq(flags))
+        .with(
+            mockcpp::eq(virPtr), mockcpp::eq(size), mockcpp::eq(offset),
+            mockcpp::eq(reinterpret_cast<drv_mem_handle_t*>(handle)), mockcpp::eq(flags))
         .will(returnValue(DRV_ERROR_NONE));
 
     const rtError_t error = rtMemMapNoAccess(virPtr, size, offset, handle, flags);
@@ -284,10 +263,8 @@ TEST_F(RtMemoryApiTest, RtMemMapNoAccessConvertsFeatureNotSupport)
 {
     uint8_t virPtrToken = 0U;
     uint8_t handleToken = 0U;
-    rtDrvMemHandle handle = static_cast<void *>(&handleToken);
-    MOCKER(halMemMapNoAccess)
-        .expects(once())
-        .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+    rtDrvMemHandle handle = static_cast<void*>(&handleToken);
+    MOCKER(halMemMapNoAccess).expects(once()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
 
     const rtError_t error = rtMemMapNoAccess(&virPtrToken, 1U, 0U, handle, 0U);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -297,10 +274,8 @@ TEST_F(RtMemoryApiTest, RtMemMapNoAccessConvertsDriverError)
 {
     uint8_t virPtrToken = 0U;
     uint8_t handleToken = 0U;
-    rtDrvMemHandle handle = static_cast<void *>(&handleToken);
-    MOCKER(halMemMapNoAccess)
-        .expects(once())
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    rtDrvMemHandle handle = static_cast<void*>(&handleToken);
+    MOCKER(halMemMapNoAccess).expects(once()).will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     const rtError_t error = rtMemMapNoAccess(&virPtrToken, 1U, 0U, handle, 0U);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -311,9 +286,7 @@ TEST_F(RtMemoryApiTest, rtUnmapMem)
     rtError_t error = rtUnmapMem(nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halMemUnmap)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemUnmap).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtUnmapMem(nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -322,14 +295,12 @@ TEST_F(RtMemoryApiTest, rtSetIpcMemorySuperPodPid)
 {
     rtError_t error;
     int32_t pids[2] = {100, 1000};
-    error = rtSetIpcMemorySuperPodPid("test1", 100, pids, sizeof(pids)/sizeof(int32_t));
+    error = rtSetIpcMemorySuperPodPid("test1", 100, pids, sizeof(pids) / sizeof(int32_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halShmemSetPodPid)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halShmemSetPodPid).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
-    error = rtSetIpcMemorySuperPodPid("test1", 100, pids, sizeof(pids)/sizeof(int32_t));
+    error = rtSetIpcMemorySuperPodPid("test1", 100, pids, sizeof(pids) / sizeof(int32_t));
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
@@ -339,9 +310,7 @@ TEST_F(RtMemoryApiTest, rtBindHostPid)
     rtError_t error = rtBindHostPid(info);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(drvBindHostPid)
-    .stubs()
-    .will(returnValue(DRV_ERROR_INVALID_VALUE));  
+    MOCKER(drvBindHostPid).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtBindHostPid(info);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -353,9 +322,7 @@ TEST_F(RtMemoryApiTest, rtUnbindHostPid)
     rtError_t error = rtUnbindHostPid(info);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(drvUnbindHostPid)
-    .stubs()
-    .will(returnValue(DRV_ERROR_INVALID_VALUE));  
+    MOCKER(drvUnbindHostPid).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtUnbindHostPid(info);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -367,9 +334,7 @@ TEST_F(RtMemoryApiTest, rtQueryProcessHostPid)
     error = rtQueryProcessHostPid(0, nullptr, nullptr, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(drvQueryProcessHostPid)
-    .stubs()
-    .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvQueryProcessHostPid).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtQueryProcessHostPid(0, nullptr, nullptr, nullptr, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -384,9 +349,7 @@ TEST_F(RtMemoryApiTest, rtGetServerIDBySDID)
     error = rtGetServerIDBySDID(sdid1, &srvid);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    MOCKER(halParseSDID)
-    .stubs()
-    .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halParseSDID).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtGetServerIDBySDID(sdid1, &srvid);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -407,9 +370,7 @@ TEST_F(RtMemoryApiTest, rtGetMemUsageInfo)
     error = apiDecorator.GetMemUsageInfo(deviceId, memUsageInfo, inputNum, &outputNum);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    MOCKER(halGetMemUsageInfo)
-    .stubs()
-    .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halGetMemUsageInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtGetMemUsageInfo(deviceId, memUsageInfo, inputNum, &outputNum);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -417,10 +378,10 @@ TEST_F(RtMemoryApiTest, rtGetMemUsageInfo)
 TEST_F(RtMemoryApiTest, rtsMallocHost_001)
 {
     rtError_t error;
-    Api *Api_= const_cast<Api *>(Runtime::runtime_->api_);
-    ApiDecorator *apiDecorator_ = new ApiDecorator(Api_);
-    void * hostPtr = nullptr;
-    rtMallocConfig_t *malloCfg = (rtMallocConfig_t *)malloc(sizeof(rtMallocConfig_t));
+    Api* Api_ = const_cast<Api*>(Runtime::runtime_->api_);
+    ApiDecorator* apiDecorator_ = new ApiDecorator(Api_);
+    void* hostPtr = nullptr;
+    rtMallocConfig_t* malloCfg = (rtMallocConfig_t*)malloc(sizeof(rtMallocConfig_t));
     rtMallocAttribute_t* mallocAttrs = new rtMallocAttribute_t[1];
     malloCfg->numAttrs = 1;
 
@@ -448,10 +409,10 @@ TEST_F(RtMemoryApiTest, rtsMallocHost_001)
 TEST_F(RtMemoryApiTest, rtsMallocHost_002)
 {
     rtError_t error;
-    Api *Api_= const_cast<Api *>(Runtime::runtime_->api_);
-    ApiDecorator *apiDecorator_ = new ApiDecorator(Api_);
-    void * hostPtr = nullptr;
-    rtMallocConfig_t *malloCfg = (rtMallocConfig_t *)malloc(sizeof(rtMallocConfig_t));
+    Api* Api_ = const_cast<Api*>(Runtime::runtime_->api_);
+    ApiDecorator* apiDecorator_ = new ApiDecorator(Api_);
+    void* hostPtr = nullptr;
+    rtMallocConfig_t* malloCfg = (rtMallocConfig_t*)malloc(sizeof(rtMallocConfig_t));
     rtMallocAttribute_t* mallocAttrs = new rtMallocAttribute_t[1];
     malloCfg->numAttrs = 1;
     malloCfg->attrs = mallocAttrs;
@@ -483,10 +444,10 @@ TEST_F(RtMemoryApiTest, rtsMallocHost_002)
 TEST_F(RtMemoryApiTest, rtsMallocHost_003)
 {
     rtError_t error;
-    Api *Api_= const_cast<Api *>(Runtime::runtime_->api_);
-    ApiDecorator *apiDecorator_ = new ApiDecorator(Api_);
-    void * hostPtr = nullptr;
-    rtMallocConfig_t *malloCfg = (rtMallocConfig_t *)malloc(sizeof(rtMallocConfig_t));
+    Api* Api_ = const_cast<Api*>(Runtime::runtime_->api_);
+    ApiDecorator* apiDecorator_ = new ApiDecorator(Api_);
+    void* hostPtr = nullptr;
+    rtMallocConfig_t* malloCfg = (rtMallocConfig_t*)malloc(sizeof(rtMallocConfig_t));
     rtMallocAttribute_t* mallocAttrs = new rtMallocAttribute_t[1];
     malloCfg->numAttrs = 1;
     malloCfg->attrs = mallocAttrs;

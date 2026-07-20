@@ -28,42 +28,35 @@
 using namespace testing;
 using namespace cce::runtime;
 
-static SegmentManager *CreateSimplePool(uint64_t size, uint32_t devId = 0U)
+static SegmentManager* CreateSimplePool(uint64_t size, uint32_t devId = 0U)
 {
     static uint64_t nextVa = (1ULL << 30);
     uint64_t va = nextVa;
     nextVa += size;
-    Segment *seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
-    SegmentManager *mgr = PoolRegistry::CreateManager(seg, devId, true);
+    Segment* seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
+    SegmentManager* mgr = PoolRegistry::CreateManager(seg, devId, true);
     PoolRegistry::Instance().RegisterMemPool(mgr);
     return mgr;
 }
 
-class SomaTest : public testing::Test
-{
+class SomaTest : public testing::Test {
 public:
-    static rtError_t rtDeviceResetStub(int32_t device)
-    {
-        return RT_ERROR_NONE;
-    }
+    static rtError_t rtDeviceResetStub(int32_t device) { return RT_ERROR_NONE; }
 
 protected:
     static void SetUpTestCase()
     {
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         std::cout << "======== SomaTest Start SetUpTestCase ========" << std::endl;
         MOCKER(rtDeviceReset).stubs().will(invoke(rtDeviceResetStub));
         MOCKER(rtSetDevice).stubs().will(returnValue(0));
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
         (void)PoolRegistry::Instance().Init();
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "======== SomaTest Start TearDownTestCase ========" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "======== SomaTest Start TearDownTestCase ========" << std::endl; }
 
     virtual void SetUp()
     {
@@ -80,24 +73,16 @@ protected:
     }
 
 private:
-    SegmentManager *defaultMemPool = nullptr;
+    SegmentManager* defaultMemPool = nullptr;
 };
 
-TEST_F(SomaTest, SegmentManagerNullptr)
-{
-    SegmentManager segMgr(nullptr, 0U, true);
-}
+TEST_F(SomaTest, SegmentManagerNullptr) { SegmentManager segMgr(nullptr, 0U, true); }
 
 TEST_F(SomaTest, AlignAndValidate_DefaultMaxSize)
 {
     uint64_t totalSize = DEVICE_POOL_ALIGN_SIZE * 4;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = 0,
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = 0, .reserve = 0};
     rtError_t error = SomaApi::AlignAndValidatePoolSize(poolProps, totalSize);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(poolProps.maxSize, totalSize);
@@ -111,8 +96,7 @@ TEST_F(SomaTest, AlignAndValidate_ExceedTotal_Fail)
         .devId = 0,
         .handleType = RT_MEM_HANDLE_TYPE_POSIX,
         .maxSize = DEVICE_POOL_ALIGN_SIZE * 3,
-        .reserve = 0
-    };
+        .reserve = 0};
     rtError_t error = SomaApi::AlignAndValidatePoolSize(poolProps, totalSize);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
@@ -125,8 +109,7 @@ TEST_F(SomaTest, AlignAndValidate_SizeRoundUp)
         .devId = 0,
         .handleType = RT_MEM_HANDLE_TYPE_POSIX,
         .maxSize = DEVICE_POOL_ALIGN_SIZE - 1,
-        .reserve = 0
-    };
+        .reserve = 0};
     rtError_t error = SomaApi::AlignAndValidatePoolSize(poolProps, totalSize);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(poolProps.maxSize, DEVICE_POOL_ALIGN_SIZE);
@@ -136,16 +119,11 @@ TEST_F(SomaTest, MemPool_CreateAndDestroy_Direct)
 {
     uint64_t totalSize = DEVICE_POOL_ALIGN_SIZE * 4;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = 0,
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = 0, .reserve = 0};
     rtError_t error = SomaApi::AlignAndValidatePoolSize(poolProps, totalSize);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
-    SegmentManager *memPool = CreateSimplePool(poolProps.maxSize, poolProps.devId);
+    SegmentManager* memPool = CreateSimplePool(poolProps.maxSize, poolProps.devId);
     ASSERT_NE(memPool, nullptr);
 
     error = SomaApi::CheckMemPool(memPool);
@@ -156,9 +134,9 @@ TEST_F(SomaTest, MemPool_CreateAndDestroy_Direct)
 
 TEST_F(SomaTest, MemPool_CreateTwoPools_DestroyAll)
 {
-    SegmentManager *pool1 = CreateSimplePool(DEVICE_POOL_ALIGN_SIZE, 0U);
+    SegmentManager* pool1 = CreateSimplePool(DEVICE_POOL_ALIGN_SIZE, 0U);
     ASSERT_NE(pool1, nullptr);
-    SegmentManager *pool2 = CreateSimplePool(DEVICE_POOL_ALIGN_SIZE * 2, 0U);
+    SegmentManager* pool2 = CreateSimplePool(DEVICE_POOL_ALIGN_SIZE * 2, 0U);
     ASSERT_NE(pool2, nullptr);
 
     EXPECT_EQ(SomaApi::CheckMemPool(pool1), RT_ERROR_NONE);
@@ -169,7 +147,7 @@ TEST_F(SomaTest, MemPool_CreateTwoPools_DestroyAll)
 
 TEST_F(SomaTest, MemPool_DestroyNonExistent_Fail)
 {
-    SegmentManager *pool = CreateSimplePool(DEVICE_POOL_ALIGN_SIZE, 0U);
+    SegmentManager* pool = CreateSimplePool(DEVICE_POOL_ALIGN_SIZE, 0U);
     ASSERT_NE(pool, nullptr);
 
     EXPECT_EQ(SomaApi::DestroyMemPool(pool), RT_ERROR_NONE);
@@ -177,7 +155,7 @@ TEST_F(SomaTest, MemPool_DestroyNonExistent_Fail)
 
 TEST_F(SomaTest, MemPoolCreate_ExplicitSize)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
@@ -193,12 +171,7 @@ TEST_F(SomaTest, MemPoolCreate_ExplicitSize)
 
     rtMemPool_t memPool = nullptr;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = (10UL << 30),
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30), .reserve = 0};
     rtError_t error = rtMemPoolCreate(&memPool, &poolProps);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(memPool, nullptr);
@@ -210,7 +183,7 @@ TEST_F(SomaTest, MemPoolCreate_ExplicitSize)
 
 TEST_F(SomaTest, MemPoolCreate_DefaultMaxSize)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
@@ -227,12 +200,7 @@ TEST_F(SomaTest, MemPoolCreate_DefaultMaxSize)
 
     rtMemPool_t memPool = nullptr;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = 0,
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = 0, .reserve = 0};
     rtError_t error = rtMemPoolCreate(&memPool, &poolProps);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(memPool, nullptr);
@@ -244,7 +212,7 @@ TEST_F(SomaTest, MemPoolCreate_DefaultMaxSize)
 
 TEST_F(SomaTest, MemPoolCreate_SizeExceedTotal_Fail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
@@ -259,8 +227,7 @@ TEST_F(SomaTest, MemPoolCreate_SizeExceedTotal_Fail)
         .devId = 0,
         .handleType = RT_MEM_HANDLE_TYPE_POSIX,
         .maxSize = (20UL * 1024 * 1024 * 1024),
-        .reserve = 0
-    };
+        .reserve = 0};
     rtError_t error = rtMemPoolCreate(&memPool, &poolProps);
     EXPECT_NE(error, RT_ERROR_NONE);
     EXPECT_EQ(memPool, nullptr);
@@ -269,7 +236,7 @@ TEST_F(SomaTest, MemPoolCreate_SizeExceedTotal_Fail)
 
 TEST_F(SomaTest, MemPoolCreate_DriverFail)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
@@ -283,12 +250,7 @@ TEST_F(SomaTest, MemPoolCreate_DriverFail)
 
     rtMemPool_t memPool = nullptr;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = (10UL << 30),
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30), .reserve = 0};
     rtError_t error = rtMemPoolCreate(&memPool, &poolProps);
     EXPECT_EQ(error, ACL_ERROR_RT_MEMORY_ALLOCATION);
     delete device;
@@ -302,7 +264,7 @@ TEST_F(SomaTest, MemPoolDestroy_NullHandle)
 
 TEST_F(SomaTest, MemPoolCreate_ThenDestroy_ThenCreateAgain)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
@@ -317,12 +279,9 @@ TEST_F(SomaTest, MemPoolCreate_ThenDestroy_ThenCreateAgain)
         .devId = 0,
         .handleType = RT_MEM_HANDLE_TYPE_POSIX,
         .maxSize = (5UL * 1024 * 1024 * 1024),
-        .reserve = 0
-    };
+        .reserve = 0};
 
-    MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = rtMemPoolCreate(&memPool, &poolProps);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -397,9 +356,10 @@ TEST_F(SomaTest, SomaApiSetAttrReservedMemHigh)
     error = SomaApi::StreamMemPoolSetAttr(defaultMemPool, rtMemPoolAttrReservedMemHigh, &resetValue);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolSetAttr).expects(mockcpp::once())
+    MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolSetAttr)
+        .expects(mockcpp::once())
         .will(returnValue(RT_ERROR_INVALID_VALUE));
     delete device;
 
@@ -486,9 +446,9 @@ TEST_F(SomaTest, SomaApiGetAttrDriverSuccess)
 
 TEST_F(SomaTest, ReuseDisabledFreeToCached)
 {
-    SegmentManager *memPool = CreateSimplePool(64U, 0U);
+    SegmentManager* memPool = CreateSimplePool(64U, 0U);
 
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
     const int streamId = 0;
     rtError_t error = memPool->SegmentAlloc(ptr, 8U, streamId, flag);
@@ -503,4 +463,3 @@ TEST_F(SomaTest, ReuseDisabledFreeToCached)
     error = PoolRegistry::Instance().RemoveMemPool(memPool, owned);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
-

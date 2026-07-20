@@ -27,29 +27,18 @@
 #include "context.hpp"
 #include "common/rt_utest_context_reset_helper.hpp"
 #include <map>
-#include <utility>  // For std::pair and std::make_pair.
+#include <utility> // For std::pair and std::make_pair.
 
 using namespace testing;
 using namespace cce::runtime;
 
 class PoolTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"pool test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "pool test start" << std::endl; }
 
-    }
+    static void TearDownTestCase() { std::cout << "pool test start end" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"pool test start end"<<std::endl;
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {

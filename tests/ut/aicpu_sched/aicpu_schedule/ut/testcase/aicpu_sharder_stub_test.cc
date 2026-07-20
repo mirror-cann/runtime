@@ -24,19 +24,17 @@ using namespace std;
 
 class AiCPUSharderStubUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(AiCPUSharderStubUt, AiCPUSharderStubUtSuccess)
 {
-    const RandomKernelScheduler randomKernelScheduler = [](const aicpu::Closure &task) {return 0U;};
+    const RandomKernelScheduler randomKernelScheduler = [](const aicpu::Closure& task) { return 0U; };
     const SplitKernelScheduler splitKernelScheduler = [](const uint32_t parallelId, const int64_t shardNum,
-                                                         const std::queue<Closure> &queue) {return 0U;};
-    const SplitKernelGetProcesser splitKernelGetProcesser = []() {return true;};
+                                                         const std::queue<Closure>& queue) { return 0U; };
+    const SplitKernelGetProcesser splitKernelGetProcesser = []() { return true; };
     SharderNonBlock::GetInstance().Register(1, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
     EXPECT_EQ(SharderNonBlock::GetInstance().cpuCoreNum_, 0);
 }

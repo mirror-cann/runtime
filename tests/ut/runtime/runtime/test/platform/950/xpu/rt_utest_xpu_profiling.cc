@@ -1,4 +1,4 @@
- /**
+/**
  * Copyright (c) 2026 Huawei Technologies Co., Ltd.
  * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
  * CANN Open Software License Agreement Version 2.0 (the "License").
@@ -34,7 +34,6 @@
 #include "tprt.hpp"
 #include "../../../common/rt_utest_xpu_helper.hpp"
 
-
 using namespace cce::runtime;
 class XpuProfilingTest : public ut::XpuRuntimeMockTest {
 protected:
@@ -45,10 +44,7 @@ protected:
         std::cout << "XpuProfilingTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "XpuProfilingTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "XpuProfilingTest end" << std::endl; }
 };
 
 TEST_F(XpuProfilingTest, xpu_profiling_command_handle_should_fail_when_data_is_null)
@@ -61,7 +57,7 @@ TEST_F(XpuProfilingTest, xpu_profiling_command_handle_should_fail_when_data_is_n
 
 TEST_F(XpuProfilingTest, xpu_profiling_command_handle_should_fail_when_type_is_wrong)
 {
-    void *data = malloc(8);
+    void* data = malloc(8);
     uint32_t len = 8;
     ApiImplDavid impl;
     rtError_t error = impl.XpuProfilingCommandHandle(PROF_CTRL_INVALID, data, len);
@@ -82,7 +78,7 @@ TEST_F(XpuProfilingTest, rtXpuProfilingCommandHandle_01)
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
     ApiImplDavid impl;
-    error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -101,7 +97,7 @@ TEST_F(XpuProfilingTest, rtXpuProfilingCommandHandle_02)
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
     ApiImplDavid impl;
-    error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -115,7 +111,8 @@ TEST_F(XpuProfilingTest, rtXpuProfilingCommandHandle_03)
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
     ApiImplDavid impl;
-    rtError_t error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    rtError_t error =
+        impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -132,7 +129,7 @@ TEST_F(XpuProfilingTest, rtXpuProfilingCommandHandle_04)
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
     ApiImplDavid impl;
-    (void)impl.XpuProfilingCommandHandle(0, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    (void)impl.XpuProfilingCommandHandle(0, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     error = rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
@@ -151,24 +148,24 @@ TEST_F(XpuProfilingTest, rtXpuProfilingCommandHandle_05)
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
     ApiImplDavid impl;
-    error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    error = impl.XpuProfilingCommandHandle(PROF_CTRL_SWITCH, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     TaskInfo taskInfo = TaskInfo{};
-    TaskInfo *taskInfoPtr = &taskInfo;
+    TaskInfo* taskInfoPtr = &taskInfo;
     taskInfoPtr->u.aicpuTaskInfo = AicpuTaskInfo{};
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     TaskCfg taskCfg{};
@@ -183,8 +180,8 @@ TEST_F(XpuProfilingTest, rtXpuProfilingCommandHandle_05)
     argsInfo.baseArgs.soNameAddrOffset = 1U;
     argsWithType.args.cpuArgsInfo = &argsInfo;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    error = XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs,
-        context->StreamList_().front(), &taskCfg);
+    error =
+        XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs, context->StreamList_().front(), &taskCfg);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;

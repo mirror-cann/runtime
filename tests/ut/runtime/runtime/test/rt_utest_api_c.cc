@@ -11,8 +11,7 @@
 #include "mockcpp/mockcpp.hpp"
 #define private public
 #define protected public
-extern "C" 
-{
+extern "C" {
 #include "runtime/c/kernel.h"
 }
 
@@ -21,13 +20,11 @@ extern "C"
 
 using namespace testing;
 
-extern "C"
-{
-    rtError_t rtDevBinaryRegister(const rtDevBinary_t* bin, void **hdl);
+extern "C" {
+rtError_t rtDevBinaryRegister(const rtDevBinary_t* bin, void** hdl);
 }
 
-class ApiCTest : public testing::Test
-{
+class ApiCTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
@@ -39,20 +36,15 @@ protected:
         // setup nano resource
     }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ApiCTest, rtDevBinaryRegister_Null)
 {
     rtError_t error;
-    void *handle;
+    void* handle;
     error = rtDevBinaryRegister(NULL, &handle);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }

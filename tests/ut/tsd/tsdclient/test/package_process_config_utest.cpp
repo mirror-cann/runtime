@@ -7,51 +7,47 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#include <fstream> 
+#include <fstream>
 #include <vector>
 #include <unordered_set>
-#include <pwd.h> 
-#include "gtest/gtest.h" 
-#include "mockcpp/mockcpp.hpp" 
+#include <pwd.h>
+#include "gtest/gtest.h"
+#include "mockcpp/mockcpp.hpp"
 #include "inc/package_worker_utils.h"
-#define private public 
-#define protected public 
+#define private public
+#define protected public
 #include "inc/package_process_config.h"
-#undef private 
+#undef private
 #undef protected
 
 using namespace tsd;
 
-class PackageProcessConfigTest : public testing::Test { 
-protected: 
-    virtual void SetUp() {} 
+class PackageProcessConfigTest : public testing::Test {
+protected:
+    virtual void SetUp() {}
 
-
-    virtual void TearDown() 
-    { 
-        GlobalMockObject::verify();
-    } 
-}; 
+    virtual void TearDown() { GlobalMockObject::verify(); }
+};
 namespace {
 bool WriteConfigFile(const std::string fileName, const std::vector<std::string> itemVec)
 {
     std::ofstream outFile(fileName);
-    if(!outFile) {
-        std::cout<<"Can not creat file."<<std::endl;
+    if (!outFile) {
+        std::cout << "Can not creat file." << std::endl;
         return false;
     }
-    for(auto &item:itemVec) {
-        outFile << item <<std::endl;
+    for (auto& item : itemVec) {
+        outFile << item << std::endl;
     }
     outFile.close();
     std::ifstream inFile(fileName);
-    if(!inFile) {
-        std::cout<<"Can not read file."<<std::endl;
+    if (!inFile) {
+        std::cout << "Can not read file." << std::endl;
         return false;
     }
     std::string line;
     while (getline(inFile, line)) {
-        std::cout<<line<<std::endl;
+        std::cout << line << std::endl;
     }
     inFile.close();
     return true;
@@ -60,30 +56,21 @@ bool WriteConfigFile(const std::string fileName, const std::vector<std::string> 
 bool WriteConfigFile2(const std::string fileName)
 {
     std::vector<std::string> itemVec{
-        "name:Ascend-aicpu_legacy.tar.gz",
-        "install_path:3",
-        "optional:true",
-        "package_path:opp",
-        "load_as_per_soc:false"
-    };
+        "name:Ascend-aicpu_legacy.tar.gz", "install_path:3", "optional:true", "package_path:opp",
+        "load_as_per_soc:false"};
     return WriteConfigFile(fileName, itemVec);
 }
 
 bool WriteConfigFile3(const std::string fileName)
 {
-    std::vector<std::string> itemVec{
-        "install_path:3",
-        "optional:true",
-        "package_path:opp",
-        "load_as_per_soc:false"
-    };
+    std::vector<std::string> itemVec{"install_path:3", "optional:true", "package_path:opp", "load_as_per_soc:false"};
     return WriteConfigFile(fileName, itemVec);
 }
-}
+} // namespace
 
-TEST_F(PackageProcessConfigTest, GetConfigDetailInfoSuccess) 
+TEST_F(PackageProcessConfigTest, GetConfigDetailInfoSuccess)
 {
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     PackConfDetail config = {};
     config.decDstDir = DeviceInstallPath::RUNTIME_PATH;
     config.findPath = "compat";
@@ -99,24 +86,24 @@ TEST_F(PackageProcessConfigTest, GetConfigDetailInfoSuccess)
     EXPECT_EQ(res1.hostTruePath, "");
 }
 
-TEST_F(PackageProcessConfigTest, SetConfigDataOnServerSuccess) 
-{ 
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+TEST_F(PackageProcessConfigTest, SetConfigDataOnServerSuccess)
+{
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     SinkPackageConfig hdcConfig;
     hdcConfig.set_package_name("Ascend_aicpu_sys.tar.gz");
     bool ret = pkgcfg->SetConfigDataOnServer(hdcConfig);
     EXPECT_EQ(ret, true);
 }
 
-TEST_F(PackageProcessConfigTest, ParseConfigDataFromProtoBufSuccess) 
-{ 
+TEST_F(PackageProcessConfigTest, ParseConfigDataFromProtoBufSuccess)
+{
     HDCMessage msg;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     msg.set_real_device_id(0U);
     msg.set_type(HDCMessage::TSD_UPDATE_PACKAGE_PROCESS_CONFIG);
     for (uint32_t index = 0; index < 101; index++) {
         std::string tmpName = "Ascend.tar.gz" + std::to_string(index);
-        SinkPackageConfig *curConf = msg.add_sink_pkg_con_list();
+        SinkPackageConfig* curConf = msg.add_sink_pkg_con_list();
         curConf->set_package_name(tmpName);
         curConf->set_file_dec_dst_dir(0);
     }
@@ -125,16 +112,16 @@ TEST_F(PackageProcessConfigTest, ParseConfigDataFromProtoBufSuccess)
     EXPECT_EQ(ret, TSD_OK);
 }
 
-TEST_F(PackageProcessConfigTest, ParseConfigDataFromProtoBufFailed) 
-{ 
+TEST_F(PackageProcessConfigTest, ParseConfigDataFromProtoBufFailed)
+{
     HDCMessage msg;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     msg.set_real_device_id(0U);
     msg.set_type(HDCMessage::TSD_UPDATE_PACKAGE_PROCESS_CONFIG);
     MOCKER_CPP(&PackageProcessConfig::SetConfigDataOnServer).stubs().will(returnValue(false));
     for (uint32_t index = 0; index < 2; index++) {
         std::string tmpName = "Ascend.tar.gz" + std::to_string(index);
-        SinkPackageConfig *curConf = msg.add_sink_pkg_con_list();
+        SinkPackageConfig* curConf = msg.add_sink_pkg_con_list();
         curConf->set_package_name(tmpName);
         curConf->set_file_dec_dst_dir(0);
     }
@@ -142,25 +129,22 @@ TEST_F(PackageProcessConfigTest, ParseConfigDataFromProtoBufFailed)
     EXPECT_EQ(ret, TSD_START_FAIL);
 }
 
-TEST_F(PackageProcessConfigTest, GetHostFilePathSucc) 
-{ 
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+TEST_F(PackageProcessConfigTest, GetHostFilePathSucc)
+{
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     std::string packagePath = "/tmp/";
     std::string packageName = "Ascend-aicpu_legacy.tar.gz";
     MOCKER(access).stubs().will(returnValue(0));
     std::string path = pkgcfg->GetHostFilePath(packagePath, packageName);
 }
 
-
-TEST_F(PackageProcessConfigTest, ParseConfigDataFromFileSucc) 
-{ 
+TEST_F(PackageProcessConfigTest, ParseConfigDataFromFileSucc)
+{
     std::string configFile = "/tmp/ascend_package_load.ini";
     MOCKER(access).stubs().will(returnValue(0));
     if (WriteConfigFile2(configFile)) {
-        PackageProcessConfig *pkgConf = PackageProcessConfig::GetInstance();
-        MOCKER_CPP(&PackageProcessConfig::GetHostFilePath)
-        .stubs()
-        .will(returnValue(configFile));
+        PackageProcessConfig* pkgConf = PackageProcessConfig::GetInstance();
+        MOCKER_CPP(&PackageProcessConfig::GetHostFilePath).stubs().will(returnValue(configFile));
         auto ret = pkgConf->ParseConfigDataFromFile("Ascend");
         MOCKER_CPP(&PackageProcessConfig::SetConfigDataOnHost).stubs().will(returnValue(true));
         EXPECT_EQ(ret, TSD_OK);
@@ -170,8 +154,8 @@ TEST_F(PackageProcessConfigTest, ParseConfigDataFromFileSucc)
     }
 }
 
-TEST_F(PackageProcessConfigTest, ParseConfigDataFromFile_EmptyPkgName_Failed) 
-{ 
+TEST_F(PackageProcessConfigTest, ParseConfigDataFromFile_EmptyPkgName_Failed)
+{
     std::string configFile = "/tmp/ascend_package_load.ini";
     MOCKER(access).stubs().will(returnValue(0));
     std::vector<std::string> itemVec{
@@ -181,24 +165,20 @@ TEST_F(PackageProcessConfigTest, ParseConfigDataFromFile_EmptyPkgName_Failed)
         "package_path:opp",
     };
     if (WriteConfigFile(configFile, itemVec)) {
-        PackageProcessConfig *pkgConf = PackageProcessConfig::GetInstance();
-        MOCKER_CPP(&PackageProcessConfig::GetHostFilePath)
-        .stubs()
-        .will(returnValue(configFile));
+        PackageProcessConfig* pkgConf = PackageProcessConfig::GetInstance();
+        MOCKER_CPP(&PackageProcessConfig::GetHostFilePath).stubs().will(returnValue(configFile));
         auto ret = pkgConf->ParseConfigDataFromFile("Ascend");
         EXPECT_EQ(ret, TSD_START_FAIL);
     }
 }
 
-TEST_F(PackageProcessConfigTest, ParseConfigDataFromFile_SetConfigDataOnHostFailed_Failed) 
-{ 
+TEST_F(PackageProcessConfigTest, ParseConfigDataFromFile_SetConfigDataOnHostFailed_Failed)
+{
     std::string configFile = "/tmp/ascend_package_load.ini";
     MOCKER(access).stubs().will(returnValue(0));
     if (WriteConfigFile2(configFile)) {
-        PackageProcessConfig *pkgConf = PackageProcessConfig::GetInstance();
-        MOCKER_CPP(&PackageProcessConfig::GetHostFilePath)
-        .stubs()
-        .will(returnValue(configFile));
+        PackageProcessConfig* pkgConf = PackageProcessConfig::GetInstance();
+        MOCKER_CPP(&PackageProcessConfig::GetHostFilePath).stubs().will(returnValue(configFile));
         MOCKER_CPP(&PackageProcessConfig::SetConfigDataOnHost).stubs().will(returnValue(false));
         auto ret = pkgConf->ParseConfigDataFromFile("Ascend");
         EXPECT_EQ(ret, TSD_START_FAIL);
@@ -209,9 +189,8 @@ TEST_F(PackageProcessConfigTest, SetConfigDataOnHostSucc)
 {
     std::string configFile = "/tmp/ascend_package_load3.ini";
     MOCKER(access).stubs().will(returnValue(0));
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
-    if (WriteConfigFile3(configFile)) 
-    {   
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
+    if (WriteConfigFile3(configFile)) {
         std::string fileName = "Ascend-aicpu_legacy.tar.gz";
         std::ifstream inFile(configFile);
         MOCKER_CPP(&PackageProcessConfig::SetPkgHostTruePath).stubs().will(returnValue(true));
@@ -224,9 +203,8 @@ TEST_F(PackageProcessConfigTest, SetConfigDataOnHost_ParseSingleParaFailed_Faile
 {
     std::string configFile = "/tmp/ascend_package_load3.ini";
     MOCKER(access).stubs().will(returnValue(0));
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
-    if (WriteConfigFile3(configFile)) 
-    {   
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
+    if (WriteConfigFile3(configFile)) {
         std::string fileName = "Ascend-aicpu_legacy.tar.gz";
         std::ifstream inFile(configFile);
         MOCKER_CPP(&PackageProcessConfig::ParseSinglePara).stubs().will(returnValue(false));
@@ -239,14 +217,13 @@ TEST_F(PackageProcessConfigTest, SetConfigDataOnHost_NotAllItemParsed_Failed)
 {
     std::string configFile = "/tmp/ascend_package_load3.ini";
     MOCKER(access).stubs().will(returnValue(0));
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     std::vector<std::string> itemVec{
         "install_path:3",
         "optional:true",
         "package_path:opp",
     };
-    if (WriteConfigFile(configFile, itemVec)) 
-    {   
+    if (WriteConfigFile(configFile, itemVec)) {
         std::string fileName = "Ascend-aicpu_legacy.tar.gz";
         std::ifstream inFile(configFile);
         auto ret = pkgcfg->SetConfigDataOnHost(inFile, fileName, "Ascend");
@@ -258,9 +235,8 @@ TEST_F(PackageProcessConfigTest, SetConfigDataOnHost_SetPkgHostTruePathFailed_Fa
 {
     std::string configFile = "/tmp/ascend_package_load3.ini";
     MOCKER(access).stubs().will(returnValue(0));
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
-    if (WriteConfigFile3(configFile)) 
-    {   
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
+    if (WriteConfigFile3(configFile)) {
         std::string fileName = "Ascend-aicpu_legacy.tar.gz";
         std::ifstream inFile(configFile);
         MOCKER_CPP(&PackageProcessConfig::SetPkgHostTruePath).stubs().will(returnValue(false));
@@ -274,7 +250,7 @@ TEST_F(PackageProcessConfigTest, SetPkgHostTruePath_Success)
     PackConfDetail tempNode;
     std::string pkgName = "-aicpu_legacy.tar.gz";
     std::string pkgTitle = "";
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->SetPkgHostTruePath(tempNode, pkgName, pkgTitle);
     EXPECT_EQ(ret, true);
 }
@@ -285,7 +261,7 @@ TEST_F(PackageProcessConfigTest, SetPkgHostTruePath_UseShortSocVersion_Success)
     tempNode.loadAsPerSocFlag = true;
     std::string pkgName;
     std::string pkgTitle = "Ascend;Ascend910B";
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->SetPkgHostTruePath(tempNode, pkgName, pkgTitle);
     EXPECT_EQ(ret, true);
 }
@@ -296,7 +272,7 @@ TEST_F(PackageProcessConfigTest, SetPkgHostTruePath_UseShortSocVersion_Failed)
     tempNode.loadAsPerSocFlag = true;
     std::string pkgName;
     std::string pkgTitle = "Ascend;";
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->SetPkgHostTruePath(tempNode, pkgName, pkgTitle);
     EXPECT_EQ(ret, false);
 }
@@ -307,7 +283,7 @@ TEST_F(PackageProcessConfigTest, SetPkgHostTruePath_NoSocVersion_Failed)
     tempNode.loadAsPerSocFlag = true;
     std::string pkgName;
     std::string pkgTitle = "Ascend";
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->SetPkgHostTruePath(tempNode, pkgName, pkgTitle);
     EXPECT_EQ(ret, false);
 }
@@ -317,7 +293,7 @@ TEST_F(PackageProcessConfigTest, ParseSinglePara_Success)
     std::string inputLine = "optional:true";
     PackConfDetail tempNode;
     std::unordered_set<std::string> finishedParseItemSet;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseSinglePara(inputLine, tempNode, finishedParseItemSet);
     EXPECT_EQ(tempNode.optionalFlag, true);
     EXPECT_EQ(ret, true);
@@ -328,7 +304,7 @@ TEST_F(PackageProcessConfigTest, ParseSinglePara_ItemWithoutColon_Failed)
     std::string inputLine = "optional";
     PackConfDetail tempNode;
     std::unordered_set<std::string> finishedParseItemSet;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseSinglePara(inputLine, tempNode, finishedParseItemSet);
     EXPECT_EQ(ret, false);
 }
@@ -338,7 +314,7 @@ TEST_F(PackageProcessConfigTest, ParseSinglePara_InvalidConfigItem_Failed)
     std::string inputLine = "invalidItem:123";
     PackConfDetail tempNode;
     std::unordered_set<std::string> finishedParseItemSet;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseSinglePara(inputLine, tempNode, finishedParseItemSet);
     EXPECT_EQ(ret, false);
 }
@@ -348,7 +324,7 @@ TEST_F(PackageProcessConfigTest, ParseSinglePara_ParseItemFailed_Failed)
     std::string inputLine = "optional:123";
     PackConfDetail tempNode;
     std::unordered_set<std::string> finishedParseItemSet;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseSinglePara(inputLine, tempNode, finishedParseItemSet);
     EXPECT_EQ(ret, false);
 }
@@ -357,7 +333,7 @@ TEST_F(PackageProcessConfigTest, ParseInstallPath_Success)
 {
     std::string para = "0";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseInstallPath(para, tempNode);
     EXPECT_EQ(ret, true);
     EXPECT_EQ(tempNode.decDstDir, static_cast<DeviceInstallPath>(0));
@@ -367,7 +343,7 @@ TEST_F(PackageProcessConfigTest, ParseInstallPath_Failed)
 {
     std::string para = "-1";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseInstallPath(para, tempNode);
     EXPECT_EQ(ret, false);
 }
@@ -376,7 +352,7 @@ TEST_F(PackageProcessConfigTest, ParseOptionalFlag_Success)
 {
     std::string para = "true";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseOptionalFlag(para, tempNode);
     EXPECT_EQ(ret, true);
     EXPECT_EQ(tempNode.optionalFlag, true);
@@ -386,7 +362,7 @@ TEST_F(PackageProcessConfigTest, ParseOptionalFlag_Failed)
 {
     std::string para = "123";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseOptionalFlag(para, tempNode);
     EXPECT_EQ(ret, false);
 }
@@ -395,7 +371,7 @@ TEST_F(PackageProcessConfigTest, ParsePackagePath_Success)
 {
     std::string para = "opp";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParsePackagePath(para, tempNode);
     EXPECT_EQ(ret, true);
     EXPECT_EQ(tempNode.findPath, para);
@@ -405,7 +381,7 @@ TEST_F(PackageProcessConfigTest, ParsePackagePath_Failed)
 {
     std::string para = "";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParsePackagePath(para, tempNode);
     EXPECT_EQ(ret, false);
 }
@@ -414,7 +390,7 @@ TEST_F(PackageProcessConfigTest, ParseLoadAsPerSocFlag_Success)
 {
     std::string para = "true";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseLoadAsPerSocFlag(para, tempNode);
     EXPECT_EQ(ret, true);
     EXPECT_EQ(tempNode.loadAsPerSocFlag, true);
@@ -424,7 +400,7 @@ TEST_F(PackageProcessConfigTest, ParseLoadAsPerSocFlag_Failed)
 {
     std::string para = "123";
     PackConfDetail tempNode;
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     const auto ret = pkgcfg->ParseLoadAsPerSocFlag(para, tempNode);
     EXPECT_EQ(ret, false);
 }
@@ -434,7 +410,7 @@ TEST_F(PackageProcessConfigTest, ParseLoadAsPerSocFlag_Failed)
 // 2) compat 包 hostTruePath 非空 -> 末尾加锁写入解析结果
 TEST_F(PackageProcessConfigTest, RefreshHostPluginVersions_LockBranches)
 {
-    PackageProcessConfig *pkgcfg = PackageProcessConfig::GetInstance();
+    PackageProcessConfig* pkgcfg = PackageProcessConfig::GetInstance();
     pkgcfg->configMap_.clear();
     pkgcfg->hostPluginVersions_.clear();
 
@@ -453,11 +429,9 @@ TEST_F(PackageProcessConfigTest, RefreshHostPluginVersions_LockBranches)
     pkgcfg->RefreshHostPluginVersions();
 
     // 两个包都应被加锁写入 hostPluginVersions_
-    ASSERT_NE(pkgcfg->hostPluginVersions_.find("cann-emptypath-compat.tar.gz"),
-              pkgcfg->hostPluginVersions_.end());
+    ASSERT_NE(pkgcfg->hostPluginVersions_.find("cann-emptypath-compat.tar.gz"), pkgcfg->hostPluginVersions_.end());
     EXPECT_TRUE(pkgcfg->hostPluginVersions_["cann-emptypath-compat.tar.gz"].Empty());
-    ASSERT_NE(pkgcfg->hostPluginVersions_.find("cann-nonexist-compat.tar.gz"),
-              pkgcfg->hostPluginVersions_.end());
+    ASSERT_NE(pkgcfg->hostPluginVersions_.find("cann-nonexist-compat.tar.gz"), pkgcfg->hostPluginVersions_.end());
     EXPECT_TRUE(pkgcfg->hostPluginVersions_["cann-nonexist-compat.tar.gz"].Empty());
 
     pkgcfg->configMap_.clear();

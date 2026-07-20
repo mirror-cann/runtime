@@ -32,27 +32,20 @@
 
 using namespace testing;
 using namespace cce::runtime;
-#define PROF_AICPU_MODEL_MASK            0x4000000000000000ULL
-#define PROF_AICPU_TRACE_MASK            0x00000008ULL
-#define PROF_TASK_TIME_MASK              0x00000002ULL
-#define PROF_AICORE_METRICS              0x00000004ULL
+#define PROF_AICPU_MODEL_MASK 0x4000000000000000ULL
+#define PROF_AICPU_TRACE_MASK 0x00000008ULL
+#define PROF_TASK_TIME_MASK 0x00000002ULL
+#define PROF_AICORE_METRICS 0x00000004ULL
 
-class RuntimeTest : public testing::Test
-{
+class RuntimeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtSetDevice(0);
     }
 
@@ -67,10 +60,10 @@ protected:
 TEST_F(RuntimeTest, binanry_reg_null_data)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.magic = RT_DEV_BINARY_MAGIC_PLAIN;
     bin.version = 1;
@@ -83,10 +76,10 @@ TEST_F(RuntimeTest, binanry_reg_null_data)
 TEST_F(RuntimeTest, binary_reg_max)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.magic = RT_DEV_BINARY_MAGIC_PLAIN;
     bin.version = 1;
@@ -102,10 +95,10 @@ TEST_F(RuntimeTest, binary_reg_max)
 TEST_F(RuntimeTest, binanry_reg_cube_null_data)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.magic = RT_DEV_BINARY_MAGIC_ELF_AICUBE;
     bin.version = 1;
@@ -119,12 +112,12 @@ TEST_F(RuntimeTest, binanry_reg_cube_null_data)
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
-using ConstructFunc = Runtime *(*)();
-using DesConstructFunc = void (*)(Runtime *);
-using PrepareProcessExitFunc = void (*)(Runtime *);
-using NothrowNewFunc = void *(*)(size_t, const std::nothrow_t &);
+using ConstructFunc = Runtime* (*)();
+using DesConstructFunc = void (*)(Runtime*);
+using PrepareProcessExitFunc = void (*)(Runtime*);
+using NothrowNewFunc = void* (*)(size_t, const std::nothrow_t&);
 
-static void *NothrowNewFailStub(size_t size, const std::nothrow_t &tag)
+static void* NothrowNewFailStub(size_t size, const std::nothrow_t& tag)
 {
     UNUSED(size);
     UNUSED(tag);
@@ -134,12 +127,12 @@ static void *NothrowNewFailStub(size_t size, const std::nothrow_t &tag)
 TEST_F(RuntimeTest, BOOT_RUNTIME_TEST_ConstructRuntime)
 {
     constexpr const int32_t flags = static_cast<int32_t>(static_cast<uint32_t>(MMPA_RTLD_NOW));
-    void *const handlePtr = dlopen(NULL, flags);
+    void* const handlePtr = dlopen(NULL, flags);
 
     EXPECT_NE(handlePtr, nullptr);
     const ConstructFunc create = reinterpret_cast<ConstructFunc>(dlsym(handlePtr, "ConstructRuntimeImpl"));
     EXPECT_NE(create, nullptr);
-    Runtime *rt = create();
+    Runtime* rt = create();
     EXPECT_NE(rt, nullptr);
 
     const DesConstructFunc destruct = reinterpret_cast<DesConstructFunc>(dlsym(handlePtr, "DestructorRuntimeImpl"));
@@ -151,14 +144,14 @@ TEST_F(RuntimeTest, BOOT_RUNTIME_TEST_ConstructRuntime)
 
 TEST_F(RuntimeTest, BOOT_RUNTIME_TEST_PrepareRuntimeProcessExitDoesNotDeleteRuntime)
 {
-    Runtime * const oldRuntime = Runtime::runtime_;
-    Runtime *rt = ConstructRuntimeImpl();
+    Runtime* const oldRuntime = Runtime::runtime_;
+    Runtime* rt = ConstructRuntimeImpl();
     EXPECT_NE(rt, nullptr);
 
-    rt->threadGuard_ = new(std::nothrow) ThreadGuard();
+    rt->threadGuard_ = new (std::nothrow) ThreadGuard();
     ASSERT_NE(rt->threadGuard_, nullptr);
     rt->tsNum_ = 1U;
-    Context * const sentinelContext = reinterpret_cast<Context *>(static_cast<uintptr_t>(0xDEADBEEFU));
+    Context* const sentinelContext = reinterpret_cast<Context*>(static_cast<uintptr_t>(0xDEADBEEFU));
     rt->priCtxs_[0][0].SetVal(sentinelContext);
 
     PrepareRuntimeProcessExitImpl(rt);
@@ -179,8 +172,8 @@ TEST_F(RuntimeTest, BootRuntime_CreateRuntimeFailed)
     static RuntimeKeeper keeper;
     MOCKER(static_cast<NothrowNewFunc>(&operator new)).expects(once()).will(invoke(NothrowNewFailStub));
 
-    Runtime * const rt = keeper.BootRuntime();
-    Runtime * const keeperRuntime = keeper.runtime_;
+    Runtime* const rt = keeper.BootRuntime();
+    Runtime* const keeperRuntime = keeper.runtime_;
     const uint32_t bootStage = keeper.bootStage_.Value();
     GlobalMockObject::verify();
 
@@ -194,8 +187,8 @@ TEST_F(RuntimeTest, BootRuntime_MsprofRegisterCallbackFailed)
     static RuntimeKeeper keeper;
     MOCKER(MsprofRegisterCallback).expects(once()).will(returnValue(RT_ERROR_INVALID_VALUE));
 
-    Runtime * const rt = keeper.BootRuntime();
-    Runtime * const keeperRuntime = keeper.runtime_;
+    Runtime* const rt = keeper.BootRuntime();
+    Runtime* const keeperRuntime = keeper.runtime_;
     const uint32_t bootStage = keeper.bootStage_.Value();
     GlobalMockObject::verify();
 
@@ -209,7 +202,7 @@ TEST_F(RuntimeTest, BootRuntimeReturnsNullWhenRuntimeKeeperExiting)
     static RuntimeKeeper keeper;
     MOCKER(IsRuntimeKeeperExiting).expects(once()).will(returnValue(true));
 
-    Runtime * const rt = keeper.BootRuntime();
+    Runtime* const rt = keeper.BootRuntime();
     const uint32_t bootStage = keeper.bootStage_.Value();
     GlobalMockObject::verify();
 
@@ -219,28 +212,25 @@ TEST_F(RuntimeTest, BootRuntimeReturnsNullWhenRuntimeKeeperExiting)
 
 TEST_F(RuntimeTest, AicpuCntInitTest)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
-    rtError_t error  = rtInstance->InitAiCpuCnt();
+    rtError_t error = rtInstance->InitAiCpuCnt();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtInstance->SetSocVersion("");
-    error  = rtInstance->InitAiCpuCnt();
+    error = rtInstance->InitAiCpuCnt();
 
     rtInstance->SetSocVersion(socVersion);
 }
 
 TEST_F(RuntimeTest, CheckHaveDevice)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool ret = rtInstance->CheckHaveDevice();
     EXPECT_EQ(ret, true);
 
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE)).then(returnValue(DRV_ERROR_NONE));
     ret = rtInstance->CheckHaveDevice();
     EXPECT_EQ(ret, false);
     rtInstance->InitChipTypeAndSocVersion();
@@ -251,7 +241,7 @@ TEST_F(RuntimeTest, CheckHaveDevice)
 
 TEST_F(RuntimeTest, CheckHaveDeviceNotSupport)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool ret = rtInstance->CheckHaveDevice();
     EXPECT_EQ(ret, true);
 
@@ -266,7 +256,7 @@ TEST_F(RuntimeTest, CheckHaveDeviceNotSupport)
 TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_2)
 {
     ElfProgram prog;
-    char *name = new (std::nothrow) char[10];
+    char* name = new (std::nothrow) char[10];
     strcpy_s(name, 10, "a_200");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
@@ -281,7 +271,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_2)
 TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid01)
 {
     ElfProgram prog;
-    char *name = new (std::nothrow) char[10];
+    char* name = new (std::nothrow) char[10];
     strcpy_s(name, 10, "a200");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
@@ -296,7 +286,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid01)
 TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid02)
 {
     ElfProgram prog;
-    char *name = new (std::nothrow) char[100];
+    char* name = new (std::nothrow) char[100];
     strcpy_s(name, 100, "a_4444444444444444444444444444444444444444444444444444444444");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
@@ -311,7 +301,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid02)
 TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid03)
 {
     ElfProgram prog;
-    char *name = new (std::nothrow) char[3];
+    char* name = new (std::nothrow) char[3];
     strcpy_s(name, 3, "a_");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;
@@ -326,10 +316,10 @@ TEST_F(RuntimeTest, ut_AllKernelRegister_GetKernelsCount_invalid03)
 TEST_F(RuntimeTest, ut_AllKernelRegister)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
-    void *code[] = {NULL, NULL, NULL, NULL};
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    void* code[] = {NULL, NULL, NULL, NULL};
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bin.version = 1;
     bin.data = code;
@@ -345,7 +335,7 @@ TEST_F(RuntimeTest, ut_AllKernelRegister)
 
 TEST_F(RuntimeTest, ut_GetTilingKeyFromKernel)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string kernelName = "abc_mix_aic";
     uint8_t mixType = 0U;
     std::string ret;
@@ -361,7 +351,7 @@ TEST_F(RuntimeTest, ut_GetTilingKeyFromKernel)
 
 TEST_F(RuntimeTest, ut_GetTilingValue)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string kernelName = "@111";
     uint64_t tilingValue = 0U;
     rtError_t error = rtInstance->GetTilingValue(kernelName, tilingValue);
@@ -376,7 +366,7 @@ TEST_F(RuntimeTest, ut_GetTilingValue)
 
 TEST_F(RuntimeTest, ut_GetProfDeviceNum)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     int32_t ret = rtInstance->GetProfDeviceNum(0xFFFFFFFFFFFFFFFFULL);
     bool result = (ret >= 0);
@@ -385,7 +375,7 @@ TEST_F(RuntimeTest, ut_GetProfDeviceNum)
 
 TEST_F(RuntimeTest, ut_OtherProfilerApiStartStopTest)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     uint64_t profConfig = 0xFFFFFFFFFFFFFFFFULL;
     uint32_t deviceList[2] = {0U, 1U};
@@ -395,10 +385,7 @@ TEST_F(RuntimeTest, ut_OtherProfilerApiStartStopTest)
 
     // open all device
     uint32_t devNum = 2;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     ret = rtInstance->RuntimeApiProfilerStart(profConfig, -1, deviceList);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtInstance->RuntimeApiProfilerStop(profConfig, -1, deviceList);
@@ -408,7 +395,7 @@ TEST_F(RuntimeTest, ut_OtherProfilerApiStartStopTest)
     ret = rtInstance->RuntimeProfileLogStop(profConfig, numsDev, deviceList);
 
     uint64_t type = 0ULL;
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
 
     rtInstance->TsTimelineStart(profConfig, type, dev);
     rtInstance->TsTimelineStop(profConfig, type, dev);
@@ -450,8 +437,8 @@ TEST_F(RuntimeTest, ut_OtherProfilerApiStartStopTest)
 
 TEST_F(RuntimeTest, ut_AicMetricStart_MdcTs1Scenario)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    RawDevice *dev = new RawDevice(0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    RawDevice* dev = new RawDevice(0);
     uint64_t profConfig = PROF_AICORE_METRICS;
     uint64_t type = 0ULL;
     uint32_t originalTsNum = rtInstance->tsNum_;
@@ -467,8 +454,8 @@ TEST_F(RuntimeTest, ut_AicMetricStart_MdcTs1Scenario)
 
 TEST_F(RuntimeTest, ut_AicMetricStop_MdcTs1Scenario)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    RawDevice *dev = new RawDevice(0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    RawDevice* dev = new RawDevice(0);
     uint64_t profConfig = PROF_AICORE_METRICS;
     uint64_t type = 0ULL;
     uint32_t originalTsNum = rtInstance->tsNum_;
@@ -484,7 +471,7 @@ TEST_F(RuntimeTest, ut_AicMetricStop_MdcTs1Scenario)
 
 TEST_F(RuntimeTest, ut_LoadFunction)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->GetSocVersionByHardwareVer(0x0500, 0, 0);
     rtChipType_t chipType = rtInstance->chipType_;
     rtInstance->chipType_ = CHIP_DC;
@@ -536,44 +523,20 @@ TEST_F(RuntimeTest, SocTypeByChipType)
 }
 
 extern "C" {
-int TsdOpenExStub(uint32_t a, uint32_t b, uint32_t c)
-{
-    return 0;
-}
-int TsdOpenStub(uint32_t a, uint32_t b)
-{
-    return 0;
-}
-int TsdCloseStub(uint32_t a)
-{
-    return 0;
-}
-int UpdateProfilingModeStub(uint32_t a, uint32_t b)
-{
-    return 0;
-}
-int TsdSetMsprofReporterCallbackStub(void *ptr)
-{
-    return 0;
-}
-int TsdInitQsStub(uint32_t a, char* s)
-{
-    return 0;
-}
-int TsdSetAttrStub(char* s1, char* s2)
-{
-    return 0;
-}
-int TsdInitFlowGwStub(uint32_t a, void *info)
-{
-    return 0;
-}
+int TsdOpenExStub(uint32_t a, uint32_t b, uint32_t c) { return 0; }
+int TsdOpenStub(uint32_t a, uint32_t b) { return 0; }
+int TsdCloseStub(uint32_t a) { return 0; }
+int UpdateProfilingModeStub(uint32_t a, uint32_t b) { return 0; }
+int TsdSetMsprofReporterCallbackStub(void* ptr) { return 0; }
+int TsdInitQsStub(uint32_t a, char* s) { return 0; }
+int TsdSetAttrStub(char* s1, char* s2) { return 0; }
+int TsdInitFlowGwStub(uint32_t a, void* info) { return 0; }
 }
 
 TEST_F(RuntimeTest, ut_GetHdcConctStatus01)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    rtInstance->tsdGetHdcConctStatus_ = [](const uint32_t logicDeviceId, int32_t *hdcSessStat) -> TDT_StatusType {
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtInstance->tsdGetHdcConctStatus_ = [](const uint32_t logicDeviceId, int32_t* hdcSessStat) -> TDT_StatusType {
         return 0;
     };
     int32_t hdcSessStat;
@@ -583,8 +546,8 @@ TEST_F(RuntimeTest, ut_GetHdcConctStatus01)
 
 TEST_F(RuntimeTest, ut_GetHdcConctStatus02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    rtInstance->tsdGetHdcConctStatus_ = [](const uint32_t logicDeviceId, int32_t *hdcSessStat) -> TDT_StatusType {
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtInstance->tsdGetHdcConctStatus_ = [](const uint32_t logicDeviceId, int32_t* hdcSessStat) -> TDT_StatusType {
         return 10;
     };
     int32_t hdcSessStat;
@@ -594,27 +557,27 @@ TEST_F(RuntimeTest, ut_GetHdcConctStatus02)
 
 void InitVisibleDevices()
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->userDeviceCnt = 0U;
     rtInstance->isSetVisibleDev = false;
     if (rtInstance->deviceInfo == nullptr) {
         rtInstance->deviceInfo = new (std::nothrow) uint32_t[RT_SET_DEVICE_STR_MAX_LEN];
     }
-    (void)memset_s(rtInstance->deviceInfo, size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
+    (void)memset_s(
+        rtInstance->deviceInfo, size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
         size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN));
-    (void)memset_s(rtInstance->inputDeviceStr, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
-        size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U));
+    (void)memset_s(
+        rtInstance->inputDeviceStr, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U));
     return;
 }
-
 
 TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_01)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint32_t devId = 65U;
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_NORMAL;
-    RawDevice *dev = new RawDevice(devId);
+    RawDevice* dev = new RawDevice(devId);
     ret = rtInstance->SetWatchDogDevStatus(dev, deviceStatus);
     EXPECT_EQ(ret, RT_ERROR_DEVICE_ID);
     ret = rtInstance->GetWatchDogDevStatus(devId, &deviceStatus);
@@ -625,11 +588,11 @@ TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_01)
 TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_02)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint32_t devId = 0U;
     uint32_t tsId = 3U;
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_NORMAL;
-    RawDevice *dev = new RawDevice(devId);
+    RawDevice* dev = new RawDevice(devId);
     dev->DevSetTsId(tsId);
     ret = rtInstance->SetWatchDogDevStatus(dev, deviceStatus);
     EXPECT_EQ(ret, RT_ERROR_DEVICE_ID);
@@ -641,10 +604,10 @@ TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_02)
 TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_03)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint32_t devId = 0U;
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_ABNORMAL;
-    RawDevice *dev = new RawDevice(devId);
+    RawDevice* dev = new RawDevice(devId);
     ret = rtInstance->SetWatchDogDevStatus(dev, deviceStatus);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtInstance->GetWatchDogDevStatus(devId, &deviceStatus);
@@ -656,11 +619,11 @@ TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_03)
 TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_04)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint32_t devId = 0U;
     uint32_t tsId = 1U;
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_ABNORMAL;
-    RawDevice *dev = new RawDevice(devId);
+    RawDevice* dev = new RawDevice(devId);
     dev->DevSetTsId(tsId);
     for (uint32_t i = 0; i < 2; i++) {
         ret = rtInstance->SetWatchDogDevStatus(dev, deviceStatus);
@@ -672,13 +635,13 @@ TEST_F(RuntimeTest, ut_SetAndGetWatchDogDevStatus_04)
 
 TEST_F(RuntimeTest, ExitDetachPrimaryContextsDoesNotDereferenceContext)
 {
-    Runtime * const runtimeInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const runtimeInstance = static_cast<Runtime*>(Runtime::Instance());
     RuntimeExitStateGuard guard(runtimeInstance, false);
     ut::ForceResetPrimaryDeviceIfActive();
 
     Runtime runtime;
     runtime.tsNum_ = 1U;
-    Context * const sentinelContext = reinterpret_cast<Context *>(static_cast<uintptr_t>(0xDEADBEEFU));
+    Context* const sentinelContext = reinterpret_cast<Context*>(static_cast<uintptr_t>(0xDEADBEEFU));
     runtime.priCtxs_[0][0].SetVal(sentinelContext);
 
     runtime.PrepareProcessExitNoThrow();
@@ -691,9 +654,9 @@ TEST_F(RuntimeTest, RuntimeDestructorDoesNotTeardownOrDeleteContextOnExit)
     {
         Runtime runtime;
         runtime.tsNum_ = 1U;
-        runtime.threadGuard_ = new(std::nothrow) ThreadGuard();
+        runtime.threadGuard_ = new (std::nothrow) ThreadGuard();
         ASSERT_NE(runtime.threadGuard_, nullptr);
-        Context * const sentinelContext = reinterpret_cast<Context *>(static_cast<uintptr_t>(0xDEADBEEFU));
+        Context* const sentinelContext = reinterpret_cast<Context*>(static_cast<uintptr_t>(0xDEADBEEFU));
         runtime.priCtxs_[0][0].SetVal(sentinelContext);
     }
 
@@ -702,7 +665,7 @@ TEST_F(RuntimeTest, RuntimeDestructorDoesNotTeardownOrDeleteContextOnExit)
 
 TEST_F(RuntimeTest, UninitializedRuntimeDestructorDoesNotMarkGlobalRuntimeExiting)
 {
-    Runtime * const runtimeInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const runtimeInstance = static_cast<Runtime*>(Runtime::Instance());
     RuntimeExitStateGuard guard(runtimeInstance, false);
 
     {
@@ -718,33 +681,33 @@ TEST_F(RuntimeTest, RuntimeDestructorDoesNotDlcloseTsdClientOnExit)
     {
         Runtime runtime;
         uintptr_t tsdClientHandle = 0x1234U;
-        runtime.tsdClientHandle_ = reinterpret_cast<void *>(tsdClientHandle);
+        runtime.tsdClientHandle_ = reinterpret_cast<void*>(tsdClientHandle);
     }
 }
 
 TEST_F(RuntimeTest, PrepareProcessExitNoThrowDetachesReferencesWithoutDeletingRuntimeRegistries)
 {
-    Runtime * const runtimeInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const runtimeInstance = static_cast<Runtime*>(Runtime::Instance());
     RuntimeExitStateGuard guard(runtimeInstance, false);
 
-    Runtime * const runtime = new Runtime();
-    runtime->threadGuard_ = new(std::nothrow) ThreadGuard();
+    Runtime* const runtime = new Runtime();
+    runtime->threadGuard_ = new (std::nothrow) ThreadGuard();
     ASSERT_NE(runtime->threadGuard_, nullptr);
     ASSERT_EQ(runtime->InitProgramAllocator(), RT_ERROR_NONE);
-    ObjAllocator<RefObject<Program *>> * const programAllocator = runtime->programAllocator_;
+    ObjAllocator<RefObject<Program*>>* const programAllocator = runtime->programAllocator_;
     ASSERT_NE(programAllocator, nullptr);
 
-    Context * const sentinelContext = reinterpret_cast<Context *>(static_cast<uintptr_t>(0xDEADBEEFU));
-    Program * const sentinelProgram = reinterpret_cast<Program *>(static_cast<uintptr_t>(0xBADC0DEU));
+    Context* const sentinelContext = reinterpret_cast<Context*>(static_cast<uintptr_t>(0xDEADBEEFU));
+    Program* const sentinelProgram = reinterpret_cast<Program*>(static_cast<uintptr_t>(0xBADC0DEU));
     runtime->tsNum_ = 1U;
     runtime->priCtxs_[0][0].SetVal(sentinelContext);
-    RefObject<Program *> * const programItem = programAllocator->GetDataToItem(0U);
+    RefObject<Program*>* const programItem = programAllocator->GetDataToItem(0U);
     ASSERT_NE(programItem, nullptr);
     ASSERT_TRUE(programItem->TryIncAndSet(sentinelProgram));
 
-    RawDevice * const dev = new RawDevice(0U);
+    RawDevice* const dev = new RawDevice(0U);
     dev->DevSetTsId(0U);
-    ExitMockEngine * const engine = new ExitMockEngine(dev);
+    ExitMockEngine* const engine = new ExitMockEngine(dev);
     dev->engine_ = engine;
     runtime->devices_[0U][0U].SetVal(dev);
 
@@ -767,13 +730,13 @@ TEST_F(RuntimeTest, PrepareProcessExitNoThrowDetachesReferencesWithoutDeletingRu
 
 TEST_F(RuntimeTest, StopDeviceHostThreadsOnExitStopsHostThreadsAndDetachesDevice)
 {
-    Runtime * const runtimeInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const runtimeInstance = static_cast<Runtime*>(Runtime::Instance());
     // This test targets the process-exit prepare path, not Runtime::~Runtime(). Keep the temporary Runtime isolated
     // from the process-global Runtime and intentionally do not delete it; destructor behavior is covered separately.
-    Runtime * const runtime = new Runtime();
-    RawDevice * const dev = new RawDevice(0U);
+    Runtime* const runtime = new Runtime();
+    RawDevice* const dev = new RawDevice(0U);
     dev->DevSetTsId(0U);
-    ExitMockEngine * const engine = new ExitMockEngine(dev);
+    ExitMockEngine* const engine = new ExitMockEngine(dev);
     dev->engine_ = engine;
     runtime->devices_[0U][0U].SetVal(dev);
 
@@ -792,13 +755,13 @@ TEST_F(RuntimeTest, StopDeviceHostThreadsOnExitStopsHostThreadsAndDetachesDevice
 
 TEST_F(RuntimeTest, DeviceReleaseOnExitUsesHostOnlyFinalize)
 {
-    Runtime * const runtimeInstance = static_cast<Runtime *>(Runtime::Instance());
+    Runtime* const runtimeInstance = static_cast<Runtime*>(Runtime::Instance());
     // Keep the temporary Runtime alive until process exit to avoid exercising Runtime::~Runtime() in this helper test.
-    Runtime * const runtime = new Runtime();
-    RawDevice * const dev = new RawDevice(0U);
+    Runtime* const runtime = new Runtime();
+    RawDevice* const dev = new RawDevice(0U);
     dev->DevSetTsId(0U);
     dev->devProfStatus_ = PROF_AICPU_MODEL_MASK;
-    ExitMockEngine * const engine = new ExitMockEngine(dev);
+    ExitMockEngine* const engine = new ExitMockEngine(dev);
     dev->engine_ = engine;
     ASSERT_TRUE(runtime->devices_[0U][0U].TryIncAndSet(dev));
     // This case targets DeviceRelease() under exit state; destructor entry is covered by dedicated Runtime tests.
@@ -821,7 +784,7 @@ TEST_F(RuntimeTest, DeviceReleaseOnExitUsesHostOnlyFinalize)
 
 TEST_F(RuntimeTest, SetTimeoutConfig_test)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string oldSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
     bool oldflag1 = rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout;
@@ -837,8 +800,8 @@ TEST_F(RuntimeTest, SetTimeoutConfig_test)
 TEST_F(RuntimeTest, RuntimeGetEnvPath_test1)
 {
     std::string binaryPath;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    char_t * const getPath = "/usr/local/Ascend/CANN-7.0/fwkacllib/lib64/";
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    char_t* const getPath = "/usr/local/Ascend/CANN-7.0/fwkacllib/lib64/";
     MOCKER(getenv).stubs().will(returnValue(getPath));
     rtError_t ret = rtInstance->GetEnvPath(binaryPath);
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
@@ -847,8 +810,8 @@ TEST_F(RuntimeTest, RuntimeGetEnvPath_test1)
 TEST_F(RuntimeTest, RuntimeGetEnvPath_test2)
 {
     std::string binaryPath;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    char_t * const getPath1 = "/usr/local/HiAI/latest/runtime/lib64:/usr/local/Ascend/CANN-7.0/fwkacllib/lib64:";
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    char_t* const getPath1 = "/usr/local/HiAI/latest/runtime/lib64:/usr/local/Ascend/CANN-7.0/fwkacllib/lib64:";
     MOCKER(getenv).stubs().will(returnValue(getPath1));
     rtError_t ret = rtInstance->GetEnvPath(binaryPath);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -856,26 +819,26 @@ TEST_F(RuntimeTest, RuntimeGetEnvPath_test2)
 
 TEST_F(RuntimeTest, RuntimeGetKernelBinTest)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    char_t *envValue = ":fwkacllib/lib64:";
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    char_t* envValue = ":fwkacllib/lib64:";
     MOCKER(getenv).stubs().will(returnValue(envValue));
-    char_t *buffer = nullptr;
+    char_t* buffer = nullptr;
     uint32_t length;
-    char_t *soName = "name";
+    char_t* soName = "name";
     rtError_t ret = rtInstance->GetKernelBin(soName, &buffer, &length);
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
 }
 
 TEST_F(RuntimeTest, GetKernelBin_Success)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     static char envPath[] = "/usr/lib:/tmp/rt_fwkacllib/lib64:/usr/local/lib";
     system("mkdir -p /tmp/rt_fwkacllib/lib64");
     std::ofstream ofs("/tmp/rt_fwkacllib/lib64/test.bin", std::ios::binary);
     ofs << "test";
     ofs.close();
     MOCKER(getenv).stubs().will(returnValue(static_cast<char*>(envPath)));
-    char_t *buffer = nullptr;
+    char_t* buffer = nullptr;
     uint32_t length = 0;
     rtError_t ret = rtInstance->GetKernelBin("test.bin", &buffer, &length);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -890,9 +853,9 @@ TEST_F(RuntimeTest, GetKernelBin_Success)
 
 TEST_F(RuntimeTest, GetKernelBinByFileName_test)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    char_t *binFileName = "llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o";
-    char_t *buffer = nullptr;
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    char_t* binFileName = "llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o";
+    char_t* buffer = nullptr;
     uint64_t length;
     rtError_t ret = rtInstance->GetKernelBinByFileName(binFileName, &buffer, &length);
     ret = rtInstance->FreeKernelBin(buffer);
@@ -906,107 +869,102 @@ TEST_F(RuntimeTest, feature_version_1)
     EXPECT_EQ(result, false);
 
     uint32_t tschVersion = ((uint32_t)TS_BRANCH_V1R1C13 << 16) | 18;
-    result = CheckFeatureIsSupportOld(tschVersion,
-        static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
+    result = CheckFeatureIsSupportOld(tschVersion, static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
     EXPECT_EQ(result, true);
 
     tschVersion = ((uint32_t)TS_BRANCH_V1R1C30 << 16) | 17;
-    result = CheckFeatureIsSupportOld(tschVersion,
-        static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
+    result = CheckFeatureIsSupportOld(tschVersion, static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
     EXPECT_EQ(result, true);
 
     tschVersion = ((uint32_t)TS_BRANCH_V1R1C15 << 16) | 22;
-    result = CheckFeatureIsSupportOld(tschVersion,
-        static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
+    result = CheckFeatureIsSupportOld(tschVersion, static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
     EXPECT_EQ(result, true);
 
     tschVersion = ((uint32_t)TS_BRANCH_TRUNK << 16) | 22;
-    result = CheckFeatureIsSupportOld(tschVersion,
-        static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
+    result = CheckFeatureIsSupportOld(tschVersion, static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
     EXPECT_EQ(result, true);
 
     tschVersion = ((uint32_t)TS_BRANCH_TRUNK << 16) | 18;
-    result = CheckFeatureIsSupportOld(tschVersion,
-        static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
+    result = CheckFeatureIsSupportOld(tschVersion, static_cast<rtFeature>(RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX));
     EXPECT_EQ(result, false);
 
     tschVersion = ((uint32_t)TS_BRANCH_V1R1C17 << 16) | 26;
-    result = CheckFeatureIsSupportOld(tschVersion,
-        static_cast<rtFeature>(RT_FEATURE_SUPPORT_REDUCEASYNC_V2_DC));
+    result = CheckFeatureIsSupportOld(tschVersion, static_cast<rtFeature>(RT_FEATURE_SUPPORT_REDUCEASYNC_V2_DC));
     EXPECT_EQ(result, true);
 }
 
 TEST_F(RuntimeTest, GetElfOffset_NullElfData)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint32_t offset = 0;
     EXPECT_EQ(rtInstance->GetElfOffset(nullptr, 0, &offset), RT_ERROR_INVALID_VALUE);
 }
 
 TEST_F(RuntimeTest, GetElfOffset_NullOffset)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     uint32_t elfData = 0;
     EXPECT_EQ(rtInstance->GetElfOffset(&elfData, 4, nullptr), RT_ERROR_INVALID_VALUE);
 }
 
 TEST_F(RuntimeTest, SetWatchDogDevStatus_NullDevice)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->SetWatchDogDevStatus(nullptr, RT_DEVICE_STATUS_ABNORMAL), RT_ERROR_DEVICE_NULL);
 }
 
 TEST_F(RuntimeTest, LookupAddrByFun_KernelNotFound)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int dummyStub = 0;
-    void *addr = nullptr;
+    void* addr = nullptr;
     EXPECT_EQ(rtInstance->LookupAddrByFun(&dummyStub, nullptr, &addr), RT_ERROR_KERNEL_LOOKUP);
 }
 
 TEST_F(RuntimeTest, LookupAddrAndPrefCntWithHandle_KernelNotFound)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    void *addr = nullptr;
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    void* addr = nullptr;
     uint32_t prefetchCnt = 0;
-    EXPECT_EQ(rtInstance->LookupAddrAndPrefCntWithHandle(nullptr, "nonexistent_kernel", nullptr, &addr, &prefetchCnt),
-              RT_ERROR_KERNEL_LOOKUP);
+    EXPECT_EQ(
+        rtInstance->LookupAddrAndPrefCntWithHandle(nullptr, "nonexistent_kernel", nullptr, &addr, &prefetchCnt),
+        RT_ERROR_KERNEL_LOOKUP);
 }
 
 TEST_F(RuntimeTest, GetPriCtxByDeviceId_InvalidDevId)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->GetPriCtxByDeviceId(RT_MAX_DEV_NUM + 1, 0), nullptr);
 }
 
 TEST_F(RuntimeTest, GetPriCtxByDeviceId_InvalidTsId)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->GetPriCtxByDeviceId(0, RT_MAX_TS_ID + 1), nullptr);
 }
 
 TEST_F(RuntimeTest, GetRefPriCtx_InvalidDevId)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->GetRefPriCtx(RT_MAX_DEV_NUM + 1, 0), nullptr);
 }
 
 TEST_F(RuntimeTest, GetRefPriCtx_InvalidTsId)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->GetRefPriCtx(0, RT_MAX_TS_ID + 1), nullptr);
 }
 
 TEST_F(RuntimeTest, PrimaryContextRetain_InvalidDevId)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->PrimaryContextRetain(RT_MAX_DEV_NUM + 1), nullptr);
 }
 
 // 等价性验证：PrimaryContextRelease 入参校验早退分支（devId 越界 -> RT_ERROR_DEVICE_ID）。
 TEST_F(RuntimeTest, PrimaryContextRelease_InvalidDevId)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->PrimaryContextRelease(RT_MAX_DEV_NUM + 1), RT_ERROR_DEVICE_ID);
     EXPECT_EQ(rtInstance->PrimaryContextRelease(RT_MAX_DEV_NUM + 1, true), RT_ERROR_DEVICE_ID);
 }
@@ -1016,26 +974,26 @@ TEST_F(RuntimeTest, PrimaryContextRelease_InvalidDevId)
 // 本用例对 fixture 引用计数保持平衡（额外 retain 1 次、release 1 次）。
 TEST_F(RuntimeTest, PrimaryContextRelease_MultiRetainKeepsPrimaryAlive)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t devId = 0;
     EXPECT_EQ(rtGetDevice(&devId), RT_ERROR_NONE);
 
-    RefObject<Context *> *refObject = rtInstance->PrimaryContextRetain(static_cast<uint32_t>(devId));
+    RefObject<Context*>* refObject = rtInstance->PrimaryContextRetain(static_cast<uint32_t>(devId));
     ASSERT_NE(refObject, nullptr);
-    Context *ctxBefore = refObject->GetVal();
+    Context* ctxBefore = refObject->GetVal();
     EXPECT_NE(ctxBefore, nullptr);
 
     // 引用计数仍 > 0，不触发 teardown，返回 RT_ERROR_NONE。
     EXPECT_EQ(rtInstance->PrimaryContextRelease(static_cast<uint32_t>(devId)), RT_ERROR_NONE);
 
     // primary context 仍存活，未被释放，指针保持不变。
-    Context *ctxAfter = refObject->GetVal();
+    Context* ctxAfter = refObject->GetVal();
     EXPECT_EQ(ctxAfter, ctxBefore);
 }
 
 TEST_F(RuntimeTest, FreeAiCpuStreamId_Invalid)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int64_t oldCnt = rtInstance->GetAicpuCnt();
     rtInstance->SetAicpuCnt(16);
     rtInstance->FreeAiCpuStreamId(0);
@@ -1044,12 +1002,12 @@ TEST_F(RuntimeTest, FreeAiCpuStreamId_Invalid)
 
 TEST_F(RuntimeTest, GetKernelBinByFileName_EmptyFile)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string emptyFile = "/tmp/rt_utest_empty_bin.o";
     std::ofstream ofs(emptyFile, std::ios::binary);
     ofs.close();
 
-    char_t *buffer = nullptr;
+    char_t* buffer = nullptr;
     uint64_t length = 0;
     EXPECT_EQ(rtInstance->GetKernelBinByFileName(emptyFile.c_str(), &buffer, &length), RT_ERROR_INVALID_VALUE);
     std::remove(emptyFile.c_str());
@@ -1057,7 +1015,7 @@ TEST_F(RuntimeTest, GetKernelBinByFileName_EmptyFile)
 
 TEST_F(RuntimeTest, LookupAddrAndPrefCnt_NoProgram)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     PlainProgram prog(RT_KERNEL_ATTR_TYPE_AICPU);
     Kernel kernel("test", 0ULL, &prog, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel.program_ = nullptr;
@@ -1067,25 +1025,25 @@ TEST_F(RuntimeTest, LookupAddrAndPrefCnt_NoProgram)
 
 TEST_F(RuntimeTest, LookupAddrAndPrefCnt_NoProgram_Overload2)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     PlainProgram prog(RT_KERNEL_ATTR_TYPE_AICPU);
     Kernel kernel("test", 0ULL, &prog, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel.program_ = nullptr;
-    void *addr = nullptr;
+    void* addr = nullptr;
     uint32_t prefetchCnt = 0;
     EXPECT_EQ(rtInstance->LookupAddrAndPrefCnt(&kernel, nullptr, &addr, &prefetchCnt), RT_ERROR_KERNEL_LOOKUP);
 }
 
 TEST_F(RuntimeTest, InitSocVersionAndChipType_HalGetSocVersionFail)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER(halGetSocVersion).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     EXPECT_NE(rtInstance->InitSocVersionAndChipType(0), RT_ERROR_NONE);
 }
 
 TEST_F(RuntimeTest, InitSocVersionAndChipType_HalGetDeviceInfoFail)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER(halGetSocVersion).stubs().will(returnValue(DRV_ERROR_NOT_SUPPORT));
     MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     EXPECT_NE(rtInstance->InitSocVersionAndChipType(0), RT_ERROR_NONE);
@@ -1093,12 +1051,12 @@ TEST_F(RuntimeTest, InitSocVersionAndChipType_HalGetDeviceInfoFail)
 
 TEST_F(RuntimeTest, LookupAddrAndPrefCnt_NoModule)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Context *ctx = rtInstance->GetPriCtxByDeviceId(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Context* ctx = rtInstance->GetPriCtxByDeviceId(0, 0);
     ASSERT_NE(ctx, nullptr);
 
-    PlainProgram *prog = new PlainProgram(RT_KERNEL_ATTR_TYPE_AICPU);
-    Kernel *kernel = new Kernel("test", 0ULL, prog, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    PlainProgram* prog = new PlainProgram(RT_KERNEL_ATTR_TYPE_AICPU);
+    Kernel* kernel = new Kernel("test", 0ULL, prog, RT_KERNEL_ATTR_TYPE_AICPU, 0);
 
     rtKernelDetailInfo_t info = {};
     rtError_t ret = rtInstance->LookupAddrAndPrefCnt(kernel, ctx, &info);
@@ -1110,17 +1068,15 @@ TEST_F(RuntimeTest, LookupAddrAndPrefCnt_NoModule)
 
 TEST_F(RuntimeTest, InitSocVersionAndChipType_HalGetDeviceInfoFail2)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER(halGetSocVersion).stubs().will(returnValue(DRV_ERROR_NOT_SUPPORT));
-    MOCKER(halGetDeviceInfo).stubs()
-        .will(returnValue(DRV_ERROR_NONE))
-        .then(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_NONE)).then(returnValue(DRV_ERROR_INVALID_VALUE));
     EXPECT_NE(rtInstance->InitSocVersionAndChipType(0), RT_ERROR_NONE);
 }
 
 TEST_F(RuntimeTest, InitAicpuFlowGw_NoDevice)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool oldHaveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = false;
     EXPECT_EQ(rtInstance->InitAicpuFlowGw(0, nullptr), RT_ERROR_FEATURE_NOT_SUPPORT);
@@ -1129,51 +1085,41 @@ TEST_F(RuntimeTest, InitAicpuFlowGw_NoDevice)
 
 TEST_F(RuntimeTest, MallocProgramAndReg_InvalidMagic)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtDevBinary_t bin = {};
     bin.magic = 0xDEADBEEF;
     bin.version = 1;
     bin.data = nullptr;
     bin.length = 0;
-    Program *prog = nullptr;
+    Program* prog = nullptr;
     EXPECT_EQ(rtInstance->MallocProgramAndReg(&bin, &prog), RT_ERROR_INVALID_VALUE);
 }
 
 TEST_F(RuntimeTest, SetAicpuAttr_TsdError)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     auto oldFunc = rtInstance->tsdSetAttr_;
-    rtInstance->tsdSetAttr_ = [](const char_t *, const char_t *) { return static_cast<TDT_StatusType>(1); };
+    rtInstance->tsdSetAttr_ = [](const char_t*, const char_t*) { return static_cast<TDT_StatusType>(1); };
     EXPECT_EQ(rtInstance->SetAicpuAttr("key", "val"), RT_ERROR_DRV_TSD_ERR);
     rtInstance->tsdSetAttr_ = oldFunc;
 }
 
 TEST_F(RuntimeTest, ProfilerStop_ConfigMismatch)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool oldMode = rtInstance->profileLogModeEnable_;
     rtInstance->profileLogModeEnable_ = true;
     EXPECT_EQ(rtInstance->ProfilerStop(0, 0, nullptr, 0), RT_ERROR_PROF_STATUS);
     rtInstance->profileLogModeEnable_ = oldMode;
 }
 
-class RuntimeTest2 : public testing::Test
-{
+class RuntimeTest2 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
+    static void TearDownTestCase() {}
 
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -1188,14 +1134,11 @@ protected:
 TEST_F(RuntimeTest2, reset_device_forece_01)
 {
     uint32_t devNum = 8;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     // 设置可用device
     setenv("ASCEND_RT_VISIBLE_DEVICES", "1,2,3", 20);
     InitVisibleDevices();
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     auto ret = rtInstance->GetVisibleDevices();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(rtInstance->userDeviceCnt, 3);
@@ -1209,14 +1152,11 @@ TEST_F(RuntimeTest2, reset_device_forece_01)
 TEST_F(RuntimeTest2, set_default_device_id)
 {
     uint32_t devNum = 8;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     // 设置可用device
     setenv("ASCEND_RT_VISIBLE_DEVICES", "1,2,3", 20);
     InitVisibleDevices();
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     auto ret = rtInstance->GetVisibleDevices();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(rtInstance->userDeviceCnt, 3);
@@ -1233,13 +1173,13 @@ TEST_F(RuntimeTest2, set_default_device_id)
 
 TEST_F(RuntimeTest2, PrimaryXpuContextRelease)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_EQ(rtInstance->PrimaryXpuContextRelease(0), RT_ERROR_NONE);
 }
 
 TEST_F(RuntimeTest2, XpuDeviceRelease)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->XpuDeviceRelease(nullptr);
     EXPECT_TRUE(true);
 }
@@ -1247,7 +1187,7 @@ TEST_F(RuntimeTest2, XpuDeviceRelease)
 TEST_F(RuntimeTest, ut_AllKernelRegister_mix_aiv)
 {
     ElfProgram prog;
-    char *name = new (std::nothrow) char[20];
+    char* name = new (std::nothrow) char[20];
     strcpy_s(name, 20, "abc_123_mix_aiv");
     RtKernel kernel = {name, 10, 10, {}};
     prog.elfData_->kernel_num = 1;

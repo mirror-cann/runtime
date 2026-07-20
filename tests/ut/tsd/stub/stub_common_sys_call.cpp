@@ -11,22 +11,13 @@
 
 int32_t g_addr = 0;
 
-void *stub_dlopen_success(const char *filename, int flags)
-{
-    return &g_addr;
-}
+void* stub_dlopen_success(const char* filename, int flags) { return &g_addr; }
 
-int stub_dlclose_success(void *handle)
-{
-    return 0;
-}
+int stub_dlclose_success(void* handle) { return 0; }
 
-int32_t stub_start_app_success(const char *appName, const size_t nameLen, const int32_t timeout)
-{
-    return 0;
-}
+int32_t stub_start_app_success(const char* appName, const size_t nameLen, const int32_t timeout) { return 0; }
 
-void *stub_dlsym_start_app_success(void *handle, const char *symbol)
+void* stub_dlsym_start_app_success(void* handle, const char* symbol)
 {
     return reinterpret_cast<void*>(stub_start_app_success);
 }

@@ -28,10 +28,7 @@ using namespace std;
 
 class PackageVerifyTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before PackageVerifyTest()" << endl;
-    }
+    virtual void SetUp() { cout << "Before PackageVerifyTest()" << endl; }
 
     virtual void TearDown()
     {

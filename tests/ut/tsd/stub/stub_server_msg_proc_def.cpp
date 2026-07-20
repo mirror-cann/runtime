@@ -18,8 +18,8 @@ void StubServerMsgProcDef::RegisterTsdOpenMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultCapabilityGetMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultCapabilityGetMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_START_PROC_MSG, &StubServerMsgImpl::DefaultStartProcMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_PROC_MSG, &StubServerMsgImpl::DefaultCloseProcMsgProc);
 }
@@ -28,19 +28,20 @@ void StubServerMsgProcDef::RegisterUpdateProfilingModeMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultCapabilityGetMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultCapabilityGetMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_START_PROC_MSG, &StubServerMsgImpl::DefaultStartProcMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_PROC_MSG, &StubServerMsgImpl::DefaultCloseProcMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_UPDATE_PROIFILING_MSG, &StubServerMsgImpl::DefaultUpdateProfilingModeMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_UPDATE_PROIFILING_MSG, &StubServerMsgImpl::DefaultUpdateProfilingModeMsgProc);
 }
 
 void StubServerMsgProcDef::RegisterTsdInitQsMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultCapabilityGetMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultCapabilityGetMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_START_QS_MSG, &StubServerMsgImpl::DefaultInitQsMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_PROC_MSG, &StubServerMsgImpl::DefaultCloseProcMsgProc);
 }
@@ -58,8 +59,8 @@ void StubServerMsgProcDef::RegisterGetOmInnerDecMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_SUPPORT_OM_INNER_DEC,
-        &StubServerMsgImpl::DefaultSupportOmInnerDecMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_SUPPORT_OM_INNER_DEC, &StubServerMsgImpl::DefaultSupportOmInnerDecMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_START_PROC_MSG, &StubServerMsgImpl::DefaultStartProcMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_PROC_MSG, &StubServerMsgImpl::DefaultCloseProcMsgProc);
 }
@@ -68,8 +69,8 @@ void StubServerMsgProcDef::RegisterGetCapabilityLevelMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_START_PROC_MSG, &StubServerMsgImpl::DefaultStartProcMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_PROC_MSG, &StubServerMsgImpl::DefaultCloseProcMsgProc);
 }
@@ -78,21 +79,21 @@ void StubServerMsgProcDef::RegisterTsdFileLoadAndUnLoadMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_REMOVE_FILE, &StubServerMsgImpl::DefaultRemoveFileMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_DEVICE_RUNTIME_CHECKCODE,
-        &StubServerMsgImpl::DefaultLoadRuntimePkgMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_DEVICE_DSHAPE_CHECKCODE,
-        &StubServerMsgImpl::DefaultLoadDshapePkgMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_DEVICE_RUNTIME_CHECKCODE, &StubServerMsgImpl::DefaultLoadRuntimePkgMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_DEVICE_DSHAPE_CHECKCODE, &StubServerMsgImpl::DefaultLoadDshapePkgMsgProc);
 }
 
 void StubServerMsgProcDef::RegisterTsdProcessOpenQueryCloseMsgDefaultCallBack()
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_OPEN_SUB_PROC, &StubServerMsgImpl::DefaultProcessOpenMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_SUB_PROC, &StubServerMsgImpl::DefaultProcessCloseMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_GET_SUB_PROC_STATUS, &StubServerMsgImpl::DefaultGetStatusMsgProc);
@@ -102,10 +103,10 @@ void StubServerMsgProcDef::RegisterTsdProcessListOpenQueryCloseMsgDefaultCallBac
 {
     StubServerReply* subReply = StubServerReply::GetInstance();
     subReply->RegisterCallBack(HDCMessage::TEST_HDC_SEND, &StubServerMsgImpl::DefaultVersionNegotiateMsgProc);
-    subReply->RegisterCallBack(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL,
-        &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
+    subReply->RegisterCallBack(
+        HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL, &StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_OPEN_SUB_PROC, &StubServerMsgImpl::DefaultProcessOpenMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_CLOSE_SUB_PROC_LIST, &StubServerMsgImpl::DefaultCloseListMsgProc);
     subReply->RegisterCallBack(HDCMessage::TSD_GET_SUB_PROC_STATUS, &StubServerMsgImpl::DefaultGetStatusMsgProc);
 }
-}
+} // namespace tsd

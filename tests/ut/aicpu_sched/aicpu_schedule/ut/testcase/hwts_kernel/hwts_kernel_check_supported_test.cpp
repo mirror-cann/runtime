@@ -31,12 +31,11 @@ TEST_F(CheckSupportedKernelTest, TsKernelCheckKernelSupported_success)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "TsKernelCheckKernelSupported";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 8;
-    char *OpraterkernelName = "markStep";
+    char* OpraterkernelName = "markStep";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
@@ -46,7 +45,7 @@ TEST_F(CheckSupportedKernelTest, TsKernelCheckKernelSupported_success)
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_OK);
     delete config;
     config = nullptr;
@@ -57,12 +56,11 @@ TEST_F(CheckSupportedKernelTest, TsKernelCheckKernelSupported_failed00)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "TsKernelCheckKernelSupported";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 14;
-    char *OpraterkernelName = "markStepMytest";
+    char* OpraterkernelName = "markStepMytest";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelType = 2;
@@ -78,12 +76,11 @@ TEST_F(CheckSupportedKernelTest, TsKernelCheckKernelSupported_failed01)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "TsKernelCheckKernelSupported";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 14;
-    char *OpraterkernelName = "markStepMytest";
+    char* OpraterkernelName = "markStepMytest";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
@@ -93,7 +90,7 @@ TEST_F(CheckSupportedKernelTest, TsKernelCheckKernelSupported_failed01)
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
     delete config;
     config = nullptr;

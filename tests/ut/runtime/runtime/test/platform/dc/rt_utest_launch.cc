@@ -19,18 +19,12 @@ protected:
     static void SetUpTestCase()
     {
         GlobalMockObject::verify();
-        std::cout<<"TaskLaunchTest test start start"<<std::endl;
+        std::cout << "TaskLaunchTest test start start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"TaskLaunchTest test start end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TaskLaunchTest test start end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -43,7 +37,7 @@ TEST_F(TaskLaunchTest, nop_task_test_01)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     Device* dev = rtInstance->GetDevice(0, 0);
     int32_t version = dev->GetTschVersion();
     dev->SetTschVersion(TS_VERSION_NOP_TASK);
@@ -59,7 +53,7 @@ TEST_F(TaskLaunchTest, nop_task_test_01)
 
 TEST_F(TaskLaunchTest, ReduceAsync_errorTest)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtError_t error;
     rtStream_t streamA;
     uint64_t buff_size = 100;
@@ -67,22 +61,17 @@ TEST_F(TaskLaunchTest, ReduceAsync_errorTest)
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    uint32_t *devMemSrc;
-    uint32_t *devMem;
+    uint32_t* devMemSrc;
+    uint32_t* devMem;
 
-    error = rtMalloc((void **)&devMemSrc, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    error = rtMalloc((void**)&devMemSrc, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtMalloc((void **)&devMem, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    error = rtMalloc((void**)&devMem, buff_size, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtReduceAsync(devMem,
-                          buff_size,
-                          devMemSrc,
-                          buff_size,
-                          RT_MEMCPY_SDMA_AUTOMATIC_EQUAL,
-                          RT_DATA_TYPE_FP32,
-                          streamA);
+    error = rtReduceAsync(
+        devMem, buff_size, devMemSrc, buff_size, RT_MEMCPY_SDMA_AUTOMATIC_EQUAL, RT_DATA_TYPE_FP32, streamA);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
     error = rtFree(devMem);
@@ -99,7 +88,7 @@ TEST_F(TaskLaunchTest, rtMemAddress_2)
 {
     rtError_t error = rtReserveMemAddress(nullptr, 0, 0, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
+
     error = rtReleaseMemAddress(nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtDrvMemHandle handVal;
@@ -109,21 +98,21 @@ TEST_F(TaskLaunchTest, rtMemAddress_2)
     rtDrvMemHandle* handle = &handVal;
     error = rtMallocPhysical(handle, 0, &prop, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtFreePhysical(nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtMapMem(nullptr, 0, 0, nullptr, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtUnmapMem(nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    
+
     rtMemLocation location;
     location.type = RT_MEMORY_LOC_HOST;
     location.id = 0;
- 
-    size_t size = 1024*1024;//1mb
+
+    size_t size = 1024 * 1024; // 1mb
     rtMemAccessDesc desc = {};
     desc.location = location;
     desc.flags = RT_MEM_ACCESS_FLAGS_READWRITE;
@@ -146,9 +135,7 @@ TEST_F(TaskLaunchTest, rtMemAddress_2)
     error = rtMemGetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_MINIMUM, &granularity);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    MOCKER(halMemGetAllocationGranularity)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemGetAllocationGranularity).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemGetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_MINIMUM, &granularity);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -192,12 +179,9 @@ TEST_F(TaskLaunchTest, rtMemAddress_01)
     error = rtsMemGetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_MINIMUM, &granularity);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    MOCKER(halMemGetAllocationGranularity)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemGetAllocationGranularity).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemGetAllocationGranularity(&prop, RT_MEM_ALLOC_GRANULARITY_MINIMUM, &granularity);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-
 }
 
 TEST_F(TaskLaunchTest, notify_create_with_flag)

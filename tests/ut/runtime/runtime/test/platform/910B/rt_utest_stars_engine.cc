@@ -36,7 +36,7 @@
 #include "device/device_error_proc.hpp"
 #include "stream_sqcq_manage.hpp"
 #include <map>
-#include <utility>  // For std::pair and std::make_pair.
+#include <utility> // For std::pair and std::make_pair.
 #include "rt_stars_define.h"
 #include "thread_local_container.hpp"
 #include "rt_unwrap.h"
@@ -59,13 +59,13 @@ constexpr uint32_t TS_SDMA_STATUS_LINK_ERROR = 0x9U;
 constexpr uint32_t TS_SDMA_STATUS_POISON_ERROR = 0xAU;
 } // namespace
 
-void ReportErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
+void ReportErrorInfoForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId);
 uint16_t GetAicpuKernelCredit(uint16_t timeout);
-}
-}
+} // namespace runtime
+} // namespace cce
 
-using std::pair;
 using std::make_pair;
+using std::pair;
 
 extern int32_t reportRasProcFlag;
 extern int32_t faultEventFlag;
@@ -73,30 +73,24 @@ extern int32_t checkProcessStatusFlag;
 
 class CloudV2StarsEngineTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "StarsTaskTest SetUP" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "StarsTaskTest SetUP" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "StarsTaskTest Tear Down" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "StarsTaskTest Tear Down" << std::endl; }
 
     virtual void SetUp()
     {
         MockDriverApi();
         rtSetDevice(0);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         device_->SetIsChipSupportRecycleThread(false);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
 
         grp_ = new DvppGrp(device_, 0);
-        rtDvppGrp_t grp_t = (rtDvppGrp_t *)grp_;
+        rtDvppGrp_t grp_t = (rtDvppGrp_t*)grp_;
         rtError_t ret = rtStreamCreateByGrp(&streamHandleDvpp_, 0, 0, grp_t);
         streamDvpp_ = rt_ut::UnwrapOrNull<Stream>(streamHandleDvpp_);
         streamDvpp_->SetLimitFlag(true);
@@ -108,7 +102,7 @@ protected:
         if (device_ != nullptr) {
             device_->SetIsChipSupportRecycleThread(false);
         }
-        ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+        ((Runtime*)Runtime::Instance())->DestroyReportRasThread();
         reportRasProcFlag = 0;
         faultEventFlag = 0;
         checkProcessStatusFlag = 0;
@@ -136,14 +130,14 @@ protected:
         stream_ = nullptr;
         streamDvpp_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
         rtDeviceReset(0);
         GlobalMockObject::verify();
         GlobalMockObject::reset();
     }
 
 protected:
-    static void ClearStreamState(Stream * const stream)
+    static void ClearStreamState(Stream* const stream)
     {
         if (stream == nullptr) {
             return;
@@ -164,7 +158,7 @@ protected:
 
     void MockDriverApi()
     {
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
         MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -178,11 +172,11 @@ protected:
         MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq).stubs().will(returnValue(RT_ERROR_NONE));
     }
 
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Stream *streamDvpp_ = nullptr;
-    Engine *engine_ = nullptr;
-    DvppGrp *grp_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Stream* streamDvpp_ = nullptr;
+    Engine* engine_ = nullptr;
+    DvppGrp* grp_ = nullptr;
     rtStream_t streamHandle_ = 0;
     rtStream_t streamHandleDvpp_ = 0;
 };
@@ -194,15 +188,15 @@ TEST_F(CloudV2StarsEngineTest, StateDown)
     task0.stream = stream_;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    Kernel *aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task0, aicKernel1, aicKernel1->GetKernelAttrType(), 1, nullptr);
     delete aicKernel1;
     task0.u.aicTaskInfo.kernel = kernel;
     EXPECT_EQ(task0.type, TS_TASK_TYPE_KERNEL_AICORE);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     const bool flag = rtInstance->GetDisableThread();
     rtInstance->SetDisableThread(true);
     device_->SetDevStatus(RT_ERROR_LOST_HEARTBEAT);
@@ -221,10 +215,10 @@ TEST_F(CloudV2StarsEngineTest, SubmitNormalTask_01)
     task0.stream = stream_;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task0, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
     delete aicKernel2;
     task0.u.aicTaskInfo.kernel = kernel;
@@ -250,7 +244,7 @@ TEST_F(CloudV2StarsEngineTest, timeout1)
 
 TEST_F(CloudV2StarsEngineTest, SendingWaitProc)
 {
-    ((StarsEngine *)engine_)->SendingWaitProc(stream_);
+    ((StarsEngine*)engine_)->SendingWaitProc(stream_);
     auto flag = stream_->GetRecycleFlag();
     EXPECT_EQ(flag, false);
 }
@@ -258,7 +252,7 @@ TEST_F(CloudV2StarsEngineTest, SendingWaitProc)
 TEST_F(CloudV2StarsEngineTest, SendingWaitStreamAbort)
 {
     stream_->abortStatus_ = RT_ERROR_STREAM_ABORT;
-    ((StarsEngine *)engine_)->SendingWaitProc(stream_);
+    ((StarsEngine*)engine_)->SendingWaitProc(stream_);
     auto flag = stream_->GetRecycleFlag();
     EXPECT_EQ(flag, false);
     stream_->abortStatus_ = RT_ERROR_NONE;
@@ -266,7 +260,7 @@ TEST_F(CloudV2StarsEngineTest, SendingWaitStreamAbort)
 
 TEST_F(CloudV2StarsEngineTest, SendingWait_dvpp)
 {
-    ((StarsEngine *)engine_)->SendingWaitProc(streamDvpp_);
+    ((StarsEngine*)engine_)->SendingWaitProc(streamDvpp_);
     auto flag = streamDvpp_->GetLimitFlag();
     EXPECT_EQ(flag, false);
 }
@@ -281,7 +275,7 @@ TEST_F(CloudV2StarsEngineTest, ProfilingEnableTask)
     task.type = TS_TASK_TYPE_PROFILING_ENABLE;
 
     rtStarsSqe_t sqe = {};
-    RtStarsPhSqe &placeHolderSqe = sqe.phSqe;
+    RtStarsPhSqe& placeHolderSqe = sqe.phSqe;
     ToConstructSqe(&task, &sqe);
     // head task_type
     EXPECT_EQ(placeHolderSqe.task_type, 27);
@@ -297,7 +291,7 @@ TEST_F(CloudV2StarsEngineTest, ProfilingDisableTask)
     task.type = TS_TASK_TYPE_PROFILING_DISABLE;
 
     rtStarsSqe_t sqe = {};
-    RtStarsPhSqe &placeHolderSqe = sqe.phSqe;
+    RtStarsPhSqe& placeHolderSqe = sqe.phSqe;
 
     ToConstructSqe(&task, &sqe);
     // head task_type
@@ -315,8 +309,7 @@ TEST_F(CloudV2StarsEngineTest, AddTaskToStream)
     workTask.stream = stream_;
     ProfilingEnableTaskInit(&workTask, 1, &profCfg);
 
-    MOCKER_CPP_VIRTUAL(stream_,
-            &Stream::StarsAddTaskToStream).stubs().will(returnValue(1)).then(returnValue(0));
+    MOCKER_CPP_VIRTUAL(stream_, &Stream::StarsAddTaskToStream).stubs().will(returnValue(1)).then(returnValue(0));
     error = engine.AddTaskToStream(&workTask, sendSqeNum);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -390,7 +383,10 @@ TEST_F(CloudV2StarsEngineTest, SendTaskStreamAbort)
     uint16_t taskId = 0;
     task.stream = stream_;
     stream_->SetAbortStatus(RT_ERROR_STREAM_ABORT);
-    MOCKER_CPP_VIRTUAL(engine_, &Engine::TryRecycleTask).stubs().with(mockcpp::any()).will(returnValue(RT_ERROR_STREAM_ABORT));
+    MOCKER_CPP_VIRTUAL(engine_, &Engine::TryRecycleTask)
+        .stubs()
+        .with(mockcpp::any())
+        .will(returnValue(RT_ERROR_STREAM_ABORT));
     err = engine_->SendTask(&task, taskId);
     EXPECT_EQ(err, RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL);
     stream_->SetAbortStatus(RT_ERROR_NONE);
@@ -407,8 +403,7 @@ TEST_F(CloudV2StarsEngineTest, AddTaskToStream3)
     rtProfCfg_t profCfg = {};
     ProfilingEnableTaskInit(&workTask, 1, &profCfg);
 
-    MOCKER_CPP_VIRTUAL(stream_,
-            &Stream::StarsAddTaskToStream).stubs().will(returnValue(1)).then(returnValue(0));
+    MOCKER_CPP_VIRTUAL(stream_, &Stream::StarsAddTaskToStream).stubs().will(returnValue(1)).then(returnValue(0));
     error = engine.AddTaskToStream(&workTask, sendSqeNum);
     EXPECT_EQ(error, RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL);
     stream_->SetBeingAbortedFlag(false);
@@ -421,16 +416,16 @@ TEST_F(CloudV2StarsEngineTest, FinishedTaskReclaim)
     uint16_t recycleHead = 0U;
     uint32_t taskId = 1U;
 
-    rtError_t error = ((StarsEngine *)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
+    rtError_t error = ((StarsEngine*)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
     sqHead = 100U;
-    error = ((StarsEngine *)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
+    error = ((StarsEngine*)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     taskHead = 0xffffU;
     sqHead = 0U;
-    error = ((StarsEngine *)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
+    error = ((StarsEngine*)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
 
@@ -442,18 +437,18 @@ TEST_F(CloudV2StarsEngineTest, FinishedTaskReclaim1)
     uint32_t taskId = 1U;
     rtError_t error;
     for (uint32_t i = 0; i < 500; i++) {
-        error = ((StarsEngine *)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
+        error = ((StarsEngine*)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
         EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     }
 
     sqHead = 100U;
-    error = ((StarsEngine *)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
+    error = ((StarsEngine*)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     for (uint32_t i = 0; i < 500; i++) {
         taskHead = 0xffffU;
         sqHead = 0U;
-        error = ((StarsEngine *)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
+        error = ((StarsEngine*)engine_)->FinishedTaskReclaim(stream_, true, taskHead, sqHead, taskId);
         EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     }
 }
@@ -491,17 +486,19 @@ TEST_F(CloudV2StarsEngineTest, TaskReclaim)
     uint32_t taskId = 0;
 
     uint32_t recycleTaskId = 0;
-    MOCKER_CPP(&StarsEngine::SendingProcReport).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
+    MOCKER_CPP(&StarsEngine::SendingProcReport)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
         .will(returnValue(RT_ERROR_NONE));
 
-    error = ((StarsEngine *)engine_)->TaskReclaim(0xffffffffU, true, taskId);
+    error = ((StarsEngine*)engine_)->TaskReclaim(0xffffffffU, true, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = ((StarsEngine *)engine_)->TaskReclaim(stream_->Id_(), true, taskId);
+    error = ((StarsEngine*)engine_)->TaskReclaim(stream_->Id_(), true, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     stream_->SetFailureMode(ABORT_ON_FAILURE);
-    error = ((StarsEngine *)engine_)->TaskReclaim(stream_->Id_(), true, taskId);
+    error = ((StarsEngine*)engine_)->TaskReclaim(stream_->Id_(), true, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -529,10 +526,9 @@ TEST_F(CloudV2StarsEngineTest, MonitorForWatchDog_01)
     rtError_t error;
     StarsEngine engine(device_);
 
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device_);
     EXPECT_NE(errorProc, nullptr);
-    MOCKER_CPP_VIRTUAL((RawDevice *)device_, &RawDevice::ReportRingBuffer).stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL((RawDevice*)device_, &RawDevice::ReportRingBuffer).stubs().will(returnValue(RT_ERROR_NONE));
     engine.MonitorForWatchDog(device_);
     delete errorProc;
 }
@@ -542,9 +538,11 @@ TEST_F(CloudV2StarsEngineTest, MonitorForWatchDog_03)
     rtError_t error;
     uint16_t streamId;
     StarsEngine engine(device_);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device_);
     EXPECT_NE(errorProc, nullptr);
-    MOCKER_CPP_VIRTUAL((RawDevice *)device_, &RawDevice::ReportRingBuffer).stubs().will(returnValue(RT_ERROR_TASK_MONITOR));
+    MOCKER_CPP_VIRTUAL((RawDevice*)device_, &RawDevice::ReportRingBuffer)
+        .stubs()
+        .will(returnValue(RT_ERROR_TASK_MONITOR));
     error = device_->ReportRingBuffer(&streamId);
     EXPECT_EQ(error, RT_ERROR_TASK_MONITOR);
     engine.MonitorForWatchDog(device_);
@@ -562,12 +560,12 @@ TEST_F(CloudV2StarsEngineTest, SyncTask)
     ProfilingEnableTaskInit(&workTask, 1, &profCfg);
 
     stream_->SetAbortStatus(RT_ERROR_STREAM_ABORT);
-    error = ((StarsEngine *)engine_)->SyncTask(stream_, 0, false, 1);
+    error = ((StarsEngine*)engine_)->SyncTask(stream_, 0, false, 1);
     EXPECT_EQ(error, RT_ERROR_STREAM_ABORT_SYNC_TASK_FAIL);
 
     stream_->SetAbortStatus(RT_ERROR_DEVICE_TASK_ABORT);
     stream_->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
-    error = ((StarsEngine *)engine_)->SyncTask(stream_, 0, false, 1);
+    error = ((StarsEngine*)engine_)->SyncTask(stream_, 0, false, 1);
 
     EXPECT_EQ(error, RT_ERROR_DEVICE_ABORT_SYNC_TASK_FAIL);
     stream_->Device_()->SetDeviceStatus(0);
@@ -585,14 +583,13 @@ TEST_F(CloudV2StarsEngineTest, SyncTask_with_async_recycle_thread)
     rtProfCfg_t profCfg = {};
     ProfilingEnableTaskInit(&workTask, 1, &profCfg);
 
-
     stream_->SetAbortStatus(RT_ERROR_STREAM_ABORT);
-    error = ((StarsEngine *)engine_)->SyncTask(stream_, 0, false, 10);
+    error = ((StarsEngine*)engine_)->SyncTask(stream_, 0, false, 10);
     EXPECT_EQ(error, RT_ERROR_STREAM_ABORT_SYNC_TASK_FAIL);
 
     stream_->SetAbortStatus(RT_ERROR_DEVICE_TASK_ABORT);
     stream_->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
-    error = ((StarsEngine *)engine_)->SyncTask(stream_, 0, false, 10);
+    error = ((StarsEngine*)engine_)->SyncTask(stream_, 0, false, 10);
 
     EXPECT_EQ(error, RT_ERROR_DEVICE_ABORT_SYNC_TASK_FAIL);
     stream_->Device_()->SetDeviceStatus(0);
@@ -604,19 +601,18 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_01)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_PROFILING_ENABLE, error);
+    TaskInfo* const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_PROFILING_ENABLE, error);
     rtProfCfg_t profCfg = {};
     ProfilingEnableTaskInit(tsk, 1, &profCfg);
-    ((StarsEngine *)engine_)->AddTaskToStream(tsk, sendSqeNum);
+    ((StarsEngine*)engine_)->AddTaskToStream(tsk, sendSqeNum);
 
     device_->GetTaskFactory()->SetSerialId(stream_, tsk);
     tsk->pkgStat[static_cast<uint16_t>(RT_PACKAGE_TYPE_TASK_REPORT)].receivePackage++;
 
     uint16_t stream_id = stream_->Id_();
     stream_->SetSyncRemainTime(5);
-    error = ((StarsEngine *)engine_)->ProcessHeadTaskByStreamId(stream_id);
+    error = ((StarsEngine*)engine_)->ProcessHeadTaskByStreamId(stream_id);
     EXPECT_EQ(error, RT_ERROR_TASK_NULL);
-
 }
 
 TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_02)
@@ -624,13 +620,13 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_02)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
+    TaskInfo* const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
     ModelExecuteTaskInit(tsk, nullptr, 0, 0);
 
-    ((StarsEngine *)engine_)->AddTaskToStream(tsk, sendSqeNum);
+    ((StarsEngine*)engine_)->AddTaskToStream(tsk, sendSqeNum);
 
     uint16_t stream_id = stream_->Id_();
-    error = ((StarsEngine *)engine_)->ProcessHeadTaskByStreamId(stream_id);
+    error = ((StarsEngine*)engine_)->ProcessHeadTaskByStreamId(stream_id);
     EXPECT_EQ(error, RT_ERROR_TASK_NULL);
 }
 
@@ -639,7 +635,7 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_03)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
+    TaskInfo* tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
     tsk->errorCode = 0x221;
     tsk->mte_error = 0x221;
     ModelExecuteTaskInit(tsk, nullptr, 0, 0);
@@ -650,13 +646,9 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_03)
         .stubs()
         .with(mockcpp::any(), outBound(taskId))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(tsk));
-    MOCKER(&ReportErrorInfoForModelExecuteTask)
-        .stubs();
-    error = ((StarsEngine *)engine_)->ProcessHeadTaskByStreamId(stream_id);
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(tsk));
+    MOCKER(&ReportErrorInfoForModelExecuteTask).stubs();
+    error = ((StarsEngine*)engine_)->ProcessHeadTaskByStreamId(stream_id);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
     MockDriverApi();
@@ -667,7 +659,7 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_04)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
+    TaskInfo* tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
     tsk->errorCode = 0x220;
     tsk->mte_error = 0x220;
     ModelExecuteTaskInit(tsk, nullptr, 0, 0);
@@ -678,13 +670,9 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_04)
         .stubs()
         .with(mockcpp::any(), outBound(taskId))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(tsk));
-    MOCKER(&ReportErrorInfoForModelExecuteTask)
-        .stubs();
-    error = ((StarsEngine *)engine_)->ProcessHeadTaskByStreamId(stream_id);
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(tsk));
+    MOCKER(&ReportErrorInfoForModelExecuteTask).stubs();
+    error = ((StarsEngine*)engine_)->ProcessHeadTaskByStreamId(stream_id);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
     MockDriverApi();
@@ -695,7 +683,7 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_05)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
+    TaskInfo* tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
     tsk->errorCode = 0x58;
     tsk->mte_error = 0x58;
     ModelExecuteTaskInit(tsk, nullptr, 0, 0);
@@ -706,13 +694,9 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_05)
         .stubs()
         .with(mockcpp::any(), outBound(taskId))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(tsk));
-    MOCKER(&ReportErrorInfoForModelExecuteTask)
-        .stubs();
-    error = ((StarsEngine *)engine_)->ProcessHeadTaskByStreamId(stream_id);
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(tsk));
+    MOCKER(&ReportErrorInfoForModelExecuteTask).stubs();
+    error = ((StarsEngine*)engine_)->ProcessHeadTaskByStreamId(stream_id);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
     MockDriverApi();
@@ -723,7 +707,7 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_06)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
+    TaskInfo* tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
     tsk->errorCode = 0x57;
     tsk->mte_error = 0x57;
     ModelExecuteTaskInit(tsk, nullptr, 0, 0);
@@ -734,13 +718,9 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_06)
         .stubs()
         .with(mockcpp::any(), outBound(taskId))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(tsk));
-    MOCKER(&ReportErrorInfoForModelExecuteTask)
-        .stubs();
-    error = ((StarsEngine *)engine_)->ProcessHeadTaskByStreamId(stream_id);
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(tsk));
+    MOCKER(&ReportErrorInfoForModelExecuteTask).stubs();
+    error = ((StarsEngine*)engine_)->ProcessHeadTaskByStreamId(stream_id);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
     MockDriverApi();
@@ -748,13 +728,13 @@ TEST_F(CloudV2StarsEngineTest, ProcessHeadTaskByStreamId_06)
 
 TEST_F(CloudV2StarsEngineTest, buffAllocer_t)
 {
-    BufferAllocator alloc(4, 1024, 5*1024*1024, BufferAllocator::EXPONENTIAL);
+    BufferAllocator alloc(4, 1024, 5 * 1024 * 1024, BufferAllocator::EXPONENTIAL);
     BufferAllocator::OpenHugeBuff();
 
-    for (uint32_t i = 0; i < 5*1024*1024 + 1; i++) {
+    for (uint32_t i = 0; i < 5 * 1024 * 1024 + 1; i++) {
         int32_t id = alloc.AllocId();
-        void *ptr = alloc.GetItemById(id);
-        if (id == 4*1024*1024 - 1) {
+        void* ptr = alloc.GetItemById(id);
+        if (id == 4 * 1024 * 1024 - 1) {
             printf("This is a keypoint\r\n");
         }
 
@@ -771,48 +751,48 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqReport)
 
     rtLogicCqReport_t logicCq = {0};
     logicCq.errorType = (RT_STARS_EXIST_ERROR | RT_STARS_EXIST_WARNING);
-    TaskInfo * const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
+    TaskInfo* const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MODEL_EXECUTE, error);
     ModelExecuteTaskInit(workTask, nullptr, 0, 0);
     device_->GetTaskFactory()->SetSerialId(stream_, workTask);
     logicCq.taskId = workTask->id;
     logicCq.streamId = workTask->stream->Id_();
     workTask->mte_error = 0x221;
 
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, nullptr);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, nullptr);
     logicCq.errorCode = 0x221;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, nullptr);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, nullptr);
     logicCq.errorCode = 0x2F;
     bool reterr = device_->GetHasTaskError();
     device_->SetHasTaskError(true);
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, nullptr);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, nullptr);
     device_->SetHasTaskError(reterr);
     logicCq.errorCode = 0x33;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x34;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x35;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x97;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x205a0000;
     logicCq.sqeType = 7;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x105a0000;
     logicCq.sqeType = 7;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x95;
     logicCq.sqeType = 5;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
 
-    TaskInfo * const workTask1 = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_GET_STARS_VERSION, error);
+    TaskInfo* const workTask1 = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_GET_STARS_VERSION, error);
     StarsVersionTaskInit(workTask1);
     device_->GetTaskFactory()->SetSerialId(stream_, workTask1);
 
     logicCq.errorCode = 16;
     logicCq.sqeType = 3;
-    auto ret = ((StarsEngine *)engine_)->ProcReportIsException(logicCq, workTask1);
+    auto ret = ((StarsEngine*)engine_)->ProcReportIsException(logicCq, workTask1);
     EXPECT_EQ(ret, false);
 }
 
@@ -825,47 +805,47 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqReport_with_async_recycle_thread)
     rtLogicCqReport_t logicCq = {0};
     logicCq.errorType = (RT_STARS_EXIST_ERROR | RT_STARS_EXIST_WARNING);
     cce::runtime::Model model;
-    TaskInfo *reportTask = stream_->taskResMang_->AllocTaskInfoByTaskResId(stream_, 0, 0, TS_TASK_TYPE_MODEL_EXECUTE);
+    TaskInfo* reportTask = stream_->taskResMang_->AllocTaskInfoByTaskResId(stream_, 0, 0, TS_TASK_TYPE_MODEL_EXECUTE);
     ModelExecuteTaskInit(reportTask, &model, 0, 0);
     logicCq.taskId = reportTask->id;
     logicCq.streamId = reportTask->stream->Id_();
     reportTask->mte_error = 0x221;
 
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
     logicCq.errorCode = 0x221;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
     logicCq.errorCode = 0x2F;
     bool reterr = device_->GetHasTaskError();
     device_->SetHasTaskError(true);
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
     device_->SetHasTaskError(reterr);
     logicCq.errorCode = 0x33;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x34;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x35;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x97;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x205a0000;
     logicCq.sqeType = 7;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x105a0000;
     logicCq.sqeType = 7;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x95;
     logicCq.sqeType = 5;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
 
-    TaskInfo * const workTask1 = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_GET_STARS_VERSION, error);
+    TaskInfo* const workTask1 = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_GET_STARS_VERSION, error);
     StarsVersionTaskInit(workTask1);
     device_->GetTaskFactory()->SetSerialId(stream_, workTask1);
 
     logicCq.errorCode = 16;
     logicCq.sqeType = 3;
-    auto ret = ((StarsEngine *)engine_)->ProcReportIsException(logicCq, workTask1);
+    auto ret = ((StarsEngine*)engine_)->ProcReportIsException(logicCq, workTask1);
     EXPECT_EQ(ret, false);
 
     device_->SetIsChipSupportRecycleThread(false);
@@ -881,47 +861,47 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqReport_with_limit_flag)
     rtLogicCqReport_t logicCq = {0};
     logicCq.errorType = (RT_STARS_EXIST_ERROR | RT_STARS_EXIST_WARNING);
     cce::runtime::Model model;
-    TaskInfo *reportTask = stream_->taskResMang_->AllocTaskInfoByTaskResId(stream_, 0, 0, TS_TASK_TYPE_MODEL_EXECUTE);
+    TaskInfo* reportTask = stream_->taskResMang_->AllocTaskInfoByTaskResId(stream_, 0, 0, TS_TASK_TYPE_MODEL_EXECUTE);
     ModelExecuteTaskInit(reportTask, &model, 0, 0);
     logicCq.taskId = reportTask->id;
     logicCq.streamId = reportTask->stream->Id_();
     reportTask->mte_error = 0x221;
 
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
     logicCq.errorCode = 0x221;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
     logicCq.errorCode = 0x2F;
     bool reterr = device_->GetHasTaskError();
     device_->SetHasTaskError(true);
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
-    ((StarsEngine *)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcLogicCqReport(logicCq, false, reportTask);
     device_->SetHasTaskError(reterr);
     logicCq.errorCode = 0x33;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x34;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x35;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x97;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x205a0000;
     logicCq.sqeType = 7;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x105a0000;
     logicCq.sqeType = 7;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
     logicCq.errorCode = 0x95;
     logicCq.sqeType = 5;
-    ((StarsEngine *)engine_)->ProcReportIsException(logicCq);
+    ((StarsEngine*)engine_)->ProcReportIsException(logicCq);
 
-    TaskInfo * const workTask1 = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_GET_STARS_VERSION, error);
+    TaskInfo* const workTask1 = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_GET_STARS_VERSION, error);
     StarsVersionTaskInit(workTask1);
     device_->GetTaskFactory()->SetSerialId(stream_, workTask1);
 
     logicCq.errorCode = 16;
     logicCq.sqeType = 3;
-    auto ret = ((StarsEngine *)engine_)->ProcReportIsException(logicCq, workTask1);
+    auto ret = ((StarsEngine*)engine_)->ProcReportIsException(logicCq, workTask1);
     EXPECT_EQ(ret, false);
 
     device_->SetIsChipSupportRecycleThread(false);
@@ -936,7 +916,7 @@ TEST_F(CloudV2StarsEngineTest, GetLastTaskIdFromRtsq)
     error = stream_->GetLastTaskIdFromRtsq(taskId);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    Device *devicetmp = stream_->device_;
+    Device* devicetmp = stream_->device_;
     stream_->device_ = nullptr;
     error = stream_->GetLastTaskIdFromRtsq(taskId);
     stream_->device_ = devicetmp;
@@ -950,8 +930,8 @@ TEST_F(CloudV2StarsEngineTest, TryRecycleTask)
 
     TaskInfo workTask = {};
     workTask.stream = stream_;
-    ((StarsEngine *)engine_)->AddTaskToStream(&workTask, 1024);
-    error = ((StarsEngine *)engine_)->TryRecycleTask(stream_);
+    ((StarsEngine*)engine_)->AddTaskToStream(&workTask, 1024);
+    error = ((StarsEngine*)engine_)->TryRecycleTask(stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -962,11 +942,11 @@ TEST_F(CloudV2StarsEngineTest, TryRecycleTaskStreamAbort)
 
     TaskInfo workTask = {};
     workTask.stream = stream_;
-    ((StarsEngine *)engine_)->AddTaskToStream(&workTask, 1024);
+    ((StarsEngine*)engine_)->AddTaskToStream(&workTask, 1024);
     stream_->abortStatus_ = RT_ERROR_STREAM_ABORT;
     stream_->pendingNum_.Set(1U);
     MOCKER_CPP(&Stream::IsSeparateSendAndRecycle).stubs().will(returnValue(false));
-    error = ((StarsEngine *)engine_)->TryRecycleTask(stream_);
+    error = ((StarsEngine*)engine_)->TryRecycleTask(stream_);
     EXPECT_EQ(error, RT_ERROR_STREAM_ABORT);
     stream_->abortStatus_ = RT_ERROR_NONE;
     stream_->pendingNum_.Set(0U);
@@ -983,7 +963,7 @@ TEST_F(CloudV2StarsEngineTest, MaintenanceTask)
     MaintenanceTaskInit(&task, MT_STREAM_DESTROY, 0, 0);
 
     rtStarsSqe_t sqe = {};
-    RtStarsPhSqe &placeHolderSqe = sqe.phSqe;
+    RtStarsPhSqe& placeHolderSqe = sqe.phSqe;
     ToConstructSqe(&task, &sqe);
     // head check
     EXPECT_EQ(placeHolderSqe.rt_streamID, (0x8000 | stream_->Id_()));
@@ -994,14 +974,14 @@ TEST_F(CloudV2StarsEngineTest, RecycleEventRecordTask)
     rtError_t error = RT_ERROR_NONE;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
-    Event *evt = new (std::nothrow) Event(device_, 0x14, nullptr);
+    TaskInfo* const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
+    Event* evt = new (std::nothrow) Event(device_, 0x14, nullptr);
     EventRecordTaskInit(workTask, evt, false, evt->EventId_());
     device_->GetTaskFactory()->SetSerialId(stream_, workTask);
     workTask->u.eventRecordTaskInfo.waitCqflag = false;
     workTask->isCqeNeedConcern = true;
     rtStarsSqe_t sqe = {};
-    RtStarsEventSqe &eventSqe = sqe.eventSqe;
+    RtStarsEventSqe& eventSqe = sqe.eventSqe;
 
     std::pair<uint32_t, uint32_t> taskInfo;
     taskInfo.first = 12;
@@ -1011,19 +991,19 @@ TEST_F(CloudV2StarsEngineTest, RecycleEventRecordTask)
     workTask->stream = stream_;
     stream_->SetSyncRemainTime(5);
 
-    ((StarsEngine *)engine_)->AddTaskToStream(workTask, sendSqeNum);
+    ((StarsEngine*)engine_)->AddTaskToStream(workTask, sendSqeNum);
 
     rtLogicCqReport_t logicCq = {};
     logicCq.streamId = stream_->Id_();
     logicCq.taskId = workTask->id;
     logicCq.errorType = 0x80U;
 
-    ((StarsEngine *)engine_)->StarsCqeReceive(logicCq, workTask);
+    ((StarsEngine*)engine_)->StarsCqeReceive(logicCq, workTask);
 
     uint16_t recycleTaskNum = 0;
-    ((StarsEngine *)engine_)->ProcessPublicTask(workTask, 0, &recycleTaskNum);
+    ((StarsEngine*)engine_)->ProcessPublicTask(workTask, 0, &recycleTaskNum);
 
-    TaskInfo * tsk = device_->GetTaskFactory()->GetTask(logicCq.streamId, logicCq.taskId);
+    TaskInfo* tsk = device_->GetTaskFactory()->GetTask(logicCq.streamId, logicCq.taskId);
     EXPECT_EQ(true, tsk == nullptr);
     delete evt;
 }
@@ -1033,14 +1013,14 @@ TEST_F(CloudV2StarsEngineTest, RecycleEventRecordTask_01)
     rtError_t error = RT_ERROR_NONE;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
-    Event *evt = new (std::nothrow) Event(device_, 0x14, nullptr);
+    TaskInfo* const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
+    Event* evt = new (std::nothrow) Event(device_, 0x14, nullptr);
     EventRecordTaskInit(workTask, evt, false, evt->EventId_());
     device_->GetTaskFactory()->SetSerialId(stream_, workTask);
     workTask->u.eventRecordTaskInfo.waitCqflag = false;
     workTask->isCqeNeedConcern = true;
     rtStarsSqe_t sqe = {};
-    RtStarsEventSqe &eventSqe = sqe.eventSqe;
+    RtStarsEventSqe& eventSqe = sqe.eventSqe;
 
     std::pair<uint32_t, uint32_t> taskInfo;
     taskInfo.first = 12;
@@ -1050,19 +1030,19 @@ TEST_F(CloudV2StarsEngineTest, RecycleEventRecordTask_01)
     workTask->stream = stream_;
     stream_->SetSyncRemainTime(5);
 
-    ((StarsEngine *)engine_)->AddTaskToStream(workTask, sendSqeNum);
+    ((StarsEngine*)engine_)->AddTaskToStream(workTask, sendSqeNum);
 
     rtLogicCqReport_t logicCq = {};
     logicCq.streamId = stream_->Id_();
     logicCq.taskId = workTask->id;
     logicCq.errorType = 0x80U;
 
-    ((StarsEngine *)engine_)->StarsCqeReceive(logicCq, workTask);
+    ((StarsEngine*)engine_)->StarsCqeReceive(logicCq, workTask);
 
     uint16_t recycleTaskNum = 0;
-    ((StarsEngine *)engine_)->ProcessPublicTask(workTask, 0, &recycleTaskNum);
+    ((StarsEngine*)engine_)->ProcessPublicTask(workTask, 0, &recycleTaskNum);
 
-    TaskInfo * tsk = device_->GetTaskFactory()->GetTask(logicCq.streamId, logicCq.taskId);
+    TaskInfo* tsk = device_->GetTaskFactory()->GetTask(logicCq.streamId, logicCq.taskId);
     EXPECT_EQ(true, tsk == nullptr);
     uint64_t time = 0ULL;
     error = evt->GetTimeStamp(&time);
@@ -1074,13 +1054,13 @@ TEST_F(CloudV2StarsEngineTest, SyncTaskCheckResult)
     rtError_t error = RT_ERROR_NONE;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
+    TaskInfo* const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
     EventRecordTaskInit(workTask, nullptr, false, INVALID_EVENT_ID);
     device_->GetTaskFactory()->SetSerialId(stream_, workTask);
     workTask->u.eventRecordTaskInfo.waitCqflag = false;
     workTask->isCqeNeedConcern = true;
     rtStarsSqe_t sqe = {};
-    RtStarsEventSqe &eventSqe = sqe.eventSqe;
+    RtStarsEventSqe& eventSqe = sqe.eventSqe;
 
     Event recorder(device_, 0x14, nullptr);
     workTask->u.eventRecordTaskInfo.event = &recorder;
@@ -1088,17 +1068,14 @@ TEST_F(CloudV2StarsEngineTest, SyncTaskCheckResult)
     taskInfo.first = 12;
     taskInfo.second = 0;
 
-
     ToConstructSqe(workTask, &sqe);
     workTask->stream = stream_;
     stream_->SetSyncRemainTime(5);
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .will(returnValue(workTask));
-    ((StarsEngine *)engine_)->AddTaskToStream(workTask, sendSqeNum);
-    ((StarsEngine *)engine_)->SyncTaskCheckResult(RT_ERROR_NONE, stream_, workTask->id);
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(workTask));
+    ((StarsEngine*)engine_)->AddTaskToStream(workTask, sendSqeNum);
+    ((StarsEngine*)engine_)->SyncTaskCheckResult(RT_ERROR_NONE, stream_, workTask->id);
     EXPECT_EQ(true, workTask->isCqeNeedConcern == true);
-    ((StarsEngine *)engine_)->SyncTaskCheckResult(RT_ERROR_STREAM_SYNC_TIMEOUT, stream_, workTask->id);
+    ((StarsEngine*)engine_)->SyncTaskCheckResult(RT_ERROR_STREAM_SYNC_TIMEOUT, stream_, workTask->id);
     EXPECT_EQ(true, workTask->isCqeNeedConcern == false);
 
     rtLogicCqReport_t logicCq = {};
@@ -1106,19 +1083,19 @@ TEST_F(CloudV2StarsEngineTest, SyncTaskCheckResult)
     logicCq.taskId = workTask->id;
     logicCq.errorType = 0x80U;
 
-    ((StarsEngine *)engine_)->StarsCqeReceive(logicCq, workTask);
+    ((StarsEngine*)engine_)->StarsCqeReceive(logicCq, workTask);
 
     uint16_t recycleTaskNum = 0;
-    ((StarsEngine *)engine_)->ProcessPublicTask(workTask, 0, &recycleTaskNum);
+    ((StarsEngine*)engine_)->ProcessPublicTask(workTask, 0, &recycleTaskNum);
     GlobalMockObject::verify();
-    TaskInfo * tsk = device_->GetTaskFactory()->GetTask(logicCq.streamId, logicCq.taskId);
+    TaskInfo* tsk = device_->GetTaskFactory()->GetTask(logicCq.streamId, logicCq.taskId);
     EXPECT_EQ(true, tsk == nullptr);
 }
 
 TEST_F(CloudV2StarsEngineTest, ProcReportIsVpcErrorAndRetry)
 {
     bool rt;
-    StarsEngine *engine = (StarsEngine *)engine_;
+    StarsEngine* engine = (StarsEngine*)engine_;
     rtLogicCqReport_t cqReport = {};
 
     // not vpc task
@@ -1141,7 +1118,7 @@ TEST_F(CloudV2StarsEngineTest, ProcReportIsVpcErrorAndRetry)
     EXPECT_EQ(rt, false);
 
     rtError_t error = RT_ERROR_NONE;
-    TaskInfo * const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_STARS_COMMON, error);
+    TaskInfo* const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_STARS_COMMON, error);
 
     device_->GetTaskFactory()->SetSerialId(stream_, tsk);
     cqReport.errorType = RT_STARS_CQE_ERR_TYPE_EXCEPTION;
@@ -1152,7 +1129,7 @@ TEST_F(CloudV2StarsEngineTest, ProcReportIsVpcErrorAndRetry)
     (void)device_->GetTaskFactory()->Recycle(tsk);
 }
 
-void testDvppGrpCallbackFunc(rtDvppGrpRptInfo_t *report)
+void testDvppGrpCallbackFunc(rtDvppGrpRptInfo_t* report)
 {
     std::cout << "streamId=" << report->streamId << " taskId=" << report->taskId << " sqeType=" << report->sqeType
               << std::endl;
@@ -1160,7 +1137,7 @@ void testDvppGrpCallbackFunc(rtDvppGrpRptInfo_t *report)
 
 TEST_F(CloudV2StarsEngineTest, DvppWaitGroup)
 {
-    DvppGrp *grp = new DvppGrp(device_, 0);
+    DvppGrp* grp = new DvppGrp(device_, 0);
     rtError_t error = device_->DvppWaitGroup(grp, testDvppGrpCallbackFunc, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete grp;
@@ -1174,12 +1151,13 @@ TEST_F(CloudV2StarsEngineTest, GetLastFinishTaskId)
     stream_->SetStreamStopSyncFlag(true);
 }
 
-
 TEST_F(CloudV2StarsEngineTest, WaitTask)
 {
     uint32_t recycleTaskId = 0;
-    MOCKER_CPP(&StarsEngine::SendingProcReport).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::SendingProcReport)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
+        .will(returnValue(RT_ERROR_NONE));
     stream_->Context_()->SetFailureError(2);
     stream_->failureMode_ = STOP_ON_FAILURE;
     TsStreamFailureMode flag = stream_->Context_()->GetCtxMode();
@@ -1193,8 +1171,10 @@ TEST_F(CloudV2StarsEngineTest, WaitTask)
 TEST_F(CloudV2StarsEngineTest, WaitTask_DEV_RUNNING_DOWN)
 {
     uint32_t recycleTaskId = 0;
-    MOCKER_CPP(&StarsEngine::SendingProcReport).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::SendingProcReport)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
+        .will(returnValue(RT_ERROR_NONE));
     stream_->Context_()->SetFailureError(2);
 
     Device* dev = stream_->Device_();
@@ -1209,8 +1189,10 @@ TEST_F(CloudV2StarsEngineTest, WaitTask_DEV_RUNNING_DOWN)
 TEST_F(CloudV2StarsEngineTest, WaitTask_StreamAbort)
 {
     uint32_t recycleTaskId = 0;
-    MOCKER_CPP(&StarsEngine::SendingProcReport).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::SendingProcReport)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
+        .will(returnValue(RT_ERROR_NONE));
     stream_->SetAbortStatus(RT_ERROR_STREAM_ABORT);
     rtError_t error = stream_->WaitTask(true, 2);
     EXPECT_EQ(error, RT_ERROR_STREAM_ABORT);
@@ -1220,8 +1202,10 @@ TEST_F(CloudV2StarsEngineTest, WaitTask_StreamAbort)
 TEST_F(CloudV2StarsEngineTest, WaitTaskabort)
 {
     uint32_t recycleTaskId = 0;
-    MOCKER_CPP(&StarsEngine::SendingProcReport).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
-    .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::SendingProcReport)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(recycleTaskId))
+        .will(returnValue(RT_ERROR_NONE));
     stream_->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
     rtError_t error = stream_->GetSynchronizeError(0U);
     EXPECT_EQ(error, RT_ERROR_DEVICE_TASK_ABORT);
@@ -1240,8 +1224,8 @@ TEST_F(CloudV2StarsEngineTest, MultipleTaskReportLogicCq_01)
     uint32_t sendSqeNum = 1;
     rtError_t error;
     // DavinciMultipleTask
-    TaskInfo * const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MULTIPLE_TASK, error);
-    ((StarsEngine *)engine_)->AddTaskToStream(tsk, sendSqeNum);
+    TaskInfo* const tsk = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_MULTIPLE_TASK, error);
+    ((StarsEngine*)engine_)->AddTaskToStream(tsk, sendSqeNum);
     device_->GetTaskFactory()->SetSerialId(stream_, tsk);
     rtMultipleTaskInfo_t multipleTaskInfo;
     multipleTaskInfo.taskNum = 2;
@@ -1257,9 +1241,9 @@ TEST_F(CloudV2StarsEngineTest, MultipleTaskReportLogicCq_01)
     cqe.streamId = stream_id;
     cqe.taskId = tsk->id;
     cqe.sqeType = RT_STARS_SQE_TYPE_JPEGD;
-    std::cout<<"MultipleTaskReportLogicCq_01 call MultipleTaskReportLogicCq"<<std::endl;
-    ((StarsEngine *)engine_)->MultipleTaskReportLogicCq(tsk, cqe, testDvppGrpCallbackFunc);
-    std::cout<<"MultipleTaskReportLogicCq_01 call end"<<std::endl;
+    std::cout << "MultipleTaskReportLogicCq_01 call MultipleTaskReportLogicCq" << std::endl;
+    ((StarsEngine*)engine_)->MultipleTaskReportLogicCq(tsk, cqe, testDvppGrpCallbackFunc);
+    std::cout << "MultipleTaskReportLogicCq_01 call end" << std::endl;
 
     TaskUnInitProc(tsk);
     delete[] multipleTaskInfo.taskDesc;
@@ -1282,14 +1266,13 @@ TEST_F(CloudV2StarsEngineTest, ProcMultipleTaskLogicCqReport_02)
     IncMultipleTaskCqeNum(&mulTipleTask);
     mulTipleTask.u.davinciMultiTaskInfo.hasUnderstudyTask = true;
 
-
     rtLogicCqReport_t cqe = {0};
     cqe.streamId = 1;
     cqe.taskId = 1;
     cqe.sqeType = RT_STARS_SQE_TYPE_JPEGD;
-    std::cout<<"ProcMultipleTaskLogicCqReport_02 call ProcMultipleTaskLogicCqReport1"<<std::endl;
-    ((StarsEngine *)engine_)->ProcMultipleTaskLogicCqReport(&mulTipleTask, cqe, isStreamSync);
-    std::cout<<"ProcMultipleTaskLogicCqReport_02 call 1 end"<<std::endl;
+    std::cout << "ProcMultipleTaskLogicCqReport_02 call ProcMultipleTaskLogicCqReport1" << std::endl;
+    ((StarsEngine*)engine_)->ProcMultipleTaskLogicCqReport(&mulTipleTask, cqe, isStreamSync);
+    std::cout << "ProcMultipleTaskLogicCqReport_02 call 1 end" << std::endl;
     TaskUnInitProc(&mulTipleTask);
     delete[] multipleTaskInfo.taskDesc;
 }
@@ -1317,10 +1300,10 @@ TEST_F(CloudV2StarsEngineTest, ProcMultipleTaskLogicCqReport_03)
     cqe.taskId = 1;
     cqe.sqeType = RT_STARS_SQE_TYPE_AICPU;
     cqe.errorType = 0xFF;
-    std::cout<<"ProcMultipleTaskLogicCqReport_03 call ProcMultipleTaskLogicCqReport"<<std::endl;
+    std::cout << "ProcMultipleTaskLogicCqReport_03 call ProcMultipleTaskLogicCqReport" << std::endl;
     MOCKER_CPP(&StarsEngine::ProcLogicCqReport).stubs().will(ignoreReturnValue());
     engine.ProcMultipleTaskLogicCqReport(&mulTipleTask, cqe, isStreamSync);
-    std::cout<<"ProcMultipleTaskLogicCqReport_03 call end"<<std::endl;
+    std::cout << "ProcMultipleTaskLogicCqReport_03 call end" << std::endl;
     TaskUnInitProc(&mulTipleTask);
     delete[] multipleTaskInfo.taskDesc;
 }
@@ -1378,15 +1361,11 @@ TEST_F(CloudV2StarsEngineTest, CompleteProcMultipleTaskReport_01)
 
 TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_test)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
 
-    MOCKER_CPP_VIRTUAL(device_->Driver_(), &Driver::LogicCqReportV2)
-        .stubs()
-        .will(returnValue(RT_ERROR_LOST_HEARTBEAT));
-    MOCKER_CPP(&Engine::ReportHeartBreakProcV2)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(device_->Driver_(), &Driver::LogicCqReportV2).stubs().will(returnValue(RT_ERROR_LOST_HEARTBEAT));
+    MOCKER_CPP(&Engine::ReportHeartBreakProcV2).stubs().will(returnValue(RT_ERROR_NONE));
 
     uint32_t taskId = 0U;
     rtError_t error = engine.ProcLogicCqUntilEmpty(stm, taskId);
@@ -1396,18 +1375,15 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_test)
 
 TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_OneLogicReport)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
     rtLogicCqReport_t report[RT_MILAN_MAX_QUERY_CQE_NUM] = {};
-    uint8_t *reportInfo = reinterpret_cast<uint8_t *>(report);
+    uint8_t* reportInfo = reinterpret_cast<uint8_t*>(report);
     uint32_t cnt = 1U;
 
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICORE;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
 
     MOCKER_CPP_VIRTUAL(device_->Driver_(), &Driver::LogicCqReportV2)
         .stubs()
@@ -1427,19 +1403,16 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_OneLogicReport)
 
 TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_MutiTaskReport)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
     rtLogicCqReport_t report[RT_MILAN_MAX_QUERY_CQE_NUM] = {};
-    uint8_t *reportInfo = reinterpret_cast<uint8_t *>(report);
+    uint8_t* reportInfo = reinterpret_cast<uint8_t*>(report);
     uint32_t cnt = 1U;
 
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_MULTIPLE_TASK;
     task.u.davinciMultiTaskInfo.sqeNum = 2U;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
 
     MOCKER_CPP_VIRTUAL(device_->Driver_(), &Driver::LogicCqReportV2)
         .stubs()
@@ -1449,9 +1422,7 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_MutiTaskReport)
         .stubs()
         .will(returnValue(RT_ERROR_NONE))
         .then(returnValue(RT_ERROR_LOST_HEARTBEAT));
-    MOCKER_CPP(&StarsEngine::ProcMultipleTaskLogicCqReport)
-        .stubs()
-        .will(returnValue(false));
+    MOCKER_CPP(&StarsEngine::ProcMultipleTaskLogicCqReport).stubs().will(returnValue(false));
     MOCKER_CPP(&StarsEngine::ProcLogicCqReport).stubs().will(ignoreReturnValue());
 
     uint32_t taskId = 0U;
@@ -1462,15 +1433,11 @@ TEST_F(CloudV2StarsEngineTest, ProcLogicCqUntilEmpty_MutiTaskReport)
 
 TEST_F(CloudV2StarsEngineTest, SendingProcReport_test)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
 
-    MOCKER_CPP(&StarsEngine::ProcLogicCqUntilEmpty)
-        .stubs()
-        .will(returnValue(RT_ERROR_LOST_HEARTBEAT));
-    MOCKER_CPP(&StarsEngine::FinishedTaskReclaim)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::ProcLogicCqUntilEmpty).stubs().will(returnValue(RT_ERROR_LOST_HEARTBEAT));
+    MOCKER_CPP(&StarsEngine::FinishedTaskReclaim).stubs().will(returnValue(RT_ERROR_NONE));
 
     bool orgIsNeedRecvCqe = stm->isNeedRecvCqe_;
     stm->SetNeedRecvCqeFlag(true);
@@ -1479,9 +1446,7 @@ TEST_F(CloudV2StarsEngineTest, SendingProcReport_test)
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
 
-    MOCKER_CPP(&StarsEngine::ProcLogicCqUntilEmpty)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::ProcLogicCqUntilEmpty).stubs().will(returnValue(RT_ERROR_NONE));
     error = engine.SendingProcReport(stm, false, 0U, taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
@@ -1490,25 +1455,18 @@ TEST_F(CloudV2StarsEngineTest, SendingProcReport_test)
 
 TEST_F(CloudV2StarsEngineTest, ProcReport_test)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
 
     rtLogicCqReport_t logicReport[RT_MILAN_MAX_QUERY_CQE_NUM] = {};
-    rtLogicCqReport_t &report = logicReport[0];
+    rtLogicCqReport_t& report = logicReport[0];
     report.taskId = 1U;
 
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_MULTIPLE_TASK;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
-    MOCKER(GetSendSqeNum)
-        .stubs()
-        .will(returnValue(static_cast<uint32_t>(2U)));
-    MOCKER_CPP(&StarsEngine::ProcMultipleTaskLogicCqReport)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
+    MOCKER(GetSendSqeNum).stubs().will(returnValue(static_cast<uint32_t>(2U)));
+    MOCKER_CPP(&StarsEngine::ProcMultipleTaskLogicCqReport).stubs().will(returnValue(true));
 
     bool isFinished = false;
     engine.ProcReport(0U, false, 1U, logicReport, isFinished, 0U);
@@ -1516,7 +1474,7 @@ TEST_F(CloudV2StarsEngineTest, ProcReport_test)
     GlobalMockObject::reset();
 }
 
-void UserDefineDvppGrpCb(rtDvppGrpRptInfo_t *rptInfo)
+void UserDefineDvppGrpCb(rtDvppGrpRptInfo_t* rptInfo)
 {
     (void)rptInfo;
     std::cout << "User define callback." << std::endl;
@@ -1524,20 +1482,17 @@ void UserDefineDvppGrpCb(rtDvppGrpRptInfo_t *rptInfo)
 
 TEST_F(CloudV2StarsEngineTest, CommonTaskReportLogicCq_test)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
     rtLogicCqReport_t report;
 
-    MOCKER_CPP(&StarsEngine::ProcReportIsVpcErrorAndRetry)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&StarsEngine::ProcReportIsVpcErrorAndRetry).stubs().will(returnValue(true));
 
     rtError_t error = engine.CommonTaskReportLogicCq(report, nullptr);
     EXPECT_EQ(error, RT_ERROR_STREAM_SYNC_TIMEOUT);
     GlobalMockObject::reset();
 
-    MOCKER_CPP(&StarsEngine::ProcLogicCqReport)
-        .stubs();
+    MOCKER_CPP(&StarsEngine::ProcLogicCqReport).stubs();
     error = engine.CommonTaskReportLogicCq(report, UserDefineDvppGrpCb);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::reset();
@@ -1545,19 +1500,14 @@ TEST_F(CloudV2StarsEngineTest, CommonTaskReportLogicCq_test)
 
 TEST_F(CloudV2StarsEngineTest, ReportLogicCq_test)
 {
-    Stream * const stm = stream_;
+    Stream* const stm = stream_;
     StarsEngine engine(device_);
     rtLogicCqReport_t report;
 
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_MULTIPLE_TASK;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
-    MOCKER_CPP(&StarsEngine::CommonTaskReportLogicCq)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
+    MOCKER_CPP(&StarsEngine::CommonTaskReportLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = engine.ReportLogicCq(report, UserDefineDvppGrpCb);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1568,7 +1518,7 @@ TEST_F(CloudV2StarsEngineTest, Run_WithWrongThreadType)
 {
     std::unique_ptr<Engine> engine = std::make_unique<StarsEngine>(device_);
     uint32_t threadType = 5U;
-    void * const typeParm = reinterpret_cast<void *>(static_cast<uintptr_t>(threadType));
+    void* const typeParm = reinterpret_cast<void*>(static_cast<uintptr_t>(threadType));
     std::unique_ptr<Thread> testThread(OsalFactory::CreateThread("test_thread", engine.get(), typeParm));
     EXPECT_NE(testThread, nullptr);
     rtError_t error = testThread->Start();
@@ -1579,20 +1529,20 @@ TEST_F(CloudV2StarsEngineTest, Run_WithWrongThreadType)
 
 TEST_F(CloudV2StarsEngineTest, DvppWaitGroup_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     StarsEngine engine(device);
 
     rtLogicCqReport_t report[RT_MILAN_MAX_QUERY_CQE_NUM] = {};
-    uint8_t *reportInfo = reinterpret_cast<uint8_t *>(report);
+    uint8_t* reportInfo = reinterpret_cast<uint8_t*>(report);
     uint32_t cnt = 0U;
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::LogicCqReportV2)
         .stubs()
         .with(mockcpp::any(), outBound(reportInfo), mockcpp::any(), outBound(cnt))
         .will(returnValue(RT_ERROR_NONE));
 
-    DvppGrp *grp = new DvppGrp(device, 0);
+    DvppGrp* grp = new DvppGrp(device, 0);
     rtDvppGrpCallback callBackFunc;
     rtError_t error = engine.DvppWaitGroup(grp, callBackFunc, 0);
     EXPECT_EQ(error, RT_ERROR_STREAM_SYNC_TIMEOUT);
@@ -1604,7 +1554,7 @@ TEST_F(CloudV2StarsEngineTest, DvppWaitGroup_test)
 
 TEST_F(CloudV2StarsEngineTest, CreateRecycleThread_failed)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     StarsEngine engine(device);
     MOCKER(mmCreateTaskWithThreadAttr).stubs().will(returnValue(-1));
     rtError_t error = engine.CreateRecycleThread();
@@ -1626,12 +1576,10 @@ TEST_F(CloudV2StarsEngineTest, MonitorTaskReclaim_taskRecycle)
     rtStream_t streamHandle;
     error = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     stream->pendingNum_.Set(1U);
     device_->SetMonitorExitFlag(false);
-    MOCKER_CPP(&StarsEngine::TaskReclaimByStreamId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::TaskReclaimByStreamId).stubs().will(returnValue(RT_ERROR_NONE));
     error = engine.MonitorTaskReclaim(stream->Id_());
     EXPECT_EQ(error, RT_ERROR_NONE);
     stream->pendingNum_.Set(0U);
@@ -1643,7 +1591,7 @@ TEST_F(CloudV2StarsEngineTest, MonitorTaskReclaim_taskRecycle)
 TEST_F(CloudV2StarsEngineTest, StarsResumeRtsq_RT_STARS_EXIST_ERROR)
 {
     uint32_t taskId = 0U;
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     StarsEngine engine(device);
     rtLogicCqReport_t logicCq = {0};
     logicCq.errorType = 0;
@@ -1658,12 +1606,12 @@ TEST_F(CloudV2StarsEngineTest, StarsResumeRtsq_RT_STARS_EXIST_ERROR)
 TEST_F(CloudV2StarsEngineTest, StarsResumeRtsq_01)
 {
     rtError_t ret;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     StarsEngine engine(device);
     rtStream_t streamHandle = nullptr;
     ret = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     stream->device_ = device;
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::GetSqEnable)
@@ -1691,7 +1639,7 @@ TEST_F(CloudV2StarsEngineTest, StarsResumeRtsq_01)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtStreamDestroy(streamHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(CloudV2StarsEngineTest, WaitTask3)
@@ -1701,10 +1649,10 @@ TEST_F(CloudV2StarsEngineTest, WaitTask3)
     TaskInfo task0 = {};
     task0.stream = stream_;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    Kernel *aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task0, aicKernel3, aicKernel3->GetKernelAttrType(), 1, nullptr);
     delete aicKernel3;
     task0.u.aicTaskInfo.kernel = kernel;
@@ -1725,10 +1673,10 @@ TEST_F(CloudV2StarsEngineTest, WaitTask4)
     TaskInfo task0 = {};
     task0.stream = stream_;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
-    Kernel *aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task0, aicKernel4, aicKernel4->GetKernelAttrType(), 1, nullptr);
     delete aicKernel4;
     task0.u.aicTaskInfo.kernel = kernel;
@@ -1749,9 +1697,9 @@ TEST_F(CloudV2StarsEngineTest, WaitTask5)
     TaskInfo task0 = {};
     task0.stream = stream_;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
-    Kernel *aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Kernel* aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task0, aicKernel5, aicKernel5->GetKernelAttrType(), 1, nullptr);
     delete aicKernel5;
     task0.u.aicTaskInfo.kernel = kernel;
@@ -1770,7 +1718,7 @@ TEST_F(CloudV2StarsEngineTest, ClearSerId)
     rtError_t error;
     uint32_t sendSqeNum = 1;
 
-    TaskInfo * const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
+    TaskInfo* const workTask = device_->GetTaskFactory()->Alloc(stream_, TS_TASK_TYPE_EVENT_RECORD, error);
     error = EventRecordTaskInit(workTask, nullptr, false, INVALID_EVENT_ID);
     EXPECT_NE(error, RT_ERROR_NONE);
     device_->GetTaskFactory()->SetSerialId(stream_, workTask);
@@ -1799,43 +1747,41 @@ TEST_F(CloudV2StarsEngineTest, ReportRasProc)
 
     reportRasProcFlag = 1;
     StarsEngine engine(&device);
-    rtError_t ret = ((Runtime *)Runtime::Instance())->CreateReportRasThread();
+    rtError_t ret = ((Runtime*)Runtime::Instance())->CreateReportRasThread();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     mmSleep(400U);
     device.SetDeviceRas(true);
-    MOCKER(halGetFaultEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halGetFaultEvent).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     GetMteErrFromCqeStatus(&task, &device, TS_SDMA_STATUS_POISON_ERROR);
     EXPECT_EQ(task.mte_error, TS_ERROR_SDMA_POISON_ERROR);
     task.mte_error = 0U;
-    ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+    ((Runtime*)Runtime::Instance())->DestroyReportRasThread();
     reportRasProcFlag = 0;
 
     reportRasProcFlag = 2;
-    ret = ((Runtime *)Runtime::Instance())->CreateReportRasThread();
+    ret = ((Runtime*)Runtime::Instance())->CreateReportRasThread();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     mmSleep(1200U);
     GetMteErrFromCqeStatus(&task, &device, TS_SDMA_STATUS_POISON_ERROR);
     EXPECT_EQ(task.mte_error, TS_ERROR_SDMA_POISON_ERROR);
     task.mte_error = 0U;
-    ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+    ((Runtime*)Runtime::Instance())->DestroyReportRasThread();
     Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_WORKING;
     reportRasProcFlag = 0;
 
     reportRasProcFlag = 3;
-    ret = ((Runtime *)Runtime::Instance())->CreateReportRasThread();
+    ret = ((Runtime*)Runtime::Instance())->CreateReportRasThread();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     mmSleep(1200U);
-    ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+    ((Runtime*)Runtime::Instance())->DestroyReportRasThread();
     Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_WORKING;
     reportRasProcFlag = 0;
 
     reportRasProcFlag = 4;
-    ret = ((Runtime *)Runtime::Instance())->CreateReportRasThread();
+    ret = ((Runtime*)Runtime::Instance())->CreateReportRasThread();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     mmSleep(1200U);
-    ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+    ((Runtime*)Runtime::Instance())->DestroyReportRasThread();
     Runtime::Instance()->hbmRasProcFlag_ = HBM_RAS_WORKING;
     reportRasProcFlag = 0;
 
@@ -1852,10 +1798,10 @@ TEST_F(CloudV2StarsEngineTest, ReportRasProc_no_support)
     reportRasProcFlag = 2;
     RawDevice device(0);
     StarsEngine engine(&device);
-    rtError_t ret = ((Runtime *)Runtime::Instance())->CreateReportRasThread();
+    rtError_t ret = ((Runtime*)Runtime::Instance())->CreateReportRasThread();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     mmSleep(400U);
-    ((Runtime *)Runtime::Instance())->DestroyReportRasThread();
+    ((Runtime*)Runtime::Instance())->DestroyReportRasThread();
     reportRasProcFlag = 0;
 }
 
@@ -1887,7 +1833,7 @@ TEST_F(CloudV2StarsEngineTest, TestMemUceError)
 TEST_F(CloudV2StarsEngineTest, ProcessStarsSdmaErrorInfoNotSupport)
 {
     StarsEngine engine(device_);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device_);
     StarsDeviceErrorInfo errorInfo = {};
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -1908,11 +1854,13 @@ TEST_F(CloudV2StarsEngineTest, MonitorForWatchDog_02)
 {
     rtError_t error;
     uint16_t streamId;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     StarsEngine engine(device_);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device_);
     EXPECT_NE(errorProc, nullptr);
-    MOCKER_CPP_VIRTUAL((RawDevice *)device_, &RawDevice::ReportRingBuffer).stubs().will(returnValue(RT_ERROR_TASK_MONITOR));
+    MOCKER_CPP_VIRTUAL((RawDevice*)device_, &RawDevice::ReportRingBuffer)
+        .stubs()
+        .will(returnValue(RT_ERROR_TASK_MONITOR));
     error = device_->ReportRingBuffer(&streamId);
     EXPECT_EQ(error, RT_ERROR_TASK_MONITOR);
     engine.MonitorForWatchDog(device_);

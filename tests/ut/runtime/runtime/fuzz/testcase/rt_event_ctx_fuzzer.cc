@@ -15,19 +15,18 @@
 #include "runtime/rt.h"
 #include "rt_comm_testcase.hpp"
 
-typedef struct tagRtEventFuzzer
-{
-    int32_t     priority;
-    uint32_t    sleepTime;
-    uint32_t    count;
-    int32_t     listener;
-    int32_t     device;
-    uint32_t    flags;
+typedef struct tagRtEventFuzzer {
+    int32_t priority;
+    uint32_t sleepTime;
+    uint32_t count;
+    int32_t listener;
+    int32_t device;
+    uint32_t flags;
 } rtEventFuzzer;
 
-int rt_event_fuzzer(const uint8_t *Data, size_t DataSize)
+int rt_event_fuzzer(const uint8_t* Data, size_t DataSize)
 {
-    rtEventFuzzer *fuzzer = (rtEventFuzzer *)Data;
+    rtEventFuzzer* fuzzer = (rtEventFuzzer*)Data;
     if (DataSize <= sizeof(rtEventFuzzer))
         return 0;
 
@@ -66,16 +65,15 @@ int main() {
 }
 #else
 
-extern "C" int LLVMFuzzerTestOneInput(uint8_t *Data, size_t Size) {
-    return rt_event_fuzzer(Data, Size);
-}
+extern "C" int LLVMFuzzerTestOneInput(uint8_t* Data, size_t Size) { return rt_event_fuzzer(Data, Size); }
 
-extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv) {
+extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv)
+{
     rtDevBinary_t binary;
     uint32_t stubFunc;
     uint32_t devFunc;
-    void *binHandle = NULL;
-    unsigned char binArray[2] = { 0xff, 0xff };
+    void* binHandle = NULL;
+    unsigned char binArray[2] = {0xff, 0xff};
 
     binary.magic = RT_DEV_BINARY_MAGIC_PLAIN;
     binary.version = 0;

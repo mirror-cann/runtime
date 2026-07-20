@@ -21,42 +21,35 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 
 namespace aicpu {
-    status_t GetAicpuRunModeStub(uint32_t &runMode)
-    {
-        std::cout << "GetAicpuRunMode at stub" << std::endl;
-        runMode = AicpuRunMode::PROCESS_SOCKET_MODE; // ADC
-        return AICPU_ERROR_NONE;
-    }
-
-    status_t GetAicpuRunModeStub1(uint32_t &runMode)
-    {
-        std::cout << "GetAicpuRunMode at stub" << std::endl;
-        runMode = 3U; // Invalid Mode
-        return AICPU_ERROR_FAILED;
-    }
-
-    status_t GetAicpuRunModeStub2(uint32_t &runMode)
-    {
-        std::cout << "GetAicpuRunMode at stub" << std::endl;
-        runMode = 3U; // Invalid Mode
-        return AICPU_ERROR_NONE;
-    }
+status_t GetAicpuRunModeStub(uint32_t& runMode)
+{
+    std::cout << "GetAicpuRunMode at stub" << std::endl;
+    runMode = AicpuRunMode::PROCESS_SOCKET_MODE; // ADC
+    return AICPU_ERROR_NONE;
 }
+
+status_t GetAicpuRunModeStub1(uint32_t& runMode)
+{
+    std::cout << "GetAicpuRunMode at stub" << std::endl;
+    runMode = 3U; // Invalid Mode
+    return AICPU_ERROR_FAILED;
+}
+
+status_t GetAicpuRunModeStub2(uint32_t& runMode)
+{
+    std::cout << "GetAicpuRunMode at stub" << std::endl;
+    runMode = 3U; // Invalid Mode
+    return AICPU_ERROR_NONE;
+}
+} // namespace aicpu
 
 class AICPUJsonReadTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUJsonReadTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUJsonReadTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUJsonReadTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUJsonReadTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUJsonReadTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUJsonReadTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -65,148 +58,118 @@ protected:
     }
 };
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailZero1) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailZero1)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailZero2) {
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailZero2)
+{
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailOne) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailOne)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailOne_1) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailOne_1)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(21008));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(21008));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailTwo) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailTwo)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
     char buf[6] = {"test"};
-    char *p = buf;
-    MOCKER_CPP(realpath)
-    .stubs()
-    .will(returnValue(p));
-    MOCKER_CPP(AicpuJsonRead::ReadJsonFile)
-    .stubs()
-    .will(returnValue(1));
+    char* p = buf;
+    MOCKER_CPP(realpath).stubs().will(returnValue(p));
+    MOCKER_CPP(AicpuJsonRead::ReadJsonFile).stubs().will(returnValue(1));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailTree) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailTree)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::CheckPathValid)
-    .stubs()
-    .will(returnValue(1));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckPathValid).stubs().will(returnValue(1));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailFour) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailFour)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::CheckPathValid)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::ReadJsonFile)
-    .stubs()
-    .will(returnValue(1));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckPathValid).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::ReadJsonFile).stubs().will(returnValue(1));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailFive) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoFailFive)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::CheckPathValid)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::ReadJsonFile)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::ParseCfgData)
-    .stubs()
-    .will(returnValue(1));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckPathValid).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::ReadJsonFile).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::ParseCfgData).stubs().will(returnValue(1));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, GetMemZoneInfoSuccess) {
+TEST_F(AICPUJsonReadTEST, GetMemZoneInfoSuccess)
+{
     setenv("BLOCK_MODE_PATH", "./test", 1);
-    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::CheckPathValid)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::ReadJsonFile)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(AicpuJsonRead::ParseCfgData)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckRunModeForMdc).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::CheckPathValid).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::ReadJsonFile).stubs().will(returnValue(0));
+    MOCKER_CPP(AicpuJsonRead::ParseCfgData).stubs().will(returnValue(0));
     BuffCfg buffCfg;
     int32_t ret = AicpuJsonRead::GetMemZoneInfo(buffCfg);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     unsetenv("BLOCK_MODE_PATH");
 }
 
-TEST_F(AICPUJsonReadTEST, ReadJsonFileFail) {
-    const std::string filePath= "./test/aifmk/test.json";
+TEST_F(AICPUJsonReadTEST, ReadJsonFileFail)
+{
+    const std::string filePath = "./test/aifmk/test.json";
     json jsonRead;
     int32_t ret = AicpuJsonRead::ReadJsonFile(filePath, jsonRead);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUJsonReadTEST, ReadJsonFileFailTwo) {
-
-    const std::string filePath= "./test.json";
+TEST_F(AICPUJsonReadTEST, ReadJsonFileFailTwo)
+{
+    const std::string filePath = "./test.json";
     std::ofstream file(filePath, std::ios::trunc | std::ios::out | std::ios::in);
     json input;
     input["0"]["cfg_id"] = 1;
@@ -217,8 +180,9 @@ TEST_F(AICPUJsonReadTEST, ReadJsonFileFailTwo) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUJsonReadTEST, ReadJsonFileFailThree) {
-    const std::string filePath= "./test.json";
+TEST_F(AICPUJsonReadTEST, ReadJsonFileFailThree)
+{
+    const std::string filePath = "./test.json";
     std::ofstream file(filePath, std::ios::trunc | std::ios::out | std::ios::in);
     std::string input("{test}");
     file << input;
@@ -228,7 +192,8 @@ TEST_F(AICPUJsonReadTEST, ReadJsonFileFailThree) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUJsonReadTEST, ParseCfgDataSuccess) {
+TEST_F(AICPUJsonReadTEST, ParseCfgDataSuccess)
+{
     json input;
     std::string k = "0";
     input[k]["cfg_id"] = 0U;
@@ -241,7 +206,8 @@ TEST_F(AICPUJsonReadTEST, ParseCfgDataSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUJsonReadTEST, ParseCfgDataFail) {
+TEST_F(AICPUJsonReadTEST, ParseCfgDataFail)
+{
     json input;
     std::string k = "1";
     input[k]["cfg_id"] = 0U;
@@ -254,50 +220,42 @@ TEST_F(AICPUJsonReadTEST, ParseCfgDataFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUJsonReadTEST, CheckPathValidFailed0) {
+TEST_F(AICPUJsonReadTEST, CheckPathValidFailed0)
+{
     std::string cfgFullPath = "/abc/";
-    char *a = nullptr;
-    MOCKER(realpath)
-        .stubs()
-        .will(returnValue(a));
+    char* a = nullptr;
+    MOCKER(realpath).stubs().will(returnValue(a));
     auto ret = AicpuJsonRead::CheckPathValid(cfgFullPath);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUJsonReadTEST, CheckPathValidFailed1) {
+TEST_F(AICPUJsonReadTEST, CheckPathValidFailed1)
+{
     std::string cfgFullPath = "/abc/";
     char buf[6] = {"/abc/"};
-    char *p = buf;
-    MOCKER(realpath)
-        .stubs()
-        .will(returnValue(p));
+    char* p = buf;
+    MOCKER(realpath).stubs().will(returnValue(p));
     auto ret = AicpuJsonRead::CheckPathValid(cfgFullPath);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUJsonReadTEST, GetRunModeInfoFail_1) {
-
-    MOCKER(aicpu::GetAicpuRunMode)
-        .stubs()
-        .will(invoke(GetAicpuRunModeStub1));
+TEST_F(AICPUJsonReadTEST, GetRunModeInfoFail_1)
+{
+    MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuRunModeStub1));
     auto ret = AicpuJsonRead::CheckRunModeForMdc();
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUJsonReadTEST, GetRunModeInfoSuccess_1) {
-
-    MOCKER(aicpu::GetAicpuRunMode)
-        .stubs()
-        .will(invoke(GetAicpuRunModeStub2));
+TEST_F(AICPUJsonReadTEST, GetRunModeInfoSuccess_1)
+{
+    MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuRunModeStub2));
     auto ret = AicpuJsonRead::CheckRunModeForMdc();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUJsonReadTEST, GetRunModeInfoSuccess_2) {
-
-    MOCKER(aicpu::GetAicpuRunMode)
-        .stubs()
-        .will(invoke(GetAicpuRunModeStub));
+TEST_F(AICPUJsonReadTEST, GetRunModeInfoSuccess_2)
+{
+    MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuRunModeStub));
     auto ret = AicpuJsonRead::CheckRunModeForMdc();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }

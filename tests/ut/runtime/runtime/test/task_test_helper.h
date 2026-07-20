@@ -15,19 +15,18 @@
 namespace cce {
 namespace runtime {
 
-inline Kernel *CreateTestKernel(rtKernelAttrType type) {
-    return new Kernel("", 0ULL, nullptr, type, 0);
-}
+inline Kernel* CreateTestKernel(rtKernelAttrType type) { return new Kernel("", 0ULL, nullptr, type, 0); }
 
-inline Kernel *CreateTestKernelWithMixType(rtKernelAttrType type, uint8_t mixType) {
-    Kernel *kernel = new Kernel("", 0ULL, nullptr, type, 0);
+inline Kernel* CreateTestKernelWithMixType(rtKernelAttrType type, uint8_t mixType)
+{
+    Kernel* kernel = new Kernel("", 0ULL, nullptr, type, 0);
     if (kernel != nullptr) {
         kernel->SetMixType(mixType);
     }
     return kernel;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif

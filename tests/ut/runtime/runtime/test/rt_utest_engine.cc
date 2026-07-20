@@ -40,7 +40,7 @@
 #include <chrono>
 #include <thread>
 #include <map>
-#include <utility>  // For std::pair and std::make_pair.
+#include <utility> // For std::pair and std::make_pair.
 #include "mmpa_api.h"
 #include "task_submit.hpp"
 #include "thread_local_container.hpp"
@@ -52,35 +52,26 @@
 using namespace testing;
 using namespace cce::runtime;
 
-using std::pair;
 using std::make_pair;
+using std::pair;
 
-static void excptCallback(rtExceptionType type)
-{
-    return;
-}
+static void excptCallback(rtExceptionType type) { return; }
 
-class EngineTest : public testing::Test
-{
+class EngineTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
-        std::cout<<"engine test start"<<std::endl;
-
+        std::cout << "engine test start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"engine test start end"<<std::endl;
-
-    }
+    static void TearDownTestCase() { std::cout << "engine test start end" << std::endl; }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
         rtSetDevice(0);
@@ -88,8 +79,8 @@ protected:
         ut::ClearCurrentDefaultStreamPending();
 
         device_ = rtInstance->DeviceRetain(0, 0);
-        engine_ = ((RawDevice *)device_)->engine_;
-        RawDevice *rawDevice = new RawDevice(0);
+        engine_ = ((RawDevice*)device_)->engine_;
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
@@ -102,7 +93,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
         device_->SetDevStatus(RT_ERROR_NONE);
@@ -118,47 +109,34 @@ protected:
     }
 
 protected:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
 };
 
-
-class SubmitFailScheduler : public FifoScheduler
-{
+class SubmitFailScheduler : public FifoScheduler {
 public:
-    virtual rtError_t PushTask(TaskInfo *task)
-    {
-        return RT_ERROR_INVALID_VALUE;
-    }
+    virtual rtError_t PushTask(TaskInfo* task) { return RT_ERROR_INVALID_VALUE; }
 };
 
 static volatile uint16_t indp = 0;
 
-class SendingRunScheduler : public FifoScheduler
-{
+class SendingRunScheduler : public FifoScheduler {
 public:
-    Scheduler *test;
+    Scheduler* test;
 
-    void set(Scheduler *fifoScheduler)
-    {
-        test = fifoScheduler;
-    }
+    void set(Scheduler* fifoScheduler) { test = fifoScheduler; }
 
-    virtual rtError_t PushTask(TaskInfo *task)
-    {
-        return  test->PushTask(task);
-    }
+    virtual rtError_t PushTask(TaskInfo* task) { return test->PushTask(task); }
 
-    virtual TaskInfo * PopTask()
+    virtual TaskInfo* PopTask()
     {
         std::cout << "PopTask begin indp = " << indp << std::endl;
-        if (0 == indp)
-        {
+        if (0 == indp) {
             indp = 1;
             std::cout << "PopTask in indp = " << indp << std::endl;
-            return  NULL;
+            return NULL;
         }
         std::cout << "PopTask end indp = " << indp << std::endl;
         return test->PopTask();
@@ -167,24 +145,22 @@ public:
 
 extern rtCommand_t g_command[2];
 
-drvError_t halSqMemGet_stub1(uint32_t devId, struct halSqMemGetInput *sqMemGetInput, struct halSqMemGetOutput *sqMemGetOutput )
+drvError_t halSqMemGet_stub1(
+    uint32_t devId, struct halSqMemGetInput* sqMemGetInput, struct halSqMemGetOutput* sqMemGetOutput)
 {
     memset_s(&g_command[devId], sizeof(rtTaskReport_t), 0, sizeof(rtTaskReport_t));
-    sqMemGetOutput->cmdPtr = (void *)&g_command[devId];
+    sqMemGetOutput->cmdPtr = (void*)&g_command[devId];
     sqMemGetOutput->cmdCount = 1;
     return DRV_ERROR_NONE;
 }
 
-rtError_t utest_engine_stream_setup_sub(Stream *stream)
+rtError_t utest_engine_stream_setup_sub(Stream* stream)
 {
     stream->streamId_ = 0;
     return RT_ERROR_NONE;
 }
 
-void ExeciptionCallback(rtExceptionType type)
-{
-    printf("this is app exception callback, ExceptionType=%d\n", type);
-}
+void ExeciptionCallback(rtExceptionType type) { printf("this is app exception callback, ExceptionType=%d\n", type); }
 
 TEST_F(EngineTest, EngineSendingWait)
 {
@@ -194,8 +170,8 @@ TEST_F(EngineTest, EngineSendingWait)
     uint16_t taskId = 0;
     task.stream = stream_;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
     task.u.aicTaskInfo.kernel = kernel;
     MOCKER_CPP(&Stream::IsTaskLimited).stubs().will(returnValue(true)).then(returnValue(false));
     err = engine_->SendTask(&task, taskId);
@@ -251,11 +227,11 @@ TEST_F(EngineTest, ReportExceptProcNotSupport)
     rtStream_t streamHandle;
     rtError_t res = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(res, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     task.stream = stream;
     uint32_t payload = TS_ERROR_TASK_TYPE_NOT_SUPPORT;
     std::unique_ptr<HwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ExeciptionCallback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ExeciptionCallback;
     engine->ReportExceptProc(&task, payload);
     rtStreamDestroy(streamHandle);
 }
@@ -267,11 +243,11 @@ TEST_F(EngineTest, ReportExceptProcNotSupport_01)
     rtStream_t streamHandle;
     rtError_t res = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(res, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     task.stream = stream;
     uint32_t payload = TS_ERROR_DEBUG_AI_CORE_EXCEPTION;
     std::unique_ptr<HwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ExeciptionCallback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ExeciptionCallback;
     device_->SetHasTaskError(true);
     engine->ReportExceptProc(&task, payload);
     rtStreamDestroy(streamHandle);
@@ -286,21 +262,19 @@ TEST_F(EngineTest, observer_test)
     EXPECT_EQ(CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG), 0);
 }
 
-extern "C" void *__real_malloc (size_t c);
-extern "C" void *__wrap_malloc (size_t c);
-void *malloc_stub(unsigned int num_bytes)
+extern "C" void* __real_malloc(size_t c);
+extern "C" void* __wrap_malloc(size_t c);
+void* malloc_stub(unsigned int num_bytes)
 {
-    if (num_bytes == 3*sizeof(uint32_t))
+    if (num_bytes == 3 * sizeof(uint32_t))
         return NULL;
     return __real_malloc(num_bytes);
 }
 
-void ut_callback(rtExceptionType type)
-{
-    printf("this is app exception callback, ExceptionType=%d\n", type);
-}
+void ut_callback(rtExceptionType type) { printf("this is app exception callback, ExceptionType=%d\n", type); }
 
-void ut_taskFailCallback(rtExceptionInfo_t *exceptionInfo) {
+void ut_taskFailCallback(rtExceptionInfo_t* exceptionInfo)
+{
     printf("taskid=%d\n, streamid=%d\n, tid=%d\n,", exceptionInfo->taskid, exceptionInfo->streamid, exceptionInfo->tid);
     bool res = ((exceptionInfo->taskid == 1024) && (exceptionInfo->streamid == 512) && (exceptionInfo->tid == 256));
     EXPECT_EQ(res, true);
@@ -325,12 +299,10 @@ TEST_F(EngineTest, de_state_down)
 TEST_F(EngineTest, engine_start)
 {
     rtError_t error = RT_ERROR_NONE;
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
 
-    MOCKER_CPP_VIRTUAL(device->engine_, &Engine::Start)
-            .stubs()
-            .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(device->engine_, &Engine::Start).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     device->Start();
     EXPECT_EQ(device->engine_->CheckMonitorThreadAlive(), false);
     (void)device->Stop();
@@ -340,16 +312,16 @@ TEST_F(EngineTest, engine_start)
 
 TEST_F(EngineTest, engine_report_last_error1)
 {
-    const void *stubFunc = NULL;
+    const void* stubFunc = NULL;
     rtStream_t streamHandle;
     rtError_t res = rtStreamCreate(&streamHandle, 0);
     EXPECT_EQ(res, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(streamHandle);
     EngineLogObserver observer;
 
-    TaskFactory *taskFactory = const_cast<TaskFactory *>(device_->GetTaskFactory());
-    TaskInfo *task = taskFactory->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, res);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    TaskFactory* taskFactory = const_cast<TaskFactory*>(device_->GetTaskFactory());
+    TaskInfo* task = taskFactory->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, res);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(task, kernel, kernel->GetKernelAttrType(), (uint16_t)1, nullptr);
     delete kernel;
     EXPECT_EQ(task->type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -363,7 +335,7 @@ TEST_F(EngineTest, engine_report_last_error1)
     engine->ReportLastError(stream->Id_(), taskId, errorCode, errorDesc);
 
     observer.TaskSubmited(device_, task);
-    TaskInfo *leftTask = taskFactory->GetTask(stream->Id_(), taskId);
+    TaskInfo* leftTask = taskFactory->GetTask(stream->Id_(), taskId);
     if (leftTask != nullptr) {
         (void)taskFactory->Recycle(leftTask);
     }
@@ -379,7 +351,7 @@ TEST_F(EngineTest, engine_PreProcessTask)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
     task.bindFlag = false;
     Runtime::Instance()->SetDisableThread(false);
     EXPECT_EQ(task.preRecycleFlag, false);
@@ -394,12 +366,10 @@ TEST_F(EngineTest, engine_PreProcessTask_001)
 
     uint32_t payload = 1;
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
     task.bindFlag = false;
     bool orginThreadDisableFlag = Runtime::Instance()->GetDisableThread();
-    MOCKER_CPP(&Stream::GetRecycleTaskHeadId)
-        .stubs()
-        .will(returnValue(RT_ERROR_STREAM_EMPTY));
+    MOCKER_CPP(&Stream::GetRecycleTaskHeadId).stubs().will(returnValue(RT_ERROR_STREAM_EMPTY));
     Runtime::Instance()->SetDisableThread(true);
     engine->PreProcessTask(&task, payload);
     EXPECT_EQ(task.preRecycleFlag, false);
@@ -414,18 +384,14 @@ TEST_F(EngineTest, engine_PreProcessTask_002)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
     task.bindFlag = false;
 
     bool orginThreadDisableFlag = Runtime::Instance()->GetDisableThread();
-    MOCKER_CPP(&Stream::GetRecycleTaskHeadId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Stream::GetRecycleTaskHeadId).stubs().will(returnValue(RT_ERROR_NONE));
 
-    TaskInfo *nullTask = nullptr;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .will(returnValue(nullTask));
+    TaskInfo* nullTask = nullptr;
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(nullTask));
     Runtime::Instance()->SetDisableThread(true);
     engine->PreProcessTask(&task, payload);
     EXPECT_EQ(task.preRecycleFlag, false);
@@ -462,31 +428,27 @@ TEST_F(EngineTest, engine_ReportTimeoutProc)
 
 TEST_F(EngineTest, engine_GetKernelNameForAiCoreorAiv)
 {
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    const void *stubFunc = (void *)0x03;
-    const char *stubName = "efg";
-    Kernel *kernel = NULL;
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    const void* stubFunc = (void*)0x03;
+    const char* stubName = "efg";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'e', 'f', 'g', 'h', '\0'};
 
-    MOCKER_CPP(&Runtime::GetProgram)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&Runtime::PutProgram)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP(&Runtime::GetProgram).stubs().will(returnValue(true));
+    MOCKER_CPP(&Runtime::PutProgram).stubs().will(ignoreReturnValue());
     kernel = new (std::nothrow) Kernel("efg", 0UL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
 
     std::unique_ptr<DirectHwtsEngine> aicpuErrObj = std::make_unique<DirectHwtsEngine>(device_);
-    Stream *stm = new Stream(device, 1);
+    Stream* stm = new Stream(device, 1);
     stm->streamId_ = 1;
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo * const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
+    TaskInfo* const kernTask = device->GetTaskFactory()->Alloc(stm, TS_TASK_TYPE_KERNEL_AICORE, errCode);
 
-    Kernel *aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(kernTask, aicKernel, aicKernel->GetKernelAttrType(), (uint16_t)1, nullptr);
     delete aicKernel;
     EXPECT_EQ(kernTask->type, TS_TASK_TYPE_KERNEL_AICORE);
@@ -495,10 +457,10 @@ TEST_F(EngineTest, engine_GetKernelNameForAiCoreorAiv)
     EXPECT_STREQ("efg", kernelNameStr.c_str());
     device->GetTaskFactory()->Recycle(kernTask);
     DELETE_O(stm);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-rtError_t StubQueryCqShm1(RawDevice *device, uint32_t streamId, rtShmQuery_t &shmInfo)
+rtError_t StubQueryCqShm1(RawDevice* device, uint32_t streamId, rtShmQuery_t& shmInfo)
 {
     shmInfo.valid = 0x5A5A5A5A;
     return RT_ERROR_NONE;
@@ -580,7 +542,7 @@ TEST_F(EngineTest, submit_task_failed)
 {
     rtError_t error = RT_ERROR_NONE;
     TaskInfo task0 = {};
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
     stream->streamId_ = -1;
     task0.stream = stream;
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
@@ -594,14 +556,12 @@ TEST_F(EngineTest, ProcessTaskWait_01)
 {
     rtError_t error = RT_ERROR_NONE;
     TaskInfo task0 = {};
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
     stream->streamId_ = -1;
     task0.stream = stream;
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
 
-    MOCKER(WaitExecFinishForModelExecuteTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER(WaitExecFinishForModelExecuteTask).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = engine->ProcessTaskWait(&task0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete stream;
@@ -611,14 +571,12 @@ TEST_F(EngineTest, ProcessTaskWait_02)
 {
     rtError_t error = RT_ERROR_NONE;
     TaskInfo task0 = {};
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
     stream->streamId_ = -1;
     task0.stream = stream;
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
 
-    MOCKER(WaitAsyncCopyComplete)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER(WaitAsyncCopyComplete).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = engine->ProcessTaskWait(&task0);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
     delete stream;
@@ -630,7 +588,7 @@ TEST_F(EngineTest, StarsCqeReceive_01)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
 
     rtLogicCqReport_t cqe = {0};
     cqe.errorCode = 0x41;
@@ -645,7 +603,7 @@ TEST_F(EngineTest, StarsCqeReceive_05)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
 
     rtLogicCqReport_t cqe = {0};
     cqe.errorCode = 0x41;
@@ -674,7 +632,7 @@ TEST_F(EngineTest, StarsCqeReceive_02)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
 
     rtLogicCqReport_t cqe = {0};
     task.id = 1;
@@ -689,7 +647,7 @@ TEST_F(EngineTest, StarsCqeReceive_03)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
 
     rtLogicCqReport_t cqe = {0};
     task.id = 1;
@@ -703,12 +661,12 @@ TEST_F(EngineTest, StarsCqeReceive_06)
     task.type = TS_TASK_TYPE_FFTS_PLUS;
     task.stream = stream_;
     task.errorCode = 0x1;
-    FftsPlusTaskInfo *fftsPlusTask = &(task.u.fftsPlusTask);
+    FftsPlusTaskInfo* fftsPlusTask = &(task.u.fftsPlusTask);
     fftsPlusTask->kernelFlag = RT_KERNEL_FFTSPLUS_DYNAMIC_SHAPE_DUMPFLAG;
 
     uint32_t payload = 1;
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
 
     rtLogicCqReport_t cqe = {0};
     task.id = 1;
@@ -725,15 +683,15 @@ TEST_F(EngineTest, StarsMonitor_DevRuningDown)
     Runtime::Instance()->SetDisableThread(true);
     engine->SetDevRunningState(DEV_RUNNING_DOWN);
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_NORMAL;
-    rtError_t error = ((Runtime *)Runtime::Instance())->GetWatchDogDevStatus(device_->Id_(), &deviceStatus);
+    rtError_t error = ((Runtime*)Runtime::Instance())->GetWatchDogDevStatus(device_->Id_(), &deviceStatus);
     engine->SetDevRunningState(DEV_RUNNING_NORMAL);
-    auto *instance = Runtime::Instance();
+    auto* instance = Runtime::Instance();
     uint32_t threadNumAfter = instance->monitorThreadNum_.Value();
     EXPECT_EQ(threadNumBefore, threadNumAfter);
     Runtime::Instance()->SetDisableThread(flag);
 }
 
-drvError_t drvGetPlatformInfo_offline_stub(uint32_t *info)
+drvError_t drvGetPlatformInfo_offline_stub(uint32_t* info)
 {
     *info = RT_RUN_MODE_OFFLINE;
     return DRV_ERROR_NONE;
@@ -750,9 +708,7 @@ TEST_F(EngineTest, ReportSocketCloseProc_01)
 TEST_F(EngineTest, ReportSocketCloseProc_02)
 {
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_offline_stub));
-    MOCKER_CPP(&Runtime::GetHdcConctStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Runtime::GetHdcConctStatus).stubs().will(returnValue(RT_ERROR_NONE));
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     engine->ReportSocketCloseProc();
     EXPECT_EQ(engine->GetDevRunningState(), DEV_RUNNING_NORMAL);
@@ -765,8 +721,7 @@ TEST_F(EngineTest, ReportSocketCloseProc_03)
         .stubs()
         .with(mockcpp::any(), outBound(hdcStat))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFailCallBackManager::Notify)
-        .stubs();
+    MOCKER_CPP(&TaskFailCallBackManager::Notify).stubs();
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     engine->ReportSocketCloseProcV2();
     EXPECT_EQ(engine->GetDevRunningState(), DEV_RUNNING_NORMAL);
@@ -782,14 +737,12 @@ TEST_F(EngineTest, SendCommand_WaitExec)
     (void)memset_s(&cmdLocal.cmdBuf, sizeof(rtTsCommandBuf_t), 0, sizeof(rtTsCommandBuf_t));
     rtTsCmdSqBuf_t command = {};
     const uint32_t sendSqeNum = 1U;
-    MOCKER(WaitExecFinish)
-        .stubs()
-        .will(returnValue(RT_ERRORCODE_BASE));
+    MOCKER(WaitExecFinish).stubs().will(returnValue(RT_ERRORCODE_BASE));
     rtError_t error = engine->SendCommand(&task, cmdLocal, &command, sendSqeNum);
     EXPECT_EQ(error, RT_ERRORCODE_BASE);
 }
 
-drvError_t drvGetPlatformInfo_OOM_stub(uint32_t *info)
+drvError_t drvGetPlatformInfo_OOM_stub(uint32_t* info)
 {
     *info = RT_ERROR_DEVICE_OOM;
     return DRV_ERROR_NONE;
@@ -806,7 +759,10 @@ TEST_F(EngineTest, ReportStatusOomProc_01)
 
 TEST_F(EngineTest, ReportOomQueryProc)
 {
-    MOCKER_CPP(&NpuDriver::GetDeviceAicpuStat).stubs().will(returnValue(RT_ERROR_DEVICE_OOM)).then(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&NpuDriver::GetDeviceAicpuStat)
+        .stubs()
+        .will(returnValue(RT_ERROR_DEVICE_OOM))
+        .then(returnValue(RT_ERROR_NONE));
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
     engine->ReportOomQueryProc();
     engine->ReportOomQueryProc();
@@ -815,14 +771,13 @@ TEST_F(EngineTest, ReportOomQueryProc)
 
 TEST_F(EngineTest, DvppWaitGroup)
 {
-    DvppGrp *grp = new DvppGrp(device_, 0);
+    DvppGrp* grp = new DvppGrp(device_, 0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
 
     rtError_t error = engine->DvppWaitGroup(grp, nullptr, 0);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
     delete grp;
 }
-
 
 TEST_F(EngineTest, recycle_thread_run_test)
 {
@@ -833,7 +788,7 @@ TEST_F(EngineTest, recycle_thread_run_test)
 
 TEST_F(EngineTest, davinci_task_exception_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
     bool result = engine->ProcessTaskDavinciList(nullptr, 1, 0);
@@ -845,7 +800,7 @@ TEST_F(EngineTest, davinci_task_exception_test)
 
     delete device;
 }
-rtError_t utest_get_head_pos_from_ctrl_sq_stub(CtrlStream *This, uint32_t &sqHead)
+rtError_t utest_get_head_pos_from_ctrl_sq_stub(CtrlStream* This, uint32_t& sqHead)
 {
     sqHead = 0;
     return RT_ERROR_NONE;
@@ -856,7 +811,7 @@ TEST_F(EngineTest, CtrlTaskReclaim_test)
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     CtrlStream* stm = new CtrlStream(device_);
     engine->CtrlTaskReclaim(stm);
-    MOCKER_CPP(&CtrlStream::GetHeadPosFromCtrlSq, rtError_t (CtrlStream::*)(uint32_t&))
+    MOCKER_CPP(&CtrlStream::GetHeadPosFromCtrlSq, rtError_t(CtrlStream::*)(uint32_t&))
         .stubs()
         .will(returnValue(RT_ERROR_DRV_NOT_SUPPORT))
         .then(invoke(utest_get_head_pos_from_ctrl_sq_stub));
@@ -890,9 +845,7 @@ TEST_F(EngineTest, RecycleCtrlTask_test)
     engine->RecycleCtrlTask(stm, 0);
     stm->SetSqTailPos(2);
 
-    MOCKER_CPP_VIRTUAL(stm, &CtrlStream::GetTaskIdByPos)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(stm, &CtrlStream::GetTaskIdByPos).stubs().will(returnValue(RT_ERROR_NONE));
     engine->RecycleCtrlTask(stm, 0);
     uint32_t taskId = 0;
     (void)stm->GetTaskIdByPos(0, taskId);
@@ -901,10 +854,7 @@ TEST_F(EngineTest, RecycleCtrlTask_test)
     DELETE_O(stm);
 }
 
-void DvppGrpCallback(rtDvppGrpRptInfo_t *report)
-{
-    UNUSED(report);
-}
+void DvppGrpCallback(rtDvppGrpRptInfo_t* report) { UNUSED(report); }
 
 TEST_F(EngineTest, StarsReportLogicCq_01)
 {
@@ -913,13 +863,13 @@ TEST_F(EngineTest, StarsReportLogicCq_01)
     engine->StarsReportLogicCq(cqe, DvppGrpCallback, 0xFFU, 0);
     uint16_t streamId = (cqe.streamId & 0x7FFFU);
     uint16_t taskId = cqe.taskId;
-    TaskInfo *reportTask = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
+    TaskInfo* reportTask = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
     EXPECT_EQ(reportTask, nullptr);
 }
 
 TEST_F(EngineTest, create_recycle_thread_1)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
 
     rtError_t result = engine->CreateRecycleThread();
@@ -933,7 +883,7 @@ TEST_F(EngineTest, create_recycle_thread_1)
 
 TEST_F(EngineTest, create_recycle_thread_2)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
 
     MOCKER(mmSemInit).stubs().will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
@@ -955,7 +905,7 @@ TEST_F(EngineTest, wakeup_recycle_thread_alive_false)
 
 TEST_F(EngineTest, wakeup_recycle_thread_alive_true)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
 
     rtError_t result = engine->CreateRecycleThread();
@@ -970,7 +920,7 @@ TEST_F(EngineTest, wakeup_recycle_thread_alive_true)
 
 TEST_F(EngineTest, destroy_with_inflight_wakeup)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
 
     rtError_t result = engine->CreateRecycleThread();
@@ -1000,11 +950,10 @@ TEST_F(EngineTest, stars_wakeup_recycle_thread_alive_false)
 
 TEST_F(EngineTest, stars_destroy_with_inflight_wakeup)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device);
 
-    MOCKER_CPP_VIRTUAL(engine.get(), &StarsEngine::RecycleThreadDo)
-        .stubs().will(ignoreReturnValue());
+    MOCKER_CPP_VIRTUAL(engine.get(), &StarsEngine::RecycleThreadDo).stubs().will(ignoreReturnValue());
 
     rtError_t result = engine->CreateRecycleThread();
     EXPECT_EQ(result, RT_ERROR_NONE);
@@ -1044,7 +993,7 @@ TEST_F(EngineTest, stars_wakeup_recycle_thread_concurrent)
     }
 
     stopFlag.store(true, std::memory_order_release);
-    for (auto &t : threads) {
+    for (auto& t : threads) {
         t.join();
     }
     engine->recycleThreadAlive_.store(false, std::memory_order_release);
@@ -1053,7 +1002,7 @@ TEST_F(EngineTest, stars_wakeup_recycle_thread_concurrent)
 
 TEST_F(EngineTest, xpu_wakeup_recycle_thread_alive_false)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     XpuDevice xpu(device->Id_());
     (void)mmSemInit(&xpu.recycleThreadSem_, 0U);
     EXPECT_EQ(xpu.recycleThreadAlive_.load(std::memory_order_acquire), false);
@@ -1066,7 +1015,7 @@ TEST_F(EngineTest, xpu_wakeup_recycle_thread_alive_false)
 
 TEST_F(EngineTest, xpu_drain_loop_yield)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     XpuDevice xpu(device->Id_());
 
     rtError_t result = xpu.CreateRecycleThread();
@@ -1112,7 +1061,7 @@ TEST_F(EngineTest, xpu_wakeup_recycle_thread_concurrent)
     }
 
     stopFlag.store(true, std::memory_order_release);
-    for (auto &t : threads) {
+    for (auto& t : threads) {
         t.join();
     }
     xpu->recycleThreadAlive_.store(false, std::memory_order_release);
@@ -1121,7 +1070,7 @@ TEST_F(EngineTest, xpu_wakeup_recycle_thread_concurrent)
 
 TEST_F(EngineTest, device_status_proc)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
 
     device->SetDevStatus(RT_ERROR_LOST_HEARTBEAT);
 
@@ -1134,7 +1083,7 @@ TEST_F(EngineTest, device_status_proc)
 
 TEST_F(EngineTest, device_monitor_exit_flag)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
 
     device->SetMonitorExitFlag(true);
 
@@ -1152,9 +1101,7 @@ TEST_F(EngineTest, Start_engine)
     error = engine->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(OsalFactory::CreateNotifier)
-            .stubs()
-            .will(returnValue((Notifier *)NULL));
+    MOCKER(OsalFactory::CreateNotifier).stubs().will(returnValue((Notifier*)NULL));
 
     error = engine->Start();
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -1164,13 +1111,11 @@ TEST_F(EngineTest, WaitCompletion_test_break)
 {
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     engine->pendingNum_.Set(1U);
     bool orginThreadDisableFlag = Runtime::Instance()->GetDisableThread();
     Runtime::Instance()->SetDisableThread(true);
-    MOCKER_CPP_VIRTUAL(engine.get(), &Engine::TaskReclaim)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(engine.get(), &Engine::TaskReclaim).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     engine->WaitCompletion();
     EXPECT_EQ(engine->pendingNum_.Value(), 1U);
     Runtime::Instance()->SetDisableThread(orginThreadDisableFlag);
@@ -1180,7 +1125,7 @@ TEST_F(EngineTest, WaitCompletion_test_submit_task_fail_break)
 {
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     engine->pendingNum_.Set(1U);
     engine->SetIsSubmitTaskFailFlag(true);
     engine->WaitCompletion();
@@ -1192,22 +1137,13 @@ TEST_F(EngineTest, WaitCompletion_test_submit_task_fail_break)
 TEST_F(EngineTest, PushFlipTask_error_recycle)
 {
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device_);
-    Stream *stream = new Stream(device_, 0);
-    MOCKER_CPP_VIRTUAL(stream, &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
+    Stream* stream = new Stream(device_, 0);
+    MOCKER_CPP_VIRTUAL(stream, &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
 
     TaskInfo task = {};
-    MOCKER_CPP(&Stream::ProcFlipTask)
-        .stubs()
-        .with(outBound(&task), mockcpp::any())
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&AsyncHwtsEngine::SubmitPush)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
-    MOCKER_CPP(&TaskFactory::Recycle)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&Stream::ProcFlipTask).stubs().with(outBound(&task), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&AsyncHwtsEngine::SubmitPush).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP(&TaskFactory::Recycle).stubs().will(returnValue(0));
 
     rtError_t error = engine->PushFlipTask(1, stream);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
@@ -1220,14 +1156,12 @@ TEST_F(EngineTest, SubmitPush_error)
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     engine->Init();
     TaskInfo task = {};
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
     task.stream = stream;
     task.type = TS_TASK_TYPE_KERNEL_AICPU;
     uint32_t flipTaskId = 1U;
 
-    MOCKER_CPP_VIRTUAL(engine->GetScheduler(), &Scheduler::PushTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(engine->GetScheduler(), &Scheduler::PushTask).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     rtError_t error = engine->SubmitPush(&task, &flipTaskId);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
@@ -1250,17 +1184,13 @@ TEST_F(EngineTest, PreProcessTask_do_while)
     task.stream = stream_;
     uint32_t payload = 1;
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device_);
-    ((Runtime *)Runtime::Instance())->excptCallBack_ = ut_callback;
+    ((Runtime*)Runtime::Instance())->excptCallBack_ = ut_callback;
     task.bindFlag = false;
 
     bool orginThreadDisableFlag = Runtime::Instance()->GetDisableThread();
-    MOCKER_CPP(&Stream::GetRecycleTaskHeadId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Stream::GetRecycleTaskHeadId).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .will(returnValue(&task));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(&task));
     Runtime::Instance()->SetDisableThread(true);
     engine->PreProcessTask(&task, payload);
     EXPECT_EQ(task.preRecycleFlag, true);
@@ -1274,34 +1204,30 @@ TEST_F(EngineTest, GetRecycleDavinciTaskNum_test)
     uint16_t lastRecycleEndTaskId = MAX_UINT16_NUM;
     uint16_t recycleEndTaskId = 0U;
     uint16_t recyclePublicTaskCount = 0U;
-    uint32_t taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId,
-        recycleEndTaskId, recyclePublicTaskCount);
+    uint32_t taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId, recycleEndTaskId, recyclePublicTaskCount);
     EXPECT_EQ(taskNum, 1U);
 
     lastRecycleEndTaskId = 0U;
     recycleEndTaskId = 1U;
-    taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId,
-        recycleEndTaskId, recyclePublicTaskCount);
+    taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId, recycleEndTaskId, recyclePublicTaskCount);
     EXPECT_EQ(taskNum, 1U);
 
     lastRecycleEndTaskId = 1U;
     recycleEndTaskId = 0U;
     recyclePublicTaskCount = 65535U;
-    taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId,
-        recycleEndTaskId, recyclePublicTaskCount);
+    taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId, recycleEndTaskId, recyclePublicTaskCount);
     EXPECT_EQ(taskNum, 0U);
 
     lastRecycleEndTaskId = 1U;
     recycleEndTaskId = 0U;
     recyclePublicTaskCount = 0U;
-    taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId,
-        recycleEndTaskId, recyclePublicTaskCount);
+    taskNum = engine->GetRecycleDavinciTaskNum(lastRecycleEndTaskId, recycleEndTaskId, recyclePublicTaskCount);
     EXPECT_EQ(taskNum, 65534U);
 }
 
 TEST_F(EngineTest, ProcessTaskDavinciList_invalid_endTaskId)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     bool result = engine->ProcessTaskDavinciList(nullptr, MAX_UINT16_NUM, 0);
     EXPECT_EQ(result, false);
@@ -1313,7 +1239,7 @@ TEST_F(EngineTest, TrigerAsyncRecycle_taskDelay)
     std::unique_ptr<Engine> engine = std::make_unique<DirectHwtsEngine>(device_);
     engine->Init();
 
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
 
     uint16_t lastRecycleTaskId = 0U;
     uint16_t endTaskId = 0U;
@@ -1321,12 +1247,10 @@ TEST_F(EngineTest, TrigerAsyncRecycle_taskDelay)
 
     stream->SetIsSupportASyncRecycle(true);
     stream->SetStreamAsyncRecycleFlag(true);
-    MOCKER_CPP_VIRTUAL((RawDevice *)device_, &RawDevice::AddStreamToMessageQueue).stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL((RawDevice*)device_, &RawDevice::AddStreamToMessageQueue).stubs().will(returnValue(true));
     MOCKER_CPP_VIRTUAL(engine.get(), &Engine::WakeUpRecycleThread).stubs();
 
-    engine->TrigerAsyncRecycle(stream, lastRecycleTaskId,
-        endTaskId, isTaskDelayRecycle);
+    engine->TrigerAsyncRecycle(stream, lastRecycleTaskId, endTaskId, isTaskDelayRecycle);
     EXPECT_EQ(stream->GetRecycleEndTaskId(), lastRecycleTaskId);
 
     delete stream;
@@ -1335,11 +1259,11 @@ TEST_F(EngineTest, TrigerAsyncRecycle_taskDelay)
 
 TEST_F(EngineTest, ProcessPublicTask_recycleStm_null)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     engine->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICPU;
     task.stream = stream;
@@ -1359,11 +1283,11 @@ TEST_F(EngineTest, ProcessPublicTask_recycleStm_null)
 
 TEST_F(EngineTest, ProcessPublicTask_GetRecycleWorkTask_null)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     engine->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICPU;
     task.stream = stream;
@@ -1384,13 +1308,13 @@ TEST_F(EngineTest, ProcessPublicTask_GetRecycleWorkTask_null)
 
 TEST_F(EngineTest, GetTsReportByIdx_GetRecycleWorkTask_null)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
     rtStarsCqe_t cqeReport;
     cqeReport.streamID = 1;
     rtTsReport_t tsReport;
     tsReport.msgType = tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE;
-    engine->GetTsReportByIdx(reinterpret_cast<void *>(&cqeReport), 0, tsReport);
+    engine->GetTsReportByIdx(reinterpret_cast<void*>(&cqeReport), 0, tsReport);
     EXPECT_EQ(tsReport.msgBuf.starsCqe->streamID, cqeReport.streamID);
     delete device;
     GlobalMockObject::reset();
@@ -1398,7 +1322,7 @@ TEST_F(EngineTest, GetTsReportByIdx_GetRecycleWorkTask_null)
 
 TEST_F(EngineTest, GetReportCommonInfo_TS_REPORT_MSG_TYPE_STARS_CQE)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
     rtStarsCqe_t cqeReport;
@@ -1425,15 +1349,15 @@ TEST_F(EngineTest, GetReportCommonInfo_TS_REPORT_MSG_TYPE_STARS_CQE)
     delete device;
 }
 
-void TaskFailCallBackStub(const uint32_t streamId, const uint32_t taskId,
-                      const uint32_t threadId, const uint32_t retCode,
-                      const Device * const dev)
+void TaskFailCallBackStub(
+    const uint32_t streamId, const uint32_t taskId, const uint32_t threadId, const uint32_t retCode,
+    const Device* const dev)
 {
     // stub
 }
 TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
@@ -1442,15 +1366,12 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE)
     report.streamIDEx = 0;
     report.streamID = 0;
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICORE;
     task.stream = stream;
 
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
     MOCKER(TaskFailCallBack).stubs().will(invoke(TaskFailCallBackStub));
     uint32_t tsRetCode = RT_ERROR_INVALID_VALUE;
     engine->ProcessOverFlowReport(&report, RT_ERROR_INVALID_VALUE);
@@ -1462,7 +1383,7 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE)
 
 TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_1)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
@@ -1471,29 +1392,25 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_1)
     report.streamIDEx = 0;
     report.streamID = 0;
 
-    const void *stubFunc = (void *)0x03;
-    const char *stubName = "efg";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x03;
+    const char* stubName = "efg";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'e', 'f', 'g', 'h', '\0'};
 
-    MOCKER_CPP(&Runtime::GetProgram)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&Runtime::PutProgram)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP(&Runtime::GetProgram).stubs().will(returnValue(true));
+    MOCKER_CPP(&Runtime::PutProgram).stubs().will(ignoreReturnValue());
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICORE;
     task.stream = stream;
 
-    AicTaskInfo *aicTaskInfo = &(task.u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(task.u.aicTaskInfo);
     aicTaskInfo->kernel = kernel;
     kernel->SetDfxSize(100U);
     uint8_t buf[4096] = {0};
@@ -1502,10 +1419,7 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_1)
     aicTaskInfo->comm.args = buf;
     aicTaskInfo->comm.argsSize = 10U;
 
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
     uint32_t tsRetCode = RT_ERROR_INVALID_VALUE;
     engine->ProcessOverFlowReport(&report, RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(task.errorCode, tsRetCode);
@@ -1517,7 +1431,7 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_1)
 
 TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_2)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
@@ -1526,29 +1440,25 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_2)
     report.streamIDEx = 0;
     report.streamID = 0;
 
-    const void *stubFunc = (void *)0x03;
-    const char *stubName = "efgexample";
-    Kernel *kernel = NULL;
+    const void* stubFunc = (void*)0x03;
+    const char* stubName = "efgexample";
+    Kernel* kernel = NULL;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->kernelNames_ = {'e', 'f', 'g', 'h', '\0'};
 
-    MOCKER_CPP(&Runtime::GetProgram)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&Runtime::PutProgram)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP(&Runtime::GetProgram).stubs().will(returnValue(true));
+    MOCKER_CPP(&Runtime::PutProgram).stubs().will(ignoreReturnValue());
     kernel = new (std::nothrow) Kernel("", 0UL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
-    ((Runtime *)Runtime::Instance())->kernelTable_.Add(kernel);
+    ((Runtime*)Runtime::Instance())->kernelTable_.Add(kernel);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICORE;
     task.stream = stream;
 
-    AicTaskInfo *aicTaskInfo = &(task.u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(task.u.aicTaskInfo);
     aicTaskInfo->kernel = kernel;
     kernel->SetDfxSize(6584);
     uint8_t buf[4096] = {0};
@@ -1556,10 +1466,7 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_2)
     program->binary_ = buf + 1024;
     program->binarySize_ = 300;
 
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .with(mockcpp::any(), mockcpp::any())
-        .will(returnValue(&task));
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().with(mockcpp::any(), mockcpp::any()).will(returnValue(&task));
     uint32_t tsRetCode = RT_ERROR_INVALID_VALUE;
     engine->ProcessOverFlowReport(&report, RT_ERROR_INVALID_VALUE);
     EXPECT_EQ(task.errorCode, tsRetCode);
@@ -1569,7 +1476,7 @@ TEST_F(EngineTest, ProcessOverFlowReport_TS_TASK_TYPE_KERNEL_AICORE_2)
     delete device;
 }
 
-void ObserverTaskLaunched(EngineObserver *ob, const uint32_t devId, TaskInfo * const tsk, rtTsCommand_t * const command)
+void ObserverTaskLaunched(EngineObserver* ob, const uint32_t devId, TaskInfo* const tsk, rtTsCommand_t* const command)
 {
     (void)devId;
     (void)command;
@@ -1578,7 +1485,7 @@ void ObserverTaskLaunched(EngineObserver *ob, const uint32_t devId, TaskInfo * c
 
 TEST_F(EngineTest, ProcessObserver_observerNum)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_KERNEL_AICORE;
@@ -1586,9 +1493,7 @@ TEST_F(EngineTest, ProcessObserver_observerNum)
     MOCKER(CheckLogLevel).stubs().will(returnValue(1));
     EngineObserver observer;
     engine->AddObserver(&observer);
-    MOCKER_CPP_VIRTUAL(&observer, &EngineObserver::TaskLaunched)
-        .stubs()
-        .will(invoke(ObserverTaskLaunched));
+    MOCKER_CPP_VIRTUAL(&observer, &EngineObserver::TaskLaunched).stubs().will(invoke(ObserverTaskLaunched));
     engine->ProcessObserver(0, &task, nullptr);
     EXPECT_EQ(task.errorCode, RT_ERROR_INVALID_VALUE);
     delete device;
@@ -1597,7 +1502,7 @@ TEST_F(EngineTest, ProcessObserver_observerNum)
 
 TEST_F(EngineTest, ProcessTaskWait_WaitExecFinish_error)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     TaskInfo task = {};
     task.type = TS_TASK_TYPE_RESERVED;
@@ -1611,21 +1516,19 @@ TEST_F(EngineTest, ProcessTaskWait_WaitExecFinish_error)
 
 TEST_F(EngineTest, GetKernelNameForAiCoreorAiv_workTask_null)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<DirectHwtsEngine> engine = std::make_unique<DirectHwtsEngine>(device);
 
-    TaskInfo *nullTask = nullptr;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .will(returnValue(nullTask));
+    TaskInfo* nullTask = nullptr;
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(nullTask));
     std::string ret = engine->GetKernelNameForAiCoreorAiv(0, 0);
     EXPECT_EQ(ret, "unknown");
     delete device;
     GlobalMockObject::reset();
 }
 
-void ToConstructSqeStub(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+void ToConstructSqeStub(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     (void)command;
     taskInfo->errorCode = RT_ERROR_NONE;
@@ -1633,7 +1536,7 @@ void ToConstructSqeStub(TaskInfo *taskInfo, rtStarsSqe_t *const command)
 
 TEST_F(EngineTest, TaskToCommand_RT_TASK_COMMAND_TYPE_STARS_SQE)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
     rtTsCommand_t cmdLocal;
@@ -1650,7 +1553,7 @@ TEST_F(EngineTest, TaskToCommand_RT_TASK_COMMAND_TYPE_STARS_SQE)
 
 TEST_F(EngineTest, SetReportSimuFlag_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
     rtStarsCqe_t cqeReport;
@@ -1669,7 +1572,7 @@ TEST_F(EngineTest, SetReportSimuFlag_test)
 
 TEST_F(EngineTest, CheckReportSimuFlag_TS_REPORT_MSG_TYPE_STARS_CQE)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
     rtStarsCqe_t cqeReport;
@@ -1694,7 +1597,7 @@ TEST_F(EngineTest, CheckReportSimuFlag_TS_REPORT_MSG_TYPE_STARS_CQE)
 
 TEST_F(EngineTest, ReportSocketCloseProc_RT_ERROR_SOCKET_CLOSE)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     int32_t hdcStat = static_cast<int32_t>(HDC_SESSION_STATUS_CLOSE);
     MOCKER_CPP(&Runtime::GetHdcConctStatus)
@@ -1716,7 +1619,7 @@ TEST_F(EngineTest, ReportSocketCloseProc_RT_ERROR_SOCKET_CLOSE)
 
 TEST_F(EngineTest, SendingWait_failCount)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device);
     engine->notifier_ = nullptr;
     engine->wflag_ = true;
@@ -1733,7 +1636,7 @@ TEST_F(EngineTest, SendingWait_failCount)
 
 TEST_F(EngineTest, CheckSendThreadAlive_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
 
     bool ret = engine->CheckSendThreadAlive();
@@ -1746,10 +1649,8 @@ TEST_F(EngineTest, CheckSendThreadAlive_test)
     EXPECT_EQ(ret, false);
 
     // test for RecycleTask, workTask is null
-    TaskInfo *nullTask = nullptr;
-    MOCKER_CPP(&TaskFactory::GetTask)
-        .stubs()
-        .will(returnValue(nullTask));
+    TaskInfo* nullTask = nullptr;
+    MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(nullTask));
 
     engine->RecycleTask(0, 0);
 
@@ -1757,13 +1658,12 @@ TEST_F(EngineTest, CheckSendThreadAlive_test)
     GlobalMockObject::reset();
 }
 
-
 TEST_F(EngineTest, SubmitSend_test)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     std::unique_ptr<Engine> engine = std::make_unique<DirectHwtsEngine>(device);
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->isCtrlStream_ = true;
 
     TaskInfo task = {};
@@ -1775,12 +1675,8 @@ TEST_F(EngineTest, SubmitSend_test)
         .stubs()
         .with(mockcpp::any(), outBound(retTaskId), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Engine::SendFlipTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Stream::ProcRecordTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Engine::SendFlipTask).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Stream::ProcRecordTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Stream::SetStreamMark).stubs();
 
     uint32_t flipTaskId = UINT32_MAX;
@@ -1793,40 +1689,32 @@ TEST_F(EngineTest, SubmitSend_test)
     GlobalMockObject::reset();
 }
 
-class EngineTestWithDisableThread : public testing::Test
-{
+class EngineTestWithDisableThread : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"engine test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "engine test start" << std::endl; }
 
-    }
-
-    static void TearDownTestCase()
-    {
-        std::cout<<"engine test start end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "engine test start end" << std::endl; }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
         device_ = new RawDevice(0);
-        rtError_t res = static_cast<RawDevice *>(device_)->Init();
+        rtError_t res = static_cast<RawDevice*>(device_)->Init();
         EXPECT_EQ(res, RT_ERROR_NONE);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
     }
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
         device_->SetDevStatus(RT_ERROR_NONE);
         stream_ = nullptr;
         engine_ = nullptr;
-        (void)static_cast<RawDevice *>(device_)->Stop();
+        (void)static_cast<RawDevice*>(device_)->Stop();
         delete device_;
         device_ = nullptr;
         GlobalMockObject::verify();
@@ -1834,21 +1722,19 @@ protected:
     }
 
 protected:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
 };
 
 TEST_F(EngineTestWithDisableThread, test_not_same_taskid_branch_engine)
 {
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     uint32_t taskId = 1111U;
     stream->SetCheckTaskId(taskId);
     bool orginThreadDisableFlag = Runtime::Instance()->GetDisableThread();
-    MOCKER_CPP_VIRTUAL(engine.get(), &Engine::TaskReclaim)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(engine.get(), &Engine::TaskReclaim).stubs().will(returnValue(RT_ERROR_NONE));
 
     uint8_t failCount = 0U;
     Runtime::Instance()->SetDisableThread(true);
@@ -1860,14 +1746,12 @@ TEST_F(EngineTestWithDisableThread, test_not_same_taskid_branch_engine)
 
 TEST_F(EngineTestWithDisableThread, test_not_same_taskid_branch_starsengine)
 {
-    Stream *stream = new Stream(device_, 0);
+    Stream* stream = new Stream(device_, 0);
     std::unique_ptr<StarsEngine> engine = std::make_unique<StarsEngine>(device_);
     uint32_t taskId = 6666U;
     stream->SetCheckTaskId(taskId);
     bool orginThreadDisableFlag = Runtime::Instance()->GetDisableThread();
-    MOCKER_CPP(&StarsEngine::SendingProcReport)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StarsEngine::SendingProcReport).stubs().will(returnValue(RT_ERROR_NONE));
 
     Runtime::Instance()->SetDisableThread(true);
     engine->SendingWaitProc(stream);
@@ -1880,9 +1764,7 @@ TEST_F(EngineTest, PushFlipTask_flip_fail)
 {
     std::unique_ptr<AsyncHwtsEngine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     std::unique_ptr<Stream> stream = std::make_unique<Stream>(device_, 0);
-    MOCKER_CPP_VIRTUAL(stream.get(), &Stream::IsNeedSendFlipTask)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(stream.get(), &Stream::IsNeedSendFlipTask).stubs().will(returnValue(true));
     TaskInfo task = {};
     MOCKER_CPP(&Stream::ProcFlipTask)
         .stubs()
@@ -1906,9 +1788,7 @@ TEST_F(EngineTest, SubmitPush_abort)
     task.type = TS_TASK_TYPE_KERNEL_AICPU;
     uint32_t flipTaskId = 1U;
 
-    MOCKER_CPP_VIRTUAL(engine->GetScheduler(), &Scheduler::PushTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(engine->GetScheduler(), &Scheduler::PushTask).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     stream->taskPublicBuffSize_ = STREAM_TO_FULL_CNT;
     stream->SetFailureMode(ABORT_ON_FAILURE);
     rtError_t error = engine->SubmitPush(&task, &flipTaskId);
@@ -1916,7 +1796,7 @@ TEST_F(EngineTest, SubmitPush_abort)
     GlobalMockObject::verify();
 }
 
-bool ProcessPublicTaskStub(Engine *engine, TaskInfo *workTask, const uint32_t deviceId, uint16_t *recycleTaskCount)
+bool ProcessPublicTaskStub(Engine* engine, TaskInfo* workTask, const uint32_t deviceId, uint16_t* recycleTaskCount)
 {
     workTask->stream->SetRecycleEndTaskId(1);
     return true;
@@ -1940,10 +1820,7 @@ TEST_F(EngineTest, ProcessTask_pciebar)
     stream->SetRecycleEndTaskId(0);
     stream->SetIsHasPcieBarFlag(true);
     stream->taskResMang_ = new (std::nothrow) TaskResManage;
-    MOCKER_CPP(&TaskResManage::RecycleTaskInfoOn)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(true));
+    MOCKER_CPP(&TaskResManage::RecycleTaskInfoOn).stubs().with(mockcpp::any()).will(returnValue(true));
     stream->isCtrlStream_ = false;
 
     bool ret = engine->ProcessTask(&task, 0U);
@@ -1952,31 +1829,22 @@ TEST_F(EngineTest, ProcessTask_pciebar)
     GlobalMockObject::reset();
 }
 
-class EngineTest1 : public testing::Test
-{
+class EngineTest1 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"engine test1 start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "engine test1 start" << std::endl; }
 
-    }
-
-    static void TearDownTestCase()
-    {
-        std::cout<<"engine test1 start end"<<std::endl;
-
-    }
+    static void TearDownTestCase() { std::cout << "engine test1 start end" << std::endl; }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
     }
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(false);
         rtInstance->excptCallBack_ = nullptr;
         GlobalMockObject::verify();
@@ -1984,7 +1852,7 @@ protected:
     }
 };
 
-drvError_t drvGetPlatformInfo_offline_stub1(uint32_t *info)
+drvError_t drvGetPlatformInfo_offline_stub1(uint32_t* info)
 {
     *info = RT_RUN_MODE_ONLINE;
     return DRV_ERROR_NONE;
@@ -1998,12 +1866,9 @@ TEST_F(EngineTest1, ReportSocketCloseProc_04)
         .stubs()
         .with(mockcpp::any(), outBound(hdcStat))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Runtime::SetWatchDogDevStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&TaskFailCallBackManager::Notify)
-        .stubs();
-    RawDevice *device = new RawDevice(0);
+    MOCKER_CPP(&Runtime::SetWatchDogDevStatus).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&TaskFailCallBackManager::Notify).stubs();
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     engine->ReportSocketCloseProc();
     EXPECT_NE(engine->GetDevRunningState(), DEV_RUNNING_DOWN);
@@ -2016,7 +1881,7 @@ TEST_F(EngineTest1, ReportSocketCloseProc_04)
 }
 
 static rtExceptionInfo_t stub_exceptionInfo;
-void TaskFailCallBackNotify_stub(rtExceptionInfo_t *const exceptionInfo)
+void TaskFailCallBackNotify_stub(rtExceptionInfo_t* const exceptionInfo)
 {
     stub_exceptionInfo = *exceptionInfo;
     return;
@@ -2031,13 +1896,11 @@ TEST_F(EngineTest1, ReportSocketCloseProc_05)
         .stubs()
         .with(mockcpp::any(), outBound(hdcStat))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Runtime::SetWatchDogDevStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Runtime::SetWatchDogDevStatus).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(TaskFailCallBackNotify).stubs().will(invoke(TaskFailCallBackNotify_stub));
 
-    stub_exceptionInfo.retcode = 0U;  // init stub status
-    RawDevice *device = new RawDevice(0);
+    stub_exceptionInfo.retcode = 0U; // init stub status
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     engine->ReportSocketCloseProc();
     EXPECT_EQ(stub_exceptionInfo.retcode, static_cast<uint32_t>(RT_TRANS_EXT_ERRCODE(RT_ERROR_SOCKET_CLOSE)));
@@ -2053,13 +1916,11 @@ TEST_F(EngineTest1, ReportSocketCloseProc_06)
         .stubs()
         .with(mockcpp::any(), outBound(hdcStat))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&Runtime::SetWatchDogDevStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&Runtime::SetWatchDogDevStatus).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(TaskFailCallBackNotify).stubs().will(invoke(TaskFailCallBackNotify_stub));
 
-    stub_exceptionInfo.retcode = 0U;  // init stub status
-    RawDevice *device = new RawDevice(0);
+    stub_exceptionInfo.retcode = 0U; // init stub status
+    RawDevice* device = new RawDevice(0);
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device);
     engine->ReportSocketCloseProc();
     EXPECT_EQ(stub_exceptionInfo.retcode, 0U);

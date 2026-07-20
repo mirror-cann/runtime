@@ -12,17 +12,11 @@
 
 class XpuAicpuCStubTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp() {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 };

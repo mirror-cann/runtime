@@ -17,33 +17,32 @@ See LICENSE in the root of the software repository for the full text of the Lice
 
 namespace rt_ut {
 template <class T, class HandleT>
-inline T *UnwrapOrNull(HandleT handle)
+inline T* UnwrapOrNull(HandleT handle)
 {
-    T *out = nullptr;
+    T* out = nullptr;
     EXPECT_EQ(::cce::runtime::GetValidatedObject<T>(handle, out), RT_ERROR_NONE);
     return out;
 }
 
 template <class HandleT, class T>
-inline HandleT InitAndExportHandle(T *realObj)
+inline HandleT InitAndExportHandle(T* realObj)
 {
     ::cce::runtime::InitEmbeddedInnerHandle<T>(realObj);
     return ::cce::runtime::RtPtrToPtr<HandleT>(::cce::runtime::RtInnerHandleAccessor<T>::Get(realObj));
 }
 
 template <class T>
-inline void ResetEmbeddedHandle(T *realObj)
+inline void ResetEmbeddedHandle(T* realObj)
 {
     ::cce::runtime::ResetEmbeddedInnerHandle<T>(realObj);
 }
 
 } // namespace rt_ut
 
-#define UT_UNWRAP(type, handle, out_ptr)                                     \
-    do {                                                                     \
-        (out_ptr) = nullptr;                                                 \
-        EXPECT_EQ(::cce::runtime::GetValidatedObject<type>((handle), (out_ptr)), \
-            RT_ERROR_NONE);                                                  \
+#define UT_UNWRAP(type, handle, out_ptr)                                                         \
+    do {                                                                                         \
+        (out_ptr) = nullptr;                                                                     \
+        EXPECT_EQ(::cce::runtime::GetValidatedObject<type>((handle), (out_ptr)), RT_ERROR_NONE); \
     } while (false)
 
 #endif // RUNTIME_UT_HELPER_H

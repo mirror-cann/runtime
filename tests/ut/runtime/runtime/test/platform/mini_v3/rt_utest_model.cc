@@ -61,14 +61,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ModelTest : public testing::Test
-{
+class ModelTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend310B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_MINI_V3);
         GlobalContainer::SetRtChipType(CHIP_MINI_V3);
         (void)rtSetDevice(0);
@@ -79,13 +78,10 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -96,28 +92,29 @@ protected:
 
 TEST_F(ModelTest, model_abort)
 {
-    RawDevice * dev = new RawDevice(1);
-    cce::runtime::NpuDriver * drv = new NpuDriver();
+    RawDevice* dev = new RawDevice(1);
+    cce::runtime::NpuDriver* drv = new NpuDriver();
     dev->driver_ = drv;
     dev->Init();
-    Context * ctx = new Context(dev, false);
+    Context* ctx = new Context(dev, false);
     ctx->Init();
-    Model * model = new Model();
+    Model* model = new Model();
     model->context_ = ctx;
-    Stream * stream = new Stream(dev, 0);
-    Stream * stm;
- 
+    Stream* stream = new Stream(dev, 0);
+    Stream* stm;
+
     rtError_t error;
     dev->properties_.isStars = true;
     ctx->SetDefaultStream(stream);
-    MOCKER_CPP_VIRTUAL(ctx, &Context::StreamCreate).stubs()
+    MOCKER_CPP_VIRTUAL(ctx, &Context::StreamCreate)
+        .stubs()
         .with(mockcpp::any(), mockcpp::any(), outBoundP(&stream), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    TaskInfo * kernTask = new TaskInfo();
+    TaskInfo* kernTask = new TaskInfo();
     MOCKER_CPP(&Stream::AllocTask).stubs().will(returnValue(kernTask));
     MOCKER(ModelMaintainceTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL((RawDevice *)dev, &RawDevice::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL((RawDevice*)dev, &RawDevice::SubmitTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(ctx, &Context::StreamDestroy).stubs().will(returnValue(RT_ERROR_NONE));
 

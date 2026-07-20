@@ -41,15 +41,9 @@ using namespace cce::runtime;
 
 class StarsTaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "StarsTaskTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "StarsTaskTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "StarsTaskTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "StarsTaskTest end" << std::endl; }
 
     virtual void SetUp()
     {
@@ -57,7 +51,7 @@ protected:
         int32_t devId = -1;
         ASSERT_EQ(rtSetDevice(0), RT_ERROR_NONE);
         ASSERT_EQ(rtGetDevice(&devId), RT_ERROR_NONE);
-        dev_ = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+        dev_ = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
         old = dev_->GetChipType();
 
         const rtError_t streamRet = rtStreamCreate(&streamHandle_, 0);
@@ -69,7 +63,7 @@ protected:
             stream_ = nullptr;
         }
         ctx_ = Runtime::Instance()->CurrentContext();
-        std::cout<<"RtsStApi test start start. old chiptype="<<old<<std::endl;
+        std::cout << "RtsStApi test start start. old chiptype=" << old << std::endl;
     }
     virtual void TearDown()
     {
@@ -78,21 +72,21 @@ protected:
             rtStreamDestroy(streamHandle_);
         }
         dev_->SetChipType(old);
-        ((Runtime *)Runtime::Instance())->DeviceRelease(dev_);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(dev_);
         rtDeviceReset(0);
         stream_ = nullptr;
         streamHandle_ = nullptr;
         dev_ = nullptr;
         GlobalContainer::SetRtChipType(oriChipType);
-        std::cout<<"RtsStApi test start end"<<std::endl;
+        std::cout << "RtsStApi test start end" << std::endl;
     }
 
 protected:
     rtChipType_t oriChipType;
-    Stream *stream_ = nullptr;
+    Stream* stream_ = nullptr;
     rtStream_t streamHandle_ = nullptr;
-    Device *dev_ = nullptr;
-    Context *ctx_ = nullptr;
+    Device* dev_ = nullptr;
+    Context* ctx_ = nullptr;
     rtChipType_t old;
     static bool flag;
 };
@@ -139,11 +133,11 @@ TEST_F(StarsTaskTest, DoCompleteStarsError_david)
     wait_cqe.errorType = 1U;
     wait_cqe.errorCode = 1U;
 
-    TaskFactory *taskFactory = stream->Device_()->GetTaskFactory();
+    TaskFactory* taskFactory = stream->Device_()->GetTaskFactory();
     ASSERT_NE(taskFactory, nullptr);
-    TaskInfo *errTask = taskFactory->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, ret);
+    TaskInfo* errTask = taskFactory->Alloc(stream, TS_TASK_TYPE_KERNEL_AICORE, ret);
     taskFactory->SetSerialId(stream, errTask);
-    Kernel *kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* kernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(errTask, kernel, kernel->GetKernelAttrType(), 1, nullptr);
     delete kernel;
     EXPECT_EQ(errTask->type, TS_TASK_TYPE_KERNEL_AICORE);

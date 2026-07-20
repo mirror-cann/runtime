@@ -12,43 +12,38 @@
 #include "gtest/gtest.h"
 
 namespace aicpu {
-    namespace pulse {
-        class AicpuPulseUt : public ::testing::Test {
-        protected:
-            static void StubPulseNotify()
-            {
-                isNotified = true;
-            }
+namespace pulse {
+class AicpuPulseUt : public ::testing::Test {
+protected:
+    static void StubPulseNotify() { isNotified = true; }
 
-        protected:
-            static bool isNotified;
-        };
+protected:
+    static bool isNotified;
+};
 
-        bool AicpuPulseUt::isNotified = false;
+bool AicpuPulseUt::isNotified = false;
 
-        TEST_F(AicpuPulseUt, AicpuPulseTest)
-        {
-            auto ret = RegisterPulseNotifyFunc(nullptr, AicpuPulseUt::StubPulseNotify);
-            EXPECT_NE(ret, 0);
+TEST_F(AicpuPulseUt, AicpuPulseTest)
+{
+    auto ret = RegisterPulseNotifyFunc(nullptr, AicpuPulseUt::StubPulseNotify);
+    EXPECT_NE(ret, 0);
 
-            ret = RegisterPulseNotifyFunc("test1", nullptr);
-            EXPECT_NE(ret, 0);
+    ret = RegisterPulseNotifyFunc("test1", nullptr);
+    EXPECT_NE(ret, 0);
 
-            AicpuPulseNotify();
-            EXPECT_FALSE(isNotified);
+    AicpuPulseNotify();
+    EXPECT_FALSE(isNotified);
 
-            ret = RegisterPulseNotifyFunc("test2", AicpuPulseUt::StubPulseNotify);
-            EXPECT_EQ(ret, 0);
+    ret = RegisterPulseNotifyFunc("test2", AicpuPulseUt::StubPulseNotify);
+    EXPECT_EQ(ret, 0);
 
-            AicpuPulseNotify();
-            EXPECT_TRUE(isNotified);
+    AicpuPulseNotify();
+    EXPECT_TRUE(isNotified);
 
-            // repeat register
-            ret = RegisterPulseNotifyFunc("test2", AicpuPulseUt::StubPulseNotify);
-            EXPECT_NE(ret, 0);
-        }
-
-    }
+    // repeat register
+    ret = RegisterPulseNotifyFunc("test2", AicpuPulseUt::StubPulseNotify);
+    EXPECT_NE(ret, 0);
 }
 
-
+} // namespace pulse
+} // namespace aicpu

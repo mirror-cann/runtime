@@ -42,10 +42,7 @@ protected:
         std::cout << "XpuStreamSynchronizeTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "XpuStreamSynchronizeTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "XpuStreamSynchronizeTest end" << std::endl; }
 };
 
 TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_null)
@@ -54,14 +51,14 @@ TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_null)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    XpuStream *stream = static_cast<XpuStream *>(context->StreamList_().front());
+    XpuStream* stream = static_cast<XpuStream*>(context->StreamList_().front());
     stream->Synchronize(true, 1000);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;
@@ -73,22 +70,22 @@ TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_fail)
     MOCKER_CPP(&XpuDevice::ParseXpuConfigInfo).stubs().will(invoke(ParseXpuConfigInfo_mock));
     rtError_t error = rtSetXpuDevice(RT_DEV_TYPE_DPU, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Runtime *rt = (Runtime *)Runtime::Instance();
-    XpuContext *context = static_cast<XpuContext*>(rt->GetXpuCtxt());
+    Runtime* rt = (Runtime*)Runtime::Instance();
+    XpuContext* context = static_cast<XpuContext*>(rt->GetXpuCtxt());
     const uint32_t prio = RT_STREAM_PRIORITY_DEFAULT;
     const uint32_t flag = 0;
-    Stream **result = new Stream*(nullptr);
+    Stream** result = new Stream*(nullptr);
     error = context->StreamCreate(prio, flag, result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     TaskInfo taskInfo = TaskInfo{};
-    TaskInfo *taskInfoPtr = &taskInfo;
+    TaskInfo* taskInfoPtr = &taskInfo;
     taskInfoPtr->u.aicpuTaskInfo = AicpuTaskInfo{};
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     const char* stub = "";
     void* stubFunc = nullptr;
-    Kernel *kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
+    Kernel* kernel = new (std::nothrow) Kernel("", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 0);
     kernel->SetStub_(stubFunc);
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     TaskCfg taskCfg{};
@@ -103,10 +100,10 @@ TEST_F(XpuStreamSynchronizeTest, Stream_synchronize_fail)
     argsInfo.baseArgs.soNameAddrOffset = 1U;
     argsWithType.args.cpuArgsInfo = &argsInfo;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    error = XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs,
-        context->StreamList_().front(), &taskCfg);
+    error =
+        XpuLaunchKernel(kernel, 1, &argsWithType.args.cpuArgsInfo->baseArgs, context->StreamList_().front(), &taskCfg);
 
-    XpuStream *stream = static_cast<XpuStream *>(context->StreamList_().front());
+    XpuStream* stream = static_cast<XpuStream*>(context->StreamList_().front());
     stream->Synchronize(true, 10000000);
     rtResetXpuDevice(RT_DEV_TYPE_DPU, 0);
     delete result;

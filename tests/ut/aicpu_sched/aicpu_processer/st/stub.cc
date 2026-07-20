@@ -14,51 +14,29 @@
 #include "ascend_inpackage_hal.h"
 
 namespace aicpu {
-status_t SetOpname(const std::string &opname)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetOpname(const std::string& opname) { return AICPU_ERROR_NONE; }
 
-status_t SetThreadLocalCtx(const std::string &key, const std::string &value)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetThreadLocalCtx(const std::string& key, const std::string& value) { return AICPU_ERROR_NONE; }
 
-status_t GetThreadLocalCtx(const std::string &key, const std::string &value)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t GetThreadLocalCtx(const std::string& key, const std::string& value) { return AICPU_ERROR_NONE; }
 
-uint32_t GetAicpuThreadIndex()
-{
-    return 0U;
-}
+uint32_t GetAicpuThreadIndex() { return 0U; }
 
-status_t GetOpname(uint32_t threadIndex, std::string &opname)
+status_t GetOpname(uint32_t threadIndex, std::string& opname)
 {
     opname = "test";
     return AICPU_ERROR_NONE;
 }
 
-uint32_t GetUniqueVfId()
-{
-    return 0U;
-}
+uint32_t GetUniqueVfId() { return 0U; }
 
-void SetUniqueVfId(uint32_t uniqueVfId)
-{
-}
+void SetUniqueVfId(uint32_t uniqueVfId) {}
 
-void SetCustAicpuSdFlag(bool isCustAicpuSdFlag)
-{
-}
+void SetCustAicpuSdFlag(bool isCustAicpuSdFlag) {}
 
-bool IsCustAicpuSd()
-{
-    return false;
-}
+bool IsCustAicpuSd() { return false; }
 
-int halGetDeviceVfMax(unsigned int devId, unsigned int *vf_max)
+int halGetDeviceVfMax(unsigned int devId, unsigned int* vf_max)
 {
     *vf_max = 8U;
     return 0U;
@@ -66,25 +44,13 @@ int halGetDeviceVfMax(unsigned int devId, unsigned int *vf_max)
 
 class AicpuContextStubSTest : public testing::Test {
 protected:
-static void SetUpTestCase()
-{
-    std::cout << "AicpuContextStubSTest SetUpTestCase" << std::endl;
-}
+    static void SetUpTestCase() { std::cout << "AicpuContextStubSTest SetUpTestCase" << std::endl; }
 
-static void TearDownTestCase()
-{
-    std::cout << "AicpuContextStubSTest TearDownTestCase" << std::endl;
-}
+    static void TearDownTestCase() { std::cout << "AicpuContextStubSTest TearDownTestCase" << std::endl; }
 
-virtual void SetUp()
-{
-    std::cout << "AicpuContextStubSTest SetUp" << std::endl;
-}
+    virtual void SetUp() { std::cout << "AicpuContextStubSTest SetUp" << std::endl; }
 
-virtual void TearDown()
-{
-    std::cout << "AicpuContextStubSTest TearDown" << std::endl;
-}
+    virtual void TearDown() { std::cout << "AicpuContextStubSTest TearDown" << std::endl; }
 };
 
 TEST_F(AicpuContextStubSTest, AicpuGetContextTest)
@@ -93,4 +59,4 @@ TEST_F(AicpuContextStubSTest, AicpuGetContextTest)
     status_t status = aicpuGetContext(&ctx);
     EXPECT_EQ(status, AICPU_ERROR_NONE);
 }
-}
+} // namespace aicpu

@@ -38,19 +38,14 @@ using namespace testing;
 using namespace std;
 using namespace acl;
 
-class UTEST_ACL_Modelri : public testing::Test
-{
+class UTEST_ACL_Modelri : public testing::Test {
 protected:
     void SetUp() override
     {
         MockFunctionTest::aclStubInstance().ResetToDefaultMock();
-        ON_CALL(MockFunctionTest::aclStubInstance(), GetPlatformResWithLock(_, _))
-            .WillByDefault(Return(true));
+        ON_CALL(MockFunctionTest::aclStubInstance(), GetPlatformResWithLock(_, _)).WillByDefault(Return(true));
     }
-    void TearDown() override
-    {
-        Mock::VerifyAndClear((void *)(&MockFunctionTest::aclStubInstance()));
-    }
+    void TearDown() override { Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance())); }
 };
 
 TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureBegin)
@@ -60,12 +55,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureBegin)
     auto ret = aclmdlRICaptureBegin(stream, mode);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCapture(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCapture(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICaptureBegin(stream, mode);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCapture(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCapture(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICaptureBegin(stream, mode);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -82,7 +77,7 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureGetInfo)
     EXPECT_EQ(ret, ACL_SUCCESS);
     EXPECT_EQ(status, ACL_MODEL_RI_CAPTURE_STATUS_ACTIVE);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamGetCaptureInfo(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamGetCaptureInfo(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICaptureGetInfo(stream, &status, &modelRI);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
@@ -95,12 +90,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureEnd)
     auto ret = aclmdlRICaptureEnd(stream, &modelRI);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamEndCapture(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamEndCapture(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICaptureEnd(stream, &modelRI);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamEndCapture(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamEndCapture(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICaptureEnd(stream, &modelRI);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -124,12 +119,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRIDebugJsonPrint)
     auto ret = aclmdlRIDebugJsonPrint(modelRI, "graph_dump.json", 0);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelDebugJsonPrint(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelDebugJsonPrint(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRIDebugJsonPrint(modelRI, "graph_dump.json", 0);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelDebugJsonPrint(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelDebugJsonPrint(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRIDebugJsonPrint(modelRI, "graph_dump.json", 0);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -159,8 +154,7 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRIDestroy_CaptureModel)
     auto ret = aclmdlRIDestroy(modelRI);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelDestroy(_))
-            .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelDestroy(_)).WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRIDestroy(modelRI);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -172,7 +166,7 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRIExecuteAsync_CaptureModel)
     auto ret = aclmdlRIExecuteAsync(modelRI, stream);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelExecute(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelExecute(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRIExecuteAsync(modelRI, stream);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
@@ -202,12 +196,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureTaskGrpEnd)
     auto ret = aclmdlRICaptureTaskGrpEnd(stream, &handle);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamEndTaskGrp(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamEndTaskGrp(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICaptureTaskGrpEnd(stream, &handle);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamEndTaskGrp(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamEndTaskGrp(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICaptureTaskGrpEnd(stream, &handle);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -220,12 +214,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureTaskUpdateBegin)
     auto ret = aclmdlRICaptureTaskUpdateBegin(stream, handle);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamBeginTaskUpdate(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamBeginTaskUpdate(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICaptureTaskUpdateBegin(stream, handle);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamBeginTaskUpdate(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtsStreamBeginTaskUpdate(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICaptureTaskUpdateBegin(stream, handle);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -250,48 +244,47 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureTaskUpdateEnd)
 
 TEST_F(UTEST_ACL_Modelri, TestaclmdlRIGetStreams)
 {
-	aclmdlRI modelRI = (aclmdlRI)0x01;
-	aclrtStream streams = nullptr;
-	uint32_t numStreams = 0;
-	auto ret = aclmdlRIGetStreams(modelRI, &streams, &numStreams);
-	EXPECT_EQ(ret, ACL_SUCCESS);
+    aclmdlRI modelRI = (aclmdlRI)0x01;
+    aclrtStream streams = nullptr;
+    uint32_t numStreams = 0;
+    auto ret = aclmdlRIGetStreams(modelRI, &streams, &numStreams);
+    EXPECT_EQ(ret, ACL_SUCCESS);
 
-        EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelGetStreams(_,_,_))
-				.WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
-        ret = aclmdlRIGetStreams(modelRI, &streams, &numStreams);
-        EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelGetStreams(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    ret = aclmdlRIGetStreams(modelRI, &streams, &numStreams);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(UTEST_ACL_Modelri, TestaclmdlRIGetTasksByStream)
 {
-	aclrtStream stream = (aclrtStream)0x01;
-	aclmdlRITask tasks = nullptr;
-	uint32_t numTasks = 0;
-	auto ret = aclmdlRIGetTasksByStream(stream, &tasks, &numTasks);
-	EXPECT_EQ(ret, ACL_SUCCESS);
+    aclrtStream stream = (aclrtStream)0x01;
+    aclmdlRITask tasks = nullptr;
+    uint32_t numTasks = 0;
+    auto ret = aclmdlRIGetTasksByStream(stream, &tasks, &numTasks);
+    EXPECT_EQ(ret, ACL_SUCCESS);
 
-	EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamGetTasks(_,_,_))
-				.WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
-        ret = aclmdlRIGetTasksByStream(stream, &tasks, &numTasks);
-	EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamGetTasks(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    ret = aclmdlRIGetTasksByStream(stream, &tasks, &numTasks);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-	EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamGetTasks(_,_,_))
-				.WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
-        ret = aclmdlRIGetTasksByStream(stream, &tasks, &numTasks);
-	EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamGetTasks(_, _, _))
+        .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
+    ret = aclmdlRIGetTasksByStream(stream, &tasks, &numTasks);
+    EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
 
 TEST_F(UTEST_ACL_Modelri, TestaclmdlRITaskGetType)
 {
-	aclmdlRITask task = (aclmdlRITask)0x01;
-	aclmdlRITaskType type{};
-	auto ret = aclmdlRITaskGetType(task, &type);
-	EXPECT_EQ(ret, ACL_SUCCESS);
+    aclmdlRITask task = (aclmdlRITask)0x01;
+    aclmdlRITaskType type{};
+    auto ret = aclmdlRITaskGetType(task, &type);
+    EXPECT_EQ(ret, ACL_SUCCESS);
 
-        EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtTaskGetType(_,_))
-				.WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
-        ret = aclmdlRITaskGetType(task, &type);
-        EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtTaskGetType(_, _)).WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    ret = aclmdlRITaskGetType(task, &type);
+    EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(UTEST_ACL_Modelri, TestaclrtTaskGetSeqId)
@@ -300,9 +293,8 @@ TEST_F(UTEST_ACL_Modelri, TestaclrtTaskGetSeqId)
     uint32_t id;
     auto ret = aclmdlRITaskGetSeqId(task, &id);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtTaskGetSeqId(_,_))
-        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtTaskGetSeqId(_, _)).WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRITaskGetSeqId(task, &id);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -313,13 +305,13 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRITaskGetParams)
     aclmdlRITaskParams params;
     auto ret = aclmdlRITaskGetParams(task, &params);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskGetParams(_,_))
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskGetParams(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRITaskGetParams(task, &params);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskGetParams(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskGetParams(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRITaskGetParams(task, &params);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -331,13 +323,13 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRITaskSetParams)
     aclmdlRITaskParams params;
     auto ret = aclmdlRITaskSetParams(task, &params);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskSetParams(_,_))
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskSetParams(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRITaskSetParams(task, &params);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskSetParams(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskSetParams(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRITaskSetParams(task, &params);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -350,8 +342,8 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRIKernelTaskGetAttribute)
     aclrtLaunchKernelAttrValue attrValue;
     auto ret = aclmdlRIKernelTaskGetAttribute(task, attrId, &attrValue);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelKernelTaskGetAttribute(_,_,_))
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelKernelTaskGetAttribute(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRIKernelTaskGetAttribute(task, attrId, &attrValue);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
@@ -362,7 +354,7 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRITaskDisable)
     aclmdlRITask task = (aclmdlRITask)0x01;
     auto ret = aclmdlRITaskDisable(task);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
+
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelTaskDisable(_))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRITaskDisable(task);
@@ -379,9 +371,8 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRIUpdate)
     aclmdlRI modelRI = (aclmdlRI)0x01;
     auto ret = aclmdlRIUpdate(modelRI);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelUpdate(_))
-        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelUpdate(_)).WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRIUpdate(modelRI);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -405,12 +396,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICondHandleCreate)
     ret = aclmdlRICondHandleCreate(modelRI, 0, flag, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleCreate(_,_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleCreate(_, _, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICondHandleCreate(modelRI, 0, flag, &handle);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleCreate(_,_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleCreate(_, _, _, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICondHandleCreate(modelRI, 0, flag, &handle);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -419,7 +410,7 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICondHandleCreate)
 TEST_F(UTEST_ACL_Modelri, TestaclmdlRICondHandleGetCondPtr)
 {
     aclmdlRICondHandle handle = (aclmdlRICondHandle)0x01;
-    uint64_t *ptr = nullptr;
+    uint64_t* ptr = nullptr;
     auto ret = aclmdlRICondHandleGetCondPtr(handle, &ptr);
     EXPECT_EQ(ret, ACL_SUCCESS);
 
@@ -429,12 +420,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICondHandleGetCondPtr)
     ret = aclmdlRICondHandleGetCondPtr(handle, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleGetCondPtr(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleGetCondPtr(_, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICondHandleGetCondPtr(handle, &ptr);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleGetCondPtr(_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtModelCondHandleGetCondPtr(_, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICondHandleGetCondPtr(handle, &ptr);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -456,12 +447,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRIAddCondTask)
     ret = aclmdlRIAddCondTask(params, nullptr, 0);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamAddCondTask(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamAddCondTask(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRIAddCondTask(params, stream, 0);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamAddCondTask(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamAddCondTask(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRIAddCondTask(params, stream, 0);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -481,12 +472,12 @@ TEST_F(UTEST_ACL_Modelri, TestaclmdlRICaptureToModelRIBegin)
     ret = aclmdlRICaptureToModelRIBegin(stream, nullptr, mode);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCaptureToModel(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCaptureToModel(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     ret = aclmdlRICaptureToModelRIBegin(stream, modelRI, mode);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCaptureToModel(_,_,_))
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtStreamBeginCaptureToModel(_, _, _))
         .WillOnce(Return(ACL_ERROR_RT_FEATURE_NOT_SUPPORT));
     ret = aclmdlRICaptureToModelRIBegin(stream, modelRI, mode);
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

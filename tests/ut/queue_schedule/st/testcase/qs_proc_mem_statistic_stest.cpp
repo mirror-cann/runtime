@@ -19,18 +19,11 @@ using namespace std;
 using namespace bqs;
 class QsProcMemStatisticSTest : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "QsProcMemStatisticSTest SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "QsProcMemStatisticSTest SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "QsProcMemStatisticSTest TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "QsProcMemStatisticSTest TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "QsProcMemStatisticSTest SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "QsProcMemStatisticSTest SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -39,12 +32,12 @@ protected:
     }
 };
 
-bool WriteStatFile(const std::string &fileName, const std::string &fileInfo)
+bool WriteStatFile(const std::string& fileName, const std::string& fileInfo)
 {
     std::ofstream ofFile;
     ofFile.open(fileName, std::ios::app);
     if (!ofFile) {
-        std::cout << "open "<< fileName << "failed" << std::endl;
+        std::cout << "open " << fileName << "failed" << std::endl;
         return false;
     }
     ofFile << fileInfo << std::endl;
@@ -52,12 +45,12 @@ bool WriteStatFile(const std::string &fileName, const std::string &fileInfo)
     return true;
 }
 
-bool WriteStatFileTwo(const std::string &fileName, const std::string &fileInfo, const std::string &fileInfo2)
+bool WriteStatFileTwo(const std::string& fileName, const std::string& fileInfo, const std::string& fileInfo2)
 {
     std::ofstream ofFile;
     ofFile.open(fileName, std::ios::app);
     if (!ofFile) {
-        std::cout << "open "<< fileName << "failed" << std::endl;
+        std::cout << "open " << fileName << "failed" << std::endl;
         return false;
     }
     ofFile << fileInfo << std::endl;
@@ -66,7 +59,8 @@ bool WriteStatFileTwo(const std::string &fileName, const std::string &fileInfo, 
     return true;
 }
 
-TEST_F(QsProcMemStatisticSTest, SvmMemStatHost) {
+TEST_F(QsProcMemStatisticSTest, SvmMemStatHost)
+{
     std::string svmFile = "/tmp/svmstat";
     std::string fileInfo = "peak_page_cnt=1234; peak_hpage_cnt=456";
     if (WriteStatFile(svmFile, fileInfo)) {
@@ -81,7 +75,8 @@ TEST_F(QsProcMemStatisticSTest, SvmMemStatHost) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, SvmMemStatDevice) {
+TEST_F(QsProcMemStatisticSTest, SvmMemStatDevice)
+{
     std::string svmFile = "/tmp/svmstat";
     std::string fileInfo = "peak_page_cnt=1234; peak_hpage_cnt=456";
     if (WriteStatFile(svmFile, fileInfo)) {
@@ -96,7 +91,8 @@ TEST_F(QsProcMemStatisticSTest, SvmMemStatDevice) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, SvmMemStatFailed1) {
+TEST_F(QsProcMemStatisticSTest, SvmMemStatFailed1)
+{
     std::string svmFile = "/tmp/svmstat";
     std::string fileInfo = "peak_page_cnts=1234; peak_hpage_cnt=456";
     if (WriteStatFile(svmFile, fileInfo)) {
@@ -110,7 +106,8 @@ TEST_F(QsProcMemStatisticSTest, SvmMemStatFailed1) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, SvmMemStatFailed2) {
+TEST_F(QsProcMemStatisticSTest, SvmMemStatFailed2)
+{
     std::string svmFile = "/tmp/svmstat";
     std::string fileInfo = "peak_page_cnt=1234;";
     if (WriteStatFile(svmFile, fileInfo)) {
@@ -124,7 +121,8 @@ TEST_F(QsProcMemStatisticSTest, SvmMemStatFailed2) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, xsMemStat) {
+TEST_F(QsProcMemStatisticSTest, xsMemStat)
+{
     std::string xsmFile = "/tmp/xsmstat";
     std::string fileInfo = "summary: 1234 1234";
     if (WriteStatFile(xsmFile, fileInfo)) {
@@ -138,7 +136,8 @@ TEST_F(QsProcMemStatisticSTest, xsMemStat) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, xsMemStatFailed1) {
+TEST_F(QsProcMemStatisticSTest, xsMemStatFailed1)
+{
     std::string xsmFile = "/tmp/xsmstat";
     std::string fileInfo = "summarys: 1234 1234";
     if (WriteStatFile(xsmFile, fileInfo)) {
@@ -151,7 +150,8 @@ TEST_F(QsProcMemStatisticSTest, xsMemStatFailed1) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, xsMemStatFailed2) {
+TEST_F(QsProcMemStatisticSTest, xsMemStatFailed2)
+{
     std::string xsmFile = "/tmp/xsmstat";
     std::string fileInfo = "summary: 1234";
     if (WriteStatFile(xsmFile, fileInfo)) {
@@ -171,7 +171,8 @@ TEST_F(QsProcMemStatisticSTest, xsMemStatFailed2) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, rssStatFailed1) {
+TEST_F(QsProcMemStatisticSTest, rssStatFailed1)
+{
     std::string rssFile = "/tmp/rsstat";
     std::string fileInfo = "summary: 1234";
     QsProcMemStatistic procMem;
@@ -183,7 +184,8 @@ TEST_F(QsProcMemStatisticSTest, rssStatFailed1) {
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(QsProcMemStatisticSTest, rssStatFailed2) {
+TEST_F(QsProcMemStatisticSTest, rssStatFailed2)
+{
     std::string rssFile = "/tmp/rsstat";
     std::string fileInfo = "summary: 1234";
     if (WriteStatFile(rssFile, fileInfo)) {
@@ -196,7 +198,8 @@ TEST_F(QsProcMemStatisticSTest, rssStatFailed2) {
     }
 }
 
-TEST_F(QsProcMemStatisticSTest, rssStatFailed3) {
+TEST_F(QsProcMemStatisticSTest, rssStatFailed3)
+{
     std::string rssFile = "/tmp/rsstat";
     std::string fileInfo = "VmRSS:undefine";
     std::string fileInfo2 = "VmHWM:undefine";

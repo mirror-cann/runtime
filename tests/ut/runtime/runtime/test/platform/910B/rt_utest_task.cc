@@ -94,27 +94,22 @@ protected:
         rtDeviceReset(0);
     }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
-    static Stream *stream_;
-    static Event *event_;
+    static Stream* stream_;
+    static Event* event_;
     static rtStream_t streamHandle_;
     static rtEvent_t eventHandle_;
 };
 
-Stream *CloudV2TaskTest::stream_ = NULL;
-Event *CloudV2TaskTest::event_ = NULL;
+Stream* CloudV2TaskTest::stream_ = NULL;
+Event* CloudV2TaskTest::event_ = NULL;
 rtStream_t CloudV2TaskTest::streamHandle_ = NULL;
 rtEvent_t CloudV2TaskTest::eventHandle_ = NULL;
 
-drvError_t drvDeviceGetTransWay_cloud_v2_stub_1(void *src, void *dst, uint8_t *trans_type)
+drvError_t drvDeviceGetTransWay_cloud_v2_stub_1(void* src, void* dst, uint8_t* trans_type)
 {
     drvError_t error = DRV_ERROR_NONE;
     *trans_type = RT_MEMCPY_CHANNEL_TYPE_PCIe;
@@ -122,7 +117,7 @@ drvError_t drvDeviceGetTransWay_cloud_v2_stub_1(void *src, void *dst, uint8_t *t
     return error;
 }
 
-drvError_t drvDeviceGetTransWay_cloud_v2_stub_2(void *src, void *dst, uint8_t *trans_type)
+drvError_t drvDeviceGetTransWay_cloud_v2_stub_2(void* src, void* dst, uint8_t* trans_type)
 {
     drvError_t error = DRV_ERROR_NONE;
     *trans_type = RT_MEMCPY_CHANNEL_TYPE_HCCs;
@@ -130,8 +125,8 @@ drvError_t drvDeviceGetTransWay_cloud_v2_stub_2(void *src, void *dst, uint8_t *t
     return error;
 }
 
-rtError_t MemCopySync_cloud_v2_stub(NpuDriver *drv, void *dst, uint64_t destMax, const void *src, uint64_t size,
-                                    rtMemcpyKind_t kind)
+rtError_t MemCopySync_cloud_v2_stub(
+    NpuDriver* drv, void* dst, uint64_t destMax, const void* src, uint64_t size, rtMemcpyKind_t kind)
 {
     memcpy(dst, src, destMax);
     return RT_ERROR_NONE;
@@ -144,14 +139,14 @@ TEST_F(CloudV2TaskTest, MemWaitModelIsNull)
     task.stream = stream_;
     task.typeName = "EVENT_WAIT";
     task.type = TS_TASK_TYPE_CAPTURE_WAIT;
-    rtError_t ret = MemWaitValueTaskInit(&task, (void *)(&devAddr), 0U, 0U);
+    rtError_t ret = MemWaitValueTaskInit(&task, (void*)(&devAddr), 0U, 0U);
     EXPECT_EQ(ret, RT_ERROR_MODEL_NULL);
 }
 
 TEST_F(CloudV2TaskTest, SnapShotAclGraphRestoreWithUbFlag)
 {
     Runtime::Instance()->SetConnectUbFlag(true);
-    RawDevice *device = dynamic_cast<RawDevice *>(Runtime::Instance()->GetDevice(0, 0));
+    RawDevice* device = dynamic_cast<RawDevice*>(Runtime::Instance()->GetDevice(0, 0));
     ASSERT_NE(device, nullptr);
     MOCKER_CPP_VIRTUAL(device, &RawDevice::RestoreSqCqPool).stubs().will(returnValue(RT_ERROR_NONE));
 
@@ -168,7 +163,7 @@ TEST_F(CloudV2TaskTest, stream_IsReclaimAsync)
     TaskInfo tsk = {};
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
     tsk.type = TS_TASK_TYPE_FFTS_PLUS;
     stream_var->IsReclaimAsync(&tsk);
     tsk.type = TS_TASK_TYPE_NOTIFY_WAIT;
@@ -196,8 +191,8 @@ TEST_F(CloudV2TaskTest, stars_timeout_sqe)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_VECTOR);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_VECTOR, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_VECTOR, 10);
 
     rtStarsSqe_t sqe1, sqe2;
     InitByStream(&task, stream_);
@@ -207,7 +202,7 @@ TEST_F(CloudV2TaskTest, stars_timeout_sqe)
     Complete(&task, 0);
 
     InitByStream(&task1, stream_);
-    Kernel *vecKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
+    Kernel* vecKernel = CreateTestKernel(RT_KERNEL_ATTR_TYPE_VECTOR);
     AicTaskInit(&task1, vecKernel, vecKernel->GetKernelAttrType(), 1, nullptr);
     delete vecKernel;
     task1.u.aicTaskInfo.kernel = kernel;
@@ -216,7 +211,7 @@ TEST_F(CloudV2TaskTest, stars_timeout_sqe)
     TaskCfg taskcfg = {};
     taskcfg.isBaseValid = 1U;
     taskcfg.base.dumpflag = RT_KERNEL_DUMPFLAG;
-    Kernel *aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel1 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel1, aicKernel1->GetKernelAttrType(), 1, &taskcfg);
     delete aicKernel1;
     EXPECT_EQ(task.u.aicTaskInfo.comm.kernelFlag, RT_KERNEL_DUMPFLAG);
@@ -237,11 +232,11 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_1)
     rtStarsSqe_t sqe;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    Kernel *aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel2 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel2, aicKernel2->GetKernelAttrType(), 1, nullptr);
     delete aicKernel2;
     task.u.aicTaskInfo.kernel = kernel;
@@ -266,11 +261,11 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_2)
     rtStarsSqe_t sqe;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    Kernel *aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel3 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel3, aicKernel3->GetKernelAttrType(), 1, nullptr);
     delete aicKernel3;
     task.u.aicTaskInfo.kernel = kernel;
@@ -294,11 +289,11 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_3)
     rtStarsSqe_t sqe;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    Kernel *aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel4 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel4, aicKernel4->GetKernelAttrType(), 1, nullptr);
     delete aicKernel4;
     task.u.aicTaskInfo.kernel = kernel;
@@ -322,11 +317,11 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_4)
     rtStarsSqe_t sqe;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    Kernel *aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel5 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel5, aicKernel5->GetKernelAttrType(), 1, nullptr);
     delete aicKernel5;
     task.u.aicTaskInfo.kernel = kernel;
@@ -341,22 +336,22 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_biu)
 {
     TaskInfo task = {};
     rtError_t error;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtInstance->SetBiuperfProfFlag(true);
     error = rtSetOpExecuteTimeOut(10);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtStarsSqe_t sqe;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
     InitByStream(&task, stream_);
-    Kernel *aicKernel6 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel6 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel6, aicKernel6->GetKernelAttrType(), 1, nullptr);
     delete aicKernel6;
     EXPECT_EQ(task.type, TS_TASK_TYPE_KERNEL_AICORE);
-    Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver_, &Driver::DevMemAlloc)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -372,7 +367,7 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_l2_cache)
     TaskInfo task = {};
     rtError_t error;
     rtStream_t stream = NULL;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtInstance->SetL2CacheProfFlag(true);
     error = rtSetOpExecuteTimeOut(10);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -382,11 +377,11 @@ TEST_F(CloudV2TaskTest, stars_mix_sqe_l2_cache)
     rtStarsSqe_t sqe;
 
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
-    Kernel *kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Program* program = &stubProg;
+    Kernel* kernel = new Kernel("test", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    Kernel *aicKernel7 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
+    Kernel* aicKernel7 = CreateTestKernel(RT_KERNEL_ATTR_TYPE_AICORE);
     AicTaskInit(&task, aicKernel7, aicKernel7->GetKernelAttrType(), 1, nullptr);
     delete aicKernel7;
     task.u.aicTaskInfo.kernel = kernel;
@@ -417,11 +412,11 @@ TEST_F(CloudV2TaskTest, stars_eventreset_sqe)
     rtStreamDestroy(stream);
 }
 
-//Memcpy Async D2D and H2D
+// Memcpy Async D2D and H2D
 TEST_F(CloudV2TaskTest, stars_memcpy_async_sqe_d2d)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_DEVICE_TO_DEVICE;
 
@@ -430,11 +425,11 @@ TEST_F(CloudV2TaskTest, stars_memcpy_async_sqe_d2d)
     (void)ReduceOpcodeHigh(&task);
 }
 
-//Memcpy Async Addr D2D
+// Memcpy Async Addr D2D
 TEST_F(CloudV2TaskTest, stars_memcpy_async_sqe_addr_d2d)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_ADDR_DEVICE_TO_DEVICE;
 
@@ -455,10 +450,10 @@ TEST_F(CloudV2TaskTest, stars_memcpy_async_sqe_addr_d2d)
     rtStreamDestroy(stream);
 }
 
-//Memcpy Async Addr D2h dsa update
+// Memcpy Async Addr D2h dsa update
 TEST_F(CloudV2TaskTest, stars_memcpy_async_dsa_sqe_d2h)
 {
-    void *src = nullptr;
+    void* src = nullptr;
     uint64_t cnt = 40U;
     uint32_t dsaStreamId = 2U;
     uint32_t dsaTaskId = 2U;
@@ -471,7 +466,7 @@ TEST_F(CloudV2TaskTest, stars_memcpy_async_dsa_sqe_d2h)
     MemcpyAsyncD2HTaskInit(&task, src, cnt, dsaStreamId, dsaTaskId);
     EXPECT_EQ(task.type, TS_TASK_TYPE_MEMCPY);
     ToConstructSqe(&task, &command);
-    RtStarsMemcpyAsyncSqe *sqe = &(command.memcpyAsyncSqe);
+    RtStarsMemcpyAsyncSqe* sqe = &(command.memcpyAsyncSqe);
 
     Complete(&task, 0);
     EXPECT_EQ(sqe->header.type, RT_STARS_SQE_TYPE_PCIE_DMA);
@@ -480,8 +475,8 @@ TEST_F(CloudV2TaskTest, stars_memcpy_async_dsa_sqe_d2h)
 
 TEST_F(CloudV2TaskTest, stars_memcpy2d_async_sqe_addr_h2d)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_HOST_TO_DEVICE;
     uint64_t size = 1000;
@@ -504,8 +499,8 @@ TEST_F(CloudV2TaskTest, stars_memcpy2d_async_sqe_addr_h2d)
 
 TEST_F(CloudV2TaskTest, memcpy2d_async_sqe_d2d)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_DEVICE_TO_DEVICE;
     uint64_t size = 1000;
@@ -528,8 +523,8 @@ TEST_F(CloudV2TaskTest, memcpy2d_async_sqe_d2d)
 
 TEST_F(CloudV2TaskTest, stars_memcpy2d_async_sqe_addr_d2h)
 {
-    void *dst = nullptr;
-    void *src = nullptr;
+    void* dst = nullptr;
+    void* src = nullptr;
     uint64_t count = 1;
     rtMemcpyKind_t kind = RT_MEMCPY_DEVICE_TO_HOST;
     uint64_t size = 1000;
@@ -550,7 +545,7 @@ TEST_F(CloudV2TaskTest, stars_memcpy2d_async_sqe_addr_d2h)
     rtStreamDestroy(stream);
 }
 
-//StreamLabelSwitchByIndexTask task ConstructSqe
+// StreamLabelSwitchByIndexTask task ConstructSqe
 TEST_F(CloudV2TaskTest, label_switch_by_index_sqe)
 {
     rtError_t error;
@@ -565,8 +560,8 @@ TEST_F(CloudV2TaskTest, label_switch_by_index_sqe)
     rtStarsSqe_t sqe[2];
 
     InitByStream(&task, rt_ut::UnwrapOrNull<Stream>(stream));
-    error = StreamLabelSwitchByIndexTaskInit(&task, (void *)&ptr, max, (void *)labelInfoPtr);
-    ToConstructSqe(&task, (rtStarsSqe_t *)sqe);
+    error = StreamLabelSwitchByIndexTaskInit(&task, (void*)&ptr, max, (void*)labelInfoPtr);
+    ToConstructSqe(&task, (rtStarsSqe_t*)sqe);
     Complete(&task, 0);
     TaskUnInitProc(&task);
     rtStreamDestroy(stream);
@@ -593,21 +588,21 @@ TEST_F(CloudV2TaskTest, stars_ipc_notify_record_sqe)
 
 TEST_F(CloudV2TaskTest, cmoAddrTaskInfo_ConstructSqe)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
-    Device *device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     EXPECT_NE(device, nullptr);
     rtError_t error = device->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
     TaskInfo cmoAddrTask = {};
     InitByStream(&cmoAddrTask, stream);
     EXPECT_NE(cmoAddrTask.stream, nullptr);
-    rtCmoAddrInfo *cmoAddrInfo;
-    cmoAddrTask.u.cmoAddrTaskInfo.cmoAddrInfo = RtPtrToPtr<void *>(cmoAddrInfo);
+    rtCmoAddrInfo* cmoAddrInfo;
+    cmoAddrTask.u.cmoAddrTaskInfo.cmoAddrInfo = RtPtrToPtr<void*>(cmoAddrInfo);
     rtCmoOpCode_t cmoOpCode = RT_CMO_PREFETCH;
-    error = CmoAddrTaskInit(&cmoAddrTask, RtPtrToPtr<void *>(cmoAddrInfo), cmoOpCode);
+    error = CmoAddrTaskInit(&cmoAddrTask, RtPtrToPtr<void*>(cmoAddrInfo), cmoOpCode);
     EXPECT_EQ(error, RT_ERROR_MODEL_NULL);
     rtStarsSqe_t sqe = {};
     ToConstructSqe(&cmoAddrTask, &sqe);
@@ -623,9 +618,9 @@ TEST_F(CloudV2TaskTest, CmoTask_test_ex)
 {
     rtError_t error;
     TaskInfo task = {};
-    Device *device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     InitByStream(&task, stream);
     EXPECT_NE(task.stream, nullptr);
     rtCmoTaskInfo_t cmoTask = {};
@@ -641,7 +636,7 @@ TEST_F(CloudV2TaskTest, CmoTask_test_ex)
 TEST_F(CloudV2TaskTest, CmoTask_for_prefetch_test)
 {
     rtError_t error;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     rtModel_t model;
     rtError_t ret = rtModelCreate(&model, 0);
@@ -653,7 +648,7 @@ TEST_F(CloudV2TaskTest, CmoTask_for_prefetch_test)
     EXPECT_NE(task.stream, nullptr);
     rtCmoTaskInfo_t cmoTask = {};
     error = CmoTaskInit(&task, &cmoTask, stream_, 0);
-    Model *tmpModel = stream_->Model_();
+    Model* tmpModel = stream_->Model_();
     stream_->models_.clear();
     error = CmoTaskInit(&task, &cmoTask, stream_, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -673,7 +668,7 @@ TEST_F(CloudV2TaskTest, CmoTask_for_prefetch_test)
 TEST_F(CloudV2TaskTest, CmoAddrTask_for_prefetch_test)
 {
     rtError_t error;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     TaskInfo task = {};
     InitByStream(&task, stream_);
@@ -684,16 +679,16 @@ TEST_F(CloudV2TaskTest, CmoAddrTask_for_prefetch_test)
     error = memset_s(&cmoAddrInfo, sizeof(rtCmoAddrInfo), 0U, sizeof(rtCmoAddrInfo));
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model *tmpModel = stream_->Model_();
+    Model* tmpModel = stream_->Model_();
     stream_->models_.clear();
     // single stream cmoAddrTask init
-    error = CmoAddrTaskInit(&task, RtPtrToPtr<void *>(&cmoAddrInfo), cmoOpCode);
+    error = CmoAddrTaskInit(&task, RtPtrToPtr<void*>(&cmoAddrInfo), cmoOpCode);
     EXPECT_EQ(error, RT_ERROR_MODEL_NULL);
 
     // model stream cmoAddrTask init
     stream_->SetModel(tmpModel);
     stream_->SetLatestModlId(tmpModel->Id_());
-    error = CmoAddrTaskInit(&task, RtPtrToPtr<void *>(&cmoAddrInfo), cmoOpCode);
+    error = CmoAddrTaskInit(&task, RtPtrToPtr<void*>(&cmoAddrInfo), cmoOpCode);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // ConstructCmoAddrSqe
@@ -707,18 +702,18 @@ TEST_F(CloudV2TaskTest, CmoAddrTask_for_prefetch_test)
 
 TEST_F(CloudV2TaskTest, BuildMultipleTaskSqe)
 {
-    RawDevice *device = new RawDevice(0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    RawDevice* device = new RawDevice(0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(false));
     MOCKER_CPP_VIRTUAL(loader, &UmaArgLoader::LoadCpuKernelArgs).stubs().will(returnValue(0));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     rtError_t errorRet;
-    void *args[] = {&errorRet, NULL};
+    void* args[] = {&errorRet, NULL};
     rtTaskDesc_t taskDesc[2] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
@@ -732,16 +727,16 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqe)
     taskDesc[0].u.aicpuTaskDesc.argsInfo.args = args;
     taskDesc[0].u.aicpuTaskDesc.argsInfo.argsSize = sizeof(args);
 
-    void *devPtr;
+    void* devPtr;
     rtMalloc(&devPtr, 16, RT_MEMORY_HBM, DEFAULT_MODULEID);
     taskDesc[1].type = RT_MULTIPLE_TASK_TYPE_DVPP;
     taskDesc[1].u.dvppTaskDesc.sqe.sqeHeader.type = 14;
-    taskDesc[1].u.dvppTaskDesc.aicpuTaskPos = 1 + 3;  // for dvpp rr, add 3 write value
+    taskDesc[1].u.dvppTaskDesc.aicpuTaskPos = 1 + 3; // for dvpp rr, add 3 write value
     taskDesc[1].u.dvppTaskDesc.sqe.commandCustom[12] = 0;
     taskDesc[1].u.dvppTaskDesc.sqe.commandCustom[13] = 0;
 
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_MULTIPLE_TASK, errCode);
+    TaskInfo* task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_MULTIPLE_TASK, errCode);
     EXPECT_NE(task, nullptr);
 
     rtStarsSqe_t sqe[2];
@@ -794,29 +789,29 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqe)
 
 TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeNotFree)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(false));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     rtError_t errorRet;
     rtTaskDesc_t taskDesc[1] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
     multipleTaskInfo.taskDesc = taskDesc;
-    void *devPtr;
+    void* devPtr;
     rtMalloc(&devPtr, 16, RT_MEMORY_HBM, DEFAULT_MODULEID);
     taskDesc[0].type = RT_MULTIPLE_TASK_TYPE_DVPP;
     taskDesc[0].u.dvppTaskDesc.sqe.sqeHeader.type = 14;
-    taskDesc[0].u.dvppTaskDesc.aicpuTaskPos = 1 + 3;  // for dvpp rr, add 3 write value
+    taskDesc[0].u.dvppTaskDesc.aicpuTaskPos = 1 + 3; // for dvpp rr, add 3 write value
     taskDesc[0].u.dvppTaskDesc.sqe.commandCustom[12] = 0;
     taskDesc[0].u.dvppTaskDesc.sqe.commandCustom[13] = 0;
 
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_MULTIPLE_TASK, errCode);
+    TaskInfo* task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_MULTIPLE_TASK, errCode);
     EXPECT_NE(task, nullptr);
     rtStarsSqe_t sqe;
 
@@ -829,7 +824,7 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeNotFree)
     WaitAsyncCopyComplete(task);
 
     rtFree(devPtr);
-    void *cmdList;
+    void* cmdList;
     rtMalloc(&cmdList, 20, RT_MEMORY_DEFAULT, DEFAULT_MODULEID);
     task->u.davinciMultiTaskInfo.cmdListVec->push_back(cmdList);
     device->GetTaskFactory()->Recycle(task);
@@ -840,29 +835,29 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeNotFree)
 
 TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeFree)
 {
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     MOCKER_CPP(&Stream::CheckASyncRecycle).stubs().will(returnValue(false));
 
     device->Init();
     EXPECT_NE(device->engine_, nullptr);
 
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     stream->Setup();
     rtError_t errorRet;
     rtTaskDesc_t taskDesc[1] = {};
     rtMultipleTaskInfo_t multipleTaskInfo = {};
     multipleTaskInfo.taskNum = sizeof(taskDesc) / sizeof(taskDesc[0]);
     multipleTaskInfo.taskDesc = taskDesc;
-    void *devPtr;
+    void* devPtr;
     rtMalloc(&devPtr, 16, RT_MEMORY_HBM, DEFAULT_MODULEID);
     taskDesc[0].type = RT_MULTIPLE_TASK_TYPE_DVPP;
     taskDesc[0].u.dvppTaskDesc.sqe.sqeHeader.type = 14;
-    taskDesc[0].u.dvppTaskDesc.aicpuTaskPos = 1 + 3;  // // for dvpp rr, add 3 write value
+    taskDesc[0].u.dvppTaskDesc.aicpuTaskPos = 1 + 3; // // for dvpp rr, add 3 write value
     taskDesc[0].u.dvppTaskDesc.sqe.commandCustom[12] = 0;
     taskDesc[0].u.dvppTaskDesc.sqe.commandCustom[13] = 0;
 
     rtError_t errCode = RT_ERROR_NONE;
-    TaskInfo *task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_MULTIPLE_TASK, errCode);
+    TaskInfo* task = device->GetTaskFactory()->Alloc(stream, TS_TASK_TYPE_MULTIPLE_TASK, errCode);
     EXPECT_NE(task, nullptr);
     rtStarsSqe_t sqe;
 
@@ -875,7 +870,7 @@ TEST_F(CloudV2TaskTest, BuildMultipleTaskSqeDvpp_RuntimeFree)
     WaitAsyncCopyComplete(task);
 
     rtFree(devPtr);
-    void *cmdList;
+    void* cmdList;
     rtMalloc(&cmdList, 20, RT_MEMORY_DEFAULT, DEFAULT_MODULEID);
     task->u.davinciMultiTaskInfo.cmdListVec->push_back(cmdList);
     device->GetTaskFactory()->Recycle(task);
@@ -888,7 +883,7 @@ protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         (void)rtSetDevice(0);
         std::cout << "task test start: " << std::endl;
     }
@@ -900,14 +895,9 @@ protected:
         ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(CloudV2TaskTest1, load_args_is_pcie_bar)
@@ -916,9 +906,9 @@ TEST_F(CloudV2TaskTest1, load_args_is_pcie_bar)
     uint32_t taskId = 0U;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
     InitByStream(&kernTask, stream_);
     InitByStream(&kernTask1, stream_);
@@ -927,10 +917,9 @@ TEST_F(CloudV2TaskTest1, load_args_is_pcie_bar)
     MOCKER(SetTaskTag).stubs();
     MOCKER(GetSendSqeNum).stubs().will(returnValue(static_cast<uint32_t>(10U)));
     stream_->SetLimitFlag(0U);
-    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo *)&kernTask1));
+    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo*)&kernTask1));
     rtArgsEx_t argsInfo = {};
     kernTask.u.aicTaskInfo.argsInfo = &argsInfo;
-
 
     error = AllocTaskAndSendStars(&kernTask, stream_, &taskId);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -943,7 +932,6 @@ TEST_F(CloudV2TaskTest1, load_args_is_pcie_bar)
     error = AllocTaskAndSendStars(&kernTask, stream_, &taskId);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-
     TaskUnInitProc(&kernTask);
     TaskUnInitProc(&kernTask1);
     delete stream_;
@@ -954,11 +942,11 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test1)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -972,11 +960,10 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test1)
     MOCKER(SetTaskTag).stubs();
     MOCKER(GetSendSqeNum).stubs().will(returnValue(static_cast<uint32_t>(10U)));
     stream_->SetLimitFlag(0U);
-    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo *)&kernTask1));
+    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo*)&kernTask1));
 
     rtArgsEx_t argsInfo = {};
     kernTask.u.aicTaskInfo.argsInfo = &argsInfo;
-
 
     error = AllocTaskAndSendStars(&kernTask, stream_, &taskId);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -991,11 +978,11 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test2)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -1008,14 +995,13 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test2)
     MOCKER(SetTaskTag).stubs();
     MOCKER(GetSendSqeNum).stubs().will(returnValue(static_cast<uint32_t>(10U)));
     stream_->SetLimitFlag(0U);
-    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo *)&kernTask1));
+    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo*)&kernTask1));
     MOCKER_CPP(&StarsEngine::AddTaskToStream).stubs().will(returnValue(RT_ERROR_STREAM_FULL));
     MOCKER_CPP(&TaskFactory::Recycle).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(dev_, &Device::GetDevRunningState)
         .stubs()
         .will(returnValue((uint32_t)DEV_RUNNING_NORMAL))
         .then(returnValue((uint32_t)DEV_RUNNING_DOWN));
-
 
     error = AllocTaskAndSendStars(&kernTask, stream_, &taskId);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -1030,11 +1016,11 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test3)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -1047,9 +1033,8 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test3)
     MOCKER(SetTaskTag).stubs();
     MOCKER(GetSendSqeNum).stubs().will(returnValue(static_cast<uint32_t>(10U)));
     stream_->SetLimitFlag(0U);
-    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo *)&kernTask1));
+    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo*)&kernTask1));
     MOCKER_CPP(&StarsEngine::AddTaskToStream).stubs().will(returnValue(RT_ERROR_STREAM_FULL));
-
 
     error = AllocTaskAndSendStars(&kernTask, stream_, &taskId);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -1064,11 +1049,11 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test4)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -1081,10 +1066,9 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test4)
     MOCKER(SetTaskTag).stubs();
     MOCKER(GetSendSqeNum).stubs().will(returnValue(static_cast<uint32_t>(10U)));
     stream_->SetLimitFlag(0U);
-    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo *)&kernTask1));
+    MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId).stubs().will(returnValue((TaskInfo*)&kernTask1));
     MOCKER_CPP(&StarsEngine::AddTaskToStream).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(WaitAsyncCopyComplete).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
-
 
     error = AllocTaskAndSendStars(&kernTask, stream_, &taskId);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -1098,11 +1082,11 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test5)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -1117,8 +1101,8 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test5)
     stream_->SetLimitFlag(0U);
     MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId)
         .stubs()
-        .will(returnValue((TaskInfo *)NULL))
-        .then(returnValue((TaskInfo *)&kernTask1));
+        .will(returnValue((TaskInfo*)NULL))
+        .then(returnValue((TaskInfo*)&kernTask1));
     MOCKER_CPP(&StarsEngine::AddTaskToStream).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(WaitAsyncCopyComplete).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
@@ -1136,11 +1120,11 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test6)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -1155,8 +1139,8 @@ TEST_F(CloudV2TaskTest1, AllocTaskAndSendStars_test6)
     stream_->SetLimitFlag(0U);
     MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId)
         .stubs()
-        .will(returnValue((TaskInfo *)NULL))
-        .then(returnValue((TaskInfo *)&kernTask1));
+        .will(returnValue((TaskInfo*)NULL))
+        .then(returnValue((TaskInfo*)&kernTask1));
     MOCKER_CPP(&StarsEngine::AddTaskToStream).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(WaitAsyncCopyComplete).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     stream_->isHasPcieBar_ = true;
@@ -1175,11 +1159,11 @@ TEST_F(CloudV2TaskTest1, SubmitTaskStars_test2)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     uint32_t taskId = 0U;
     stream_->device_ = dev_;
@@ -1205,11 +1189,11 @@ TEST_F(CloudV2TaskTest1, SubmitTaskDc_test)
 {
     rtError_t error;
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     TaskInfo kernTask1 = {};
     uint32_t taskId = 0U;
@@ -1225,8 +1209,8 @@ TEST_F(CloudV2TaskTest1, SubmitTaskDc_test)
     stream_->SetLimitFlag(0U);
     MOCKER_CPP(&TaskResManage::AllocTaskInfoByTaskResId)
         .stubs()
-        .will(returnValue(static_cast<TaskInfo *>(nullptr)))
-        .then(returnValue(static_cast<TaskInfo *>(&kernTask1)));
+        .will(returnValue(static_cast<TaskInfo*>(nullptr)))
+        .then(returnValue(static_cast<TaskInfo*>(&kernTask1)));
     MOCKER_CPP(&StarsEngine::AddTaskToStream).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(WaitAsyncCopyComplete).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     stream_->isHasPcieBar_ = true;
@@ -1247,11 +1231,11 @@ TEST_F(CloudV2TaskTest1, SubmitTaskDc_test)
 TEST_F(CloudV2TaskTest1, constructSqeBarrierTask)
 {
     NpuDriver drv;
-    Device *dev_ = new RawDevice(0);
+    Device* dev_ = new RawDevice(0);
     dev_->Init();
-    Stream *stream_ = new Stream(dev_, 0);
+    Stream* stream_ = new Stream(dev_, 0);
     stream_->Setup();
-    ((RawDevice *)dev_)->driver_ = &drv;
+    ((RawDevice*)dev_)->driver_ = &drv;
     TaskInfo kernTask = {};
     uint32_t taskId = 0U;
 
@@ -1270,14 +1254,14 @@ TEST_F(CloudV2TaskTest1, TryToGetCallbackSqCqId)
 {
     GlobalMockObject::verify();
 
-    CbSubscribe *cbSubscribe = new (std::nothrow) CbSubscribe(static_cast<uint32_t>(RT_THREAD_GROUP_ID_MAX));
+    CbSubscribe* cbSubscribe = new (std::nothrow) CbSubscribe(static_cast<uint32_t>(RT_THREAD_GROUP_ID_MAX));
     ASSERT_NE(cbSubscribe, nullptr);
 
     NpuDriver drv;
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     dev->driver_ = &drv;
-    Stream *stm = new (std::nothrow) Stream(dev, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_FAST_SYNC, nullptr);
+    Stream* stm = new (std::nothrow) Stream(dev, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_FAST_SYNC, nullptr);
     ASSERT_NE(stm, nullptr);
 
     const uint64_t threadId = 0x1234;
@@ -1314,10 +1298,10 @@ TEST_F(CloudV2TaskTest1, TryToGetCallbackSqCqId)
 
     // missing devId/tsId key
     cbSubscribe->subscribeMapByThreadId_[threadId][key][streamId] = info;
-    RawDevice *dev2 = new RawDevice(2);
+    RawDevice* dev2 = new RawDevice(2);
     dev2->Init();
     dev2->driver_ = &drv;
-    Stream *stm2 = new (std::nothrow) Stream(dev2, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_FAST_SYNC, nullptr);
+    Stream* stm2 = new (std::nothrow) Stream(dev2, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_FAST_SYNC, nullptr);
     ASSERT_NE(stm2, nullptr);
     ok = cbSubscribe->TryToGetCallbackSqCqId(threadId, stm2, &outSq, &outCq);
     EXPECT_EQ(ok, false);
@@ -1342,13 +1326,13 @@ TEST_F(CloudV2TaskTest1, TryToGetCallbackSqCqId)
 TEST_F(CloudV2TaskTest1, AicpuKernelArgsRelease)
 {
     TaskInfo task = {};
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
-    Stream *stm = new (std::nothrow) Stream(dev, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, nullptr);
+    Stream* stm = new (std::nothrow) Stream(dev, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, nullptr);
     task.stream = stm;
     AicpuTaskInit(&task, 1U, 0U);
 
-    AicpuTaskInfo *aicpuTaskInfo = &(task.u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTaskInfo = &(task.u.aicpuTaskInfo);
     aicpuTaskInfo->kernel = nullptr;
     aicpuTaskInfo->comm.argHandle = RtPtrToPtr<void*>(0x1U);
     MOCKER_CPP(&Stream::IsSeparateSendAndRecycle).stubs().will(returnValue(true));
@@ -1362,13 +1346,13 @@ TEST_F(CloudV2TaskTest1, AicpuKernelArgsRelease)
 TEST_F(CloudV2TaskTest1, AicpuKernelArgsRelease2)
 {
     TaskInfo task = {};
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
-    Stream *stm = new (std::nothrow) Stream(dev, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, nullptr);
+    Stream* stm = new (std::nothrow) Stream(dev, RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, nullptr);
     task.stream = stm;
     AicpuTaskInit(&task, 1U, 0U);
 
-    AicpuTaskInfo *aicpuTaskInfo = &(task.u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTaskInfo = &(task.u.aicpuTaskInfo);
     aicpuTaskInfo->kernel = nullptr;
     aicpuTaskInfo->comm.argHandle = reinterpret_cast<void*>(0x1U);
 
@@ -1403,15 +1387,15 @@ TEST_F(CloudV2TaskTest, RefreshTaskFuncPointer_concurrent_access)
 {
     const int threadCount = 10;
     std::vector<std::thread> threads;
-    
+
     for (int i = 0; i < threadCount; i++) {
         threads.emplace_back([i]() {
             rtChipType_t chipType = (i % 2 == 0) ? CHIP_CLOUD : CHIP_DC;
             RefreshTaskFuncPointer(chipType);
         });
     }
-    
-    for (auto &thread : threads) {
+
+    for (auto& thread : threads) {
         thread.join();
     }
 }
@@ -1421,7 +1405,7 @@ TEST_F(CloudV2TaskTest, RefreshTaskFuncPointer_concurrent_mixed_access)
     const int threadCount = 20;
     std::vector<std::thread> threads;
     std::atomic<int> callCount(0);
-    
+
     for (int i = 0; i < threadCount; i++) {
         threads.emplace_back([i, &callCount]() {
             for (int j = 0; j < 100; j++) {
@@ -1431,11 +1415,11 @@ TEST_F(CloudV2TaskTest, RefreshTaskFuncPointer_concurrent_mixed_access)
             }
         });
     }
-    
-    for (auto &thread : threads) {
+
+    for (auto& thread : threads) {
         thread.join();
     }
-    
+
     EXPECT_EQ(callCount.load(), threadCount * 100);
 }
 
@@ -1452,7 +1436,7 @@ TEST_F(CloudV2TaskTest, RefreshTaskFuncPointer_mutex_thread_safety)
     const int threadCount = 50;
     std::vector<std::thread> threads;
     std::atomic<int> successCount(0);
-    
+
     for (int i = 0; i < threadCount; i++) {
         threads.emplace_back([i, &successCount]() {
             rtChipType_t chipType = static_cast<rtChipType_t>(CHIP_BEGIN + (i % (CHIP_END - CHIP_BEGIN)));
@@ -1460,11 +1444,11 @@ TEST_F(CloudV2TaskTest, RefreshTaskFuncPointer_mutex_thread_safety)
             successCount++;
         });
     }
-    
-    for (auto &thread : threads) {
+
+    for (auto& thread : threads) {
         thread.join();
     }
-    
+
     EXPECT_EQ(successCount.load(), threadCount);
 }
 
@@ -1480,7 +1464,7 @@ TEST_F(CloudV2TaskTest, rtCacheLastTaskExtendInfo_debug_json_success)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Model * const mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* const mdl = rt_ut::UnwrapOrNull<Model>(model);
     Stream* const stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     stm->SetModel(mdl);
@@ -1562,7 +1546,7 @@ TEST_F(CloudV2TaskTest, rtCacheLastTaskExtendInfo_api_impl_abnormal)
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Model * const mdl = rt_ut::UnwrapOrNull<Model>(model);
+    Model* const mdl = rt_ut::UnwrapOrNull<Model>(model);
     stm->SetModel(mdl);
     stm->SetLatestModlId(mdl->Id_());
     EXPECT_EQ(impl.CacheLastTaskExtendInfo(extendInfo, sizeof(extendInfo) - 1U), RT_ERROR_NONE);
@@ -1586,7 +1570,7 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_valid_params)
         .setResultFunc = nullptr,
         .setStarsResultFunc = nullptr,
     };
-    
+
     EXPECT_NO_THROW(RegTaskFunc(chipType, taskType, funcs));
 }
 
@@ -1595,7 +1579,7 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_invalid_chip_type)
     rtChipType_t invalidChipType = static_cast<rtChipType_t>(100);
     tsTaskType_t taskType = TS_TASK_TYPE_KERNEL_AICPU;
     TaskFuncSingle funcs = {};
-    
+
     EXPECT_NO_THROW(RegTaskFunc(invalidChipType, taskType, funcs));
 }
 
@@ -1604,14 +1588,14 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_invalid_task_type)
     rtChipType_t chipType = CHIP_CLOUD;
     tsTaskType_t invalidTaskType = TS_TASK_TYPE_RESERVED;
     TaskFuncSingle funcs = {};
-    
+
     EXPECT_NO_THROW(RegTaskFunc(chipType, invalidTaskType, funcs));
 }
 
 TEST_F(CloudV2TaskTest, RegTaskFunc_chip_type_boundary)
 {
     TaskFuncSingle funcs = {};
-    
+
     EXPECT_NO_THROW(RegTaskFunc(CHIP_BEGIN, TS_TASK_TYPE_KERNEL_AICPU, funcs));
     EXPECT_NO_THROW(RegTaskFunc(static_cast<rtChipType_t>(CHIP_END - 1), TS_TASK_TYPE_KERNEL_AICPU, funcs));
 }
@@ -1619,7 +1603,7 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_chip_type_boundary)
 TEST_F(CloudV2TaskTest, RegTaskFunc_different_chip_types)
 {
     TaskFuncSingle funcs = {};
-    
+
     EXPECT_NO_THROW(RegTaskFunc(CHIP_CLOUD, TS_TASK_TYPE_KERNEL_AICPU, funcs));
     EXPECT_NO_THROW(RegTaskFunc(CHIP_DC, TS_TASK_TYPE_KERNEL_AICPU, funcs));
     EXPECT_NO_THROW(RegTaskFunc(CHIP_ADC, TS_TASK_TYPE_KERNEL_AICPU, funcs));
@@ -1630,19 +1614,19 @@ TEST_F(CloudV2TaskTest, RegTaskFunc_concurrent_registration)
     const int threadCount = 10;
     std::vector<std::thread> threads;
     std::atomic<int> completedCount(0);
-    
+
     for (int i = 0; i < threadCount; i++) {
         threads.emplace_back([i, &completedCount]() {
             rtChipType_t chipType = static_cast<rtChipType_t>(i % 3);
             tsTaskType_t taskType = TS_TASK_TYPE_KERNEL_AICPU;
             TaskFuncSingle funcs = {};
-            
+
             RegTaskFunc(chipType, taskType, funcs);
             completedCount++;
         });
     }
-    
-    for (auto &thread : threads) {
+
+    for (auto& thread : threads) {
         thread.join();
     }
 

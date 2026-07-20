@@ -24,18 +24,11 @@ using namespace aicpu;
 
 class AICPUModelErrProcTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUModelErrProcTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUModelErrProcTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUModelErrProcTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUModelErrProcTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUModelErrProcTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUModelErrProcTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -44,7 +37,8 @@ protected:
     }
 };
 
-TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_SetAddrSuccess) {
+TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_SetAddrSuccess)
+{
     uint8_t bufTmp[4096] = {0};
     AicpuConfigMsg cfgInfo = {0};
     cfgInfo.msgType = 2; /* set buf addr to aicpu */
@@ -58,7 +52,8 @@ TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_SetAddrSuccess) {
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[cfgInfo.tsId], true);
 }
 
-TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_SetAddrFail) {
+TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_SetAddrFail)
+{
     uint8_t bufTmp[4096] = {0};
     AicpuConfigMsg cfgInfo = {0};
     cfgInfo.msgType = 2; /* set buf addr to aicpu */
@@ -70,7 +65,8 @@ TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_SetAddrFail) {
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[cfgInfo.tsId], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_ResetAddrSuccess) {
+TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_ResetAddrSuccess)
+{
     uint8_t bufTmp[4096] = {0};
     AicpuConfigMsg cfgInfo = {0};
     cfgInfo.msgType = 2; /* set buf addr to aicpu */
@@ -91,7 +87,8 @@ TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_ResetAddrSuccess) {
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[cfgInfo.tsId], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_ResetAddrFail) {
+TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_ResetAddrFail)
+{
     uint8_t bufTmp[4096] = {0};
     AicpuConfigMsg cfgInfo = {0};
     cfgInfo.msgType = 2; /* set buf addr to aicpu */
@@ -109,20 +106,22 @@ TEST_F(AICPUModelErrProcTEST, ProcessLogBuffCfgMsg_ResetAddrFail) {
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[cfgInfo.tsId], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, SetUnitLogEmpyOffsetTooLarge) {
-
+TEST_F(AICPUModelErrProcTEST, SetUnitLogEmpyOffsetTooLarge)
+{
     AicpuModelErrProc::GetInstance().SetUnitLogEmpy(1, 4097);
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[1], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, SetUnitLogEmpyBuffInvalid) {
+TEST_F(AICPUModelErrProcTEST, SetUnitLogEmpyBuffInvalid)
+{
     const uint32_t tsId = 1U;
     AicpuModelErrProc::GetInstance().isBuffValid_[tsId] = false;
     AicpuModelErrProc::GetInstance().SetUnitLogEmpy(tsId, 0);
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[tsId], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, GetEmptLogOffsetBuffInvalid) {
+TEST_F(AICPUModelErrProcTEST, GetEmptLogOffsetBuffInvalid)
+{
     AicpuModelErrProc proc;
     const uint32_t tsId = 1U;
     proc.isBuffValid_[tsId] = false;
@@ -130,15 +129,17 @@ TEST_F(AICPUModelErrProcTEST, GetEmptLogOffsetBuffInvalid) {
     EXPECT_EQ(ret, UINT32_MAX);
 }
 
-TEST_F(AICPUModelErrProcTEST, CheckLogIsEmptOffsetTooLarge) {
+TEST_F(AICPUModelErrProcTEST, CheckLogIsEmptOffsetTooLarge)
+{
     const uint32_t tsId = 1U;
     const bool ret = AicpuModelErrProc::GetInstance().CheckLogIsEmpt(tsId, 4097);
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(AICPUModelErrProcTEST, AicoreAddErrLogOffsetInvalid) {
+TEST_F(AICPUModelErrProcTEST, AicoreAddErrLogOffsetInvalid)
+{
     const uint32_t tsId = 1U;
-    const uint32_t buffLen = 4096*2;
+    const uint32_t buffLen = 4096 * 2;
     std::unique_ptr<char[]> buff(new (std::nothrow) char[buffLen]());
     memset(buff.get(), 1, buffLen);
     AicpuModelErrProc::GetInstance().buffBaseAddr_[tsId] = PtrToValue(buff.get());
@@ -152,7 +153,8 @@ TEST_F(AICPUModelErrProcTEST, AicoreAddErrLogOffsetInvalid) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogSuccess) {
+TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogSuccess)
+{
     const uint32_t tsId = 1U;
     const uint32_t buffLen = 1024;
     std::unique_ptr<char[]> buff(new (std::nothrow) char[buffLen]());
@@ -166,7 +168,8 @@ TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogOffsetInvalid) {
+TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogOffsetInvalid)
+{
     MOCKER_CPP(&AicpuModelErrProc::GetEmptLogOffset).stubs().will(returnValue(UINT32_MAX));
     const uint32_t tsId = 1U;
     const uint32_t buffLen = 1024;
@@ -181,14 +184,15 @@ TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogOffsetInvalid) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogSuccess) {
+TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogSuccess)
+{
     AicpuModel model;
     model.modelTsId_ = 0;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
 
-    RunContext ctx = {.modelId=0};
+    RunContext ctx = {.modelId = 0};
     AicpuTaskInfo taskInfo = {};
-    const char *kernelName = "testKernel";
+    const char* kernelName = "testKernel";
     taskInfo.kernelName = PtrToValue(kernelName);
     const uint32_t resultCode = 1U;
 
@@ -203,15 +207,16 @@ TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogSuccess) {
     modelErrProc.RecordAicpuOpErrLog(ctx, taskInfo, resultCode);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogFail) {
+TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogFail)
+{
     AicpuModel model;
     model.modelTsId_ = 0;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(-1));
 
-    RunContext ctx = {.modelId=0};
+    RunContext ctx = {.modelId = 0};
     AicpuTaskInfo taskInfo = {};
-    const char *kernelName = "testKernel";
+    const char* kernelName = "testKernel";
     taskInfo.kernelName = PtrToValue(kernelName);
     const uint32_t resultCode = 1U;
 
@@ -226,32 +231,35 @@ TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogFail) {
     modelErrProc.RecordAicpuOpErrLog(ctx, taskInfo, resultCode);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogNoModelFail) {
+TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogNoModelFail)
+{
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
-    RunContext ctx = {.modelId=0};
+    RunContext ctx = {.modelId = 0};
     AicpuTaskInfo taskInfo = {};
-    const char *kernelName = "testKernel";
+    const char* kernelName = "testKernel";
     taskInfo.kernelName = PtrToValue(kernelName);
     const uint32_t resultCode = 1U;
     AicpuModelErrProc::GetInstance().RecordAicpuOpErrLog(ctx, taskInfo, resultCode);
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[0], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogTsIdMaxFail) {
+TEST_F(AICPUModelErrProcTEST, RecordAicpuOpErrLogTsIdMaxFail)
+{
     AicpuModel model;
     model.modelTsId_ = 50;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
 
-    RunContext ctx = {.modelId=0};
+    RunContext ctx = {.modelId = 0};
     AicpuTaskInfo taskInfo = {};
-    const char *kernelName = "testKernel";
+    const char* kernelName = "testKernel";
     taskInfo.kernelName = PtrToValue(kernelName);
     const uint32_t resultCode = 1U;
     AicpuModelErrProc::GetInstance().RecordAicpuOpErrLog(ctx, taskInfo, resultCode);
     EXPECT_EQ(AicpuModelErrProc::GetInstance().isBuffValid_[0], false);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogSuccess) {
+TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogSuccess)
+{
     AicpuModel model;
     model.modelTsId_ = 0;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
@@ -272,7 +280,8 @@ TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogSuccess) {
     modelErrProc.RecordAicoreOpErrLog(info, adapter);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogFail) {
+TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogFail)
+{
     AicpuModel model;
     model.modelTsId_ = 0;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
@@ -294,7 +303,8 @@ TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogFail) {
     modelErrProc.RecordAicoreOpErrLog(info, adapter);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogMemCpyFail) {
+TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogMemCpyFail)
+{
     AicpuModel model;
     model.modelTsId_ = 0;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
@@ -317,10 +327,11 @@ TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogMemCpyFail) {
     modelErrProc.RecordAicoreOpErrLog(info, adapter);
 }
 
-TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogNoModelFail) {
+TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogNoModelFail)
+{
     AicpuModel model;
     model.modelTsId_ = 0;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel *)nullptr));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
 
     TsToAicpuTaskReport taskInfo = {};
     taskInfo.result_code = 1;
@@ -338,7 +349,8 @@ TEST_F(AICPUModelErrProcTEST, RecordAicoreOpErrLogNoModelFail) {
     modelErrProc.RecordAicoreOpErrLog(info, adapter);
 }
 
-TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogMemCpyFail) {
+TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogMemCpyFail)
+{
     AicpuModelErrProc modelErrProc;
     const uint32_t buffLen = 1024;
     std::unique_ptr<char[]> buff(new (std::nothrow) char[buffLen]());
@@ -352,7 +364,8 @@ TEST_F(AICPUModelErrProcTEST, AicpuAddErrLogMemCpyFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_SAFE_FUNCTION_ERR);
 }
 
-TEST_F(AICPUModelErrProcTEST, ReportErrLogFail) {
+TEST_F(AICPUModelErrProcTEST, ReportErrLogFail)
+{
     ErrLogRptInfo info = {};
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(-1));
     const auto ret = AicpuModelErrProc::GetInstance().ReportErrLog(info);

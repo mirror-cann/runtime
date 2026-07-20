@@ -66,15 +66,15 @@ public:
         auto& bindRelation = bqs::BindRelation::GetInstance();
         auto& dstToSrcRelation = bindRelation.GetDstToSrcRelation();
         for (auto& relation : dstToSrcRelation) {
-            const auto &dstId = relation.first;
-            for (auto srcId : relation.second){
+            const auto& dstId = relation.first;
+            for (auto srcId : relation.second) {
                 allRelation.emplace_back(std::make_tuple(srcId, dstId));
             }
         }
 
         for (auto& relation : allRelation) {
-            auto &srcId = std::get<0>(relation);
-            auto &dstId = std::get<1>(relation);
+            auto& srcId = std::get<0>(relation);
+            auto& dstId = std::get<1>(relation);
             bqs::BqsStatus ret = bindRelation.UnBind(srcId, dstId);
             EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
         }
@@ -85,7 +85,7 @@ public:
 };
 
 namespace {
-uint32_t *g_queueId = nullptr;
+uint32_t* g_queueId = nullptr;
 
 void NewQueueId(const uint32_t queueId)
 {
@@ -93,16 +93,13 @@ void NewQueueId(const uint32_t queueId)
     std::cout << "g_queueId:" << *g_queueId << std::endl;
 }
 
-void DeleteQueueId()
+void DeleteQueueId() { delete g_queueId; }
+int halMbufGetBuffAddrFake2(Mbuf* mbuf, void** buf)
 {
-    delete g_queueId;
-}
-int halMbufGetBuffAddrFake2(Mbuf *mbuf, void **buf)
-{
-    *(char **)buf = allocFakeMBuf;
+    *(char**)buf = allocFakeMBuf;
     return DRV_ERROR_NONE;
 }
-}  // namespace
+} // namespace
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, InitSuccess1)
 {
@@ -166,34 +163,36 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, CreateQueueFailed)
     MOCKER(halQueueCreate).stubs().will(returnValue(0));
     MOCKER(halQueueAttach).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
     uint32_t queueId = 2;
-    const char_t *const name = "tmp";
+    const char_t* const name = "tmp";
     bqs::BqsStatus ret = instance.CreateQueue(name, 0, queueId, 0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, CreateAndSubscribeQueueExtraFailed)
 {
-    MOCKER(&QueueManager::CreateQueue,
+    MOCKER(
+        &QueueManager::CreateQueue,
         bqs::BqsStatus(QueueManager::*)(
-            const char_t *const name, const uint32_t depth, uint32_t &queueId, uint32_t deviceId) const)
+            const char_t* const name, const uint32_t depth, uint32_t& queueId, uint32_t deviceId) const)
         .stubs()
         .will(returnValue(bqs::BQS_STATUS_DRIVER_ERROR));
     uint32_t queueId = 2;
-    const char_t *const name = "tmp";
+    const char_t* const name = "tmp";
     bqs::BqsStatus ret = instance.CreateAndSubscribeQueueExtra(name, 0, queueId);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, CreateAndSubscribeQueueExtraFailed2)
 {
-    MOCKER(&QueueManager::CreateQueue,
+    MOCKER(
+        &QueueManager::CreateQueue,
         bqs::BqsStatus(QueueManager::*)(
-            const char_t *const name, const uint32_t depth, uint32_t &queueId, uint32_t deviceId) const)
+            const char_t* const name, const uint32_t depth, uint32_t& queueId, uint32_t deviceId) const)
         .stubs()
         .will(returnValue(0));
     MOCKER(halQueueSubscribe).stubs().will(returnValue(DRV_ERROR_QUEUE_INNER_ERROR));
     uint32_t queueId = 2;
-    const char_t *const name = "tmp";
+    const char_t* const name = "tmp";
     bqs::BqsStatus ret = instance.CreateAndSubscribeQueueExtra(name, 0, queueId);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
@@ -265,7 +264,7 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, InitQueueFailed2)
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, Clear_MbufForF2nfNull)
 {
-    instance.mbufForF2nf_ = (Mbuf *)allocFakeMBuf;
+    instance.mbufForF2nf_ = (Mbuf*)allocFakeMBuf;
     instance.Clear();
     EXPECT_EQ(instance.mbufForF2nf_, nullptr);
 }
@@ -356,7 +355,10 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, EnqueueRelationEventOnNotify)
 {
     instance.stopped_ = false;
     instance.initialized_ = false;
-    auto th = std::thread {[&] {sleep(1); instance.NotifyInitSuccess(0); }};
+    auto th = std::thread{[&] {
+        sleep(1);
+        instance.NotifyInitSuccess(0);
+    }};
     bqs::BqsStatus ret = instance.EnqueueRelationEvent();
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     if (th.joinable()) {
@@ -367,7 +369,10 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, EnqueueRelationEventOnNotify)
 TEST_F(BQS_QUEUE_MANAGER_UTest, HandleRelationEventSuccess)
 {
     MOCKER_CPP(&bqs::BqsServer::BindMsgProc).stubs().will(returnValue(0));
-    MOCKER(halQueueDeQueue).stubs().will(returnValue((int)DRV_ERROR_NONE)).then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
+    MOCKER(halQueueDeQueue)
+        .stubs()
+        .will(returnValue((int)DRV_ERROR_NONE))
+        .then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     bool ret = instance.HandleRelationEvent();
     EXPECT_EQ(ret, true);
 }
@@ -392,7 +397,10 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, HandleRelationEventDeBuffQueueFailed)
 TEST_F(BQS_QUEUE_MANAGER_UTest, HandleRelationEventMbufFreeFailed)
 {
     MOCKER(halMbufFree).stubs().will(returnValue(-1));
-    MOCKER(halQueueDeQueue).stubs().will(returnValue((int)DRV_ERROR_NONE)).then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
+    MOCKER(halQueueDeQueue)
+        .stubs()
+        .will(returnValue((int)DRV_ERROR_NONE))
+        .then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     bool ret = instance.HandleRelationEvent();
     EXPECT_EQ(ret, true);
 }
@@ -471,9 +479,7 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, EnqueueAsynMemBuffEventBuffSuccess)
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, HandleAsynMemBuffEventFailed01)
 {
-    MOCKER(halQueueDeQueue).stubs()
-        .will(returnValue((int)DRV_ERROR_NONE))
-        .then(returnValue((int)DRV_ERROR_PARA_ERROR));
+    MOCKER(halQueueDeQueue).stubs().will(returnValue((int)DRV_ERROR_NONE)).then(returnValue((int)DRV_ERROR_PARA_ERROR));
     MOCKER(halMbufFree).stubs().will(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     instance.isTriggeredByAsyncMemDequeue_ = true;
     instance.isTriggeredByAsyncMemEnqueue_ = true;
@@ -484,7 +490,8 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, HandleAsynMemBuffEventFailed01)
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, HandleAsynMemBuffEventFailed02)
 {
-    MOCKER(halQueueDeQueue).stubs()
+    MOCKER(halQueueDeQueue)
+        .stubs()
         .will(returnValue((int)DRV_ERROR_NONE))
         .then(returnValue((int)DRV_ERROR_NONE))
         .then(returnValue((int)DRV_ERROR_PARA_ERROR));
@@ -499,7 +506,10 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, HandleAsynMemBuffEventFailed02)
 
 TEST_F(BQS_QUEUE_MANAGER_UTest, HandleAsynMemBuffEventSuccess)
 {
-    MOCKER(halQueueDeQueue).stubs().will(returnValue((int)DRV_ERROR_NONE)).then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
+    MOCKER(halQueueDeQueue)
+        .stubs()
+        .will(returnValue((int)DRV_ERROR_NONE))
+        .then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     MOCKER(halMbufFree).stubs().will(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     instance.isTriggeredByAsyncMemDequeue_ = true;
     instance.isTriggeredByAsyncMemEnqueue_ = true;
@@ -519,7 +529,7 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, HandleFullToNotFullEventResumeSuccess)
     MOCKER(halMbufAlloc).stubs().will(invoke(MbufAllocFake));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake2));
 
-    auto &bindRelation = bqs::BindRelation::GetInstance();
+    auto& bindRelation = bqs::BindRelation::GetInstance();
     auto srcEntity = bqs::EntityInfo(0U, 0U);
     auto dstEntity = bqs::EntityInfo(1U, 0U);
     int32_t result = bindRelation.Bind(srcEntity, dstEntity);
@@ -558,7 +568,7 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, HandleFullToNotFullEventMbufFreeFailed)
 
     MOCKER(halMbufFree).stubs().will(returnValue(-1));
 
-    auto &bindRelation = bqs::BindRelation::GetInstance();
+    auto& bindRelation = bqs::BindRelation::GetInstance();
     auto srcEntity = bqs::EntityInfo(0U, 0U);
     auto dstEntity = bqs::EntityInfo(1U, 0U);
     int32_t result = bindRelation.Bind(srcEntity, dstEntity);
@@ -582,7 +592,7 @@ TEST_F(BQS_QUEUE_MANAGER_UTest, MakeUpMbuf_Fail)
 {
     MOCKER(halMbufAlloc).stubs().will(returnValue(1)).then(returnValue(0));
     MOCKER(halMbufSetDataLen).stubs().will(returnValue(1));
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     // fail for alloc
     instance.MakeUpMbuf(&mbuf);
     EXPECT_EQ(mbuf, nullptr);

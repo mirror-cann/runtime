@@ -38,22 +38,16 @@ using namespace std;
 using namespace acl;
 
 namespace acl {
-    extern aclError CheckQueueRouteQueryInfo(const acltdtQueueRouteQueryInfo *queryInfo);
+extern aclError CheckQueueRouteQueryInfo(const acltdtQueueRouteQueryInfo* queryInfo);
 }
 
-class UTEST_QUEUE : public testing::Test
-{
-    public:
-        UTEST_QUEUE(){}
-    protected:
-        void SetUp() override
-        {
-            MockFunctionTest::aclStubInstance().ResetToDefaultMock();
-        }
-        void TearDown() override
-        {
-            Mock::VerifyAndClear((void *)(&MockFunctionTest::aclStubInstance()));
-        }
+class UTEST_QUEUE : public testing::Test {
+public:
+    UTEST_QUEUE() {}
+
+protected:
+    void SetUp() override { MockFunctionTest::aclStubInstance().ResetToDefaultMock(); }
+    void TearDown() override { Mock::VerifyAndClear((void*)(&MockFunctionTest::aclStubInstance())); }
 };
 
 TEST_F(UTEST_QUEUE, MsprofRegisterCallbackTest)
@@ -63,11 +57,12 @@ TEST_F(UTEST_QUEUE, MsprofRegisterCallbackTest)
     command.devNums = 1;
     command.devIdList[0] = 0;
     command.type = 1; // START_PROFILING
-    auto ret = AclTdtQueueProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void *>(&command), sizeof(rtProfCommandHandle_t));
+    auto ret =
+        AclTdtQueueProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void*>(&command), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(ret, ACL_SUCCESS);
 
     command.type = 2; // STOP_PROFILING
-    ret = AclTdtQueueProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void *>(&command), sizeof(rtProfCommandHandle_t));
+    ret = AclTdtQueueProfCtrlHandle(RT_PROF_CTRL_SWITCH, static_cast<void*>(&command), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
 
@@ -102,7 +97,7 @@ TEST_F(UTEST_QUEUE, acltdtSetQueueAttr)
     EXPECT_EQ(tmpName, oriName);
 
     char nameVec[] = "222";
-    char *nameVecPtr = &nameVec[0];
+    char* nameVecPtr = &nameVec[0];
     ret = acltdtSetQueueAttr(&attr, ACL_TDT_QUEUE_NAME_PTR, len, &nameVecPtr);
     oriName = std::string(nameVec);
     tmpName = std::string(attr.name);
@@ -110,8 +105,9 @@ TEST_F(UTEST_QUEUE, acltdtSetQueueAttr)
     EXPECT_EQ(tmpName, oriName);
 
     // 129 bytes
-    const char* nameFake = "66666666666666666666669666668888866666666666666666666668888888888888888844444444444444444444444444444444488888888888888888888888";
-    
+    const char* nameFake = "6666666666666666666666966666888886666666666666666666666888888888888888884444444444444444444"
+                           "4444444444444488888888888888888888888";
+
     ret = acltdtSetQueueAttr(&attr, ACL_TDT_QUEUE_NAME_PTR, len, &nameFake);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
@@ -135,7 +131,7 @@ TEST_F(UTEST_QUEUE, acltdtGetQueueAttr)
     ret = acltdtGetQueueAttr(&attr, ACL_TDT_QUEUE_NAME_PTR, len, &retSize, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
 
-    const char *preName = "1234";
+    const char* preName = "1234";
     memcpy_s(attr.name, 128, preName, strlen(preName) + 1);
     string copyName = string(attr.name);
     EXPECT_EQ(copyName, "1234");
@@ -155,7 +151,7 @@ TEST_F(UTEST_QUEUE, acltdtGetQueueAttr)
 
 TEST_F(UTEST_QUEUE, QueueRoute_create_destroy)
 {
-    acltdtQueueRoute *route =  acltdtCreateQueueRoute(1, 2);
+    acltdtQueueRoute* route = acltdtCreateQueueRoute(1, 2);
     EXPECT_NE(route, nullptr);
     EXPECT_EQ(route->srcId, 1);
     EXPECT_EQ(route->dstId, 2);
@@ -200,7 +196,7 @@ TEST_F(UTEST_QUEUE, acltdtGetQueueRouteParam)
 
 TEST_F(UTEST_QUEUE, QueueRouteList_create_destroy)
 {
-    acltdtQueueRouteList *routeList =  acltdtCreateQueueRouteList();
+    acltdtQueueRouteList* routeList = acltdtCreateQueueRouteList();
     EXPECT_NE(routeList, nullptr);
     EXPECT_EQ(routeList->routeList.size(), 0);
     auto ret = acltdtDestroyQueueRouteList(routeList);
@@ -280,7 +276,7 @@ TEST_F(UTEST_QUEUE, CheckQueueRouteQueryInfo)
     queryInfo.isConfigDst = true;
     ret = CheckQueueRouteQueryInfo(&queryInfo);
     EXPECT_EQ(ret, ACL_SUCCESS);
-    
+
     queryInfo.mode = ACL_TDT_QUEUE_ROUTE_QUERY_SRC_AND_DST;
     queryInfo.isConfigDst = false;
     ret = CheckQueueRouteQueryInfo(&queryInfo);
@@ -293,7 +289,7 @@ TEST_F(UTEST_QUEUE, CheckQueueRouteQueryInfo)
 
 TEST_F(UTEST_QUEUE, QueryQueueRoute_create_destroy)
 {
-    acltdtQueueRouteQueryInfo *info = acltdtCreateQueueRouteQueryInfo();
+    acltdtQueueRouteQueryInfo* info = acltdtCreateQueueRouteQueryInfo();
     EXPECT_NE(info, nullptr);
     EXPECT_EQ(info->isConfigSrc, false);
     EXPECT_EQ(info->isConfigDst, false);
@@ -308,7 +304,7 @@ TEST_F(UTEST_QUEUE, acltdtSetQueueRouteQueryInfo)
     uint32_t src = 999;
     auto ret = acltdtSetQueueRouteQueryInfo(nullptr, ACL_TDT_QUEUE_ROUTE_QUERY_SRC_ID_UINT32, len, &src);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
-    acltdtQueueRouteQueryInfo *info = acltdtCreateQueueRouteQueryInfo();
+    acltdtQueueRouteQueryInfo* info = acltdtCreateQueueRouteQueryInfo();
     EXPECT_NE(info, nullptr);
     ret = acltdtSetQueueRouteQueryInfo(info, ACL_TDT_QUEUE_ROUTE_QUERY_SRC_ID_UINT32, len, nullptr);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
@@ -339,8 +335,7 @@ TEST_F(UTEST_QUEUE, acltdtEnqueueData)
     void* ptr = nullptr;
     size_t size = 100;
     aclrtMalloc(&ptr, size, ACL_MEM_MALLOC_HUGE_FIRST);
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_))
-        .WillRepeatedly(Return(ACL_RT_SUCCESS));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_)).WillRepeatedly(Return(ACL_RT_SUCCESS));
 
     QueueProcessorHost phost;
 
@@ -374,17 +369,13 @@ TEST_F(UTEST_QUEUE, acltdtEnqueueData)
 
     QueueProcessorCcpu pccpu;
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpQuery(_, _))
-        .WillRepeatedly(Return(ACL_RT_SUCCESS));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpQuery(_, _)).WillRepeatedly(Return(ACL_RT_SUCCESS));
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpCreate(_, _))
-        .WillRepeatedly(Return(ACL_RT_SUCCESS));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpCreate(_, _)).WillRepeatedly(Return(ACL_RT_SUCCESS));
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpAddProc(_, _, _))
-        .WillRepeatedly(Return(ACL_RT_SUCCESS));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpAddProc(_, _, _)).WillRepeatedly(Return(ACL_RT_SUCCESS));
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpAttach(_, _))
-        .WillRepeatedly(Return(ACL_RT_SUCCESS));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpAttach(_, _)).WillRepeatedly(Return(ACL_RT_SUCCESS));
 
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueEnQueueBuff(_, _, _, _))
         .WillOnce(Return(ACL_ERROR_RT_QUEUE_FULL))
@@ -398,7 +389,6 @@ TEST_F(UTEST_QUEUE, acltdtEnqueueData)
 
     ret = pccpu.acltdtEnqueueData(-1, ptr, size, nullptr, 0, 0, 0);
     EXPECT_EQ(ret, ACL_SUCCESS);
-
 
     aclrtFree(ptr);
 }
@@ -519,7 +509,7 @@ TEST_F(UTEST_QUEUE, acltdtAttachQueue)
 TEST_F(UTEST_QUEUE, acltdtGetBufData_host)
 {
     acltdtBuf buf = nullptr;
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     size_t size = 0;
     QueueProcessorHost processor;
     auto ret = processor.acltdtGetBufData(buf, &dataPtr, &size);
@@ -554,10 +544,8 @@ TEST_F(UTEST_QUEUE, acltdtCreateQueue_host)
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
     ret = acltdtCreateQueue(nullptr, &qid);
     EXPECT_EQ(ret, ACL_RT_SUCCESS);
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueInit(_))
-        .WillRepeatedly(Return(RT_ERROR_NONE));
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueCreate(_,_,_))
-        .WillRepeatedly(Return(RT_ERROR_NONE));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueInit(_)).WillRepeatedly(Return(RT_ERROR_NONE));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueCreate(_, _, _)).WillRepeatedly(Return(RT_ERROR_NONE));
     ret = acltdtCreateQueue(&attr, &qid);
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
@@ -589,9 +577,8 @@ TEST_F(UTEST_QUEUE, acltdtUnbindQueueRoutes_host)
     acltdtQueueRouteList qRouteList;
     acltdtQueueRoute route = {};
     qRouteList.routeList.push_back(route);
-    
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _))
-        .WillRepeatedly(Return((ACL_RT_SUCCESS)));
+
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _)).WillRepeatedly(Return((ACL_RT_SUCCESS)));
 
     auto ret = acltdtUnbindQueueRoutes(&qRouteList);
     EXPECT_EQ(ret, ACL_SUCCESS);
@@ -630,7 +617,7 @@ TEST_F(UTEST_QUEUE, QueryQueueRoutes_host)
     rtEschedEventSummary_t eventSum = {};
     rtEschedEventReply_t ack = {};
     bqs::QsProcMsgRsp qsRsp = {};
-    ack.buf = reinterpret_cast<char *>(&qsRsp);
+    ack.buf = reinterpret_cast<char*>(&qsRsp);
     ack.bufLen = sizeof(qsRsp);
 
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEschedSubmitEventSync(_, _, _))
@@ -664,7 +651,7 @@ TEST_F(UTEST_QUEUE, QueryQueueRoutes_host)
 TEST_F(UTEST_QUEUE, acltdtMbufNotSupport_host)
 {
     acltdtBuf buf = nullptr;
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     size_t size = 0U;
     size_t offset = 0U;
     QueueProcessorHost queueProcess;
@@ -678,9 +665,9 @@ TEST_F(UTEST_QUEUE, acltdtMbufNotSupport_host)
     EXPECT_EQ(ret, ACL_ERROR_FEATURE_UNSUPPORTED);
 }
 
-rtError_t rtMemGrpQuery_Invoke(const rtMemGrpQueryInput_t *input, rtMemGrpQueryOutput_t *output)
+rtError_t rtMemGrpQuery_Invoke(const rtMemGrpQueryInput_t* input, rtMemGrpQueryOutput_t* output)
 {
-    (void) input;
+    (void)input;
     rtMemGrpShareAttr_t attr;
     attr.admin = 1U;
     attr.read = 1U;
@@ -699,8 +686,7 @@ rtError_t rtMemGrpQuery_Invoke(const rtMemGrpQueryInput_t *input, rtMemGrpQueryO
 
 TEST_F(UTEST_QUEUE, acltdtMbufApiRC)
 {
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpQuery(_, _))
-        .WillRepeatedly(Invoke(rtMemGrpQuery_Invoke));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemGrpQuery(_, _)).WillRepeatedly(Invoke(rtMemGrpQuery_Invoke));
     QueueProcessorSp queueProcess;
     acltdtBuf buf1 = nullptr;
     acltdtBuf buf2 = nullptr;
@@ -742,7 +728,7 @@ TEST_F(UTEST_QUEUE, acltdtCopyBufRef_sp)
     size_t size = 96U;
     size_t offset = 0U;
     uint32_t type = 0U;
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     QueueProcessorSp queueProcess;
     auto ret = queueProcess.acltdtGetBufData(buf, &dataPtr, &size);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
@@ -774,7 +760,7 @@ TEST_F(UTEST_QUEUE, acltdtAllocBuf_sp)
     acltdtBuf buf = nullptr;
     size_t size = 100;
     uint32_t type = 0U;
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     QueueProcessorSp queueProcess;
     auto ret = queueProcess.acltdtGetBufData(buf, &dataPtr, &size);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
@@ -926,7 +912,7 @@ TEST_F(UTEST_QUEUE, QueryQueueRoutes_sp)
     rtEschedEventSummary_t eventSum = {};
     rtEschedEventReply_t ack = {};
     bqs::QsProcMsgRsp qsRsp = {};
-    ack.buf = reinterpret_cast<char *>(&qsRsp);
+    ack.buf = reinterpret_cast<char*>(&qsRsp);
     ack.bufLen = sizeof(qsRsp);
 
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemQueueEnQueue(_, _, _))
@@ -986,7 +972,7 @@ TEST_F(UTEST_QUEUE, acltdtAllocBuf_ccpu)
     acltdtBuf buf = nullptr;
     size_t size = 100;
     uint32_t type = 0U;
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     QueueProcessorCcpu queueProcess;
     auto ret = queueProcess.acltdtGetBufData(buf, &dataPtr, &size);
     EXPECT_EQ(ret, ACL_ERROR_INVALID_PARAM);
@@ -999,7 +985,7 @@ TEST_F(UTEST_QUEUE, acltdtAllocBuf_ccpu)
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
 
-rtError_t rtGetRunModeInvoke(rtRunMode *mode)
+rtError_t rtGetRunModeInvoke(rtRunMode* mode)
 {
     *mode = RT_RUN_MODE_OFFLINE;
     return RT_ERROR_NONE;
@@ -1008,14 +994,12 @@ rtError_t rtGetRunModeInvoke(rtRunMode *mode)
 TEST_F(UTEST_QUEUE, GetRunningEnvTest)
 {
     RunEnv runningEnv = ACL_ACL_ENV_UNKNOWN;
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_))
-        .WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_)).WillOnce(Return(ACL_ERROR_RT_PARAM_INVALID));
     QueueManager manage;
     aclError ret = manage.GetRunningEnv(runningEnv);
     EXPECT_EQ(ret, ACL_ERROR_RT_PARAM_INVALID);
 
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_))
-        .WillOnce(Invoke(rtGetRunModeInvoke));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_)).WillOnce(Invoke(rtGetRunModeInvoke));
     ret = manage.GetRunningEnv(runningEnv);
     EXPECT_EQ(ret, ACL_SUCCESS);
 }
@@ -1024,10 +1008,9 @@ TEST_F(UTEST_QUEUE, GetQueueProcessorTest)
 {
     QueueManager manage;
     RunEnv runningEnv = ACL_ACL_ENV_UNKNOWN;
-    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_))
-        .WillOnce(Invoke(rtGetRunModeInvoke));
+    EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtGetRunMode(_)).WillOnce(Invoke(rtGetRunModeInvoke));
     manage.GetRunningEnv(runningEnv);
-    QueueProcessor *ret = manage.GetQueueProcessor();
+    QueueProcessor* ret = manage.GetQueueProcessor();
     EXPECT_EQ(ret, nullptr);
 }
 
@@ -1039,7 +1022,7 @@ TEST_F(UTEST_QUEUE, SendConnectQsMsg_Fail)
     bqs::QsProcMsgRsp rsp = {};
     rsp.retCode = 0;
     rsp.majorVersion = 2;
-    ack.buf = reinterpret_cast<char *>(&rsp);
+    ack.buf = reinterpret_cast<char*>(&rsp);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEschedSubmitEventSync(_, _, _))
         .WillRepeatedly(Return((RT_ERROR_NONE)));
     auto ret = queueProcess.SendConnectQsMsg(0, eventSum, ack);
@@ -1060,7 +1043,7 @@ TEST_F(UTEST_QUEUE, SendBindUnbindMsg_Fail)
     qsRsp.retCode = 0;
     qsRsp.majorVersion = 2;
     rtEschedEventReply_t ack = {nullptr, 0U, 0U};
-    ack.buf = reinterpret_cast<char_t *>(&qsRsp);
+    ack.buf = reinterpret_cast<char_t*>(&qsRsp);
     ack.bufLen = sizeof(qsRsp);
 
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtMemcpy(_, _, _, _, _))
@@ -1087,7 +1070,7 @@ TEST_F(UTEST_QUEUE, GetQueueRouteNum_Fail)
     bqs::QsProcMsgRsp qsRsp;
     qsRsp.retCode = 1;
     rtEschedEventReply_t ack = {nullptr, 0U, 0U};
-    ack.buf = reinterpret_cast<char_t *>(&qsRsp);
+    ack.buf = reinterpret_cast<char_t*>(&qsRsp);
     ack.bufLen = sizeof(qsRsp);
     size_t routeNum = 0;
 
@@ -1106,7 +1089,7 @@ TEST_F(UTEST_QUEUE, SendBindUnbindMsgOnDevice_Fail)
     bqs::QsProcMsgRsp qsRsp;
     qsRsp.retCode = 1;
     rtEschedEventReply_t ack = {nullptr, 0, 0};
-    ack.buf = reinterpret_cast<char_t *>(&qsRsp);
+    ack.buf = reinterpret_cast<char_t*>(&qsRsp);
     ack.bufLen = sizeof(qsRsp);
     EXPECT_CALL(MockFunctionTest::aclStubInstance(), rtEschedSubmitEventSync(_, _, _))
         .WillRepeatedly(Return((RT_ERROR_NONE)));

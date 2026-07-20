@@ -7,9 +7,9 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#include <stdio.h>      // 使用snprintf
-#include <stdlib.h>     // 使用getenv
-#include <fcntl.h>      // 使用文件权限
+#include <stdio.h>  // 使用snprintf
+#include <stdlib.h> // 使用getenv
+#include <fcntl.h>  // 使用文件权限
 #include <memory.h>
 
 #include <sys/types.h>
@@ -23,28 +23,27 @@
 
 LogWriter::LogWriter() : m_FileIndex(0), m_FileHandle(-1)
 {
-    m_iLogSize        = 0;
-    m_iHeadSize       = 0;
-    m_lInterval       = 1;
-    m_lLastTime       = time(NULL);
-    m_szLogBuff[0]    = 0;
-    m_Pid             = getpid();
-    m_FilePath[0]     = 0;
-    m_FilePrev[0]     = 0;
-    m_FileName[0]     = 0;
+    m_iLogSize = 0;
+    m_iHeadSize = 0;
+    m_lInterval = 1;
+    m_lLastTime = time(NULL);
+    m_szLogBuff[0] = 0;
+    m_Pid = getpid();
+    m_FilePath[0] = 0;
+    m_FilePrev[0] = 0;
+    m_FileName[0] = 0;
 
     pthread_mutex_init(&m_Mutex, NULL);
 }
 
 LogWriter::~LogWriter()
 {
-    if (-1 != m_FileHandle)
-    {
+    if (-1 != m_FileHandle) {
         close(m_FileHandle);
     }
 }
 
-void LogWriter::Init(const char *szPath, const char *szPrefix)
+void LogWriter::Init(const char* szPath, const char* szPrefix)
 {
     snprintf(m_FilePath, PATH_MAX, "%s", szPath);
     snprintf(m_FilePrev, PATH_MAX, "%s", szPrefix);
@@ -52,17 +51,11 @@ void LogWriter::Init(const char *szPath, const char *szPrefix)
     snprintf(m_FileName, PATH_MAX, "%s/%s_%u_%.2u.log", szPath, szPrefix, m_Pid, m_FileIndex);
 }
 
-void LogWriter::Lock()
-{
-    pthread_mutex_lock(&m_Mutex);
-}
+void LogWriter::Lock() { pthread_mutex_lock(&m_Mutex); }
 
-void LogWriter::Unlock()
-{
-    pthread_mutex_unlock(&m_Mutex);
-}
+void LogWriter::Unlock() { pthread_mutex_unlock(&m_Mutex); }
 
-void LogWriter::addToBuffer(const char *pszBuff, pthread_t ulThreadId)
+void LogWriter::addToBuffer(const char* pszBuff, pthread_t ulThreadId)
 {
     Lock();
 
@@ -71,15 +64,14 @@ void LogWriter::addToBuffer(const char *pszBuff, pthread_t ulThreadId)
     localtime_r(&lNowTime, &tmNowTime);
 
     char szHead[Max_Head_Len];
-    size_t iHead = snprintf(szHead, Max_Head_Len, "[%04d-%02d-%02d %02d:%02d:%02d][%lu]",
-                            tmNowTime.tm_year + 1900, tmNowTime.tm_mon + 1, tmNowTime.tm_mday,
-                            tmNowTime.tm_hour, tmNowTime.tm_min, tmNowTime.tm_sec,
-                            ulThreadId);    //lint !e732
+    size_t iHead = snprintf(
+        szHead, Max_Head_Len, "[%04d-%02d-%02d %02d:%02d:%02d][%lu]", tmNowTime.tm_year + 1900, tmNowTime.tm_mon + 1,
+        tmNowTime.tm_mday, tmNowTime.tm_hour, tmNowTime.tm_min, tmNowTime.tm_sec,
+        ulThreadId); // lint !e732
 
     // 如果不能添加则需要把已经存储的日志写入文件.
     size_t uiMsgLen = strlen(pszBuff);
-    if (m_iLogSize + uiMsgLen + iHead >= Max_Buff_Size)
-    {
+    if (m_iLogSize + uiMsgLen + iHead >= Max_Buff_Size) {
         WriteToFile(m_szLogBuff + m_iHeadSize, m_iLogSize - m_iHeadSize);
         m_iLogSize = m_iHeadSize;
     }
@@ -87,22 +79,17 @@ void LogWriter::addToBuffer(const char *pszBuff, pthread_t ulThreadId)
     memcpy(m_szLogBuff + m_iLogSize, szHead, iHead);
     m_iLogSize += iHead;
 
-    if ((0 == uiMsgLen) || (*(pszBuff + uiMsgLen - 1) != '\n'))
-    {
+    if ((0 == uiMsgLen) || (*(pszBuff + uiMsgLen - 1) != '\n')) {
         memcpy(m_szLogBuff + m_iLogSize, pszBuff, uiMsgLen);
         m_iLogSize += uiMsgLen;
         memcpy(m_szLogBuff + m_iLogSize, "\n", 1);
         m_iLogSize += 1;
-    }
-    else if((uiMsgLen >= 2) && ('\r' == *(pszBuff + uiMsgLen - 2)))
-    {
+    } else if ((uiMsgLen >= 2) && ('\r' == *(pszBuff + uiMsgLen - 2))) {
         memcpy(m_szLogBuff + m_iLogSize, pszBuff, uiMsgLen - 2);
         m_iLogSize += uiMsgLen - 2;
         memcpy(m_szLogBuff + m_iLogSize, "\n", 1);
         m_iLogSize += 1;
-    }
-    else
-    {
+    } else {
         memcpy(m_szLogBuff + m_iLogSize, pszBuff, uiMsgLen);
         m_iLogSize += uiMsgLen;
     }
@@ -110,32 +97,25 @@ void LogWriter::addToBuffer(const char *pszBuff, pthread_t ulThreadId)
     Unlock();
 }
 
-void LogWriter::WriteToFile(const char *szBuf, size_t uiLen)
+void LogWriter::WriteToFile(const char* szBuf, size_t uiLen)
 {
     struct stat buf;
-    if (-1 == stat(m_FilePath, &buf))
-    {
+    if (-1 == stat(m_FilePath, &buf)) {
         // mlog目录下文件不存在, 创建目录.
         mkdir(m_FilePath, S_IRWXU | S_IRWXG);
     }
 
-    if (-1 == stat(m_FileName, &buf))
-    {
+    if (-1 == stat(m_FileName, &buf)) {
         // 文件不存在.
-        if (-1 != m_FileHandle)
-        {
+        if (-1 != m_FileHandle) {
             close(m_FileHandle);
         }
 
         m_FileHandle = open(m_FileName, O_TRUNC | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    }
-    else if (-1 == m_FileHandle)
-    {
+    } else if (-1 == m_FileHandle) {
         // 文件未打开.
         m_FileHandle = open(m_FileName, O_TRUNC | O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    }
-    else if (buf.st_size >= 20 * 1024 * 1024)
-    {
+    } else if (buf.st_size >= 20 * 1024 * 1024) {
         // 文件已写满.
         close(m_FileHandle);
 
@@ -149,7 +129,7 @@ void LogWriter::WriteToFile(const char *szBuf, size_t uiLen)
         rename(m_FileName, szBackFile);
 
         ++m_FileIndex;
-        if (m_FileIndex >= 20)  // 最多存储20个文件(400M).
+        if (m_FileIndex >= 20) // 最多存储20个文件(400M).
         {
             m_FileIndex = 0;
         }
@@ -168,8 +148,7 @@ void LogWriter::WriteLastLog()
     Lock();
 
     // 直接从iHeadSize出开始写
-    if (m_iHeadSize != m_iLogSize)
-    {
+    if (m_iHeadSize != m_iLogSize) {
         WriteToFile(m_szLogBuff + m_iHeadSize, m_iLogSize - m_iHeadSize);
         m_iLogSize = m_iHeadSize;
     }
@@ -183,11 +162,9 @@ void LogWriter::CheckWriteLog(time_t ulNowTime)
 {
     Lock();
 
-    if ((ulNowTime - m_lLastTime >= m_lInterval) || (m_iLogSize >= Max_Trace_Len) || (ulNowTime < m_lLastTime))
-    {
+    if ((ulNowTime - m_lLastTime >= m_lInterval) || (m_iLogSize >= Max_Trace_Len) || (ulNowTime < m_lLastTime)) {
         // 直接从iHeadSize出开始写
-        if (m_iHeadSize != m_iLogSize)
-        {
+        if (m_iHeadSize != m_iLogSize) {
             WriteToFile(m_szLogBuff + m_iHeadSize, m_iLogSize - m_iHeadSize);
             m_iLogSize = m_iHeadSize;
         }
@@ -200,13 +177,10 @@ void LogWriter::CheckWriteLog(time_t ulNowTime)
     Unlock();
 }
 
+std::mutex LogThread::m_ImplMutex;
+LogThread* LogThread::m_Singleton = NULL;
 
-std::mutex  LogThread::m_ImplMutex;
-LogThread  *LogThread::m_Singleton = NULL;
-
-LogThread::LogThread() : m_working(false)
-{
-}
+LogThread::LogThread() : m_working(false) {}
 
 LogThread::~LogThread()
 {
@@ -225,21 +199,17 @@ LogThread::~LogThread()
 void LogThread::Init()
 {
     char filePath[PATH_MAX] = {0};
-    const char *pszWorkDir = getenv("WORK_DIR");
-    if (NULL != pszWorkDir)
-    {
+    const char* pszWorkDir = getenv("WORK_DIR");
+    if (NULL != pszWorkDir) {
         // 存在WORK_DIR创建专用目录输出日志.
         snprintf(filePath, PATH_MAX, "%s/mlog", pszWorkDir);
-    }
-    else
-    {
+    } else {
         // 没有WORK_DIR直接输出到当前目录.
-        getcwd(filePath, PATH_MAX);     // 不判断结果了, 爱咋咋地.
+        getcwd(filePath, PATH_MAX); // 不判断结果了, 爱咋咋地.
     }
 
     struct stat buf;
-    if (-1 == stat(filePath, &buf))
-    {
+    if (-1 == stat(filePath, &buf)) {
         // mlog目录下文件不存在, 创建目录.
         mkdir(filePath, S_IRUSR | S_IWUSR | S_IXUSR);
     }
@@ -251,8 +221,7 @@ void LogThread::Init()
 void LogThread::Worker()
 {
     m_working = true;
-    while (m_working)
-    {
+    while (m_working) {
         sleep(1);
         time_t now = time(NULL);
         m_AllocBuff.CheckWriteLog(now);
@@ -261,7 +230,7 @@ void LogThread::Worker()
     m_AllocBuff.WriteLastLog();
 }
 
-void LogThread::addDebugLog(int logLevel, int moduleId, const char *szInfo)
+void LogThread::addDebugLog(int logLevel, int moduleId, const char* szInfo)
 {
     if (!m_Singleton) {
         std::lock_guard<std::mutex> lock(m_ImplMutex);
@@ -275,7 +244,4 @@ void LogThread::addDebugLog(int logLevel, int moduleId, const char *szInfo)
     m_Singleton->m_AllocBuff.addToBuffer(szInfo, ulThreadId);
 }
 
-void LogThread::doFlush()
-{
-    m_AllocBuff.WriteLastLog();
-}
+void LogThread::doFlush() { m_AllocBuff.WriteLastLog(); }

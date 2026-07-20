@@ -15,64 +15,64 @@ char dequeueFakeMBuf[maxQueueNum][maxMbufNumInMbuflist][mbufSize] = {0};
 char allocFakeMBuf[maxQueueNum][mbufSize] = {0};
 uint32_t allocIndex = 0;
 uint32_t singeMbufListIndex = 0;
-void *singleMbufList[maxQueueNum] = {nullptr};
-std::map<uint32_t, std::list<void *>> enqueueFakeStore;
+void* singleMbufList[maxQueueNum] = {nullptr};
+std::map<uint32_t, std::list<void*>> enqueueFakeStore;
 std::list<uint32_t> mbufChainGetNumReturnValues;
 uint32_t dequeueCount = 0;
 uint32_t enqueueCount = 0;
-AicpuModel *aicpuModel = nullptr;
+AicpuModel* aicpuModel = nullptr;
 char bufForFakeEOS[MAX_SIZE_BUF_FOR_FAKE_EOS] = {0};
-void *halMbufGetBuffAddrFakeAddr = nullptr;
+void* halMbufGetBuffAddrFakeAddr = nullptr;
 RunContext runContextT = {.modelId = modelId, .modelTsId = 1, .streamId = 1, .pending = false, .executeInline = true};
 CommonBufHead g_curHead = {};
-uint32_t batchDequeueInfoQueueIds[] = { 0U, 1U };
+uint32_t batchDequeueInfoQueueIds[] = {0U, 1U};
 uint8_t mbuf[1024] = {0x1};
-uint64_t mbufAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(reinterpret_cast<void *>(mbuf)));
-uint64_t batchDequeueInfoMbufAddrs[] = { mbufAddr, mbufAddr };
+uint64_t mbufAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(reinterpret_cast<void*>(mbuf)));
+uint64_t batchDequeueInfoMbufAddrs[] = {mbufAddr, mbufAddr};
 
-int32_t halMbufGetBuffAddrFake2(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFake2(Mbuf* mbuf, void** buf)
 {
     *buf = halMbufGetBuffAddrFakeAddr;
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetPrivInfoFake(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFake(Mbuf* mbuf, void** priv, unsigned int* size)
 {
-    *priv = (void *)mbuf;
+    *priv = (void*)mbuf;
     *size = mbufHeadSize;
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetBuffSizeFake(Mbuf *mbuf, uint64_t *totalSize)
+int halMbufGetBuffSizeFake(Mbuf* mbuf, uint64_t* totalSize)
 {
     (void)(mbuf);
     *totalSize = 102;
     return -1;
 }
 
-drvError_t halQueueDeQueueFake(unsigned int devId, unsigned int qid, void **mbuf)
+drvError_t halQueueDeQueueFake(unsigned int devId, unsigned int qid, void** mbuf)
 {
-    uint32_t index = qid%maxQueueNum;
-    *mbuf = (Mbuf *)dequeueFakeMBuf[index];
+    uint32_t index = qid % maxQueueNum;
+    *mbuf = (Mbuf*)dequeueFakeMBuf[index];
     printf("halQueueDeQueueFake mbuf:%p, index:%u\n", *mbuf, index);
     dequeueCount++;
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetPrivInfoFakeForEOS(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFakeForEOS(Mbuf* mbuf, void** priv, unsigned int* size)
 {
-  *priv = (void *)mbuf;
-  *size = 256;
-  return DRV_ERROR_NONE;
+    *priv = (void*)mbuf;
+    *size = 256;
+    return DRV_ERROR_NONE;
 }
 
-drvError_t halQueueDeQueueFakeForEOS(unsigned int devId, unsigned int qid, void **mbuf)
+drvError_t halQueueDeQueueFakeForEOS(unsigned int devId, unsigned int qid, void** mbuf)
 {
-  *mbuf = (Mbuf *)bufForFakeEOS;
-  return DRV_ERROR_NONE;
+    *mbuf = (Mbuf*)bufForFakeEOS;
+    return DRV_ERROR_NONE;
 }
 
-DLLEXPORT drvError_t halQueueEnQueueFake(unsigned int devId, unsigned int qid, void *mbuf)
+DLLEXPORT drvError_t halQueueEnQueueFake(unsigned int devId, unsigned int qid, void* mbuf)
 {
     uint32_t index = qid % maxQueueNum;
     auto enqueueListIter = enqueueFakeStore.find(index);
@@ -86,86 +86,82 @@ DLLEXPORT drvError_t halQueueEnQueueFake(unsigned int devId, unsigned int qid, v
     return DRV_ERROR_NONE;
 }
 
-int halMbufAllocFake(unsigned int size, unsigned int align, unsigned long flag, int grp_id, Mbuf **mbuf)
+int halMbufAllocFake(unsigned int size, unsigned int align, unsigned long flag, int grp_id, Mbuf** mbuf)
 {
-    uint32_t index = allocIndex++%maxQueueNum;
-    *mbuf = (Mbuf *)allocFakeMBuf[index];
+    uint32_t index = allocIndex++ % maxQueueNum;
+    *mbuf = (Mbuf*)allocFakeMBuf[index];
     printf("halMbufAllocFake mbuf:%p, index:%u\n", *mbuf, index);
     return 0;
 }
 
-int halMbufFreeFake(Mbuf *mbuf)
+int halMbufFreeFake(Mbuf* mbuf)
 {
     allocIndex--;
     return 0;
 }
 
-int32_t halMbufGetBuffAddrFake(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFake(Mbuf* mbuf, void** buf)
 {
     // 假设每个dataPtr间隔一个mbufDataOffSet，mbuf指针和第一个dataPtr也间隔一个mbufDataOffSet
-    *buf = (void*)((char*)mbuf+mbufDataOffSet);
+    *buf = (void*)((char*)mbuf + mbufDataOffSet);
     printf("getMbufDataPtr mbuf:%p, dataPtr:%p.\n", mbuf, *buf);
     return 0;
 }
 
-int halMbufGetPrivInfoFake2(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFake2(Mbuf* mbuf, void** priv, unsigned int* size)
 {
-    *priv = (void *)mbuf;
+    *priv = (void*)mbuf;
     *size = mbufDataOffSet;
     return DRV_ERROR_NONE;
 }
 
-int halMbufAllocFakeByAlloc(uint64_t size, unsigned int align, unsigned long flag, int grp_id, Mbuf **mbuf)
+int halMbufAllocFakeByAlloc(uint64_t size, unsigned int align, unsigned long flag, int grp_id, Mbuf** mbuf)
 {
     *mbuf = reinterpret_cast<Mbuf*>(malloc(size + mbufDataOffSet));
     printf("halMbufAllocFakeByAlloc mbuf:%p\n", *mbuf);
     return 0;
 }
 
-int halMbufFreeFakeByFree(Mbuf *mbuf)
+int halMbufFreeFakeByFree(Mbuf* mbuf)
 {
     printf("halMbufFreeFakeByFree mbuf:%p\n", mbuf);
     free(mbuf);
     return 0;
 }
 
-uint32_t getMbufInMbufListOffSet(uint32_t index)
-{
-    return mbufSize*index;
-}
+uint32_t getMbufInMbufListOffSet(uint32_t index) { return mbufSize * index; }
 
 Mbuf* getMbufInMbufList(Mbuf* mbufChainHead, uint32_t index)
 {
-    return (Mbuf*)((char*)mbufChainHead+getMbufInMbufListOffSet(index));
+    return (Mbuf*)((char*)mbufChainHead + getMbufInMbufListOffSet(index));
 }
 
 void* calcMbufDataPtrFack(Mbuf* mbufChainHead, unsigned int index)
 {
-    void *buf = nullptr;
+    void* buf = nullptr;
     halMbufGetBuffAddrFake(getMbufInMbufList(mbufChainHead, index), &buf);
     return buf;
 }
 
-int halMbufChainGetMbufFake(Mbuf *mbufChainHead, unsigned int index, Mbuf **mbuf)
+int halMbufChainGetMbufFake(Mbuf* mbufChainHead, unsigned int index, Mbuf** mbuf)
 {
     *mbuf = getMbufInMbufList(mbufChainHead, index);
     printf("halMbufChainGetMbufFake mbuf:%p, dataPtr:%p, index:%u.\n", mbuf, *mbuf, index);
     return 0;
 }
 
-int halMbufChainAppendFake(Mbuf *a, Mbuf *b)
+int halMbufChainAppendFake(Mbuf* a, Mbuf* b)
 {
     if (singeMbufListIndex == 0) {
         printf("halMbufChainAppendFake add a mbuf:%p, index:%u\n", a, singeMbufListIndex);
         singleMbufList[singeMbufListIndex++] = a;
-
     }
     printf("halMbufChainAppendFake add b mbuf:%p, index:%u\n", b, singeMbufListIndex);
     singleMbufList[singeMbufListIndex++] = b;
     return 0;
 }
 
-int halMbufChainGetMbufNumFack(Mbuf *mbufChainHead, unsigned int *num)
+int halMbufChainGetMbufNumFack(Mbuf* mbufChainHead, unsigned int* num)
 {
     if (!mbufChainGetNumReturnValues.empty()) {
         *num = mbufChainGetNumReturnValues.front();
@@ -178,7 +174,7 @@ int halMbufChainGetMbufNumFack(Mbuf *mbufChainHead, unsigned int *num)
     return 0;
 }
 
-int halMbufGetDataLenFake(Mbuf *mbuf, uint64_t *len)
+int halMbufGetDataLenFake(Mbuf* mbuf, uint64_t* len)
 {
     *len = sizeof(RuntimeTensorDesc) + sizeof(uint64_t);
     return 0;
@@ -196,15 +192,13 @@ uint32_t calcGuardBufSize(bool isSingleMbuflistOutput)
     }
 }
 
-void setSimpleAicpuPrepareInfo(AicpuPrepareInfo &info)
+void setSimpleAicpuPrepareInfo(AicpuPrepareInfo& info)
 {
     void *input1, *input2, *input3, *input4, *input5;
     /* 假设ge拼接方式*/
-    uint64_t inputAddrList[] = {reinterpret_cast<uint64_t>(&input1),
-        reinterpret_cast<uint64_t>(&input2),
-        reinterpret_cast<uint64_t>(&input3),
-        reinterpret_cast<uint64_t>(&input4),
-        reinterpret_cast<uint64_t>(&input5)};
+    uint64_t inputAddrList[] = {
+        reinterpret_cast<uint64_t>(&input1), reinterpret_cast<uint64_t>(&input2), reinterpret_cast<uint64_t>(&input3),
+        reinterpret_cast<uint64_t>(&input4), reinterpret_cast<uint64_t>(&input5)};
 
     info.aicpuPareInfoSize = sizeof(AicpuPrepareInfo);
     info.modelId = 1;
@@ -222,12 +216,12 @@ void setSimpleAicpuPrepareInfo(AicpuPrepareInfo &info)
     info.inQueueIdList = 0xffff;
     info.outQueueNum = sizeof(inputAddrList) / sizeof(inputAddrList[0]);
     info.outQueueIdList = 0xffff;
-    info.mbufPtrlist =reinterpret_cast<uint64_t>(inputAddrList);
+    info.mbufPtrlist = reinterpret_cast<uint64_t>(inputAddrList);
 }
 
-
-int32_t AlignTimestampStub1(BatchDequeueInfo &batchDeqInfo, const RunContext &taskContext,
-    uint32_t &maxAlignTimestamp, uint32_t &minAlignTimestamp, uint32_t &minTimestampIndex)
+int32_t AlignTimestampStub1(
+    BatchDequeueInfo& batchDeqInfo, const RunContext& taskContext, uint32_t& maxAlignTimestamp,
+    uint32_t& minAlignTimestamp, uint32_t& minTimestampIndex)
 {
     maxAlignTimestamp = 0;
     minAlignTimestamp = 0;
@@ -235,12 +229,13 @@ int32_t AlignTimestampStub1(BatchDequeueInfo &batchDeqInfo, const RunContext &ta
     return AICPU_SCHEDULE_OK;
 }
 
-int32_t AlignTimestampStub2(BatchDequeueInfo &batchDeqInfo, const RunContext &taskContext, uint32_t &maxAlignTimestamp,
-    uint32_t &minAlignTimestamp, uint32_t &minTimestampIndex)
+int32_t AlignTimestampStub2(
+    BatchDequeueInfo& batchDeqInfo, const RunContext& taskContext, uint32_t& maxAlignTimestamp,
+    uint32_t& minAlignTimestamp, uint32_t& minTimestampIndex)
 {
     maxAlignTimestamp = 1;
     minAlignTimestamp = 0;
     minTimestampIndex = 0;
     return AICPU_SCHEDULE_OK;
 }
-}  // namespace AicpuSchedule
+} // namespace AicpuSchedule

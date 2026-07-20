@@ -30,22 +30,15 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ArgLoaderTest : public testing::Test
-{
+class ArgLoaderTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        const testing::TestInfo * const testInfo = testing::UnitTest::GetInstance()->current_test_info();
+        const testing::TestInfo* const testInfo = testing::UnitTest::GetInstance()->current_test_info();
         setDevice_ = ((testInfo == nullptr) || (std::string(testInfo->name()) != "uma_arg_loader_copy_err2"));
         if (setDevice_) {
             rtSetDevice(0);
@@ -70,12 +63,12 @@ TEST_F(ArgLoaderTest, uma_arg_loader_test_310M)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -83,25 +76,25 @@ TEST_F(ArgLoaderTest, uma_arg_loader_test_310M)
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     int64_t aiCpuCnt = 1;
-     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetDevInfo)
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetDevInfo)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&aiCpuCnt, sizeof(aiCpuCnt)))
         .will(returnValue(RT_ERROR_NONE));
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     error = loader->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
     for (uint32_t i = 0; i < 10; i++) {
-        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
@@ -111,7 +104,7 @@ TEST_F(ArgLoaderTest, uma_arg_loader_test_310M)
     }
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtInstance->SetSocVersion(socVersion);
 }
 
@@ -119,12 +112,12 @@ TEST_F(ArgLoaderTest, uma_arg_loader)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -135,29 +128,27 @@ TEST_F(ArgLoaderTest, uma_arg_loader)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
-    for (uint32_t i = 0; i < 10; i++)
-    {
-        error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+    for (uint32_t i = 0; i < 10; i++) {
+        error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    for (uint32_t i = 0; i < 10; i++)
-    {
+    for (uint32_t i = 0; i < 10; i++) {
         error = loader->Release(results[i].handle);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-rtError_t StubCheckSupportPcieBarCopy(Driver *that, const uint32_t deviceId, uint32_t &val, const bool need4KAsync)
+rtError_t StubCheckSupportPcieBarCopy(Driver* that, const uint32_t deviceId, uint32_t& val, const bool need4KAsync)
 {
     val = RT_CAPABILITY_SUPPORT;
     return RT_ERROR_NONE;
@@ -167,15 +158,15 @@ TEST_F(ArgLoaderTest, uma_arg_loader_mix_illegal_size)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
     uint32_t supportPcieBar = 1;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results;
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::CheckSupportPcieBarCopy)
         .stubs()
@@ -184,29 +175,29 @@ TEST_F(ArgLoaderTest, uma_arg_loader_mix_illegal_size)
         .stubs()
         .will(returnValue(static_cast<uint32_t>(RT_RUN_MODE_ONLINE)));
 
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = 40900U;
     bool mixOpt = false;
-    error = loader->LoadForMix(&argsInfo, (Stream *)device->PrimaryStream_(), &results, mixOpt);
+    error = loader->LoadForMix(&argsInfo, (Stream*)device->PrimaryStream_(), &results, mixOpt);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void *)NULL));
+    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void*)NULL));
 
     argsInfo.argsSize = 128U;
-    error = loader->LoadForMix(&argsInfo, (Stream *)device->PrimaryStream_(), &results, mixOpt);
+    error = loader->LoadForMix(&argsInfo, (Stream*)device->PrimaryStream_(), &results, mixOpt);
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
 
     delete loader;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_init_of_chip_as31xm1x)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     UmaArgLoader argLdr(device);
     std::string preSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
@@ -214,7 +205,7 @@ TEST_F(ArgLoaderTest, uma_arg_loader_init_of_chip_as31xm1x)
     rtInstance->SetAicpuCnt(1);
     rtError_t err = argLdr.Init();
     EXPECT_EQ(RT_ERROR_NONE, err);
-    void *soNameAddr = nullptr;
+    void* soNameAddr = nullptr;
     argLdr.GetKernelInfoDevAddr("123", KernelInfoType::SO_NAME, &soNameAddr);
     argLdr.GetKernelInfoDevAddr("456", KernelInfoType::KERNEL_NAME, &soNameAddr);
     argLdr.RestoreAiCpuKernelInfo();
@@ -225,13 +216,13 @@ TEST_F(ArgLoaderTest, uma_arg_loader_init_of_chip_as31xm1x)
 
 TEST_F(ArgLoaderTest, uma_arg_loader_teardown_is_idempotent)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     UmaArgLoader argLdr(device);
     EXPECT_EQ(argLdr.Init(), RT_ERROR_NONE);
 
-    argLdr.soNameMap_.emplace("TEST_SO", reinterpret_cast<void *>(0x1000));
-    argLdr.kernelNameMap_.emplace("TEST_KERNEL", reinterpret_cast<void *>(0x2000));
+    argLdr.soNameMap_.emplace("TEST_SO", reinterpret_cast<void*>(0x1000));
+    argLdr.kernelNameMap_.emplace("TEST_KERNEL", reinterpret_cast<void*>(0x2000));
 
     argLdr.TearDown();
     EXPECT_EQ(argLdr.argAllocator_, nullptr);
@@ -262,8 +253,8 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_sm)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     ArgLoaderResult result2;
 
@@ -272,38 +263,38 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_sm)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
-    error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &result);
+    error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &result);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &result2);
+    error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &result2);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = loader->Release(result.handle);
-	EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = loader->Release(result2.handle);
-	EXPECT_EQ(error, RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     delete loader;
-	((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -314,38 +305,36 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
-    for (uint32_t i = 0; i < 10; i++)
-    {
-        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+    for (uint32_t i = 0; i < 10; i++) {
+        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    for (uint32_t i = 0; i < 10; i++)
-    {
+    for (uint32_t i = 0; i < 10; i++) {
         error = loader->Release(results[i].handle);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex00)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -356,39 +345,37 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex00)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtAicpuArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
 
-    for (uint32_t i = 0; i < 10; i++)
-    {
-        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+    for (uint32_t i = 0; i < 10; i++) {
+        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    for (uint32_t i = 0; i < 10; i++)
-    {
+    for (uint32_t i = 0; i < 10; i++) {
         error = loader->Release(results[i].handle);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex01)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -399,39 +386,37 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex01)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtAicpuArgsEx_t argsInfo = {};
     argsInfo.args = &args;
-    argsInfo.argsSize = 6320;//sizeof(args);
-    for (uint32_t i = 0; i < 1; i++)
-    {
-        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+    argsInfo.argsSize = 6320; // sizeof(args);
+    for (uint32_t i = 0; i < 1; i++) {
+        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    for (uint32_t i = 0; i < 1; i++)
-    {
+    for (uint32_t i = 0; i < 1; i++) {
         error = loader->Release(results[i].handle);
-        //EXPECT_EQ(error, RT_ERROR_NONE);
+        // EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex02)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -442,39 +427,37 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex02)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtAicpuArgsEx_t argsInfo = {};
     argsInfo.args = &args;
-    argsInfo.argsSize = 45000;//sizeof(args);
-    for (uint32_t i = 0; i < 1; i++)
-    {
-        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+    argsInfo.argsSize = 45000; // sizeof(args);
+    for (uint32_t i = 0; i < 1; i++) {
+        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    for (uint32_t i = 0; i < 1; i++)
-    {
+    for (uint32_t i = 0; i < 1; i++) {
         error = loader->Release(results[i].handle);
-        //EXPECT_EQ(error, RT_ERROR_NONE);
+        // EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex03)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -485,46 +468,34 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_Ex03)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtAicpuArgsEx_t argsInfo = {};
     argsInfo.args = &args;
-    argsInfo.argsSize = 80000;//sizeof(args);
-    for (uint32_t i = 0; i < 1; i++)
-    {
-        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+    argsInfo.argsSize = 80000; // sizeof(args);
+    for (uint32_t i = 0; i < 1; i++) {
+        error = loader->LoadCpuKernelArgsEx(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    for (uint32_t i = 0; i < 1; i++)
-    {
+    for (uint32_t i = 0; i < 1; i++) {
         error = loader->Release(results[i].handle);
-        //EXPECT_EQ(error, RT_ERROR_NONE);
+        // EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
-class ArgLoaderTest1 : public testing::Test
-{
+class ArgLoaderTest1 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
+    static void TearDownTestCase() {}
 
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -537,12 +508,12 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_super)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -553,38 +524,36 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_super)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
-    argsInfo.argsSize = 6320;//sizeof(args);
-    for (uint32_t i = 0; i < 1; i++)
-    {
-        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);        
+    argsInfo.argsSize = 6320; // sizeof(args);
+    for (uint32_t i = 0; i < 1; i++) {
+        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
     }
 
-    for (uint32_t i = 0; i < 1; i++)
-    {
+    for (uint32_t i = 0; i < 1; i++) {
         error = loader->Release(results[i].handle);
-        //EXPECT_EQ(error, RT_ERROR_NONE);
+        // EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_super_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult results[10];
-    void *memBase = (void*)100;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* memBase = (void*)100;
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -595,60 +564,44 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_kernel_info_super_fail)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
-	
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
 
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
-    argsInfo.argsSize = 6320;//sizeof(args);
-    for (uint32_t i = 0; i < 1; i++)
-    {
+    argsInfo.argsSize = 6320; // sizeof(args);
+    for (uint32_t i = 0; i < 1; i++) {
         memset(&results[i], 0, sizeof(results[i]));
-        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream *)device->PrimaryStream_(), &results[i]);
+        error = loader->LoadCpuKernelArgs(&argsInfo, (Stream*)device->PrimaryStream_(), &results[i]);
     }
 
-    for (uint32_t i = 0; i < 1; i++)
-    {
+    for (uint32_t i = 0; i < 1; i++) {
         error = loader->Release(results[i].handle);
-        //EXPECT_EQ(error, RT_ERROR_NONE);
+        // EXPECT_EQ(error, RT_ERROR_NONE);
     }
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
 
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemFree).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
 
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
     GlobalMockObject::verify();
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_sm_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     uint32_t info = RT_RUN_MODE_ONLINE;
 
@@ -657,66 +610,50 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_sm_fail)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     MOCKER(drvGetPlatformInfo).stubs().with(outBoundP(&info, sizeof(info))).will(returnValue(DRV_ERROR_NONE));
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
     argsInfo.argsSize = sizeof(args);
-    error = loader->Load(&argsInfo, (Stream *)device->PrimaryStream_(), &result);
+    error = loader->Load(&argsInfo, (Stream*)device->PrimaryStream_(), &result);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
 
     delete loader;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_copy)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::CheckSupportPcieBarCopy)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::CheckSupportPcieBarCopy).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 10U, 1U, 1U,
-        BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 10U, 1U, 1U, BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
 
-    void *args = argAllocator->AllocDevMem();
+    void* args = argAllocator->AllocDevMem();
     argAllocator->FreeDevMem(args);
     argAllocator->cpyInfoDmaMap_.cpyCount = 2;
     argAllocator->cpyInfoDmaMap_.cpyItemSize = 1;
     argAllocator->cpyInfoDmaMap_.device = argAllocator->device_;
     argAllocator->cpyInfoDmaMap_.mapLock = &argAllocator->mapLock_;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
 
     argAllocator->MallocBuffer(1, &(argAllocator->cpyInfoDmaMap_));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    argAllocator->FreeBuffer((void *)1, &(argAllocator->cpyInfoDmaMap_));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    argAllocator->FreeBuffer((void*)1, &(argAllocator->cpyInfoDmaMap_));
     CpyHandle hdl;
     hdl.copyStatus = ASYNC_COPY_STATU_SUCC;
     int32_t ret = argAllocator->H2DMemCopyWaitFinish(&hdl);
@@ -729,40 +666,26 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_2)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::CheckSupportPcieBarCopy)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::CheckSupportPcieBarCopy).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 10U, 1U, 1U,
-        BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx)
-        .stubs()
-        .will(returnValue(RT_ERROR_DEVICE_NULL));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 10U, 1U, 1U, BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx).stubs().will(returnValue(RT_ERROR_DEVICE_NULL));
 
-    void *args = argAllocator->AllocDevMem();
+    void* args = argAllocator->AllocDevMem();
     argAllocator->FreeDevMem(args);
     argAllocator->cpyInfoDmaMap_.cpyCount = 2;
     argAllocator->cpyInfoDmaMap_.cpyItemSize = 1;
     argAllocator->cpyInfoDmaMap_.device = argAllocator->device_;
     argAllocator->cpyInfoDmaMap_.mapLock = &argAllocator->mapLock_;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
 
     argAllocator->MallocBuffer(1, &(argAllocator->cpyInfoDmaMap_));
 
@@ -775,10 +698,8 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_2)
     auto error = argAllocator->ArgsPoolConvertAddr();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    argAllocator->FreeBuffer((void *)1, &(argAllocator->cpyInfoDmaMap_));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    argAllocator->FreeBuffer((void*)1, &(argAllocator->cpyInfoDmaMap_));
     CpyHandle hdl;
     hdl.copyStatus = ASYNC_COPY_STATU_SUCC;
     int32_t ret = argAllocator->H2DMemCopyWaitFinish(&hdl);
@@ -787,22 +708,19 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_2)
     delete device;
 }
 
-drvError_t halMemCpyTest(struct DMA_ADDR *dmaAddr)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halMemCpyTest(struct DMA_ADDR* dmaAddr) { return DRV_ERROR_NONE; }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_copy_err1)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
     char memBase[2000];
     char memBase1[2000];
-    void *mem = memBase;
-    void *mem1 = memBase1;
+    void* mem = memBase;
+    void* mem1 = memBase1;
     MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&mem, sizeof(mem)), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -813,44 +731,30 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err1)
         .with(outBoundP(&mem1, sizeof(mem1)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    const bool flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 2000U, 1U, 1U,
-        BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
+    const bool flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 2000U, 1U, 1U, BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
 
-    void *args = argAllocator->AllocDevMem();
+    void* args = argAllocator->AllocDevMem();
     argAllocator->FreeDevMem(args);
 
     struct DMA_ADDR dmaHandle;
 
-    MOCKER(drvMemConvertAddr)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemConvertAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     dmaHandle.fixed_size = 0;
     int32_t ret = drv.MemConvertAddr(0, 1, 0, &dmaHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(flag);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(flag);
     delete argAllocator;
     delete device;
 }
@@ -890,20 +794,20 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_memcpy_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    Device* device;
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
     uint32_t info = RT_RUN_MODE_ONLINE;
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
     MOCKER(memcpy_s).stubs().will(returnValue(1));
-    Stream *stream;
-    stream = (Stream *)device->PrimaryStream_();
+    Stream* stream;
+    stream = (Stream*)device->PrimaryStream_();
     stream->models_.clear();
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &args;
@@ -912,20 +816,20 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_memcpy_fail)
     EXPECT_NE(error, RT_ERROR_SEC_HANDLE);
 
     delete loader;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_with_switchN)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
     StreamSwitchNLoadResult result;
-    int64_t value[2] = {1 , 2};
+    int64_t value[2] = {1, 2};
     rtStream_t streamA;
     rtStream_t streamB;
-    void *memBase = (void*)100;
+    void* memBase = (void*)100;
 
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -937,7 +841,7 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_switchN)
     trueStream[0] = streamA;
     trueStream[1] = streamB;
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -945,22 +849,19 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_switchN)
         .with(outBoundP(&memBase, sizeof(memBase)), mockcpp::any(), mockcpp::any(), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-   MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync)
-        .stubs()
-        .will(returnValue(1))
-        .then(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::MemCopySync).stubs().will(returnValue(1)).then(returnValue(RT_ERROR_NONE));
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
-    loader->LoadStreamSwitchNArgs((Stream *)device->PrimaryStream_(), &value, 2,
-        (Stream **)&trueStream, 2, RT_SWITCH_INT32, &result);
-    loader->LoadStreamSwitchNArgs((Stream *)device->PrimaryStream_(), &value, 2,
-        (Stream **)&trueStream, 2, RT_SWITCH_INT64, &result);
+    loader->LoadStreamSwitchNArgs(
+        (Stream*)device->PrimaryStream_(), &value, 2, (Stream**)&trueStream, 2, RT_SWITCH_INT32, &result);
+    loader->LoadStreamSwitchNArgs(
+        (Stream*)device->PrimaryStream_(), &value, 2, (Stream**)&trueStream, 2, RT_SWITCH_INT64, &result);
 
     error = rtStreamDestroy(streamA);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -969,20 +870,20 @@ TEST_F(ArgLoaderTest, uma_arg_loader_with_switchN)
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete loader;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ArgLoaderTest, uma_arg_loader_copy_err2)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
     char memBase[2000];
     char memBase1[2000];
-    void *mem = memBase;
-    void *mem1 = memBase1;
+    void* mem = memBase;
+    void* mem1 = memBase1;
     MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&mem, sizeof(mem)), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -993,34 +894,20 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err2)
         .with(outBoundP(&mem1, sizeof(mem1)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx).stubs().will(returnValue(RT_ERROR_NONE));
 
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    const bool flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 2000U, 5U, 5U,
-        BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
+    const bool flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 2000U, 5U, 5U, BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
 
     argAllocator->cpyInfoDmaMap_.cpyCount = 1;
     argAllocator->cpyInfoDmaMap_.cpyItemSize = 2000U;
@@ -1028,24 +915,22 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err2)
     argAllocator->cpyInfoDmaMap_.mapLock = &argAllocator->mapLock_;
     argAllocator->policy_ = COPY_POLICY_ASYNC_PCIE_DMA;
     argAllocator->handleAllocator_ = new (std::nothrow) BufferAllocator(sizeof(CpyHandle), 5, 5);
-    void *args = argAllocator->AllocDevMem();
-    CpyHandle *hdl = (CpyHandle *)args;
+    void* args = argAllocator->AllocDevMem();
+    CpyHandle* hdl = (CpyHandle*)args;
     hdl->copyStatus = ASYNC_COPY_STATU_SUCC;
     hdl->isDmaPool = true;
     argAllocator->H2DMemCopyWaitFinish(args);
     argAllocator->FreeDevMem(args);
 
     argAllocator->MallocPcieBarBuffer(1, device);
-    argAllocator->FreePcieBarBuffer((void *)1, device);
+    argAllocator->FreePcieBarBuffer((void*)1, device);
 
     struct DMA_ADDR dmaHandle;
-    MOCKER(drvMemConvertAddr)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemConvertAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     dmaHandle.fixed_size = 0;
     int32_t ret = drv.MemConvertAddr(0, 1, 0, &dmaHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(flag);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(flag);
     delete argAllocator;
     delete device;
 }
@@ -1054,13 +939,13 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err6)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
     char memBase[2000];
     char memBase1[2000];
-    void *mem = memBase;
-    void *mem1 = memBase1;
+    void* mem = memBase;
+    void* mem1 = memBase1;
     MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&mem, sizeof(mem)), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -1070,29 +955,21 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err6)
         .with(outBoundP(&mem1, sizeof(mem1)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 2, 5U, 5U,
-        BufferAllocator::LINEAR, COPY_POLICY_MAX);
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 2, 5U, 5U, BufferAllocator::LINEAR, COPY_POLICY_MAX);
 
     argAllocator->cpyInfoDmaMap_.cpyCount = 1;
     argAllocator->cpyInfoDmaMap_.cpyItemSize = 2;
     argAllocator->cpyInfoDmaMap_.device = device;
     argAllocator->cpyInfoDmaMap_.mapLock = nullptr;
 
-    void *args = argAllocator->MallocBuffer(1, &argAllocator->cpyInfoDmaMap_);
+    void* args = argAllocator->MallocBuffer(1, &argAllocator->cpyInfoDmaMap_);
     EXPECT_NE(args, nullptr);
     argAllocator->FreeBuffer(args, &argAllocator->cpyInfoDmaMap_);
 
@@ -1104,28 +981,20 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err8)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncEx)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncEx).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     MOCKER(mmRWLockRDLock).stubs().will(returnValue(0));
     MOCKER(mmRDLockUnLock).stubs().will(returnValue(0));
 
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 2, 5U, 5U,
-        BufferAllocator::LINEAR, COPY_POLICY_MAX);
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 2, 5U, 5U, BufferAllocator::LINEAR, COPY_POLICY_MAX);
 
     int dst = 0;
     int src = 0;
@@ -1146,7 +1015,7 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err8)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     DELETE_O(argAllocator->devAllocator_);
     argAllocator->AllocDevMem();
-    argAllocator->FreeDevMem((void *)1);
+    argAllocator->FreeDevMem((void*)1);
     delete argAllocator;
     delete device;
 }
@@ -1155,28 +1024,25 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_long_string_cut)
 {
     int32_t devId = -1;
     rtError_t error;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     rtSmDesc_t smDesc;
     NpuDriver drv;
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
 
-    Stream * stream = new Stream(device, 0);
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    Stream* stream = new Stream(device, 0);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
-    MOCKER_CPP_VIRTUAL(drv,&NpuDriver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(drv,&NpuDriver::ManagedMemAlloc)
-       .stubs()
-       .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::ManagedMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
 
-    void *addr;
-    std::string kernelName = "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
-    "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
-    "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
-    "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel";
+    void* addr;
+    std::string kernelName =
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel"
+        "RunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernelRunCpuKernel";
     error = loader->GetKernelInfoDevAddr(kernelName.c_str(), KERNEL_NAME, &addr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -1187,12 +1053,12 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_long_string_cut)
 TEST_F(ArgLoaderTest, uma_arg_loader_pure_load)
 {
     rtError_t error;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
 
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
     error = loader->PureLoad(81920, args, &result);
@@ -1208,15 +1074,15 @@ TEST_F(ArgLoaderTest, uma_arg_loader_pure_load)
 TEST_F(ArgLoaderTest, uma_arg_loader_pure_load_AllocDevMemStub)
 {
     rtError_t error;
-    void * args[] = {NULL, NULL, NULL, NULL};
+    void* args[] = {NULL, NULL, NULL, NULL};
     ArgLoaderResult result;
-    
-    Device * device = new RawDevice(0);
+
+    Device* device = new RawDevice(0);
     device->Init();
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
-    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void *)NULL));
+    MOCKER_CPP(&H2DCopyMgr::AllocDevMem, void* (H2DCopyMgr::*)(const bool)).stubs().will(returnValue((void*)NULL));
     error = loader->PureLoad(1024, args, &result);
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
 
@@ -1226,16 +1092,16 @@ TEST_F(ArgLoaderTest, uma_arg_loader_pure_load_AllocDevMemStub)
 
 TEST_F(ArgLoaderTest, uma_arg_loader_find_kernel_info_name)
 {
-    Device * device = new RawDevice(0);
+    Device* device = new RawDevice(0);
     device->Init();
-    UmaArgLoader *loader = new UmaArgLoader(device);
+    UmaArgLoader* loader = new UmaArgLoader(device);
     loader->Init();
 
-    std::unordered_map<std::string, void *> nameMap;
+    std::unordered_map<std::string, void*> nameMap;
     uint32_t addrObj1 = 0U;
     uint32_t addrObj2 = 0U;
-    void *addr1 = &addrObj1;
-    void *addr2 = &addrObj2;
+    void* addr1 = &addrObj1;
+    void* addr2 = &addrObj2;
     nameMap.emplace("TEST_KERNEL_01", addr1);
     nameMap.emplace("TEST_KERNEL_02", addr2);
 
@@ -1252,13 +1118,13 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
     char memBase[2000];
     char memBase1[2000];
-    void *mem = memBase;
-    void *mem1 = memBase1;
+    void* mem = memBase;
+    void* mem1 = memBase1;
     MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&mem, sizeof(mem)), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -1268,36 +1134,26 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err)
         .stubs()
         .with(outBoundP(&mem1, sizeof(mem1)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree).stubs().will(returnValue(RT_ERROR_NONE));
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-    const bool flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 5000U, 1U, 1U,
-        BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    const bool flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 5000U, 1U, 1U, BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
 
-    void *args = argAllocator->AllocDevMem((uint32_t)10);
+    void* args = argAllocator->AllocDevMem((uint32_t)10);
     EXPECT_EQ(args, nullptr);
     argAllocator->FreeDevMem(args);
 
     struct DMA_ADDR dmaHandle;
 
-    MOCKER(drvMemConvertAddr)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemConvertAddr).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     dmaHandle.fixed_size = 0;
     drv.MemConvertAddr(0, 1, 0, &dmaHandle);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(flag);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(flag);
     delete argAllocator;
     delete device;
 }
@@ -1306,13 +1162,13 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err3)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
     char memBase[2000];
     char memBase1[2000];
-    void *mem = memBase;
-    void *mem1 = memBase1;
+    void* mem = memBase;
+    void* mem1 = memBase1;
     MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
         .stubs()
         .with(outBoundP(&mem, sizeof(mem)), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -1323,34 +1179,20 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err3)
         .with(outBoundP(&mem1, sizeof(mem1)), mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemDestroyAddr).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::HostMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::MemCopyAsyncWaitFinishEx).stubs().will(returnValue(RT_ERROR_NONE));
 
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
-    const bool flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-    ((Runtime *)Runtime::Instance())->SetDisableThread(true);
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 2000U, 5U, 5U,
-        BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
+    const bool flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+    ((Runtime*)Runtime::Instance())->SetDisableThread(true);
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 2000U, 5U, 5U, BufferAllocator::LINEAR, COPY_POLICY_ASYNC_PCIE_DMA);
 
     argAllocator->cpyInfoDmaMap_.cpyCount = 1;
     argAllocator->cpyInfoDmaMap_.cpyItemSize = 2000U;
@@ -1358,19 +1200,19 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err3)
     argAllocator->cpyInfoDmaMap_.mapLock = &argAllocator->mapLock_;
     argAllocator->policy_ = COPY_POLICY_ASYNC_PCIE_DMA;
     argAllocator->handleAllocator_ = nullptr;
-    void *args = argAllocator->AllocDevMem();
+    void* args = argAllocator->AllocDevMem();
     EXPECT_EQ(argAllocator->GetDevAddr(args), nullptr);
     argAllocator->FreeDevMem(args);
 
     argAllocator->handleAllocator_ = new (std::nothrow) BufferAllocator(sizeof(CpyHandle), 5, 5);
     args = argAllocator->AllocDevMem();
     EXPECT_NE(argAllocator->GetDevAddr(args), nullptr);
-    CpyHandle *hdl = (CpyHandle *)args;
+    CpyHandle* hdl = (CpyHandle*)args;
     hdl->copyStatus = ASYNC_COPY_STATU_SUCC;
     argAllocator->FreeDevMem(args);
     EXPECT_EQ(argAllocator->MallocPcieBarBuffer(1, device), nullptr);
-    argAllocator->FreePcieBarBuffer((void *)1, device);
-    ((Runtime *)Runtime::Instance())->SetDisableThread(flag);
+    argAllocator->FreePcieBarBuffer((void*)1, device);
+    ((Runtime*)Runtime::Instance())->SetDisableThread(flag);
     delete argAllocator;
     delete device;
 }
@@ -1379,29 +1221,19 @@ TEST_F(ArgLoaderTest, uma_arg_loader_copy_err4)
 {
     NpuDriver drv;
 
-    RawDevice * device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->driver_ = &drv;
     drv.runMode_ = RT_RUN_MODE_ONLINE;
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::CheckSupportPcieBarCopy)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::CheckSupportPcieBarCopy).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_ERR));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode)
-        .stubs()
-        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-    H2DCopyMgr *argAllocator = new (std::nothrow) H2DCopyMgr(device, 10U, 1U, 1U,
-        BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostRegister).stubs().will(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::PcieHostUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(&drv, &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+    H2DCopyMgr* argAllocator =
+        new (std::nothrow) H2DCopyMgr(device, 10U, 1U, 1U, BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
     EXPECT_EQ(argAllocator->MallocPcieBarBuffer(1, device), nullptr);
-    argAllocator->FreePcieBarBuffer((void *)1, device);
+    argAllocator->FreePcieBarBuffer((void*)1, device);
     delete argAllocator;
     delete device;
 }
@@ -1422,20 +1254,24 @@ TEST_F(ArgLoaderTest, load_stream_switch_n_args_with_drv_error)
     Stream* trueStreamPtr[] = {&stream};
     StreamSwitchNLoadResult result = {};
 
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::DevMemAlloc).stubs()
-        .will(returnValue(RT_ERROR_NONE)).then(returnValue(RT_ERROR_DRV_ERR));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::DevMemAlloc)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_DRV_ERR));
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
 
-    rtError_t err = argLdr.LoadStreamSwitchNArgs(&stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize,
-        RT_SWITCH_INT32, &result);
+    rtError_t err = argLdr.LoadStreamSwitchNArgs(
+        &stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize, RT_SWITCH_INT32, &result);
     EXPECT_EQ(RT_ERROR_DRV_ERR, err);
 
     GlobalMockObject::verify();
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs()
-        .will(returnValue(RT_ERROR_NONE)).then(returnValue(RT_ERROR_DRV_ERR));
-    err = argLdr.LoadStreamSwitchNArgs(&stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize,
-        RT_SWITCH_INT32, &result);
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_DRV_ERR));
+    err = argLdr.LoadStreamSwitchNArgs(
+        &stream, (void*)valuePtr, valueSize, trueStreamPtr, elementSize, RT_SWITCH_INT32, &result);
     EXPECT_EQ(RT_ERROR_DRV_ERR, err);
 }
 
@@ -1448,9 +1284,9 @@ TEST_F(ArgLoaderTest, find_or_insert_dev_addr)
     Stream stream(&device, 0);
     UmaArgLoader argLdr(&device);
 
-    char_t *kernelName = "tf_test_so_name";
-    std::unordered_map<std::string, void *> nameMap;
-    void *devAddr = nullptr;
+    char_t* kernelName = "tf_test_so_name";
+    std::unordered_map<std::string, void*> nameMap;
+    void* devAddr = nullptr;
 
     rtError_t err = argLdr.Init();
     EXPECT_EQ(RT_ERROR_NONE, err);
@@ -1468,7 +1304,7 @@ TEST_F(ArgLoaderTest, AllocCopyPtrWithPolicy_AICORE_maxArgNull_fallback_random)
     rtError_t error = RT_ERROR_NONE;
     Device* device = nullptr;
     void* memBase = reinterpret_cast<void*>(0x100);
-    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+    NpuDriver* rawDrv = new (std::nothrow) NpuDriver();
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
@@ -1477,7 +1313,7 @@ TEST_F(ArgLoaderTest, AllocCopyPtrWithPolicy_AICORE_maxArgNull_fallback_random)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader* loader = new(std::nothrow) UmaArgLoader(device);
+    UmaArgLoader* loader = new (std::nothrow) UmaArgLoader(device);
     error = loader->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
     H2DCopyMgr* savedMax = loader->maxArgAllocator_;
@@ -1509,7 +1345,7 @@ TEST_F(ArgLoaderTest, SelectFallbackAllocator_maxArgNull_fallback_random)
     rtError_t error;
     Device* device;
     void* memBase = reinterpret_cast<void*>(0x100);
-    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+    NpuDriver* rawDrv = new (std::nothrow) NpuDriver();
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
@@ -1521,7 +1357,7 @@ TEST_F(ArgLoaderTest, SelectFallbackAllocator_maxArgNull_fallback_random)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
-    UmaArgLoader* loader = new(std::nothrow) UmaArgLoader(device);
+    UmaArgLoader* loader = new (std::nothrow) UmaArgLoader(device);
     error = loader->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
 

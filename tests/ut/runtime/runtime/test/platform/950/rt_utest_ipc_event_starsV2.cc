@@ -46,7 +46,8 @@ static rtError_t g_memWriteValueInitRet = RT_ERROR_NONE;
 static rtError_t g_memWaitValueInitRet = RT_ERROR_NONE;
 static uint16_t g_mockCurIndex = 0;
 
-rtError_t AllocTaskInfoMock(TaskInfo** tsk, Stream* stm, uint32_t& pos) {
+rtError_t AllocTaskInfoMock(TaskInfo** tsk, Stream* stm, uint32_t& pos)
+{
     if (g_allocTaskSuccess) {
         *tsk = &g_mockTask;
         return RT_ERROR_NONE;
@@ -54,7 +55,8 @@ rtError_t AllocTaskInfoMock(TaskInfo** tsk, Stream* stm, uint32_t& pos) {
     return g_allocTaskError;
 }
 
-void ResetIpcEventStarsV2Mocks() {
+void ResetIpcEventStarsV2Mocks()
+{
     g_allocTaskSuccess = true;
     g_allocTaskError = RT_ERROR_NONE;
     g_davidSendTaskRet = RT_ERROR_NONE;
@@ -66,24 +68,28 @@ void ResetIpcEventStarsV2Mocks() {
     g_mockCurIndex = 0;
 }
 
-rtError_t MockGetIpcRecordIndex(IpcEvent* self, uint16_t* curIndex) {
+rtError_t MockGetIpcRecordIndex(IpcEvent* self, uint16_t* curIndex)
+{
     *curIndex = g_mockCurIndex;
     return RT_ERROR_NONE;
 }
 
-drvError_t halMemExportToShareableHandleStub(drv_mem_handle_t *handle, drv_mem_handle_type handle_type,
-    uint64_t flags, uint64_t *shareable_handle) {
+drvError_t halMemExportToShareableHandleStub(
+    drv_mem_handle_t* handle, drv_mem_handle_type handle_type, uint64_t flags, uint64_t* shareable_handle)
+{
     *shareable_handle = 1;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halMemAddressReserveStub(void **ptr, size_t size, size_t alignment, void *addr, uint64_t flag) {
+drvError_t halMemAddressReserveStub(void** ptr, size_t size, size_t alignment, void* addr, uint64_t flag)
+{
     static IpcHandleVa dummyVa = {0, nullptr, {0}, 0};
     *ptr = &dummyVa;
     return DRV_ERROR_NONE;
 }
 
-drvError_t halMemCreateStub(drv_mem_handle_t **handle, size_t size, const struct drv_mem_prop *prop, uint64_t flag) {
+drvError_t halMemCreateStub(drv_mem_handle_t** handle, size_t size, const struct drv_mem_prop* prop, uint64_t flag)
+{
     static void* dummyHandle = reinterpret_cast<void*>(0x1);
     *handle = reinterpret_cast<drv_mem_handle_t*>(dummyHandle);
     return DRV_ERROR_NONE;
@@ -94,14 +100,16 @@ static IpcEvent** g_ipcEventDestroyEventPtr = nullptr;
 static int32_t g_ipcEventDestroyTimeout = 0;
 static bool g_ipcEventDestroyIsNeedDestroy = false;
 
-void IpcEventDestroyMock(IpcEvent** event, int32_t timeout, bool isNeedDestroy) {
+void IpcEventDestroyMock(IpcEvent** event, int32_t timeout, bool isNeedDestroy)
+{
     g_ipcEventDestroyCallCount++;
     g_ipcEventDestroyEventPtr = event;
     g_ipcEventDestroyTimeout = timeout;
     g_ipcEventDestroyIsNeedDestroy = isNeedDestroy;
 }
 
-void ResetIpcEventDestroyMock() {
+void ResetIpcEventDestroyMock()
+{
     g_ipcEventDestroyCallCount = 0;
     g_ipcEventDestroyEventPtr = nullptr;
     g_ipcEventDestroyTimeout = 0;
@@ -112,14 +120,16 @@ static int g_devMemFreeCallCount = 0;
 static void* g_devMemFreePtr = nullptr;
 static int32_t g_devMemFreeDeviceId = 0;
 
-rtError_t DevMemFreeMock(void* ptr, int32_t deviceId) {
+rtError_t DevMemFreeMock(void* ptr, int32_t deviceId)
+{
     g_devMemFreeCallCount++;
     g_devMemFreePtr = ptr;
     g_devMemFreeDeviceId = deviceId;
     return RT_ERROR_NONE;
 }
 
-void ResetDevMemFreeMock() {
+void ResetDevMemFreeMock()
+{
     g_devMemFreeCallCount = 0;
     g_devMemFreePtr = nullptr;
     g_devMemFreeDeviceId = 0;
@@ -131,32 +141,38 @@ void IpcVaLockInitStub() {}
 
 class IpcEventStarsV2Test : public testing::Test {
 public:
-    Device *device_ = nullptr;
+    Device* device_ = nullptr;
+
 protected:
     static void SetUpTestCase() {}
 
     static void TearDownTestCase() {}
 
-    virtual void SetUp() {
+    virtual void SetUp()
+    {
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         (void)rtSetDevice(0);
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     }
 
-    virtual void TearDown() {
-        RawDevice *rd = (RawDevice *)device_;
-        while (rd->IsNeedFreeEventId()) { rd->PopNextPoolFreeEventId(); }
+    virtual void TearDown()
+    {
+        RawDevice* rd = (RawDevice*)device_;
+        while (rd->IsNeedFreeEventId()) {
+            rd->PopNextPoolFreeEventId();
+        }
         rtDeviceReset(0);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         GlobalMockObject::verify();
     }
 };
 
-TEST_F(IpcEventStarsV2Test, RecordStarsV2_Success) {
+TEST_F(IpcEventStarsV2Test, RecordStarsV2_Success)
+{
     ResetIpcEventStarsV2Mocks();
 
     MOCKER(halMemExportToShareableHandle).stubs().will(invoke(halMemExportToShareableHandleStub));
@@ -179,7 +195,7 @@ TEST_F(IpcEventStarsV2Test, RecordStarsV2_Success) {
     MOCKER_CPP(&IpcEvent::GetIpcRecordIndex).stubs().will(invoke(MockGetIpcRecordIndex));
     MOCKER(MemWriteValueTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
 
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     error = ipcEvent->IpcEventRecordStarsV2(rt_ut::UnwrapOrNull<Stream>(stream));
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_TRUE(g_mockTask.needPostProc);
@@ -188,7 +204,8 @@ TEST_F(IpcEventStarsV2Test, RecordStarsV2_Success) {
     rtEventDestroy(event);
 }
 
-TEST_F(IpcEventStarsV2Test, WaitStarsV2_Success) {
+TEST_F(IpcEventStarsV2Test, WaitStarsV2_Success)
+{
     ResetIpcEventStarsV2Mocks();
     MOCKER(halMemExportToShareableHandle).stubs().will(invoke(halMemExportToShareableHandleStub));
     MOCKER(halMemAddressReserve).stubs().will(invoke(halMemAddressReserveStub));
@@ -202,7 +219,7 @@ TEST_F(IpcEventStarsV2Test, WaitStarsV2_Success) {
     error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     ASSERT_EQ(error, ACL_RT_SUCCESS);
 
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     IpcHandleVa* handleVa = ipcEvent->ipcHandleVa_;
     handleVa->currentIndex = 0;
     handleVa->deviceMemRef[0] = 1;
@@ -223,7 +240,8 @@ TEST_F(IpcEventStarsV2Test, WaitStarsV2_Success) {
     rtEventDestroy(event);
 }
 
-TEST_F(IpcEventStarsV2Test, WaitStarsV2_AllocFail) {
+TEST_F(IpcEventStarsV2Test, WaitStarsV2_AllocFail)
+{
     ResetIpcEventStarsV2Mocks();
     MOCKER(halMemExportToShareableHandle).stubs().will(invoke(halMemExportToShareableHandleStub));
     MOCKER(halMemAddressReserve).stubs().will(invoke(halMemAddressReserveStub));
@@ -237,7 +255,7 @@ TEST_F(IpcEventStarsV2Test, WaitStarsV2_AllocFail) {
     error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     ASSERT_EQ(error, ACL_RT_SUCCESS);
 
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     IpcHandleVa* handleVa = ipcEvent->ipcHandleVa_;
     handleVa->currentIndex = 0;
     handleVa->deviceMemRef[0] = 1;
@@ -257,7 +275,8 @@ TEST_F(IpcEventStarsV2Test, WaitStarsV2_AllocFail) {
     rtEventDestroy(event);
 }
 
-TEST_F(IpcEventStarsV2Test, WaitStarsV2_RefCountZero_EarlyReturn) {
+TEST_F(IpcEventStarsV2Test, WaitStarsV2_RefCountZero_EarlyReturn)
+{
     ResetIpcEventStarsV2Mocks();
     MOCKER(halMemExportToShareableHandle).stubs().will(invoke(halMemExportToShareableHandleStub));
     MOCKER(halMemAddressReserve).stubs().will(invoke(halMemAddressReserveStub));
@@ -271,7 +290,7 @@ TEST_F(IpcEventStarsV2Test, WaitStarsV2_RefCountZero_EarlyReturn) {
     error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     ASSERT_EQ(error, ACL_RT_SUCCESS);
 
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     IpcHandleVa* handleVa = ipcEvent->ipcHandleVa_;
     handleVa->currentIndex = 0;
     handleVa->deviceMemRef[0] = 0;
@@ -286,7 +305,8 @@ TEST_F(IpcEventStarsV2Test, WaitStarsV2_RefCountZero_EarlyReturn) {
     rtEventDestroy(event);
 }
 
-TEST_F(IpcEventStarsV2Test, RecordTaskUnInit_NormalPath) {
+TEST_F(IpcEventStarsV2Test, RecordTaskUnInit_NormalPath)
+{
     ResetIpcEventStarsV2Mocks();
     ResetIpcEventDestroyMock();
 
@@ -302,7 +322,7 @@ TEST_F(IpcEventStarsV2Test, RecordTaskUnInit_NormalPath) {
     ASSERT_EQ(error, ACL_RT_SUCCESS);
     error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     ASSERT_EQ(error, ACL_RT_SUCCESS);
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
 
     IpcHandleVa* handleVa = ipcEvent->ipcHandleVa_;
     uint16_t testIndex = 0;
@@ -324,7 +344,8 @@ TEST_F(IpcEventStarsV2Test, RecordTaskUnInit_NormalPath) {
     rtEventDestroy(event);
 }
 
-TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_NormalPath) {
+TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_NormalPath)
+{
     ResetIpcEventStarsV2Mocks();
 
     MOCKER(halMemExportToShareableHandle).stubs().will(invoke(halMemExportToShareableHandleStub));
@@ -337,7 +358,7 @@ TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_NormalPath) {
     rtEvent_t event;
     rtError_t error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     ASSERT_EQ(error, ACL_RT_SUCCESS);
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
 
     IpcHandleVa* handleVa = ipcEvent->ipcHandleVa_;
     uint32_t testIndex = 0;
@@ -346,8 +367,7 @@ TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_NormalPath) {
     uint8_t testMem = 0xFF;
     ipcEvent->currentHostMem_ = &testMem;
 
-    bool canDelete = ipcEvent->TryFreeEventIdAndCheckCanBeDelete(
-        static_cast<int32_t>(testIndex), false);
+    bool canDelete = ipcEvent->TryFreeEventIdAndCheckCanBeDelete(static_cast<int32_t>(testIndex), false);
 
     EXPECT_EQ(handleVa->deviceMemRef[testIndex], 0U);
     EXPECT_EQ(testMem, 0);
@@ -356,7 +376,8 @@ TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_NormalPath) {
     rtEventDestroy(event);
 }
 
-TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_RefCountZero) {
+TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_RefCountZero)
+{
     ResetIpcEventStarsV2Mocks();
 
     MOCKER(halMemExportToShareableHandle).stubs().will(invoke(halMemExportToShareableHandleStub));
@@ -369,15 +390,14 @@ TEST_F(IpcEventStarsV2Test, TryFreeEventIdAndCheckCanBeDelete_RefCountZero) {
     rtEvent_t event;
     rtError_t error = rtEventCreateExWithFlag(&event, RT_EVENT_IPC);
     ASSERT_EQ(error, ACL_RT_SUCCESS);
-    IpcEvent* ipcEvent = static_cast<IpcEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    IpcEvent* ipcEvent = static_cast<IpcEvent*>(rt_ut::UnwrapOrNull<Event>(event));
 
     IpcHandleVa* handleVa = ipcEvent->ipcHandleVa_;
     uint32_t testIndex = 0;
     handleVa->deviceMemRef[testIndex] = 0;
     ipcEvent->totalTaskCnt_ = 1;
 
-    bool canDelete = ipcEvent->TryFreeEventIdAndCheckCanBeDelete(
-        static_cast<int32_t>(testIndex), false);
+    bool canDelete = ipcEvent->TryFreeEventIdAndCheckCanBeDelete(static_cast<int32_t>(testIndex), false);
 
     EXPECT_EQ(handleVa->deviceMemRef[testIndex], 0U);
     EXPECT_FALSE(canDelete);

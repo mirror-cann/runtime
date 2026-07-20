@@ -39,7 +39,7 @@ TEST_F(EndGraphKernelKernelTest, TsKernelEndGraph_failed)
 
 TEST_F(EndGraphKernelKernelTest, TsKernelEndGraph_failed1)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
@@ -52,7 +52,7 @@ TEST_F(EndGraphKernelKernelTest, TsKernelEndGraph_failed1)
 
 TEST_F(EndGraphKernelKernelTest, TsKernelEndGraph_success)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     aicpu::HwtsTsKernel tsKernelInfo = {};
     aicpu::HwtsCceKernel cceKernel;

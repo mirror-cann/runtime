@@ -17,8 +17,7 @@
 
 using namespace cce::runtime;
 
-class RtEnvironment : public testing::Environment
-{
+class RtEnvironment : public testing::Environment {
 public:
     virtual void SetUp()
     {
@@ -34,15 +33,10 @@ public:
     }
 };
 
-extern "C" void *__real_malloc (size_t c);
-extern "C" void *
-__wrap_malloc (size_t c)
-{
-    return __real_malloc (c);
-}
+extern "C" void* __real_malloc(size_t c);
+extern "C" void* __wrap_malloc(size_t c) { return __real_malloc(c); }
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

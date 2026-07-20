@@ -11,8 +11,8 @@
 #include "platform_manager_v2.h"
 #include "rt_unwrap.h"
 
-rtError_t LaunchHostFuncNormalStub(cce::runtime::ApiImpl *impl, Stream *const stm,
-    const rtCallback_t callBackFunc, void *const fnData)
+rtError_t LaunchHostFuncNormalStub(
+    cce::runtime::ApiImpl* impl, Stream* const stm, const rtCallback_t callBackFunc, void* const fnData)
 {
     if (callBackFunc == nullptr) {
         return RT_ERROR_FEATURE_NOT_SUPPORT;
@@ -21,26 +21,25 @@ rtError_t LaunchHostFuncNormalStub(cce::runtime::ApiImpl *impl, Stream *const st
     return RT_ERROR_NONE;
 }
 
-rtError_t LaunchHostFuncFailStub(cce::runtime::ApiImpl *impl, Stream *const stm,
-    const rtCallback_t callBackFunc, void *const fnData)
+rtError_t LaunchHostFuncFailStub(
+    cce::runtime::ApiImpl* impl, Stream* const stm, const rtCallback_t callBackFunc, void* const fnData)
 {
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-class ApiTestSoma950: public testing::Test
-{
+class ApiTestSoma950 : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         delete rawDevice;
-        std::cout<<"engine test start"<<std::endl;
+        std::cout << "engine test start" << std::endl;
     }
 
     virtual void SetUp()
     {
         (void)rtSetDevice(0);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         MOCKER_CPP(&ApiImplSoma::SomaAicpuKernelLaunch).stubs().will(returnValue(RT_ERROR_NONE));
         delete rawDevice;
@@ -54,13 +53,13 @@ protected:
 };
 
 TEST_F(ApiTestSoma950, MallocFromPoolAsyncSuccess)
-{   
+{
     rtError_t error;
     rtStream_t streamId;
     error = rtStreamCreate(&streamId, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::MemGetInfoEx)
@@ -68,19 +67,11 @@ TEST_F(ApiTestSoma950, MallocFromPoolAsyncSuccess)
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport).stubs().with(mockcpp::any()).will(returnValue(true));
 
     rtMemPool_t memPoolId = nullptr;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = (10UL << 30),
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30), .reserve = 0};
     uint64_t fakeVa = (1ULL << 32);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
         .stubs()
@@ -90,14 +81,14 @@ TEST_F(ApiTestSoma950, MallocFromPoolAsyncSuccess)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     size_t size = 1;
-    void *devPtr = nullptr;
+    void* devPtr = nullptr;
     rtMemType_t asyncpolicy = RT_MEMORY_DEFAULT;
     rtError_t ret = rtMemPoolMallocAsync(&devPtr, size, memPoolId, streamId);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     ret = rtMemPoolFreeAsync(devPtr, streamId);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    
+
     error = rtMemPoolDestroy(memPoolId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     delete device;
@@ -111,28 +102,28 @@ TEST_F(ApiTestSoma950, rt_free_from_mempool_normal)
     EXPECT_EQ(error, RT_ERROR_NONE);
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::MemGetInfoEx)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
         .will(returnValue(RT_ERROR_NONE));
-    
-    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport).stubs().with(mockcpp::any())
-        .will(returnValue(true));
+
+    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport).stubs().with(mockcpp::any()).will(returnValue(true));
 
     rtMemPool_t memPoolId = nullptr;
-    rtMemPoolProps poolProps = {.side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30),
-        .reserve = 0
-    };
+    rtMemPoolProps poolProps = {
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30), .reserve = 0};
     uint64_t fakeVa = (1ULL << 32);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(fakeVa))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(fakeVa))
         .will(returnValue(RT_ERROR_NONE));
     error = rtMemPoolCreate(&memPoolId, &poolProps);
     EXPECT_EQ(error, RT_ERROR_NONE);
     size_t size = (2UL * 1024 * 1024);
-    void *ptr = nullptr;
+    void* ptr = nullptr;
     const int32_t stmId = 0;
     rtError_t ret = SomaApi::AllocFromMemPool(&ptr, size, memPoolId, stmId, flag);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -161,27 +152,19 @@ TEST_F(ApiTestSoma950, rt_free_from_mempool_invaild_ptr)
     EXPECT_EQ(error, RT_ERROR_NONE);
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::MemGetInfoEx)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
         .will(returnValue(RT_ERROR_NONE));
-    
-    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(true));
+
+    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport).stubs().with(mockcpp::any()).will(returnValue(true));
 
     rtMemPool_t memPoolId = nullptr;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = (10UL << 30),
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30), .reserve = 0};
     uint64_t fakeVa = (1ULL << 32);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
         .stubs()
@@ -190,7 +173,7 @@ TEST_F(ApiTestSoma950, rt_free_from_mempool_invaild_ptr)
     error = rtMemPoolCreate(&memPoolId, &poolProps);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *ptr = nullptr;
+    void* ptr = nullptr;
     rtError_t ret = rtMemPoolFreeAsync(ptr, stream1);
     EXPECT_NE(ret, RT_ERROR_NONE);
 
@@ -211,27 +194,19 @@ TEST_F(ApiTestSoma950, rt_free_from_mempool_nullptr_stm)
     rtStream_t stream1 = nullptr;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     size_t totalSize = (16UL * 1024 * 1024 * 1024);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::MemGetInfoEx)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
         .will(returnValue(RT_ERROR_NONE));
-    
-    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(true));
+
+    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport).stubs().with(mockcpp::any()).will(returnValue(true));
 
     rtMemPool_t memPoolId = nullptr;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = (10UL << 30),
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (10UL << 30), .reserve = 0};
     uint64_t fakeVa = (1ULL << 32);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
         .stubs()
@@ -241,7 +216,7 @@ TEST_F(ApiTestSoma950, rt_free_from_mempool_nullptr_stm)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     size_t size = 32;
-    void *ptr = nullptr;
+    void* ptr = nullptr;
     const int32_t stmId = 0;
     rtError_t ret = SomaApi::AllocFromMemPool(&ptr, size, memPoolId, stmId, flag);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -255,13 +230,12 @@ TEST_F(ApiTestSoma950, rt_free_from_mempool_nullptr_stm)
     delete device;
 }
 
-
 TEST_F(ApiTestSoma950, rt_sync_alloc_and_async_free)
 {
-    ApiImpl *apiImplObj = static_cast<ApiImpl *>(Runtime::Instance()->ApiImpl_());
+    ApiImpl* apiImplObj = static_cast<ApiImpl*>(Runtime::Instance()->ApiImpl_());
     MOCKER_CPP_VIRTUAL(*apiImplObj, &ApiImpl::LaunchHostFunc).stubs().will(invoke(LaunchHostFuncNormalStub));
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     rtStream_t streamId;
     rtError_t ret = rtStreamCreate(&streamId, 0);
@@ -282,10 +256,10 @@ TEST_F(ApiTestSoma950, rt_sync_alloc_and_async_free)
 
 TEST_F(ApiTestSoma950, rt_sync_alloc_and_async_free_failed)
 {
-    ApiImpl *apiImplObj = static_cast<ApiImpl *>(Runtime::Instance()->ApiImpl_());
+    ApiImpl* apiImplObj = static_cast<ApiImpl*>(Runtime::Instance()->ApiImpl_());
     MOCKER_CPP_VIRTUAL(*apiImplObj, &ApiImpl::LaunchHostFunc).stubs().will(invoke(LaunchHostFuncFailStub));
 
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     rtStream_t streamId;
     rtError_t ret = rtStreamCreate(&streamId, 0);
@@ -307,7 +281,7 @@ TEST_F(ApiTestSoma950, rt_sync_alloc_and_async_free_failed)
     delete device;
 }
 
-drvError_t halMemFreeNormalStub(void *pp)
+drvError_t halMemFreeNormalStub(void* pp)
 {
     RT_LOG(RT_LOG_DEBUG, "halMemFree Normal ptr=%" PRIx64 ".", RtPtrToValue(pp));
     return DRV_ERROR_NONE;
@@ -315,8 +289,7 @@ drvError_t halMemFreeNormalStub(void *pp)
 
 TEST_F(ApiTestSoma950, rt_async_alloc_and_sync_free)
 {
-
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     device->Init();
     rtStream_t streamId;
     rtError_t ret = rtStreamCreate(&streamId, 0);
@@ -326,20 +299,12 @@ TEST_F(ApiTestSoma950, rt_async_alloc_and_sync_free)
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::MemGetInfoEx)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&totalSize, sizeof(totalSize)))
-        .will(returnValue(RT_ERROR_NONE)); 
-    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport)
-        .stubs()
-        .with(mockcpp::any())
-        .will(returnValue(true));
+        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(*device, &RawDevice::CheckFeatureSupport).stubs().with(mockcpp::any()).will(returnValue(true));
 
     rtMemPool_t memPoolId;
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = (1UL << 30),
-        .reserve = 0
-    };
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = (1UL << 30), .reserve = 0};
     uint64_t fakeVa = (1ULL << 32);
     MOCKER_CPP_VIRTUAL(*device->driver_, &Driver::StreamMemPoolCreate)
         .stubs()
@@ -349,12 +314,13 @@ TEST_F(ApiTestSoma950, rt_async_alloc_and_sync_free)
     ASSERT_EQ(ret, RT_ERROR_NONE);
 
     size_t size = (1UL << 30);
-    void *ptr = nullptr;
+    void* ptr = nullptr;
     ret = rtMemPoolMallocAsync(&ptr, size, memPoolId, streamId);
     ASSERT_EQ(ret, RT_ERROR_NONE);
 
     uint64_t expectSize = size;
-    MOCKER_CPP(&halMemPoolTrim).stubs()
+    MOCKER_CPP(&halMemPoolTrim)
+        .stubs()
         .with(mockcpp::any(), outBoundP(&expectSize, sizeof(expectSize)), mockcpp::any(), mockcpp::any())
         .will(returnValue(DRV_ERROR_NONE));
 

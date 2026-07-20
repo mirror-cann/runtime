@@ -18,23 +18,16 @@ using namespace testing;
 using namespace cce::runtime;
 class CloudV2RtErrorCodeTest : public Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
-TEST_F(CloudV2RtErrorCodeTest, GetTsErrModuleType)
-{
-    EXPECT_EQ(GetTsErrModuleType(TS_SUCCESS), ERR_MODULE_RTS);
-}
+TEST_F(CloudV2RtErrorCodeTest, GetTsErrModuleType) { EXPECT_EQ(GetTsErrModuleType(TS_SUCCESS), ERR_MODULE_RTS); }
 
 TEST_F(CloudV2RtErrorCodeTest, GetTsErrModuleTypeNotFind)
 {
@@ -43,14 +36,14 @@ TEST_F(CloudV2RtErrorCodeTest, GetTsErrModuleTypeNotFind)
 
 TEST_F(CloudV2RtErrorCodeTest, GetTsErrCodeDescNotFind)
 {
-    RecordErrorLog(__FILE__, __LINE__, __FUNCTION__,  "%s", "unknown error");
-    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__,  "%s", "unknown error");
+    RecordErrorLog(__FILE__, __LINE__, __FUNCTION__, "%s", "unknown error");
+    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__, "%s", "unknown error");
     EXPECT_EQ(strcmp(GetTsErrCodeDesc(TS_ERROR_RESERVED + 1), "unknown error"), 0);
 }
 
 TEST_F(CloudV2RtErrorCodeTest, GetTsErrDescByRtErr)
 {
     RecordErrorLog(__FILE__, __LINE__, __FUNCTION__, nullptr);
-    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__,  nullptr);
+    RecordLog(DLOG_DEBUG, __FILE__, __LINE__, __FUNCTION__, nullptr);
     EXPECT_EQ(strcmp(GetTsErrDescByRtErr(RT_ERROR_NONE), "success"), 0);
 }

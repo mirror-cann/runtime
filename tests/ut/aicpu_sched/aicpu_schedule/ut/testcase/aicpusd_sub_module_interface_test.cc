@@ -27,10 +27,7 @@
 using namespace AicpuSchedule;
 class AicpusdSubModuleInterfaceTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AicpusdSubModuleInterface SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpusdSubModuleInterface SetUpTestCase" << std::endl; }
 
     static void TearDownTestCase()
     {
@@ -38,10 +35,7 @@ protected:
         std::cout << "AicpusdSubModuleInterface TearDownTestCase" << std::endl;
     }
 
-    virtual void SetUp()
-    {
-        std::cout << "AicpusdSubModuleInterfaceTest SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AicpusdSubModuleInterfaceTest SetUP" << std::endl; }
 
     virtual void TearDown()
     {

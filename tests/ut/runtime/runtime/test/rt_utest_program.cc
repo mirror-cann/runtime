@@ -22,336 +22,310 @@ using namespace cce::runtime;
 
 class ProgramTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"program test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "program test start" << std::endl; }
 
-    }
+    static void TearDownTestCase() { std::cout << "program test end" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"program test end"<<std::endl;
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         rtDeviceReset(0);
-         GlobalMockObject::verify();
+        GlobalMockObject::verify();
     }
 };
 
 TEST_F(ProgramTest, Program_Process_ELF)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 7186;
-        FILE *bin = NULL;
-        //bin = fopen("conv_fwd_sample.cce.tmp", "rb");
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/conv_fwd_sample.cce.tmp", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 7186;
+    FILE* bin = NULL;
+    // bin = fopen("conv_fwd_sample.cce.tmp", "rb");
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/conv_fwd_sample.cce.tmp", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        Program* program = new ElfProgram();
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_NONE);
+    Program* program = new ElfProgram();
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
-        rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
-        printf("machine244:%d\n",kernelAttrType);
+    rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
+    printf("machine244:%d\n", kernelAttrType);
 
-        char kernelName[] = "_Z15executor_conv2dPDhj";
-        printf("kernelName:%s\n",kernelName);
-        uint32_t length = 0;
-        uint32_t symOff = program->SymbolOffset(kernelName, length);
-        printf("symOff0:%d\n",symOff);
+    char kernelName[] = "_Z15executor_conv2dPDhj";
+    printf("kernelName:%s\n", kernelName);
+    uint32_t length = 0;
+    uint32_t symOff = program->SymbolOffset(kernelName, length);
+    printf("symOff0:%d\n", symOff);
 
-        uint32_t elfSize = program->LoadSize();
-        printf("elfSize:%d\n",elfSize);
+    uint32_t elfSize = program->LoadSize();
+    printf("elfSize:%d\n", elfSize);
 
-        void * output = NULL;
-        //uint32_t size = 0;
-        output= (void*)malloc(elfSize);
-        memset(output,'\0',elfSize);
+    void* output = NULL;
+    // uint32_t size = 0;
+    output = (void*)malloc(elfSize);
+    memset(output, '\0', elfSize);
 
-        error = program->LoadExtract(output, elfSize);
-        EXPECT_EQ(error, RT_ERROR_NONE);
+    error = program->LoadExtract(output, elfSize);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
-        if(NULL != output)
-        {
-            free(output);
-            output = NULL;
-        }
-        program->SearchKernelByPcAddr(0);
-        delete program;
+    if (NULL != output) {
+        free(output);
+        output = NULL;
+    }
+    program->SearchKernelByPcAddr(0);
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_ELF_Parse_SO_Name)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 7186;
-        FILE *bin = NULL;
-        //bin = fopen("conv_fwd_sample.cce.tmp", "rb");
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/conv_fwd_sample.cce.tmp", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 7186;
+    FILE* bin = NULL;
+    // bin = fopen("conv_fwd_sample.cce.tmp", "rb");
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/conv_fwd_sample.cce.tmp", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        ElfProgram* program = new ElfProgram();
-        program->elfData_->so_name = (char *)"test.so";
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_NONE);
+    ElfProgram* program = new ElfProgram();
+    program->elfData_->so_name = (char*)"test.so";
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_No_Kernel)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 7186;
-        FILE *bin = NULL;
-        //bin = fopen("conv_fwd_sample.cce.tmp", "rb");
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/no-kernel.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 7186;
+    FILE* bin = NULL;
+    // bin = fopen("conv_fwd_sample.cce.tmp", "rb");
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/no-kernel.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        Program* program = new ElfProgram();
-        program->SetIsNewBinaryLoadFlow(true);
-        int32_t fun1;
-        Kernel * kernel2 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
-        TilingTabl *tilingTab2 = nullptr;
-        uint32_t kernelLen2 = 0U;
-        program->kernelNameMap_["test1"] = kernel2;
-        error = program->BuildTilingTbl(&tilingTab2, &kernelLen2);
-        EXPECT_EQ(kernelLen2, 1);
-        free(tilingTab2);
+    Program* program = new ElfProgram();
+    program->SetIsNewBinaryLoadFlow(true);
+    int32_t fun1;
+    Kernel* kernel2 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    TilingTabl* tilingTab2 = nullptr;
+    uint32_t kernelLen2 = 0U;
+    program->kernelNameMap_["test1"] = kernel2;
+    error = program->BuildTilingTbl(&tilingTab2, &kernelLen2);
+    EXPECT_EQ(kernelLen2, 1);
+    free(tilingTab2);
 
-        TilingTablForDavid *tilingTabForDavid2 = nullptr;
-        kernelLen2 = 0U;
-        error = program->BuildTilingTblForDavid(nullptr, &tilingTabForDavid2, &kernelLen2);
-        EXPECT_EQ(kernelLen2, 1);
-        free(tilingTabForDavid2);
+    TilingTablForDavid* tilingTabForDavid2 = nullptr;
+    kernelLen2 = 0U;
+    error = program->BuildTilingTblForDavid(nullptr, &tilingTabForDavid2, &kernelLen2);
+    EXPECT_EQ(kernelLen2, 1);
+    free(tilingTabForDavid2);
 
-        program->SetIsNewBinaryLoadFlow(false);
-        Module *mdl;
-        TilingTabl *tilingTab = nullptr;
-        uint32_t kernelLen = 0;
-        error = program->BuildTilingTbl(&tilingTab, &kernelLen);
-        EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
-    
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    program->SetIsNewBinaryLoadFlow(false);
+    Module* mdl;
+    TilingTabl* tilingTab = nullptr;
+    uint32_t kernelLen = 0;
+    error = program->BuildTilingTbl(&tilingTab, &kernelLen);
+    EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
 
-        rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
-        printf("machine244:%d\n",kernelAttrType);
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-        char kernelName[] = "_Z15executor_conv2dPDhj";
-        printf("kernelName:%s\n",kernelName);
-        uint32_t length = 0;
-        uint32_t symOff = program->SymbolOffset(kernelName, length);
-        printf("symOff0:%d\n",symOff);
+    rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
+    printf("machine244:%d\n", kernelAttrType);
 
-        uint32_t elfSize = program->LoadSize();
-        printf("elfSize:%d\n",elfSize);
+    char kernelName[] = "_Z15executor_conv2dPDhj";
+    printf("kernelName:%s\n", kernelName);
+    uint32_t length = 0;
+    uint32_t symOff = program->SymbolOffset(kernelName, length);
+    printf("symOff0:%d\n", symOff);
 
-        void * output = NULL;
-        //uint32_t size = 0;
-        output= (void*)malloc(elfSize);
-        memset(output,'\0',elfSize);
+    uint32_t elfSize = program->LoadSize();
+    printf("elfSize:%d\n", elfSize);
 
-        error = program->LoadExtract(output, elfSize);
-        EXPECT_EQ(error, RT_ERROR_SEC_HANDLE);
+    void* output = NULL;
+    // uint32_t size = 0;
+    output = (void*)malloc(elfSize);
+    memset(output, '\0', elfSize);
 
-        if(NULL != output)
-        {
-            free(output);
-            output = NULL;
-        }
+    error = program->LoadExtract(output, elfSize);
+    EXPECT_EQ(error, RT_ERROR_SEC_HANDLE);
 
-        MOCKER(malloc).stubs().will(returnValue((void *)NULL));
-        uint32_t kernelPos = program->kernelPos_;
-        program->kernelPos_ = 1;
-        Runtime *rt = ((Runtime *)Runtime::Instance());
-        TilingTablForDavid *tilingTabForDavid = nullptr;
-        rt->UpdateDevProperties(CHIP_DAVID, "Ascend950PR_9599");
-        error = program->BuildTilingTblForDavid(mdl, &tilingTabForDavid, &kernelLen);
-        EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
-        program->kernelPos_ = kernelPos; 
+    if (NULL != output) {
+        free(output);
+        output = NULL;
+    }
 
-        delete program;
+    MOCKER(malloc).stubs().will(returnValue((void*)NULL));
+    uint32_t kernelPos = program->kernelPos_;
+    program->kernelPos_ = 1;
+    Runtime* rt = ((Runtime*)Runtime::Instance());
+    TilingTablForDavid* tilingTabForDavid = nullptr;
+    rt->UpdateDevProperties(CHIP_DAVID, "Ascend950PR_9599");
+    error = program->BuildTilingTblForDavid(mdl, &tilingTabForDavid, &kernelLen);
+    EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
+    program->kernelPos_ = kernelPos;
+
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_No_Kernel_For_David)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 7186;
-        FILE *bin = NULL;
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/no-kernel.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 7186;
+    FILE* bin = NULL;
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/no-kernel.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        Program* program = new ElfProgram();
-        Module *mdl;
-        TilingTablForDavid *tilingTab = nullptr;
-        uint32_t kernelLen = 0;
-        error = program->BuildTilingTblForDavid(mdl, &tilingTab, &kernelLen);
-        EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
+    Program* program = new ElfProgram();
+    Module* mdl;
+    TilingTablForDavid* tilingTab = nullptr;
+    uint32_t kernelLen = 0;
+    error = program->BuildTilingTblForDavid(mdl, &tilingTab, &kernelLen);
+    EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
 
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-        rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
-        printf("machine244:%d\n",kernelAttrType);
+    rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
+    printf("machine244:%d\n", kernelAttrType);
 
-        char kernelName[] = "_Z15executor_conv2dPDhj";
-        printf("kernelName:%s\n",kernelName);
-        uint32_t length = 0;
-        uint32_t symOff = program->SymbolOffset(kernelName, length);
-        printf("symOff0:%d\n",symOff);
+    char kernelName[] = "_Z15executor_conv2dPDhj";
+    printf("kernelName:%s\n", kernelName);
+    uint32_t length = 0;
+    uint32_t symOff = program->SymbolOffset(kernelName, length);
+    printf("symOff0:%d\n", symOff);
 
-        uint32_t elfSize = program->LoadSize();
-        printf("elfSize:%d\n",elfSize);
+    uint32_t elfSize = program->LoadSize();
+    printf("elfSize:%d\n", elfSize);
 
-        void * output = NULL;
-        output= (void*)malloc(elfSize);
-        memset(output,'\0',elfSize);
+    void* output = NULL;
+    output = (void*)malloc(elfSize);
+    memset(output, '\0', elfSize);
 
-        error = program->LoadExtract(output, elfSize);
-        EXPECT_EQ(error, RT_ERROR_SEC_HANDLE);
+    error = program->LoadExtract(output, elfSize);
+    EXPECT_EQ(error, RT_ERROR_SEC_HANDLE);
 
-        if(NULL != output)
-        {
-            free(output);
-            output = NULL;
-        }
+    if (NULL != output) {
+        free(output);
+        output = NULL;
+    }
 
-        MOCKER(malloc).stubs().will(returnValue((void *)NULL));
-        uint32_t kernelPos = program->kernelPos_;
-        program->kernelPos_ = 1;
-        Runtime *rt = ((Runtime *)Runtime::Instance());
-        TilingTablForDavid *tilingTabForDavid = nullptr;
-        rt->UpdateDevProperties(CHIP_DAVID, "Ascend950PR_9599");
-        error = program->BuildTilingTblForDavid(mdl, &tilingTabForDavid, &kernelLen);
-        EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
-        program->kernelPos_ = kernelPos;
+    MOCKER(malloc).stubs().will(returnValue((void*)NULL));
+    uint32_t kernelPos = program->kernelPos_;
+    program->kernelPos_ = 1;
+    Runtime* rt = ((Runtime*)Runtime::Instance());
+    TilingTablForDavid* tilingTabForDavid = nullptr;
+    rt->UpdateDevProperties(CHIP_DAVID, "Ascend950PR_9599");
+    error = program->BuildTilingTblForDavid(mdl, &tilingTabForDavid, &kernelLen);
+    EXPECT_EQ(error, RT_ERROR_PROGRAM_SIZE);
+    program->kernelPos_ = kernelPos;
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_build_tiling_tbl_For_David)
 {
-        rtError_t error;
-        Device * device = new RawDevice(0);
-        Program* program = new ElfProgram();
-        program->SetIsNewBinaryLoadFlow(false);
-        program->kernelPos_ = 1;
-        Module *mdl = new Module(device);
-        program->KernelTable_ = new (std::nothrow) rtKernelArray_t[1U];
-        int32_t fun1;
-        Kernel * kernel2 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
-        program->KernelTable_->kernel = kernel2;
- 
-        TilingTablForDavid *tilingTabForDavid2 = nullptr;
-        uint32_t kernelLen2 = 0U;
-        error = program->BuildTilingTblForDavid(mdl, &tilingTabForDavid2, &kernelLen2);
-        EXPECT_EQ(kernelLen2, 1);
-        EXPECT_EQ(error, RT_ERROR_NONE);
-        free(tilingTabForDavid2);
- 
-        delete device;
-        delete mdl;
-        delete program;
+    rtError_t error;
+    Device* device = new RawDevice(0);
+    Program* program = new ElfProgram();
+    program->SetIsNewBinaryLoadFlow(false);
+    program->kernelPos_ = 1;
+    Module* mdl = new Module(device);
+    program->KernelTable_ = new (std::nothrow) rtKernelArray_t[1U];
+    int32_t fun1;
+    Kernel* kernel2 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    program->KernelTable_->kernel = kernel2;
+
+    TilingTablForDavid* tilingTabForDavid2 = nullptr;
+    uint32_t kernelLen2 = 0U;
+    error = program->BuildTilingTblForDavid(mdl, &tilingTabForDavid2, &kernelLen2);
+    EXPECT_EQ(kernelLen2, 1);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    free(tilingTabForDavid2);
+
+    delete device;
+    delete mdl;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Destructor_Skip_KernelNameMap_Duplicate)
 {
-    Program *program = new ElfProgram();
+    Program* program = new ElfProgram();
     program->kernelPos_ = 1U;
     program->KernelTable_ = new (std::nothrow) rtKernelArray_t[1U];
     ASSERT_NE(program->KernelTable_, nullptr);
 
-    Kernel *kernel = new Kernel("duplicate_kernel", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
+    Kernel* kernel = new Kernel("duplicate_kernel", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICORE, 10);
     program->KernelTable_[0].kernel = kernel;
     program->KernelTable_[0].TilingKey = 0ULL;
     program->kernelNameMap_["duplicate_kernel"] = kernel;
@@ -362,282 +336,262 @@ TEST_F(ProgramTest, Program_Destructor_Skip_KernelNameMap_Duplicate)
 
 TEST_F(ProgramTest, Program_Process_ELF_Output_Error)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 6144;
-        FILE *bin = NULL;
+    size_t MAX_LENGTH = 6144;
+    FILE* bin = NULL;
 
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        Program* program = new ElfProgram();
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_NONE);
+    Program* program = new ElfProgram();
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
-        rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
-        printf("machine244:%d\n",kernelAttrType);
+    rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
+    printf("machine244:%d\n", kernelAttrType);
 
-        const void * kernelName = "_Z15executor_conv2dPDhj";
-        uint32_t length = 0;
-        uint32_t symOff = program->SymbolOffset(kernelName, length);
-        printf("symOff0:%d\n",symOff);
+    const void* kernelName = "_Z15executor_conv2dPDhj";
+    uint32_t length = 0;
+    uint32_t symOff = program->SymbolOffset(kernelName, length);
+    printf("symOff0:%d\n", symOff);
 
-        uint32_t elfSize = program->LoadSize();
-        printf("elfSize:%d\n",elfSize);
+    uint32_t elfSize = program->LoadSize();
+    printf("elfSize:%d\n", elfSize);
 
-        void * output = NULL;
-        //uint32_t size = 0;
-        //output= (void*)malloc(elfSize);
-        //memset(output,'\0',elfSize);
+    void* output = NULL;
+    // uint32_t size = 0;
+    // output= (void*)malloc(elfSize);
+    // memset(output,'\0',elfSize);
 
-        error = program->LoadExtract(output, elfSize);
-        EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-        if(NULL != output)
-        {
-            free(output);
-            output = NULL;
-        }
+    error = program->LoadExtract(output, elfSize);
+    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    if (NULL != output) {
+        free(output);
+        output = NULL;
+    }
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_Name_Error)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 6144;
-        FILE *bin = NULL;
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 6144;
+    FILE* bin = NULL;
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        Program* program = new ElfProgram();
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_NONE);
+    Program* program = new ElfProgram();
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
-        rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
-        printf("machine244:%d\n",kernelAttrType);
+    rtKernelAttrType kernelAttrType = program->GetDefaultKernelAttrType();
+    printf("machine244:%d\n", kernelAttrType);
 
-        char kernelName[] = "onv";
-        printf("kernelName:%s\n",kernelName);
-        uint32_t length = 0U;
-        uint32_t symOff = program->SymbolOffset(kernelName, length);
-        printf("symOff:%d\n",symOff);
+    char kernelName[] = "onv";
+    printf("kernelName:%s\n", kernelName);
+    uint32_t length = 0U;
+    uint32_t symOff = program->SymbolOffset(kernelName, length);
+    printf("symOff:%d\n", symOff);
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_LoadExtract_Error)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 6144;
-        FILE *bin = NULL;
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 6144;
+    FILE* bin = NULL;
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        Program* program = new ElfProgram();
+    Program* program = new ElfProgram();
 
-        uint32_t elfSize = program->LoadSize();
-        printf("elfSize:%d\n",elfSize);
+    uint32_t elfSize = program->LoadSize();
+    printf("elfSize:%d\n", elfSize);
 
-        void * output = NULL;
-        //uint32_t size = 0;
-        output= (void*)malloc(elfSize);
-        memset(output,'\0',elfSize);
+    void* output = NULL;
+    // uint32_t size = 0;
+    output = (void*)malloc(elfSize);
+    memset(output, '\0', elfSize);
 
-        error = program->LoadExtract(output, elfSize);
-        EXPECT_EQ(error, RT_ERROR_PROGRAM_DATA);
+    error = program->LoadExtract(output, elfSize);
+    EXPECT_EQ(error, RT_ERROR_PROGRAM_DATA);
 
-        if(NULL != output)
-        {
-            free(output);
-            output = NULL;
-        }
+    if (NULL != output) {
+        free(output);
+        output = NULL;
+    }
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_Parser_Error)
 {
-        rtError_t error;
-        rtDevBinary_t binary;
+    rtError_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 6144;
-        FILE *bin = NULL;
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 6144;
+    FILE* bin = NULL;
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        ElfProgram* program = new ElfProgram();
+    ElfProgram* program = new ElfProgram();
 
-        delete program->elfData_;
+    delete program->elfData_;
 
-        program->elfData_=NULL;
+    program->elfData_ = NULL;
 
-        error = program->Register(binary.data, binary.length);
-        EXPECT_EQ(error, RT_ERROR_PROGRAM_DATA);
+    error = program->Register(binary.data, binary.length);
+    EXPECT_EQ(error, RT_ERROR_PROGRAM_DATA);
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_SymbolOffset_Error)
 {
-        uint32_t error;
-        rtDevBinary_t binary;
+    uint32_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 6144;
-        FILE *bin = NULL;
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 6144;
+    FILE* bin = NULL;
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        ElfProgram* program = new ElfProgram();
+    ElfProgram* program = new ElfProgram();
 
-        delete program->elfData_;
+    delete program->elfData_;
 
-        program->elfData_=NULL;
-        char symbol[]="conv";
-        uint32_t length = 0;
-        error = program->SymbolOffset(symbol, length);
-        EXPECT_EQ(error, 0);
+    program->elfData_ = NULL;
+    char symbol[] = "conv";
+    uint32_t length = 0;
+    error = program->SymbolOffset(symbol, length);
+    EXPECT_EQ(error, 0);
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, Program_Process_ELF_LoadSize_Error)
 {
-        uint32_t error;
-        rtDevBinary_t binary;
+    uint32_t error;
+    rtDevBinary_t binary;
 
-        size_t MAX_LENGTH = 6144;
-        FILE *bin = NULL;
-        //bin = fopen("elf.o", "rb");
-        bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-        if (bin == NULL)
-        {
-            printf("error\n");
-            return;
-        }
-        else
-        {
-            printf("succ\n");
-        }
+    size_t MAX_LENGTH = 6144;
+    FILE* bin = NULL;
+    // bin = fopen("elf.o", "rb");
+    bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
+    if (bin == NULL) {
+        printf("error\n");
+        return;
+    } else {
+        printf("succ\n");
+    }
 
-        char bindata[MAX_LENGTH];
-        fread(bindata, sizeof(char), MAX_LENGTH, bin);
+    char bindata[MAX_LENGTH];
+    fread(bindata, sizeof(char), MAX_LENGTH, bin);
 
-        fclose(bin);
+    fclose(bin);
 
-        binary.magic = RT_DEV_BINARY_MAGIC_ELF;
-        binary.version = 0;
-        binary.data = (void*)bindata;
-        binary.length = MAX_LENGTH;
+    binary.magic = RT_DEV_BINARY_MAGIC_ELF;
+    binary.version = 0;
+    binary.data = (void*)bindata;
+    binary.length = MAX_LENGTH;
 
-        ElfProgram* program = new ElfProgram();
+    ElfProgram* program = new ElfProgram();
 
-        delete program->elfData_;
+    delete program->elfData_;
 
-        program->elfData_=NULL;
+    program->elfData_ = NULL;
 
-        error = program->LoadSize();
-        EXPECT_EQ(error, 0);
+    error = program->LoadSize();
+    EXPECT_EQ(error, 0);
 
-        delete program;
+    delete program;
 }
 
 TEST_F(ProgramTest, LOAD_EXTRACT_TEST)
@@ -645,12 +599,11 @@ TEST_F(ProgramTest, LOAD_EXTRACT_TEST)
     size_t MAX_LENGTH = 6144;
     uint32_t error;
     uint32_t size = 100;
-    FILE *bin = NULL;
+    FILE* bin = NULL;
     rtDevBinary_t binary;
-    void *output = (char *)malloc(sizeof(char)*size);
+    void* output = (char*)malloc(sizeof(char) * size);
     bin = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-    if (bin == NULL)
-    {
+    if (bin == NULL) {
         printf("error\n");
         free(output);
         return;
@@ -680,7 +633,8 @@ TEST_F(ProgramTest, MIX_KERNEL_TEST_1)
     uint64_t tilingValue = 0ULL;
 
     ElfProgram* program = new ElfProgram(RT_KERNEL_ATTR_TYPE_AICPU);
-    Kernel *kernelPtr = new (std::nothrow) Kernel("abc", tilingValue, program, RT_KERNEL_ATTR_TYPE_AICORE, 0, 0, NO_MIX);
+    Kernel* kernelPtr =
+        new (std::nothrow) Kernel("abc", tilingValue, program, RT_KERNEL_ATTR_TYPE_AICORE, 0, 0, NO_MIX);
 
     EXPECT_NE(kernelPtr, nullptr);
 
@@ -690,7 +644,7 @@ TEST_F(ProgramTest, MIX_KERNEL_TEST_1)
     error = program->KernelNameMapAdd(kernelPtr);
     EXPECT_EQ(error, RT_ERROR_KERNEL_DUPLICATE);
 
-    const Kernel *getKernel = program->GetKernelByName("abc");
+    const Kernel* getKernel = program->GetKernelByName("abc");
     EXPECT_NE(getKernel, nullptr);
 
     getKernel = program->GetKernelByName("abcd");
@@ -701,20 +655,20 @@ TEST_F(ProgramTest, MIX_KERNEL_TEST_1)
 
 TEST_F(ProgramTest, CPU_KERNEL_REG)
 {
-    Context *const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_NE(curCtx, nullptr);
-    Driver *drv = curCtx->Device_()->Driver_();
+    Driver* drv = curCtx->Device_()->Driver_();
     EXPECT_NE(drv, nullptr);
     MOCKER_CPP_VIRTUAL(drv, &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
     rtStream_t stream;
     rtError_t error = rtStreamCreateWithFlags(&stream, 0, 8);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ElfProgram *program = new ElfProgram();
+    ElfProgram* program = new ElfProgram();
     EXPECT_NE(program, nullptr);
     program->SetKernelRegType(RT_KERNEL_REG_TYPE_CPU);
 
-    std::vector<void *> allocatedMem;
-    void *devMem= nullptr;
+    std::vector<void*> allocatedMem;
+    void* devMem = nullptr;
     allocatedMem.push_back(devMem);
     MOCKER_CPP_VIRTUAL(curCtx, &Context::StreamDestroy).stubs().will(returnValue(RT_ERROR_NONE));
     error = program->FreeCpuSoH2dMem(curCtx->Device_(), allocatedMem);
@@ -788,9 +742,9 @@ TEST_F(ProgramTest, GetKernelTypeAndMixTypeByMetaInfo_MixMain_InvalidKernelName)
 
 TEST_F(ProgramTest, StoreKernelLiteralNameToDevice_NonCpu_ReturnEarly)
 {
-    ElfProgram *program = new ElfProgram();
+    ElfProgram* program = new ElfProgram();
     program->SetKernelRegType(RT_KERNEL_REG_TYPE_NON_CPU);
-    Kernel *kernel = new Kernel("non_cpu_kernel", 0U, program, RT_KERNEL_ATTR_TYPE_AICORE, 0U);
+    Kernel* kernel = new Kernel("non_cpu_kernel", 0U, program, RT_KERNEL_ATTR_TYPE_AICORE, 0U);
     rtError_t ret = program->StoreKernelLiteralNameToDevice(kernel);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     delete kernel;
@@ -799,10 +753,10 @@ TEST_F(ProgramTest, StoreKernelLiteralNameToDevice_NonCpu_ReturnEarly)
 
 TEST_F(ProgramTest, CopySoAndNameToCurrentDevice_StoreKernelLiteralNameFailed)
 {
-    ElfProgram *program = new ElfProgram();
+    ElfProgram* program = new ElfProgram();
     program->SetIsNewBinaryLoadFlow(true);
     program->SetKernelRegType(RT_KERNEL_REG_TYPE_CPU);
-    Kernel *kernel = new Kernel("cpu_kernel", 0U, program, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
+    Kernel* kernel = new Kernel("cpu_kernel", 0U, program, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
     program->kernelNameMap_["cpu_kernel"] = kernel;
 
     MOCKER_CPP(&Program::StoreKernelLiteralNameToDevice).stubs().will(returnValue(ACL_ERROR_RT_DEVICE_MEM_ERROR));

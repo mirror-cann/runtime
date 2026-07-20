@@ -65,7 +65,7 @@
 using namespace testing;
 using namespace cce::runtime;
 static rtChipType_t g_chipType;
-static drvError_t halGetDeviceInfoStub(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t halGetDeviceInfoStub(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -85,7 +85,7 @@ protected:
     static void SetUpTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoStub));
-        char *socVer = "MC32DM11AA";
+        char* socVer = "MC32DM11AA";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("MC32DM11AA")))
@@ -93,7 +93,7 @@ protected:
         MOCKER(halSqTaskSend).stubs().will(returnValue(RT_ERROR_NONE));
         std::cout << "TaskTestV201 SetUP" << std::endl;
         GlobalContainer::SetRtChipType(CHIP_MC32DM11A);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_MC32DM11A);
@@ -105,7 +105,7 @@ protected:
     static void TearDownTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoStub));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
         rtInstance->SetDisableThread(false);
@@ -114,32 +114,26 @@ protected:
         GlobalMockObject::verify();
     }
 
-    virtual void SetUp()
-    {
+    virtual void SetUp() {}
 
-    }
-
-    virtual void TearDown()
-    {
-
-    }
+    virtual void TearDown() {}
 
 public:
-    Device *device_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Engine* engine_ = nullptr;
 };
 
 TEST_F(TaskTestV201L, Test_SetDevice)
 {
     rtError_t error;
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     error = rtSetTSDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(TaskTestV201L, Test_SetSocTypeByChipType)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string oriSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_MC32DM11A);

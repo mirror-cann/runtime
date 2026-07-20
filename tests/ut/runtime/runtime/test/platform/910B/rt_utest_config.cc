@@ -25,23 +25,13 @@
 #undef private
 using namespace testing;
 using namespace cce::runtime;
-class CloudV2ConfigTest : public testing::Test
-{
+class CloudV2ConfigTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"Config test start"<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "Config test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"Config test end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "Config test end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -50,51 +40,51 @@ protected:
     }
 };
 
-static void CreateACorrectIniFile(const char * const filename)
+static void CreateACorrectIniFile(const char* const filename)
 {
     std::ofstream myfile;
     myfile.open(filename);
 
-    myfile<<"[Global Config]\n";
-    myfile<<"IsHeterogenousMode=1\n";
+    myfile << "[Global Config]\n";
+    myfile << "IsHeterogenousMode=1\n";
 
     myfile.close();
 }
 
-static void CreateAWrongIniFile(const char * const filename)
+static void CreateAWrongIniFile(const char* const filename)
 {
     std::ofstream myfile;
     myfile.open(filename);
 
-    myfile<<"111111\n";
-    myfile<<"222222=1\n";
+    myfile << "111111\n";
+    myfile << "222222=1\n";
 
     myfile.close();
 }
 
-static void CreateAInvalidArgIniFile(const char * const filename)
+static void CreateAInvalidArgIniFile(const char* const filename)
 {
     std::ofstream myfile;
     myfile.open(filename);
 
-    myfile<<"[Global Config]\n";
-    myfile<<"IsHeterogenousMode=A\n";
+    myfile << "[Global Config]\n";
+    myfile << "IsHeterogenousMode=A\n";
 
     myfile.close();
 }
 
-static void CreateAOutOfRangeIniFile(const char * const filename)
+static void CreateAOutOfRangeIniFile(const char* const filename)
 {
     std::ofstream myfile;
     myfile.open(filename);
 
-    myfile<<"[Global Config]\n";
-    myfile<<"IsHeterogenousMode=99999999999999999999999999999999999999\n";
+    myfile << "[Global Config]\n";
+    myfile << "IsHeterogenousMode=99999999999999999999999999999999999999\n";
 
     myfile.close();
 }
 
-static void RemoveFile(const char * const filename)
+static void RemoveFile(const char* const filename)
 {
     const std::string cmd = "rm -rf ";
     const std::string myfile = filename;
@@ -103,7 +93,7 @@ static void RemoveFile(const char * const filename)
     system(full_command.c_str());
 }
 
-static void MakeDir(const char * const dirName)
+static void MakeDir(const char* const dirName)
 {
     const std::string cmd = "mkdir -p ";
     const std::string name = dirName;
@@ -116,7 +106,7 @@ TEST_F(CloudV2ConfigTest, test_config_ini_reader)
 {
     const std::string key("IsHeterogenousMode=");
 
-    const char * const file1 = "tmpCorrect.ini";
+    const char* const file1 = "tmpCorrect.ini";
     CreateACorrectIniFile(file1);
     int32_t val = -1;
     const std::string strfile1(file1);
@@ -125,7 +115,7 @@ TEST_F(CloudV2ConfigTest, test_config_ini_reader)
     EXPECT_EQ(val, 1);
     RemoveFile(file1);
 
-    const char * const file2 = "tmpWrong.ini";
+    const char* const file2 = "tmpWrong.ini";
     CreateAWrongIniFile(file2);
     const std::string strfile2(file2);
     val = -1;
@@ -133,7 +123,7 @@ TEST_F(CloudV2ConfigTest, test_config_ini_reader)
     EXPECT_EQ(ret, false);
     RemoveFile(file2);
 
-    const char * const file3 = "tmpInvalidArg.ini";
+    const char* const file3 = "tmpInvalidArg.ini";
     CreateAInvalidArgIniFile(file3);
     const std::string strfile3(file3);
     val = -1;
@@ -141,7 +131,7 @@ TEST_F(CloudV2ConfigTest, test_config_ini_reader)
     EXPECT_EQ(ret, false);
     RemoveFile(file3);
 
-    const char * const file4 = "tmpOutOfRange.ini";
+    const char* const file4 = "tmpOutOfRange.ini";
     CreateAOutOfRangeIniFile(file4);
     const std::string strfile4(file4);
     val = -1;
@@ -168,7 +158,4 @@ TEST_F(CloudV2ConfigTest, test_heterogenous_with_set_env)
     unsetenv("ASCEND_LATEST_INSTALL_PATH");
 }
 
-TEST_F(CloudV2ConfigTest, test_heterogenous_without_set_env)
-{
-    EXPECT_EQ(ReadHeterogenousModeFromConfigIni(), 0);
-}
+TEST_F(CloudV2ConfigTest, test_heterogenous_without_set_env) { EXPECT_EQ(ReadHeterogenousModeFromConfigIni(), 0); }

@@ -19,21 +19,20 @@
 
 using namespace bqs;
 
-
 namespace {
 const std::string SoFileName = "libtest.so";
 
 void Foo0() {}
 void Foo1() {}
-}
+} // namespace
 
 class BqsSoManagerSTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
         const qstest::FuncNamePtrMap funcMap = {
-            {"Foo0", reinterpret_cast<void *>(&Foo0)},
-            {"Foo1", reinterpret_cast<void *>(&Foo1)},
+            {"Foo0", reinterpret_cast<void*>(&Foo0)},
+            {"Foo1", reinterpret_cast<void*>(&Foo1)},
         };
 
         qstest::DlopenStub::GetInstance().RegDlopenFuncPtr(SoFileName, funcMap);
@@ -75,7 +74,7 @@ TEST_F(BqsSoManagerSTest, GetFuncFromNull)
 TEST_F(BqsSoManagerSTest, DlopenFail)
 {
     GlobalMockObject::verify();
-    MOCKER(dlopen).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlopen).stubs().will(returnValue(static_cast<void*>(nullptr)));
     const std::vector<std::string> funcNames = {"Foo0"};
     SoManager manager(SoFileName, funcNames);
     EXPECT_EQ(manager.soHandle_, nullptr);
@@ -84,7 +83,7 @@ TEST_F(BqsSoManagerSTest, DlopenFail)
 TEST_F(BqsSoManagerSTest, DlsymFail)
 {
     GlobalMockObject::verify();
-    MOCKER(dlsym).stubs().will(returnValue(static_cast<void *>(nullptr)));
+    MOCKER(dlsym).stubs().will(returnValue(static_cast<void*>(nullptr)));
     MOCKER(dlclose).stubs().will(returnValue(0));
     MOCKER_DLFCN();
     const std::vector<std::string> funcNames = {"Foo1"};

@@ -21,7 +21,7 @@
 
 using namespace std;
 
-class SUBSCRIBE_MANAGER_UTest :public testing::Test {
+class SUBSCRIBE_MANAGER_UTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -40,18 +40,14 @@ protected:
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, SubscribeSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, SubscribeRepeatSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.Subscribe(0);
@@ -60,54 +56,37 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, SubscribeRepeatSuccess)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, SubscribeFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(200));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ReSubscribeSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED))
-    .then(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED)).then(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ReSubscribehalQueueUnsubscribeFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED))
-    .then(returnValue(0));
-     MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED)).then(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(200));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ReSubscribehalQueueSubscribeFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED))
-    .then(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED)).then(returnValue(200));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.Unsubscribe(0);
@@ -122,12 +101,8 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, NoneedUnsubscribeSuccess)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(200));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.Unsubscribe(0);
@@ -136,21 +111,15 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFailed)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeAlreadyPauseSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.Unsubscribe(0);
@@ -159,63 +128,44 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeAlreadyPauseSuccess)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, SubscribeFullToNotFullSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, SubscribeFullToNotFullFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(200));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ReSubscribeFullToNotFullSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED))
-    .then(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED)).then(returnValue(0));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ReSubscribeFullToNotFullhalQueueUnsubF2NFEventFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED))
-    .then(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED)).then(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(200));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ReSubscribeFullToNotFullhalQueueSubF2NFEventFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED))
-    .then(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue((int)DRV_ERROR_QUEUE_RE_SUBSCRIBED)).then(returnValue(200));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFullToNotFullSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.UnsubscribeFullToNotFull(1);
@@ -230,12 +180,8 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, NoneedUnsubscribeFullToNotFullSuccess)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFullToNotFullFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(200));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.UnsubscribeFullToNotFull(1);
@@ -244,39 +190,29 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFullToNotFullFailed)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, PauseSubscribeSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, PauseAndUpdateSubscribeSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
@@ -306,9 +242,7 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, NoneedPauseSubscribeSuccess1)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, NoneedPauseSubscribeSuccess2)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
@@ -318,21 +252,15 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, NoneedPauseSubscribeSuccess2)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, PauseSubscribeRepeatedSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.PauseSubscribe(0, 1, true);
@@ -341,42 +269,30 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, PauseSubscribeRepeatedSuccess)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, PauseSubscribeFailed)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(200));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(200));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ResumeSubscribeSuccess)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     ret = instance.ResumeSubscribe(0, 1);
@@ -385,9 +301,7 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, ResumeSubscribeSuccess)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ResumeSubscribeRepeatedSuccess)
 {
-    MOCKER(halQueueSubEvent)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
@@ -407,47 +321,37 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, ResumeSubscribeFailed1)
     EXPECT_EQ(instance.Subscribe(0), bqs::BQS_STATUS_OK);
     EXPECT_EQ(instance.PauseSubscribe(0, 1, true), bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueSubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
     EXPECT_EQ(instance.ResumeSubscribe(0, 1), bqs::BQS_STATUS_DRIVER_ERROR);
 }
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, ResumeSubscribeSuccess2)
 {
     MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0))
-    .then(returnValue(0))
-    .then(returnValue(0))
-    .then(returnValue(0))
-    .then(returnValue(200));
+        .stubs()
+        .will(returnValue(0))
+        .then(returnValue(0))
+        .then(returnValue(0))
+        .then(returnValue(0))
+        .then(returnValue(200));
     bqs::BqsStatus ret = instance.Subscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
     ret = instance.SubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(0));
     ret = instance.PauseSubscribe(0, 1, true);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
-
 
     ret = instance.ResumeSubscribe(0, 1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
 }
 
-
 TEST_F(SUBSCRIBE_MANAGER_UTest, Unsubscribefail_01)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(100));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(100));
     bqs::BqsStatus ret = instance.Subscribe(0);
     ret = instance.Unsubscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
@@ -455,12 +359,8 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, Unsubscribefail_01)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, Unsubscribefail_02)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(11));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(11));
     bqs::BqsStatus ret = instance.Subscribe(0);
     ret = instance.Unsubscribe(0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -468,12 +368,8 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, Unsubscribefail_02)
 
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFullToNotFullFail_01)
 {
-    MOCKER(halQueueSubEvent)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halQueueUnsubEvent)
-    .stubs()
-    .will(returnValue(100));
+    MOCKER(halQueueSubEvent).stubs().will(returnValue(0));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(100));
     bqs::BqsStatus ret = instance.SubscribeFullToNotFull(1);
     ret = instance.UnsubscribeFullToNotFull(1);
     EXPECT_EQ(ret, bqs::BQS_STATUS_DRIVER_ERROR);
@@ -524,9 +420,7 @@ TEST_F(SUBSCRIBE_MANAGER_UTest, UpdateSubscribeFullToNotFull_Fail)
 TEST_F(SUBSCRIBE_MANAGER_UTest, UnsubscribeFullToNotFull_Success)
 {
     EXPECT_EQ(instance.SubscribeFullToNotFull(1), bqs::BQS_STATUS_OK);
-    MOCKER(halQueueUnsubEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NOT_EXIST));
+    MOCKER(halQueueUnsubEvent).stubs().will(returnValue(DRV_ERROR_NOT_EXIST));
 
     EXPECT_EQ(instance.UnsubscribeFullToNotFull(1), bqs::BQS_STATUS_OK);
 }

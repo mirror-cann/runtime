@@ -27,18 +27,11 @@ using namespace cce::runtime;
 
 class XpuApiImplTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
-    }
+    virtual void SetUp() { cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage(); }
 
     virtual void TearDown()
     {

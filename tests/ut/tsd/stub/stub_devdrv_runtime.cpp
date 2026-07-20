@@ -16,24 +16,21 @@
 
 static const int32_t PHYSICAL_ID = 15;
 
-pid_t drvDeviceGetBareTgid(void)
-{
-    return getpid();
-}
+pid_t drvDeviceGetBareTgid(void) { return getpid(); }
 
-drvError_t drvDeviceGetIndexByPhyId(uint32_t phyId, uint32_t *devIndex)
+drvError_t drvDeviceGetIndexByPhyId(uint32_t phyId, uint32_t* devIndex)
 {
     *devIndex = phyId;
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvDeviceGetPhyIdByIndex(uint32_t devIndex, uint32_t *phyId)
+drvError_t drvDeviceGetPhyIdByIndex(uint32_t devIndex, uint32_t* phyId)
 {
     *phyId = PHYSICAL_ID;
     return DRV_ERROR_NONE;
 }
 
-drvError_t drvGetProcessSign(struct process_sign *sign)
+drvError_t drvGetProcessSign(struct process_sign* sign)
 {
     sign->tgid = getpid();
     sign->sign[0] = 'a';
@@ -41,26 +38,20 @@ drvError_t drvGetProcessSign(struct process_sign *sign)
     sign->resv[0] = '\0';
     return DRV_ERROR_NONE;
 }
-drvError_t drvGetPlatformInfo(uint32_t *info)
+drvError_t drvGetPlatformInfo(uint32_t* info)
 {
-    char *is_start = getenv("RUN_MODE");
+    char* is_start = getenv("RUN_MODE");
     if (is_start != nullptr && strcmp("THREAD", is_start) == 0) {
         *info = 0; // OFFLINE
     } else {
-        *info = 1; //ONLINE
+        *info = 1; // ONLINE
     }
     return DRV_ERROR_NONE;
 }
-int InitAICPUScheduler(const uint32_t a, const pid_t b, const uint32_t c)
-{
-    return 0;
-}
-int StopAICPUScheduler(const uint32_t a, const pid_t b)
-{
-    return 0;
-}
+int InitAICPUScheduler(const uint32_t a, const pid_t b, const uint32_t c) { return 0; }
+int StopAICPUScheduler(const uint32_t a, const pid_t b) { return 0; }
 
-rtError_t rtGetDeviceIndexByPhyId(uint32_t phyId, uint32_t *devIndex)
+rtError_t rtGetDeviceIndexByPhyId(uint32_t phyId, uint32_t* devIndex)
 {
     *devIndex = phyId;
     return RT_ERROR_NONE;

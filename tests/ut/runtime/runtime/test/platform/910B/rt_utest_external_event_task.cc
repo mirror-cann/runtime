@@ -37,7 +37,7 @@ using namespace testing;
 using namespace cce::runtime;
 
 namespace {
-void EnableSoftwareRecord(Event *event, uint8_t *recordValue, int32_t eventId)
+void EnableSoftwareRecord(Event* event, uint8_t* recordValue, int32_t eventId)
 {
     ASSERT_EQ(event->TrySwitchToSoftwareMode(), RT_ERROR_NONE);
     event->SetEventAddr(recordValue);
@@ -46,14 +46,14 @@ void EnableSoftwareRecord(Event *event, uint8_t *recordValue, int32_t eventId)
     event->SetHasReset(false);
 }
 
-CaptureModel *UnwrapCaptureModel(rtModel_t modelHandle)
+CaptureModel* UnwrapCaptureModel(rtModel_t modelHandle)
 {
-    Model *modelBase = rt_ut::UnwrapOrNull<Model>(modelHandle);
-    return dynamic_cast<CaptureModel *>(modelBase);
+    Model* modelBase = rt_ut::UnwrapOrNull<Model>(modelHandle);
+    return dynamic_cast<CaptureModel*>(modelBase);
 }
 
 void CreateRecordedSoftwareEvent(
-    rtStream_t &stream, rtEvent_t &event, Stream *&streamObj, Event *&eventObj, uint8_t &recordValue,
+    rtStream_t& stream, rtEvent_t& event, Stream*& streamObj, Event*& eventObj, uint8_t& recordValue,
     const int32_t eventId)
 {
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
@@ -72,8 +72,8 @@ protected:
     {
         GlobalMockObject::verify();
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         ASSERT_EQ(rtSetDevice(0), RT_ERROR_NONE);
     }
 
@@ -81,9 +81,9 @@ protected:
     {
         GlobalMockObject::verify();
         rtDeviceReset(0);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 };
 
@@ -98,20 +98,19 @@ TEST_F(ExternalEventTaskTest910B, ExternalWaitPlaceholderMaterializesMemWaitReso
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamGetCaptureInfo(stream, nullptr, &captureMdlHandle), RT_ERROR_NONE);
 
-    Model *modelBase = rt_ut::UnwrapOrNull<Model>(captureMdlHandle);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Model* modelBase = rt_ut::UnwrapOrNull<Model>(captureMdlHandle);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     ASSERT_NE(modelBase, nullptr);
     ASSERT_NE(streamObj, nullptr);
-    auto *model = dynamic_cast<CaptureModel *>(modelBase);
+    auto* model = dynamic_cast<CaptureModel*>(modelBase);
     ASSERT_NE(model, nullptr);
-    Stream *captureStream = streamObj->GetCaptureStream();
+    Stream* captureStream = streamObj->GetCaptureStream();
     ASSERT_NE(captureStream, nullptr);
 
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL),
-        RT_ERROR_NONE);
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, event, 0U, RT_EVENT_WAIT_EXTERNAL), RT_ERROR_NONE);
     ASSERT_EQ(model->externalWaitEventItems_.size(), 1U);
-    TaskInfo *waitTask = captureStream->Device_()->GetTaskFactory()->GetTask(captureStream->Id_(),
-        static_cast<uint16_t>(model->externalWaitEventItems_[0].taskId));
+    TaskInfo* waitTask = captureStream->Device_()->GetTaskFactory()->GetTask(
+        captureStream->Id_(), static_cast<uint16_t>(model->externalWaitEventItems_[0].taskId));
     ASSERT_NE(waitTask, nullptr);
     EXPECT_EQ(GetSendSqeNum(waitTask), MEM_WAIT_SQE_NUM);
     EXPECT_EQ(waitTask->u.memWaitValueTask.profDisableStatusAddr, 0U);
@@ -138,8 +137,8 @@ TEST_F(ExternalEventTaskTest910B, ExternalRecordLaunchCommitPublishesSoftwareRes
     ASSERT_EQ(rtEventRecordWithFlag(event, stream, RT_EVENT_RECORD_EXTERNAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamEndCapture(stream, &modelHandle), RT_ERROR_NONE);
 
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
-    CaptureModel *model = UnwrapCaptureModel(modelHandle);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    CaptureModel* model = UnwrapCaptureModel(modelHandle);
     ASSERT_NE(eventObj, nullptr);
     ASSERT_NE(model, nullptr);
     ExternalEventRefreshInfo launch;
@@ -172,17 +171,15 @@ TEST_F(ExternalEventTaskTest910B, ExternalWaitLaunchRetainsRecordedProducerOnly)
     EnableSoftwareRecord(rt_ut::UnwrapOrNull<Event>(resetEvent), &recordValue, 8);
     rt_ut::UnwrapOrNull<Event>(resetEvent)->SetHasReset(true);
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, recordedEvent, 0U, RT_EVENT_WAIT_EXTERNAL),
-        RT_ERROR_NONE);
-    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, resetEvent, 0U, RT_EVENT_WAIT_EXTERNAL),
-        RT_ERROR_NONE);
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, recordedEvent, 0U, RT_EVENT_WAIT_EXTERNAL), RT_ERROR_NONE);
+    ASSERT_EQ(rtStreamWaitEventWithFlag(stream, resetEvent, 0U, RT_EVENT_WAIT_EXTERNAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamEndCapture(stream, &modelHandle), RT_ERROR_NONE);
 
-    CaptureModel *model = UnwrapCaptureModel(modelHandle);
+    CaptureModel* model = UnwrapCaptureModel(modelHandle);
     ASSERT_NE(model, nullptr);
     ExternalEventRefreshInfo launch;
     ASSERT_EQ(model->PrepareExternalEventRefreshInfo(&launch), RT_ERROR_NONE);
-    auto *waitEntries = RtPtrToPtr<uint64_t *>(launch.hostRefresh.get() + model->externalEventSummaryInfo_.waitOffset);
+    auto* waitEntries = RtPtrToPtr<uint64_t*>(launch.hostRefresh.get() + model->externalEventSummaryInfo_.waitOffset);
     EXPECT_EQ(waitEntries[0], RtPtrToValue(&recordValue));
     EXPECT_EQ(waitEntries[1], 0U);
     EXPECT_EQ(launch.retainedWaitResources.size(), 1U);
@@ -200,15 +197,15 @@ TEST_F(ExternalEventTaskTest910B, NormalRecordSoftwareEventUsesMemWriteValueTask
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DEFAULT), RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(streamObj, nullptr);
     ASSERT_NE(eventObj, nullptr);
     ASSERT_EQ(eventObj->TrySwitchToSoftwareMode(), RT_ERROR_NONE);
 
     ASSERT_EQ(rtEventRecord(event, stream), RT_ERROR_NONE);
-    TaskInfo *recordTask = streamObj->Device_()->GetTaskFactory()->GetTask(streamObj->Id_(),
-        static_cast<uint16_t>(streamObj->GetLastTaskId()));
+    TaskInfo* recordTask = streamObj->Device_()->GetTaskFactory()->GetTask(
+        streamObj->Id_(), static_cast<uint16_t>(streamObj->GetLastTaskId()));
     ASSERT_NE(recordTask, nullptr);
     EXPECT_EQ(recordTask->type, TS_TASK_TYPE_MEM_WRITE_VALUE);
     ASSERT_NE(eventObj->GetEventAddr(), nullptr);
@@ -227,15 +224,15 @@ TEST_F(ExternalEventTaskTest910B, NormalWaitSoftwareEventUsesMemWaitValueTask)
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
 
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(streamObj, nullptr);
     ASSERT_NE(eventObj, nullptr);
     EnableSoftwareRecord(eventObj, &recordValue, 7);
 
     ASSERT_EQ(rtStreamWaitEvent(stream, event), RT_ERROR_NONE);
-    TaskInfo *waitTask = streamObj->Device_()->GetTaskFactory()->GetTask(streamObj->Id_(),
-        static_cast<uint16_t>(streamObj->GetLastTaskId()));
+    TaskInfo* waitTask = streamObj->Device_()->GetTaskFactory()->GetTask(
+        streamObj->Id_(), static_cast<uint16_t>(streamObj->GetLastTaskId()));
     ASSERT_NE(waitTask, nullptr);
     EXPECT_EQ(waitTask->type, TS_TASK_TYPE_MEM_WAIT_VALUE);
     EXPECT_EQ(waitTask->u.memWaitValueTask.devAddr, RtPtrToValue(eventObj->GetEventAddr()));
@@ -254,7 +251,7 @@ TEST_F(ExternalEventTaskTest910B, ExternalWaitCompleteClearsRetainedEventIdBefor
     Event event(nullptr, 0, nullptr);
     constexpr int32_t retainedEventId = 65537;
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     ASSERT_NE(streamObj, nullptr);
 
     event.device_ = streamObj->Device_();
@@ -278,13 +275,13 @@ TEST_F(ExternalEventTaskTest910B, NormalResetSoftwareEventUsesMemWriteValueTask)
     rtStream_t stream = nullptr;
     rtEvent_t event = nullptr;
     uint8_t recordValue = 1U;
-    Stream *streamObj = nullptr;
-    Event *eventObj = nullptr;
+    Stream* streamObj = nullptr;
+    Event* eventObj = nullptr;
     ASSERT_NO_FATAL_FAILURE(CreateRecordedSoftwareEvent(stream, event, streamObj, eventObj, recordValue, 7));
 
     ASSERT_EQ(rtEventReset(event, stream), RT_ERROR_NONE);
-    TaskInfo *resetTask = streamObj->Device_()->GetTaskFactory()->GetTask(streamObj->Id_(),
-        static_cast<uint16_t>(streamObj->GetLastTaskId()));
+    TaskInfo* resetTask = streamObj->Device_()->GetTaskFactory()->GetTask(
+        streamObj->Id_(), static_cast<uint16_t>(streamObj->GetLastTaskId()));
     ASSERT_NE(resetTask, nullptr);
     EXPECT_EQ(resetTask->type, TS_TASK_TYPE_MEM_WRITE_VALUE);
     EXPECT_EQ(resetTask->u.memWriteValueTask.value, 0U);
@@ -304,7 +301,7 @@ TEST_F(ExternalEventTaskTest910B, NormalWaitSoftwareEventWithoutProducerRejects)
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
 
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(eventObj, nullptr);
     ASSERT_EQ(eventObj->TrySwitchToSoftwareMode(), RT_ERROR_NONE);
 
@@ -321,7 +318,7 @@ TEST_F(ExternalEventTaskTest910B, PublishSoftwareRecordResourceLifetime)
     uint8_t newRecordValue = 1U;
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DEFAULT), RT_ERROR_NONE);
 
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(eventObj, nullptr);
     EnableSoftwareRecord(eventObj, &oldRecordValue, 7);
     eventObj->EventIdCountAdd(7);
@@ -345,12 +342,10 @@ TEST_F(ExternalEventTaskTest910B, PublishSoftwareRecordResourceFreesStaleEvent)
     uint8_t oldRecordValue = 1U;
     uint8_t newRecordValue = 1U;
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DEFAULT), RT_ERROR_NONE);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(eventObj, nullptr);
     EnableSoftwareRecord(eventObj, &oldRecordValue, 7);
-    MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::FreeExpandingPoolEvent)
-        .stubs()
-        .will(ignoreReturnValue());
+    MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::FreeExpandingPoolEvent).stubs().will(ignoreReturnValue());
 
     eventObj->PublishSoftwareRecordResource(&newRecordValue, 8);
 
@@ -365,7 +360,7 @@ TEST_F(ExternalEventTaskTest910B, EventIdCountSubFreesCurrentHardwareId)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DEFAULT), RT_ERROR_NONE);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(eventObj, nullptr);
     eventObj->SetEventId(9);
     eventObj->isHardwareMode_ = true;
@@ -373,9 +368,7 @@ TEST_F(ExternalEventTaskTest910B, EventIdCountSubFreesCurrentHardwareId)
     eventObj->isIdAllocFromDrv_ = true;
     eventObj->idMap_[9] = 0U;
     MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::IsSupportEventPool).stubs().will(returnValue(false));
-    MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::FreeEventIdFromDrv)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::FreeEventIdFromDrv).stubs().will(returnValue(RT_ERROR_NONE));
 
     eventObj->EventIdCountSub(9, true);
 
@@ -387,14 +380,12 @@ TEST_F(ExternalEventTaskTest910B, EventBusyAndFreeBranchesUseIdMap)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DEFAULT), RT_ERROR_NONE);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(eventObj, nullptr);
     eventObj->SetEventId(11);
     eventObj->isIdAllocFromDrv_ = true;
     eventObj->idMap_[11] = 0U;
-    MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::FreeEventIdFromDrv)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(eventObj->Device_(), &Device::FreeEventIdFromDrv).stubs().will(returnValue(RT_ERROR_NONE));
 
     EXPECT_TRUE(eventObj->HasPendingBusyWork());
     EXPECT_FALSE(eventObj->TryFreeEventIdAndCheckCanBeDelete(11, false));
@@ -408,7 +399,7 @@ TEST_F(ExternalEventTaskTest910B, SoftwareEventWaitFirstReturnsSuccess)
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(eventObj, nullptr);
     eventObj->SoftwareModeEnable();
     eventObj->isNewMode_ = true;
@@ -424,8 +415,8 @@ TEST_F(ExternalEventTaskTest910B, SoftwareEventWaitSubmitFailureRecyclesTask)
     rtStream_t stream = nullptr;
     rtEvent_t event = nullptr;
     uint8_t recordValue = 1U;
-    Stream *streamObj = nullptr;
-    Event *eventObj = nullptr;
+    Stream* streamObj = nullptr;
+    Event* eventObj = nullptr;
     ASSERT_NO_FATAL_FAILURE(CreateRecordedSoftwareEvent(stream, event, streamObj, eventObj, recordValue, 7));
     MOCKER_CPP_VIRTUAL(streamObj->Device_(), &Device::SubmitTask).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
@@ -441,7 +432,7 @@ TEST_F(ExternalEventTaskTest910B, NotifyWaitTakesExternalWaitRetainedOwner)
 {
     rtStream_t stream = nullptr;
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     ASSERT_NE(streamObj, nullptr);
     Notify notify(0, 0U);
     notify.notifyid_ = 0U;
@@ -465,7 +456,7 @@ TEST_F(ExternalEventTaskTest910B, ExternalRecordRefreshSlotUsesStarsWriteValuePt
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamGetCaptureInfo(stream, nullptr, &captureMdlHandle), RT_ERROR_NONE);
-    CaptureModel *model = UnwrapCaptureModel(captureMdlHandle);
+    CaptureModel* model = UnwrapCaptureModel(captureMdlHandle);
     ASSERT_NE(model, nullptr);
 
     EXPECT_EQ(model->FillExternalRecordRefreshSlot(nullptr, eventAddr), RT_ERROR_INVALID_VALUE);
@@ -490,17 +481,20 @@ TEST_F(ExternalEventTaskTest910B, ExternalRefreshRejectsInvalidLaunchInputs)
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamGetCaptureInfo(stream, nullptr, &captureMdlHandle), RT_ERROR_NONE);
-    CaptureModel *model = UnwrapCaptureModel(captureMdlHandle);
+    CaptureModel* model = UnwrapCaptureModel(captureMdlHandle);
     ASSERT_NE(model, nullptr);
     ExternalEventRefreshInfo launch;
     uint8_t deviceTable = 0U;
     model->externalEventSummaryInfo_.totalSize = sizeof(deviceTable);
 
     EXPECT_EQ(model->SubmitExternalEventRefreshInfo(nullptr, &launch), RT_ERROR_STREAM_NULL);
-    EXPECT_EQ(model->SubmitExternalEventRefreshInfo(rt_ut::UnwrapOrNull<Stream>(stream), nullptr), RT_ERROR_INVALID_VALUE);
-    EXPECT_EQ(model->SubmitExternalEventRefreshInfo(rt_ut::UnwrapOrNull<Stream>(stream), &launch), RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(
+        model->SubmitExternalEventRefreshInfo(rt_ut::UnwrapOrNull<Stream>(stream), nullptr), RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(
+        model->SubmitExternalEventRefreshInfo(rt_ut::UnwrapOrNull<Stream>(stream), &launch), RT_ERROR_INVALID_VALUE);
     model->externalEventRefreshDeviceBase_ = &deviceTable;
-    EXPECT_EQ(model->SubmitExternalEventRefreshInfo(rt_ut::UnwrapOrNull<Stream>(stream), &launch), RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(
+        model->SubmitExternalEventRefreshInfo(rt_ut::UnwrapOrNull<Stream>(stream), &launch), RT_ERROR_INVALID_VALUE);
 
     launch.hostRefresh.reset(new uint8_t[sizeof(deviceTable)](), std::default_delete<uint8_t[]>());
     MOCKER(MemcopyAsync).stubs().will(returnValue(RT_ERROR_NONE));
@@ -513,7 +507,7 @@ TEST_F(ExternalEventTaskTest910B, ExternalRefreshRejectsInvalidLaunchInputs)
 
 TEST_F(ExternalEventTaskTest910B, ExternalEventSummaryInfoAllocationFailureResetsState)
 {
-    auto *model = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    auto* model = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     ASSERT_NE(model, nullptr);
     model->context_ = Runtime::Instance()->CurrentContext();
     ASSERT_NE(model->context_, nullptr);
@@ -539,8 +533,8 @@ TEST_F(ExternalEventTaskTest910B, ExternalLaunchRollbackAndPrepareRejectInvalidE
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamGetCaptureInfo(stream, nullptr, &captureMdlHandle), RT_ERROR_NONE);
-    CaptureModel *model = UnwrapCaptureModel(captureMdlHandle);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    CaptureModel* model = UnwrapCaptureModel(captureMdlHandle);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     ASSERT_NE(model, nullptr);
     ASSERT_NE(eventObj, nullptr);
     ExternalEventRefreshInfo launch;
@@ -574,8 +568,8 @@ TEST_F(ExternalEventTaskTest910B, ExternalTaskSqeBuildRejectsInvalidAndSkipsNull
     ASSERT_EQ(rtStreamCreate(&stream, 0), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL), RT_ERROR_NONE);
     ASSERT_EQ(rtStreamGetCaptureInfo(stream, nullptr, &captureMdlHandle), RT_ERROR_NONE);
-    CaptureModel *model = UnwrapCaptureModel(captureMdlHandle);
-    Stream *streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
+    CaptureModel* model = UnwrapCaptureModel(captureMdlHandle);
+    Stream* streamObj = rt_ut::UnwrapOrNull<Stream>(stream);
     ASSERT_NE(model, nullptr);
     ASSERT_NE(streamObj, nullptr);
 
@@ -593,7 +587,7 @@ TEST_F(ExternalEventTaskTest910B, ExternalTaskSqeBuildRejectsInvalidAndSkipsNull
     uint8_t sqeBuffer[sizeof(rtStarsSqe_t) * MEM_WAIT_SQE_NUM] = {};
     uint8_t funcCallMem[sizeof(RtStarsExternalWaitFuncCall)] = {};
     uint32_t oldSqeBufferSize = streamObj->sqeBufferSize_;
-    uint8_t *oldSqeBuffer = streamObj->sqeBuffer_;
+    uint8_t* oldSqeBuffer = streamObj->sqeBuffer_;
     ASSERT_EQ(CaptureWaitExternalTaskInit(&taskInfo, &sqeBuffer[0]), RT_ERROR_NONE);
     taskInfo.u.memWaitValueTask.funcCallSvmMem2 = funcCallMem;
     taskInfo.u.memWaitValueTask.funCallMemSize2 = sizeof(funcCallMem);
@@ -616,14 +610,16 @@ TEST_F(ExternalEventTaskTest910B, ExternalTaskSqeBuildRejectsInvalidAndSkipsNull
 
 TEST_F(ExternalEventTaskTest910B, ExternalPlaceholderBuildFailuresReleaseRefreshTable)
 {
-    auto *model = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    auto* model = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     ASSERT_NE(model, nullptr);
     uint8_t deviceTable = 0U;
     model->context_ = Runtime::Instance()->CurrentContext();
     model->externalEventRefreshDeviceBase_ = &deviceTable;
     model->externalEventSummaryInfo_.totalSize = sizeof(deviceTable);
     model->externalRecordEventItems_.push_back({nullptr, 0U, 0U});
-    MOCKER_CPP_VIRTUAL(model->context_->Device_()->Driver_(), &Driver::DevMemFree).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(model->context_->Device_()->Driver_(), &Driver::DevMemFree)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER(CaptureRecordExternalTaskInit).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     EXPECT_EQ(model->BuildExternalRecordPlaceholders(), RT_ERROR_INVALID_VALUE);

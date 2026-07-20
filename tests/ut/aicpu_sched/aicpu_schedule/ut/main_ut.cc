@@ -11,10 +11,10 @@
 #include <gtest/gtest.h>
 #include "aicpusd_lastword.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     AicpuSchedule::AicpusdLastword::GetInstance();
-    testing::InitGoogleTest(&argc,argv);
+    testing::InitGoogleTest(&argc, argv);
     int ret = RUN_ALL_TESTS();
 
     return ret;

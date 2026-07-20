@@ -31,14 +31,11 @@ static const int deviceId = 0;
 struct StubDeviceComm : public DeviceComm {
     explicit StubDeviceComm(uint32_t devId) : DeviceComm(devId, DeviceCommType::HDC) {}
 };
-}
+} // namespace
 
 class CapabilityManagerTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before CapabilityManagerTest" << endl;
-    }
+    virtual void SetUp() { cout << "Before CapabilityManagerTest" << endl; }
     virtual void TearDown()
     {
         cout << "After CapabilityManagerTest" << endl;

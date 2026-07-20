@@ -13,76 +13,42 @@
 #include <string>
 
 namespace aicpu {
-status_t SetOpname(const std::string &opname)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetOpname(const std::string& opname) { return AICPU_ERROR_NONE; }
 
-status_t SetThreadLocalCtx(const std::string &key, const std::string &value)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetThreadLocalCtx(const std::string& key, const std::string& value) { return AICPU_ERROR_NONE; }
 
-status_t GetThreadLocalCtx(const std::string &key, const std::string &value)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t GetThreadLocalCtx(const std::string& key, const std::string& value) { return AICPU_ERROR_NONE; }
 
-uint32_t GetAicpuThreadIndex()
-{
-    return 0U;
-}
+uint32_t GetAicpuThreadIndex() { return 0U; }
 
-status_t GetOpname(uint32_t threadIndex, std::string &opname)
+status_t GetOpname(uint32_t threadIndex, std::string& opname)
 {
     opname = "test";
     return AICPU_ERROR_NONE;
 }
 
-status_t GetAicpuRunMode(uint32_t &runMode)
+status_t GetAicpuRunMode(uint32_t& runMode)
 {
     runMode = aicpu::PROCESS_PCIE_MODE;
     return AICPU_ERROR_NONE;
 }
 
-uint32_t GetUniqueVfId()
-{
-    return 0U;
-}
+uint32_t GetUniqueVfId() { return 0U; }
 
-void SetUniqueVfId(uint32_t uniqueVfId)
-{
-}
+void SetUniqueVfId(uint32_t uniqueVfId) {}
 
-void SetCustAicpuSdFlag(bool isCustAicpuSdFlag)
-{
-}
+void SetCustAicpuSdFlag(bool isCustAicpuSdFlag) {}
 
-bool IsCustAicpuSd()
-{
-    return false;
-}
+bool IsCustAicpuSd() { return false; }
 class AicpuContextStubUTest : public testing::Test {
 protected:
-static void SetUpTestCase()
-{
-    std::cout << "AicpuContextStubUTest SetUpTestCase" << std::endl;
-}
+    static void SetUpTestCase() { std::cout << "AicpuContextStubUTest SetUpTestCase" << std::endl; }
 
-static void TearDownTestCase()
-{
-    std::cout << "AicpuContextStubUTest TearDownTestCase" << std::endl;
-}
+    static void TearDownTestCase() { std::cout << "AicpuContextStubUTest TearDownTestCase" << std::endl; }
 
-virtual void SetUp()
-{
-    std::cout << "AicpuContextStubUTest SetUp" << std::endl;
-}
+    virtual void SetUp() { std::cout << "AicpuContextStubUTest SetUp" << std::endl; }
 
-virtual void TearDown()
-{
-    std::cout << "AicpuContextStubUTest TearDown" << std::endl;
-}
+    virtual void TearDown() { std::cout << "AicpuContextStubUTest TearDown" << std::endl; }
 };
 
 TEST_F(AicpuContextStubUTest, AicpuGetContextTest)
@@ -91,4 +57,4 @@ TEST_F(AicpuContextStubUTest, AicpuGetContextTest)
     status_t status = aicpuGetContext(&ctx);
     EXPECT_EQ(status, AICPU_ERROR_NONE);
 }
-}
+} // namespace aicpu

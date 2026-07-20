@@ -18,11 +18,9 @@
 
 class AiCPUInterfaceStubSt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(AiCPUInterfaceStubSt, AiCPUInterfaceStubStSuccess)
@@ -64,11 +62,10 @@ TEST_F(AiCPUInterfaceStubSt, AiCPUInterfaceStubStSuccess)
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(AiCPUInterfaceStubSt, RegLastwordCallbackTest) {
+TEST_F(AiCPUInterfaceStubSt, RegLastwordCallbackTest)
+{
     uint64_t times = 0;
-    auto TestLastword = [&times]() {
-        times++;
-    };
+    auto TestLastword = [&times]() { times++; };
     std::function<void()> cancelReg = nullptr;
     RegLastwordCallback("test", TestLastword, cancelReg);
     if (cancelReg != nullptr) {

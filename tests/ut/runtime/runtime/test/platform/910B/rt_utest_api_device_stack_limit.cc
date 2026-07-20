@@ -307,7 +307,8 @@ TEST_F(DeviceLimitTest, GetLimit_WithoutSetDevice_ReturnsScalar)
 // ==================== Value Range Boundary Tests ====================
 
 // Scenario: STACK_SIZE input UINT32_MAX, validate alignment overflow behavior
-// Expected: SetDeviceCustomerStackSize alignment overflow wraps around, scalar gets wrong value (known risk, test records current behavior)
+// Expected: SetDeviceCustomerStackSize alignment overflow wraps around, scalar gets wrong value (known risk, test
+// records current behavior)
 TEST_F(DeviceLimitTest, SetLimit_StackSize_UINT32_MAX)
 {
     rtError_t ret = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, UINT32_MAX);
@@ -369,8 +370,8 @@ TEST_F(DeviceLimitTest, SetLimit_StackSize_JustAbove32K_AlignTo48K)
 
 // ==================== Locking Concurrency Tests ====================
 
-// Scenario: Multi-threaded concurrent SetLimit(STACK_SIZE), validate no data race (Standard SoC has no lock, recording current behavior)
-// Expected: Final GetLimit returns the last written value (not guaranteed which thread's value)
+// Scenario: Multi-threaded concurrent SetLimit(STACK_SIZE), validate no data race (Standard SoC has no lock, recording
+// current behavior) Expected: Final GetLimit returns the last written value (not guaranteed which thread's value)
 TEST_F(DeviceLimitTest, SetLimit_Concurrent_StackSize_NoCrash)
 {
     const int32_t threadNum = 4;
@@ -381,7 +382,9 @@ TEST_F(DeviceLimitTest, SetLimit_Concurrent_StackSize_NoCrash)
             rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, val);
         });
     }
-    for (auto &t : threads) { t.join(); }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     // Verify no crash, GetLimit returns a valid value
     uint32_t val = 0U;
@@ -402,7 +405,9 @@ TEST_F(DeviceLimitTest, SetLimit_Concurrent_SimdFifo_NoCrash)
             rtDeviceSetLimit(0, RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE, val);
         });
     }
-    for (auto &t : threads) { t.join(); }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     uint32_t val = 0U;
     rtError_t ret = rtDeviceGetLimit(RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE, &val);
@@ -425,7 +430,8 @@ TEST_F(DeviceLimitTest, SetLimit_StackSize_NegativeOne)
     // Scalar gets the overflowed value, will be rejected by maxCustomerStackSize during SetDevice
 }
 
-// Scenario: STACK_SIZE passes oversized value 1MB, SetLimit does not reject, SetDevice should be rejected by maxCustomerStackSize
+// Scenario: STACK_SIZE passes oversized value 1MB, SetLimit does not reject, SetDevice should be rejected by
+// maxCustomerStackSize
 TEST_F(DeviceLimitTest, SetLimit_StackSize_1MB_ExceedMaxAtSetDevice)
 {
     rtDeviceReset(0);

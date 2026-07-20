@@ -31,7 +31,7 @@ struct CommonBufHead {
 constexpr uint32_t mbufDataOffSet = 256;
 constexpr uint32_t maxMbufNumInMbuflist = 20;
 constexpr uint32_t mbufSize = 384;
-constexpr uint32_t mbufDataPtrSize = mbufSize-mbufDataOffSet;
+constexpr uint32_t mbufDataPtrSize = mbufSize - mbufDataOffSet;
 constexpr uint32_t maxQueueNum = 64;
 constexpr uint32_t modelId = 1;
 constexpr uint32_t mbufHeadSize = 4;
@@ -47,9 +47,9 @@ extern std::map<uint32_t, std::list<void*>> enqueueFakeStore;
 extern std::list<uint32_t> mbufChainGetNumReturnValues;
 extern uint32_t dequeueCount;
 extern uint32_t enqueueCount;
-extern AicpuModel *aicpuModel;
+extern AicpuModel* aicpuModel;
 extern char bufForFakeEOS[MAX_SIZE_BUF_FOR_FAKE_EOS];
-extern void *halMbufGetBuffAddrFakeAddr;
+extern void* halMbufGetBuffAddrFakeAddr;
 extern RunContext runContextT;
 extern CommonBufHead g_curHead;
 extern uint32_t batchDequeueInfoQueueIds[];
@@ -59,10 +59,7 @@ extern uint64_t batchDequeueInfoMbufAddrs[];
 
 class OperatorKernelTest : public testing::Test {
 public:
-    virtual void SetUp()
-    {
-        clearData();
-    }
+    virtual void SetUp() { clearData(); }
 
     virtual void TearDown()
     {
@@ -91,47 +88,46 @@ public:
     }
 };
 
-
-int32_t halMbufGetBuffAddrFake2(Mbuf *mbuf, void **buf);
-int halMbufGetPrivInfoFake(Mbuf *mbuf,  void **priv, unsigned int *size);
-int halMbufGetBuffSizeFake(Mbuf *mbuf, uint64_t *totalSize);
-drvError_t halQueueDeQueueFake(unsigned int devId, unsigned int qid, void **mbuf);
-int halMbufGetPrivInfoFakeForEOS(Mbuf *mbuf,  void **priv, unsigned int *size);
-drvError_t halQueueDeQueueFakeForEOS(unsigned int devId, unsigned int qid, void **mbuf);
-DLLEXPORT drvError_t halQueueEnQueueFake(unsigned int devId, unsigned int qid, void *mbuf);
-int halMbufAllocFake(unsigned int size, unsigned int align, unsigned long flag, int grp_id, Mbuf **mbuf);
-int halMbufFreeFake(Mbuf *mbuf);
-int32_t halMbufGetBuffAddrFake(Mbuf *mbuf, void **buf);
-int halMbufGetPrivInfoFake2(Mbuf *mbuf,  void **priv, unsigned int *size);
-int halMbufAllocFakeByAlloc(uint64_t size, unsigned int align, unsigned long flag, int grp_id, Mbuf **mbuf);
-int halMbufFreeFakeByFree(Mbuf *mbuf);
+int32_t halMbufGetBuffAddrFake2(Mbuf* mbuf, void** buf);
+int halMbufGetPrivInfoFake(Mbuf* mbuf, void** priv, unsigned int* size);
+int halMbufGetBuffSizeFake(Mbuf* mbuf, uint64_t* totalSize);
+drvError_t halQueueDeQueueFake(unsigned int devId, unsigned int qid, void** mbuf);
+int halMbufGetPrivInfoFakeForEOS(Mbuf* mbuf, void** priv, unsigned int* size);
+drvError_t halQueueDeQueueFakeForEOS(unsigned int devId, unsigned int qid, void** mbuf);
+DLLEXPORT drvError_t halQueueEnQueueFake(unsigned int devId, unsigned int qid, void* mbuf);
+int halMbufAllocFake(unsigned int size, unsigned int align, unsigned long flag, int grp_id, Mbuf** mbuf);
+int halMbufFreeFake(Mbuf* mbuf);
+int32_t halMbufGetBuffAddrFake(Mbuf* mbuf, void** buf);
+int halMbufGetPrivInfoFake2(Mbuf* mbuf, void** priv, unsigned int* size);
+int halMbufAllocFakeByAlloc(uint64_t size, unsigned int align, unsigned long flag, int grp_id, Mbuf** mbuf);
+int halMbufFreeFakeByFree(Mbuf* mbuf);
 uint32_t getMbufInMbufListOffSet(uint32_t index);
 Mbuf* getMbufInMbufList(Mbuf* mbufChainHead, uint32_t index);
 void* calcMbufDataPtrFack(Mbuf* mbufChainHead, unsigned int index);
-int halMbufChainGetMbufFake(Mbuf *mbufChainHead, unsigned int index, Mbuf **mbuf);
-int halMbufChainAppendFake(Mbuf *a, Mbuf *b);
-int halMbufChainGetMbufNumFack(Mbuf *mbufChainHead, unsigned int *num);
-int halMbufGetDataLenFake(Mbuf *mbuf, uint64_t *len);
+int halMbufChainGetMbufFake(Mbuf* mbufChainHead, unsigned int index, Mbuf** mbuf);
+int halMbufChainAppendFake(Mbuf* a, Mbuf* b);
+int halMbufChainGetMbufNumFack(Mbuf* mbufChainHead, unsigned int* num);
+int halMbufGetDataLenFake(Mbuf* mbuf, uint64_t* len);
 uint32_t calcGuardBufSize(bool isSingleMbuflistOutput);
-void setSimpleAicpuPrepareInfo(AicpuPrepareInfo &info);
-int32_t AlignTimestampStub1(BatchDequeueInfo &batchDeqInfo, const RunContext &taskContext,
-    uint32_t &maxAlignTimestamp, uint32_t &minAlignTimestamp, uint32_t &minTimestampIndex);
-int32_t AlignTimestampStub2(BatchDequeueInfo &batchDeqInfo, const RunContext &taskContext, uint32_t &maxAlignTimestamp,
-    uint32_t &minAlignTimestamp, uint32_t &minTimestampIndex);
+void setSimpleAicpuPrepareInfo(AicpuPrepareInfo& info);
+int32_t AlignTimestampStub1(
+    BatchDequeueInfo& batchDeqInfo, const RunContext& taskContext, uint32_t& maxAlignTimestamp,
+    uint32_t& minAlignTimestamp, uint32_t& minTimestampIndex);
+int32_t AlignTimestampStub2(
+    BatchDequeueInfo& batchDeqInfo, const RunContext& taskContext, uint32_t& maxAlignTimestamp,
+    uint32_t& minAlignTimestamp, uint32_t& minTimestampIndex);
 
-#define BUILD_SUCC_PREPARE_INFO()                                                                                            \
-    aicpuModel = new AicpuModel();                                                                                   \
-    aicpuModel->modelId_= modelId;                                                                                            \
-    aicpuModel->iteratorCount_ = 1;                                                                                            \
+#define BUILD_SUCC_PREPARE_INFO()                                                                                                \
+    aicpuModel = new AicpuModel();                                                                                               \
+    aicpuModel->modelId_ = modelId;                                                                                              \
+    aicpuModel->iteratorCount_ = 1;                                                                                              \
     /*input 准备， dequeue 队列三个，总共返回4个展平后的mbuf， 需要填充5个模型输出 */                 \
     /*假设模型使用的入参数据指针*/                                                                                  \
     void *input1, *input2, *input3, *input4, *input5;                                                                            \
     /* 假设ge拼接方式*/                                                                                                    \
-    uint64_t inputAddrList[] = {reinterpret_cast<uint64_t>(&input1),                                                             \
-        reinterpret_cast<uint64_t>(&input2),                                                                                     \
-        reinterpret_cast<uint64_t>(&input3),                                                                                     \
-        reinterpret_cast<uint64_t>(&input4),                                                                                     \
-        reinterpret_cast<uint64_t>(&input5)};                                                                                    \
+    uint64_t inputAddrList[] = {                                                                                                 \
+        reinterpret_cast<uint64_t>(&input1), reinterpret_cast<uint64_t>(&input2), reinterpret_cast<uint64_t>(&input3),           \
+        reinterpret_cast<uint64_t>(&input4), reinterpret_cast<uint64_t>(&input5)};                                               \
     /* dequeue队列id*/                                                                                                         \
     uint32_t inQueueIdList[] = {10, 3, 7, 9};                                                                                    \
     /* 每个mbuflist返回的mbuf长度*/                                                                                       \
@@ -145,10 +141,9 @@ int32_t AlignTimestampStub2(BatchDequeueInfo &batchDeqInfo, const RunContext &ta
     /* output准备，模型输出4个，申请mbuf3个用于填充，enqueue到3个队列中 模型输出数据指针1*/        \
     void *output1, *output2, *output3, *output4;                                                                                 \
     /* ge拼接方式*/                                                                                                          \
-    uint64_t outputAddrList[] = {reinterpret_cast<uint64_t>(&output1),                                                           \
-        reinterpret_cast<uint64_t>(&output2),                                                                                    \
-        reinterpret_cast<uint64_t>(&output3),                                                                                    \
-        reinterpret_cast<uint64_t>(&output4)};                                                                                   \
+    uint64_t outputAddrList[] = {                                                                                                \
+        reinterpret_cast<uint64_t>(&output1), reinterpret_cast<uint64_t>(&output2),                                              \
+        reinterpret_cast<uint64_t>(&output3), reinterpret_cast<uint64_t>(&output4)};                                             \
     /* enqueue队列id*/                                                                                                         \
     uint32_t outQueueIdList[] = {11, 12, 14};                                                                                    \
     /* 每个申请的mbuf数据长度*/                                                                                         \
@@ -176,11 +171,11 @@ int32_t AlignTimestampStub2(BatchDequeueInfo &batchDeqInfo, const RunContext &ta
     info.outQueueIdList = reinterpret_cast<uint64_t>(outQueueIdList);                                                            \
     info.mbufPtrlist = reinterpret_cast<uint64_t>(mbufPtrlist);
 
-// alloc和free同步mocker，halMbufSetDataLen 失败会free 
+// alloc和free同步mocker，halMbufSetDataLen 失败会free
 #define MOCK_MBUF_ALLOCK_FAKE()                                    \
     MOCKER(halMbufAllocEx).stubs().will(invoke(halMbufAllocFake)); \
     MOCKER(halMbufFree).stubs().will(invoke(halMbufFreeFake));
 
-}  // namespace AicpuSchedule
+} // namespace AicpuSchedule
 
-#endif  // OPERATOR_KERNEL_STUB_H
+#endif // OPERATOR_KERNEL_STUB_H

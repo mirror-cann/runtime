@@ -16,13 +16,13 @@
 
 using namespace AicpuSchedule;
 
-
 class OperatorKernelActiveModelTest : public OperatorKernelTest {
 protected:
     OperatorKernelActiveModel activeModelKernel_;
 };
 
-TEST_F(OperatorKernelActiveModelTest, ModelActiveModelExecute_success) {
+TEST_F(OperatorKernelActiveModelTest, ModelActiveModelExecute_success)
+{
     AicpuTaskInfo taskT;
     uint32_t modelID = 0;
     taskT.paraBase = (uint64_t)&modelID;
@@ -30,10 +30,11 @@ TEST_F(OperatorKernelActiveModelTest, ModelActiveModelExecute_success) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(OperatorKernelActiveModelTest, ModelActiveModelExecute_failed_for_nullPara) {
+TEST_F(OperatorKernelActiveModelTest, ModelActiveModelExecute_failed_for_nullPara)
+{
     AicpuTaskInfo taskT;
     uint32_t modelID = 0;
-    taskT.paraBase = (uint64_t)nullptr;
+    taskT.paraBase = (uint64_t) nullptr;
     int ret = activeModelKernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }

@@ -39,31 +39,20 @@
 
 using namespace testing;
 using namespace cce::runtime;
-class LabelTest : public testing::Test
-{
+class LabelTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        rtSetDevice(0);
-    }
+    static void SetUpTestCase() { rtSetDevice(0); }
 
-    static void TearDownTestCase()
-    {
-        ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
-    }
+    static void TearDownTestCase() { ut::ResetPrimaryDeviceIfActiveWithDeviceDown(); }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
-
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(LabelTest, free_labelAllocator)
@@ -105,8 +94,8 @@ TEST_F(LabelTest, label_id_free_model_released)
 {
     rtError_t error;
     uint16_t id = 0;
-    Model *model = new Model();
-    Label *label = new Label(model);
+    Model* model = new Model();
+    Label* label = new Label(model);
     label->labelId_ = 0;
     MOCKER_CPP(&LabelAllocator::LabelIdFree).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Model::LabelFree).stubs().will(returnValue(RT_ERROR_NONE));
@@ -123,11 +112,11 @@ TEST_F(LabelTest, label_switch)
     uint16_t id = 0;
     rtStream_t stream = NULL;
 
-    Model *model = new Model();
+    Model* model = new Model();
     error = rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    Context *ctx = (Context *)stm->Context_();
-    Label *label = new Label(model);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Context* ctx = (Context*)stm->Context_();
+    Label* label = new Label(model);
     stm->SetModel(model);
     stm->SetLatestModlId(model->Id_());
     label->labelId_ = 0;
@@ -154,13 +143,13 @@ TEST_F(LabelTest, label_StreamGoto)
     uint16_t id = 0;
     rtStream_t stream = NULL;
 
-    Model *model = new Model();
+    Model* model = new Model();
     error = rtStreamCreate(&stream, 0);
-    usleep(100000);   // wait for create_stream task done
-    TaskResManage *trm = new (std::nothrow) TaskResManage();
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    Context *ctx = (Context *)stm->Context_();
-    Label *label = new Label(model);
+    usleep(100000); // wait for create_stream task done
+    TaskResManage* trm = new (std::nothrow) TaskResManage();
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Context* ctx = (Context*)stm->Context_();
+    Label* label = new Label(model);
     trm->taskPoolNum_ = 1;
     stm->SetModel(model);
     stm->taskResMang_ = trm;
@@ -202,7 +191,7 @@ TEST_F(LabelTest, label_task_submit)
     rtStream_t stream;
     rtLabel_t label;
     rtContext_t ctx;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_INIT);
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -239,7 +228,7 @@ TEST_F(LabelTest, label_task_submit)
 
     error = rtCtxDestroy(ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(LabelTest, label_handle_invalid_after_destroy)
@@ -261,7 +250,7 @@ TEST_F(LabelTest, label_handle_invalid_after_destroy)
     error = rtLabelDestroy(label);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Label *destroyedLabel = nullptr;
+    Label* destroyedLabel = nullptr;
     error = GetValidatedObject<Label>(label, destroyedLabel);
     EXPECT_EQ(error, RT_ERROR_INVALID_HANDLE);
     EXPECT_EQ(destroyedLabel, nullptr);
@@ -280,9 +269,9 @@ TEST_F(LabelTest, label_gotoex_task_submit)
     rtStream_t stream;
     rtLabel_t label;
     rtContext_t ctx;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device->SetTschVersion(TS_VERSION_INIT);
-    
+
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -318,7 +307,7 @@ TEST_F(LabelTest, label_gotoex_task_submit)
 
     error = rtCtxDestroy(ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 rtError_t LabelGotoTaskInitStubErr(TaskInfo* taskInfo, const uint16_t lblId)
@@ -331,9 +320,8 @@ rtError_t LabelGotoTaskInitStubErr(TaskInfo* taskInfo, const uint16_t lblId)
     return RT_ERROR_INVALID_VALUE;
 }
 
-rtError_t LabelSetTaskInitStubErr(TaskInfo* taskInfo, const uint16_t labelIndex, void * const devDestAddr)
+rtError_t LabelSetTaskInitStubErr(TaskInfo* taskInfo, const uint16_t labelIndex, void* const devDestAddr)
 {
-
     taskInfo->liteStreamResId = RTS_INVALID_RES_ID;
     taskInfo->liteTaskResId = RTS_INVALID_RES_ID;
     taskInfo->type = TS_TASK_TYPE_LABEL_SET;
@@ -350,7 +338,8 @@ rtError_t StreamLabelGotoTaskInitStubErr(TaskInfo* taskInfo, const uint16_t lblI
     taskInfo->typeName = "STREAM_LABEL_GOTO";
     taskInfo->type = TS_TASK_TYPE_STREAM_LABEL_GOTO;
     taskInfo->u.streamLabelGotoTask.labelId = lblId;
-    RT_LOG(RT_LOG_DEBUG, "stream label goto task, labelId=%u.",
+    RT_LOG(
+        RT_LOG_DEBUG, "stream label goto task, labelId=%u.",
         static_cast<uint32_t>(taskInfo->u.streamLabelGotoTask.labelId));
     return RT_ERROR_INVALID_VALUE;
 }
@@ -414,7 +403,7 @@ TEST_F(LabelTest, model_load_complete_mini)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtContext_t ctx;
 
     error = rtCtxCreate(&ctx, RT_CTX_NORMAL_MODE, 0);
@@ -442,8 +431,8 @@ TEST_F(LabelTest, model_load_complete_mini)
 TEST_F(LabelTest, STARS_EventTimeout_ErrorInfo)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
 
     rtError_t ret = errorProc->ProcessStarsWaitTimeoutErrorInfo(nullptr, 0, device, nullptr);
@@ -453,14 +442,14 @@ TEST_F(LabelTest, STARS_EventTimeout_ErrorInfo)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
 TEST_F(LabelTest, STARS_WaitTimeout_ErrorInfo)
 {
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
     rtError_t ret = errorProc->ProcessStarsWaitTimeoutErrorInfo(nullptr, 0, device, nullptr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -470,13 +459,13 @@ TEST_F(LabelTest, STARS_WaitTimeout_ErrorInfo)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(LabelTest, STARS_OtherTimeout_ErrorInfo)
 {
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
     StarsDeviceErrorInfo errorInfo = {};
     rtError_t ret = errorProc->ProcessStarsWaitTimeoutErrorInfo(nullptr, 0, device, nullptr);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -486,5 +475,5 @@ TEST_F(LabelTest, STARS_OtherTimeout_ErrorInfo)
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }

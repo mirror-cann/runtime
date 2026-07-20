@@ -6,7 +6,7 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
-*/
+ */
 
 #include <iostream>
 #include <unistd.h>
@@ -66,7 +66,7 @@ using namespace testing;
 using namespace cce::runtime;
 static rtChipType_t g_chipType;
 
-static drvError_t halGetDeviceInfoStubF(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t halGetDeviceInfoStubF(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -86,14 +86,14 @@ protected:
     static void SetUpTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoStubF));
-        char *socVer = "MC62CM12AA";
+        char* socVer = "MC62CM12AA";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("MC62CM12AA")))
             .will(returnValue(DRV_ERROR_NONE));
         MOCKER(halSqTaskSend).stubs().will(returnValue(RT_ERROR_NONE));
         std::cout << "TaskTestV201 SetUP" << std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_MC62CM12A);
@@ -105,7 +105,7 @@ protected:
     static void TearDownTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(halGetDeviceInfoStubF));
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
         rtInstance->SetDisableThread(false);
@@ -113,20 +113,14 @@ protected:
         std::cout << "UbStreamTest end" << std::endl;
     }
 
-    virtual void SetUp()
-    {
-        return;
-    }
+    virtual void SetUp() { return; }
 
-    virtual void TearDown()
-    {
-        return;
-    }
+    virtual void TearDown() { return; }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
 };
 
@@ -135,7 +129,7 @@ TEST_F(TaskTestV201F, TestSetdevice)
     rtError_t error;
     error = rtSetDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     error = rtSetTSDevice(0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     error = rtDeviceReset(0);
@@ -145,7 +139,7 @@ TEST_F(TaskTestV201F, TestSetdevice)
 TEST_F(TaskTestV201F, TestSetdevice2)
 {
     rtError_t error;
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     error = rtSetTSDevice(1);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtSetDevice(0);

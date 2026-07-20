@@ -17,18 +17,14 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdint.h>
- 
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/time.h>
 
-typedef enum tagDrvError {
-    DRV_ERROR_NONE = 0,
-    DRV_ERROR_WAIT_TIMEOUT = 16,
-    DRV_ERROR_RESERVED
-} drvError_t;
+typedef enum tagDrvError { DRV_ERROR_NONE = 0, DRV_ERROR_WAIT_TIMEOUT = 16, DRV_ERROR_RESERVED } drvError_t;
 
 typedef struct _dump_mailbox_info {
     uint16_t sid;
@@ -46,7 +42,7 @@ typedef struct _dump_mailbox_info {
 
     uint16_t mid : 8;
     uint16_t res2 : 8;
-    
+
     uint16_t block_id;
     uint16_t block_dim;
     uint32_t task_pc_addr_l;

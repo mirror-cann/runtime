@@ -41,11 +41,9 @@ using namespace cce::runtime;
 
 class CloudV2CaptureModelUpdateTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
@@ -178,7 +176,7 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskSetParams_Success)
     EXPECT_EQ(params.type, RT_TASK_KERNEL);
 
     char rawInfo[] = "test_op_info_data";
-    params.opInfoPtr = (void *)rawInfo;
+    params.opInfoPtr = (void*)rawInfo;
     params.opInfoSize = sizeof(rawInfo);
     ret = rtModelTaskSetParams(inputTasks[0], &params);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -251,12 +249,12 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelKernelTaskInvalidParam)
     ret = rtStreamBeginCapture(stream, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    
+
     void* args[] = {&ret, NULL};
     ret = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    void *devAddr;
+    void* devAddr;
     ret = rtMalloc(&devAddr, 64U, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtsValueWrite(devAddr, 1, 0, stream);
@@ -586,13 +584,13 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskDisable_Success)
 
 TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskDisable_failed)
 {
-    void *srcPtr;
-    void *dstPtr;
+    void* srcPtr;
+    void* dstPtr;
     rtContext_t ctx;
     rtError_t ret = rtCtxCreate(&ctx, 0, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     rtPointerAttributes_t rtAttributes;
     rtAttributes.deviceID = 0;
     rtAttributes.memoryType = RT_MEMORY_TYPE_DEVICE;
@@ -717,14 +715,14 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskDefault_Success)
     GlobalMockObject::verify();
 }
 
-void CreateEventTaskModel(rtStream_t& stream, rtStream_t& stream2, rtEvent_t& event, rtEvent_t& event2,
-    rtModel_t& model)
+void CreateEventTaskModel(
+    rtStream_t& stream, rtStream_t& stream2, rtEvent_t& event, rtEvent_t& event2, rtModel_t& model)
 {
     rtError_t ret = rtStreamCreate(&stream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtStreamCreate(&stream2, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    
+
     ret = rtEventCreateExWithFlag(&event, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtEventCreateExWithFlag(&event2, RT_EVENT_WITH_FLAG);
@@ -806,7 +804,7 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskEventParam001)
     GlobalMockObject::verify();
 }
 
-void CreateValueTaskModel(rtStream_t& stream, rtModel_t& model, void *addr)
+void CreateValueTaskModel(rtStream_t& stream, rtModel_t& model, void* addr)
 {
     rtError_t ret = rtStreamCreate(&stream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -833,7 +831,7 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskGetValueParam001)
 
     rtStream_t stream;
     rtModel_t model;
-    void *devAddr;
+    void* devAddr;
     ret = rtMalloc(&devAddr, 64U, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     CreateValueTaskModel(stream, model, devAddr);
@@ -879,7 +877,7 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskSetValueParam001)
 
     rtStream_t stream;
     rtModel_t model;
-    void *addr;
+    void* addr;
     ret = rtMalloc(&addr, 1024U, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     CreateValueTaskModel(stream, model, addr);
@@ -924,7 +922,6 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskSetValueParam001)
     GlobalMockObject::verify();
 }
 
-
 TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskSetValueParam002)
 {
     rtContext_t ctx;
@@ -934,7 +931,7 @@ TEST_F(CloudV2CaptureModelUpdateTest, rtModelTaskSetValueParam002)
     rtStream_t stream;
     rtStream_t exeStream;
     rtModel_t model;
-    void *addr;
+    void* addr;
     ret = rtMalloc(&addr, 1024U, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     CreateValueTaskModel(stream, model, addr);

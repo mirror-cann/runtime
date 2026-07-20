@@ -23,9 +23,8 @@ using namespace tsd;
 namespace {
 std::string GetWorkDir()
 {
-    struct passwd *user = getpwuid(getuid());
-    if ((user == nullptr) ||
-        (user->pw_dir == nullptr)) {
+    struct passwd* user = getpwuid(getuid());
+    if ((user == nullptr) || (user->pw_dir == nullptr)) {
         return "";
     }
 
@@ -33,20 +32,22 @@ std::string GetWorkDir()
     std::string workdir = pwDir + "/tmp/" + std::to_string(getpid()) + "tsd/";
     return workdir;
 };
-}
+} // namespace
 
 class PackageWorkerUtilsTest : public testing::Test {
 protected:
-    static void SetUpTestCase() {
+    static void SetUpTestCase()
+    {
         const std::string workDir = GetWorkDir();
-        const std::string cmd = "mkdir -p " + workDir + "inntertsd/" + "&& touch " +
-                          workDir + "aaa && touch " + workDir + "inntertsd/bbb";
+        const std::string cmd =
+            "mkdir -p " + workDir + "inntertsd/" + "&& touch " + workDir + "aaa && touch " + workDir + "inntertsd/bbb";
         const int32_t ret = PackSystem(cmd.c_str());
 
         std::cout << "PackageWorkerUtilsTest setup cmd=" << cmd << ", ret=" << ret << std::endl;
     }
 
-    static void TearDownTestCase() {
+    static void TearDownTestCase()
+    {
         const std::string workDir = GetWorkDir();
         const std::string cmd = "rm -rf " + workDir;
         const int32_t ret = PackSystem(cmd.c_str());
@@ -55,10 +56,7 @@ protected:
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(PackageWorkerUtilsTest, MakeDirectorySuccess)

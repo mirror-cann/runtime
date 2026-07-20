@@ -64,31 +64,29 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiCloudV2DisableThreadTest : public testing::Test
-{
+class ApiCloudV2DisableThreadTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
         int64_t phyDieId = 0;
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&phyDieId, sizeof(phyDieId)))
             .will(returnValue(RT_ERROR_NONE));
-        std::cout<<"error2 : " << 1 <<endl;
+        std::cout << "error2 : " << 1 << endl;
         (void)rtSetDevice(0);
-        std::cout<<"error2 : " << 2 <<endl;
+        std::cout << "error2 : " << 2 << endl;
         (void)rtSetTSDevice(0);
         rtError_t error1 = rtStreamCreateWithFlags(&stream_, 0, RT_STREAM_DEFAULT);
-        std::cout<<"error1 : " << error1 <<endl;
+        std::cout << "error1 : " << error1 << endl;
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -101,40 +99,40 @@ protected:
 
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 0);
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
     {
-        Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-        Stream *stream = new Stream((Device *)device, 0);
+        Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+        Stream* stream = new Stream((Device*)device, 0);
         MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
         rtError_t error1 = rtStreamDestroy(stream_);
         delete stream;
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
-        RawDevice *rawDevice = (RawDevice *)device;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
+        RawDevice* rawDevice = (RawDevice*)device;
         rawDevice->Engine_()->pendingNum_.Set(0U);
         rtDeviceReset(0);
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device);
         GlobalMockObject::verify();
         (void)rtSetSocVersion("");
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
-        rtInstance->SetDisableThread(false);      // Recover.
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
+        rtInstance->SetDisableThread(false); // Recover.
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(oldChipType);
         GlobalContainer::SetRtChipType(oldChipType);
         GlobalMockObject::verify();
@@ -143,17 +141,17 @@ protected:
 public:
     rtChipType_t oldChipType;
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
-    static Driver    *driver_;
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
+    static Driver* driver_;
 };
 
 rtStream_t ApiCloudV2DisableThreadTest::stream_ = nullptr;
 rtEvent_t ApiCloudV2DisableThreadTest::event_ = nullptr;
 void* ApiCloudV2DisableThreadTest::binHandle_ = nullptr;
-char  ApiCloudV2DisableThreadTest::function_ = 'a';
+char ApiCloudV2DisableThreadTest::function_ = 'a';
 uint32_t ApiCloudV2DisableThreadTest::binary_[32] = {};
 Driver* ApiCloudV2DisableThreadTest::driver_ = nullptr;
 
@@ -164,11 +162,11 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_external)
     rtModel_t model;
     rtStream_t stream1;
     rtStream_t stream2;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtStreamCaptureStatus status;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -219,7 +217,7 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_external)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     // 确保Event内存被释放
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     uint32_t evtId = 0U;
     (void)eventObj->GetEventID(&evtId);
     TryToFreeEventIdAndDestroyEvent(&eventObj, evtId, false);
@@ -228,7 +226,7 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_external)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, capture_event_external2)
@@ -238,11 +236,11 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_external2)
     rtModel_t model;
     rtStream_t stream1;
     rtStream_t stream2;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtStreamCaptureStatus status;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -293,7 +291,7 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_external2)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     // 确保Event内存被释放
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     uint32_t evtId = 0U;
     (void)eventObj->GetEventID(&evtId);
     TryToFreeEventIdAndDestroyEvent(&eventObj, evtId, false);
@@ -302,24 +300,24 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_external2)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, kernel_launch_success_dfx)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream_);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream_);
     stm->SetLimitFlag(true);
     stm->SetRecycleFlag(false);
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtGetFunctionByName("foo", &stubFunc);
@@ -333,24 +331,21 @@ TEST_F(ApiCloudV2DisableThreadTest, kernel_launch_success_dfx)
 TEST_F(ApiCloudV2DisableThreadTest, kernel_launch_sq_task_send_error)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream_);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream_);
     Device* dev = stm->Device_();
-    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState)
-    .stubs()
-    .will(returnValue((uint32_t)DEV_RUNNING_DOWN));
+    MOCKER_CPP_VIRTUAL(dev, &Device::GetDevRunningState).stubs().will(returnValue((uint32_t)DEV_RUNNING_DOWN));
 
     int32_t errCode = 8888;
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::SqTaskSend)
-        .stubs().will(returnValue(errCode));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(dev->Driver_()), &NpuDriver::SqTaskSend).stubs().will(returnValue(errCode));
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, errCode);
 }
 
@@ -361,8 +356,8 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_create)
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -412,7 +407,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_create)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, capture_event_not_support)
@@ -422,10 +417,10 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_not_support)
     rtEvent_t event2;
     rtModel_t model;
     rtStream_t stream1;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -437,26 +432,26 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_not_support)
 
     error = rtStreamCreate(&stream1, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    
+
     error = rtEventCreateWithFlag(&event1, RT_EVENT_WITH_FLAG);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Event *evt = rt_ut::UnwrapOrNull<Event>(event1);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event1);
     evt->isNewMode_ = true;
     evt->hasRecord_.Set(true);
 
     error = rtEventCreateExWithFlag(&event2, RT_EVENT_WITH_FLAG);
-    EXPECT_EQ(error, ACL_RT_SUCCESS);    
+    EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // Exception
     error = rtStreamWaitEvent(stream1, event1);
     EXPECT_EQ(error, ACL_ERROR_RT_CAPTURE_DEPENDENCY);
-    
+
     // Normal
     error = rtEventRecord(event2, stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -480,7 +475,7 @@ TEST_F(ApiCloudV2DisableThreadTest, capture_event_not_support)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_unclosed)
@@ -558,8 +553,8 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_repeat)
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -600,7 +595,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_repeat)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_update)
@@ -610,8 +605,8 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update)
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -652,7 +647,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_update_task)
@@ -662,10 +657,10 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_task)
     rtStream_t stream1;
     rtStream_t stream2;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -681,18 +676,16 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_task)
     error = rtStreamCreate(&stream2, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    NpuDriver * rawDrv = new NpuDriver();
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-                        .stubs()
-                        .will(returnValue(1)); 
+    NpuDriver* rawDrv = new NpuDriver();
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
 
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
- 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -704,18 +697,18 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_task)
     error = rtsStreamBeginTaskUpdate(stream2, taskGrpHandle);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream2);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream2);
 
     error = rtsStreamEndTaskUpdate(stream2);
     int32_t streamId = -1;
     (void)rtGetStreamId(stream2, &streamId);
-    TaskInfo * const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
+    TaskInfo* const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
     if (h2dTask != nullptr) {
         EXPECT_EQ(h2dTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(h2dTask);
     }
 
-    TaskInfo * const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
+    TaskInfo* const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
     if (d2hTask != nullptr) {
         EXPECT_EQ(d2hTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(d2hTask);
@@ -740,7 +733,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_task)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade)
@@ -750,10 +743,10 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade)
     rtStream_t stream1 = stream_;
     rtStream_t stream2;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -767,17 +760,15 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade)
     error = rtStreamCreate(&stream2, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    NpuDriver * rawDrv = new NpuDriver();
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-                        .stubs()
-                        .will(returnValue(1));
+    NpuDriver* rawDrv = new NpuDriver();
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -789,26 +780,26 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade)
     error = rtsStreamBeginTaskUpdate(stream2, taskGrpHandle);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream2);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream2);
 
     error = rtsStreamEndTaskUpdate(stream2);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     int32_t streamId = -1;
     (void)rtGetStreamId(stream2, &streamId);
-    TaskInfo * const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
+    TaskInfo* const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
     if (h2dTask != nullptr) {
         EXPECT_EQ(h2dTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(h2dTask);
     }
 
-    TaskInfo * const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
+    TaskInfo* const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
     if (d2hTask != nullptr) {
         EXPECT_EQ(d2hTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(d2hTask);
     }
 
-    //debug print;
+    // debug print;
     error = rtModelDebugDotPrint(model);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -834,7 +825,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
@@ -844,11 +835,11 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
     rtStream_t stream1 = stream_;
     rtStream_t stream2;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     const uint16_t taskNum = 10U;
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -862,7 +853,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
     error = rtStreamCreate(&stream2, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -871,7 +862,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     for (uint16_t i = 0U; i < taskNum; i++) {
-         error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+        error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
@@ -885,7 +876,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     for (uint16_t i = 0U; i < taskNum; i++) {
-         error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream2);
+        error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream2);
     }
 
     error = rtsStreamEndTaskUpdate(stream2);
@@ -894,7 +885,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
     int32_t streamId = -1;
     (void)rtGetStreamId(stream2, &streamId);
     for (uint16_t i = 0U; i < (taskNum * 2U); i++) {
-        TaskInfo * const task = device->GetTaskFactory()->GetTask(streamId, i);
+        TaskInfo* const task = device->GetTaskFactory()->GetTask(streamId, i);
         if (task != nullptr) {
             EXPECT_EQ(task->type, TS_TASK_TYPE_MEMCPY);
             (void)device->GetTaskFactory()->Recycle(task);
@@ -917,7 +908,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_cascade2)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_capture_invalid)
@@ -926,10 +917,10 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_capture_invalid)
     rtModel_t model;
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -949,7 +940,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_capture_invalid)
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, ACL_ERROR_RT_RESOURCE_ALLOC_FAIL);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -968,7 +959,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_capture_invalid)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
@@ -978,10 +969,10 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
     rtStream_t stream1 = stream_;
     rtStream_t stream2;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -994,7 +985,7 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
 
     error = rtStreamCreate(&stream2, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
 
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
@@ -1003,7 +994,7 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -1015,18 +1006,18 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
     error = rtsStreamBeginTaskUpdate(stream2, taskGrpHandle);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream2);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream2);
 
     error = rtsStreamEndTaskUpdate(stream2);
     int32_t streamId = -1;
     (void)rtGetStreamId(stream2, &streamId);
-    TaskInfo * const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
+    TaskInfo* const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
     if (h2dTask != nullptr) {
         EXPECT_EQ(h2dTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(h2dTask);
     }
 
-    TaskInfo * const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
+    TaskInfo* const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
     if (d2hTask != nullptr) {
         EXPECT_EQ(d2hTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(d2hTask);
@@ -1039,7 +1030,7 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
     TaskInfo task = {};
     InitByStream(&task, (rt_ut::UnwrapOrNull<Stream>(stream1)));
     task.type = TS_TASK_TYPE_KERNEL_AICPU;
-    AicpuTaskInfo *aicpuTask = &(task.u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTask = &(task.u.aicpuTaskInfo);
     aicpuTask->kernel = nullptr;
 
     MOCKER_CPP(&TaskFactory::GetTask).stubs().will(returnValue(&task));
@@ -1060,8 +1051,7 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_AicpuTask)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
-
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_Error_01)
@@ -1071,10 +1061,10 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_Error_01)
     rtStream_t stream1 = stream_;
     rtStream_t stream2;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -1087,7 +1077,7 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_Error_01)
 
     error = rtStreamCreate(&stream2, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
 
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
@@ -1096,7 +1086,7 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_Error_01)
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -1108,20 +1098,20 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_Error_01)
     error = rtsStreamBeginTaskUpdate(stream2, taskGrpHandle);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream2);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream2);
 
     error = rtsStreamEndTaskUpdate(stream2);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     int32_t streamId = -1;
     (void)rtGetStreamId(stream2, &streamId);
-    TaskInfo * const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
+    TaskInfo* const h2dTask = device->GetTaskFactory()->GetTask(streamId, 0);
     if (h2dTask != nullptr) {
         EXPECT_EQ(h2dTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(h2dTask);
     }
 
-    TaskInfo * const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
+    TaskInfo* const d2hTask = device->GetTaskFactory()->GetTask(streamId, 1);
     if (d2hTask != nullptr) {
         EXPECT_EQ(d2hTask->type, TS_TASK_TYPE_MEMCPY);
         (void)device->GetTaskFactory()->Recycle(d2hTask);
@@ -1147,10 +1137,8 @@ TEST_F(ApiCloudV2DisableThreadTest, ModelDebugJsonPrint_Error_01)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
-
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
-
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_update_1)
 {
@@ -1158,10 +1146,10 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_1)
     rtModel_t model;
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -1173,10 +1161,8 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_1)
 
     error = rtStreamCreate(&stream1, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    NpuDriver * rawDrv = new NpuDriver();
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-                        .stubs()
-                        .will(returnValue(1)); 
+    NpuDriver* rawDrv = new NpuDriver();
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
 
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -1184,7 +1170,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_1)
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -1193,14 +1179,14 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_1)
     error = rtStreamEndCapture(stream1, &model);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    TaskGroup* taskGroup = (TaskGroup* )taskGrpHandle;
+    TaskGroup* taskGroup = (TaskGroup*)taskGrpHandle;
     uint32_t streamId = taskGroup->taskIds[0].first;
     taskGroup->taskIds[0].first = 345;
 
     error = rtsStreamBeginTaskUpdate(stream1, taskGrpHandle);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, ACL_ERROR_RT_INTERNAL_ERROR);
 
     error = rtsStreamEndTaskUpdate(stream1);
@@ -1218,7 +1204,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_1)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_update_2)
@@ -1227,10 +1213,10 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_2)
     rtModel_t model;
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -1249,7 +1235,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_2)
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -1261,11 +1247,11 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_2)
     error = rtsStreamBeginTaskUpdate(stream1, taskGrpHandle);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Model *model2 = new Model();
+    Model* model2 = new Model();
     (rt_ut::UnwrapOrNull<Stream>(stream1))->ResetUpdateTaskGroup();
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
-    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID );
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     error = rtsStreamEndTaskUpdate(stream1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1281,7 +1267,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_2)
 
     delete stream;
     delete model2;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, task_group_update_3)
@@ -1289,7 +1275,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_3)
     rtError_t error;
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtModel_t model;
 
     error = rtStreamCreate(&stream1, 0);
@@ -1319,10 +1305,10 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_4)
     rtModel_t model;
     rtStream_t stream1;
     rtTaskGrp_t taskGrpHandle = nullptr;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
-    Device* device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
-    Stream *stream = new Stream((Device *)device, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
+    Stream* stream = new Stream((Device*)device, 0);
     MOCKER_CPP_VIRTUAL(stream, &Stream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP(&Stream::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
@@ -1335,10 +1321,8 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_4)
 
     error = rtStreamCreate(&stream1, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    NpuDriver * rawDrv = new NpuDriver();
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-                        .stubs()
-                        .will(returnValue(1));  
+    NpuDriver* rawDrv = new NpuDriver();
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
 
     error = rtStreamBeginCapture(stream1, RT_STREAM_CAPTURE_MODE_GLOBAL);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -1346,7 +1330,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_4)
     error = rtsStreamBeginTaskGrp(stream1);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), nullptr, stream1);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), nullptr, stream1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtsStreamEndTaskGrp(stream1, &taskGrpHandle);
@@ -1365,7 +1349,7 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_4)
     EXPECT_EQ(error, ACL_ERROR_RT_INTERNAL_ERROR);
 
     error = rtsStreamEndTaskUpdate(stream1);
-    EXPECT_EQ(error, ACL_ERROR_STREAM_TASK_GROUP_STATUS);  // 重复调用报错
+    EXPECT_EQ(error, ACL_ERROR_STREAM_TASK_GROUP_STATUS); // 重复调用报错
 
     error = rtModelDestroy(model);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -1377,15 +1361,15 @@ TEST_F(ApiCloudV2DisableThreadTest, task_group_update_4)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     delete rawDrv;
     delete stream;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_async_param_err0)
 {
     constexpr size_t count = 4U;
     constexpr size_t len = 128U;
-    char *dsts[count];
-    char *srcs[count];
+    char* dsts[count];
+    char* srcs[count];
     size_t sizes[count];
     size_t destMaxs[count];
     for (size_t i = 0; i < count; i++) {
@@ -1407,19 +1391,24 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_async_param_err0)
 
     size_t failIdx = SIZE_MAX;
     rtError_t error;
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, nullptr, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, nullptr, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, 0U, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, 0U, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, nullptr, attrsIdxs, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, nullptr, attrsIdxs, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs, nullptr, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs, nullptr, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs, attrsIdxs, 0U, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs, attrsIdxs, 0U, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
@@ -1427,17 +1416,19 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_async_param_err0)
     for (size_t i = 0; i < count; i++) {
         sizes[i] = 0U;
     }
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     // sizes 为 nullptr
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, nullptr, count, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, nullptr, count, attrs, attrsIdxs, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     for (size_t i = 0; i < count; i++) {
-        delete [] dsts[i];
-        delete [] srcs[i];
+        delete[] dsts[i];
+        delete[] srcs[i];
     }
 }
 
@@ -1445,8 +1436,8 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_async_param_err1)
 {
     constexpr size_t count = 4U;
     constexpr size_t len = 128U;
-    char *dsts[count];
-    char *srcs[count];
+    char* dsts[count];
+    char* srcs[count];
     size_t sizes[count];
     size_t destMaxs[count];
     for (size_t i = 0; i < count; i++) {
@@ -1479,27 +1470,31 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_async_param_err1)
 
     size_t failIdx;
     rtError_t error;
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs0, attrsIdxs0, numAttrs0, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs0, attrsIdxs0, numAttrs0, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     size_t attrsIdxs1[numAttrs] = {1, 3};
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs, attrsIdxs1, numAttrs, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs, attrsIdxs1, numAttrs, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     size_t attrsIdxs2[numAttrs + 1] = {0, 3, 5};
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs, attrsIdxs2, numAttrs + 1, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs, attrsIdxs2, numAttrs + 1, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     size_t attrsIdxs3[numAttrs + 1] = {0, 3, 1};
-    error = rtsMemcpyBatchAsync((void **)dsts, destMaxs, (void **)srcs, sizes, count, attrs, attrsIdxs3, numAttrs + 1, &failIdx, nullptr);
+    error = rtsMemcpyBatchAsync(
+        (void**)dsts, destMaxs, (void**)srcs, sizes, count, attrs, attrsIdxs3, numAttrs + 1, &failIdx, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
     for (size_t i = 0; i < count; i++) {
-        delete [] dsts[i];
-        delete [] srcs[i];
+        delete[] dsts[i];
+        delete[] srcs[i];
     }
 }
 
@@ -1507,8 +1502,8 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_param_err0)
 {
     constexpr size_t count = 4U;
     constexpr size_t len = 128U;
-    char *dsts[count];
-    char *srcs[count];
+    char* dsts[count];
+    char* srcs[count];
     size_t sizes[count];
     for (size_t i = 0; i < count; i++) {
         dsts[i] = new (std::nothrow) char[len];
@@ -1529,22 +1524,22 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_param_err0)
 
     size_t failIdx = SIZE_MAX;
     rtError_t error;
-    error = rtsMemcpyBatch(nullptr, (void **)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch(nullptr, (void**)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatch((void **)dsts, nullptr, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, nullptr, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, 0U, attrs, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, 0U, attrs, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, nullptr, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, nullptr, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, nullptr, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, nullptr, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, attrsIdxs, 0U, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, attrsIdxs, 0U, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
@@ -1552,18 +1547,18 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_param_err0)
     for (size_t i = 0; i < count; i++) {
         sizes[i] = 0U;
     }
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     // sizes 为 nullptr
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, nullptr, count, attrs, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, nullptr, count, attrs, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     for (size_t i = 0; i < count; i++) {
-        delete [] dsts[i];
-        delete [] srcs[i];
+        delete[] dsts[i];
+        delete[] srcs[i];
     }
 }
 
@@ -1571,8 +1566,8 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_param_err1)
 {
     constexpr size_t count = 4U;
     constexpr size_t len = 128U;
-    char *dsts[count];
-    char *srcs[count];
+    char* dsts[count];
+    char* srcs[count];
     size_t sizes[count];
     for (size_t i = 0; i < count; i++) {
         dsts[i] = new (std::nothrow) char[len];
@@ -1603,28 +1598,28 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_param_err1)
 
     size_t failIdx;
     rtError_t error;
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs0, attrsIdxs0, numAttrs0, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs0, attrsIdxs0, numAttrs0, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     size_t attrsIdxs1[numAttrs] = {1, 3};
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, attrsIdxs1, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, attrsIdxs1, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     size_t attrsIdxs2[numAttrs + 1] = {0, 3, 5};
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, attrsIdxs2, numAttrs + 1, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, attrsIdxs2, numAttrs + 1, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     size_t attrsIdxs3[numAttrs + 1] = {0, 3, 1};
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, attrsIdxs3, numAttrs + 1, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, attrsIdxs3, numAttrs + 1, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     for (size_t i = 0; i < count; i++) {
-        delete [] dsts[i];
-        delete [] srcs[i];
+        delete[] dsts[i];
+        delete[] srcs[i];
     }
 }
 
@@ -1632,8 +1627,8 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_count_err)
 {
     constexpr size_t count = static_cast<size_t>(DEVMM_MEMCPY_BATCH_MAX_COUNT) + 1U;
     constexpr size_t len = 128U;
-    char *dsts[count];
-    char *srcs[count];
+    char* dsts[count];
+    char* srcs[count];
     size_t sizes[count];
     for (size_t i = 0; i < count; i++) {
         dsts[i] = new (std::nothrow) char[len];
@@ -1654,12 +1649,12 @@ TEST_F(ApiCloudV2DisableThreadTest, memcpy_batch_count_err)
 
     size_t failIdx;
     rtError_t error;
-    error = rtsMemcpyBatch((void **)dsts, (void **)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
+    error = rtsMemcpyBatch((void**)dsts, (void**)srcs, sizes, count, attrs, attrsIdxs, numAttrs, &failIdx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     EXPECT_EQ(failIdx, SIZE_MAX);
 
     for (size_t i = 0; i < count; i++) {
-        delete [] dsts[i];
-        delete [] srcs[i];
+        delete[] dsts[i];
+        delete[] srcs[i];
     }
 }

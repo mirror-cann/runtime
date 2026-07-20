@@ -23,7 +23,7 @@
 
 using namespace AicpuSchedule;
 
-namespace {}  // namespace
+namespace {} // namespace
 
 class OperatorKernelModelPrepareOutputTest : public OperatorKernelTest {
 protected:
@@ -36,7 +36,7 @@ protected:
 
 TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOutputTaskKernel_failed1)
 {
-    int *mbuf = nullptr;
+    int* mbuf = nullptr;
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     ProcessOutputInfo outputInfoT;
@@ -48,8 +48,8 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOutputTaskKernel_failed
 
 TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepare_Alloc_Error)
 {
-    Mbuf *inMbuf = nullptr;
-    Mbuf *outMbuf = nullptr;
+    Mbuf* inMbuf = nullptr;
+    Mbuf* outMbuf = nullptr;
     MOCKER(halMbufAllocEx).stubs().will(returnValue(1));
 
     ProcessOutputInfo prepareOutputInfo;
@@ -64,8 +64,8 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepare_Alloc_Error)
 
 TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepare_halMbufSetDataLen_Error)
 {
-    Mbuf *inMbuf = nullptr;
-    Mbuf *outMbuf = nullptr;
+    Mbuf* inMbuf = nullptr;
+    Mbuf* outMbuf = nullptr;
 
     MOCKER(halMbufAllocEx).stubs().will(invoke(halMbufAllocFake));
     MOCKER(halMbufFree).stubs().will(returnValue(1));
@@ -85,8 +85,8 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepare_halMbufSetDataLen_Erro
 
 TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepare_halMbufGetPrivInfo_Error1)
 {
-    Mbuf *inMbuf = nullptr;
-    Mbuf *outMbuf = nullptr;
+    Mbuf* inMbuf = nullptr;
+    Mbuf* outMbuf = nullptr;
     MOCK_MBUF_ALLOCK_FAKE()
     MOCKER(halMbufSetDataLen).stubs().will(returnValue(0));
     MOCKER(halMbufGetPrivInfo).stubs().will(returnValue(1));
@@ -114,8 +114,8 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOut_MEM_FAIL)
 {
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
-    Mbuf *inMbuf = nullptr;
-    Mbuf *outMbuf = nullptr;
+    Mbuf* inMbuf = nullptr;
+    Mbuf* outMbuf = nullptr;
     ProcessOutputInfo output;
     output.inMBuf = (uint64_t)&inMbuf;
     output.outMBuf = (uint64_t)&outMbuf;
@@ -133,8 +133,8 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOut_Success)
     taskT.taskID = 1;
     int32_t srcVal = 1;
     int32_t dstVal = 1;
-    Mbuf *inMbuf = (Mbuf *)&srcVal;
-    Mbuf *outMbuf = (Mbuf *)&dstVal;
+    Mbuf* inMbuf = (Mbuf*)&srcVal;
+    Mbuf* outMbuf = (Mbuf*)&dstVal;
     ProcessOutputInfo preOutputInfo;
     preOutputInfo.dataSize = sizeof(int32_t);
     preOutputInfo.outMBuf = (uint64_t)&outMbuf;
@@ -148,7 +148,7 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOut_Success)
 
 TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOut_failed1)
 {
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -166,15 +166,15 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelPrepareOutWithTensorDesc_Succe
     taskT.taskID = 1;
     int32_t srcVal = 1;
     int32_t dstVal = 1;
-    Mbuf *inMbuf = (Mbuf *)&srcVal;
-    Mbuf *outMbuf = (Mbuf *)&dstVal;
+    Mbuf* inMbuf = (Mbuf*)&srcVal;
+    Mbuf* outMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(ProcessOutputInfo) + sizeof(RuntimeTensorDesc)] = {0};
-    ProcessOutputInfo *preOutputInfo = (ProcessOutputInfo *)(buff);
+    ProcessOutputInfo* preOutputInfo = (ProcessOutputInfo*)(buff);
     preOutputInfo->dataSize = sizeof(int32_t);
     preOutputInfo->outMBuf = (uint64_t)&outMbuf;
     preOutputInfo->srcPtr = (uint64_t)&srcVal;
     preOutputInfo->inMBuf = (uint64_t)&inMbuf;
-    RuntimeTensorDesc *tensorDesc = (RuntimeTensorDesc *)(&buff[sizeof(ProcessOutputInfo)]);
+    RuntimeTensorDesc* tensorDesc = (RuntimeTensorDesc*)(&buff[sizeof(ProcessOutputInfo)]);
     taskT.paraBase = (uint64_t)buff;
     int ret = prepareTensorKernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -203,8 +203,8 @@ TEST_F(OperatorKernelModelPrepareOutputTest, ModelBufferPrepareOutput_Success)
     taskT.taskID = 1;
     int32_t srcVal = 1;
     int32_t dstVal = 1;
-    Mbuf *inMbuf = (Mbuf *)&srcVal;
-    Mbuf *outMbuf = (Mbuf *)&dstVal;
+    Mbuf* inMbuf = (Mbuf*)&srcVal;
+    Mbuf* outMbuf = (Mbuf*)&dstVal;
     ProcessOutputInfo preOutputInfo;
     preOutputInfo.dataSize = sizeof(int32_t);
     preOutputInfo.outMBuf = (uint64_t)&outMbuf;

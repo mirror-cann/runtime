@@ -11,17 +11,10 @@
 #include "aicpu_prof/profiling_adp.h"
 
 namespace aicpu {
-bool IsSupportedProfData()
-{
-    return false;
-}
+bool IsSupportedProfData() { return false; }
 
 void UpdateModelMode(const bool mode) {}
-int32_t ProfModelMessage::ReportProfModelMessage() {
-    return 0;
-}
+int32_t ProfModelMessage::ReportProfModelMessage() { return 0; }
 
-bool IsModelProfOpen() {
-    return true;
-}
-}
+bool IsModelProfOpen() { return true; }
+} // namespace aicpu

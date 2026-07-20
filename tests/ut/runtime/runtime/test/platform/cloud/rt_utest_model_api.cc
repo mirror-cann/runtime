@@ -20,34 +20,22 @@ using namespace cce::runtime;
 namespace {
 class ModelApiTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        (void)rtSetDevice(0);
-    }
+    static void SetUpTestCase() { (void)rtSetDevice(0); }
 
-    static void TearDownTestCase()
-    {
-        rtDeviceReset(0);
-    }
+    static void TearDownTestCase() { rtDeviceReset(0); }
 
-    virtual void SetUp()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void SetUp() { GlobalMockObject::verify(); }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
-}
+} // namespace
 
 TEST_F(ModelApiTest, ContextIsValid)
 {
-    const Runtime *const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     EXPECT_NE(rtInstance, nullptr);
-    Context *const curCtx = rtInstance->CurrentContext();
+    Context* const curCtx = rtInstance->CurrentContext();
     EXPECT_NE(curCtx, nullptr);
-    Device *dev = curCtx->Device_();
+    Device* dev = curCtx->Device_();
     EXPECT_NE(dev, nullptr);
 }

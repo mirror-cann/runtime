@@ -20,37 +20,35 @@
         MOCKER(dlopen).stubs().will(invoke(qstest::DlopenQsTestStub));   \
         MOCKER(dlsym).stubs().will(invoke(qstest::DlsymQsTestStub));     \
         MOCKER(dlclose).stubs().will(invoke(qstest::DlcloseQsTestStub)); \
-    } while(0)
+    } while (0)
 
 namespace qstest {
-using FuncNamePtrMap = std::map<std::string, void *>;
+using FuncNamePtrMap = std::map<std::string, void*>;
 
 class DlopenStub {
 public:
-    DlopenStub() : ptrManageMap_({}) {};
-    ~DlopenStub() {
-        ptrManageMap_.clear();
-    };
+    DlopenStub() : ptrManageMap_({}){};
+    ~DlopenStub() { ptrManageMap_.clear(); };
 
-    static DlopenStub &GetInstance();
+    static DlopenStub& GetInstance();
 
-    bool RegDlopenFuncPtr(const std::string &fileName, const FuncNamePtrMap &funcMaps);
-    void *dlopen(const char *fileName, int32_t mode);
-    void *dlsym(void *handle, const char *name);
-    int32_t dlclose(void *handle);
+    bool RegDlopenFuncPtr(const std::string& fileName, const FuncNamePtrMap& funcMaps);
+    void* dlopen(const char* fileName, int32_t mode);
+    void* dlsym(void* handle, const char* name);
+    int32_t dlclose(void* handle);
 
 private:
-    DlopenStub(const DlopenStub &) = delete;
-    DlopenStub &operator=(const DlopenStub &) = delete;
-    DlopenStub(DlopenStub &&) = delete;
-    DlopenStub &operator=(DlopenStub &&) = delete;
+    DlopenStub(const DlopenStub&) = delete;
+    DlopenStub& operator=(const DlopenStub&) = delete;
+    DlopenStub(DlopenStub&&) = delete;
+    DlopenStub& operator=(DlopenStub&&) = delete;
 
     std::map<std::string, FuncNamePtrMap> ptrManageMap_;
 };
 
-void *DlopenQsTestStub(const char *fileName, int32_t mode);
-int32_t DlcloseQsTestStub(void *handle);
-void *DlsymQsTestStub(void *handle, const char *name);
-}  // namespace qstest
+void* DlopenQsTestStub(const char* fileName, int32_t mode);
+int32_t DlcloseQsTestStub(void* handle);
+void* DlsymQsTestStub(void* handle, const char* name);
+} // namespace qstest
 
 #endif // QS_TEST_DLOPEN_SUB_H

@@ -30,27 +30,20 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class SomaTest : public testing::Test
-{
+class SomaTest : public testing::Test {
 public:
-    static rtError_t rtDeviceResetStub(int32_t device)
-    {
-        return RT_ERROR_NONE;
-    }
+    static rtError_t rtDeviceResetStub(int32_t device) { return RT_ERROR_NONE; }
 
 protected:
     static void SetUpTestCase()
     {
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         std::cout << "======== SomaTest Start SetUpTestCase ========" << std::endl;
         MOCKER(rtDeviceReset).stubs().will(invoke(rtDeviceResetStub));
         MOCKER(rtSetDevice).stubs().will(returnValue(0));
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "======== SomaTest Start TearDownTestCase ========" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "======== SomaTest Start TearDownTestCase ========" << std::endl; }
 
     virtual void SetUp()
     {
@@ -67,19 +60,16 @@ protected:
 
 static SegmentManager* CreateTestMemPool(uint64_t size, uint32_t devId = 0U)
 {
-    static uint64_t nextVa = (1ULL << 30);   // 从 1GB 起，避免 nullptr 区域
+    static uint64_t nextVa = (1ULL << 30); // 从 1GB 起，避免 nullptr 区域
     uint64_t va = nextVa;
     nextVa += size;
-    Segment *seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
-    SegmentManager *mgr = PoolRegistry::CreateManager(seg, devId, true);
+    Segment* seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
+    SegmentManager* mgr = PoolRegistry::CreateManager(seg, devId, true);
     PoolRegistry::Instance().RegisterMemPool(mgr);
     return mgr;
 }
 
-TEST_F(SomaTest, streamMemSegmentManagerNullptr)
-{
-    SegmentManager segManeger(nullptr, 0U, true);
-}
+TEST_F(SomaTest, streamMemSegmentManagerNullptr) { SegmentManager segManeger(nullptr, 0U, true); }
 
 TEST_F(SomaTest, MemPoolAttrToName)
 {
@@ -90,11 +80,11 @@ TEST_F(SomaTest, MemPoolAttrToName)
 
 TEST_F(SomaTest, MemPoolTest)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
     uint64_t size = 8U;
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     const int streamId = 0;
     error = memPool->SegmentAlloc(ptr, size, streamId, flag);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -108,7 +98,7 @@ TEST_F(SomaTest, MemPoolTest)
 
 TEST_F(SomaTest, PoolAllocatorSetAttributeTest)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     memPool->isIPCPool_ = true;
     rtMemPoolAttr attr = rtMemPoolAttr::rtMemPoolReuseFollowEventDependencies;
@@ -140,7 +130,7 @@ TEST_F(SomaTest, PoolAllocatorSetAttributeTest)
 
 TEST_F(SomaTest, PoolAllocatorGetAttributeTest)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     size_t local = 0;
     void* value = &local;
@@ -175,10 +165,10 @@ TEST_F(SomaTest, PoolAllocatorGetAttributeTest)
 
 TEST_F(SomaTest, StreamInternalReuseTest_Opport_Reuse)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     uint64_t size = 8U;
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
     const int streamId = 0;
     error = memPool->SegmentAlloc(ptr, size, streamId, flag);
@@ -186,7 +176,7 @@ TEST_F(SomaTest, StreamInternalReuseTest_Opport_Reuse)
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_NONE);
     error = memPool->SegmentFree(ptr->basePtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Segment *segManager = memPool->StreamInternalReuse(5U, 0, true, flag);
+    Segment* segManager = memPool->StreamInternalReuse(5U, 0, true, flag);
     EXPECT_NE(segManager, nullptr);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_STANDARD);
     std::shared_ptr<SegmentManager> owned;
@@ -196,10 +186,10 @@ TEST_F(SomaTest, StreamInternalReuseTest_Opport_Reuse)
 
 TEST_F(SomaTest, StreamInternalReuseTest_Internal_Reuse)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     uint64_t size = 8U;
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     const int streamId = 1;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
     error = memPool->SegmentAlloc(ptr, size, streamId, flag);
@@ -207,7 +197,7 @@ TEST_F(SomaTest, StreamInternalReuseTest_Internal_Reuse)
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_NONE);
     error = memPool->SegmentFree(ptr->basePtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Segment *segManager = memPool->StreamInternalReuse(5U, 0, false, flag);
+    Segment* segManager = memPool->StreamInternalReuse(5U, 0, false, flag);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_INTERNAL);
     EXPECT_NE(segManager, nullptr);
     std::shared_ptr<SegmentManager> owned;
@@ -217,10 +207,10 @@ TEST_F(SomaTest, StreamInternalReuseTest_Internal_Reuse)
 
 TEST_F(SomaTest, StreamEventReuseTest_Event_Reuse)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     uint64_t size = 8U;
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     const int streamId = 0;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
     error = memPool->SegmentAlloc(ptr, size, streamId, flag);
@@ -232,7 +222,7 @@ TEST_F(SomaTest, StreamEventReuseTest_Event_Reuse)
     const int streamId1 = 1;
     PoolRegistry::Instance().UpdateEventMap(streamId, eventId);
     PoolRegistry::Instance().UpdateSeqMap(streamId1, eventId);
-    Segment *segManager = memPool->StreamEventReuse(5U, 1, flag);
+    Segment* segManager = memPool->StreamEventReuse(5U, 1, flag);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_STANDARD);
     EXPECT_NE(segManager, nullptr);
     std::shared_ptr<SegmentManager> owned;
@@ -242,10 +232,10 @@ TEST_F(SomaTest, StreamEventReuseTest_Event_Reuse)
 
 TEST_F(SomaTest, StreamEventReuseTest_Reuse_None)
 {
-    SegmentManager *memPool = CreateTestMemPool(64U, 0U);
+    SegmentManager* memPool = CreateTestMemPool(64U, 0U);
     rtError_t error = RT_ERROR_NONE;
     uint64_t size = 8U;
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     const int streamId = 0;
     const int streamId1 = 1;
     const int eventId = 0;
@@ -258,7 +248,7 @@ TEST_F(SomaTest, StreamEventReuseTest_Reuse_None)
     PoolRegistry::Instance().UpdateEventMap(streamId, eventId);
     error = memPool->SegmentFree(ptr->basePtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Segment *ret = memPool->StreamEventReuse(5U, 1, flag);
+    Segment* ret = memPool->StreamEventReuse(5U, 1, flag);
     EXPECT_EQ(flag, ReuseFlag::REUSE_FLAG_NONE);
     EXPECT_EQ(ret, nullptr);
     std::shared_ptr<SegmentManager> owned;
@@ -272,7 +262,7 @@ TEST_F(SomaTest, FindMemPoolByPtrTest)
     uint64_t size = DEVICE_POOL_ALIGN_SIZE;
     uint64_t ptr = 0;
 
-    SegmentManager *memPool1 = CreateTestMemPool(size, 0U);
+    SegmentManager* memPool1 = CreateTestMemPool(size, 0U);
     ASSERT_NE(memPool1, nullptr);
     ptr = memPool1->PoolSegAddr();
     std::shared_ptr<SegmentManager> retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr - 1);
@@ -285,7 +275,7 @@ TEST_F(SomaTest, FindMemPoolByPtrTest)
     retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr + retPool->PoolSize());
     EXPECT_NE(retPool.get(), memPool1);
 
-    SegmentManager *memPool2 = CreateTestMemPool(size, 0U);
+    SegmentManager* memPool2 = CreateTestMemPool(size, 0U);
     ASSERT_NE(memPool2, nullptr);
     ptr = memPool2->PoolSegAddr() + memPool2->PoolSize() / 2;
     retPool = PoolRegistry::Instance().FindMemPoolByPtr(ptr);
@@ -304,13 +294,8 @@ TEST_F(SomaTest, SomaApiTest_Create_Destory)
     uint64_t totalSize = DEVICE_POOL_ALIGN_SIZE * 2;
 
     rtMemPoolProps poolProps = {
-        .side = 1,
-        .devId = 0,
-        .handleType = RT_MEM_HANDLE_TYPE_POSIX,
-        .maxSize = 0,
-        .reserve = 0
-    };
-    SegmentManager *memPool1 = nullptr;
+        .side = 1, .devId = 0, .handleType = RT_MEM_HANDLE_TYPE_POSIX, .maxSize = 0, .reserve = 0};
+    SegmentManager* memPool1 = nullptr;
     error = SomaApi::AlignAndValidatePoolSize(poolProps, totalSize);
     ASSERT_EQ(error, RT_ERROR_NONE);
     memPool1 = CreateTestMemPool(poolProps.maxSize, poolProps.devId);
@@ -326,8 +311,7 @@ TEST_F(SomaTest, SomaApiTest_Create_Destory)
         .devId = 0,
         .handleType = RT_MEM_HANDLE_TYPE_POSIX,
         .maxSize = DEVICE_POOL_ALIGN_SIZE * 3,
-        .reserve = 0
-    };
+        .reserve = 0};
     error = SomaApi::AlignAndValidatePoolSize(poolProps1, totalSize);
     ASSERT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
@@ -342,9 +326,8 @@ TEST_F(SomaTest, SomaApiMemoryAlignmentTest)
         .devId = 0,
         .handleType = RT_MEM_HANDLE_TYPE_POSIX,
         .maxSize = DEVICE_POOL_ALIGN_SIZE - 1,
-        .reserve = 0
-    };
-    SegmentManager *memPool = nullptr;
+        .reserve = 0};
+    SegmentManager* memPool = nullptr;
     error = SomaApi::AlignAndValidatePoolSize(poolProps, totalSize);
     ASSERT_EQ(error, RT_ERROR_NONE);
     memPool = CreateTestMemPool(poolProps.maxSize, poolProps.devId);
@@ -356,21 +339,20 @@ TEST_F(SomaTest, SomaApiMemoryAlignmentTest)
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
 
-
 TEST_F(SomaTest, MemPoolTest_TrimTo_trim_part)
 {
-    SegmentManager *memPool = nullptr;
+    SegmentManager* memPool = nullptr;
     const int streamId = 0;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
     memPool = CreateTestMemPool(1000U, 0U);
     rtError_t error = RT_ERROR_NONE;
 
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     error = memPool->SegmentAlloc(ptr, 200U, streamId, flag);
     ASSERT_EQ(error, RT_ERROR_NONE);
     {
-        Segment *ptr = nullptr;
+        Segment* ptr = nullptr;
         error = memPool->SegmentAlloc(ptr, 300U, streamId, flag);
         ASSERT_EQ(error, RT_ERROR_NONE);
 
@@ -397,18 +379,18 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_trim_part)
 
 TEST_F(SomaTest, MemPoolTest_TrimTo_not_trim)
 {
-    SegmentManager *memPool = nullptr;
+    SegmentManager* memPool = nullptr;
     const int streamId = 0;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
     memPool = CreateTestMemPool((10UL << 20), 0U);
     rtError_t error = RT_ERROR_NONE;
 
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     error = memPool->SegmentAlloc(ptr, (2UL << 20), streamId, flag);
     ASSERT_EQ(error, RT_ERROR_NONE);
     {
-        Segment *ptr = nullptr;
+        Segment* ptr = nullptr;
         error = memPool->SegmentAlloc(ptr, (3UL << 20), streamId, flag);
         ASSERT_EQ(error, RT_ERROR_NONE);
         error = memPool->SegmentFree(ptr->basePtr);
@@ -443,18 +425,18 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_not_trim)
 
 TEST_F(SomaTest, MemPoolTest_TrimTo_trim_all)
 {
-    SegmentManager *memPool = nullptr;
+    SegmentManager* memPool = nullptr;
     const int streamId = 0;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
     memPool = CreateTestMemPool((100UL << 10), 0U);
     rtError_t error = RT_ERROR_NONE;
 
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
     error = memPool->SegmentAlloc(ptr, (20UL << 10), streamId, flag);
     ASSERT_EQ(error, RT_ERROR_NONE);
     {
-        Segment *ptr = nullptr;
+        Segment* ptr = nullptr;
         error = memPool->SegmentAlloc(ptr, (30UL << 10), streamId, flag);
         ASSERT_EQ(error, RT_ERROR_NONE);
         error = memPool->SegmentFree(ptr->basePtr);
@@ -480,14 +462,14 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_trim_all)
 
 TEST_F(SomaTest, MemPoolTest_TrimTo_mempools)
 {
-    SegmentManager *memPool = nullptr;
+    SegmentManager* memPool = nullptr;
     const int streamId = 0;
     ReuseFlag flag = ReuseFlag::REUSE_FLAG_NONE;
 
     memPool = CreateTestMemPool(100U, 0U);
     rtError_t error = RT_ERROR_NONE;
 
-    Segment *ptr = nullptr;
+    Segment* ptr = nullptr;
 
     error = memPool->SegmentAlloc(ptr, 100U, streamId, flag);
     ASSERT_EQ(error, RT_ERROR_NONE);
@@ -495,8 +477,8 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_mempools)
     ASSERT_EQ(error, RT_ERROR_POOL_OP_INVALID);
 
     {
-        SegmentManager *memPool2 = nullptr;
-        Segment *ptr2 = nullptr;
+        SegmentManager* memPool2 = nullptr;
+        Segment* ptr2 = nullptr;
         memPool2 = CreateTestMemPool(100U, 0U);
         error = memPool2->SegmentAlloc(ptr2, 10U, streamId, flag);
         ASSERT_EQ(error, RT_ERROR_NONE);
@@ -519,7 +501,7 @@ TEST_F(SomaTest, MemPoolTest_TrimTo_mempools)
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
 
-void EventStateStubCallback(Stream* stream, Event* event, EventStatePeriod period, void *args)
+void EventStateStubCallback(Stream* stream, Event* event, EventStatePeriod period, void* args)
 {
     UNUSED(stream);
     UNUSED(event);
@@ -529,11 +511,11 @@ void EventStateStubCallback(Stream* stream, Event* event, EventStatePeriod perio
 
 TEST_F(SomaTest, SomaApiEventStateCallbackRegTest)
 {
-    rtError_t ret = EventStateCallbackManager::Instance().RegEventStateCallback("Stub#NullptrCallback",
-        nullptr, nullptr, EventStateCallbackType::RT_EVENT_STATE_CALLBACK);
+    rtError_t ret = EventStateCallbackManager::Instance().RegEventStateCallback(
+        "Stub#NullptrCallback", nullptr, nullptr, EventStateCallbackType::RT_EVENT_STATE_CALLBACK);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    ret = EventStateCallbackManager::Instance().RegEventStateCallback("Stub#WrongTypeCallback",
-        RtPtrToPtr<void *>(EventStateStubCallback), nullptr,
+    ret = EventStateCallbackManager::Instance().RegEventStateCallback(
+        "Stub#WrongTypeCallback", RtPtrToPtr<void*>(EventStateStubCallback), nullptr,
         EventStateCallbackType::RT_EVENT_STATE_CALLBACK_TYPE_MAX);
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
 }

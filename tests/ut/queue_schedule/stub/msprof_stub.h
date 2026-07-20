@@ -10,5 +10,5 @@
 #include <cstdint>
 
 namespace qstest {
-int32_t RunMsprofCallback(uint32_t type, void *data, uint32_t len);
+int32_t RunMsprofCallback(uint32_t type, void* data, uint32_t len);
 } // namespace qstest

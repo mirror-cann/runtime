@@ -35,7 +35,7 @@
 #define IOCTL_CMD_MUNMAP 0x7FFF0004
 
 // This is the location of IAM library in runtime env
-#define IAM_LIB_PATH    "/usr/lib64/libiam.so.1"
+#define IAM_LIB_PATH "/usr/lib64/libiam.so.1"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,28 +55,28 @@ const int DEFAULT_FS_TIMEOUT = -1;
 #define IAMUDSInfo FTEUDSInfo
 
 struct IAMServiceRequest {
-    uint8_t *data;
+    uint8_t* data;
     uint32_t size;
 };
 
 struct IAMIoctlArg {
     size_t size;
-    void *argData;
+    void* argData;
 };
 
 struct IAMServiceResponse {
-    uint8_t *data;
+    uint8_t* data;
     uint32_t size;
 };
 
 struct IAMMgrFile {
     int sid;
-    const char *appName;
-    const char *fileName;
-    const char *serviceName;
+    const char* appName;
+    const char* fileName;
+    const char* serviceName;
     int flags;
     mode_t mode;
-    void *priv;
+    void* priv;
     int timeOut;
 };
 
@@ -85,13 +85,11 @@ enum ProcType { // 进程类型
     PRIVILEGED
 };
 
-
 struct AppConfig {
-    std::string procName; //全局唯一的进程名，该进程名会被映射到FIFO管道文件名
+    std::string procName; // 全局唯一的进程名，该进程名会被映射到FIFO管道文件名
     std::string executablePath;
     enum ProcType type;
 };
-
 
 enum IAM_SECVFS_FILE_TYPE {
     QFILE = 1,
@@ -99,36 +97,35 @@ enum IAM_SECVFS_FILE_TYPE {
 };
 
 struct IAMFileOps {
-    ssize_t (*read)(struct IAMMgrFile *, char *buf, size_t len, loff_t *pos);
-    ssize_t (*write)(struct IAMMgrFile *, const char *buf, size_t len, loff_t *pos);
-    int (*ioctl)(struct IAMMgrFile *, unsigned cmd, struct IAMIoctlArg *);
-    int (*open)(struct IAMMgrFile *);
-    int (*close)(struct IAMMgrFile *);
+    ssize_t (*read)(struct IAMMgrFile*, char* buf, size_t len, loff_t* pos);
+    ssize_t (*write)(struct IAMMgrFile*, const char* buf, size_t len, loff_t* pos);
+    int (*ioctl)(struct IAMMgrFile*, unsigned cmd, struct IAMIoctlArg*);
+    int (*open)(struct IAMMgrFile*);
+    int (*close)(struct IAMMgrFile*);
 };
 
 struct IAMFileConfig {
-    const char *serviceName;
-    const struct IAMFileOps *ops;
+    const char* serviceName;
+    const struct IAMFileOps* ops;
     int timeOut;
 };
 
-int IAMRegisterService(const struct IAMFileConfig *config);
+int IAMRegisterService(const struct IAMFileConfig* config);
 int IAMResMgrReady(void);
 int IAMRegAllSystemStateChange(void);
-int IAMResMgrReportEvent(const struct IAMEventInfo *eventInfo, const struct IAMUDSInfo *udsInfo);
-int IAMValidateDev(const char *cert, unsigned int certLen);
-int IAMInitProc(const AppConfig &config);
-
+int IAMResMgrReportEvent(const struct IAMEventInfo* eventInfo, const struct IAMUDSInfo* udsInfo);
+int IAMValidateDev(const char* cert, unsigned int certLen);
+int IAMInitProc(const AppConfig& config);
 
 struct IAMShmBlock {
-    struct xshmem_block *block;
-    void *addr;
+    struct xshmem_block* block;
+    void* addr;
     uint32_t size;
 };
 
 struct IAMShmPool {
-    struct xshmem_pool *xshmemPool_writer;
-    struct xshmem_pool *xshmemPool_reader;
+    struct xshmem_pool* xshmemPool_writer;
+    struct xshmem_pool* xshmemPool_reader;
     uint32_t size;
     char name[100];
 };
@@ -139,45 +136,34 @@ struct IAMShmPool {
 struct IAMDataQueue;
 
 struct IamQfsMgrFile {
-    const char *appName;
-    const char *fileName;
-    const char *serviceName;
-    struct IAMDataQueue *queue;
-    void *priv;
+    const char* appName;
+    const char* fileName;
+    const char* serviceName;
+    struct IAMDataQueue* queue;
+    void* priv;
 };
 
 struct IAMQfsFileOps {
-    ssize_t (*write)(struct IamQfsMgrFile *, const char *buf, size_t len, loff_t *pos);
-    int (*ioctl)(struct IamQfsMgrFile *, unsigned cmd, struct IAMIoctlArg *);
-    int (*open)(struct IamQfsMgrFile *);
-    int (*close)(struct IamQfsMgrFile *);
+    ssize_t (*write)(struct IamQfsMgrFile*, const char* buf, size_t len, loff_t* pos);
+    int (*ioctl)(struct IamQfsMgrFile*, unsigned cmd, struct IAMIoctlArg*);
+    int (*open)(struct IamQfsMgrFile*);
+    int (*close)(struct IamQfsMgrFile*);
 };
 
 struct IAMQFileConfig {
-    const char *serviceName;
-    struct IAMQfsFileOps *ops;
+    const char* serviceName;
+    struct IAMQfsFileOps* ops;
     int timeOut;
 };
 
 /************************************************
  *  IAM RTFS
  ***********************************************/
-enum IAMRTDataPriority {
-    IAM_RT_DATA_PRIO_NORMAL,
-    IAM_RT_DATA_PRIO_HIGH,
-    IAM_RT_DATA_PRIO_INVALID
-};
+enum IAMRTDataPriority { IAM_RT_DATA_PRIO_NORMAL, IAM_RT_DATA_PRIO_HIGH, IAM_RT_DATA_PRIO_INVALID };
 
-enum IAMHungerStrategyEnum {
-    IAM_REQUEST_MIXED_STRATEGY,
-    IAM_REQUEST_STRATEGY_INVALID
-};
+enum IAMHungerStrategyEnum { IAM_REQUEST_MIXED_STRATEGY, IAM_REQUEST_STRATEGY_INVALID };
 
-enum IAMRTType {
-    IAM_POLICY_DEFAULT_PRIO_DEFAULT,
-    IAM_POLICY_FIFO_PRIO_HIGH,
-    IAM_RTTYPE_BUTT
-};
+enum IAMRTType { IAM_POLICY_DEFAULT_PRIO_DEFAULT, IAM_POLICY_FIFO_PRIO_HIGH, IAM_RTTYPE_BUTT };
 
 struct IAMRTParam {
     enum IAMHungerStrategyEnum hungerStrategy;
@@ -195,23 +181,23 @@ struct IAMRTParam {
 struct IAMRTDataQueue;
 
 struct IAMRTFSMgrFile {
-    const char *appName;
-    const char *fileName;
-    const char *serviceName;
-    struct IAMRTDataQueue *queue;
-    void *priv;
+    const char* appName;
+    const char* fileName;
+    const char* serviceName;
+    struct IAMRTDataQueue* queue;
+    void* priv;
 };
 
 struct IAMRTFSFileOps {
-    ssize_t (*write)(struct IAMRTFSMgrFile *, const char *buf, size_t len, loff_t *pos);
-    int (*ioctl)(struct IAMRTFSMgrFile *, unsigned cmd, struct IAMIoctlArg *);
-    int (*open)(struct IAMRTFSMgrFile *);
-    int (*close)(struct IAMRTFSMgrFile *);
+    ssize_t (*write)(struct IAMRTFSMgrFile*, const char* buf, size_t len, loff_t* pos);
+    int (*ioctl)(struct IAMRTFSMgrFile*, unsigned cmd, struct IAMIoctlArg*);
+    int (*open)(struct IAMRTFSMgrFile*);
+    int (*close)(struct IAMRTFSMgrFile*);
 };
 
 struct IAMRTFileConfig {
-    const char *serviceName;
-    struct IAMRTFSFileOps *ops;
+    const char* serviceName;
+    struct IAMRTFSFileOps* ops;
     int timeOut;
     struct IAMRTParam rtParam;
 #ifdef __cplusplus
@@ -220,47 +206,46 @@ struct IAMRTFileConfig {
 };
 
 struct IAMRTDataPacket {
-    struct IAMShmPool *pool;
-    struct IAMShmBlock *block;
+    struct IAMShmPool* pool;
+    struct IAMShmBlock* block;
     enum IAMRTDataPriority prio;
 };
 
-int IAMRTDataEnqueue(struct IAMRTDataQueue *queue, struct IAMRTDataPacket *data);
-int IAMRTDataClear(struct IAMRTDataQueue *queue);
+int IAMRTDataEnqueue(struct IAMRTDataQueue* queue, struct IAMRTDataPacket* data);
+int IAMRTDataClear(struct IAMRTDataQueue* queue);
 
 struct IAMServiceRPCConfig {
     int timeOut;
 };
 
 #ifndef IAM_HOOK
-int IAMOpen(const char *, int, ...);
+int IAMOpen(const char*, int, ...);
 int IAMClose(int);
 int IAMIoctl(int, unsigned long, ...);
-ssize_t IAMRead(int, void *, size_t);
-ssize_t IAMWrite(int, const void *, size_t);
+ssize_t IAMRead(int, void*, size_t);
+ssize_t IAMWrite(int, const void*, size_t);
 #endif
 
-int IAMRegisterQueueService(const struct IAMQFileConfig *config);
-int IAMRegisterRTService(const struct IAMRTFileConfig *config);
-int IAMDataEnqueue(struct IAMDataQueue *queue, struct IAMShmPool *pool, struct IAMShmBlock *block);
-int IAMDataClear(struct IAMDataQueue *queue);
-ssize_t IAMFastRead(int fd, void *buf, size_t count);
-void *IAMMmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
-int IAMMunmap(void *addr, size_t length);
+int IAMRegisterQueueService(const struct IAMQFileConfig* config);
+int IAMRegisterRTService(const struct IAMRTFileConfig* config);
+int IAMDataEnqueue(struct IAMDataQueue* queue, struct IAMShmPool* pool, struct IAMShmBlock* block);
+int IAMDataClear(struct IAMDataQueue* queue);
+ssize_t IAMFastRead(int fd, void* buf, size_t count);
+void* IAMMmap(void* addr, size_t length, int prot, int flags, int fd, off_t offset);
+int IAMMunmap(void* addr, size_t length);
 
-int IAMInitServiceRPC(const char *rscFilePath, size_t rscFilePathLen);
-int IAMInitServiceRPCWithConfig(const char *rscFilePath, size_t rscFilePathLen,
-                                const struct IAMServiceRPCConfig *config);
-int IAMServiceRPCSync(int fd, const struct IAMServiceRequest *req, struct IAMServiceResponse *resp);
+int IAMInitServiceRPC(const char* rscFilePath, size_t rscFilePathLen);
+int IAMInitServiceRPCWithConfig(
+    const char* rscFilePath, size_t rscFilePathLen, const struct IAMServiceRPCConfig* config);
+int IAMServiceRPCSync(int fd, const struct IAMServiceRequest* req, struct IAMServiceResponse* resp);
 int IAMFiniServiceRPC(int fd);
 
-int IAMShmRegisterPool(const char *fileName, unsigned int size, struct IAMShmPool *poolHandle);
-int IAMShmMalloc(struct IAMShmPool *poolHandle, unsigned int allocedSize, struct IAMShmBlock *blockHandle);
-int IAMShmFree(struct IAMShmPool *poolHandle, struct IAMShmBlock *blockHandle);
-int IAMShmDestroyPool(struct IAMShmPool *pool);
+int IAMShmRegisterPool(const char* fileName, unsigned int size, struct IAMShmPool* poolHandle);
+int IAMShmMalloc(struct IAMShmPool* poolHandle, unsigned int allocedSize, struct IAMShmBlock* blockHandle);
+int IAMShmFree(struct IAMShmPool* poolHandle, struct IAMShmBlock* blockHandle);
+int IAMShmDestroyPool(struct IAMShmPool* pool);
 #ifdef __cplusplus
 }
 #endif
 
 #endif // IAMMGR_IAM_H
-

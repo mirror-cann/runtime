@@ -36,34 +36,26 @@
 using namespace testing;
 using namespace cce::runtime;
 
-
-class ContextTestDavid : public testing::Test
-{
+class ContextTestDavid : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         GlobalMockObject::verify();
     }
+
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
-    static void *binHandle_;
+    static void* binHandle_;
     static char function_;
     static uint32_t binary_[32];
 };
@@ -73,70 +65,63 @@ TEST_F(ContextTestDavid, CopyTilingTabToDevForDavid_ForNewBinaryLoadFlow_Test)
     GlobalMockObject::verify();
     int32_t devId;
     rtError_t error;
-    Context *ctx;
+    Context* ctx;
 
     error = rtGetDevice(&devId);
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     EXPECT_NE(device, nullptr);
     device->Init();
-    Stream *stream = new Stream(device, 0);
-    RefObject<Context*> *refObject = NULL;
-    refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    Stream* stream = new Stream(device, 0);
+    RefObject<Context*>* refObject = NULL;
+    refObject = (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
     EXPECT_NE(ctx, nullptr);
 
     PlainProgram prog;
     prog.SetIsNewBinaryLoadFlow(true);
-    TilingTabl *memoryPtr = new TilingTabl[10];
+    TilingTabl* memoryPtr = new TilingTabl[10];
     uint32_t tilingTabLen = 0U;
     Module module(device);
-    void *devMem = nullptr;
+    void* devMem = nullptr;
 
-    MOCKER_CPP(&Program::DavidBuildTilingTblForNewFlow)
-        .stubs()
-        .will(returnValue(1))
-        .then(returnValue(RT_ERROR_NONE));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, &devMem, &tilingTabLen);
+    MOCKER_CPP(&Program::DavidBuildTilingTblForNewFlow).stubs().will(returnValue(1)).then(returnValue(RT_ERROR_NONE));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, &devMem, &tilingTabLen);
     EXPECT_EQ(error, 1);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)&memoryPtr))
+        .with(outBoundP((void**)&memoryPtr))
         .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, &devMem, &tilingTabLen);
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, &devMem, &tilingTabLen);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)&memoryPtr))
+        .with(outBoundP((void**)&memoryPtr))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-        .stubs()
-        .then(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, &devMem, &tilingTabLen);
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().then(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, &devMem, &tilingTabLen);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-        MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)&memoryPtr))
+        .with(outBoundP((void**)&memoryPtr))
         .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, &devMem, &tilingTabLen);
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, &devMem, &tilingTabLen);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)memoryPtr))
+        .with(outBoundP((void**)memoryPtr))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-        .stubs()
-        .then(returnValue(RT_ERROR_NONE));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, &devMem, &tilingTabLen);
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().then(returnValue(RT_ERROR_NONE));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, &devMem, &tilingTabLen);
     EXPECT_NE(error, RT_ERROR_NONE);
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
     delete stream;
     delete device;
-    delete [] memoryPtr;
+    delete[] memoryPtr;
     GlobalMockObject::verify();
 }
 
@@ -145,72 +130,62 @@ TEST_F(ContextTestDavid, CopyTilingTabToDevForDavid_test)
     GlobalMockObject::verify();
     int32_t devId;
     rtError_t error;
-    Context *ctx;
+    Context* ctx;
 
     error = rtGetDevice(&devId);
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     EXPECT_NE(device, nullptr);
     device->Init();
-    Stream *stream = new Stream(device, 0);
-    RefObject<Context*> *refObject = NULL;
-    refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    Stream* stream = new Stream(device, 0);
+    RefObject<Context*>* refObject = NULL;
+    refObject = (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
     EXPECT_NE(ctx, nullptr);
 
     PlainProgram prog;
-    TilingTabl *memoryPtr = new TilingTabl[10];
+    TilingTabl* memoryPtr = new TilingTabl[10];
     Module module(device);
-    MOCKER_CPP(&Context::GetModule)
-        .stubs()
-        .will(returnValue((Module *)nullptr))
-        .then(returnValue(&module));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, nullptr, nullptr);
+    MOCKER_CPP(&Context::GetModule).stubs().will(returnValue((Module*)nullptr)).then(returnValue(&module));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_MODULE_NULL);
 
-    MOCKER_CPP(&Program::BuildTilingTblForDavid)
-        .stubs()
-        .will(returnValue(1))
-        .then(returnValue(RT_ERROR_NONE));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, nullptr, nullptr);
+    MOCKER_CPP(&Program::BuildTilingTblForDavid).stubs().will(returnValue(1)).then(returnValue(RT_ERROR_NONE));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, nullptr, nullptr);
     EXPECT_EQ(error, 1);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)&memoryPtr))
+        .with(outBoundP((void**)&memoryPtr))
         .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, nullptr, nullptr);
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)&memoryPtr))
+        .with(outBoundP((void**)&memoryPtr))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-        .stubs()
-        .then(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, nullptr, nullptr);
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().then(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, nullptr, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-        MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)&memoryPtr))
+        .with(outBoundP((void**)&memoryPtr))
         .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, nullptr, nullptr);
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, nullptr, nullptr);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 
     MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP((void **)memoryPtr))
+        .with(outBoundP((void**)memoryPtr))
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync)
-        .stubs()
-        .then(returnValue(RT_ERROR_NONE));
-    error = ctx->CopyTilingTabToDev((Program *)&prog, device, nullptr, nullptr);
+    MOCKER_CPP_VIRTUAL(device->Driver_(), &Driver::MemCopySync).stubs().then(returnValue(RT_ERROR_NONE));
+    error = ctx->CopyTilingTabToDev((Program*)&prog, device, nullptr, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
     delete stream;
     delete device;
-    delete [] memoryPtr;
+    delete[] memoryPtr;
     GlobalMockObject::verify();
 }

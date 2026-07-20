@@ -51,31 +51,21 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiAbnormalTest : public testing::Test
-{
+class ApiAbnormalTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ApiAbnormalTest, rtReduceAsyncV2Abnormal)
 {
     rtError_t error;
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     rtChipType_t originType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
@@ -89,7 +79,7 @@ TEST_F(ApiAbnormalTest, rtReduceAsyncV2Abnormal)
 TEST_F(ApiAbnormalTest, rtRDMASendAbnormal)
 {
     rtError_t error;
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     rtChipType_t originType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
@@ -103,7 +93,7 @@ TEST_F(ApiAbnormalTest, rtRDMASendAbnormal)
 TEST_F(ApiAbnormalTest, rtRDMADBSendAbnormal)
 {
     rtError_t error;
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     rtChipType_t originType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
@@ -122,17 +112,17 @@ TEST_F(ApiAbnormalTest, rtsGetMemcpyDescSize_DavidChip_Success)
     rtGetSocVersion(oriSocVersion, 128);
     GlobalContainer::SetHardwareSocVersion("");
     (void)rtSetSocVersion("ASCEND950PR_958A");
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
-    
+
     error = rtsGetMemcpyDescSize(RT_MEMCPY_KIND_INNER_DEVICE_TO_DEVICE, &size);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(size, MEMCPY_DESC_SIZE_V2);
-    
+
     rtInstance->SetChipType(oriChipType);
     GlobalContainer::SetRtChipType(oriChipType);
     rtSetSocVersion(oriSocVersion);
-    ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+    ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 }

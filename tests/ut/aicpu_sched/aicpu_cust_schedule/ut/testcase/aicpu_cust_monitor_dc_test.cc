@@ -18,31 +18,23 @@
 
 class AICPUScheduleDcStubTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleDcStubTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleDcStubTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleDcStubTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleDcStubTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleDcStubTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleDcStubTEST SetUP" << std::endl; }
 
-    virtual void TearDown()
-    {
-        std::cout << "AICPUScheduleDcStubTEST TearDown" << std::endl;
-    }
+    virtual void TearDown() { std::cout << "AICPUScheduleDcStubTEST TearDown" << std::endl; }
 };
 
-TEST_F(AICPUScheduleDcStubTEST, stubTest) {
+TEST_F(AICPUScheduleDcStubTEST, stubTest)
+{
     DataPreprocess::TaskQueueMgr::GetInstance();
     EXPECT_EQ(aicpu::AddToCgroup(0U, 0U), true);
 }
 
-TEST_F(AICPUScheduleDcStubTEST, stubSecCom) {
+TEST_F(AICPUScheduleDcStubTEST, stubSecCom)
+{
     scmp_filter_ctx ctx = seccomp_init(0U);
     EXPECT_EQ(ctx, nullptr);
 

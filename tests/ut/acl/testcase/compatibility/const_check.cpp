@@ -19,13 +19,13 @@
 #undef private
 #endif
 
-class UTEST_ACL_compatibility_const_check : public testing::Test
-{
-    public:
-        UTEST_ACL_compatibility_const_check() {}
-    protected:
-        virtual void SetUp() {}
-        virtual void TearDown() {}
+class UTEST_ACL_compatibility_const_check : public testing::Test {
+public:
+    UTEST_ACL_compatibility_const_check() {}
+
+protected:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
 TEST_F(UTEST_ACL_compatibility_const_check, ge_error_codes)
@@ -233,13 +233,13 @@ TEST_F(UTEST_ACL_compatibility_const_check, acl_prof)
     EXPECT_EQ(ACL_PROF_MAX_OP_TYPE_LEN, 65);
 }
 
-
-
-TEST_F(UTEST_ACL_compatibility_const_check, acl_capability) {
+TEST_F(UTEST_ACL_compatibility_const_check, acl_capability)
+{
     EXPECT_LE(acl::CannInfoUtils::attrToCannInfo_.size(), 128);
 }
 
-TEST_F(UTEST_ACL_compatibility_const_check, enum_acl_cann_package_name) {
+TEST_F(UTEST_ACL_compatibility_const_check, enum_acl_cann_package_name)
+{
     EXPECT_EQ(ACL_PKG_VERSION_MAX_SIZE, 128);
     EXPECT_EQ(ACL_PKG_VERSION_PARTS_MAX_SIZE, 64);
 
@@ -295,10 +295,7 @@ TEST_F(UTEST_ACL_compatibility_const_check, devs_topology)
     EXPECT_EQ(ACL_RT_DEVS_TOPOLOGY_HCCS_SW, 0x40ULL);
 }
 
-TEST_F(UTEST_ACL_compatibility_const_check, cmo_max_barrier_num)
-{
-    EXPECT_EQ(ACL_RT_CMO_MAX_BARRIER_NUM, 0x06U);
-}
+TEST_F(UTEST_ACL_compatibility_const_check, cmo_max_barrier_num) { EXPECT_EQ(ACL_RT_CMO_MAX_BARRIER_NUM, 0x06U); }
 
 TEST_F(UTEST_ACL_compatibility_const_check, ACL_RT_IPC_MEM_ATTR_ACCESS_LINK_VALUE)
 {
@@ -331,7 +328,4 @@ TEST_F(UTEST_ACL_compatibility_const_check, ipc_flag)
     EXPECT_EQ(ACL_RT_VMM_EXPORT_FLAG_DISABLE_PID_VALIDATION, 0x1UL);
 }
 
-TEST_F(UTEST_ACL_compatibility_const_check, mem_uce_info_max_num)
-{
-    EXPECT_EQ(ACL_RT_MEM_UCE_INFO_MAX_NUM, 20);
-}
+TEST_F(UTEST_ACL_compatibility_const_check, mem_uce_info_max_num) { EXPECT_EQ(ACL_RT_MEM_UCE_INFO_MAX_NUM, 20); }

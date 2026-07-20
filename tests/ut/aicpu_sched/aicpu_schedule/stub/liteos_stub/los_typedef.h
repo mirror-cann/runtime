@@ -12,16 +12,16 @@
 #define LOS_TYPEDEF_H
 
 #define LOS_OK 0
-#define bool 	int
-#define true	1
-#define false 	0
+#define bool int
+#define true 1
+#define false 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <stdint.h>
- 
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>

@@ -24,9 +24,9 @@
 using namespace tsd;
 
 namespace {
-constexpr const char *OPEN_FAIL_VERSION_INFO_PATH = "/tmp/cann_runtime_ut_nonexistent_version.info";
+constexpr const char* OPEN_FAIL_VERSION_INFO_PATH = "/tmp/cann_runtime_ut_nonexistent_version.info";
 
-char *RealpathFakeOpenFail(const char *path, char *resolvedPath)
+char* RealpathFakeOpenFail(const char* path, char* resolvedPath)
 {
     (void)path;
     if (resolvedPath == nullptr) {
@@ -47,7 +47,7 @@ char *RealpathFakeOpenFail(const char *path, char *resolvedPath)
 
 std::string GetDirName()
 {
-    std::unique_ptr<char_t []> path(new (std::nothrow) char_t[PATH_MAX]);
+    std::unique_ptr<char_t[]> path(new (std::nothrow) char_t[PATH_MAX]);
     if (path == nullptr) {
         std::cout << "Oom" << std::endl;
         return "";
@@ -73,7 +73,7 @@ std::string GetDirName()
     return dirPath;
 }
 
-bool CreateVersionFile(const std::string &dirPath)
+bool CreateVersionFile(const std::string& dirPath)
 {
     (void)PackageWorkerUtils::MakeDirectory(dirPath);
     std::string fileName = dirPath + "version.info";
@@ -108,21 +108,18 @@ bool CreateVersionFile(const std::string &dirPath)
     return true;
 }
 
-void ClearDir(const std::string &dirPath)
+void ClearDir(const std::string& dirPath)
 {
     const std::string cmd = "rm -rf " + dirPath;
     PackSystem(cmd.c_str());
 }
-}
+} // namespace
 
 class AicpuPackageProcessTest : public testing::Test {
 protected:
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(AicpuPackageProcessTest, CheckPackageNameSuccess)
@@ -184,7 +181,8 @@ TEST_F(AicpuPackageProcessTest, MoveSoToSandBoxGetSandboxFail)
         return;
     }
     MOCKER(rename).stubs().will(returnValue(0));
-    MOCKER_CPP(&AicpuPackageProcess::WalkInVersionFile).stubs()
+    MOCKER_CPP(&AicpuPackageProcess::WalkInVersionFile)
+        .stubs()
         .will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
     TSD_StatusT ret = AicpuPackageProcess::MoveSoToSandBox(soInstallPath);
     ClearDir(soInstallPath);
@@ -198,8 +196,7 @@ TEST_F(AicpuPackageProcessTest, MoveSoToSandBoxCreateDirFail)
         return;
     }
     MOCKER(rename).stubs().will(returnValue(0));
-    MOCKER_CPP(PackageWorkerUtils::MakeDirectory).stubs()
-        .will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
+    MOCKER_CPP(PackageWorkerUtils::MakeDirectory).stubs().will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
     TSD_StatusT ret = AicpuPackageProcess::MoveSoToSandBox(soInstallPath);
     ClearDir(soInstallPath);
     EXPECT_EQ(ret, TSD_INTERNAL_ERROR);
@@ -233,9 +230,7 @@ TEST_F(AicpuPackageProcessTest, CopyExtendSoToCommonSoPathAsanFail)
 TEST_F(AicpuPackageProcessTest, WalkInVersionFileMemsetFail)
 {
     const std::string soInstallPath = "";
-    const auto handler = [] (const std::string &line) -> bool {
-        return true;
-    };
+    const auto handler = [](const std::string& line) -> bool { return true; };
     MOCKER(memset_s).stubs().will(returnValue(-1));
     const TSD_StatusT ret = AicpuPackageProcess::WalkInVersionFile(soInstallPath, handler);
     EXPECT_EQ(ret, TSD_INTERNAL_ERROR);
@@ -244,7 +239,7 @@ TEST_F(AicpuPackageProcessTest, WalkInVersionFileMemsetFail)
 TEST_F(AicpuPackageProcessTest, WalkInVersionFileOpenFail)
 {
     const std::string soInstallPath = "/tmp/";
-    const auto handler = [] (const std::string &line) -> bool {
+    const auto handler = [](const std::string& line) -> bool {
         (void)line;
         return false;
     };

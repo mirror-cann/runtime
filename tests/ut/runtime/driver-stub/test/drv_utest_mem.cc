@@ -16,88 +16,86 @@
 #include "model/model_api.h"
 #include "mockcpp/mockcpp.hpp"
 
-//extern "C" int open(const char *pathname, int flags);
+// extern "C" int open(const char *pathname, int flags);
 extern "C" void drvResetMgmtHead(void);
 extern "C" void drvResetMgmtTail(void);
 
 using namespace testing;
 
 class DrvMemTest : public testing::Test {
- protected:
-  static void SetUpTestCase() {
-    std::cout << "DrvApiTest SetUP" << std::endl;
-  }
-  static void TearDownTestCase() {
-    std::cout << "DrvApiTest TearDown" << std::endl;
-  }
-  // Some expensive resource shared by all tests.
-  virtual void SetUp()
-  {
-    GlobalMockObject::verify();
-    std::cout << "a test SetUP" << std::endl;
-  }
-  virtual void TearDown()
-  {
-    drvResetMgmtHead();
-    drvResetMgmtTail();
-    GlobalMockObject::verify();
-    std::cout << "a test TearDown" << std::endl;
-  }
+protected:
+    static void SetUpTestCase() { std::cout << "DrvApiTest SetUP" << std::endl; }
+    static void TearDownTestCase() { std::cout << "DrvApiTest TearDown" << std::endl; }
+    // Some expensive resource shared by all tests.
+    virtual void SetUp()
+    {
+        GlobalMockObject::verify();
+        std::cout << "a test SetUP" << std::endl;
+    }
+    virtual void TearDown()
+    {
+        drvResetMgmtHead();
+        drvResetMgmtTail();
+        GlobalMockObject::verify();
+        std::cout << "a test TearDown" << std::endl;
+    }
 };
 
 extern "C" drvError_t drvMemMgmtInit();
-extern "C" drvError_t drvMemAllocHost(void **pp, size_t bytesize);
-extern "C" drvError_t drvMemFreeHost(void *pp);
-extern "C" drvError_t drvMergeDeviceHBM(drvMemNode_t *drvNewMemMgmt, int32_t deviceId);
-extern "C" drvError_t drvFreeDeviceHBM(void *dptr, int32_t deviceId);
-extern "C" drvError_t drvMemAllocDeviceHBM(void **dptr, uint64_t requestSize, int32_t deviceId);
+extern "C" drvError_t drvMemAllocHost(void** pp, size_t bytesize);
+extern "C" drvError_t drvMemFreeHost(void* pp);
+extern "C" drvError_t drvMergeDeviceHBM(drvMemNode_t* drvNewMemMgmt, int32_t deviceId);
+extern "C" drvError_t drvFreeDeviceHBM(void* dptr, int32_t deviceId);
+extern "C" drvError_t drvMemAllocDeviceHBM(void** dptr, uint64_t requestSize, int32_t deviceId);
 extern "C" drvError_t drvMemMgmtQueueFree(int32_t deviceId);
-extern "C" DVresult drvMemAddressTranslate(DVdeviceptr vptr, UINT64 *pptr);
-extern "C" drvError_t drvMemSmmuQuery(uint32_t device, uint32_t *SSID);
-extern "C" DVresult drvMemAllocL2buffAddr(DVdevice device, void **l2buff, UINT64 *pte);
-extern "C" drvError_t drvMemReleaseL2buffAddr(uint32_t device, void *l2buff);
-extern "C" DVresult drvMemAllocHugePageManaged(DVdeviceptr *pp, size_t bytesize);
+extern "C" DVresult drvMemAddressTranslate(DVdeviceptr vptr, UINT64* pptr);
+extern "C" drvError_t drvMemSmmuQuery(uint32_t device, uint32_t* SSID);
+extern "C" DVresult drvMemAllocL2buffAddr(DVdevice device, void** l2buff, UINT64* pte);
+extern "C" drvError_t drvMemReleaseL2buffAddr(uint32_t device, void* l2buff);
+extern "C" DVresult drvMemAllocHugePageManaged(DVdeviceptr* pp, size_t bytesize);
 extern "C" DVresult drvMemFreeHugePageManaged(DVdeviceptr addr);
-extern "C" DVresult drvMemAllocManaged(DVdeviceptr *addr, size_t bytesize);
+extern "C" DVresult drvMemAllocManaged(DVdeviceptr* addr, size_t bytesize);
 extern "C" DVresult drvMemFreeManaged(DVdeviceptr addr);
-extern "C" drvError_t drvMemDestroyAddr(struct DMA_ADDR *ptr);
+extern "C" drvError_t drvMemDestroyAddr(struct DMA_ADDR* ptr);
 extern "C" DVresult drvMemPrefetchToDevice(DVdeviceptr devPtr, size_t len, DVdevice device);
 extern "C" DVresult drvMemAdvise(DVdeviceptr devPtr, size_t count, DVmem_advise advise, DVdevice device);
-extern "C" DVresult drvMemConvertAddr(DVdeviceptr pSrc, DVdeviceptr pDst, UINT32 len, struct DMA_ADDR *dmaAddr);
+extern "C" DVresult drvMemConvertAddr(DVdeviceptr pSrc, DVdeviceptr pDst, UINT32 len, struct DMA_ADDR* dmaAddr);
 extern "C" int drvMemDeviceOpen(unsigned int devid, int devfd);
 extern "C" int drvMemDeviceClose(unsigned int devid);
 extern "C" DVresult drvMemcpy(DVdeviceptr dst, size_t destMax, DVdeviceptr src, size_t ByteCount);
 extern "C" DVresult drvMemsetD8(DVdeviceptr dst, size_t destMax, UINT8 value, size_t num);
 extern "C" DVresult drvMemLock(DVdeviceptr devPtr, unsigned int lockType, DVdevice device);
 extern "C" DVresult drvMemUnLock(DVdeviceptr devPtr);
-extern "C" DVresult drvMemGetAttribute(DVdeviceptr vptr, struct DVattribute *attr);
-extern "C" DVresult halShmemCreateHandle(DVdeviceptr vptr, size_t byte_count, char *name, unsigned int name_len);
-extern "C" drvError_t halShmemDestroyHandle(const char *name);
-extern "C" DVresult halShmemOpenHandle(const char *name, DVdeviceptr *vptr);
-extern "C" DVresult halShmemOpenHandleByDevId(DVdevice devId, const char *name, DVdeviceptr *vptr);
+extern "C" DVresult drvMemGetAttribute(DVdeviceptr vptr, struct DVattribute* attr);
+extern "C" DVresult halShmemCreateHandle(DVdeviceptr vptr, size_t byte_count, char* name, unsigned int name_len);
+extern "C" drvError_t halShmemDestroyHandle(const char* name);
+extern "C" DVresult halShmemOpenHandle(const char* name, DVdeviceptr* vptr);
+extern "C" DVresult halShmemOpenHandleByDevId(DVdevice devId, const char* name, DVdeviceptr* vptr);
 extern "C" DVresult halShmemCloseHandle(DVdeviceptr vptr);
-extern "C" drvError_t halShmemSetPidHandle(const char *name, pid_t pid[], int num);
-extern "C" drvError_t drvLoadProgram(uint32_t deviceId, void *program, unsigned int offset, size_t ByteCount, void **vPtr);
-extern "C" drvError_t drvDeviceGetPhyIdByIndex(uint32_t devIndex, uint32_t *phyId);
-extern "C" drvError_t drvDeviceGetIndexByPhyId(uint32_t phyId, uint32_t *devIndex);
-extern "C" DVresult cmodelDrvMemcpy(DVdeviceptr dst, size_t destMax, DVdeviceptr src, size_t size, drvMemcpyKind_t kind);
-extern "C" drvError_t cmodelDrvFreeHost(void *pp);
+extern "C" drvError_t halShmemSetPidHandle(const char* name, pid_t pid[], int num);
+extern "C" drvError_t drvLoadProgram(
+    uint32_t deviceId, void* program, unsigned int offset, size_t ByteCount, void** vPtr);
+extern "C" drvError_t drvDeviceGetPhyIdByIndex(uint32_t devIndex, uint32_t* phyId);
+extern "C" drvError_t drvDeviceGetIndexByPhyId(uint32_t phyId, uint32_t* devIndex);
+extern "C" DVresult cmodelDrvMemcpy(
+    DVdeviceptr dst, size_t destMax, DVdeviceptr src, size_t size, drvMemcpyKind_t kind);
+extern "C" drvError_t cmodelDrvFreeHost(void* pp);
 TEST_F(DrvMemTest, mem_init_test)
 {
-	drvError_t error;
-	void *hbmOffsetPoint;
-	int32_t nodeId=0;
+    drvError_t error;
+    void* hbmOffsetPoint;
+    int32_t nodeId = 0;
     int32_t deviceId = nodeId;
-	uint64_t size=64;   //size of L1
+    uint64_t size = 64; // size of L1
 
-	error=drvMemMgmtInit();
+    error = drvMemMgmtInit();
     EXPECT_EQ(error, DRV_ERROR_NONE);
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
     drvFlushCache((uint64_t)hbmOffsetPoint, (uint32_t)size);
     error = drvMemFree(hbmOffsetPoint, deviceId);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = drvMemMgmtInit();
     EXPECT_EQ(error, DRV_ERROR_NONE);
@@ -111,25 +109,25 @@ TEST_F(DrvMemTest, mem_init_test)
     EXPECT_EQ(error, DRV_ERROR_NONE);
     error = drvMemFree(hbmOffsetPoint, deviceId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	error = drvMemMgmtInit();
+    error = drvMemMgmtInit();
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
+    error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
+    error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	error = drvMemMgmtInit();
+    error = drvMemMgmtInit();
     EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 
 TEST_F(DrvMemTest, mem_allocAPI_test)
 {
-	drvError_t error;
-    void *hbmOffsetPoint;
-	int32_t nodeId=0;
+    drvError_t error;
+    void* hbmOffsetPoint;
+    int32_t nodeId = 0;
     int32_t deviceId = nodeId;
-	uint64_t size=64;
+    uint64_t size = 64;
 
-	drvMemMgmtInit();
+    drvMemMgmtInit();
 
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
@@ -138,51 +136,50 @@ TEST_F(DrvMemTest, mem_allocAPI_test)
 
     error = drvMemAlloc(&hbmOffsetPoint, MAX_ALLOC, DRV_MEMORY_HBM, nodeId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-	error = drvMemAlloc(&hbmOffsetPoint, 0x40000000UL - 0x10000000, DRV_MEMORY_HBM, nodeId);
-	EXPECT_EQ(error, DRV_ERROR_OUT_OF_MEMORY);
+    error = drvMemAlloc(&hbmOffsetPoint, 0x40000000UL - 0x10000000, DRV_MEMORY_HBM, nodeId);
+    EXPECT_EQ(error, DRV_ERROR_OUT_OF_MEMORY);
     error = drvMemFree(hbmOffsetPoint, deviceId);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = drvMemAlloc(&hbmOffsetPoint, 0, DRV_MEMORY_HBM, nodeId);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
 
-	error=drvMemAlloc(NULL,size,DRV_MEMORY_HBM,nodeId);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
+    error = drvMemAlloc(NULL, size, DRV_MEMORY_HBM, nodeId);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
     error = drvMemAlloc(&hbmOffsetPoint, -1, DRV_MEMORY_HBM, nodeId);
-	EXPECT_EQ(error, DRV_ERROR_OUT_OF_MEMORY);
+    EXPECT_EQ(error, DRV_ERROR_OUT_OF_MEMORY);
     error = drvMemAlloc(&hbmOffsetPoint, 0x40000000UL - 0x10000000 + 1, DRV_MEMORY_HBM, nodeId);
-	EXPECT_EQ(error, DRV_ERROR_OUT_OF_MEMORY);
+    EXPECT_EQ(error, DRV_ERROR_OUT_OF_MEMORY);
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_DDR, nodeId);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_MALLOC_TYPE);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_MALLOC_TYPE);
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, -1);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, 1);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
 }
 
 TEST_F(DrvMemTest, mem_freeAPI_test)
 {
     drvError_t error;
-    void *hbmOffsetPoint;
+    void* hbmOffsetPoint;
     int32_t nodeId = 0;
     int32_t deviceId = nodeId;
     uint64_t size = 64;
 
-	drvMemMgmtInit();
+    drvMemMgmtInit();
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
     error = drvMemFree(hbmOffsetPoint, deviceId);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
-	error=drvMemFree(NULL,deviceId);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
+    error = drvMemFree(NULL, deviceId);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
     error = drvMemFree(hbmOffsetPoint, -1);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
     error = drvMemFree(hbmOffsetPoint, 1);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
-	error = drvMemFree(hbmOffsetPoint, deviceId);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
-
+    EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
+    error = drvMemFree(hbmOffsetPoint, deviceId);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = drvModelMemset(0, 0, 0, 8);
     EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
@@ -194,14 +191,12 @@ TEST_F(DrvMemTest, mem_freeAPI_test)
     destMax = 256;
     error = drvModelMemset(dst, destMax, 0, size);
     EXPECT_EQ(error, DRV_ERROR_NONE);
-
-
 }
 
 TEST_F(DrvMemTest, mem_hostAPI_test)
 {
     drvError_t error;
-    void *hostDDRPoint;
+    void* hostDDRPoint;
     int32_t nodeId = 0;
     int32_t deviceId = nodeId;
     uint64_t size = 64;
@@ -215,7 +210,7 @@ TEST_F(DrvMemTest, mem_hostAPI_test)
     error = halMemAlloc(NULL, size, MEM_SET_ALIGN_SIZE(20) | MEM_HOST);
     EXPECT_EQ(error, DRV_ERROR_INVALID_VALUE);
 
-    void *mem;
+    void* mem;
     error = halMemAlloc(&mem, size, MEM_SET_ALIGN_SIZE(20) | MEM_DEV);
     EXPECT_EQ(error, DRV_ERROR_NONE);
     error = halMemFree(mem);
@@ -227,8 +222,6 @@ TEST_F(DrvMemTest, mem_hostAPI_test)
     error = cmodelDrvFreeHost(hostDDRPoint);
     EXPECT_EQ(error, DRV_ERROR_NONE);
 }
-
-
 
 TEST_F(DrvMemTest, drv_memaddr_translate)
 {
@@ -259,20 +252,19 @@ TEST_F(DrvMemTest, drv_memaddr_translate)
 
 TEST_F(DrvMemTest, mem_drvMemConvertAddr)
 {
-	drvError_t error;
-	DVresult result;
-	size_t ByteCount = (size_t)32;
-	DVdeviceptr dstDev = 0;
-	DVdeviceptr srcDev = 0;
-	void *srcHost = 0;
-	void *dstHost = 0;
-	uint32_t len = 0;
-	struct DMA_ADDR dmaAddr;
+    drvError_t error;
+    DVresult result;
+    size_t ByteCount = (size_t)32;
+    DVdeviceptr dstDev = 0;
+    DVdeviceptr srcDev = 0;
+    void* srcHost = 0;
+    void* dstHost = 0;
+    uint32_t len = 0;
+    struct DMA_ADDR dmaAddr;
 
-	error = drvMemConvertAddr(srcDev, dstDev, len, &dmaAddr);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = drvMemConvertAddr(srcDev, dstDev, len, &dmaAddr);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
-
 
 #if 0
 TEST_F(DrvMemTest, mem_alloc_test)
@@ -887,63 +879,63 @@ TEST_F(DrvMemTest, mem_drvMemlock)
 
 TEST_F(DrvMemTest, mem_GetAttribute)
 {
-	drvError_t error;
-	DVdeviceptr dstDev = 1;
+    drvError_t error;
+    DVdeviceptr dstDev = 1;
     DVattribute attr;
 
-	error = drvMemGetAttribute(dstDev, &attr);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = drvMemGetAttribute(dstDev, &attr);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     dstDev = 0x20000000;
     error = drvMemGetAttribute(dstDev, &attr);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 
 TEST_F(DrvMemTest, mem_ipc)
 {
-	drvError_t error;
-	DVdeviceptr dstDev = 1;
+    drvError_t error;
+    DVdeviceptr dstDev = 1;
     pid_t pid[2];
     DVattribute attr;
 
     pid[0] = fork();
     pid[1] = pid[0];
 
-	error = halShmemCreateHandle(dstDev, 4, "st", 4);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = halShmemCreateHandle(dstDev, 4, "st", 4);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
-	error = halShmemOpenHandle("test", &dstDev);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = halShmemOpenHandle("test", &dstDev);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = halShmemOpenHandleByDevId(0, "test", &dstDev);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = halShmemCloseHandle(dstDev);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = halShmemDestroyHandle("test");
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 
     error = halShmemSetPidHandle("test", pid, 0);
 }
 
 TEST_F(DrvMemTest, mem_LoadProgram)
 {
-	drvError_t error;
-	void *srcHost = (void*)1;
-	void *dstHost;
+    drvError_t error;
+    void* srcHost = (void*)1;
+    void* dstHost;
     DVattribute attr;
-	DVdevice device = 99;
+    DVdevice device = 99;
 
-	error = drvLoadProgram(device, srcHost, 0, 100, &dstHost);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_MALLOC_TYPE);
+    error = drvLoadProgram(device, srcHost, 0, 100, &dstHost);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_MALLOC_TYPE);
 }
 
 TEST_F(DrvMemTest, mem_init_test_001)
 {
     printf("1111--6 \n");
 
-    MOCKER(malloc).stubs().will(returnValue((void *)NULL));
+    MOCKER(malloc).stubs().will(returnValue((void*)NULL));
     printf("1111--7 \n");
     MOCKER(drvMemMgmtQueueFree).stubs().will(returnValue(DRV_ERROR_NONE));
     printf("1111--8 \n");
@@ -991,44 +983,43 @@ TEST_F(DrvMemTest, mem_GetIndexByPhyId)
 TEST_F(DrvMemTest, cmodelMemcpy_syncH2D_test)
 {
     drvError_t error;
-    void *hbmOffsetPoint;
+    void* hbmOffsetPoint;
     int32_t nodeId = 0;
     int32_t deviceId = nodeId;
     uint64_t size = 64;
     char str[64] = "HelloWorld";
 
-        drvMemMgmtInit();
+    drvMemMgmtInit();
     error = drvMemAlloc(&hbmOffsetPoint, size, DRV_MEMORY_HBM, nodeId);
-        EXPECT_EQ(error, DRV_ERROR_NONE);
-    error = cmodelDrvMemcpy((uint64_t)hbmOffsetPoint, sizeof(str), (uint64_t)str, sizeof(str), DRV_MEMCPY_HOST_TO_DEVICE);
-        EXPECT_EQ(error, DRV_ERROR_NONE);
-        memset(str,0,size);
-    error = drvMemcpy((uint64_t)str,  sizeof(str), (uint64_t)hbmOffsetPoint, sizeof(str));
-        EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
+    error =
+        cmodelDrvMemcpy((uint64_t)hbmOffsetPoint, sizeof(str), (uint64_t)str, sizeof(str), DRV_MEMCPY_HOST_TO_DEVICE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
+    memset(str, 0, size);
+    error = drvMemcpy((uint64_t)str, sizeof(str), (uint64_t)hbmOffsetPoint, sizeof(str));
+    EXPECT_EQ(error, DRV_ERROR_NONE);
     error = drvMemFree(hbmOffsetPoint, deviceId);
-        EXPECT_EQ(error, DRV_ERROR_NONE);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
 
 TEST_F(DrvMemTest, mem_drvMemcpy)
 {
-	drvError_t error;
-	DVresult result;
-	DVdevice device = 99;
-	void **l2buff = (void **)99;
-	DVdeviceptr pp = 0;
-	size_t bytesize = (size_t)32;
-	DVdeviceptr dst = 0;
-	DVdeviceptr src = 0;
+    drvError_t error;
+    DVresult result;
+    DVdevice device = 99;
+    void** l2buff = (void**)99;
+    DVdeviceptr pp = 0;
+    size_t bytesize = (size_t)32;
+    DVdeviceptr dst = 0;
+    DVdeviceptr src = 0;
 
     error = drvMemcpy(0x20000000, bytesize, src, bytesize);
-	EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
+    EXPECT_EQ(error, DRV_ERROR_INVALID_HANDLE);
 
     error = drvMemcpy(0x22000000, bytesize, 0x20000000, bytesize);
-	EXPECT_NE(error, DRV_ERROR_NONE);
+    EXPECT_NE(error, DRV_ERROR_NONE);
 
     MOCKER(memcpy_s).stubs().will(returnValue(0));
-	error = drvMemcpy(0x41000000, bytesize, 0x44000000, bytesize);
-	EXPECT_EQ(error, DRV_ERROR_NONE);
+    error = drvMemcpy(0x41000000, bytesize, 0x44000000, bytesize);
+    EXPECT_EQ(error, DRV_ERROR_NONE);
 }
-
-

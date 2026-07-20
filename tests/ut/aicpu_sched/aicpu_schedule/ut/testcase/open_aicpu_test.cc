@@ -17,18 +17,11 @@ using namespace AicpuSchedule;
 
 class AICPUScheduleOpenTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUScheduleOpenTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleOpenTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUScheduleOpenTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleOpenTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleOpenTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleOpenTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -37,7 +30,8 @@ protected:
     }
 };
 
-TEST_F(AICPUScheduleOpenTEST, Check_default_feature) {
+TEST_F(AICPUScheduleOpenTEST, Check_default_feature)
+{
     FeatureCtrl::Init(0, 0U);
     EXPECT_TRUE(FeatureCtrl::ShouldAddtocGroup());
     EXPECT_FALSE(FeatureCtrl::IsAosCore());
@@ -56,14 +50,16 @@ TEST_F(AICPUScheduleOpenTEST, Check_default_feature) {
     EXPECT_TRUE(FeatureCtrl::ShouldSetModuleNullData());
 }
 
-TEST_F(AICPUScheduleOpenTEST, Check_A2_feature) {
+TEST_F(AICPUScheduleOpenTEST, Check_A2_feature)
+{
     FeatureCtrl::Init(5 << 8, 0U);
     EXPECT_TRUE(FeatureCtrl::ShouldAddtocGroup());
     EXPECT_TRUE(FeatureCtrl::IsBindPidByHal());
     EXPECT_FALSE(FeatureCtrl::IsDoubleDieProduct());
 }
 
-TEST_F(AICPUScheduleOpenTEST, Check_A3_feature) {
+TEST_F(AICPUScheduleOpenTEST, Check_A3_feature)
+{
     char socVersion[] = "Ascend910_93";
     MOCKER(halGetSocVersion)
         .stubs()

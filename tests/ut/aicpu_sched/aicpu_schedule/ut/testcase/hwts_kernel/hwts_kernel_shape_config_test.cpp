@@ -29,17 +29,18 @@ protected:
     ShapeConfigTsKernel kernel_;
 };
 
-TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_success01) {
+TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_success01)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 36;
@@ -50,17 +51,18 @@ TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_success01) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_success02) {
+TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_success02)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     uint8_t data[56] = {-24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0,
-        -24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+                        -24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 56;
@@ -71,17 +73,18 @@ TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_success02) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed01) {
+TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed01)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 35;
@@ -92,17 +95,18 @@ TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed01) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed02) {
+TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed02)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        1, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {1, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0, 0, 0, 0, 0,  0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 36;
@@ -113,17 +117,18 @@ TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed02) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed03) {
+TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed03)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 36;
@@ -134,17 +139,18 @@ TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed03) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed04) {
+TEST_F(ShapeConfigKernelTest, TsKernelModelConfigHasShape_failed04)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len - 1;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 35;

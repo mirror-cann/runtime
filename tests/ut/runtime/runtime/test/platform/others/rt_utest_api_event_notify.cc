@@ -61,14 +61,13 @@ using namespace testing;
 using namespace cce::runtime;
 
 // rts-event-notify-ut-begin
-class ApiEventNotifyTest : public testing::Test
-{
+class ApiEventNotifyTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
         (void)rtSetDevice(0);
@@ -79,20 +78,17 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ApiEventNotifyTest, rtsEventTest)
@@ -108,7 +104,7 @@ TEST_F(ApiEventNotifyTest, rtsEventTest)
     rtEvent_t eventEx = nullptr;
     rtError_t error3 = rtsEventCreateEx(&eventEx, 0x888U);
     EXPECT_NE(error3, RT_ERROR_NONE);
-    
+
     uint32_t event_id = 0;
     rtError_t error4 = rtsEventGetId(event, &event_id);
     EXPECT_NE(error4, RT_ERROR_NONE);

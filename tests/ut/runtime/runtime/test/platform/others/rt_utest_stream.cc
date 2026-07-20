@@ -44,89 +44,72 @@ using namespace cce::runtime;
 
 static uint16_t ind = 0;
 
-class ChipStreamTest : public testing::Test
-{
+class ChipStreamTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"ChipStreamTest start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "ChipStreamTest start" << std::endl; }
 
-    }
-
-    static void TearDownTestCase()
-    {
-        std::cout<<"ChipStreamTest end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "ChipStreamTest end" << std::endl; }
 
     virtual void SetUp()
     {
         (void)rtSetDevice(0);
-        std::cout<<"ut test start."<<std::endl;
+        std::cout << "ut test start." << std::endl;
     }
 
     virtual void TearDown()
     {
-        std::cout<<"ut test end."<<std::endl;
+        std::cout << "ut test end." << std::endl;
         ind = 0;
         GlobalMockObject::verify();
         rtDeviceReset(0);
     }
 
 public:
-    static Api        *oldApi_;
+    static Api* oldApi_;
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
+
 private:
     rtChipType_t originType;
 };
 
-Api * ChipStreamTest::oldApi_ = nullptr;
+Api* ChipStreamTest::oldApi_ = nullptr;
 rtStream_t ChipStreamTest::stream_ = nullptr;
 rtEvent_t ChipStreamTest::event_ = nullptr;
 void* ChipStreamTest::binHandle_ = nullptr;
-char  ChipStreamTest::function_ = 'a';
+char ChipStreamTest::function_ = 'a';
 uint32_t ChipStreamTest::binary_[32] = {};
 
-class SubmitFailSchedulerT : public FifoScheduler
-{
+class SubmitFailSchedulerT : public FifoScheduler {
 public:
-    Scheduler *test;
+    Scheduler* test;
 
-    void set(Scheduler *fifoScheduler)
-    {
-        test = fifoScheduler;
-    }
+    void set(Scheduler* fifoScheduler) { test = fifoScheduler; }
 
-    virtual rtError_t PushTask(TaskInfo *task)
+    virtual rtError_t PushTask(TaskInfo* task)
     {
         std::cout << "PushTask begin taskType = " << task->type << "ind = " << ind << std::endl;
-        if (0 == ind)
-        {
+        if (0 == ind) {
             ind = 1;
             std::cout << "PushTask begin taskType = " << task->type << "ind = " << ind << std::endl;
-            return  test->PushTask(task);
+            return test->PushTask(task);
             // return  FifoScheduler::PushTask(task);
         }
         return RT_ERROR_INVALID_VALUE;
     }
 
-    virtual TaskInfo * PopTask()
-    {
-        return test->PopTask();
-    }
+    virtual TaskInfo* PopTask() { return test->PopTask(); }
 };
 
-static void ApiTest_Stream_Cb(void *arg)
-{
-}
+static void ApiTest_Stream_Cb(void* arg) {}
 
 TEST_F(ChipStreamTest, TestIsTaskLimitedWithTaskFinished)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     Stream stream(device, 0);
     rtChipType_t preChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -143,8 +126,8 @@ TEST_F(ChipStreamTest, TestIsTaskLimitedWithTaskFinished)
 
 TEST_F(ChipStreamTest, TestIsTaskLimitedWithTaskTypeUnexpected)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     Stream stream(device, 0);
     rtChipType_t preChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -178,7 +161,7 @@ TEST_F(ChipStreamTest, EngineStreamObserver_TaskSubmited)
 
     std::shared_ptr<EngineStreamObserver> streamObserver = std::make_shared<EngineStreamObserver>();
     EXPECT_EQ(stream->GetPendingNum(), 0);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);

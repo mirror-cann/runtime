@@ -28,37 +28,33 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class CloudV2ApiImpltaskOwnerTest : public testing::Test
-{
+class CloudV2ApiImpltaskOwnerTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
         std::cout << "CloudV2ApiImpltaskOwnerTest test start start. " << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "CloudV2ApiImpltaskOwnerTest test start end. " << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "CloudV2ApiImpltaskOwnerTest test start end. " << std::endl; }
 
     virtual void SetUp()
     {
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         (void)rtSetDevice(0);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
-        
-        rtInstance_ = const_cast<Runtime *>(Runtime::Instance());
+
+        rtInstance_ = const_cast<Runtime*>(Runtime::Instance());
         device_ = rtInstance_->DeviceRetain(0, 0);
         ASSERT_NE(device_, nullptr);
 
         context_ = new Context(device_, false);
         context_->Init();
-        
+
         stream_ = new Stream(context_, 0);
         stream_->SetContext(context_);
     }
@@ -66,44 +62,44 @@ protected:
     virtual void TearDown()
     {
         GlobalMockObject::verify();
-        
+
         if (stream_ != nullptr) {
             delete stream_;
             stream_ = nullptr;
         }
-        
+
         if (context_ != nullptr) {
             delete context_;
             context_ = nullptr;
         }
-        
+
         if (device_ != nullptr) {
             device_->WaitCompletion();
             rtInstance_->DeviceRelease(device_);
             device_ = nullptr;
         }
-        
+
         rtDeviceReset(0);
     }
 
-    Runtime *rtInstance_{nullptr};
-    Device *device_{nullptr};
-    Context *context_{nullptr};
-    Stream *stream_{nullptr};
+    Runtime* rtInstance_{nullptr};
+    Device* device_{nullptr};
+    Context* context_{nullptr};
+    Stream* stream_{nullptr};
 };
 
 TEST_F(CloudV2ApiImpltaskOwnerTest, EventOwner_SetAndGet)
 {
     Event event(device_, 0, context_);
-    
+
     EXPECT_EQ(event.EventOwner_(), EventOwner::EVENT_UNKNOWN);
-    
+
     event.SetEventOwner(EventOwner::EVENT_USER);
     EXPECT_EQ(event.EventOwner_(), EventOwner::EVENT_USER);
-    
+
     event.SetEventOwner(EventOwner::EVENT_INNER);
     EXPECT_EQ(event.EventOwner_(), EventOwner::EVENT_INNER);
-    
+
     event.SetEventOwner(EventOwner::EVENT_UNKNOWN);
     EXPECT_EQ(event.EventOwner_(), EventOwner::EVENT_UNKNOWN);
 }
@@ -112,7 +108,7 @@ TEST_F(CloudV2ApiImpltaskOwnerTest, EventResetTask_InheritEventOwner)
 {
     Event innerEvent(device_, 0, context_);
     innerEvent.SetEventOwner(EventOwner::EVENT_INNER);
-    
+
     Event userEvent(device_, 0, context_);
     userEvent.SetEventOwner(EventOwner::EVENT_USER);
 
@@ -139,7 +135,7 @@ TEST_F(CloudV2ApiImpltaskOwnerTest, EventWaitTask_InheritEventOwner)
 {
     Event innerEvent(device_, 0, context_);
     innerEvent.SetEventOwner(EventOwner::EVENT_INNER);
-    
+
     Event userEvent(device_, 0, context_);
     userEvent.SetEventOwner(EventOwner::EVENT_USER);
 
@@ -173,7 +169,7 @@ TEST_F(CloudV2ApiImpltaskOwnerTest, TaskGetParams_InnerTaskReturnsDefaultType)
 
     innerTaskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
     userTaskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
-    
+
     innerTaskInfo.taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_INNER);
     userTaskInfo.taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_USER);
 
@@ -198,7 +194,7 @@ TEST_F(CloudV2ApiImpltaskOwnerTest, ConvertTaskType_InnerTaskReturnsDefaultType)
 
     innerTaskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
     userTaskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
-    
+
     innerTaskInfo.taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_INNER);
     userTaskInfo.taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_USER);
 
@@ -221,7 +217,7 @@ TEST_F(CloudV2ApiImpltaskOwnerTest, TaskGetParams_UnknownTaskType_DefaultCase)
     TaskInfo taskInfo;
     (void)memset_s(&taskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
     taskInfo.stream = stream_;
-    taskInfo.type = static_cast<tsTaskType_t>(0xFFFF);  // Unknown task type to trigger default case
+    taskInfo.type = static_cast<tsTaskType_t>(0xFFFF); // Unknown task type to trigger default case
     taskInfo.taskOwner = static_cast<uint8_t>(TaskOwner::RT_TASK_USER);
     taskInfo.typeName = "UNKNOWN_TYPE";
 

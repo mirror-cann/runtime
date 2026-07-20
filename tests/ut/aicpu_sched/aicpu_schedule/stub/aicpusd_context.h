@@ -12,12 +12,12 @@
 #define AICPUSD_AICPUSD_CONTEXT_H
 
 namespace aicpu {
-    // have cust pid flag
-    extern bool g_isHaveCustPid;
+// have cust pid flag
+extern bool g_isHaveCustPid;
 
-    __attribute__((visibility("default"))) void SetHaveCustPid(bool isHaveCustPid);
+__attribute__((visibility("default"))) void SetHaveCustPid(bool isHaveCustPid);
 
-    bool IsHaveCustPid();
-}
+bool IsHaveCustPid();
+} // namespace aicpu
 
 #endif

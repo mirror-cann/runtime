@@ -30,51 +30,43 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ProfilerTest : public testing::Test
-{
+class ProfilerTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetDevice(0);
-        std::cout<<"Profiler test start -- dc"<<std::endl;
+        std::cout << "Profiler test start -- dc" << std::endl;
     }
 
     static void TearDownTestCase()
     {
         GlobalMockObject::verify();
         rtDeviceReset(0);
-        std::cout<<"Profiler test start end -- dc"<<std::endl;
+        std::cout << "Profiler test start end -- dc" << std::endl;
     }
 
-    virtual void SetUp()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void SetUp() { GlobalMockObject::verify(); }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ProfilerTest, ReduceAsyncV2)
 {
     ApiImpl* apiImpl_ = new ApiImpl();
     MOCKER_CPP_VIRTUAL(apiImpl_, &ApiImpl::ReduceAsyncV2).stubs().will(returnValue(RT_ERROR_NONE));
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Profiler *profiler = rtInstance->profiler_;
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Profiler* profiler = rtInstance->profiler_;
     profiler->SetApiProfEnable(true);
 
-
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_REDUCV2_SUPPORT_DC);
 
-    auto error = profiler->apiProfileDecorator_->ReduceAsyncV2(NULL, NULL, 1, RT_MEMCPY_SDMA_AUTOMATIC_ADD, RT_DATA_TYPE_FP32, NULL, NULL);
+    auto error = profiler->apiProfileDecorator_->ReduceAsyncV2(
+        NULL, NULL, 1, RT_MEMCPY_SDMA_AUTOMATIC_ADD, RT_DATA_TYPE_FP32, NULL, NULL);
     profiler->SetApiProfEnable(false);
     EXPECT_EQ(error, RT_ERROR_NONE);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     delete apiImpl_;
 }

@@ -23,30 +23,32 @@
 
 using namespace AicpuSchedule;
 
-namespace {}  // namespace
+namespace {} // namespace
 
 class OperatorKernelModelEnqueueTest : public OperatorKernelTest {
 protected:
     OperatorKernelModelEnqueue kernel_;
 };
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&BufManager::UnGuardBuf).stubs().will(returnValue(0));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
-    char tmpBuf[128]={0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
-    BufEnQueueInfo queue{0,(uint64_t)&mbuf};
+    char tmpBuf[128] = {0};
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
+    BufEnQueueInfo queue{0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
 
     uint32_t dataLen = 128U;
-    void *headPtr = reinterpret_cast<void *>(&tmpBuf[0U]);
+    void* headPtr = reinterpret_cast<void*>(&tmpBuf[0U]);
     MOCKER(halMbufGetPrivInfo)
         .stubs()
         .with(mockcpp::any(), outBoundP(&headPtr), outBoundP(&dataLen))
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));;
+        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
+    ;
 
     int ret = kernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -58,10 +60,11 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue) {
     EXPECT_EQ(kernel_.Compute(taskT, runContextT), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_failed1) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_failed1)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -70,10 +73,11 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_failed1) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed1) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed1)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    int *mbuf = nullptr;
+    int* mbuf = nullptr;
     BufEnQueueInfo bufInfoT;
     bufInfoT.mBufPtr = (uint64_t)mbuf;
 
@@ -81,10 +85,11 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed1) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed2) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed2)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    char *mbuf = allocFakeMBuf[0];
+    char* mbuf = allocFakeMBuf[0];
     BufEnQueueInfo bufInfoT;
     bufInfoT.mBufPtr = (uint64_t)&mbuf;
 
@@ -94,10 +99,11 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed3) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed3)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    char *mbuf = allocFakeMBuf[0];
+    char* mbuf = allocFakeMBuf[0];
     BufEnQueueInfo bufInfoT;
     bufInfoT.mBufPtr = (uint64_t)&mbuf;
 
@@ -107,30 +113,32 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueTaskKernel_failed3) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_halQueueEnQueue_FAILED) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_halQueueEnQueue_FAILED)
+{
     MOCKER(halQueueEnQueue).stubs().will(returnValue(DRV_ERROR_QUEUE_INNER_ERROR));
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
-    char tmpBuf[128]={0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
-    BufEnQueueInfo queue{0,(uint64_t)&mbuf};
+    char tmpBuf[128] = {0};
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
+    BufEnQueueInfo queue{0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_halQueueEnQueue_FULL) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_halQueueEnQueue_FULL)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER(halQueueEnQueue).stubs().will(returnValue(DRV_ERROR_QUEUE_FULL));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
-    char tmpBuf[128]={0};
-    Mbuf *mbuf = (Mbuf *)tmpBuf;
+    char tmpBuf[128] = {0};
+    Mbuf* mbuf = (Mbuf*)tmpBuf;
     uint32_t queueId = 123;
-    BufEnQueueInfo queue{queueId,(uint64_t)&mbuf};
+    BufEnQueueInfo queue{queueId, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -140,7 +148,8 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueue_halQueueEnQueue_FULL) {
     EXPECT_TRUE(hasWait);
 }
 
-TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueForEOS) {
+TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueForEOS)
+{
     MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFakeForEOS));
     MOCKER_CPP(&BufManager::UnGuardBuf).stubs().will(returnValue(0));
     MOCKER_CPP(&AicpuModel::IsEndOfSequence).stubs().will(returnValue(true));
@@ -151,8 +160,8 @@ TEST_F(OperatorKernelModelEnqueueTest, ModelEnqueueForEOS) {
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char mbufVal[MAX_SIZE_BUF_FOR_FAKE_EOS] = {0};
-    Mbuf *mbuf = (Mbuf *)mbufVal;
-    BufEnQueueInfo queue{0,(uint64_t)&mbuf};
+    Mbuf* mbuf = (Mbuf*)mbufVal;
+    BufEnQueueInfo queue{0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -165,7 +174,7 @@ TEST_F(OperatorKernelModelEnqueueTest, SetMbufNullData_success)
     aicpuModel.nullDataFlag_ = true;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     kernel_.SetMbufNullData(0U, &head[0U], 256U);
-    MbufHeadMsg *const msg = PtrToPtr<uint8_t, MbufHeadMsg>(
+    MbufHeadMsg* const msg = PtrToPtr<uint8_t, MbufHeadMsg>(
         PtrAdd<uint8_t>(PtrToPtr<char, uint8_t>(&head[0U]), 256U, 256U - sizeof(MbufHeadMsg)));
     EXPECT_TRUE((msg->dataFlag & MBUF_HEAD_DATA_FLAG_MASK) == static_cast<uint8_t>(DataFlag::DFLOW_NULL_DATA_FLAG));
 }

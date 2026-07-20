@@ -12,13 +12,13 @@
 
 TEST_F(ApiDavidTest, AllocTaskInfoForCapture_UpdateTask)
 {
-    TaskInfo *task = nullptr;
+    TaskInfo* task = nullptr;
     rtStream_t stream;
     rtError_t error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     error = (rt_ut::UnwrapOrNull<Stream>(stream))->UpdateTaskGroupStatus(StreamTaskGroupStatus::UPDATE);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *dstStm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* dstStm = rt_ut::UnwrapOrNull<Stream>(stream);
     uint32_t pos = 0;
 
     error = AllocTaskInfoForCapture(&task, rt_ut::UnwrapOrNull<Stream>(stream), pos, dstStm);
@@ -48,7 +48,7 @@ TEST_F(StarsTaskTest, ModelExecute_memFree)
     rtError_t ret;
     rtModel_t model;
     TaskInfo mdlExecTask = {};
-    Stream *headSream;
+    Stream* headSream;
     ret = rtStreamCreate((rtStream_t*)&headSream, 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 
@@ -60,13 +60,13 @@ TEST_F(StarsTaskTest, ModelExecute_memFree)
 
     InitByStream(&mdlExecTask, headSream);
     MOCKER(CheckLogLevel).stubs().will(returnValue(1));
-    ret = ModelExecuteTaskInit(&mdlExecTask, rt_ut::UnwrapOrNull<Model>(model),
-        rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
+    ret = ModelExecuteTaskInit(
+        &mdlExecTask, rt_ut::UnwrapOrNull<Model>(model), rt_ut::UnwrapOrNull<Model>(model)->Id_(), 0);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     uint32_t sqeNum = GetSendSqeNum(&mdlExecTask);
     EXPECT_EQ(sqeNum, 1U);
 
-    TaskInfo *task = &mdlExecTask;
+    TaskInfo* task = &mdlExecTask;
     rtStarsSqe_t command[3] = {};
     ToConstructSqe(task, command);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -85,25 +85,25 @@ TEST_F(StarsTaskTest, ModelExecute_memFree)
 TEST_F(ApiDCDisableThreadTest, kernel_launch_normal_test)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
 
     // using normal stream
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // using lite stream
-    driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
-    .stubs()
-    .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+        .stubs()
+        .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
     rtStream_t liteStream;
     error = rtStreamCreateWithFlags(&liteStream, 0, RT_STREAM_FAST_LAUNCH);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(liteStream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(liteStream);
     EXPECT_EQ(stm->isHasPcieBar_, false);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, liteStream);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, liteStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtStreamDestroy(liteStream);
     EXPECT_EQ(error, RT_ERROR_NONE);

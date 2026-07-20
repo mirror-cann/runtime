@@ -18,42 +18,21 @@ std::map<std::string, std::string> g_ctx;
 }
 
 namespace aicpu {
-status_t SetOpname(const std::string &opname)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetOpname(const std::string& opname) { return AICPU_ERROR_NONE; }
 
-status_t InitTaskMonitorContext(uint32_t aicpuCoreCnt)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t InitTaskMonitorContext(uint32_t aicpuCoreCnt) { return AICPU_ERROR_NONE; }
 
-uint32_t GetAicpuThreadIndex()
-{
-    return 0;
-}
+uint32_t GetAicpuThreadIndex() { return 0; }
 
-status_t SetAicpuThreadIndex(uint32_t threadIndex)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetAicpuThreadIndex(uint32_t threadIndex) { return AICPU_ERROR_NONE; }
 
-status_t GetOpname(uint32_t threadIndex, std::string &opname)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t GetOpname(uint32_t threadIndex, std::string& opname) { return AICPU_ERROR_NONE; }
 
-status_t SetThreadLocalCtx(const std::string &key, const std::string &value)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetThreadLocalCtx(const std::string& key, const std::string& value) { return AICPU_ERROR_NONE; }
 
-status_t SetTaskAndStreamId(uint64_t taskId, uint32_t streamId)
-{
-    return AICPU_ERROR_NONE;
-}
+status_t SetTaskAndStreamId(uint64_t taskId, uint32_t streamId) { return AICPU_ERROR_NONE; }
 
-const std::map<std::string, std::string> &GetAllThreadCtxInfo(aicpu::CtxType type, uint32_t threadIndex)
+const std::map<std::string, std::string>& GetAllThreadCtxInfo(aicpu::CtxType type, uint32_t threadIndex)
 {
     return g_ctx;
 }
@@ -62,39 +41,19 @@ void UpdateModelMode(const bool mode) {}
 
 class ProfModelMessage {
 public:
-    explicit ProfModelMessage(const char *tag) {};
+    explicit ProfModelMessage(const char* tag){};
     virtual ~ProfModelMessage() = default;
-    ProfModelMessage *SetDataTagId(const uint16_t dataTagId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuModelIterId(const uint16_t indexId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuModelTimeStamp(const uint64_t timeStamp)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuModelId(const uint32_t modelId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetAicpuTagId(const uint16_t tagId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetEventId(const uint16_t eventId)
-    {
-        return this;
-    }
-    ProfModelMessage *SetDeviceId(const uint32_t deviceId)
-    {
-        return this;
-    }
+    ProfModelMessage* SetDataTagId(const uint16_t dataTagId) { return this; }
+    ProfModelMessage* SetAicpuModelIterId(const uint16_t indexId) { return this; }
+    ProfModelMessage* SetAicpuModelTimeStamp(const uint64_t timeStamp) { return this; }
+    ProfModelMessage* SetAicpuModelId(const uint32_t modelId) { return this; }
+    ProfModelMessage* SetAicpuTagId(const uint16_t tagId) { return this; }
+    ProfModelMessage* SetEventId(const uint16_t eventId) { return this; }
+    ProfModelMessage* SetDeviceId(const uint32_t deviceId) { return this; }
     int32_t ReportProfModelMessage();
+
 private:
     ProfModelMessage(const ProfModelMessage&) = delete;
     ProfModelMessage& operator=(const ProfModelMessage&) = delete;
 };
-}  // namespace aicpu
+} // namespace aicpu

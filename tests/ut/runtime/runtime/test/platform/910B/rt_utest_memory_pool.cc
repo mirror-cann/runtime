@@ -31,33 +31,25 @@
 using namespace testing;
 using namespace cce::runtime;
 
-extern "C"
-{
+extern "C" {
 #include "runtime/stars_interface.h"
 }
 
-class MemoryPoolManagerTest : public testing::Test
-{
+class MemoryPoolManagerTest : public testing::Test {
 public:
-    static rtError_t rtDeviceResetStub(int32_t device)
-    {
-        return RT_ERROR_NONE;
-    }
+    static rtError_t rtDeviceResetStub(int32_t device) { return RT_ERROR_NONE; }
 
 protected:
     static void SetUpTestCase()
     {
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         std::cout << "======== init ========" << std::endl;
         MOCKER(rtSetDevice).stubs().will(returnValue(0));
         MOCKER(rtDeviceReset).stubs().will(invoke(rtDeviceResetStub));
         rtError_t rtErr;
     }
 
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
@@ -70,16 +62,17 @@ protected:
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t originType;
 };
 
 // 测试基本功能
-rtError_t DevMemAllocStubxx(void ** const dptr, const uint64_t size, const rtMemType_t type,
-    const uint32_t deviceId, const uint16_t moduleId, const bool isLogError, const bool readOnlyFlag,
-    const bool starsTillingFlag)
+rtError_t DevMemAllocStubxx(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId,
+    const bool isLogError, const bool readOnlyFlag, const bool starsTillingFlag)
 {
-    void *ptr = malloc(size);
+    void* ptr = malloc(size);
     *dptr = ptr;
     return RT_ERROR_NONE;
 }
@@ -88,11 +81,11 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_test)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
-    void *memBase = (void*)100;
+    void* memBase = (void*)100;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
@@ -107,7 +100,7 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_test)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
 
     MemoryPoolManager* kernelMemPoolMng = new (std::nothrow) MemoryPoolManager(device);
     error = kernelMemPoolMng->Init();
@@ -115,12 +108,12 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_test)
 
     // allocate
     size_t kernelSize = 4 * 1024;
-    void *deviceMem = kernelMemPoolMng->Allocate(kernelSize, true);
+    void* deviceMem = kernelMemPoolMng->Allocate(kernelSize, true);
     // release
     kernelMemPoolMng->Release(deviceMem, kernelSize);
     EXPECT_EQ(kernelMemPoolMng->numPools_, 1);
     // 为多个kernel 申请内存！
-    for(size_t i = 0; i < 512; i++) {
+    for (size_t i = 0; i < 512; i++) {
         deviceMem = kernelMemPoolMng->Allocate(kernelSize, true);
     }
     EXPECT_EQ(kernelMemPoolMng->numPools_, 1);
@@ -129,7 +122,7 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_test)
     EXPECT_EQ(kernelMemPoolMng->numPools_, 2);
 
     // 申请超出五个内存池 并记录内存池地址
-    vector<void *> deviceAddrs;
+    vector<void*> deviceAddrs;
 
     size_t bigSize = 2 * 1024 * 1024;
     for (size_t i = 0; i < 10; i++) {
@@ -153,8 +146,8 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_test)
     EXPECT_EQ(deviceMem, nullptr);
 
     // 申请2个1M内存
-    void *deviceMem1 = kernelMemPoolMng->Allocate(1024 * 1024, true);
-    void *deviceMem2 = kernelMemPoolMng->Allocate(1024 * 1024, true);
+    void* deviceMem1 = kernelMemPoolMng->Allocate(1024 * 1024, true);
+    void* deviceMem2 = kernelMemPoolMng->Allocate(1024 * 1024, true);
     // 释放2个1M内存
     kernelMemPoolMng->Release(deviceMem2, 1024 * 1024);
     kernelMemPoolMng->Release(deviceMem1, 1024 * 1024);
@@ -164,18 +157,18 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_test)
 
     delete kernelMemPoolMng;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(MemoryPoolManagerTest, kernel_memory_list_test)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
-    void *memBase = (void*)100;
+    void* memBase = (void*)100;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
@@ -190,39 +183,39 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_list_test)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
 
     MemoryPoolManager* kernelMemPoolMng = new (std::nothrow) MemoryPoolManager(device);
     error = kernelMemPoolMng->Init();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // 申请0.5M, 1M, 0.5内存
-    void *deviceMem1 = kernelMemPoolMng->Allocate(512 * 1024, true);
-    void *deviceMem2 = kernelMemPoolMng->Allocate(1024 * 1024, true);
-    void *deviceMem3 = kernelMemPoolMng->Allocate(512 * 1024, true);
+    void* deviceMem1 = kernelMemPoolMng->Allocate(512 * 1024, true);
+    void* deviceMem2 = kernelMemPoolMng->Allocate(1024 * 1024, true);
+    void* deviceMem3 = kernelMemPoolMng->Allocate(512 * 1024, true);
     // 释放0.5M, 1M
     kernelMemPoolMng->Release(deviceMem1, 512 * 1024);
     kernelMemPoolMng->Release(deviceMem2, 1024 * 1024);
 
-    void *deviceMem4 = kernelMemPoolMng->Allocate(1024 * 1024, true);
+    void* deviceMem4 = kernelMemPoolMng->Allocate(1024 * 1024, true);
 
     // 释放空闲池中的内存
     kernelMemPoolMng->Release(deviceMem1 + 1, 512 * 1024);
-    
+
     delete kernelMemPoolMng;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(MemoryPoolManagerTest, kernel_memory_pool_allocate_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
-    void *memBase = (void*)100;
+    void* memBase = (void*)100;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
@@ -237,7 +230,7 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_allocate_fail)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
 
     MemoryPoolManager* kernelMemPoolMng = new (std::nothrow) MemoryPoolManager(device);
     error = kernelMemPoolMng->Init();
@@ -245,18 +238,18 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_allocate_fail)
 
     delete kernelMemPoolMng;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(MemoryPoolManagerTest, kernel_memory_pool_add_pool_fail)
 {
     int32_t devId = -1;
     rtError_t error;
-    Device *device;
+    Device* device;
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
-    void *memBase = (void*)100;
+    void* memBase = (void*)100;
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::DevMemAlloc)
         .stubs()
@@ -271,7 +264,7 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_add_pool_fail)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    device = ((Runtime *)Runtime::Instance())->DeviceRetain(devId, 0);
+    device = ((Runtime*)Runtime::Instance())->DeviceRetain(devId, 0);
 
     MemoryPoolManager* kernelMemPoolMng = new (std::nothrow) MemoryPoolManager(device);
     error = kernelMemPoolMng->AddMemoryPool(true);
@@ -279,5 +272,5 @@ TEST_F(MemoryPoolManagerTest, kernel_memory_pool_add_pool_fail)
 
     delete kernelMemPoolMng;
     delete rawDrv;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }

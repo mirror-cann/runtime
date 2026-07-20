@@ -16,26 +16,15 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class MemoryTypeManagerTest : public testing::Test
-{
+class MemoryTypeManagerTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        GlobalMockObject::verify();
-    }
+    static void SetUpTestCase() { GlobalMockObject::verify(); }
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(MemoryTypeManagerTest, memory_type_test)

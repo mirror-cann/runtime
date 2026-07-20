@@ -19,64 +19,54 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ChipKernelTest : public testing::Test
-{
+class ChipKernelTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ChipKernelTest, kernel_create_for_solomon)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t curChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD_V5);
     GlobalContainer::SetRtChipType(CHIP_CLOUD_V5);
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     int32_t fun1;
-    Kernel * k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
+    Kernel* k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
     k1->SetStub_(&fun1);
 
     EXPECT_EQ(k1->Name_(), "f1");
     EXPECT_EQ(k1->Stub_(), &fun1);
     EXPECT_EQ(k1->Offset_(), 10);
-    EXPECT_EQ((Program *)k1->Program_(), program);
+    EXPECT_EQ((Program*)k1->Program_(), program);
     rtInstance->SetChipType(curChipType);
     delete k1;
 }
 
 TEST_F(ChipKernelTest, kernel_create_for_second_solomon)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t curChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD_V5);
     GlobalContainer::SetRtChipType(CHIP_CLOUD_V5);
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     int32_t fun1;
-    Kernel * k1 = new Kernel("f1", 1, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
+    Kernel* k1 = new Kernel("f1", 1, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
     k1->SetStub_(&fun1);
 
     EXPECT_EQ(k1->Name_(), "f1");
     EXPECT_EQ(k1->Stub_(), &fun1);
     EXPECT_EQ(k1->Offset_(), 10);
     EXPECT_EQ(k1->TilingKey(), 1);
-    EXPECT_EQ((Program *)k1->Program_(), program);
+    EXPECT_EQ((Program*)k1->Program_(), program);
     rtInstance->SetChipType(curChipType);
     delete k1;
 }

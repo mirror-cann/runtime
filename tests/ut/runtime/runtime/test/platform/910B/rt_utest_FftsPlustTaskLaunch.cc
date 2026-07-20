@@ -11,46 +11,44 @@
 #include "rt_unwrap.h"
 #include "../../data/elf.h"
 
-class FftsPlusTaskLaunchTest : public testing::Test
-{
+class FftsPlusTaskLaunchTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
-        RawDevice *rawDevice = new RawDevice(0);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         (void)rtSetDevice(0);
         (void)rtSetTSDevice(1);
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
- 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
- 
+
         rtDevBinary_t devBin;
         devBin.magic = RT_DEV_BINARY_MAGIC_ELF;
         devBin.version = 2;
         devBin.data = (void*)elf_o;
         devBin.length = elf_o_len;
         rtError_t error3 = rtDevBinaryRegister(&devBin, &binHandle_);
- 
+
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 0);
         delete rawDevice;
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
- 
+
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
         GlobalMockObject::verify();
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
@@ -59,38 +57,35 @@ protected:
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
-        RawDevice *rawDevice = new RawDevice(0);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
- 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
- 
+
+    virtual void TearDown() { GlobalMockObject::verify(); }
+
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
-    static Driver*    driver_;
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
+    static Driver* driver_;
 };
 
 rtStream_t FftsPlusTaskLaunchTest::stream_ = NULL;
 rtEvent_t FftsPlusTaskLaunchTest::event_ = NULL;
 void* FftsPlusTaskLaunchTest::binHandle_ = nullptr;
-char  FftsPlusTaskLaunchTest::function_ = 'a';
+char FftsPlusTaskLaunchTest::function_ = 'a';
 uint32_t FftsPlusTaskLaunchTest::binary_[32] = {};
 Driver* FftsPlusTaskLaunchTest::driver_ = NULL;
 
 TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunch)
 {
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
-    void *descBuf = malloc(100);         // device memory
-    uint32_t descBufLen=100;
+    void* descBuf = malloc(100); // device memory
+    uint32_t descBufLen = 100;
 
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
 
@@ -123,8 +118,8 @@ TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunch_readyNum)
 {
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
     fftsSqe.readyContextNum = 1;
-    void *descBuf = malloc(100);         // device memory
-    uint32_t descBufLen=100;
+    void* descBuf = malloc(100); // device memory
+    uint32_t descBufLen = 100;
     fftsSqe.totalContextNum = descBufLen;
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
     std::vector<uintptr_t> input;
@@ -138,8 +133,8 @@ TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunch_readyNum)
 TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunchWithFlag)
 {
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
-    void *descBuf = malloc(100);         // device memory
-    uint32_t descBufLen=100;
+    void* descBuf = malloc(100); // device memory
+    uint32_t descBufLen = 100;
     uint32_t flag = 2;
 
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
@@ -151,10 +146,9 @@ TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunchWithFlag)
 
 TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunchWithFlagForGetDevAddr)
 {
-
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
-    void *descBuf = malloc(1000);         // device memory
-    uint32_t descBufLen=1000;
+    void* descBuf = malloc(1000); // device memory
+    uint32_t descBufLen = 1000;
     uint32_t flag = 2;
 
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo = {&fftsSqe, descBuf, descBufLen, {NULL, NULL, 0, 0}};
@@ -162,7 +156,7 @@ TEST_F(FftsPlusTaskLaunchTest, FftsPlusTaskLaunchWithFlagForGetDevAddr)
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &arg;
     argsInfo.argsSize = sizeof(arg);
-    void *handleInfo[2] = {nullptr, nullptr};
+    void* handleInfo[2] = {nullptr, nullptr};
     void *devArgsAddr = nullptr, *argsHandle = nullptr;
     rtError_t error = rtGetDevArgsAddr(stream_, &argsInfo, &devArgsAddr, &argsHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);

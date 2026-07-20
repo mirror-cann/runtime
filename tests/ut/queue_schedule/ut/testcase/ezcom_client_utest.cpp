@@ -23,12 +23,9 @@
 
 using namespace std;
 
-class EZCOM_CLIENT_UTest :public testing::Test {
+class EZCOM_CLIENT_UTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before ezcom_client_utest" << endl;
-    }
+    virtual void SetUp() { cout << "Before ezcom_client_utest" << endl; }
 
     virtual void TearDown()
     {
@@ -38,45 +35,41 @@ protected:
 };
 
 namespace {
-    int EzcomRPCSyncFake(int fd, struct EzcomRequest *req, struct EzcomResponse *resp)
-    {
-        std::cout << "EzcomRPCSync stub begin" << std::endl;
-        resp->size = req->size;
-        char *respData = new (std::nothrow) char[req->size];
-        memcpy(respData, (char*)req->data, resp->size);
-        resp->data = (uint8_t*)respData;
-        std::cout << "EzcomRPCSync stub end" << std::endl;
-        return 0;
-    }
-
-    int EzcomRPCSyncFailedFake(int fd, struct EzcomRequest *req, struct EzcomResponse *resp)
-    {
-        std::cout << "EzcomRPCSync stub failed begin" << std::endl;
-        resp->size = req->size + 1;
-        char *respData = new (std::nothrow) char[req->size];
-        memcpy(respData, (char*)req->data, req->size);
-        resp->data = (uint8_t*)respData;
-        std::cout << "EzcomRPCSync stub end" << std::endl;
-        return 0;
-    }
+int EzcomRPCSyncFake(int fd, struct EzcomRequest* req, struct EzcomResponse* resp)
+{
+    std::cout << "EzcomRPCSync stub begin" << std::endl;
+    resp->size = req->size;
+    char* respData = new (std::nothrow) char[req->size];
+    memcpy(respData, (char*)req->data, resp->size);
+    resp->data = (uint8_t*)respData;
+    std::cout << "EzcomRPCSync stub end" << std::endl;
+    return 0;
 }
+
+int EzcomRPCSyncFailedFake(int fd, struct EzcomRequest* req, struct EzcomResponse* resp)
+{
+    std::cout << "EzcomRPCSync stub failed begin" << std::endl;
+    resp->size = req->size + 1;
+    char* respData = new (std::nothrow) char[req->size];
+    memcpy(respData, (char*)req->data, req->size);
+    resp->data = (uint8_t*)respData;
+    std::cout << "EzcomRPCSync stub end" << std::endl;
+    return 0;
+}
+} // namespace
 
 TEST_F(EZCOM_CLIENT_UTest, SerializeBindMsgSuccess1)
 {
     std::vector<bqs::BQSBindQueueItem> bindQueueVec;
     for (uint32_t i = 0; i < 10; i++) {
-        bqs::BQSBindQueueItem tmp = {
-            srcQueueId_: i,
-            dstQueueId_: i + 1
-        };
+        bqs::BQSBindQueueItem tmp = {srcQueueId_ : i, dstQueueId_ : i + 1};
         bindQueueVec.push_back(tmp);
     }
-    
+
     bqs::BQSMsg bqsReqMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SerializeBindMsg(bindQueueVec, bqsReqMsg);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     EXPECT_EQ(bqsReqMsg.msg_type(), bqs::BQSMsg::BIND);
-
 
     bqs::BQSBindQueueMsgs* bqsBindQueueMsgs = bqsReqMsg.mutable_bind_queue_msgs();
     EXPECT_NE(bqsBindQueueMsgs, nullptr);
@@ -104,17 +97,11 @@ TEST_F(EZCOM_CLIENT_UTest, SerializeUnbindMsgSuccess1)
 {
     std::vector<bqs::BQSQueryPara> bqsQueryParaVec;
     for (uint32_t i = 0; i < 10; i++) {
-        bqs::BQSBindQueueItem tmp = {
-            srcQueueId_: i,
-            dstQueueId_: i + 1
-        };
-        bqs::BQSQueryPara tmpPara = {
-            keyType_: bqs::BQS_QUERY_TYPE_SRC,
-            bqsBindQueueItem_: tmp
-        };
+        bqs::BQSBindQueueItem tmp = {srcQueueId_ : i, dstQueueId_ : i + 1};
+        bqs::BQSQueryPara tmpPara = {keyType_ : bqs::BQS_QUERY_TYPE_SRC, bqsBindQueueItem_ : tmp};
         bqsQueryParaVec.push_back(tmpPara);
     }
-    
+
     bqs::BQSMsg bqsReqMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SerializeUnbindMsg(bqsQueryParaVec, bqsReqMsg);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -149,14 +136,8 @@ TEST_F(EZCOM_CLIENT_UTest, SerializeUnbindMsgFailed1)
 
 TEST_F(EZCOM_CLIENT_UTest, SerializeGetBindMsgSuccess1)
 {
-    bqs::BQSBindQueueItem tmp = {
-        srcQueueId_: 5,
-        dstQueueId_: 6
-    };
-    bqs::BQSQueryPara bqsQueryPara = {
-        keyType_: bqs::BQS_QUERY_TYPE_SRC,
-        bqsBindQueueItem_: tmp
-    };
+    bqs::BQSBindQueueItem tmp = {srcQueueId_ : 5, dstQueueId_ : 6};
+    bqs::BQSQueryPara bqsQueryPara = {keyType_ : bqs::BQS_QUERY_TYPE_SRC, bqsBindQueueItem_ : tmp};
 
     bqs::BQSMsg bqsReqMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SerializeGetBindMsg(bqsQueryPara, bqsReqMsg);
@@ -251,9 +232,7 @@ TEST_F(EZCOM_CLIENT_UTest, ParseGetBindRespMsgSuccess1)
 
 TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgSuccess1)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFake));
     bqs::BQSMsg bqsReqMsg;
     bqs::BQSMsg bqsRespMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SendBqsMsg(bqsReqMsg, bqsRespMsg);
@@ -280,9 +259,7 @@ TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgFailForPbSerialize)
 
 TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgEzcomRPCSyncFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(returnValue(-1));
+    MOCKER(EzcomRPCSync).stubs().will(returnValue(-1));
     bqs::BQSMsg bqsReqMsg;
     bqs::BQSMsg bqsRespMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SendBqsMsg(bqsReqMsg, bqsRespMsg);
@@ -291,9 +268,7 @@ TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgEzcomRPCSyncFailed)
 
 TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgCheckRspSizeFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(invoke(EzcomRPCSyncFailedFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncFailedFake));
     bqs::BQSMsg bqsReqMsg;
     bqs::BQSMsg bqsRespMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SendBqsMsg(bqsReqMsg, bqsRespMsg);
@@ -302,9 +277,7 @@ TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgCheckRspSizeFailed)
 
 TEST_F(EZCOM_CLIENT_UTest, SendBqsMsgTryAgainFailed)
 {
-    MOCKER(EzcomRPCSync)
-    .stubs()
-    .will(returnValue(-EAGAIN));
+    MOCKER(EzcomRPCSync).stubs().will(returnValue(-EAGAIN));
     bqs::BQSMsg bqsReqMsg;
     bqs::BQSMsg bqsRespMsg;
     bqs::BqsStatus ret = bqs::EzcomClient::GetInstance(0)->SendBqsMsg(bqsReqMsg, bqsRespMsg);

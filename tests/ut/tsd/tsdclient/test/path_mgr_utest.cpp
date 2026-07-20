@@ -20,17 +20,14 @@ using namespace std;
 
 class PathMgrTest : public testing::Test {
 protected:
-  virtual void SetUp()
-  {
-      cout << "Before PathMgrTest()" << endl;
-  }
+    virtual void SetUp() { cout << "Before PathMgrTest()" << endl; }
 
-  virtual void TearDown()
-  {
-      cout << "After PathMgrTest" << endl;
-      GlobalMockObject::verify();
-      GlobalMockObject::reset();
-  }
+    virtual void TearDown()
+    {
+        cout << "After PathMgrTest" << endl;
+        GlobalMockObject::verify();
+        GlobalMockObject::reset();
+    }
 };
 
 TEST_F(PathMgrTest, BuildKernelSoRootPathWithDestPath)

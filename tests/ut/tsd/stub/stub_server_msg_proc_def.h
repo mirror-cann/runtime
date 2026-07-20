@@ -14,15 +14,15 @@ namespace tsd {
 class StubServerMsgProcDef {
 public:
     StubServerMsgProcDef() = default;
-    
+
     virtual ~StubServerMsgProcDef() = default;
-    
+
     StubServerMsgProcDef(const StubServerMsgProcDef&) = delete;
 
     StubServerMsgProcDef(StubServerMsgProcDef&&) = delete;
 
     StubServerMsgProcDef& operator=(const StubServerMsgProcDef&) = delete;
-    
+
     StubServerMsgProcDef& operator=(StubServerMsgProcDef&) = delete;
 
     StubServerMsgProcDef& operator=(StubServerMsgProcDef&&) = delete;
@@ -45,5 +45,5 @@ public:
 
     static void RegisterTsdProcessListOpenQueryCloseMsgDefaultCallBack();
 };
-}
+} // namespace tsd
 #endif

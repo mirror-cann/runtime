@@ -21,18 +21,11 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 class MsgInfoMessageAdapterTEST : public ::testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "MsgInfoMessageAdapterTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "MsgInfoMessageAdapterTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "MsgInfoMessageAdapterTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "MsgInfoMessageAdapterTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "MsgInfoMessageAdapterTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "MsgInfoMessageAdapterTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -41,38 +34,27 @@ protected:
     }
 };
 
-static void MOCK() 
+static void MOCK()
 {
     uint16_t version = 1;
     uint16_t pid = 1;
     uint16_t vfId = 2;
     AicpuDrvManager::GetInstance().isInit_ = true;
-    AicpuDrvManager::GetInstance().hostPid_  = pid;
-    AicpuDrvManager::GetInstance().vfId_  = vfId;
-    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion)
-        .stubs()
-        .will(returnValue(version));
-    MOCKER(halEschedAckEvent)
-        .stubs()
-        .will(invoke(MsgInfohalEschedAckEventStub));
-    MOCKER(tsDevSendMsgAsync)
-        .stubs()
-        .will(invoke(MsgInfotsDevSendMsgAsyncStub));
-    
+    AicpuDrvManager::GetInstance().hostPid_ = pid;
+    AicpuDrvManager::GetInstance().vfId_ = vfId;
+    MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue(version));
+    MOCKER(halEschedAckEvent).stubs().will(invoke(MsgInfohalEschedAckEventStub));
+    MOCKER(tsDevSendMsgAsync).stubs().will(invoke(MsgInfotsDevSendMsgAsyncStub));
 }
 
-static void MOCK_DUMP() 
-{
-    
-}
+static void MOCK_DUMP() {}
 
-
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlEventModelOperate) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlEventModelOperate)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;
@@ -86,16 +68,13 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlEventModelOperate)
     info->cmd_type = TS_AICPU_MODEL_OPERATE;
     expMsg_.cmd_type = TS_AICPU_MODEL_OPERATE;
 
-
     info->u.aicpu_model_operate.arg_ptr = 0x5A5A;
     info->u.aicpu_model_operate.cmd_type = TS_AICPU_MODEL_LOAD;
     info->u.aicpu_model_operate.model_id = 63;
     info->u.aicpu_model_operate.stream_id = 0;
 
-    MOCKER_CPP(&AicpuScheduleInterface::LoadProcess)
-        .stubs()
-        .will(returnValue(0));
-    
+    MOCKER_CPP(&AicpuScheduleInterface::LoadProcess).stubs().will(returnValue(0));
+
     expMsg_.u.aicpu_resp.result_code = 0;
     expMsg_.u.aicpu_resp.stream_id = UINT16_MAX;
     expMsg_.u.aicpu_resp.task_id = UINT32_MAX;
@@ -105,12 +84,12 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlEventModelOperate)
     ClearMsgAndSqe();
 }
 
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTaskReport) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTaskReport)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;
@@ -130,17 +109,17 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTaskReport)
     expMsg_.u.aicpu_resp.stream_id = 8;
     expMsg_.u.aicpu_resp.task_id = 8;
     AicpuModel retModel;
-    MOCKER_CPP(static_cast<uint32_t(AicpuModelErrProc:: *)(const AicoreErrMsgInfo&, uint32_t, uint32_t&)>(&AicpuModelErrProc::AddErrLog))
+    MOCKER_CPP(static_cast<uint32_t (AicpuModelErrProc::*)(const AicoreErrMsgInfo&, uint32_t, uint32_t&)>(
+                   &AicpuModelErrProc::AddErrLog))
         .stubs()
         .will(returnValue((uint32_t)0));
     MOCKER_CPP(&AicpuModelManager::GetModel)
         .stubs()
-        .will(returnValue(static_cast<AicpuSchedule::AicpuModel *>(nullptr)))
+        .will(returnValue(static_cast<AicpuSchedule::AicpuModel*>(nullptr)))
         .then(returnValue(&retModel));
-    MOCKER_CPP(&AicpuModel::GetModelTsId)
-        .stubs()
-        .will(returnValue(1));
-    MOCKER_CPP(static_cast<uint32_t(AicpuModelErrProc:: *)(const AicoreErrMsgInfo&, uint32_t, uint32_t&)>(&AicpuModelErrProc::AddErrLog))
+    MOCKER_CPP(&AicpuModel::GetModelTsId).stubs().will(returnValue(1));
+    MOCKER_CPP(static_cast<uint32_t (AicpuModelErrProc::*)(const AicoreErrMsgInfo&, uint32_t, uint32_t&)>(
+                   &AicpuModelErrProc::AddErrLog))
         .stubs()
         .will(returnValue((uint32_t)0));
     int ret = AicpuEventManager::GetInstance().ProcessHWTSControlEvent(eventInfo);
@@ -148,12 +127,12 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTaskReport)
     ClearMsgAndSqe();
 }
 
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpReport) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpReport)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;
@@ -166,7 +145,8 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpReport)
     info->u.ts_to_aicpu_normal_datadump.dump_stream_id = UINT16_MAX;
     info->u.ts_to_aicpu_normal_datadump.is_model = 0;
 
-    MOCKER_CPP(static_cast<int32_t(OpDumpTaskManager::*)(TaskInfoExt &, const DumpFileName &)>(&OpDumpTaskManager::DumpOpInfo))
+    MOCKER_CPP(
+        static_cast<int32_t (OpDumpTaskManager::*)(TaskInfoExt&, const DumpFileName&)>(&OpDumpTaskManager::DumpOpInfo))
         .stubs()
         .will(returnValue(0));
     expMsg_.pid = 1;
@@ -184,12 +164,12 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpReport)
     ClearMsgAndSqe();
 }
 
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDebugDataDumpReport) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDebugDataDumpReport)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;
@@ -203,7 +183,8 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDebugDataDumpReport)
     info->u.ts_to_aicpu_debug_datadump.dump_stream_id = 8;
     info->u.ts_to_aicpu_debug_datadump.is_model = 1;
 
-    MOCKER_CPP(static_cast<int32_t(OpDumpTaskManager::*)(TaskInfoExt &, const DumpFileName &)>(&OpDumpTaskManager::DumpOpInfo))
+    MOCKER_CPP(
+        static_cast<int32_t (OpDumpTaskManager::*)(TaskInfoExt&, const DumpFileName&)>(&OpDumpTaskManager::DumpOpInfo))
         .stubs()
         .will(returnValue(0));
     expMsg_.pid = 1;
@@ -221,12 +202,12 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDebugDataDumpReport)
     ClearMsgAndSqe();
 }
 
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpLoadInfoReport) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpLoadInfoReport)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;
@@ -239,12 +220,11 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpLoadInfoReport)
     info->u.ts_to_aicpu_datadump_info_load.task_id = 8;
     info->u.ts_to_aicpu_datadump_info_load.stream_id = 8;
 
-    MOCKER_CPP(static_cast<int32_t(OpDumpTaskManager::*)(const char_t * const, const uint32_t, AicpuSqeAdapter &)>(&OpDumpTaskManager::LoadOpMappingInfo))
+    MOCKER_CPP(static_cast<int32_t (OpDumpTaskManager::*)(const char_t* const, const uint32_t, AicpuSqeAdapter&)>(
+                   &OpDumpTaskManager::LoadOpMappingInfo))
         .stubs()
         .will(returnValue(0));
-    MOCKER_CPP(GetAicpuRunMode)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(GetAicpuRunMode).stubs().will(returnValue(0));
     expMsg_.pid = 1;
     expMsg_.vf_id = 2;
     expMsg_.tid = 3;
@@ -259,12 +239,12 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlDataDumpLoadInfoReport)
     ClearMsgAndSqe();
 }
 
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTimeoutConfig) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTimeoutConfig)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;
@@ -291,12 +271,12 @@ TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlTimeoutConfig)
     ClearMsgAndSqe();
 }
 
-TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlInfoLoad) 
+TEST_F(MsgInfoMessageAdapterTEST, ProcessHWTSControlInfoLoad)
 {
     MOCK();
     event_info eventInfo{};
     eventInfo.priv.msg_len = sizeof(TsAicpuMsgInfo);
-    TsAicpuMsgInfo *info = reinterpret_cast<TsAicpuMsgInfo *>(eventInfo.priv.msg);
+    TsAicpuMsgInfo* info = reinterpret_cast<TsAicpuMsgInfo*>(eventInfo.priv.msg);
 
     info->pid = 1;
     info->vf_id = 2;

@@ -26,16 +26,17 @@ protected:
     CfgLogAddrTsKernel kernel_;
 };
 
-TEST_F(CfgLogAddrKernelTest, TsKernelCfgLogAddr_success) {
+TEST_F(CfgLogAddrKernelTest, TsKernelCfgLogAddr_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(aicpu::AicpuConfigMsg) + sizeof(uint32_t);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(aicpu::AicpuConfigMsg) + sizeof(uint32_t);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    char *p = args + sizeof(aicpu::AicpuParamHead);
+    char* p = args + sizeof(aicpu::AicpuParamHead);
     p += sizeof(aicpu::AicpuConfigMsg);
-    aicpu::AicpuConfigMsg *cfgMsg = (aicpu::AicpuConfigMsg *)p;
+    aicpu::AicpuConfigMsg* cfgMsg = (aicpu::AicpuConfigMsg*)p;
     cfgMsg->msgType = 0;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;

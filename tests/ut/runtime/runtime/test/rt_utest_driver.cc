@@ -18,26 +18,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-
-class DriverTest : public testing::Test
-{
+class DriverTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"Driver test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "Driver test start" << std::endl; }
 
-    }
+    static void TearDownTestCase() { std::cout << "Driver test start end" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"Driver test start end"<<std::endl;
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -50,30 +37,29 @@ TEST_F(DriverTest, bitmap)
 {
     Bitmap map(70);
     int id = -1;
-    for (int i = 0; i < 70; i++)
-    {
+    for (int i = 0; i < 70; i++) {
         id = map.AllocId();
         EXPECT_NE(id, -1);
     }
     id = map.AllocId();
     EXPECT_EQ(id, -1);
 
-    uint32_t numOfRes = 15*1024;
-    uint32_t curMaxNumOfRes = 11*1024;
+    uint32_t numOfRes = 15 * 1024;
+    uint32_t curMaxNumOfRes = 11 * 1024;
     Bitmap map2(numOfRes);
     for (int i = 0; i < curMaxNumOfRes; i++) {
         id = map2.AllocId(curMaxNumOfRes);
         EXPECT_NE(id, -1);
     }
 
-    for (int i =0; i < 1025; i++) {     // utilization: 11*1024 - 1025, available: 1025
+    for (int i = 0; i < 1025; i++) { // utilization: 11*1024 - 1025, available: 1025
         map2.FreeId(i);
     }
 
-    id = map2.AllocId(curMaxNumOfRes);  // available: 1024
+    id = map2.AllocId(curMaxNumOfRes); // available: 1024
     EXPECT_NE(id, -1);
 
-    id = map2.AllocId(curMaxNumOfRes);  // available: 1023
+    id = map2.AllocId(curMaxNumOfRes); // available: 1023
     EXPECT_NE(id, -1);
 
     id = map2.AllocId(curMaxNumOfRes);
@@ -84,11 +70,9 @@ TEST_F(DriverTest, get_plat_info_succ)
 {
     uint32_t info = 0;
 
-    MOCKER(drvGetPlatformInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetPlatformInfo).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     info = rawDrv->RtGetRunMode();
     EXPECT_EQ(info, RT_RUN_MODE_RESERVED);
@@ -101,21 +85,18 @@ TEST_F(DriverTest, get_plat_info_fail)
 {
     uint32_t info = 0;
 
-    MOCKER(drvGetPlatformInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvGetPlatformInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     info = rawDrv->RtGetRunMode();
     EXPECT_EQ(info, RT_RUN_MODE_RESERVED);
     delete rawDrv;
 }
 
-
 TEST_F(DriverTest, register_driver_fail)
 {
-    DriverFactory * rawDrv = new DriverFactory();
+    DriverFactory* rawDrv = new DriverFactory();
     bool ret = rawDrv->RegDriver(NPU_DRIVER, nullptr);
     EXPECT_EQ(ret, false);
     delete rawDrv;

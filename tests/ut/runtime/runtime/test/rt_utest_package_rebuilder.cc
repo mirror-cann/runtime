@@ -26,30 +26,20 @@ using namespace testing;
 using namespace cce::runtime;
 
 #ifndef UT_REPORT_HASH_KEY
-#define UT_REPORT_HASH_KEY(taskId, streamId, taskType)               \
+#define UT_REPORT_HASH_KEY(taskId, streamId, taskType)            \
     (((static_cast<uint64_t>(taskId) << 32U) & 0xFFFF00000000U) | \
-     ((static_cast<uint64_t>(streamId) << 16U) & 0xFFFF0000U) | \
-     (static_cast<uint64_t>(taskType) & 0x0000FFFFU))
+     ((static_cast<uint64_t>(streamId) << 16U) & 0xFFFF0000U) | (static_cast<uint64_t>(taskType) & 0x0000FFFFU))
 #endif
 
-class PackageRebuilderTest : public testing::Test
-{
+class PackageRebuilderTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 };
 
 TEST_F(PackageRebuilderTest, PackageReportReceive_false)
@@ -63,7 +53,7 @@ TEST_F(PackageRebuilderTest, PackageReportReceive_false)
     report.packageType = 1U;
 
     uint8_t package[M_PROF_PACKAGE_LEN] = {0U};
-    size_t pktLen  = static_cast<size_t>(M_PROF_PACKAGE_LEN);
+    size_t pktLen = static_cast<size_t>(M_PROF_PACKAGE_LEN);
     TaskInfo task = {};
     task.pkgStat[report.packageType].packageReportNum = 1U;
 
@@ -95,15 +85,12 @@ TEST_F(PackageRebuilderTest, PackageReportReceive_false)
         static_cast<uint64_t>(UT_REPORT_HASH_KEY(report.taskID, report.streamID, report.packageType));
     const size_t packageBufLen =
         static_cast<uint32_t>(task.pkgStat[report.packageType].packageReportNum + 1U) * sizeof(uint32_t);
-    pr->rptPkgTbl_[reportHashVal] = static_cast<rtPackageBuf_t *>(malloc(packageBufLen));
+    pr->rptPkgTbl_[reportHashVal] = static_cast<rtPackageBuf_t*>(malloc(packageBufLen));
     ret = pr->PackageReportReceive(&report, package, pktLen, &task);
     EXPECT_EQ(ret, false);
 }
 
-int memset_s_stub(void *str, size_t buf_l, int c, size_t n)
-{
-    return -1;
-}
+int memset_s_stub(void* str, size_t buf_l, int c, size_t n) { return -1; }
 
 TEST_F(PackageRebuilderTest, PackageReportReceive_memcpy_fail)
 {
@@ -116,7 +103,7 @@ TEST_F(PackageRebuilderTest, PackageReportReceive_memcpy_fail)
     report.packageType = 1U;
 
     uint8_t package[M_PROF_PACKAGE_LEN] = {0U};
-    size_t pktLen  = static_cast<size_t>(M_PROF_PACKAGE_LEN);
+    size_t pktLen = static_cast<size_t>(M_PROF_PACKAGE_LEN);
     TaskInfo task = {};
     task.pkgStat[report.packageType].packageReportNum = 2U;
 
@@ -124,6 +111,6 @@ TEST_F(PackageRebuilderTest, PackageReportReceive_memcpy_fail)
     std::unique_ptr<PackageRebuilder> pr = std::make_unique<PackageRebuilder>();
     bool ret = pr->PackageReportReceive(&report, package, pktLen, &task);
     EXPECT_EQ(ret, false);
-    pr->rptPkgTbl_[1] = static_cast<rtPackageBuf_t *>(malloc(1U));
+    pr->rptPkgTbl_[1] = static_cast<rtPackageBuf_t*>(malloc(1U));
     GlobalMockObject::verify();
 }

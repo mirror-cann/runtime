@@ -9,55 +9,24 @@
  */
 #include "atrace_api.h"
 
-TraHandle AtraceCreate(TracerType tracerType, const char *objName)
-{
-    return 0;
-}
+TraHandle AtraceCreate(TracerType tracerType, const char* objName) { return 0; }
 
-TraEventHandle AtraceEventCreate(const char *eventName)
-{
-    return 0;
-}
+TraEventHandle AtraceEventCreate(const char* eventName) { return 0; }
 
-TraStatus AtraceEventSetAttr(TraEventHandle eventHandle, const TraceEventAttr *attr)
-{
-    return TRACE_SUCCESS;
-}
+TraStatus AtraceEventSetAttr(TraEventHandle eventHandle, const TraceEventAttr* attr) { return TRACE_SUCCESS; }
 
-TraStatus AtraceEventBindTrace(TraEventHandle eventHandle, TraHandle handle)
-{
-    return TRACE_SUCCESS;
-}
+TraStatus AtraceEventBindTrace(TraEventHandle eventHandle, TraHandle handle) { return TRACE_SUCCESS; }
 
-TraStatus AtraceEventReport(TraEventHandle eventHandle)
-{
-    return TRACE_SUCCESS;
-}
+TraStatus AtraceEventReport(TraEventHandle eventHandle) { return TRACE_SUCCESS; }
 
-void AtraceEventDestroy(TraEventHandle eventHandle)
-{}
+void AtraceEventDestroy(TraEventHandle eventHandle) {}
 
-void AtraceDestroy(TraHandle handle)
-{
-    return;
-}
+void AtraceDestroy(TraHandle handle) { return; }
 
-TraStatus AtraceSubmit(TraHandle handle, const void *buffer, uint32_t bufSize)
-{
-    return 0;
-}
+TraStatus AtraceSubmit(TraHandle handle, const void* buffer, uint32_t bufSize) { return 0; }
 
-TraStatus AtraceSave(TracerType tracerType, bool SyncFlag)
-{
-    return 0;
-}
+TraStatus AtraceSave(TracerType tracerType, bool SyncFlag) { return 0; }
 
-int AtraceReportStart(int devId)
-{
-    return 0;
-}
+int AtraceReportStart(int devId) { return 0; }
 
-void AtraceReportStop(int devId)
-{
-    return;
-}
+void AtraceReportStop(int devId) { return; }

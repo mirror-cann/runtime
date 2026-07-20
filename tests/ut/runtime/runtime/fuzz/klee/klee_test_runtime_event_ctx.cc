@@ -11,7 +11,8 @@
 #include "runtime/rt.h"
 #include "rt_comm_testcase.hpp"
 
-int main() {
+int main()
+{
     int32_t priority;
     klee_make_symbolic(&priority, sizeof(priority), "priority");
     uint32_t sleepTime;

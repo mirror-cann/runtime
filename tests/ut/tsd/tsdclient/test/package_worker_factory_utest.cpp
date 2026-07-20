@@ -7,35 +7,36 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#include <thread> 
-#include "gtest/gtest.h" 
+#include <thread>
+#include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
 
-#define private public 
-#define protected public 
+#define private public
+#define protected public
 #include "inc/package_worker_factory.h"
 #include "tsd_log.h"
 #include "inc/package_worker_utils.h"
 #include "inc/aicpu_thread_package_worker.h"
-#undef private 
+#undef private
 #undef protected
- using namespace tsd; 
-  class PackageWorkerFactoryTest : public testing::Test { 
- protected: 
-     virtual void SetUp() {} 
- 
- 
-     virtual void TearDown() 
-     { 
-         GlobalMockObject::verify(); 
-     } 
- };
+using namespace tsd;
+class PackageWorkerFactoryTest : public testing::Test {
+protected:
+    virtual void SetUp() {}
 
-  TEST_F(PackageWorkerFactoryTest, CreatePackageWorkerSucc) 
- {
-    PackageWorkerFactory &inst = PackageWorkerFactory::GetInstance();
+    virtual void TearDown() { GlobalMockObject::verify(); }
+};
+
+TEST_F(PackageWorkerFactoryTest, CreatePackageWorkerSucc)
+{
+    PackageWorkerFactory& inst = PackageWorkerFactory::GetInstance();
     PackageWorkerParas para;
-    inst.RegisterPackageWorker(PackageWorkerType::PACKAGE_WORKER_AICPU_THREAD, [](const PackageWorkerParas paras) -> std::shared_ptr<AicpuThreadPackageWorker> { return std::make_shared<AicpuThreadPackageWorker>(paras); });
-    std::shared_ptr<BasePackageWorker> tmpins = inst.CreatePackageWorker(PackageWorkerType::PACKAGE_WORKER_AICPU_THREAD, para);
+    inst.RegisterPackageWorker(
+        PackageWorkerType::PACKAGE_WORKER_AICPU_THREAD,
+        [](const PackageWorkerParas paras) -> std::shared_ptr<AicpuThreadPackageWorker> {
+            return std::make_shared<AicpuThreadPackageWorker>(paras);
+        });
+    std::shared_ptr<BasePackageWorker> tmpins =
+        inst.CreatePackageWorker(PackageWorkerType::PACKAGE_WORKER_AICPU_THREAD, para);
     EXPECT_NE(tmpins, nullptr);
- } 
+}

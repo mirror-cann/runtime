@@ -30,10 +30,7 @@ enum ELogLevel {
     LOG_LEVEL_TRACE
 };
 
-typedef enum {
-    APPLICATION = 0,
-    SYSTEM
-} ProcessType;
+typedef enum { APPLICATION = 0, SYSTEM } ProcessType;
 
 typedef struct {
     ProcessType type;
@@ -43,52 +40,41 @@ typedef struct {
 } LogAttr;
 
 typedef struct tagKV {
-    char *kname;
-    char *value;
+    char* kname;
+    char* value;
 } KeyValue;
 
-#define LOG_THREAD_WRITE(logLevel)                  \
-do {                                                            \
-    char szInfo[Max_Trace_Len + 1];                             \
-                                                                \
-    va_list valist;                                             \
-    memset(&valist, 0, sizeof(valist));                         \
-    va_start(valist, fmt);                                      \
-    vsnprintf(szInfo, Max_Trace_Len + 1, fmt, valist);          \
-    va_end(valist);                                             \
-                                                                \
-    LogThread::addDebugLog(logLevel, module_id, szInfo);        \
-} while (0)
+#define LOG_THREAD_WRITE(logLevel)                           \
+    do {                                                     \
+        char szInfo[Max_Trace_Len + 1];                      \
+                                                             \
+        va_list valist;                                      \
+        memset(&valist, 0, sizeof(valist));                  \
+        va_start(valist, fmt);                               \
+        vsnprintf(szInfo, Max_Trace_Len + 1, fmt, valist);   \
+        va_end(valist);                                      \
+                                                             \
+        LogThread::addDebugLog(logLevel, module_id, szInfo); \
+    } while (0)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void dlog_init()
-{
-}
+void dlog_init() {}
 
-int  dlog_getlevel(int module_id, int* enable_event)
-{
-    return 2;
-}
+int dlog_getlevel(int module_id, int* enable_event) { return 2; }
 
-int CheckLogLevel(int moduleId, int logLevel)
-{
-    return 1;
-}
+int CheckLogLevel(int moduleId, int logLevel) { return 1; }
 
-void Dlog(int module_id,int level ,const char *fmt, ...)
-{
-    LOG_THREAD_WRITE(LOG_LEVEL_OPLOG);
-}
+void Dlog(int module_id, int level, const char* fmt, ...) { LOG_THREAD_WRITE(LOG_LEVEL_OPLOG); }
 
-void DlogWithKV(int module_id, int level, KeyValue *pstKVArray, int kvNum, const char *fmt, ...)
+void DlogWithKV(int module_id, int level, KeyValue* pstKVArray, int kvNum, const char* fmt, ...)
 {
     LOG_THREAD_WRITE(LOG_LEVEL_TRACE);
 }
 
-void DlogErrorInner(int moduleId, const char *fmt, ...)
+void DlogErrorInner(int moduleId, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -98,7 +84,7 @@ void DlogErrorInner(int moduleId, const char *fmt, ...)
     va_end(args);
 }
 
-void DlogWarnInner(int moduleId, const char *fmt, ...)
+void DlogWarnInner(int moduleId, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -108,7 +94,7 @@ void DlogWarnInner(int moduleId, const char *fmt, ...)
     va_end(args);
 }
 
-void DlogInfoInner(int moduleId, const char *fmt, ...)
+void DlogInfoInner(int moduleId, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -118,18 +104,13 @@ void DlogInfoInner(int moduleId, const char *fmt, ...)
     va_end(args);
 }
 
-static const char *LOGLEVEL[] =
-{
-    "DEBUG",
-    "INFO",
-    "WARNING",
-    "ERROR",
-    "NULL",
+static const char* LOGLEVEL[] = {
+    "DEBUG", "INFO", "WARNING", "ERROR", "NULL",
 };
 
-void DlogWrite(int moduleId, int level, const char *fmt, ...)
+void DlogWrite(int moduleId, int level, const char* fmt, ...)
 {
-    if(level >= 5) {
+    if (level >= 5) {
         return;
     }
     va_list args;
@@ -140,9 +121,9 @@ void DlogWrite(int moduleId, int level, const char *fmt, ...)
     va_end(args);
 }
 
-void DlogRecord(int moduleId, int level, const char *fmt, ...)
+void DlogRecord(int moduleId, int level, const char* fmt, ...)
 {
-    if(level >= 5) {
+    if (level >= 5) {
         return;
     }
     va_list args;
@@ -153,64 +134,57 @@ void DlogRecord(int moduleId, int level, const char *fmt, ...)
     va_end(args);
 }
 
-void DlogDebugInner(int moduleId, const char *fmt, ...)
+void DlogDebugInner(int moduleId, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
     printf("[DEBUG][TDT]");
     vprintf(fmt, args);
     printf("\n");
-    va_end(args);;
+    va_end(args);
+    ;
 }
 
-void DlogEventInner(int moduleId, const char *fmt, ...)
+void DlogEventInner(int moduleId, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
     printf("[EVENT][TDT]");
     vprintf(fmt, args);
     printf("\n");
-    va_end(args);;
+    va_end(args);
+    ;
 }
 
-void DlogInner(int moduleId, int level, const char *fmt, ...)
+void DlogInner(int moduleId, int level, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
     printf("[OPLOG][TDT]");
     vprintf(fmt, args);
     printf("\n");
-    va_end(args);;
+    va_end(args);
+    ;
 }
 
-void DlogWithKVInner(int moduleId, int level, KeyValue *pstKVArray, int kvNum, const char *fmt, ...)
+void DlogWithKVInner(int moduleId, int level, KeyValue* pstKVArray, int kvNum, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
     printf("[TRACE][TDT]");
     vprintf(fmt, args);
     printf("\n");
-    va_end(args);;
+    va_end(args);
+    ;
 }
 
-int DlogSetAttr(LogAttr logAttr) {
-    return 0;
-}
+int DlogSetAttr(LogAttr logAttr) { return 0; }
 
-int dlog_setlevel(int moduleId, int level, int enableEvent)
-{
-    return 0;
-}
+int dlog_setlevel(int moduleId, int level, int enableEvent) { return 0; }
 
-int setlogattr(int input)
-{
-    return 0;
-}
+int setlogattr(int input) { return 0; }
 
-void DlogFlush()
-{
-    
-}
+void DlogFlush() {}
 #ifdef __cplusplus
 }
 #endif

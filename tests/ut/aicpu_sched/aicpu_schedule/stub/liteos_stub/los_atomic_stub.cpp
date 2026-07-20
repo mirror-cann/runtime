@@ -16,23 +16,17 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdint.h>
- 
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/time.h>
-void LOS_AtomicSet(volatile int32_t *ptr, int32_t val)
-{
-    *ptr = val;
-}
+void LOS_AtomicSet(volatile int32_t* ptr, int32_t val) { *ptr = val; }
 
-int32_t LOS_AtomicRead(volatile int32_t *ptr)
-{
-    return *ptr;
-}
+int32_t LOS_AtomicRead(volatile int32_t* ptr) { return *ptr; }
 
-bool LOS_AtomicCmpXchg32bits(volatile int32_t *ptr, int32_t desired, int32_t expected)
+bool LOS_AtomicCmpXchg32bits(volatile int32_t* ptr, int32_t desired, int32_t expected)
 {
     if (*ptr == expected) {
         *ptr = desired;
@@ -41,7 +35,7 @@ bool LOS_AtomicCmpXchg32bits(volatile int32_t *ptr, int32_t desired, int32_t exp
     return true;
 }
 
-int32_t LOS_AtomicAdd(volatile int32_t *ptr, int32_t val)
+int32_t LOS_AtomicAdd(volatile int32_t* ptr, int32_t val)
 {
     *ptr += val;
     return 0;

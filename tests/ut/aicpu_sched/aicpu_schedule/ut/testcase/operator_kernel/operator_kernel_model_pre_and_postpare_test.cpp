@@ -25,7 +25,7 @@
 
 using namespace AicpuSchedule;
 
-namespace {}  // namespace
+namespace {} // namespace
 
 class OperatorKernelModelPreAndPostpareTest : public OperatorKernelTest {
 protected:
@@ -56,20 +56,20 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_And_Postpare_Success)
 
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     for (uint32_t i = 0; i < info.inputAddrNum; i++) {
-        void *dataPtr = *(reinterpret_cast<void **>(inputAddrList[i]));
-        void *checkDataPtr =
-            calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[inQueueIdList[inputIndexList[i]]]), 0);
+        void* dataPtr = *(reinterpret_cast<void**>(inputAddrList[i]));
+        void* checkDataPtr =
+            calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[inQueueIdList[inputIndexList[i]]]), 0);
         EXPECT_EQ(dataPtr, checkDataPtr);
     }
 
     for (uint32_t i = 0; i < info.outputAddrNum; i++) {
-        void *dataPtr = *(reinterpret_cast<void **>(outputAddrList[i]));
-        void *checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(allocFakeMBuf[outputIndexList[i]]), 0);
+        void* dataPtr = *(reinterpret_cast<void**>(outputAddrList[i]));
+        void* checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(allocFakeMBuf[outputIndexList[i]]), 0);
         EXPECT_EQ(dataPtr, checkDataPtr);
     }
 
     for (uint32_t i = 0; i < info.outQueueNum; i++) {
-        void *mbufPtr = reinterpret_cast<void *>(mbufPtrlist[i]);
+        void* mbufPtr = reinterpret_cast<void*>(mbufPtrlist[i]);
         EXPECT_EQ(mbufPtr, allocFakeMBuf[i]);
     }
 
@@ -77,8 +77,8 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_And_Postpare_Success)
 
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     for (uint32_t i = 0; i < info.outQueueNum; i++) {
-        void *mbufPtr = reinterpret_cast<void *>(mbufPtrlist[i]);
-        void *enqueueMbufPtr = enqueueFakeStore[outQueueIdList[i]].front();
+        void* mbufPtr = reinterpret_cast<void*>(mbufPtrlist[i]);
+        void* enqueueMbufPtr = enqueueFakeStore[outQueueIdList[i]].front();
         EXPECT_EQ(mbufPtr, enqueueMbufPtr);
     }
     EXPECT_EQ(BufManager::GetInstance().modelBufs_[modelId].size(), calcGuardBufSize(false));
@@ -140,20 +140,20 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_And_Postpare_Pending_
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     for (uint32_t i = 0; i < info.inputAddrNum; i++) {
-        void *dataPtr = *(reinterpret_cast<void **>(inputAddrList[i]));
-        void *checkDataPtr =
-            calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[inQueueIdList[inputIndexList[i]]]), 0);
+        void* dataPtr = *(reinterpret_cast<void**>(inputAddrList[i]));
+        void* checkDataPtr =
+            calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[inQueueIdList[inputIndexList[i]]]), 0);
         EXPECT_EQ(dataPtr, checkDataPtr);
     }
 
     for (uint32_t i = 0; i < info.outputAddrNum; i++) {
-        void *dataPtr = *(reinterpret_cast<void **>(outputAddrList[i]));
-        void *checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(allocFakeMBuf[outputIndexList[i]]), 0);
+        void* dataPtr = *(reinterpret_cast<void**>(outputAddrList[i]));
+        void* checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(allocFakeMBuf[outputIndexList[i]]), 0);
         EXPECT_EQ(dataPtr, checkDataPtr);
     }
 
     for (uint32_t i = 0; i < info.outQueueNum; i++) {
-        void *mbufPtr = reinterpret_cast<void *>(mbufPtrlist[i]);
+        void* mbufPtr = reinterpret_cast<void*>(mbufPtrlist[i]);
         EXPECT_EQ(mbufPtr, allocFakeMBuf[i]);
     }
 
@@ -166,8 +166,8 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_And_Postpare_Pending_
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     for (uint32_t i = 0; i < info.outQueueNum; i++) {
-        void *mbufPtr = reinterpret_cast<void *>(mbufPtrlist[i]);
-        void *enqueueMbufPtr = enqueueFakeStore[outQueueIdList[i]].front();
+        void* mbufPtr = reinterpret_cast<void*>(mbufPtrlist[i]);
+        void* enqueueMbufPtr = enqueueFakeStore[outQueueIdList[i]].front();
         EXPECT_EQ(mbufPtr, enqueueMbufPtr);
     }
     EXPECT_EQ(BufManager::GetInstance().modelBufs_[modelId].size(), calcGuardBufSize(false));
@@ -306,7 +306,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPostpare_Param_Nullptr_List_E
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     // error
-    auto addrList = (uint64_t *)info.mbufPtrlist;
+    auto addrList = (uint64_t*)info.mbufPtrlist;
     addrList[1] = 0;
 
     AicpuTaskInfo taskT;
@@ -353,36 +353,36 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_Dequeue_mbufList_Succ
 
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
-    void *dataPtr = nullptr;
-    void *checkDataPtr = nullptr;
+    void* dataPtr = nullptr;
+    void* checkDataPtr = nullptr;
 
     uint32_t addrIndex = 0;
-    dataPtr = *(reinterpret_cast<void **>(inputAddrList[addrIndex]));
+    dataPtr = *(reinterpret_cast<void**>(inputAddrList[addrIndex]));
     checkDataPtr =
-        calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[inQueueIdListSp[inputIndexListSp[addrIndex]]]), 0);
+        calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[inQueueIdListSp[inputIndexListSp[addrIndex]]]), 0);
     EXPECT_EQ(dataPtr, checkDataPtr);
 
     addrIndex = 1;
-    dataPtr = *(reinterpret_cast<void **>(inputAddrList[addrIndex]));
+    dataPtr = *(reinterpret_cast<void**>(inputAddrList[addrIndex]));
     checkDataPtr =
-        calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[inQueueIdListSp[inputIndexListSp[addrIndex]]]), 0);
+        calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[inQueueIdListSp[inputIndexListSp[addrIndex]]]), 0);
     EXPECT_EQ(dataPtr, checkDataPtr);
 
     addrIndex = 2;
-    dataPtr = *(reinterpret_cast<void **>(inputAddrList[addrIndex]));
+    dataPtr = *(reinterpret_cast<void**>(inputAddrList[addrIndex]));
     checkDataPtr =
-        calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[inQueueIdListSp[inputIndexListSp[addrIndex]]]), 0);
+        calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[inQueueIdListSp[inputIndexListSp[addrIndex]]]), 0);
     EXPECT_EQ(dataPtr, checkDataPtr);
 
     addrIndex = 3;
-    dataPtr = *(reinterpret_cast<void **>(inputAddrList[addrIndex]));
+    dataPtr = *(reinterpret_cast<void**>(inputAddrList[addrIndex]));
     // 使用3号队列dequeue的mbuf的第二个mbuf（index为1）
-    checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[3]), 1);
+    checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[3]), 1);
     EXPECT_EQ(dataPtr, checkDataPtr);
 
     addrIndex = 4;
-    dataPtr = *(reinterpret_cast<void **>(inputAddrList[addrIndex]));
-    checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[3]), 1);
+    dataPtr = *(reinterpret_cast<void**>(inputAddrList[addrIndex]));
+    checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[3]), 1);
     EXPECT_EQ(dataPtr, checkDataPtr);
     EXPECT_EQ(BufManager::GetInstance().modelBufs_[modelId].size(), calcGuardBufSize(false));
 }
@@ -470,20 +470,20 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_Success_OneOutputQueu
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
     for (uint32_t i = 0; i < info.inputAddrNum; i++) {
-        void *dataPtr = *(reinterpret_cast<void **>(inputAddrList[i]));
-        void *checkDataPtr =
-            calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(dequeueFakeMBuf[inQueueIdList[inputIndexList[i]]]), 0);
+        void* dataPtr = *(reinterpret_cast<void**>(inputAddrList[i]));
+        void* checkDataPtr =
+            calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(dequeueFakeMBuf[inQueueIdList[inputIndexList[i]]]), 0);
         EXPECT_EQ(dataPtr, checkDataPtr);
     }
 
     for (uint32_t i = 0; i < info.outputAddrNum; i++) {
-        void *dataPtr = *(reinterpret_cast<void **>(outputAddrList[i]));
-        void *checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf *>(allocFakeMBuf[outputIndexList[i]]), 0);
+        void* dataPtr = *(reinterpret_cast<void**>(outputAddrList[i]));
+        void* checkDataPtr = calcMbufDataPtrFack(reinterpret_cast<Mbuf*>(allocFakeMBuf[outputIndexList[i]]), 0);
         EXPECT_EQ(dataPtr, checkDataPtr);
     }
 
     for (uint32_t i = 0; i < info.outQueueNum; i++) {
-        void *mbufPtr = reinterpret_cast<void *>(mbufPtrlistSp[i]);
+        void* mbufPtr = reinterpret_cast<void*>(mbufPtrlistSp[i]);
         EXPECT_EQ(mbufPtr, allocFakeMBuf[i]);
     }
 
@@ -1033,7 +1033,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_BuildEnqueueMbufPtrLi
     uint64_t mbufPtrlistSp[3] = {0};
     info.mbufPtrlist = reinterpret_cast<uint64_t>(mbufPtrlistSp);
 
-    Mbuf *mbufPtrStore[128U] = {(Mbuf *)allocFakeMBuf[0], (Mbuf *)allocFakeMBuf[1], (Mbuf *)allocFakeMBuf[2]};
+    Mbuf* mbufPtrStore[128U] = {(Mbuf*)allocFakeMBuf[0], (Mbuf*)allocFakeMBuf[1], (Mbuf*)allocFakeMBuf[2]};
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -1056,7 +1056,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_BuildEnqueueMbufPtrLi
     uint64_t mbufPtrlistSp[3] = {0};
     info.mbufPtrlist = reinterpret_cast<uint64_t>(mbufPtrlistSp);
 
-    Mbuf *mbufPtrStore[128U] = {(Mbuf *)allocFakeMBuf[0], (Mbuf *)allocFakeMBuf[1], (Mbuf *)allocFakeMBuf[2]};
+    Mbuf* mbufPtrStore[128U] = {(Mbuf*)allocFakeMBuf[0], (Mbuf*)allocFakeMBuf[1], (Mbuf*)allocFakeMBuf[2]};
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -1078,7 +1078,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_BuildEnqueueMbufPtrLi
     info.outQueueNum = 2;
     uint64_t mbufPtrlistSp[3] = {0};
     info.mbufPtrlist = reinterpret_cast<uint64_t>(mbufPtrlistSp);
-    Mbuf *mbufPtrStore[128U] = {(Mbuf *)allocFakeMBuf[0], (Mbuf *)allocFakeMBuf[1], (Mbuf *)allocFakeMBuf[2]};
+    Mbuf* mbufPtrStore[128U] = {(Mbuf*)allocFakeMBuf[0], (Mbuf*)allocFakeMBuf[1], (Mbuf*)allocFakeMBuf[2]};
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -1168,7 +1168,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_Param_Nullptr_List_Er
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     // error
-    auto addrList = (uint64_t *)info.inputAddrList;
+    auto addrList = (uint64_t*)info.inputAddrList;
     addrList[1] = 0;
 
     AicpuTaskInfo taskT;
@@ -1184,7 +1184,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_Param_Nullptr_List_Er
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     // error
-    auto addrList = (uint64_t *)info.outputAddrList;
+    auto addrList = (uint64_t*)info.outputAddrList;
     addrList[1] = 0;
 
     AicpuTaskInfo taskT;
@@ -1200,7 +1200,7 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, ModelPrepare_Param_Nullptr_List_Er
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     // error
-    auto addrList = (uint64_t *)info.mbufPtrlist;
+    auto addrList = (uint64_t*)info.mbufPtrlist;
     addrList[1] = 0;
 
     AicpuTaskInfo taskT;
@@ -1216,9 +1216,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetMbufListDataPtr_succ)
     MOCKER(halMbufChainGetMbuf).stubs().will(invoke(halMbufChainGetMbufFake));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
 
-    void *mbufPtr = (void *)dequeueFakeMBuf[0];
-    void *dataPtr = nullptr;
-    halMbufGetBuffAddrFake((Mbuf *)mbufPtr, &dataPtr);
+    void* mbufPtr = (void*)dequeueFakeMBuf[0];
+    void* dataPtr = nullptr;
+    halMbufGetBuffAddrFake((Mbuf*)mbufPtr, &dataPtr);
     uint32_t index = 0;
 
     int ret = preKernel_.GetMbufListDataPtr(mbufPtr, &dataPtr, index);
@@ -1230,9 +1230,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetMbufListDataPtr_error1)
     MOCKER(halMbufChainGetMbuf).stubs().will(invoke(halMbufChainGetMbufFake));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
 
-    void *mbufPtr = (void *)dequeueFakeMBuf[0];
-    void *dataPtr = nullptr;
-    halMbufGetBuffAddrFake((Mbuf *)mbufPtr, &dataPtr);
+    void* mbufPtr = (void*)dequeueFakeMBuf[0];
+    void* dataPtr = nullptr;
+    halMbufGetBuffAddrFake((Mbuf*)mbufPtr, &dataPtr);
     uint32_t index = 0;
 
     int ret = preKernel_.GetMbufListDataPtr(nullptr, &dataPtr, index);
@@ -1244,9 +1244,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetMbufListDataPtr_error2)
     MOCKER(halMbufChainGetMbuf).stubs().will(invoke(halMbufChainGetMbufFake));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
 
-    void *mbufPtr = (void *)dequeueFakeMBuf[0];
-    void *dataPtr = nullptr;
-    halMbufGetBuffAddrFake((Mbuf *)mbufPtr, &dataPtr);
+    void* mbufPtr = (void*)dequeueFakeMBuf[0];
+    void* dataPtr = nullptr;
+    halMbufGetBuffAddrFake((Mbuf*)mbufPtr, &dataPtr);
     uint32_t index = 0;
 
     int ret = preKernel_.GetMbufListDataPtr(mbufPtr, nullptr, index);
@@ -1258,9 +1258,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetMbufListDataPtr_error3)
     MOCKER(halMbufChainGetMbuf).stubs().will(returnValue(1));
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
 
-    void *mbufPtr = (void *)dequeueFakeMBuf[0];
-    void *dataPtr = nullptr;
-    halMbufGetBuffAddrFake((Mbuf *)mbufPtr, &dataPtr);
+    void* mbufPtr = (void*)dequeueFakeMBuf[0];
+    void* dataPtr = nullptr;
+    halMbufGetBuffAddrFake((Mbuf*)mbufPtr, &dataPtr);
     uint32_t index = 0;
 
     int ret = preKernel_.GetMbufListDataPtr(mbufPtr, &dataPtr, index);
@@ -1272,9 +1272,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetMbufListDataPtr_error4)
     // error ，出参未赋值，直接返回成功
     MOCKER(halMbufChainGetMbuf).stubs().will(returnValue(0));
 
-    void *mbufPtr = (void *)dequeueFakeMBuf[0];
-    void *dataPtr = nullptr;
-    halMbufGetBuffAddrFake((Mbuf *)mbufPtr, &dataPtr);
+    void* mbufPtr = (void*)dequeueFakeMBuf[0];
+    void* dataPtr = nullptr;
+    halMbufGetBuffAddrFake((Mbuf*)mbufPtr, &dataPtr);
     uint32_t index = 0;
 
     int ret = preKernel_.GetMbufListDataPtr(mbufPtr, &dataPtr, index);
@@ -1286,9 +1286,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetMbufListDataPtr_error5)
     MOCKER(halMbufChainGetMbuf).stubs().will(invoke(halMbufChainGetMbufFake));
     MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(1));
 
-    void *mbufPtr = (void *)dequeueFakeMBuf[0];
-    void *dataPtr = nullptr;
-    halMbufGetBuffAddrFake((Mbuf *)mbufPtr, &dataPtr);
+    void* mbufPtr = (void*)dequeueFakeMBuf[0];
+    void* dataPtr = nullptr;
+    halMbufGetBuffAddrFake((Mbuf*)mbufPtr, &dataPtr);
     uint32_t index = 0;
 
     int ret = preKernel_.GetMbufListDataPtr(mbufPtr, &dataPtr, index);
@@ -1305,7 +1305,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, DoComputeFail1)
     MOCKER_CPP(&OperatorKernelModelPrepare::DequeueMbufList).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelModelPrepare::CopyDequeueDataPtrToInputAddr).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelModelPrepare::AllocOutputMbufList).stubs().will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&OperatorKernelModelPrepare::GetDataPtrsFromMbufs).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_FROM_DRV));
+    MOCKER_CPP(&OperatorKernelModelPrepare::GetDataPtrsFromMbufs)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_FROM_DRV));
     int ret = preKernel_.DoCompute(info, ctx);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
@@ -1322,7 +1324,9 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, DoComputeFail2)
     MOCKER_CPP(&OperatorKernelModelPrepare::AllocOutputMbufList).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelModelPrepare::GetDataPtrsFromMbufs).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     MOCKER_CPP(&OperatorKernelModelPrepare::CopyOutputDataPtrToOutputAddr).stubs().will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&OperatorKernelModelPrepare::BuildEnqueueMbufPtrList).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_FROM_DRV));
+    MOCKER_CPP(&OperatorKernelModelPrepare::BuildEnqueueMbufPtrList)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_FROM_DRV));
     int ret = preKernel_.DoCompute(info, ctx);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
@@ -1333,8 +1337,8 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, AllocOutputMbufListFail)
     info.outQueueNum = 2;
     info.outputMbufNum = 1;
     RunContext ctx = {};
-    Mbuf *lastInputMbuflist = nullptr;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* lastInputMbuflist = nullptr;
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
     int ret = preKernel_.AllocOutputMbufList(info, &lastInputMbuflist, mbufPtrStore, ctx);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
@@ -1345,12 +1349,14 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, AllocOutputMbufListFail2)
     info.outQueueNum = 1;
     info.outputMbufNum = 1;
     RunContext ctx = {};
-    Mbuf *lastInputMbuflist = nullptr;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* lastInputMbuflist = nullptr;
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
 
     MOCKER(halMbufGetPrivInfo).stubs().will(returnValue((int32_t)DRV_ERROR_NONE));
     MOCKER_CPP(&BufManager::MallocAndGuardBufList).stubs().will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&OperatorKernelCommon::CopyMbufHeadInfo).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
+    MOCKER_CPP(&OperatorKernelCommon::CopyMbufHeadInfo)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
     int ret = preKernel_.AllocOutputMbufList(info, &lastInputMbuflist, mbufPtrStore, ctx);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
@@ -1360,8 +1366,8 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetDataPtrsFromMbufsDrvFail)
     AicpuPrepareInfo info = {};
     info.outQueueNum = 1;
     info.outputMbufNum = 1;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
-    void *dataPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
+    void* dataPtrStore[MAX_SIZE_NUM] = {};
 
     MOCKER(halMbufChainGetMbufNum).stubs().will(returnValue((int32_t)DRV_ERROR_INVALID_VALUE));
     int ret = preKernel_.GetDataPtrsFromMbufs(info, mbufPtrStore, dataPtrStore);
@@ -1373,8 +1379,8 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetDataPtrsFromMbufsNoData)
     AicpuPrepareInfo info = {};
     info.outQueueNum = 1;
     info.outputMbufNum = 1;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
-    void *dataPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
+    void* dataPtrStore[MAX_SIZE_NUM] = {};
 
     MOCKER(halMbufChainGetMbufNum).stubs().will(returnValue((int32_t)DRV_ERROR_NONE));
     int ret = preKernel_.GetDataPtrsFromMbufs(info, mbufPtrStore, dataPtrStore);
@@ -1386,13 +1392,15 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetDataPtrsFromMbufsFail2)
     AicpuPrepareInfo info = {};
     info.outQueueNum = 1;
     info.outputMbufNum = 1;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
-    void *dataPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
+    void* dataPtrStore[MAX_SIZE_NUM] = {};
 
     mbufChainGetNumReturnValues = {1, 1, 2};
 
     MOCKER(halMbufChainGetMbufNum).stubs().will(invoke(halMbufChainGetMbufNumFack));
-    MOCKER_CPP(&OperatorKernelModelPrepare::GetMbufListDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
+    MOCKER_CPP(&OperatorKernelModelPrepare::GetMbufListDataPtr)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
     int ret = preKernel_.GetDataPtrsFromMbufs(info, mbufPtrStore, dataPtrStore);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
@@ -1402,13 +1410,15 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetDataPtrsFromMbufsFail3)
     AicpuPrepareInfo info = {};
     info.outQueueNum = 2;
     info.outputMbufNum = 2;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
-    void *dataPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
+    void* dataPtrStore[MAX_SIZE_NUM] = {};
 
     mbufChainGetNumReturnValues = {1, 1, 2};
 
     MOCKER(halMbufChainGetMbufNum).stubs().will(invoke(halMbufChainGetMbufNumFack));
-    MOCKER_CPP(&OperatorKernelCommon::GetMbufDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
+    MOCKER_CPP(&OperatorKernelCommon::GetMbufDataPtr)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
     int ret = preKernel_.GetDataPtrsFromMbufs(info, mbufPtrStore, dataPtrStore);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
@@ -1418,13 +1428,15 @@ TEST_F(OperatorKernelModelPreAndPostpareTest, GetDataPtrsFromMbufsFail4)
     AicpuPrepareInfo info = {};
     info.outQueueNum = 2;
     info.outputMbufNum = 1;
-    Mbuf *mbufPtrStore[MAX_SIZE_NUM] = {};
-    void *dataPtrStore[MAX_SIZE_NUM] = {};
+    Mbuf* mbufPtrStore[MAX_SIZE_NUM] = {};
+    void* dataPtrStore[MAX_SIZE_NUM] = {};
 
     mbufChainGetNumReturnValues = {1, 1, 2};
 
     MOCKER(halMbufChainGetMbufNum).stubs().will(invoke(halMbufChainGetMbufNumFack));
-    MOCKER_CPP(&OperatorKernelCommon::GetMbufDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
+    MOCKER_CPP(&OperatorKernelCommon::GetMbufDataPtr)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID));
     int ret = preKernel_.GetDataPtrsFromMbufs(info, mbufPtrStore, dataPtrStore);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }

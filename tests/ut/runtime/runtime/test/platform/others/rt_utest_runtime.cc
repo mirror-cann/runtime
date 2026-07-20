@@ -32,32 +32,25 @@ namespace cce {
 namespace runtime {
 void ParseIniFile(const std::string& socVersion, RtIniAttributes& iniAttrs);
 }
-}
+} // namespace cce
 
 using namespace testing;
 using namespace cce::runtime;
-#define PROF_AICPU_MODEL_MASK            0x4000000000000000ULL
-#define PROF_AICPU_TRACE_MASK            0x00000008ULL
-#define PROF_TASK_TIME_MASK              0x00000002ULL
-#define PROF_AICORE_METRICS              0x00000004ULL
+#define PROF_AICPU_MODEL_MASK 0x4000000000000000ULL
+#define PROF_AICPU_TRACE_MASK 0x00000008ULL
+#define PROF_TASK_TIME_MASK 0x00000002ULL
+#define PROF_AICORE_METRICS 0x00000004ULL
 
-class ChipRuntimeTest : public testing::Test
-{
+class ChipRuntimeTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
         GlobalMockObject::verify();
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtSetDevice(0);
     }
 
@@ -69,61 +62,39 @@ protected:
 
     static void InitVisibleDevices()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->userDeviceCnt = 0U;
         rtInstance->isSetVisibleDev = false;
         if (rtInstance->deviceInfo == nullptr) {
             rtInstance->deviceInfo = new (std::nothrow) uint32_t[RT_SET_DEVICE_STR_MAX_LEN];
         }
-        (void)memset_s(rtInstance->deviceInfo, size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
+        (void)memset_s(
+            rtInstance->deviceInfo, size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
             size_t(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN));
-        (void)memset_s(rtInstance->inputDeviceStr, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
+        (void)memset_s(
+            rtInstance->inputDeviceStr, size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
             size_t(RT_SET_DEVICE_STR_MAX_LEN + 1U));
         return;
     }
 
-    static int TsdOpenExStub(uint32_t a, uint32_t b, uint32_t c)
-    {
-        return 0;
-    }
+    static int TsdOpenExStub(uint32_t a, uint32_t b, uint32_t c) { return 0; }
 
-    static int TsdOpenStub(uint32_t a, uint32_t b)
-    {
-        return 0;
-    }
+    static int TsdOpenStub(uint32_t a, uint32_t b) { return 0; }
 
-    static int TsdCloseStub(uint32_t a)
-    {
-        return 0;
-    }
+    static int TsdCloseStub(uint32_t a) { return 0; }
 
-    static int UpdateProfilingModeStub(uint32_t a, uint32_t b)
-    {
-        return 0;
-    }
+    static int UpdateProfilingModeStub(uint32_t a, uint32_t b) { return 0; }
 
-    static int TsdSetMsprofReporterCallbackStub(void *ptr)
-    {
-        return 0;
-    }
+    static int TsdSetMsprofReporterCallbackStub(void* ptr) { return 0; }
 
-    static int TsdInitQsStub(uint32_t a, char* s)
-    {
-        return 0;
-    }
+    static int TsdInitQsStub(uint32_t a, char* s) { return 0; }
 
-    static int TsdSetAttrStub(char* s1, char* s2)
-    {
-        return 0;
-    }
+    static int TsdSetAttrStub(char* s1, char* s2) { return 0; }
 
-    static int TsdInitFlowGwStub(uint32_t a, void *info)
-    {
-        return 0;
-    }
+    static int TsdInitFlowGwStub(uint32_t a, void* info) { return 0; }
 
-    static void stubFunc(void)
-    {}
+    static void stubFunc(void) {}
+
 private:
     rtChipType_t originType;
 };
@@ -131,10 +102,10 @@ private:
 TEST_F(ChipRuntimeTest, binanry_reg_mix_null_data)
 {
     rtError_t error;
-    Program *program;
+    Program* program;
     rtDevBinary_t bin;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MINI_V3);
@@ -151,7 +122,7 @@ TEST_F(ChipRuntimeTest, binanry_reg_mix_null_data)
 
 TEST_F(ChipRuntimeTest, SocTypeInit)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_NE(rtInstance, nullptr);
     uint32_t aicoreNum = 0;
     int64_t virAicoreNum = 1;
@@ -171,7 +142,7 @@ TEST_F(ChipRuntimeTest, SocTypeInit)
 
 TEST_F(ChipRuntimeTest, UpdateDevProperties)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_NE(rtInstance, nullptr);
 
     rtInstance->UpdateDevProperties(CHIP_CLOUD, "Ascend910A");
@@ -201,7 +172,7 @@ TEST_F(ChipRuntimeTest, UpdateDevProperties)
 
 TEST_F(ChipRuntimeTest, UpdateDevPropertiesFromIniAttrs_PartialOverride)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     DevProperties origProps;
     EXPECT_EQ(GET_DEV_PROPERTIES(CHIP_CLOUD, origProps), RT_ERROR_NONE);
@@ -260,7 +231,7 @@ TEST_F(ChipRuntimeTest, ParseIniFile_QueryError_SkipRemainingFields)
 
 TEST_F(ChipRuntimeTest, AicpuCntInitTest_02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -269,7 +240,7 @@ TEST_F(ChipRuntimeTest, AicpuCntInitTest_02)
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
-    rtError_t error  = rtInstance->InitAiCpuCnt();
+    rtError_t error = rtInstance->InitAiCpuCnt();
     EXPECT_EQ(error, RT_ERROR_DRV_INVALID_DEVICE);
     rtInstance->SetSocVersion(socVersion);
     rtInstance->SetChipType(chipType);
@@ -278,7 +249,7 @@ TEST_F(ChipRuntimeTest, AicpuCntInitTest_02)
 
 TEST_F(ChipRuntimeTest, AicpuCntInitTest_03)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -286,7 +257,7 @@ TEST_F(ChipRuntimeTest, AicpuCntInitTest_03)
     rtInstance->SetSocVersion("AS31XM1X");
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
-    rtError_t error  = rtInstance->InitAiCpuCnt();
+    rtError_t error = rtInstance->InitAiCpuCnt();
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtInstance->SetSocVersion(socVersion);
     rtInstance->SetChipType(chipType);
@@ -295,7 +266,7 @@ TEST_F(ChipRuntimeTest, AicpuCntInitTest_03)
 
 TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string oriSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_ADC);
@@ -309,7 +280,7 @@ TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer)
 
 TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer_as31xm1)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string oriSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_AS31XM1);
@@ -321,10 +292,9 @@ TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer_as31xm1)
     rtInstance->SetSocVersion(oriSocVersion);
 }
 
-
 TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer_610lite)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string oriSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_610LITE);
@@ -338,7 +308,7 @@ TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer_610lite)
 
 TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer02)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string oriSocVersion = rtInstance->GetSocVersion();
     rtInstance->SetChipType(CHIP_ADC);
@@ -352,7 +322,7 @@ TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVer02)
 
 TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVerSelectiveChipFallback)
 {
-    Runtime* rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string oriSocVersion = rtInstance->GetSocVersion();
 
@@ -375,16 +345,15 @@ TEST_F(ChipRuntimeTest, ut_GetSocVersionByHardwareVerSelectiveChipFallback)
 
 TEST_F(ChipRuntimeTest, ut_InitSocTypeFromVersion)
 {
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     EXPECT_NE(rtInstance, nullptr);
     rtInstance->InitSocTypeFrom310BVersion((PLAT_COMBINE(ARCH_V300, CHIP_MINI_V3, RT_VER_BIN4)));
     rtInstance->InitSocTypeFrom310BVersion((PLAT_COMBINE(ARCH_END, CHIP_END, RT_VER_END)));
 }
 
-
 TEST_F(ChipRuntimeTest, ut_HwtsLogDynamicProfilerStartStopSTTest)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -402,10 +371,7 @@ TEST_F(ChipRuntimeTest, ut_HwtsLogDynamicProfilerStartStopSTTest)
 
     // open all device
     uint32_t devNum = 1;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     ret = rtInstance->TsProfilerStart(profConfig, -1, deviceList);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = rtInstance->TsProfilerStop(profConfig, -1, deviceList);
@@ -419,7 +385,7 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
 {
     unsetenv("ASCEND_RT_VISIBLE_DEVICES");
     rtError_t ret = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     bool haveDevice = rtInstance->isHaveDevice_;
     uint32_t devNum = 3;
@@ -460,10 +426,7 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
     EXPECT_EQ(rtInstance->userDeviceCnt, 0);
     EXPECT_EQ(rtInstance->isSetVisibleDev, false);
 
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     setenv("ASCEND_RT_VISIBLE_DEVICES", "", 1);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
@@ -604,7 +567,11 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
     EXPECT_EQ(rtInstance->userDeviceCnt, 0);
     EXPECT_EQ(rtInstance->isSetVisibleDev, true);
 
-    setenv("ASCEND_RT_VISIBLE_DEVICES", "0,1,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4", 134);
+    setenv(
+        "ASCEND_RT_VISIBLE_DEVICES",
+        "0,1,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,"
+        "2,3,4,5,6,7,8,9,1,2,3,4",
+        134);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
     rtInstance->SetChipType(chipType);
@@ -626,14 +593,13 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest0)
     unsetenv("ASCEND_RT_VISIBLE_DEVICES");
 }
 
-
 TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest1)
 {
     rtError_t ret = 0;
     uint32_t userDeviceid = 5;
     uint32_t deviceid = 0;
     uint32_t devNum = 3;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -645,10 +611,7 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest1)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(deviceid, 5);
 
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     setenv("ASCEND_RT_VISIBLE_DEVICES", "1,-1", 5);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
@@ -662,7 +625,7 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest1)
     userDeviceid = 0;
     int32_t deviceid0 = 0;
     Api* oldApi_ = Runtime::runtime_->api_;
-    Profiler *profiler = new Profiler(oldApi_);
+    Profiler* profiler = new Profiler(oldApi_);
     profiler->Init();
     ret = rtInstance->ChgUserDevIdToDeviceId(userDeviceid, &deviceid);
     ret |= rtGetVisibleDeviceIdByLogicDeviceId(userDeviceid, &deviceid0);
@@ -683,7 +646,7 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest2)
     uint32_t userDeviceid = 5;
     uint32_t deviceid = 0;
     uint32_t devNum = 3;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -695,10 +658,7 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest2)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     EXPECT_EQ(deviceid, 5);
 
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(0));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(0));
     setenv("ASCEND_RT_VISIBLE_DEVICES", "1,-1", 5);
     InitVisibleDevices();
     ret = rtInstance->GetVisibleDevices();
@@ -722,9 +682,9 @@ TEST_F(ChipRuntimeTest, ut_GetVisibleDevicesByChipCloudTest2)
 TEST_F(ChipRuntimeTest, ut_AiCpuProfilerStart_00)
 {
     rtError_t ret = 0;
-    uint32_t deviceList[5]={1,2,3,4,5};
+    uint32_t deviceList[5] = {1, 2, 3, 4, 5};
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);

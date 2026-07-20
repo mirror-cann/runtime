@@ -10,26 +10,13 @@
 
 #include "hiperf_marker.h"
 
-void InitMarker()
-{
-}
+void InitMarker() {}
 
-void FiniMarker()
-{
-}
+void FiniMarker() {}
 namespace Hiva {
-uint64_t MarkerAicpuScheduler(Hiva::KernelTrack &m)
-{
-    return 0;
-}
+uint64_t MarkerAicpuScheduler(Hiva::KernelTrack& m) { return 0; }
 
-uint32_t PerfDurationBegin(const uint64_t seq, const uint64_t begin)
-{
-    return 0;
-}
+uint32_t PerfDurationBegin(const uint64_t seq, const uint64_t begin) { return 0; }
 
-uint32_t PerfDurationEnd(unsigned long, unsigned long, unsigned long, Hiva::KernelTrack&)
-{
-    return 0;
-}
-}
+uint32_t PerfDurationEnd(unsigned long, unsigned long, unsigned long, Hiva::KernelTrack&) { return 0; }
+} // namespace Hiva

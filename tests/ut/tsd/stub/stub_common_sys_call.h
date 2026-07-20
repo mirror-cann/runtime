@@ -16,9 +16,9 @@
 extern "C" {
 #endif
 
-void *stub_dlopen_success(const char *filename, int flags);
-int stub_dlclose_success(void *handle);
-void *stub_dlsym_start_app_success(void *handle, const char *symbol);
+void* stub_dlopen_success(const char* filename, int flags);
+int stub_dlclose_success(void* handle);
+void* stub_dlsym_start_app_success(void* handle, const char* symbol);
 #ifdef __cplusplus
 }
 #endif

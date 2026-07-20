@@ -25,7 +25,8 @@ protected:
     void TearDown() {}
 };
 
-TEST_F(ApiModelCTest, model_load) {
+TEST_F(ApiModelCTest, model_load)
+{
     rtMdlLoad_t modelLoad = {0};
     uint32_t phyModelId = 0UL;
     EXPECT_EQ(rtNanoModelLoad(&modelLoad, &phyModelId), RT_ERROR_NONE);
@@ -34,7 +35,8 @@ TEST_F(ApiModelCTest, model_load) {
     EXPECT_EQ(rtNanoModelLoad(&modelLoad, &phyModelId), ACL_ERROR_RT_PARAM_INVALID);
 }
 
-TEST_F(ApiModelCTest, model_exec) {
+TEST_F(ApiModelCTest, model_exec)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -56,28 +58,32 @@ TEST_F(ApiModelCTest, model_exec) {
     rtDeinit();
 }
 
-TEST_F(ApiModelCTest, model_destroy) {
+TEST_F(ApiModelCTest, model_destroy)
+{
     uint32_t phyModelId = 0UL;
     EXPECT_EQ(rtNanoModelDestroy(phyModelId), RT_ERROR_NONE);
 }
 
-TEST_F(ApiModelCTest, dump_init) {
+TEST_F(ApiModelCTest, dump_init)
+{
     EXPECT_EQ(rtDumpInit(), RT_ERROR_NONE);
     MOCKER(halDumpInit).stubs().will(returnObjectList(DRV_ERROR_NO_DEVICE));
     EXPECT_EQ(rtDumpInit(), DRV_ERROR_NO_DEVICE);
 }
 
-TEST_F(ApiModelCTest, dump_deinit) {
+TEST_F(ApiModelCTest, dump_deinit)
+{
     EXPECT_EQ(rtDumpDeInit(), RT_ERROR_NONE);
     MOCKER(halDumpDeinit).stubs().will(returnObjectList(DRV_ERROR_NO_DEVICE));
     EXPECT_EQ(rtDumpDeInit(), DRV_ERROR_NO_DEVICE);
 }
 
-TEST_F(ApiModelCTest, dump_msg_send) {
+TEST_F(ApiModelCTest, dump_msg_send)
+{
     uint32_t tId;
     uint32_t sendTid = 0U;
     int32_t timeout = 0;
-    void *sendInfo = NULL;
+    void* sendInfo = NULL;
     uint32_t size;
     EXPECT_EQ(rtMsgSend(tId, sendTid, timeout, sendInfo, size), RT_ERROR_NONE);
 
@@ -85,9 +91,10 @@ TEST_F(ApiModelCTest, dump_msg_send) {
     EXPECT_EQ(rtMsgSend(tId, sendTid, timeout, sendInfo, size), DRV_ERROR_SEND_MESG);
 }
 
-TEST_F(ApiModelCTest, set_taskDesc_dumpFlag) {
+TEST_F(ApiModelCTest, set_taskDesc_dumpFlag)
+{
     uint32_t taskId;
-    void *taskDescBaseAddr = NULL;
+    void* taskDescBaseAddr = NULL;
     size_t taskDescSize = 0UL;
     EXPECT_EQ(rtSetTaskDescDumpFlag(taskDescBaseAddr, taskDescSize, taskId), ACL_ERROR_RT_PARAM_INVALID);
     taskId = 1U;

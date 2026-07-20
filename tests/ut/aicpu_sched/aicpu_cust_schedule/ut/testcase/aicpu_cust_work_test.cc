@@ -46,7 +46,7 @@ void WaitAndStopThread(uint32_t time)
     AicpuEventManager::GetInstance().SetRunningFlag(false);
 }
 
-void CreateSyscallFile(const std::string &fileName)
+void CreateSyscallFile(const std::string& fileName)
 {
     std::ofstream outFile(fileName);
     if (!outFile) {
@@ -59,22 +59,15 @@ void CreateSyscallFile(const std::string &fileName)
     outFile << "recvmsg" << std::endl;
     outFile.close();
 }
-}  // namespace
+} // namespace
 
 class AICPUCusWorkerTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUCusWorkerTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUCusWorkerTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUCusWorkerTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUCusWorkerTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUCusWorkerTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUCusWorkerTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -83,47 +76,27 @@ protected:
     }
 };
 
-int32_t halGetVdevNumStub(uint32_t *num_dev)
+int32_t halGetVdevNumStub(uint32_t* num_dev)
 {
     *num_dev = 1;
     return 0;
 }
 
-TEST_F(AICPUCusWorkerTEST, CreateWorkTest) {
-
+TEST_F(AICPUCusWorkerTEST, CreateWorkTest)
+{
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(signal)
-        .stubs()
-        .will(returnValue(sighandler_t(1)));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
+    MOCKER(signal).stubs().will(returnValue(sighandler_t(1)));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
 
-    MOCKER_CPP(&ThreadPool::SetAffinity)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
-    MOCKER_CPP(&ThreadPool::SecureCompute)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::SetAffinity).stubs().will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
+    MOCKER_CPP(&ThreadPool::SecureCompute).stubs().will(returnValue(0));
 
     auto ret = AicpuDrvManager::GetInstance().InitDrvMgr(0, 0, 0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -138,7 +111,8 @@ TEST_F(AICPUCusWorkerTEST, CreateWorkTest) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-TEST_F(AICPUCusWorkerTEST, CreateWorkTest_aicpu_no_0) {
+TEST_F(AICPUCusWorkerTEST, CreateWorkTest_aicpu_no_0)
+{
     ThreadPool tp;
     AicpuDrvManager::GetInstance().aicpuNum_ = 0;
     AicpuSchedule::AicpuMonitor::GetInstance().done_ = false;
@@ -146,65 +120,46 @@ TEST_F(AICPUCusWorkerTEST, CreateWorkTest_aicpu_no_0) {
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, CreateWorkTest_sem_init_fail) {
+TEST_F(AICPUCusWorkerTEST, CreateWorkTest_sem_init_fail)
+{
     AicpuDrvManager::GetInstance().aicpuNum_ = 1;
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(sem_init).stubs().will(returnValue(-1));
     int32_t ret = tp.CreateWorker();
     EXPECT_NE(ret, 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, CreateWorkTest_CreateOneWorker_fail) {
+TEST_F(AICPUCusWorkerTEST, CreateWorkTest_CreateOneWorker_fail)
+{
     AicpuDrvManager::GetInstance().aicpuNum_ = 1;
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::CreateOneWorker)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::CreateOneWorker).stubs().will(returnValue(-1));
     int32_t ret = tp.CreateWorker();
     EXPECT_NE(ret, 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, CreateWorkTest_sem_wait_fail) {
+TEST_F(AICPUCusWorkerTEST, CreateWorkTest_sem_wait_fail)
+{
     AicpuDrvManager::GetInstance().aicpuNum_ = 1;
     ThreadPool tp;
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::CreateOneWorker)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(-1))
-        .then(returnValue(0));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::CreateOneWorker).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(-1)).then(returnValue(0));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
     int32_t ret = tp.CreateWorker();
     EXPECT_NE(ret, 0);
     ret = tp.CreateWorker();
     EXPECT_NE(ret, 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, WorkTest) {
-    MOCKER_CPP(&ThreadPool::SetAffinity)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
-    MOCKER_CPP(&ThreadPool::SecureCompute)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUCusWorkerTEST, WorkTest)
+{
+    MOCKER_CPP(&ThreadPool::SetAffinity).stubs().will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
+    MOCKER_CPP(&ThreadPool::SecureCompute).stubs().will(returnValue(0));
     ThreadPool tp;
 
     std::thread th(&WaitAndStopThread, 100);
@@ -214,7 +169,8 @@ TEST_F(AICPUCusWorkerTEST, WorkTest) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUCusWorkerTEST, SecureComputeTest) {
+TEST_F(AICPUCusWorkerTEST, SecureComputeTest)
+{
     ThreadPool tp;
     ThreadStatus s = ThreadStatus::THREAD_INIT;
     tp.threadStatus_.push_back(s);
@@ -223,7 +179,8 @@ TEST_F(AICPUCusWorkerTEST, SecureComputeTest) {
     EXPECT_EQ(tp.threadStatus_[0], ThreadStatus::THREAD_RUNNING);
 }
 
-TEST_F(AICPUCusWorkerTEST, SecureComputeTest_002) {
+TEST_F(AICPUCusWorkerTEST, SecureComputeTest_002)
+{
     ThreadPool tp;
     ThreadStatus s = ThreadStatus::THREAD_INIT;
     tp.threadStatus_.push_back(s);
@@ -231,83 +188,57 @@ TEST_F(AICPUCusWorkerTEST, SecureComputeTest_002) {
     EXPECT_EQ(tp.SecureCompute(0), 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, SecureComputeTest_fall2) {
-    MOCKER(seccomp_load)
-        .stubs()
-        .will(returnValue(-1));
+TEST_F(AICPUCusWorkerTEST, SecureComputeTest_fall2)
+{
+    MOCKER(seccomp_load).stubs().will(returnValue(-1));
     ThreadPool tp;
     ThreadStatus s = ThreadStatus::THREAD_INIT;
     tp.threadStatus_.push_back(s);
     EXPECT_EQ(tp.SecureCompute(0), 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, WorkTest_Fail1) {
-    MOCKER(halEschedSubscribeEvent)
-        .stubs()
-        .will(returnValue(1));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+TEST_F(AICPUCusWorkerTEST, WorkTest_Fail1)
+{
+    MOCKER(halEschedSubscribeEvent).stubs().will(returnValue(1));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
     ThreadPool tp;
     tp.Work(0);
     EXPECT_EQ(AicpuSchedule::AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUCusWorkerTEST, WorkTest_Fail2) {
-    MOCKER_CPP(&ThreadPool::SetAffinity)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
-    MOCKER_CPP(&ThreadPool::SecureCompute)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUCusWorkerTEST, WorkTest_Fail2)
+{
+    MOCKER_CPP(&ThreadPool::SetAffinity).stubs().will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
+    MOCKER_CPP(&ThreadPool::SecureCompute).stubs().will(returnValue(0));
 
-    MOCKER(aicpu::aicpuSetContext)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(aicpu::aicpuSetContext).stubs().will(returnValue(1));
     ThreadPool tp;
     tp.Work(0);
     EXPECT_EQ(AicpuSchedule::AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUCusWorkerTEST, WorkTest_Fail3) {
-    MOCKER_CPP(&ThreadPool::SetAffinity)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+TEST_F(AICPUCusWorkerTEST, WorkTest_Fail3)
+{
+    MOCKER_CPP(&ThreadPool::SetAffinity).stubs().will(returnValue(0));
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(sem_post).stubs().will(returnValue(0));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
 
-    MOCKER_CPP(&ThreadPool::SecureCompute)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&ThreadPool::SecureCompute).stubs().will(returnValue(-1));
 
     ThreadPool tp;
     tp.Work(0);
     EXPECT_EQ(AicpuSchedule::AicpuEventManager::GetInstance().runningFlag_, false);
 }
 
-TEST_F(AICPUCusWorkerTEST, SetAffinityTest) {
-    MOCKER(system)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(pthread_setaffinity_np)
-        .stubs()
-        .will(returnValue(0))
-        .then(returnValue(-1));
-    MOCKER_CPP(&ThreadPool::PostSem)
-        .stubs();
+TEST_F(AICPUCusWorkerTEST, SetAffinityTest)
+{
+    MOCKER(system).stubs().will(returnValue(0));
+    MOCKER(pthread_setaffinity_np).stubs().will(returnValue(0)).then(returnValue(-1));
+    MOCKER_CPP(&ThreadPool::PostSem).stubs();
     setenv("PROCMGR_AICPU_CPUSET", "0", 1);
     ThreadPool tp;
     tp.threadStatus_ = std::move(std::vector<ThreadStatus>(1, ThreadStatus::THREAD_INIT));
@@ -364,37 +295,34 @@ TEST_F(AICPUCusWorkerTEST, WriteTidForAffinityFail)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUCusWorkerTEST, SetAffinityByPm) {
-    MOCKER(ProcMgrBindThread)
-        .stubs()
-        .will(returnValue(0U))
-        .then(returnValue(1U));
+TEST_F(AICPUCusWorkerTEST, SetAffinityByPm)
+{
+    MOCKER(ProcMgrBindThread).stubs().will(returnValue(0U)).then(returnValue(1U));
     ThreadPool tp;
     tp.threadStatus_ = std::move(std::vector<ThreadStatus>(1, ThreadStatus::THREAD_INIT));
     EXPECT_EQ(tp.SetAffinityByPm(0), 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, SetAffinityByPmTest_Succ) {
+TEST_F(AICPUCusWorkerTEST, SetAffinityByPmTest_Succ)
+{
     setenv("PROCMGR_AICPU_CPUSET", "1", 1);
     ThreadPool tp;
     tp.threadStatus_ = std::move(std::vector<ThreadStatus>(1, ThreadStatus::THREAD_INIT));
     EXPECT_EQ(tp.SetAffinity(0, 0), 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, SetAffinityByPmTest_Failed) {
-    MOCKER(ProcMgrBindThread)
-        .stubs()
-        .will(returnValue(2));
+TEST_F(AICPUCusWorkerTEST, SetAffinityByPmTest_Failed)
+{
+    MOCKER(ProcMgrBindThread).stubs().will(returnValue(2));
     setenv("PROCMGR_AICPU_CPUSET", "1", 1);
     ThreadPool tp;
     tp.threadStatus_ = std::move(std::vector<ThreadStatus>(1, ThreadStatus::THREAD_INIT));
     EXPECT_NE(tp.SetAffinity(0, 0), 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, PostSemTest) {
-    MOCKER(sem_post)
-        .stubs()
-        .will(returnValue(0));
+TEST_F(AICPUCusWorkerTEST, PostSemTest)
+{
+    MOCKER(sem_post).stubs().will(returnValue(0));
     ThreadPool tp;
     tp.sems_.resize(1);
     tp.PostSem(0);
@@ -429,31 +357,31 @@ TEST_F(AICPUCusWorkerTEST, AddPidToTask_Fail2)
     EXPECT_EQ(tp.AddPidToTask(0), AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUCusWorkerTEST, InitDrvMgr_001) {
+TEST_F(AICPUCusWorkerTEST, InitDrvMgr_001)
+{
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
     auto ret = AicpuDrvManager::GetInstance().InitDrvMgr(1, 0, 0, true);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, InitDrvMgr_002) {
+TEST_F(AICPUCusWorkerTEST, InitDrvMgr_002)
+{
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(0));
     auto ret = AicpuDrvManager::GetInstance().InitDrvMgr(48, 0, 0, true);
     EXPECT_EQ(ret, 0);
 }
 
-TEST_F(AICPUCusWorkerTEST, InitDrvMgr_003) {
+TEST_F(AICPUCusWorkerTEST, InitDrvMgr_003)
+{
     MOCKER_CPP(&FeatureCtrl::IsAosCore).stubs().will(returnValue(true));
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(1));
     auto ret = AicpuDrvManager::GetInstance().InitDrvMgr(48, 0, 0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_FAILED);
 }
 
-TEST_F(AICPUCusWorkerTEST, GetExpandedSysCalls_With_InvalidFile) {
+TEST_F(AICPUCusWorkerTEST, GetExpandedSysCalls_With_InvalidFile)
+{
     MOCKER(access).stubs().will(returnValue(-1));
     std::unordered_set<int32_t> filterSystemCalls;
 
@@ -462,7 +390,8 @@ TEST_F(AICPUCusWorkerTEST, GetExpandedSysCalls_With_InvalidFile) {
     EXPECT_EQ(tp.expandedSystemCalls_.size(), 0U);
 }
 
-TEST_F(AICPUCusWorkerTEST, GetExpandedSysCalls_insert2_from3) {
+TEST_F(AICPUCusWorkerTEST, GetExpandedSysCalls_insert2_from3)
+{
     CreateSyscallFile("white_list");
     std::unordered_set<int32_t> filterSystemCalls = {64};
     MOCKER(seccomp_syscall_resolve_name)
@@ -478,7 +407,8 @@ TEST_F(AICPUCusWorkerTEST, GetExpandedSysCalls_insert2_from3) {
     remove("white_list");
 }
 
-TEST_F(AICPUCusWorkerTEST, ExpandSysCallList_insert1_from2) {
+TEST_F(AICPUCusWorkerTEST, ExpandSysCallList_insert1_from2)
+{
     std::unordered_set<int32_t> filterSystemCalls = {64};
     ThreadPool tp;
 

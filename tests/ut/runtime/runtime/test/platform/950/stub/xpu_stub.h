@@ -11,8 +11,8 @@
 #define CCE_RUNTIME_XPU_STUB
 #include "xpu_device.hpp"
 
-drvError_t drvGetPlatformInfo_online(uint32_t *info);
-rtError_t ParseXpuConfigInfo_mock(cce::runtime::XpuDevice *This);
-drvError_t drvGetPlatformInfo_offline(uint32_t *info);
+drvError_t drvGetPlatformInfo_online(uint32_t* info);
+rtError_t ParseXpuConfigInfo_mock(cce::runtime::XpuDevice* This);
+drvError_t drvGetPlatformInfo_offline(uint32_t* info);
 
 #endif

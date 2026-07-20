@@ -21,44 +21,26 @@ using namespace cce::runtime;
 
 class OsalTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"osal test start"<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "osal test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"osal test start end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "osal test start end" << std::endl; }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
-class MyRunnable: public ThreadRunnable
-{
+class MyRunnable : public ThreadRunnable {
 public:
-    MyRunnable()
-    {
-        runFlag_ = 0;
-    }
-    void Run(const void *param)
-    {
-        runFlag_ = 1;
-    }
+    MyRunnable() { runFlag_ = 0; }
+    void Run(const void* param) { runFlag_ = 1; }
 
-    uint32_t  runFlag_;
+    uint32_t runFlag_;
 };
 
 TEST_F(OsalTest, notifier_triger_after_wait)
 {
-    Notifier * notifier = OsalFactory::CreateNotifier();
+    Notifier* notifier = OsalFactory::CreateNotifier();
     rtError_t error;
 
     error = notifier->Triger();
@@ -73,13 +55,12 @@ TEST_F(OsalTest, notifier_triger_after_wait)
     delete notifier;
 }
 
-
 TEST_F(OsalTest, ref_object_test)
 {
     bool updateFlag;
     uint64_t refVal;
-    void *val;
-    RefObject<void *> obj;
+    void* val;
+    RefObject<void*> obj;
 
     refVal = obj.GetRef();
     EXPECT_EQ(refVal, 0);
@@ -90,8 +71,8 @@ TEST_F(OsalTest, ref_object_test)
     refVal = obj.GetRef();
     EXPECT_EQ(refVal, 0x8000000000000000ULL + 1);
 
-    //obj.DecRef(); //deadlock test by manual
-    //val = obj.GetVal(); //deadlock test by manual
+    // obj.DecRef(); //deadlock test by manual
+    // val = obj.GetVal(); //deadlock test by manual
 
     obj.SetVal(&updateFlag);
 
@@ -113,5 +94,5 @@ TEST_F(OsalTest, ref_object_test)
     EXPECT_EQ(refVal, 0);
 
     val = obj.GetVal(false);
-    EXPECT_EQ(val, (void *)NULL);
+    EXPECT_EQ(val, (void*)NULL);
 }

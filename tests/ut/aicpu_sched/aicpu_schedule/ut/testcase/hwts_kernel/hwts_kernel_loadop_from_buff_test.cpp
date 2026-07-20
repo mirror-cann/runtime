@@ -37,39 +37,34 @@ protected:
 
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf)
 {
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidStub));
     aicpu::SetHaveCustPid(false);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
     pid_t hostPid = AicpuDrvManager::GetInstance().GetHostPid();
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -78,8 +73,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -101,34 +95,29 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf)
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_01)
 {
     aicpu::SetHaveCustPid(false);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::PROCESS_PCIE_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::PROCESS_PCIE_MODE, SCHED_MODE_INTERRUPT);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
     pid_t hostPid = AicpuDrvManager::GetInstance().GetHostPid();
     MOCKER_CPP(&CustOperationCommon::StartCustProcess)
         .stubs()
         .will(returnValue((int32_t)AICPU_SCHEDULE_ERROR_INNER_ERROR));
-    MOCKER_CPP(&AicpuCustSoManager::CheckAndCreateSoFile)
-        .stubs()
-        .will(returnValue((int32_t)AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CheckAndCreateSoFile).stubs().will(returnValue((int32_t)AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels1.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -137,8 +126,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_01)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -161,26 +149,21 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_01)
 
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed1)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue((int32_t)AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue((int32_t)AICPU_SCHEDULE_OK));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = 0;
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -189,8 +172,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed1)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -200,26 +182,21 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed1)
 
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed2)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue((int32_t)AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue((int32_t)AICPU_SCHEDULE_OK));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = 0;
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -228,8 +205,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed2)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -239,30 +215,27 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed2)
 
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed3)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue((int32_t)AICPU_SCHEDULE_ERROR_INNER_ERROR));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue((int32_t)AICPU_SCHEDULE_ERROR_INNER_ERROR));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels_fail.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -271,8 +244,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed3)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -282,26 +254,21 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed3)
 
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed4)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue((int32_t)AICPU_SCHEDULE_ERROR_INNER_ERROR));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue((int32_t)AICPU_SCHEDULE_ERROR_INNER_ERROR));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_cpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -310,8 +277,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed4)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -321,8 +287,7 @@ TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBuf_failed4)
 
 TEST_F(LoadOpFromBuffKernelTest, TsKernelLoadOpFromBufNotSupport)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_MSGQ);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_MSGQ);
 
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;

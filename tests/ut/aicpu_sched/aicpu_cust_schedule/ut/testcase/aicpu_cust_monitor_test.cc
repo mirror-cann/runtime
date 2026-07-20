@@ -28,18 +28,11 @@ using namespace AicpuSchedule;
 
 class AICPUCustMonitorTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AICPUCustMonitorTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUCustMonitorTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AICPUCustMonitorTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUCustMonitorTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUCustMonitorTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUCustMonitorTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -48,23 +41,16 @@ protected:
     }
 };
 
-TEST_F(AICPUCustMonitorTEST, PublicFuncTest_1) {
+TEST_F(AICPUCustMonitorTEST, PublicFuncTest_1)
+{
     AicpuMonitor monitor;
-    MOCKER(aicpu::GetSystemTickFreq)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
     int32_t ret = monitor.InitAicpuMonitor(0, true);
     EXPECT_EQ(ret, 0);
 
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
     monitor.running_ = false;
     monitor.done_ = true;
     ret = monitor.Run();
@@ -74,38 +60,39 @@ TEST_F(AICPUCustMonitorTEST, PublicFuncTest_1) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-TEST_F(AICPUCustMonitorTEST, Init_Succ) {
+TEST_F(AICPUCustMonitorTEST, Init_Succ)
+{
     AicpuMonitor monitor;
     int32_t ret = monitor.InitAicpuMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUCustMonitorTEST, Init_Succ_offline) {
+TEST_F(AICPUCustMonitorTEST, Init_Succ_offline)
+{
     AicpuMonitor monitor;
     int32_t ret = monitor.InitAicpuMonitor(0, false);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUCustMonitorTEST, Init_setFlag_fail) {
+TEST_F(AICPUCustMonitorTEST, Init_setFlag_fail)
+{
     AicpuMonitor monitor;
-    MOCKER_CPP(&AicpuMonitor::SetTaskTimeoutFlag)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER_CPP(&AicpuMonitor::SetTaskTimeoutFlag).stubs().will(returnValue(1));
     int32_t ret = monitor.InitAicpuMonitor(0, true);
     EXPECT_EQ(ret, 1);
 }
 
-TEST_F(AICPUCustMonitorTEST, SendKillMsgToTsdFail) {
-    MOCKER(TsdDestroy)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUCustMonitorTEST, SendKillMsgToTsdFail)
+{
+    MOCKER(TsdDestroy).stubs().will(returnValue(1));
     AicpuMonitor monitor;
     monitor.SendKillMsgToTsd();
     int32_t ret = monitor.SetTaskTimeoutFlag();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout) {
+TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout)
+{
     AicpuMonitor m;
     m.online_ = true;
     m.taskTimeoutFlag_ = true;
@@ -114,9 +101,7 @@ TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout) {
     m.taskTimer_.reset(new (std::nothrow) TaskTimer[m.aicpuCoreNum_]);
     m.taskInfo_.reset(new (std::nothrow) TaskInfoForMonitor[m.aicpuCoreNum_]);
     m.SetTaskInfo(0, {0, 0, 0, false});
-    MOCKER(aicpu::GetSystemTick)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER(aicpu::GetSystemTick).stubs().will(returnValue(20));
     if (m.taskTimer_ != nullptr && m.taskInfo_ != nullptr) {
         m.taskTimer_[0].runFlag_ = true;
         m.taskTimer_[0].startTick_ = 1;
@@ -126,7 +111,8 @@ TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout_Fail) {
+TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout_Fail)
+{
     AicpuMonitor m;
     m.online_ = true;
     m.taskTimeoutFlag_ = false;
@@ -135,14 +121,16 @@ TEST_F(AICPUCustMonitorTEST, HandleTaskTimeout_Fail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUCustMonitorTEST, SetTaskTimeoutFlagSucc) {
+TEST_F(AICPUCustMonitorTEST, SetTaskTimeoutFlagSucc)
+{
     AicpuMonitor moniter;
     int32_t ret = moniter.SetTaskTimeoutFlag();
     EXPECT_EQ(ret, 0);
     EXPECT_EQ(moniter.taskTimeoutFlag_, true);
 }
 
-TEST_F(AICPUCustMonitorTEST, SetTaskEndTimeSucc) {
+TEST_F(AICPUCustMonitorTEST, SetTaskEndTimeSucc)
+{
     AicpuMonitor moniter;
     int32_t ret = moniter.SetTaskTimeoutFlag();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -152,15 +140,14 @@ TEST_F(AICPUCustMonitorTEST, SetTaskEndTimeSucc) {
     moniter.taskTimer_.reset(new (std::nothrow) TaskTimer[moniter.aicpuCoreNum_]);
     moniter.taskInfo_.reset(new (std::nothrow) TaskInfoForMonitor[moniter.aicpuCoreNum_]);
     moniter.SetTaskInfo(0, {0, 0, 0, false});
-    MOCKER(aicpu::GetSystemTick)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER(aicpu::GetSystemTick).stubs().will(returnValue(20));
 
     moniter.SetTaskStartTime(0);
     moniter.SetTaskEndTime(0);
 }
 
-TEST_F(AICPUCustMonitorTEST, MonitorRunSemInitFail) {
+TEST_F(AICPUCustMonitorTEST, MonitorRunSemInitFail)
+{
     AicpuMonitor monitor;
     MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
     int32_t ret = monitor.InitAicpuMonitor(0, true);

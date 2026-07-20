@@ -20,7 +20,6 @@
 
 using namespace AicpuSchedule;
 
-
 class OperatorKernelDynOutputPostProcessTest : public OperatorKernelTest {
 protected:
     OperatorKernelDynOutputPostProcess kernel_;
@@ -36,12 +35,12 @@ TEST_F(OperatorKernelDynOutputPostProcessTest, ModelDynOutputPostProcess_Success
     int32_t srcVal = 1;
     RuntimeTensorDesc srcDesc;
     srcDesc.dataAddr = (uint64_t)&srcVal;
-    srcDesc.dtype = 3;  // DT_INT32
+    srcDesc.dtype = 3; // DT_INT32
     srcDesc.shape[0] = 1;
     srcDesc.shape[1] = 1;
     int32_t dstVal = 1;
-    Mbuf *inMbuf = (Mbuf *)&srcVal;
-    Mbuf *outMbuf = (Mbuf *)&dstVal;
+    Mbuf* inMbuf = (Mbuf*)&srcVal;
+    Mbuf* outMbuf = (Mbuf*)&dstVal;
     ProcessOutputInfo process;
     process.dataSize = sizeof(int32_t);
     process.outMBuf = (uint64_t)&outMbuf;
@@ -70,8 +69,8 @@ TEST_F(OperatorKernelDynOutputPostProcessTest, ModelDynOutputPostProcess_Failed2
     taskT.taskID = 1;
     int32_t srcVal = 1;
     int32_t dstVal = 1;
-    Mbuf *inMbuf = (Mbuf *)&srcVal;
-    Mbuf *outMbuf = (Mbuf *)&dstVal;
+    Mbuf* inMbuf = (Mbuf*)&srcVal;
+    Mbuf* outMbuf = (Mbuf*)&dstVal;
     ProcessOutputInfo process;
     process.dataSize = sizeof(int32_t);
     process.outMBuf = (uint64_t)&outMbuf;
@@ -89,12 +88,12 @@ TEST_F(OperatorKernelDynOutputPostProcessTest, ModelDynOutputPostProcess_Failed3
     int32_t srcVal = 1;
     RuntimeTensorDesc srcDesc;
     srcDesc.dataAddr = (uint64_t)&srcVal;
-    srcDesc.dtype = 3;  // DT_INT32
+    srcDesc.dtype = 3;     // DT_INT32
     srcDesc.shape[0] = 1;
-    srcDesc.shape[1] = -1;  // invalid shape
+    srcDesc.shape[1] = -1; // invalid shape
     int32_t dstVal = 1;
-    Mbuf *inMbuf = (Mbuf *)&srcVal;
-    Mbuf *outMbuf = (Mbuf *)&dstVal;
+    Mbuf* inMbuf = (Mbuf*)&srcVal;
+    Mbuf* outMbuf = (Mbuf*)&dstVal;
     ProcessOutputInfo process;
     process.dataSize = sizeof(int32_t);
     process.outMBuf = (uint64_t)&outMbuf;
@@ -109,7 +108,7 @@ TEST_F(OperatorKernelDynOutputPostProcessTest, CopyTensorDescAndDataBufFail)
 {
     const RuntimeTensorDesc srcTensorDesc = {};
     uint32_t srcDataSize = 0U;
-    Mbuf *outMBuf = nullptr;
+    Mbuf* outMBuf = nullptr;
     uint32_t dstdataSize = 0U;
     MOCKER(halMbufGetBuffAddr).stubs().will(returnValue((int32_t)DRV_ERROR_BAD_ADDRESS));
     int ret = kernel_.CopyTensorDescAndDataBuf(&srcTensorDesc, srcDataSize, outMBuf, dstdataSize);
@@ -120,7 +119,7 @@ TEST_F(OperatorKernelDynOutputPostProcessTest, CopyTensorDescAndDataBufMemcpyFai
 {
     const RuntimeTensorDesc srcTensorDesc = {};
     uint32_t srcDataSize = 0U;
-    Mbuf *outMBuf = nullptr;
+    Mbuf* outMBuf = nullptr;
     uint32_t dstdataSize = 0U;
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
     MOCKER(memcpy_s).stubs().will(returnValue(1));
@@ -132,7 +131,7 @@ TEST_F(OperatorKernelDynOutputPostProcessTest, CopyTensorDescAndDataBufMemcpyFai
 {
     const RuntimeTensorDesc srcTensorDesc = {};
     uint32_t srcDataSize = 1U;
-    Mbuf *outMBuf = nullptr;
+    Mbuf* outMBuf = nullptr;
     uint32_t dstdataSize = 0U;
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
     MOCKER(memcpy_s).stubs().will(returnValue(0)).then(returnValue(1));

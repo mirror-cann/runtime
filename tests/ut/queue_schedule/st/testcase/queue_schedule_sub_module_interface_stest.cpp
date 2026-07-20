@@ -40,7 +40,7 @@ using namespace bqs;
 namespace {
 std::string GetWorkDir()
 {
-    struct passwd *user = getpwuid(getuid());
+    struct passwd* user = getpwuid(getuid());
     if ((user == nullptr) || (user->pw_dir == nullptr)) {
         return "";
     }
@@ -49,30 +49,27 @@ std::string GetWorkDir()
     std::string workdir = pwDir + "/tmp/" + std::to_string(getpid()) + "qs_sub_module/";
     return workdir;
 };
-}
+} // namespace
 
 class QsSubModuleInterfaceUtest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
+    virtual void TearDown() { GlobalMockObject::verify(); }
+    static void SetUpTestCase()
     {
-        GlobalMockObject::verify();
-    }
-    static void SetUpTestCase() {
         const std::string workDir = GetWorkDir();
         const std::string cmd = "mkdir -p " + workDir;
-        (void) system(cmd.c_str());
+        (void)system(cmd.c_str());
 
         std::cout << "QsSubModuleInterfaceUtest setup cmd=" << cmd << std::endl;
     }
 
-    static void TearDownTestCase() {
+    static void TearDownTestCase()
+    {
         const std::string workDir = GetWorkDir();
         const std::string cmd = "rm -rf " + workDir;
-        (void) system(cmd.c_str());
+        (void)system(cmd.c_str());
         std::cout << "QsSubModuleInterfaceUtest teardown" << std::endl;
     }
 };
@@ -221,7 +218,7 @@ TEST_F(QsSubModuleInterfaceUtest, ParseArgsFromFile_001)
     std::string argsFile = "./argsFile";
     std::string cmd = "touch argsFile";
     system(cmd.c_str());
-    FILE *file_fp = fopen(argsFile.c_str(), "a");
+    FILE* file_fp = fopen(argsFile.c_str(), "a");
     if (file_fp != nullptr) {
         fprintf(file_fp, "%s", "testaaa");
         fclose(file_fp);

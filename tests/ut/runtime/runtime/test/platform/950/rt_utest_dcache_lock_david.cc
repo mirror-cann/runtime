@@ -64,7 +64,7 @@ static bool g_disableThread;
 static rtChipType_t g_chipType;
 extern int64_t g_device_driver_version_stub;
 
-static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -83,13 +83,13 @@ protected:
     static void SetUpTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
         std::cout << "ApiDavidTest SetUP" << std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         originType_ = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
@@ -101,7 +101,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         rtInstance->SetDisableThread(false);
@@ -113,12 +113,12 @@ protected:
     {
         GlobalMockObject::reset();
         int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -138,23 +138,23 @@ protected:
         MOCKER_CPP_VIRTUAL(driver, &Driver::EnableSq).stubs().will(returnValue(RT_ERROR_NONE));
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         device_->SetChipType(CHIP_DAVID);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
 
         rtError_t res = rtStreamCreateWithFlags(&streamHandle_, 0, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
         stream_->SetSqMemAttr(false);
         stream_->Context_()->DefaultStream_()->SetSqMemAttr(false);
-        davidSqe_ = (rtDavidSqe_t *)malloc(2 * sizeof(rtDavidSqe_t));
+        davidSqe_ = (rtDavidSqe_t*)malloc(2 * sizeof(rtDavidSqe_t));
         oldSqAddr_ = stream_->GetSqBaseAddr();
         uint64_t sqeAddr = reinterpret_cast<uint64_t>(davidSqe_);
         stream_->SetSqBaseAddr(sqeAddr);
         MOCKER(StreamNopTask).stubs().will(returnValue(RT_ERROR_NONE));
 
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+        TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
@@ -163,16 +163,16 @@ protected:
 
     virtual void TearDown()
     {
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         stream_->SetSqBaseAddr(oldSqAddr_);
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+        TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
         taskResMang->ResetTaskRes();
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
             .will(returnValue(RT_ERROR_NONE));
-        Stream *dft = stream_->Context_()->DefaultStream_();
-        taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(dft)->taskResMang_));
+        Stream* dft = stream_->Context_()->DefaultStream_();
+        taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(dft)->taskResMang_));
         taskResMang->ResetTaskRes();
         while (stream_->GetPendingNum() > 0) {
             stream_->pendingNum_.Sub(1U);
@@ -186,8 +186,8 @@ protected:
         davidSqe_ = nullptr;
         stream_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_OFFLINE));
 
@@ -196,10 +196,10 @@ protected:
     }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
-    rtDavidSqe_t *davidSqe_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
+    rtDavidSqe_t* davidSqe_ = nullptr;
     rtStream_t streamHandle_ = 0;
     rtStream_t streamHandleDvpp_ = 0;
     uint64_t oldSqAddr_ = 0;
@@ -233,7 +233,7 @@ TEST_F(DcacheLockDavidTest, DcacheLockSendTask_abnormal_02)
 TEST_F(DcacheLockDavidTest, AllocStackPhyBaseDavid)
 {
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_NONE));
-    rtError_t ret = ((RawDevice *)device_)->AllocStackPhyBaseDavid();
+    rtError_t ret = ((RawDevice*)device_)->AllocStackPhyBaseDavid();
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
 
@@ -243,8 +243,8 @@ TEST_F(DcacheLockDavidTest, FreeDcacheAddr)
     MOCKER(halMemAddressFree).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(halMemRelease).stubs().will(returnValue(RT_ERROR_NONE));
     uint8_t addrs[2];
-    void *p1 = (void *)addrs;
+    void* p1 = (void*)addrs;
     uint8_t handle[2];
-    void *p2 = (void *)handle;
+    void* p2 = (void*)handle;
     FreeDcacheAddr(0, p1, p2);
 }

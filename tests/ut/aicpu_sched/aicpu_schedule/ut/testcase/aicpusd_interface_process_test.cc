@@ -45,38 +45,24 @@ using namespace aicpu;
 
 namespace {
 static struct event_info g_event = {
-    .comm = {
-        .event_id = EVENT_TEST,
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
+    .comm =
+        {.event_id = EVENT_TEST,
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
 }
 
 class AICPUScheduleInterfaceTEST : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AICPUScheduleInterfaceTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleInterfaceTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "AICPUScheduleInterfaceTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUScheduleInterfaceTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleInterfaceTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleInterfaceTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -87,7 +73,7 @@ protected:
 
 TEST_F(AICPUScheduleInterfaceTEST, TsControlExecuteProcess)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelExecute).stubs().will(returnValue(0));
     int ret = AicpuEventManager::GetInstance().TsControlExecuteProcess(0);
@@ -98,7 +84,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsControlExecuteProcess)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsControlExecuteProcess_failed)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     int ret = AicpuEventManager::GetInstance().TsControlExecuteProcess(0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -106,7 +92,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsControlExecuteProcess_failed)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelExecute).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -118,7 +104,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed1)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AICPUSubEventInfo event;
     int ret = AicpuEventProcess::GetInstance().AICPUEventExecuteModel(event);
@@ -127,7 +113,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed1)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed2)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelExecute).stubs().will(returnValue(1));
     AICPUSubEventInfo event;
@@ -139,7 +125,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed2)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventActiveAicpuStream)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ActiveStream).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -151,16 +137,15 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventActiveAicpuStream)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventActiveAicpuStream_failed)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     AICPUSubEventInfo event;
     int ret = AicpuEventProcess::GetInstance().AICPUEventActiveAicpuStream(event);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }
 
-
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelRepeat).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -172,7 +157,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel_failed)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelRepeat).stubs().will(returnValue(1));
     AICPUSubEventInfo event;
@@ -184,7 +169,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel_failed)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRecoveryStream)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::RecoverStream).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -229,7 +214,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph02)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph03) {
+TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph03)
+{
     printf("=======================AicpuLoadModelWithQ=====================\n");
     ModelQueueInfo modelQueueInfo = {0, 0};
     ModelTaskInfo modelTaskInfo = {0, 0, 0};
@@ -253,7 +239,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph03) {
 
 TEST_F(AICPUScheduleInterfaceTEST, ProcessAICPUEvent)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ActiveStream).stubs().will(returnValue(0));
     event_info eventInfo = g_event;
@@ -267,7 +253,7 @@ TEST_F(AICPUScheduleInterfaceTEST, ProcessAICPUEvent)
 
 TEST_F(AICPUScheduleInterfaceTEST, ProcessAICPUEvent_failed0)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ActiveStream).stubs().will(returnValue(0));
     event_info eventInfo = g_event;
@@ -294,20 +280,20 @@ TEST_F(AICPUScheduleInterfaceTEST, SendAICPUSubEvent)
     AICPUSubEventInfo subEventInfo = {0};
     subEventInfo.modelId = 0;
     subEventInfo.para.streamInfo.streamId = 0;
-    int ret = AicpuMsgSend::SendAICPUSubEvent(reinterpret_cast<char *>(&subEventInfo), sizeof(AICPUSubEventInfo), 0, 0);
+    int ret = AicpuMsgSend::SendAICPUSubEvent(reinterpret_cast<char*>(&subEventInfo), sizeof(AICPUSubEventInfo), 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, SendAICPUSubEvent_failed1)
 {
-    char *msg = nullptr;
+    char* msg = nullptr;
     int ret = AicpuMsgSend::SendAICPUSubEvent(msg, 1, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INVAILD_EVENT_SUBMIT);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, SendAICPUSubEvent_failed2)
 {
-    char *msg = "test";
+    char* msg = "test";
     int ret = AicpuMsgSend::SendAICPUSubEvent(msg, 0, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INVAILD_EVENT_SUBMIT);
 }
@@ -326,33 +312,32 @@ TEST_F(AICPUScheduleInterfaceTEST, ProcessQueueNotFullEvent)
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-
 TEST_F(AICPUScheduleInterfaceTEST, InitAICPUScheduler_failed1)
 {
     pid_t hostPid = 0;
-    char *pidSign = "test";
+    char* pidSign = "test";
     bool isOnline = true;
     AicpuScheduleInterface::GetInstance().UpdateOrInsertStartFlag(0U, false);
     MOCKER_CPP(&AicpuDrvManager::InitDrvSchedModule).stubs().will(returnValue(10));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(0);
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, hostPid, pidSign, PROFILING_CLOSE,
-                                                                       0, isOnline);
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(
+        deviceVec, hostPid, pidSign, PROFILING_CLOSE, 0, isOnline);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, InitAICPUScheduler_failed2)
 {
     pid_t hostPid = 0;
-    char *pidSign = "test";
+    char* pidSign = "test";
     bool isOnline = true;
     AicpuScheduleInterface::GetInstance().UpdateOrInsertStartFlag(0U, false);
     MOCKER_CPP(&AicpuDrvManager::InitDrvSchedModule).stubs().will(returnValue(0));
     MOCKER_CPP(&ComputeProcess::Start).stubs().will(returnValue(10));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(0);
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, hostPid, pidSign, PROFILING_CLOSE,
-                                                                       0, isOnline);
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(
+        deviceVec, hostPid, pidSign, PROFILING_CLOSE, 0, isOnline);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_CP_FAILED);
 }
 
@@ -360,16 +345,14 @@ TEST_F(AICPUScheduleInterfaceTEST, StopAICPUScheduler_failed1)
 {
     pid_t hostPid = 0;
     AicpuScheduleInterface::GetInstance().noThreadFlag_ = true;
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(10));
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(10));
     std::vector<uint32_t> deviceId;
     deviceId.push_back(0);
     int32_t ret = AicpuScheduleInterface::GetInstance().StopAICPUScheduler(deviceId, hostPid);
     EXPECT_EQ(ret, 10);
 }
 
-hdcError_t drvHdcGetCapacity_pcie(struct drvHdcCapacity *capacity)
+hdcError_t drvHdcGetCapacity_pcie(struct drvHdcCapacity* capacity)
 {
     capacity->chanType = HDC_CHAN_TYPE_PCIE;
     return DRV_ERROR_NONE;
@@ -378,12 +361,8 @@ TEST_F(AICPUScheduleInterfaceTEST, StopAICPUScheduler_failed2)
 {
     pid_t hostPid = 0;
     AicpuScheduleInterface::GetInstance().noThreadFlag_ = true;
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(10));
-    MOCKER(drvHdcGetCapacity)
-        .stubs()
-        .will(invoke(drvHdcGetCapacity_pcie));
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(10));
+    MOCKER(drvHdcGetCapacity).stubs().will(invoke(drvHdcGetCapacity_pcie));
     std::vector<uint32_t> deviceId;
     deviceId.push_back(0);
     AicpuScheduleInterface::GetInstance().GetCurrentRunMode(true);
@@ -402,7 +381,7 @@ TEST_F(AICPUScheduleInterfaceTEST, DettachDeviceInDestory_success)
 
 TEST_F(AICPUScheduleInterfaceTEST, ExecuteProcess_failed1)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     int ret = AicpuEventManager::GetInstance().ExecuteProcess(0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -414,9 +393,7 @@ TEST_F(AICPUScheduleInterfaceTEST, ProcessDumpDataEvent_failed1)
     ctrlMsg.cmd_type = AICPU_DATADUMP_RESPONSE;
     ts_to_aicpu_datadump_t ts_to_aicpu_datadump;
     ctrlMsg.u.ts_to_aicpu_datadump = ts_to_aicpu_datadump;
-    MOCKER(tsDevSendMsgAsync)
-        .stubs()
-        .will(returnValue(10));
+    MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(10));
     AicpuSqeAdapter ada(ctrlMsg, 0U);
     int32_t ret = AicpuEventProcess::GetInstance().ProcessDumpDataEvent(ada);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
@@ -430,15 +407,16 @@ TEST_F(AICPUScheduleInterfaceTEST, ProcessLoadOpMappingEvent_failed1)
     ts_to_aicpu_datadumploadinfo_t ts_to_aicpu_datadumploadinfo;
     ctrlMsg.u.ts_to_aicpu_datadumploadinfo = ts_to_aicpu_datadumploadinfo;
 
-    MOCKER(halEschedAckEvent)
+    MOCKER(halEschedAckEvent).stubs().will(returnValue(10));
+    MOCKER_CPP(
+        &OpDumpTaskManager::LoadOpMappingInfo, int32_t(OpDumpTaskManager::*)(const char_t* const, const uint32_t))
         .stubs()
-        .will(returnValue(10));
-    MOCKER_CPP(&OpDumpTaskManager::LoadOpMappingInfo,int32_t(OpDumpTaskManager::*)(const char_t * const, const uint32_t))
-            .stubs()
-            .will(returnValue(0));
-    MOCKER_CPP(&OpDumpTaskManager::LoadOpMappingInfo,int32_t(OpDumpTaskManager::*)(const char_t * const, const uint32_t, AicpuSqeAdapter &))
-            .stubs()
-            .will(returnValue(0));
+        .will(returnValue(0));
+    MOCKER_CPP(
+        &OpDumpTaskManager::LoadOpMappingInfo,
+        int32_t(OpDumpTaskManager::*)(const char_t* const, const uint32_t, AicpuSqeAdapter&))
+        .stubs()
+        .will(returnValue(0));
     AicpuSqeAdapter ada(ctrlMsg, 0U);
     int32_t ret = AicpuEventProcess::GetInstance().ProcessLoadOpMappingEvent(ada);
     EXPECT_EQ(ret, 0);
@@ -449,8 +427,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile_Fail6)
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3206, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     char* curDirName = getenv("HOME");
     std::string dirName(curDirName);
@@ -459,12 +437,12 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile_Fail6)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
 
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -480,8 +458,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile7)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
     aicpu::SetHaveCustPid(false);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3207, 0, true);
@@ -492,10 +470,10 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile7)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -511,8 +489,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile7)
 TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile8)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -524,10 +502,10 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile8)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -543,8 +521,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile8)
 TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile9)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -556,10 +534,10 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile9)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -575,37 +553,32 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile9)
 TEST_F(AICPUScheduleInterfaceTEST, InitAicpuCustSoManager1)
 {
     MOCKER(&AicpuDrvManager::GetInstance().GetUniqueVfId).stubs().will(returnValue(32));
-    int32_t ret = AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::PROCESS_PCIE_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    int32_t ret = AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::PROCESS_PCIE_MODE, SCHED_MODE_INTERRUPT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     MOCKER(&AicpuDrvManager::GetInstance().GetUniqueVfId).stubs().will(returnValue(1));
-    ret = AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::PROCESS_PCIE_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    ret = AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::PROCESS_PCIE_MODE, SCHED_MODE_INTERRUPT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_Success)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
-    MOCKER_CPP(&AicpuScheduleInterface::Stop)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuScheduleInterface::Stop).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     EXPECT_EQ(AICPUModelStop(config), AICPU_SCHEDULE_SUCCESS);
     delete config;
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_fail1)
-{
-    EXPECT_EQ(AICPUModelStop(nullptr), AICPU_SCHEDULE_FAIL);
-}
+TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_fail1) { EXPECT_EQ(AICPUModelStop(nullptr), AICPU_SCHEDULE_FAIL); }
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_fail2)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     EXPECT_EQ(AICPUModelStop(config), AICPU_SCHEDULE_FAIL);
     delete config;
@@ -614,13 +587,11 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_fail2)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_fail3)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
-    MOCKER_CPP(&AicpuScheduleInterface::Stop)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuScheduleInterface::Stop).stubs().will(returnValue(-1));
     EXPECT_EQ(AICPUModelStop(config), AICPU_SCHEDULE_FAIL);
     delete config;
     config = nullptr;
@@ -628,16 +599,12 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelStop_fail3)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_Success)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
-    MOCKER_CPP(&AicpuScheduleInterface::ClearInput)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&AicpuScheduleInterface::Restart)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuScheduleInterface::ClearInput).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuScheduleInterface::Restart).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     EXPECT_EQ(AICPUModelClearInputAndRestart(config), AICPU_SCHEDULE_SUCCESS);
     delete config;
     config = nullptr;
@@ -650,7 +617,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail1)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail2)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     EXPECT_EQ(AICPUModelClearInputAndRestart(config), AICPU_SCHEDULE_FAIL);
     delete config;
@@ -659,13 +626,11 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail2)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail3)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
-    MOCKER_CPP(&AicpuScheduleInterface::ClearInput)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuScheduleInterface::ClearInput).stubs().will(returnValue(-1));
     EXPECT_EQ(AICPUModelClearInputAndRestart(config), AICPU_SCHEDULE_FAIL);
     delete config;
     config = nullptr;
@@ -673,16 +638,12 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail3)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail4)
 {
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
-    MOCKER_CPP(&AicpuScheduleInterface::ClearInput)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&AicpuScheduleInterface::Restart)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuScheduleInterface::ClearInput).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuScheduleInterface::Restart).stubs().will(returnValue(-1));
     EXPECT_EQ(AICPUModelClearInputAndRestart(config), AICPU_SCHEDULE_FAIL);
     delete config;
     config = nullptr;
@@ -690,11 +651,9 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelClearInputAndRestart_fail4)
 
 TEST_F(AICPUScheduleInterfaceTEST, Stop_Success)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::ModelStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuModel::ModelStop).stubs().will(returnValue(0));
     int ret = AicpuScheduleInterface::GetInstance().Stop(0U);
     EXPECT_EQ(ret, 0);
     delete aicpuModel;
@@ -703,7 +662,7 @@ TEST_F(AICPUScheduleInterfaceTEST, Stop_Success)
 
 TEST_F(AICPUScheduleInterfaceTEST, Stop_fail1)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     int ret = AicpuScheduleInterface::GetInstance().Stop(0U);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -711,11 +670,9 @@ TEST_F(AICPUScheduleInterfaceTEST, Stop_fail1)
 
 TEST_F(AICPUScheduleInterfaceTEST, Stop_fail2)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::ModelStop)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuModel::ModelStop).stubs().will(returnValue(0));
     AicpuModelInfo modelInfoT = {0};
     modelInfoT.moduleID = 1;
     (void)aicpuModel->ModelLoad(&modelInfoT);
@@ -728,11 +685,9 @@ TEST_F(AICPUScheduleInterfaceTEST, Stop_fail2)
 
 TEST_F(AICPUScheduleInterfaceTEST, Restart_Success)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::ModelRestart)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuModel::ModelRestart).stubs().will(returnValue(0));
     int ret = AicpuScheduleInterface::GetInstance().Restart(0U);
     EXPECT_EQ(ret, 0);
     delete aicpuModel;
@@ -741,7 +696,7 @@ TEST_F(AICPUScheduleInterfaceTEST, Restart_Success)
 
 TEST_F(AICPUScheduleInterfaceTEST, Restart_fail)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     int ret = AicpuScheduleInterface::GetInstance().Restart(0U);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -749,11 +704,9 @@ TEST_F(AICPUScheduleInterfaceTEST, Restart_fail)
 
 TEST_F(AICPUScheduleInterfaceTEST, ClearInput_Success)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::ModelClearInput)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuModel::ModelClearInput).stubs().will(returnValue(0));
     int ret = AicpuScheduleInterface::GetInstance().ClearInput(0U);
     EXPECT_EQ(ret, 0);
     delete aicpuModel;
@@ -762,7 +715,7 @@ TEST_F(AICPUScheduleInterfaceTEST, ClearInput_Success)
 
 TEST_F(AICPUScheduleInterfaceTEST, ClearInput_fail)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     int ret = AicpuScheduleInterface::GetInstance().ClearInput(0U);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -770,19 +723,19 @@ TEST_F(AICPUScheduleInterfaceTEST, ClearInput_fail)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_success)
 {
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 8;
-    char *OpraterkernelName = "markStep";
+    char* OpraterkernelName = "markStep";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
     config->checkResultLen = sizeof(uint32_t);
     int ret = CheckKernelSupported(config);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_OK);
 
-    char *tsKernelName = "tsKernel:ProcessDataException";
+    char* tsKernelName = "tsKernel:ProcessDataException";
     config->kernelNameAddr = PtrToValue(tsKernelName);
     config->kernelNameLen = strlen(tsKernelName);
     retValue = 10;
@@ -793,22 +746,22 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_success)
     delete config;
     config = nullptr;
 }
- 
+
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed01)
 {
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 14;
-    char *OpraterkernelName = "markStepMytest";
+    char* OpraterkernelName = "markStepMytest";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
     config->checkResultLen = 0;
     int ret = CheckKernelSupported(config);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
-    char *tsKernelName = "tsKernel:Unknown";
+    char* tsKernelName = "tsKernel:Unknown";
     config->kernelNameAddr = PtrToValue(tsKernelName);
     config->kernelNameLen = strlen(tsKernelName);
     retValue = 0;
@@ -827,7 +780,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed02)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed3)
 {
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     int ret = CheckKernelSupported(config);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
     delete config;
@@ -836,7 +789,9 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed3)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelDestroy_failed)
 {
-    MOCKER_CPP(&AicpuScheduleInterface::Destroy, int32_t(AicpuScheduleInterface::*)(const uint32_t)const).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
+    MOCKER_CPP(&AicpuScheduleInterface::Destroy, int32_t(AicpuScheduleInterface::*)(const uint32_t) const)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
     EXPECT_EQ(AICPUModelDestroy(1U), AICPU_SCHEDULE_FAIL);
 }
 
@@ -856,8 +811,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUExecuteTask_success)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUExecuteTask_failed)
 {
-    struct event_info *drvEventInfo;
-    struct event_ack *drvEventAck;
+    struct event_info* drvEventInfo;
+    struct event_ack* drvEventAck;
     MOCKER_CPP(&AicpuEventManager::ExecuteProcessSyc).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
     EXPECT_EQ(AICPUExecuteTask(drvEventInfo, drvEventAck), AICPU_SCHEDULE_FAIL);
 }
@@ -914,7 +869,9 @@ TEST_F(AICPUScheduleInterfaceTEST, AicpuSetMsprofReporterCallback)
 
 TEST_F(AICPUScheduleInterfaceTEST, AicpuLoadModelWithQ_success)
 {
-    MOCKER_CPP(&AicpuSchedule::AicpuScheduleInterface::LoadModelWithQueue).stubs().will(returnValue(AicpuSchedule::AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuSchedule::AicpuScheduleInterface::LoadModelWithQueue)
+        .stubs()
+        .will(returnValue(AicpuSchedule::AICPU_SCHEDULE_OK));
     int ret = AicpuLoadModelWithQ(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
@@ -942,10 +899,10 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelProcessDataException_success)
 
     AicpuModelManager::GetInstance().allModel_[0U].modelId_ = 0U;
     AicpuModelManager::GetInstance().allModel_[0U].isValid = true;
-    AicpuModel &aicpuModel0 = AicpuModelManager::GetInstance().allModel_[0U];
+    AicpuModel& aicpuModel0 = AicpuModelManager::GetInstance().allModel_[0U];
     AicpuModelManager::GetInstance().allModel_[1U].modelId_ = 1U;
     AicpuModelManager::GetInstance().allModel_[1U].isValid = true;
-    AicpuModel &aicpuModel1 = AicpuModelManager::GetInstance().allModel_[1U];
+    AicpuModel& aicpuModel1 = AicpuModelManager::GetInstance().allModel_[1U];
 
     // first adding execption transid
     EXPECT_EQ(AICPUModelProcessDataException(&notify), AICPU_SCHEDULE_OK);
@@ -971,10 +928,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelProcessDataException_fail_for_inval
 
     AicpuModel aicpuModel0;
     aicpuModel0.modelId_ = 0U;
-    AicpuModel *nullAicpuModel = nullptr;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs()
-        .will(returnValue(&aicpuModel0))
-        .then(returnValue(nullAicpuModel));
+    AicpuModel* nullAicpuModel = nullptr;
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel0)).then(returnValue(nullAicpuModel));
 
     EXPECT_EQ(AICPUModelProcessDataException(&notify), AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }

@@ -45,20 +45,14 @@ using namespace cce::runtime;
 
 class CloudV2DcacheDeviceTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
+
 private:
     rtChipType_t oldChipType;
 };
@@ -76,7 +70,7 @@ TEST_F(CloudV2DcacheDeviceTest, GetDriverPath_01)
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyBaseForCloudV2_01)
 {
     MOCKER_CPP(&RawDevice::AllocStackPhyAddrForDcache).stubs().will(returnValue(RT_ERROR_NONE));
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     auto ret = dev->AllocStackPhyBaseForCloudV2();
     EXPECT_EQ(ret, RT_ERROR_NONE);
     delete dev;
@@ -85,9 +79,9 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyBaseForCloudV2_01)
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyBaseForCloudV2_02)
 {
     MOCKER_CPP(&RawDevice::AllocStackPhyAddrForDcache).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     int32_t temp = 0;
-    Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     dev->driver_ = driver_;
     // dev->stackPhyBase16k_ = &temp;
     auto ret = dev->AllocStackPhyBaseForCloudV2();
@@ -100,10 +94,10 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyBaseForCloudV2_02)
 TEST_F(CloudV2DcacheDeviceTest, Alloc32kStackAddrForDcache)
 {
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     int32_t temp = 0;
     dev->stackPhyBase32k_ = &temp;
-    Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     dev->driver_ = driver_;
     rtError_t ret = dev->Alloc32kStackAddrForDcache();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -115,10 +109,10 @@ TEST_F(CloudV2DcacheDeviceTest, Alloc32kStackAddrForDcache)
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_01)
 {
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_NONE));
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     int32_t temp = 0;
     dev->stackPhyBase32k_ = &temp;
-    Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     dev->driver_ = driver_;
     rtError_t ret = dev->AllocStackPhyAddrForDcache();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -129,7 +123,7 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_01)
 
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_02)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->stackAddrIsDcache_ = true;
     rtError_t ret = dev->AllocStackPhyAddrForDcache();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -139,7 +133,7 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_02)
 
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_03)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_DCACHE_MEM_ALLOC_FAIL));
     rtError_t ret = dev->AllocStackPhyAddrForDcache();
     EXPECT_EQ(ret, RT_ERROR_DCACHE_MEM_ALLOC_FAIL);
@@ -148,7 +142,7 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_03)
 
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_04)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_NONE));
     int32_t temp = 0;
     dev->stackPhyBase16k_ = &temp;
@@ -159,7 +153,7 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_04)
 
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_05)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->InitRawDriver();
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
@@ -170,14 +164,16 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_05)
 
 TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_06)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->InitRawDriver();
     MOCKER(AllocAddrForDcache).stubs().will(returnValue(RT_ERROR_NONE));
     uint32_t tmp = 0;
-    void *addr = &tmp;
+    void* addr = &tmp;
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     rtError_t ret = dev->AllocStackPhyAddrForDcache();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -186,7 +182,7 @@ TEST_F(CloudV2DcacheDeviceTest, AllocStackPhyAddrForDcache_06)
 
 TEST_F(CloudV2DcacheDeviceTest, FreeStackPhyBase_01)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->InitRawDriver();
     int32_t temp = 0;
     dev->stackPhyBase32k_ = &temp;
@@ -198,7 +194,7 @@ TEST_F(CloudV2DcacheDeviceTest, FreeStackPhyBase_01)
 
 TEST_F(CloudV2DcacheDeviceTest, FreeStackPhyBase_02)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->InitRawDriver();
     int32_t temp = 0;
     dev->stackPhyBase32k_ = &temp;
@@ -212,7 +208,7 @@ TEST_F(CloudV2DcacheDeviceTest, FreeStackPhyBase_02)
 
 TEST_F(CloudV2DcacheDeviceTest, FreeStackPhyBase_03)
 {
-    RawDevice *dev = new RawDevice(1);
+    RawDevice* dev = new RawDevice(1);
     dev->InitRawDriver();
     int32_t temp = 0;
     dev->stackPhyBase32k_ = &temp;
@@ -226,8 +222,8 @@ TEST_F(CloudV2DcacheDeviceTest, FreeStackPhyBase_03)
 
 TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_05)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    RawDevice *dev = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     MOCKER_CPP_VIRTUAL(dev, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
     MOCKER(QueryDcacheLockStatus).stubs().will(returnValue(RT_ERROR_NONE));
@@ -236,7 +232,7 @@ TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_05)
     ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
     MOCKER_CPP(&RawDevice::RegisterDcacheLockOp)
         .stubs()
-        .with(outBound((Program *)&program))
+        .with(outBound((Program*)&program))
         .will(returnValue(RT_ERROR_NONE));
     Context ctx(dev, 0);
     ctx.Init();
@@ -250,8 +246,8 @@ TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_05)
 
 TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_06)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    RawDevice *dev = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     MOCKER_CPP_VIRTUAL(dev, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
     MOCKER(QueryDcacheLockStatus).stubs().will(returnValue(RT_ERROR_NONE));
@@ -260,7 +256,7 @@ TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_06)
     ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
     MOCKER_CPP(&RawDevice::RegisterDcacheLockOp)
         .stubs()
-        .with(outBound((Program *)&program))
+        .with(outBound((Program*)&program))
         .will(returnValue(RT_ERROR_NONE));
     Context ctx(dev, 0);
     ctx.Init();
@@ -277,17 +273,17 @@ TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_06)
 
 TEST_F(CloudV2DcacheDeviceTest, LaunchDcacheLockOp_07)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    RawDevice *dev = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    RawDevice* dev = new RawDevice(1);
     dev->Init();
     MOCKER_CPP_VIRTUAL(dev, &RawDevice::CheckFeatureSupport).stubs().will(returnValue(true));
     MOCKER(QueryDcacheLockStatus).stubs().will(returnValue(RT_ERROR_NONE));
     dev->stackAddrIsDcache_ = true;
-    Stream *stm;
+    Stream* stm;
     ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
     MOCKER_CPP(&RawDevice::RegisterDcacheLockOp)
         .stubs()
-        .with(outBound((Program *)&program))
+        .with(outBound((Program*)&program))
         .will(returnValue(RT_ERROR_NONE));
     Context ctx(dev, 0);
     ctx.Init();
@@ -309,17 +305,20 @@ TEST_F(CloudV2DcacheDeviceTest, FreeDcacheAddr_01)
         .will(returnValue(DRV_ERROR_NONE))
         .then(returnValue(DRV_ERROR_INVALID_VALUE));
     int32_t temp = 0;
-    void *tempAddr = static_cast<void *>(&temp);
-    void *drvHandle = nullptr;
+    void* tempAddr = static_cast<void*>(&temp);
+    void* drvHandle = nullptr;
     FreeDcacheAddr(0, tempAddr, drvHandle);
     EXPECT_EQ(tempAddr, nullptr);
 }
 
 TEST_F(CloudV2DcacheDeviceTest, AllocAddrForDcache_01)
 {
-    MOCKER(halMemCtl).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_INVALID_VALUE));
-    void *tempAddr = nullptr;
-    void *drvHandle = nullptr;
+    MOCKER(halMemCtl)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    void* tempAddr = nullptr;
+    void* drvHandle = nullptr;
     auto ret = AllocAddrForDcache(0, tempAddr, 0, drvHandle);
     EXPECT_EQ(ret, RT_ERROR_DCACHE_MEM_ALLOC_FAIL);
 }
@@ -332,8 +331,8 @@ TEST_F(CloudV2DcacheDeviceTest, AllocAddrForDcache_02)
         .will(returnValue(DRV_ERROR_NONE))
         .then(returnValue(DRV_ERROR_INVALID_VALUE));
     int32_t temp = 0;
-    void *tempAddr = static_cast<void *>(&temp);
-    void *drvHandle = nullptr;
+    void* tempAddr = static_cast<void*>(&temp);
+    void* drvHandle = nullptr;
     auto ret = AllocAddrForDcache(0, tempAddr, 0, drvHandle);
     EXPECT_EQ(ret, RT_ERROR_DCACHE_MEM_ALLOC_FAIL);
 }
@@ -342,7 +341,7 @@ TEST_F(CloudV2DcacheDeviceTest, QueryDcacheLockStatus_01)
 {
     MOCKER(halTsdrvCtl).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
     int32_t temp = 0;
-    void *dcacheAddr = &temp;
+    void* dcacheAddr = &temp;
     bool dCacheLockFlag = false;
     rtError_t ret = QueryDcacheLockStatus(0, 0, dcacheAddr, dCacheLockFlag);
     EXPECT_EQ(ret, RT_ERROR_DRV_NO_DEVICE);
@@ -352,7 +351,7 @@ TEST_F(CloudV2DcacheDeviceTest, QueryDcacheLockStatus_02)
 {
     MOCKER(halTsdrvCtl).stubs().will(returnValue(DRV_ERROR_NONE));
     int32_t temp = 0;
-    void *dcacheAddr = &temp;
+    void* dcacheAddr = &temp;
     bool dCacheLockFlag = false;
     rtError_t ret = QueryDcacheLockStatus(0, 0, dcacheAddr, dCacheLockFlag);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -364,10 +363,12 @@ TEST_F(CloudV2DcacheDeviceTest, QueryDcacheLockStatus_03)
     ack.u.query_task_ack_info.status = 1;
     MOCKER(halTsdrvCtl)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void *)&ack, sizeof(ack)), mockcpp::any())
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void*)&ack, sizeof(ack)),
+            mockcpp::any())
         .will(returnValue(DRV_ERROR_NONE));
     int32_t temp = 0;
-    void *dcacheAddr = &temp;
+    void* dcacheAddr = &temp;
     bool dCacheLockFlag = false;
     rtError_t ret = QueryDcacheLockStatus(0, 0, dcacheAddr, dCacheLockFlag);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -380,10 +381,12 @@ TEST_F(CloudV2DcacheDeviceTest, QueryDcacheLockStatus_04)
     ack.u.query_task_ack_info.status = 1;
     MOCKER(halTsdrvCtl)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void *)&ack, sizeof(ack)), mockcpp::any())
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void*)&ack, sizeof(ack)),
+            mockcpp::any())
         .will(returnValue(DRV_ERROR_NONE));
     int32_t temp = 0;
-    void *dcacheAddr = &temp;
+    void* dcacheAddr = &temp;
     bool dCacheLockFlag = false;
     rtError_t ret = QueryDcacheLockStatus(0, 0, dcacheAddr, dCacheLockFlag);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -392,12 +395,12 @@ TEST_F(CloudV2DcacheDeviceTest, QueryDcacheLockStatus_04)
 
 TEST_F(CloudV2DcacheDeviceTest, RegisterDcacheLockOp_01)
 {
-    RawDevice *dev = new RawDevice(1);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RawDevice* dev = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::vector<char> dcacheLockMixOpData{'a'};
     rtInstance->dcacheLockMixOpData_ = dcacheLockMixOpData;
     MOCKER_CPP(&Runtime::ProgramRegister).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
-    Program *dcacheLockOpProgram = nullptr;
+    Program* dcacheLockOpProgram = nullptr;
     auto ret = dev->RegisterDcacheLockOp(dcacheLockOpProgram);
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
     rtInstance->dcacheLockMixOpData_.clear();
@@ -406,18 +409,18 @@ TEST_F(CloudV2DcacheDeviceTest, RegisterDcacheLockOp_01)
 
 TEST_F(CloudV2DcacheDeviceTest, RegisterDcacheLockOp_02)
 {
-    RawDevice *dev = new RawDevice(1);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RawDevice* dev = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::vector<char> dcacheLockMixOpData{'a'};
     rtInstance->dcacheLockMixOpData_ = dcacheLockMixOpData;
     ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *programPtr = &program;
+    Program* programPtr = &program;
     MOCKER_CPP(&Runtime::ProgramRegister)
         .stubs()
         .with(mockcpp::any(), outBoundP(&programPtr, sizeof(programPtr)))
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Runtime::KernelRegister).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
-    Program *dcacheLockOpProgram = nullptr;
+    Program* dcacheLockOpProgram = nullptr;
     auto ret = dev->RegisterDcacheLockOp(dcacheLockOpProgram);
     EXPECT_EQ(ret, RT_ERROR_INVALID_VALUE);
     rtInstance->dcacheLockMixOpData_.clear();
@@ -426,18 +429,18 @@ TEST_F(CloudV2DcacheDeviceTest, RegisterDcacheLockOp_02)
 
 TEST_F(CloudV2DcacheDeviceTest, RegisterDcacheLockOp_03)
 {
-    RawDevice *dev = new RawDevice(1);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RawDevice* dev = new RawDevice(1);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::vector<char> dcacheLockMixOpData{'a'};
     rtInstance->dcacheLockMixOpData_ = dcacheLockMixOpData;
     ElfProgram program(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *programPtr = &program;
+    Program* programPtr = &program;
     MOCKER_CPP(&Runtime::ProgramRegister)
         .stubs()
         .with(mockcpp::any(), outBoundP(&programPtr, sizeof(programPtr)))
         .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Runtime::KernelRegister).stubs().will(returnValue(RT_ERROR_NONE));
-    Program *dcacheLockOpProgram = nullptr;
+    Program* dcacheLockOpProgram = nullptr;
     auto ret = dev->RegisterDcacheLockOp(dcacheLockOpProgram);
     EXPECT_EQ(ret, RT_ERROR_NONE);
     rtInstance->dcacheLockMixOpData_.clear();
@@ -446,23 +449,23 @@ TEST_F(CloudV2DcacheDeviceTest, RegisterDcacheLockOp_03)
 
 TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_01)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER_CPP(&Runtime::GetDcacheLockMixOpPath).stubs().will(returnValue(1));
     rtInstance->FindDcacheLockOp();
     EXPECT_EQ(rtInstance->dcacheLockMixOpData_.size(), 0);
 }
 
-int32_t invokeStat_02(const char *path, struct stat *buf)
+int32_t invokeStat_02(const char* path, struct stat* buf)
 {
     if (buf != nullptr) {
-        buf->st_size = 0; 
+        buf->st_size = 0;
     }
     return 0;
 }
 
 TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER(stat).stubs().with(mockcpp::any(), mockcpp::any()).will(mockcpp::invoke(invokeStat_02));
     rtInstance->FindDcacheLockOp();
     EXPECT_EQ(rtInstance->dcacheLockMixOpData_.size(), 0);
@@ -470,7 +473,7 @@ TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_02)
 
 TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_06)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     std::string driverPath = "llt/ace/npuruntime/runtime/ut/runtime/test/data/";
     MOCKER(GetDriverPath).stubs().with(outBound(driverPath)).will(returnValue(true));
     MOCKER_CPP(&ifstream::is_open, bool(ifstream::*)()).stubs().will(returnValue(false));
@@ -478,7 +481,7 @@ TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_06)
     EXPECT_EQ(rtInstance->dcacheLockMixOpData_.size(), 0);
 }
 
-int32_t invokeStat(const char *path, struct stat *buf)
+int32_t invokeStat(const char* path, struct stat* buf)
 {
     if (path != nullptr && !strcmp(path, "/usr/local/Ascend/driver/lib64/common/dcache_lock_mix.o")) {
         buf->st_size = 10485760;
@@ -488,7 +491,7 @@ int32_t invokeStat(const char *path, struct stat *buf)
 
 TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_07)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     MOCKER(stat).stubs().with(mockcpp::any(), mockcpp::any()).will(invoke(invokeStat));
     MOCKER_CPP(&ifstream::is_open, bool(ifstream::*)()).stubs().will(returnValue(true));
     rtInstance->FindDcacheLockOp();
@@ -497,22 +500,18 @@ TEST_F(CloudV2DcacheDeviceTest, FindAndRegisterDcacheLockOp_07)
 
 class CloudV2DcacheLockFillFftsMixSqeForDavinciTaskTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t oldChipType;
 };

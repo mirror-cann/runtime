@@ -27,7 +27,7 @@
 using namespace tsd;
 using namespace std;
 
-class TsdClientTest :public testing::Test {
+class TsdClientTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
@@ -246,15 +246,16 @@ TEST_F(TsdClientTest, TsdCapabilityGet_Support_Mutiple_Hccp_Success)
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
 
-TEST_F(TsdClientTest, TsdFileLoad_TsdFileUnLoad_Runtime_Pkg_Success) {
+TEST_F(TsdClientTest, TsdFileLoad_TsdFileUnLoad_Runtime_Pkg_Success)
+{
     // TsdFileLoad 及 TsdFileUnLoad 接口已经在日落计划中，已经不建议外部使用
     StubServerMsgProcDef::RegisterTsdFileLoadAndUnLoadMsgDefaultCallBack();
     const std::string runtimePkgName = "Ascend-runtime_device-minios.tar.gz";
     std::string filepath = "/tmp";
     std::string pathPreFix = std::to_string(getpid());
     if (WriteTmpFile(pathPreFix, runtimePkgName)) {
-        tsd::TSD_StatusT ret = TsdFileLoad(0U, filepath.c_str(), filepath.size(), runtimePkgName.c_str(),
-            runtimePkgName.size());
+        tsd::TSD_StatusT ret =
+            TsdFileLoad(0U, filepath.c_str(), filepath.size(), runtimePkgName.c_str(), runtimePkgName.size());
         const std::string dstFile = filepath + "/" + runtimePkgName;
         remove(dstFile.c_str());
         const std::string fileDir = filepath + "/" + pathPreFix;
@@ -265,15 +266,16 @@ TEST_F(TsdClientTest, TsdFileLoad_TsdFileUnLoad_Runtime_Pkg_Success) {
     }
 }
 
-TEST_F(TsdClientTest, TsdFileLoad_TsdFileUnLoad_Dshape_Pkg_Success) {
+TEST_F(TsdClientTest, TsdFileLoad_TsdFileUnLoad_Dshape_Pkg_Success)
+{
     // TsdFileLoad 及 TsdFileUnLoad 接口已经在日落计划中，已经不建议外部使用
     StubServerMsgProcDef::RegisterTsdFileLoadAndUnLoadMsgDefaultCallBack();
     const std::string dShapePkgName = "Ascend-opp_rt-minios.aarch64.tar.gz";
     std::string filepath = "/tmp";
     std::string pathPreFix = std::to_string(getpid());
     if (WriteTmpFile(pathPreFix, dShapePkgName)) {
-        tsd::TSD_StatusT ret = TsdFileLoad(0U, filepath.c_str(), filepath.size(), dShapePkgName.c_str(),
-            dShapePkgName.size());
+        tsd::TSD_StatusT ret =
+            TsdFileLoad(0U, filepath.c_str(), filepath.size(), dShapePkgName.c_str(), dShapePkgName.size());
         const std::string dstFile = filepath + "/" + dShapePkgName;
         remove(dstFile.c_str());
         const std::string fileDir = filepath + "/" + pathPreFix;
@@ -284,7 +286,8 @@ TEST_F(TsdClientTest, TsdFileLoad_TsdFileUnLoad_Dshape_Pkg_Success) {
     }
 }
 
-TEST_F(TsdClientTest, TsdProcessOpen_GetStatus_Close_Success) {
+TEST_F(TsdClientTest, TsdProcessOpen_GetStatus_Close_Success)
+{
     // TsdProcessOpen TsdGetProcStatus TsdProcessClose接口已经在日落计划中，已经不建议外部使用
     StubServerMsgProcDef::RegisterTsdProcessOpenQueryCloseMsgDefaultCallBack();
     ProcOpenArgs openArgs;
@@ -318,7 +321,8 @@ TEST_F(TsdClientTest, TsdProcessOpen_GetStatus_Close_Success) {
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
 
-TEST_F(TsdClientTest, TsdProcessOpen_GetProcListStatus_CloseProcList_Success) {
+TEST_F(TsdClientTest, TsdProcessOpen_GetProcListStatus_CloseProcList_Success)
+{
     // TsdProcessOpen TsdGetProcListsStatus ProcessCloseSubProcList 接口已经在日落计划中，已经不建议外部使用
     StubServerMsgProcDef::RegisterTsdProcessListOpenQueryCloseMsgDefaultCallBack();
     ProcOpenArgs openArgsUdf;
@@ -340,7 +344,7 @@ TEST_F(TsdClientTest, TsdProcessOpen_GetProcListStatus_CloseProcList_Success) {
     pid_t subPidUdf = 0;
     openArgsUdf.subPid = &subPidUdf;
     openArgsUdf.procType = TSD_SUB_PROC_UDF;
-    std::string filepathprefix= "/home";
+    std::string filepathprefix = "/home";
     openArgsUdf.filePath = filepathprefix.c_str();
     openArgsUdf.pathLen = filepathprefix.length();
     tsd::TSD_StatusT ret = TsdProcessOpen(0U, &openArgsUdf);
@@ -372,7 +376,8 @@ TEST_F(TsdClientTest, TsdProcessOpen_GetProcListStatus_CloseProcList_Success) {
     EXPECT_EQ(ret, tsd::TSD_OK);
 }
 
-TEST_F(TsdClientTest, TsdOpen_Close_NetService_Success) {
+TEST_F(TsdClientTest, TsdOpen_Close_NetService_Success)
+{
     StubServerMsgProcDef::RegisterTsdProcessOpenQueryCloseMsgDefaultCallBack();
     NetServiceOpenArgs args;
     ProcExtParam extParamList;
@@ -385,7 +390,8 @@ TEST_F(TsdClientTest, TsdOpen_Close_NetService_Success) {
     EXPECT_EQ(result, tsd::TSD_OK);
 }
 
-TEST_F(TsdClientTest, NotifyPmToStartTsdaemon_Success) {
+TEST_F(TsdClientTest, NotifyPmToStartTsdaemon_Success)
+{
     // NotifyPmToStartTsdaemon 接口已经在日落计划中，已经不建议外部使用
     // 直接返回ERROR
     auto result = NotifyPmToStartTsdaemon(0U);
@@ -477,8 +483,8 @@ TEST_F(TsdClientTest, TsdFileUnLoad_Success)
     std::string filepath = "/tmp";
     std::string pathPreFix = std::to_string(getpid());
     if (WriteTmpFile(pathPreFix, runtimePkgName)) {
-        tsd::TSD_StatusT ret = TsdFileLoad(0U, filepath.c_str(), filepath.size(), runtimePkgName.c_str(),
-            runtimePkgName.size());
+        tsd::TSD_StatusT ret =
+            TsdFileLoad(0U, filepath.c_str(), filepath.size(), runtimePkgName.c_str(), runtimePkgName.size());
         const std::string dstFile = filepath + "/" + runtimePkgName;
         remove(dstFile.c_str());
         const std::string fileDir = filepath + "/" + pathPreFix;
@@ -688,15 +694,9 @@ TEST_F(TsdClientTest, TsdInitFlowGw_DestructFlagTrue_ReturnOk)
     EXPECT_EQ(TsdInitFlowGw(0U, &info), tsd::TSD_OK);
 }
 
-TEST_F(TsdClientTest, TsdInitFlowGw_NullArg_Fail)
-{
-    EXPECT_EQ(TsdInitFlowGw(0U, nullptr), tsd::TSD_INTERNAL_ERROR);
-}
+TEST_F(TsdClientTest, TsdInitFlowGw_NullArg_Fail) { EXPECT_EQ(TsdInitFlowGw(0U, nullptr), tsd::TSD_INTERNAL_ERROR); }
 
-TEST_F(TsdClientTest, GetHdcConctStatus_NullArg_ReturnOk)
-{
-    EXPECT_EQ(GetHdcConctStatus(0U, nullptr), tsd::TSD_OK);
-}
+TEST_F(TsdClientTest, GetHdcConctStatus_NullArg_ReturnOk) { EXPECT_EQ(GetHdcConctStatus(0U, nullptr), tsd::TSD_OK); }
 
 TEST_F(TsdClientTest, GetHdcConctStatus_DestructFlagTrue_ReturnOk)
 {
@@ -706,25 +706,13 @@ TEST_F(TsdClientTest, GetHdcConctStatus_DestructFlagTrue_ReturnOk)
     EXPECT_EQ(status, HDC_SESSION_STATUS_CONNECT);
 }
 
-TEST_F(TsdClientTest, TsdSetAttr_NullKey_Fail)
-{
-    EXPECT_EQ(TsdSetAttr(nullptr, "v"), tsd::TSD_INTERNAL_ERROR);
-}
+TEST_F(TsdClientTest, TsdSetAttr_NullKey_Fail) { EXPECT_EQ(TsdSetAttr(nullptr, "v"), tsd::TSD_INTERNAL_ERROR); }
 
-TEST_F(TsdClientTest, TsdSetAttr_NullValue_Fail)
-{
-    EXPECT_EQ(TsdSetAttr("k", nullptr), tsd::TSD_INTERNAL_ERROR);
-}
+TEST_F(TsdClientTest, TsdSetAttr_NullValue_Fail) { EXPECT_EQ(TsdSetAttr("k", nullptr), tsd::TSD_INTERNAL_ERROR); }
 
-TEST_F(TsdClientTest, TsdSetAttr_RunMode_OK)
-{
-    EXPECT_EQ(TsdSetAttr("RunMode", "PROCESS"), tsd::TSD_OK);
-}
+TEST_F(TsdClientTest, TsdSetAttr_RunMode_OK) { EXPECT_EQ(TsdSetAttr("RunMode", "PROCESS"), tsd::TSD_OK); }
 
-TEST_F(TsdClientTest, TsdSetAttr_UnsupportedKey_OK)
-{
-    EXPECT_EQ(TsdSetAttr("AnyKey", "v"), tsd::TSD_OK);
-}
+TEST_F(TsdClientTest, TsdSetAttr_UnsupportedKey_OK) { EXPECT_EQ(TsdSetAttr("AnyKey", "v"), tsd::TSD_OK); }
 
 TEST_F(TsdClientTest, TsdCapabilityGet_DestructFlagTrue_ReturnOk)
 {

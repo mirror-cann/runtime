@@ -17,34 +17,32 @@
  *   - runtime/rt.h
  */
 
-static Driver *MockDavidDriverSetup()
+static Driver* MockDavidDriverSetup()
 {
     int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-    MOCKER_CPP_VIRTUAL(driver,
-        &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),
-        outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
         .will(returnValue(RT_ERROR_NONE));
-    char *socVer = "Ascend950PR_9599";
-    MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")),
-        mockcpp::any()).will(returnValue(DRV_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
+    char* socVer = "Ascend950PR_9599";
+    MOCKER(halGetSocVersion)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(driver, &Driver::StreamUnBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
     return driver;
 }
 
-static void SetupDavidDeviceAndEngine(Device *&device_, Engine *&engine_)
+static void SetupDavidDeviceAndEngine(Device*& device_, Engine*& engine_)
 {
     rtSetDevice(0);
     (void)rtSetSocVersion("Ascend950PR_9599");
-    ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-    device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+    device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     device_->SetChipType(CHIP_DAVID);
-    engine_ = ((RawDevice *)device_)->engine_;
+    engine_ = ((RawDevice*)device_)->engine_;
 }
 
-#endif  // RT_UTEST_DAVID_FIXTURE_HELPER_H_
+#endif // RT_UTEST_DAVID_FIXTURE_HELPER_H_

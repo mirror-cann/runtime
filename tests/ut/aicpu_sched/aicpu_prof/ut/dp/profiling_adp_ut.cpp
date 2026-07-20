@@ -32,68 +32,42 @@
 using namespace std;
 using namespace aicpu;
 
-class ProfilingAdpUt : public testing::Test
-{
+class ProfilingAdpUt : public testing::Test {
 public:
 protected:
-    static void SetUpTestCase() {
-        printf("ProfilingAdpUt UT SetUp\n");
-    }
-    static void TearDownTestCase() {
-        printf("ProfilingAdpUt UT TearDown\n");
-
-    }
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    static void SetUpTestCase() { printf("ProfilingAdpUt UT SetUp\n"); }
+    static void TearDownTestCase() { printf("ProfilingAdpUt UT TearDown\n"); }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 namespace {
-int32_t AdprofAicpuStartRegister(AicpuStartFunc aicpuStartCallback, const struct AicpuStartPara *para)
-{
-    return 0;
-}
+int32_t AdprofAicpuStartRegister(AicpuStartFunc aicpuStartCallback, const struct AicpuStartPara* para) { return 0; }
 
-int32_t AdprofReportData(VOID_PTR data, uint32_t len)
-{
-    return 0;
-}
+int32_t AdprofReportData(VOID_PTR data, uint32_t len) { return 0; }
 
-int32_t AdprofReportAdditionalInfo(uint32_t agingFlag, const VOID_PTR data, uint32_t length)
-{
-    return 0;
-}
+int32_t AdprofReportAdditionalInfo(uint32_t agingFlag, const VOID_PTR data, uint32_t length) { return 0; }
 
-int32_t AdprofAicpuStop()
-{
-    return 0;
-}
+int32_t AdprofAicpuStop() { return 0; }
 
-void *dlsymSucFake(void *handle, const char *symbol)
+void* dlsymSucFake(void* handle, const char* symbol)
 {
     if (std::string(symbol) == "AdprofAicpuStartRegister") {
-        return (void *)AdprofAicpuStartRegister;
+        return (void*)AdprofAicpuStartRegister;
     } else if (std::string(symbol) == "AdprofReportData") {
-        return (void *)AdprofReportData;
+        return (void*)AdprofReportData;
     } else if (std::string(symbol) == "AdprofReportAdditionalInfo") {
-        return (void *)AdprofReportAdditionalInfo;
+        return (void*)AdprofReportAdditionalInfo;
     } else if (std::string(symbol) == "AdprofAicpuStop") {
-        return (void *)AdprofAicpuStop;
+        return (void*)AdprofAicpuStop;
     } else {
         return nullptr;
     }
 }
 
-void *dlsymNullFake(void *handle, const char *symbol)
-{
-    return nullptr;
-}
-}
+void* dlsymNullFake(void* handle, const char* symbol) { return nullptr; }
+} // namespace
 
-int32_t ReportCallbackImp(uint32_t moduleId, uint32_t type, void *data, uint32_t len) {
-    return 0;
-}
+int32_t ReportCallbackImp(uint32_t moduleId, uint32_t type, void* data, uint32_t len) { return 0; }
 
 TEST_F(ProfilingAdpUt, InitProfilingCheck)
 {
@@ -101,7 +75,7 @@ TEST_F(ProfilingAdpUt, InitProfilingCheck)
     MOCKER(dlopen).stubs().will(returnValue((void*)1));
     MOCKER(dlsym).stubs().will(invoke(dlsymSucFake));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    //init profiling
+    // init profiling
     aicpu::InitProfiling(0, 100, 0);
     EXPECT_EQ(aicpu::IsProfOpen(), true);
 }
@@ -109,11 +83,11 @@ TEST_F(ProfilingAdpUt, InitProfilingCheck)
 TEST_F(ProfilingAdpUt, InitProfilingCheckCallback)
 {
     aicpu::UpdateMode(true);
-    //set callback function valid
+    // set callback function valid
     MsprofReporterCallback reporterCallback = ReportCallbackImp;
     ProfilingAdp::GetInstance().SetReportCallbackValid(true, reporterCallback);
 
-    //init profiling
+    // init profiling
     aicpu::InitProfiling(0, 100, 0);
     EXPECT_EQ(aicpu::IsProfOpen(), true);
 }
@@ -141,7 +115,7 @@ TEST_F(ProfilingAdpUt, SendProcessCheck01)
 TEST_F(ProfilingAdpUt, SendProcessCheckCallback)
 {
     aicpu::UpdateMode(true);
-    //set callback function valid
+    // set callback function valid
     MsprofReporterCallback reporterCallback = ReportCallbackImp;
     ProfilingAdp::GetInstance().SetReportCallbackValid(true, reporterCallback);
     EXPECT_EQ(aicpu::IsProfOpen(), true);
@@ -157,14 +131,14 @@ TEST_F(ProfilingAdpUt, SendToProfilingCheck)
     aicpu::UpdateMode(true);
     aicpu::SendToProfiling("sendData", "mark");
 
-    //mark size == 0
+    // mark size == 0
     aicpu::SendToProfiling("sendData", "");
 
-    //sendSize == 0
+    // sendSize == 0
     aicpu::SendToProfiling("", "mark");
 
-    //sendData length > 1024
-    string sendData( 1048, 'c' );
+    // sendData length > 1024
+    string sendData(1048, 'c');
     aicpu::SendToProfiling(sendData, "mark");
     EXPECT_EQ(aicpu::IsProfOpen(), true);
 }
@@ -179,11 +153,11 @@ TEST_F(ProfilingAdpUt, ReleaseProfilingCheck)
 TEST_F(ProfilingAdpUt, ReleaseProfilingCheckCallback)
 {
     aicpu::UpdateMode(true);
-    //set callback function valid
+    // set callback function valid
     MsprofReporterCallback reporterCallback = ReportCallbackImp;
     ProfilingAdp::GetInstance().SetReportCallbackValid(true, reporterCallback);
     EXPECT_EQ(aicpu::IsProfOpen(), true);
-    //release profiling
+    // release profiling
     aicpu::ReleaseProfiling();
 }
 
@@ -241,9 +215,7 @@ TEST_F(ProfilingAdpUt, ProfMessage_AICPU_MODEL_Test)
 {
     aicpu::UpdateModelMode(true);
     EXPECT_EQ(aicpu::IsModelProfOpen(), true);
-    MOCKER_CPP(&ProfilingAdp::SendProcess)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&ProfilingAdp::SendProcess).stubs().will(returnValue(0));
     ProfModelMessage prof("AICPU_MODEL");
     const int32_t ret = prof.ReportProfModelMessage();
     EXPECT_EQ(ret, 0);
@@ -251,15 +223,9 @@ TEST_F(ProfilingAdpUt, ProfMessage_AICPU_MODEL_Test)
 
 TEST_F(ProfilingAdpUt, ProfMessage_AICPU_Test)
 {
-    MOCKER_CPP(&ifstream::is_open, bool(ifstream::*)())
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::SendProcess)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER_CPP(&ifstream::is_open, bool(ifstream::*)()).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::SendProcess).stubs().will(returnValue(0));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     aicpu::UpdateMode(true);
     ProfMessage prof("AICPU");
     EXPECT_EQ(aicpu::IsProfOpen(), true);
@@ -267,15 +233,9 @@ TEST_F(ProfilingAdpUt, ProfMessage_AICPU_Test)
 
 TEST_F(ProfilingAdpUt, ProfMessage_AICPU_Unsupported_Test)
 {
-    MOCKER(&IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::SendProcess)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER(&IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::SendProcess).stubs().will(returnValue(0));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     aicpu::UpdateMode(true);
     ProfMessage prof("AICPU");
     EXPECT_EQ(aicpu::IsProfOpen(), true);
@@ -283,15 +243,9 @@ TEST_F(ProfilingAdpUt, ProfMessage_AICPU_Unsupported_Test)
 
 TEST_F(ProfilingAdpUt, ProfMessage_DP_Unsupported_Test)
 {
-    MOCKER(&IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::SendProcess)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER(&IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::SendProcess).stubs().will(returnValue(0));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     aicpu::UpdateMode(true);
     ProfMessage prof("DP");
     EXPECT_EQ(aicpu::IsProfOpen(), true);
@@ -350,7 +304,7 @@ TEST_F(ProfilingAdpUt, BuildProfMiAdditionalData_Test_Success)
     ProfilingAdp::GetInstance().reportCallback_ = nullptr;
     ProfilingAdp::GetInstance().BuildProfMiAdditionalData(sendData, reportData);
     MsprofAicpuMiAdditionalData expReportData = {GET_NEXT_DEQUEUE_WAIT, 0, 6, 1034567891, 1034567999};
-    auto ReportDataInfo = reinterpret_cast<MsprofAicpuMiAdditionalData *>(reportData.data);
+    auto ReportDataInfo = reinterpret_cast<MsprofAicpuMiAdditionalData*>(reportData.data);
     EXPECT_EQ(ReportDataInfo->queueSize, expReportData.queueSize);
 }
 
@@ -365,7 +319,7 @@ TEST_F(ProfilingAdpUt, ReleaseProfilingWithAdditionalFlagSuccess)
     MOCKER(dlopen).stubs().will(returnValue((void*)1));
     MOCKER(dlsym).stubs().will(invoke(dlsymSucFake));
     MOCKER(dlclose).stubs().will(returnValue(0));
-    //init profiling
+    // init profiling
     aicpu::ProfSoManager::GetInstance()->LoadSo();
     aicpu::InitProfiling(0, 100, 0);
     ProfilingAdp::GetInstance().reportCallback_ = nullptr;
@@ -374,76 +328,67 @@ TEST_F(ProfilingAdpUt, ReleaseProfilingWithAdditionalFlagSuccess)
 
 TEST_F(ProfilingAdpUt, BuildProfAicpuAdditionalData_Test_Success)
 {
-    MOCKER(&IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER(&IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     aicpu::UpdateMode(true);
     auto ret = aicpu::AicpuStartCallback();
     EXPECT_EQ(ret, 0);
     std::shared_ptr<aicpu::ProfMessage> prof = std::make_shared<aicpu::ProfMessage>("AICPU");
     (void)prof->SetAicpuMagicNumber(static_cast<uint16_t>(MSPROF_DATA_HEAD_MAGIC_NUM))
-              ->SetAicpuDataTag(static_cast<uint16_t>(MSPROF_AICPU_DATA_TAG))
-              ->SetStreamId(static_cast<uint16_t>(12))
-              ->SetTaskId(static_cast<uint16_t>(12))->SetThreadId(1)
-              ->SetDeviceId(1)
-              ->SetKernelType(1)->SetSubmitTick(1034567891)
-              ->SetScheduleTick(1034567989)->SetTickBeforeRun(1034568980)
-              ->SetTickAfterRun(1034568990)->SetDispatchTime(1034569000)
-              ->SetTotalTime(123)->SetVersion(aicpu::AICPU_PROF_VERSION);
+        ->SetAicpuDataTag(static_cast<uint16_t>(MSPROF_AICPU_DATA_TAG))
+        ->SetStreamId(static_cast<uint16_t>(12))
+        ->SetTaskId(static_cast<uint16_t>(12))
+        ->SetThreadId(1)
+        ->SetDeviceId(1)
+        ->SetKernelType(1)
+        ->SetSubmitTick(1034567891)
+        ->SetScheduleTick(1034567989)
+        ->SetTickBeforeRun(1034568980)
+        ->SetTickAfterRun(1034568990)
+        ->SetDispatchTime(1034569000)
+        ->SetTotalTime(123)
+        ->SetVersion(aicpu::AICPU_PROF_VERSION);
 }
 
 TEST_F(ProfilingAdpUt, BuildProfDpAdditionalData_Test_Success)
 {
-    MOCKER(&IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER(&IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     aicpu::UpdateMode(true);
     auto ret = aicpu::AicpuStartCallback();
     EXPECT_EQ(ret, 0);
     std::shared_ptr<aicpu::ProfMessage> prof = std::make_shared<aicpu::ProfMessage>("DP");
     (void)prof->SetDPMagicNumber(static_cast<uint16_t>(MSPROF_DATA_HEAD_MAGIC_NUM))
-              ->SetDPDataTag(static_cast<uint16_t>(MSPROF_DP_DATA_TAG))
-              ->SetAction("Last dequeue")
-              ->SetSource("test_source")->SetIndex(1)->SetSize(20);
+        ->SetDPDataTag(static_cast<uint16_t>(MSPROF_DP_DATA_TAG))
+        ->SetAction("Last dequeue")
+        ->SetSource("test_source")
+        ->SetIndex(1)
+        ->SetSize(20);
 }
 
 TEST_F(ProfilingAdpUt, BuildProfModelAdditionalData_Test_Success)
 {
-    MOCKER(&IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER(&IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     MOCKER(aicpu::AdprofReportAdditionalInfoFunc).stubs().will(returnValue(0));
     aicpu::UpdateMode(true);
     aicpu::AicpuStartCallback();
     aicpu::ProfModelMessage prof("AICPU_MODEL");
     (void)prof.SetAicpuModelId(1)
-              ->SetDataTagId(MSPROF_AICPU_MODEL_TAG)
-                ->SetAicpuModelIterId(12)
-                ->SetAicpuModelTimeStamp(aicpu::GetSystemTick())
-                ->SetAicpuTagId(aicpu::MODEL_EXECUTE_START)
-                ->SetEventId(0)
-                ->SetDeviceId(1);
+        ->SetDataTagId(MSPROF_AICPU_MODEL_TAG)
+        ->SetAicpuModelIterId(12)
+        ->SetAicpuModelTimeStamp(aicpu::GetSystemTick())
+        ->SetAicpuTagId(aicpu::MODEL_EXECUTE_START)
+        ->SetEventId(0)
+        ->SetDeviceId(1);
     const int32_t ret = prof.ReportProfModelMessage();
     EXPECT_EQ(ret, 0);
 }
 
 TEST_F(ProfilingAdpUt, BuildProfModelAdditionalData_Test_Success001)
 {
-    MOCKER(&IsSupportedProfData)
-        .stubs()
-        .will(returnValue(true));
-    MOCKER_CPP(&ProfilingAdp::GetReportValid)
-        .stubs()
-        .will(returnValue(true));
+    MOCKER(&IsSupportedProfData).stubs().will(returnValue(true));
+    MOCKER_CPP(&ProfilingAdp::GetReportValid).stubs().will(returnValue(true));
     auto profSoManager = ProfSoManager::GetInstance();
     profSoManager->soHandle_ = nullptr;
     MOCKER(dlopen).stubs().will(returnValue((void*)1));
@@ -455,12 +400,12 @@ TEST_F(ProfilingAdpUt, BuildProfModelAdditionalData_Test_Success001)
     aicpu::AicpuStartCallback();
     aicpu::ProfModelMessage prof("AICPU_MODEL");
     (void)prof.SetAicpuModelId(1)
-              ->SetDataTagId(MSPROF_AICPU_MODEL_TAG)
-                ->SetAicpuModelIterId(12)
-                ->SetAicpuModelTimeStamp(aicpu::GetSystemTick())
-                ->SetAicpuTagId(aicpu::MODEL_EXECUTE_START)
-                ->SetEventId(0)
-                ->SetDeviceId(1);
+        ->SetDataTagId(MSPROF_AICPU_MODEL_TAG)
+        ->SetAicpuModelIterId(12)
+        ->SetAicpuModelTimeStamp(aicpu::GetSystemTick())
+        ->SetAicpuTagId(aicpu::MODEL_EXECUTE_START)
+        ->SetEventId(0)
+        ->SetDeviceId(1);
     const int32_t ret = prof.ReportProfModelMessage();
     EXPECT_EQ(ret, 0);
     profSoManager->UnloadSo();
@@ -549,9 +494,7 @@ TEST_F(ProfilingAdpUt, SendProfModelMessageWithOldChannelFail)
     MOCKER(strncpy_s).stubs().will(returnValue(-1));
     aicpu::UpdateModelMode(true);
     EXPECT_EQ(aicpu::IsModelProfOpen(), true);
-    MOCKER_CPP(&ProfilingAdp::SendProcess)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&ProfilingAdp::SendProcess).stubs().will(returnValue(0));
     ProfilingAdp::GetInstance().reportCallback_ = ReportCallbackImp;
     ProfModelMessage prof("AICPU_MODEL");
     const int32_t ret = prof.ReportProfModelMessage();

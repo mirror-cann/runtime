@@ -15,13 +15,12 @@
 class CmmpaTest : public testing::Test {
 protected:
     void SetUp() {}
-    void TearDown() {
-        GlobalMockObject::verify();
-    }
+    void TearDown() { GlobalMockObject::verify(); }
 };
 
-TEST_F(CmmpaTest, mmOpenFile_FILE_READ_BIN) {
-    const char *fileName = "file_name";
-    mmFileHandle *fd = mmOpenFile(fileName, FILE_READ_BIN);
+TEST_F(CmmpaTest, mmOpenFile_FILE_READ_BIN)
+{
+    const char* fileName = "file_name";
+    mmFileHandle* fd = mmOpenFile(fileName, FILE_READ_BIN);
     EXPECT_EQ(fd, nullptr);
 }

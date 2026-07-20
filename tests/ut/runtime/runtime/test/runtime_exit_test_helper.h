@@ -20,7 +20,7 @@ namespace runtime {
 // while the test translation unit has temporarily defined private as public.
 class RuntimeExitStateGuard {
 public:
-    explicit RuntimeExitStateGuard(Runtime *runtime, const bool exiting)
+    explicit RuntimeExitStateGuard(Runtime* runtime, const bool exiting)
         : runtime_(runtime), oldExiting_((runtime != nullptr) && runtime->isExiting_)
     {
         if (runtime_ != nullptr) {
@@ -36,25 +36,17 @@ public:
     }
 
 private:
-    Runtime *runtime_;
+    Runtime* runtime_;
     bool oldExiting_;
 };
 
 class ExitMockEngine : public Engine {
 public:
-    explicit ExitMockEngine(Device * const dev) : Engine(dev)
-    {
-    }
+    explicit ExitMockEngine(Device* const dev) : Engine(dev) {}
 
-    rtError_t Init() override
-    {
-        return RT_ERROR_NONE;
-    }
+    rtError_t Init() override { return RT_ERROR_NONE; }
 
-    rtError_t Start() override
-    {
-        return RT_ERROR_NONE;
-    }
+    rtError_t Start() override { return RT_ERROR_NONE; }
 
     rtError_t Stop() override
     {
@@ -62,10 +54,7 @@ public:
         return stopRet_;
     }
 
-    void Run(const void * const param) override
-    {
-        (void)param;
-    }
+    void Run(const void* const param) override { (void)param; }
 
     bool CheckSendThreadAlive() override
     {
@@ -92,7 +81,7 @@ public:
     uint32_t checkMonitorCalled_ = 0U;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_TEST_RUNTIME_EXIT_TEST_HELPER_H
+#endif // CCE_RUNTIME_TEST_RUNTIME_EXIT_TEST_HELPER_H

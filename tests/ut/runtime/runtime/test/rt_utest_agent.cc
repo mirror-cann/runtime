@@ -20,20 +20,14 @@ namespace RuntTimeUtest {
 __THREAD_LOCAL__ uint32_t g_lastModelId = UINT32_MAX;
 __THREAD_LOCAL__ uint32_t g_lastType = UINT32_MAX;
 __THREAD_LOCAL__ uint32_t g_lastLen = UINT32_MAX;
-__THREAD_LOCAL__ const void *g_lastDataPtr = nullptr;
+__THREAD_LOCAL__ const void* g_lastDataPtr = nullptr;
 __THREAD_LOCAL__ bool g_lastSuccess = false;
 
 class ProfilingAgentTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "ProfilingAgentTest SetUP" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "ProfilingAgentTest SetUP" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "ProfilingAgentTest Tear Down" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "ProfilingAgentTest Tear Down" << std::endl; }
 
     virtual void SetUp()
     {
@@ -41,10 +35,7 @@ protected:
         ResetLastInfo();
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
     void ResetLastInfo()
     {
@@ -54,17 +45,16 @@ protected:
         g_lastDataPtr = nullptr;
         g_lastSuccess = false;
     }
-
 };
 
-int32_t MsprofReporterCallbackSuccessStub(uint32_t moduleId, uint32_t type, void *data, uint32_t len)
+int32_t MsprofReporterCallbackSuccessStub(uint32_t moduleId, uint32_t type, void* data, uint32_t len)
 {
     g_lastModelId = moduleId;
     g_lastType = type;
     g_lastDataPtr = nullptr;
     g_lastLen = 0;
     if (type == MSPROF_REPORTER_REPORT) {
-        const ReporterData *reporterData = (const ReporterData *) data;
+        const ReporterData* reporterData = (const ReporterData*)data;
         if (reporterData != nullptr) {
             g_lastDataPtr = reporterData->data;
             g_lastLen = reporterData->dataLen;
@@ -74,14 +64,14 @@ int32_t MsprofReporterCallbackSuccessStub(uint32_t moduleId, uint32_t type, void
     return MSPROF_ERROR_NONE;
 }
 
-int32_t MsprofReporterCallbackErrorStub(uint32_t moduleId, uint32_t type, void *data, uint32_t len)
+int32_t MsprofReporterCallbackErrorStub(uint32_t moduleId, uint32_t type, void* data, uint32_t len)
 {
     g_lastModelId = moduleId;
     g_lastType = type;
     g_lastDataPtr = nullptr;
     g_lastLen = 0;
     if (type == MSPROF_REPORTER_REPORT) {
-        const ReporterData *reporterData = (const ReporterData *) data;
+        const ReporterData* reporterData = (const ReporterData*)data;
         if (reporterData != nullptr) {
             g_lastDataPtr = reporterData->data;
             g_lastLen = reporterData->dataLen;
@@ -203,4 +193,4 @@ TEST_F(ProfilingAgentTest, PROF_REPORT_FAIL)
     ret = ProfilingAgent::Instance().UnInit();
     ASSERT_EQ(ret, RT_ERROR_NONE);
 }
-}
+} // namespace RuntTimeUtest

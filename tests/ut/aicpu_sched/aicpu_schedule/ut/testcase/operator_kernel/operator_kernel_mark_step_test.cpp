@@ -20,27 +20,26 @@
 #include "aicpusd_model_execute.h"
 #include "operator_kernel_stub.h"
 
-
 using namespace AicpuSchedule;
-
 
 class OperatorKernelMarkStepTest : public OperatorKernelTest {
 protected:
     OperatorKernelMarkStep kernel_;
 };
 
-TEST_F(OperatorKernelMarkStepTest, MarkStep) {
+TEST_F(OperatorKernelMarkStepTest, MarkStep)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 1;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     MarkStepInfo stepInfo{2, 0, 0, (uint64_t)&mbuf};
     memset_s(stepInfo.reserved, MAX_MARK_STEP_RESERVE, 0, MAX_MARK_STEP_RESERVE);
     taskT.paraBase = (uint64_t)&stepInfo;
     int ret = kernel_.Compute(taskT, runContextT);
-    uint64_t *stepId = reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(stepInfo.stepIdAddr));
+    uint64_t* stepId = reinterpret_cast<uint64_t*>(static_cast<uintptr_t>(stepInfo.stepIdAddr));
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     EXPECT_EQ(*stepId, 3);
     taskT.paraBase = 0;
@@ -48,28 +47,30 @@ TEST_F(OperatorKernelMarkStepTest, MarkStep) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(OperatorKernelMarkStepTest, MarkStepNoModel) {
+TEST_F(OperatorKernelMarkStepTest, MarkStepNoModel)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 1;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     MarkStepInfo stepInfo{2, 0, 0, (uint64_t)&mbuf};
     memset_s(stepInfo.reserved, MAX_MARK_STEP_RESERVE, 0, MAX_MARK_STEP_RESERVE);
     taskT.paraBase = (uint64_t)&stepInfo;
     int ret = kernel_.Compute(taskT, runContextT);
-    uint64_t *stepId = reinterpret_cast<uint64_t *>(static_cast<uintptr_t>(stepInfo.stepIdAddr));
+    uint64_t* stepId = reinterpret_cast<uint64_t*>(static_cast<uintptr_t>(stepInfo.stepIdAddr));
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(OperatorKernelMarkStepTest, MarkStep_Overflow) {
+TEST_F(OperatorKernelMarkStepTest, MarkStep_Overflow)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 1;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     MarkStepInfo stepInfo{500, 2, 0, (uint64_t)&mbuf};
     memset_s(stepInfo.reserved, MAX_MARK_STEP_RESERVE, 0, MAX_MARK_STEP_RESERVE);
     taskT.paraBase = (uint64_t)&stepInfo;
@@ -78,13 +79,14 @@ TEST_F(OperatorKernelMarkStepTest, MarkStep_Overflow) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_OVERFLOW);
 }
 
-TEST_F(OperatorKernelMarkStepTest, MarkStep_Overflow1) {
+TEST_F(OperatorKernelMarkStepTest, MarkStep_Overflow1)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 1;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     MarkStepInfo stepInfo{1, std::numeric_limits<uint32_t>::max(), 0, (uint64_t)&mbuf};
     memset_s(stepInfo.reserved, MAX_MARK_STEP_RESERVE, 0, MAX_MARK_STEP_RESERVE);
     taskT.paraBase = (uint64_t)&stepInfo;
@@ -93,13 +95,14 @@ TEST_F(OperatorKernelMarkStepTest, MarkStep_Overflow1) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_OVERFLOW);
 }
 
-TEST_F(OperatorKernelMarkStepTest, MarkStep_NullHeadFlag) {
+TEST_F(OperatorKernelMarkStepTest, MarkStep_NullHeadFlag)
+{
     BUILD_SUCC_PREPARE_INFO();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 1;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     MarkStepInfo stepInfo{2, 0, 0, (uint64_t)&mbuf, 0UL, 1};
     memset_s(stepInfo.reserved, MAX_MARK_STEP_RESERVE, 0, MAX_MARK_STEP_RESERVE);
     taskT.paraBase = (uint64_t)&stepInfo;

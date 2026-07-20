@@ -45,89 +45,72 @@ using namespace cce::runtime;
 
 static uint16_t ind = 0;
 
-class CloudV2StreamTest : public testing::Test
-{
+class CloudV2StreamTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"CloudV2StreamTest start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "CloudV2StreamTest start" << std::endl; }
 
-    }
-
-    static void TearDownTestCase()
-    {
-        std::cout<<"CloudV2StreamTest end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "CloudV2StreamTest end" << std::endl; }
 
     virtual void SetUp()
     {
         (void)rtSetDevice(0);
         rtError_t error;
-        Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+        Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
         EXPECT_NE(rtInstance, nullptr);
 
         GlobalContainer::SetHardwareSocVersion("");
-        std::cout<<"ut test start."<<std::endl;
+        std::cout << "ut test start." << std::endl;
     }
 
     virtual void TearDown()
     {
-        std::cout<<"ut test end."<<std::endl;
+        std::cout << "ut test end." << std::endl;
         ind = 0;
         GlobalMockObject::verify();
         rtDeviceReset(0);
-        Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+        Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
         EXPECT_NE(rtInstance, nullptr);
     }
 
 public:
-    static Api        *oldApi_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static Api* oldApi_;
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
+
 private:
     rtChipType_t originType;
 };
 
-Api * CloudV2StreamTest::oldApi_ = nullptr;
+Api* CloudV2StreamTest::oldApi_ = nullptr;
 rtEvent_t CloudV2StreamTest::event_ = nullptr;
 void* CloudV2StreamTest::binHandle_ = nullptr;
-char  CloudV2StreamTest::function_ = 'a';
+char CloudV2StreamTest::function_ = 'a';
 uint32_t CloudV2StreamTest::binary_[32] = {};
 
-class SubmitFailSchedulerT : public FifoScheduler
-{
+class SubmitFailSchedulerT : public FifoScheduler {
 public:
-    Scheduler *test;
+    Scheduler* test;
 
-    void set(Scheduler *fifoScheduler)
-    {
-        test = fifoScheduler;
-    }
+    void set(Scheduler* fifoScheduler) { test = fifoScheduler; }
 
-    virtual rtError_t PushTask(TaskInfo *task)
+    virtual rtError_t PushTask(TaskInfo* task)
     {
         std::cout << "PushTask begin taskType = " << task->type << "ind = " << ind << std::endl;
-        if (0 == ind)
-        {
+        if (0 == ind) {
             ind = 1;
             std::cout << "PushTask begin taskType = " << task->type << "ind = " << ind << std::endl;
-            return  test->PushTask(task);
+            return test->PushTask(task);
             // return  FifoScheduler::PushTask(task);
         }
         return RT_ERROR_INVALID_VALUE;
     }
 
-    virtual TaskInfo * PopTask()
-    {
-        return test->PopTask();
-    }
+    virtual TaskInfo* PopTask() { return test->PopTask(); }
 };
 
-static void ApiTest_Stream_Cb(void *arg)
-{
-}
+static void ApiTest_Stream_Cb(void* arg) {}
 
 TEST_F(CloudV2StreamTest, stream_set_attribute2)
 {
@@ -136,7 +119,7 @@ TEST_F(CloudV2StreamTest, stream_set_attribute2)
     rtStream_t stream;
     rtError_t error;
     rtStreamAttrValue_t value;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
     value.failureMode = RT_STREAM_FAILURE_MODE_CONTINUE_ON_FAILURE; // 假设这是一个有效的失败模式值
@@ -167,10 +150,9 @@ TEST_F(CloudV2StreamTest, stream_set_attribute2)
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     Runtime::Instance()->SetDisableThread(olgFlag);
 }
-
 
 TEST_F(CloudV2StreamTest, stream_get_attribute2)
 {
@@ -179,11 +161,11 @@ TEST_F(CloudV2StreamTest, stream_get_attribute2)
     rtError_t error;
     rtStreamAttrValue_t setvalue;
     rtStreamAttrValue_t stmModeRet;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
 
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     error = rtsStreamGetAttribute(stream, RT_STREAM_ATTR_MAX, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     error = rtsStreamGetAttribute(nullptr, RT_STREAM_ATTR_MAX, &stmModeRet);
@@ -217,7 +199,7 @@ TEST_F(CloudV2StreamTest, stream_get_attribute2)
 
     error = rtStreamDestroy(stm);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     Runtime::Instance()->SetDisableThread(olgFlag);
 }
 
@@ -266,20 +248,20 @@ TEST_F(CloudV2StreamTest, Query_test)
 
 TEST_F(CloudV2StreamTest, TestIsTaskLimitedWithTaskFinished)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     Stream stream(device, 0);
     stream.waitTaskList_.push_back(512);
     TaskInfo task = {};
-    stream.SynchronizeDelayTime(0,2,0);
+    stream.SynchronizeDelayTime(0, 2, 0);
     bool ret = stream.IsTaskLimited(&task);
     ASSERT_EQ(ret, false);
 }
 
 TEST_F(CloudV2StreamTest, TestIsTaskLimitedWithTaskTypeUnexpected)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     Stream stream(device, 0);
     stream.waitTaskList_.push_back(512);
     TaskInfo aicoreTask = {};
@@ -321,7 +303,7 @@ TEST_F(CloudV2StreamTest, rtGetAvailStreamNum)
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     error = rtGetAvailStreamNum(RT_HUGE_STREAM, NULL);
@@ -331,9 +313,7 @@ TEST_F(CloudV2StreamTest, rtGetAvailStreamNum)
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halResourceInfoQuery)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halResourceInfoQuery).stubs().will(returnValue(code));
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -343,26 +323,27 @@ TEST_F(CloudV2StreamTest, rtGetAvailStreamNum)
 
 TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_01)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     rtStream_t stm;
     rtError_t error = rtStreamCreate(&stm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(stm);
 
     stream->posToTaskIdMapSize_ = 10U;
     stream->posToTaskIdMap_ = new uint16_t[stream->posToTaskIdMapSize_];
-    (void)memset_s(stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t),
-                   0xFF, stream->posToTaskIdMapSize_ * sizeof(uint16_t));
+    (void)memset_s(
+        stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t), 0xFF,
+        stream->posToTaskIdMapSize_ * sizeof(uint16_t));
     MOCKER_CPP(&Stream::IsSoftwareSqEnable).stubs().will(returnValue(true));
     uint16_t taskId = 0U;
     tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
-    const char_t *taskTypeName = nullptr;
+    const char_t* taskTypeName = nullptr;
     stream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
-    
+
     EXPECT_EQ(taskId, MAX_UINT16_NUM);
     EXPECT_EQ(taskType, TS_TASK_TYPE_RESERVED);
-    
+
     delete[] stream->posToTaskIdMap_;
     stream->posToTaskIdMap_ = nullptr;
     rtInstance->DeviceRelease(device);
@@ -370,27 +351,28 @@ TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_01)
 
 TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     rtStream_t stm;
     rtError_t error = rtStreamCreate(&stm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(stm);
 
     stream->posToTaskIdMapSize_ = 10U;
     stream->posToTaskIdMap_ = new uint16_t[stream->posToTaskIdMapSize_];
     stream->taskHead_ = 0U;
-    (void)memset_s(stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t),
-                   0xFF, stream->posToTaskIdMapSize_ * sizeof(uint16_t));
+    (void)memset_s(
+        stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t), 0xFF,
+        stream->posToTaskIdMapSize_ * sizeof(uint16_t));
     MOCKER_CPP(&Stream::IsSoftwareSqEnable).stubs().will(returnValue(true));
     uint16_t taskId = 0U;
     tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
-    const char_t *taskTypeName = nullptr;
+    const char_t* taskTypeName = nullptr;
     stream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
-    
+
     EXPECT_EQ(taskId, MAX_UINT16_NUM);
     EXPECT_EQ(taskType, TS_TASK_TYPE_RESERVED);
-    
+
     delete[] stream->posToTaskIdMap_;
     stream->posToTaskIdMap_ = nullptr;
     rtInstance->DeviceRelease(device);
@@ -398,24 +380,25 @@ TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_02)
 
 TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_03)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Device *device = rtInstance->DeviceRetain(0, 0);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Device* device = rtInstance->DeviceRetain(0, 0);
     rtStream_t stm;
     rtError_t error = rtStreamCreate(&stm, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stm);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(stm);
 
     stream->posToTaskIdMapSize_ = 10U;
     stream->posToTaskIdMap_ = new uint16_t[stream->posToTaskIdMapSize_];
     stream->taskHead_ = 0U;
-    (void)memset_s(stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t),
-                   0U, stream->posToTaskIdMapSize_ * sizeof(uint16_t));
+    (void)memset_s(
+        stream->posToTaskIdMap_, stream->posToTaskIdMapSize_ * sizeof(uint16_t), 0U,
+        stream->posToTaskIdMapSize_ * sizeof(uint16_t));
     MOCKER_CPP(&Device::IsDavidPlatform).stubs().will(returnValue(true));
     MOCKER_CPP(&Stream::IsSoftwareSqEnable).stubs().will(returnValue(false));
     MOCKER_CPP(&Stream::IsAutoSplitSq).stubs().will(returnValue(false));
     uint16_t taskId = 0U;
     tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
-    const char_t *taskTypeName = nullptr;
+    const char_t* taskTypeName = nullptr;
     tagTaskInfoStru mockTaskInfo = {};
     mockTaskInfo.typeName = "KERNEL_AICORE";
     mockTaskInfo.type = TS_TASK_TYPE_KERNEL_AICORE;
@@ -424,7 +407,7 @@ TEST_F(CloudV2StreamTest, GetCurrentRunningTaskInfo_03)
     stream->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
     EXPECT_EQ(taskId, 0U);
     EXPECT_EQ(taskType, TS_TASK_TYPE_KERNEL_AICORE);
-    
+
     delete[] stream->posToTaskIdMap_;
     stream->posToTaskIdMap_ = nullptr;
     rtInstance->DeviceRelease(device);

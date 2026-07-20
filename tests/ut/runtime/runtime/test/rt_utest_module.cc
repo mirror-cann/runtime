@@ -24,23 +24,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ModuleTest : public testing::Test
-{
+class ModuleTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
+    static void TearDownTestCase() {}
 
-    static void TearDownTestCase()
-    {
-
-    }
-
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -49,8 +39,7 @@ protected:
     }
 };
 
-class TestProgram : public Program
-{
+class TestProgram : public Program {
 public:
     TestProgram()
     {
@@ -60,22 +49,10 @@ public:
         extractResult_ = RT_ERROR_NONE;
     }
 
-    uint32_t SymbolOffset(const void *symbol)
-    {
-        return offset_;
-    }
-    uint32_t LoadSize()
-    {
-        return loadSize_;
-    }
-    rtError_t LoadExtract(void *output, uint32_t size)
-    {
-        return extractResult_;
-    }
-    void *Data()
-    {
-        return binary_;
-    }
+    uint32_t SymbolOffset(const void* symbol) { return offset_; }
+    uint32_t LoadSize() { return loadSize_; }
+    rtError_t LoadExtract(void* output, uint32_t size) { return extractResult_; }
+    void* Data() { return binary_; }
 
     uint32_t offset_;
     uint32_t loadSize_;
@@ -86,8 +63,8 @@ TEST_F(ModuleTest, TearDownIsIdempotent)
 {
     // Empty-resource module verifies host state reset and repeated TearDown no-op without entering device free paths.
     Module module(nullptr);
-    module.baseAddrAlign_ = reinterpret_cast<void *>(0x1000);
-    module.baseFMAddr_ = reinterpret_cast<void *>(0x2000);
+    module.baseAddrAlign_ = reinterpret_cast<void*>(0x1000);
+    module.baseFMAddr_ = reinterpret_cast<void*>(0x2000);
     module.baseAddrSize_ = 64U;
     module.programId_ = 1U;
 

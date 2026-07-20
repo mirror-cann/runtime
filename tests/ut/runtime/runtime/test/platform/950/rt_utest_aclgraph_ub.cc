@@ -71,8 +71,8 @@ static drvError_t StubHalMemFree(void* dptr)
     return DRV_ERROR_NONE;
 }
 
-static rtError_t StubHostMemAlloc_Success(void** dptr, const uint64_t size, 
-    const uint32_t deviceId, const uint16_t moduleId, const uint32_t vaFlag)
+static rtError_t StubHostMemAlloc_Success(
+    void** dptr, const uint64_t size, const uint32_t deviceId, const uint16_t moduleId, const uint32_t vaFlag)
 {
     if (dptr != nullptr) {
         *dptr = malloc(size);
@@ -110,8 +110,7 @@ static void SetupJettyDriverMocks(Driver* driver)
 
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), 
-              outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
         .will(returnValue(RT_ERROR_NONE));
     MOCKER(halGetSocVersion)
         .stubs()
@@ -384,10 +383,7 @@ TEST_F(StreamJettyContextTest, GetNextWqeBuffer_EmptyBuffer)
 
 class StreamJettyHandlerTest : public testing::Test {
 protected:
-    void TearDown() override
-    {
-        Runtime::Instance()->SetConnectUbFlag(false);
-    }
+    void TearDown() override { Runtime::Instance()->SetConnectUbFlag(false); }
 };
 
 TEST_F(StreamJettyHandlerTest, IsUbDmaCopyType_H2D_WithUbFlag)
@@ -460,15 +456,12 @@ TEST_F(StreamJettyHandlerTest, GetJettyTypeFromTask_ValidTask)
     TaskInfo taskInfo = {};
     taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
     JettyType result = StreamJettyHandler::GetJettyTypeFromTask(&taskInfo);
-EXPECT_EQ(result, JettyType::JETTY_TYPE_H2D);
+    EXPECT_EQ(result, JettyType::JETTY_TYPE_H2D);
 }
 
 class JettyDavidTestBase : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        GlobalMockObject::reset();
-    }
+    static void SetUpTestCase() { GlobalMockObject::reset(); }
 
     static void TearDownTestCase()
     {
@@ -1082,14 +1075,13 @@ static void SetupMocksWithoutHostMemAlloc(Driver* driver)
 {
     GlobalMockObject::reset();
     MOCKER(halGetDeviceInfo).stubs().will(invoke(StubDavidGetDeviceInfo));
-    
+
     int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
     char* socVer = "Ascend950PR_9599";
 
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), 
-              outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
         .will(returnValue(RT_ERROR_NONE));
     MOCKER(halGetSocVersion)
         .stubs()
@@ -1177,7 +1169,8 @@ protected:
 TEST_F(NpuDriverJettyTest, AsyncDmaJettyCreate_Success)
 {
     uint64_t handle = 0;
-    rtError_t error = stream_->Device_()->Driver_()->AsyncDmaJettyCreate(0, 1, 2048, TRS_ASYNC_JETTY_HOST_DEVICE, &handle);
+    rtError_t error =
+        stream_->Device_()->Driver_()->AsyncDmaJettyCreate(0, 1, 2048, TRS_ASYNC_JETTY_HOST_DEVICE, &handle);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(handle, 0ULL);
 }
@@ -1185,7 +1178,8 @@ TEST_F(NpuDriverJettyTest, AsyncDmaJettyCreate_Success)
 TEST_F(NpuDriverJettyTest, AsyncDmaJettyCreate_D2D_Success)
 {
     uint64_t handle = 0;
-    rtError_t error = stream_->Device_()->Driver_()->AsyncDmaJettyCreate(0, 1, 2048, TRS_ASYNC_JETTY_DEVICE_TO_DEVICE, &handle);
+    rtError_t error =
+        stream_->Device_()->Driver_()->AsyncDmaJettyCreate(0, 1, 2048, TRS_ASYNC_JETTY_DEVICE_TO_DEVICE, &handle);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(handle, 0ULL);
 }
@@ -1221,7 +1215,7 @@ TEST_F(NpuDriverJettyTest, AsyncDmaWqeConvert_Normal_Success)
     input.normal.src = buffer;
     input.normal.dst = buffer;
     input.normal.len = 1024;
-    
+
     AsyncWqeOutputPara output = {};
     // Call through Driver interface which is already mocked
     rtError_t error = stream_->Device_()->Driver_()->AsyncDmaWqeConvert(0, &input, &output);
@@ -1244,7 +1238,7 @@ TEST_F(NpuDriverJettyTest, AsyncDmaWqeConvert_Batch_Success)
     input.batch.dst = dstArr;
     input.batch.len = lenArr;
     input.batch.count = 2;
-    
+
     AsyncWqeOutputPara output = {};
     rtError_t error = stream_->Device_()->Driver_()->AsyncDmaWqeConvert(0, &input, &output);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1267,7 +1261,7 @@ TEST_F(NpuDriverJettyTest, AsyncDmaWqeConvert_2D_Success)
     input.matrix2d.width = 256;
     input.matrix2d.height = 256;
     input.matrix2d.fixedSize = 0;
-    
+
     AsyncWqeOutputPara output = {};
     rtError_t error = stream_->Device_()->Driver_()->AsyncDmaWqeConvert(0, &input, &output);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1282,7 +1276,7 @@ TEST_F(NpuDriverJettyTest, AsyncDmaWqeFill_Success)
     uint8_t wqeBuffer[64] = {0};
     fillInfo.srcWqe = wqeBuffer;
     fillInfo.size = 64;
-    
+
     rtError_t error = stream_->Device_()->Driver_()->AsyncDmaWqeFill(0, &fillInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1304,11 +1298,11 @@ TEST_F(NpuDriverJettyTest, GetOrCreateStreamJettyContext_Success)
     EXPECT_NE(context, nullptr);
 }
 
-static void SetupCreateAndAppendWqeTest(StreamJettyContext& context, TaskInfo& taskInfo,
-    void* src, void* dst, uint64_t size, uint32_t id)
+static void SetupCreateAndAppendWqeTest(
+    StreamJettyContext& context, TaskInfo& taskInfo, void* src, void* dst, uint64_t size, uint32_t id)
 {
     SetupContextWithBuffer(context);
-    
+
     taskInfo = {};
     taskInfo.u.memcpyAsyncTaskInfo.src = src;
     taskInfo.u.memcpyAsyncTaskInfo.destPtr = dst;
@@ -1320,11 +1314,11 @@ static void SetupCreateAndAppendWqeTest(StreamJettyContext& context, TaskInfo& t
 TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext context;
     TaskInfo taskInfo;
-    SetupCreateAndAppendWqeTest(context, taskInfo,
-        reinterpret_cast<void*>(0x10000), reinterpret_cast<void*>(0x20000), 1024, 1);
+    SetupCreateAndAppendWqeTest(
+        context, taskInfo, reinterpret_cast<void*>(0x10000), reinterpret_cast<void*>(0x20000), 1024, 1);
     taskInfo.stream = stream_;
 
     AsyncWqeInputPara input = {};
@@ -1336,16 +1330,16 @@ TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_Success)
 TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_LargeSize)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext context;
     SetupContextWithBuffer(context);
-    
+
     TaskInfo taskInfo = {};
     taskInfo.u.memcpyAsyncTaskInfo.src = reinterpret_cast<void*>(0x10000);
     taskInfo.u.memcpyAsyncTaskInfo.destPtr = reinterpret_cast<void*>(0x20000);
     taskInfo.u.memcpyAsyncTaskInfo.size = 300 * 1024 * 1024;
     taskInfo.id = 1;
-    
+
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
     taskInfo.stream = stream_;
@@ -1360,11 +1354,11 @@ TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_ConvertFail)
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeConvert)
         .stubs()
         .will(returnValue(RT_ERROR_INVALID_VALUE));
-    
+
     StreamJettyContext context;
     TaskInfo taskInfo;
-    SetupCreateAndAppendWqeTest(context, taskInfo,
-        reinterpret_cast<void*>(0x10000), reinterpret_cast<void*>(0x20000), 1024, 1);
+    SetupCreateAndAppendWqeTest(
+        context, taskInfo, reinterpret_cast<void*>(0x10000), reinterpret_cast<void*>(0x20000), 1024, 1);
     taskInfo.stream = stream_;
 
     AsyncWqeInputPara input = {};
@@ -1410,10 +1404,10 @@ TEST_F(NpuDriverJettyTest, FillNopWqeForPartialBuffer_Success)
     rtError_t ctxError = StreamJettyHandler::GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D, context);
     ASSERT_EQ(ctxError, RT_ERROR_NONE);
     ASSERT_NE(context, nullptr);
-    
+
     // Set filledWqeCount less than capacity to trigger NOP fill
     context->filledWqeCount = 100;
-    
+
     rtError_t error = StreamJettyHandler::FillNopWqeForPartialBuffer(stream_, context);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1426,7 +1420,7 @@ TEST_F(JettyPoolTest, CreateJetty_QueryFail)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     JettyInfo jettyInfo;
     rtError_t error = jettyPool_->CreateJetty(JettyType::JETTY_TYPE_H2D, 2048, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1438,7 +1432,7 @@ TEST_F(JettyPoolTest, PreAllocJetty_PoolExhausted)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     // Fill the pool beyond limit
     for (uint32_t i = 0; i < JETTY_POOL_H2D_MAX_SIZE + 5; ++i) {
         rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
@@ -1457,7 +1451,7 @@ TEST_F(JettyPoolTest, FreeJetty_HandleNotFound)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     rtError_t error = jettyPool_->FreeJetty(99999, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
@@ -1468,7 +1462,7 @@ TEST_F(JettyPoolTest, FreeLargeDepthJetty_HandleNotFound)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     rtError_t error = jettyPool_->FreeLargeDepthJetty(99999);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
@@ -1479,10 +1473,10 @@ TEST_F(JettyPoolTest, FindJettyByState_BoundState)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     ASSERT_EQ(error, RT_ERROR_NONE);
-    
+
     JettyInfo jettyInfo2;
     error = jettyPool_->AllocJetty(JettyType::JETTY_TYPE_H2D, jettyInfo2);
     ASSERT_EQ(error, RT_ERROR_NONE);
@@ -1495,14 +1489,14 @@ TEST_F(JettyPoolTest, FindJettyByHandle_D2DPool)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     rtError_t error = jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_D2D);
     ASSERT_EQ(error, RT_ERROR_NONE);
 
     JettyInfo* freeInfo = nullptr;
     ASSERT_TRUE(jettyPool_->FindJettyByState(JettyType::JETTY_TYPE_D2D, JettyState::FREE, freeInfo));
     ASSERT_NE(freeInfo, nullptr);
-    
+
     JettyInfo* foundInfo = nullptr;
     bool found = jettyPool_->FindJettyByHandle(freeInfo->handle, foundInfo);
     EXPECT_TRUE(found);
@@ -1515,11 +1509,11 @@ TEST_F(JettyPoolTest, FindJettyByHandle_LargePool)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     JettyInfo jettyInfo;
     rtError_t error = jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, jettyInfo);
     ASSERT_EQ(error, RT_ERROR_NONE);
-    
+
     JettyInfo* foundInfo = nullptr;
     bool found = jettyPool_->FindJettyByHandle(jettyInfo.handle, foundInfo);
     EXPECT_TRUE(found);
@@ -1532,15 +1526,15 @@ TEST_F(JettyPoolTest, Clear_AllPools)
     GlobalMockObject::reset();
     Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     SetupJettyDriverMocks(driver);
-    
+
     // Add jets to all pools
     ASSERT_EQ(jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_H2D), RT_ERROR_NONE);
     ASSERT_EQ(jettyPool_->PreAllocJetty(JettyType::JETTY_TYPE_D2D), RT_ERROR_NONE);
     JettyInfo largeInfo;
     ASSERT_EQ(jettyPool_->AllocLargeDepthJetty(JettyType::JETTY_TYPE_H2D, 4096, largeInfo), RT_ERROR_NONE);
-    
+
     jettyPool_->Clear();
-    
+
     JettyInfo* foundInfo = nullptr;
     EXPECT_FALSE(jettyPool_->FindJettyByHandle(0, foundInfo));
     EXPECT_FALSE(jettyPool_->FindJettyByHandle(largeInfo.handle, foundInfo));
@@ -1566,17 +1560,17 @@ TEST_F(NpuDriverJettyTest, GetOrCreateStreamJettyContext_ReserveFail)
 TEST_F(NpuDriverJettyTest, BindJettyForStream_LargeDepth_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext* context = nullptr;
     rtError_t ctxError = StreamJettyHandler::GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D, context);
     ASSERT_EQ(ctxError, RT_ERROR_NONE);
     ASSERT_NE(context, nullptr);
-    
+
     // Set large depth flag
     context->isLargeDepth = true;
     context->capacity = 4096;
     context->filledWqeCount = 100;
-    
+
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     rtError_t error = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
@@ -1588,18 +1582,18 @@ TEST_F(NpuDriverJettyTest, BindJettyForStream_AlreadyBound)
 {
     GlobalMockObject::reset();
     SetupJettyDriverMocks(stream_->Device_()->Driver_());
-    
+
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     StreamJettyContext* context = nullptr;
     StreamJettyHandler::GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D, context);
     ASSERT_NE(context, nullptr);
-    
+
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
-    
+
     // First bind
     rtError_t error1 = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
     ASSERT_EQ(error1, RT_ERROR_NONE);
-    
+
     // Second bind - should return success without action
     rtError_t error2 = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error2, RT_ERROR_NONE);
@@ -1618,20 +1612,20 @@ TEST_F(NpuDriverJettyTest, UnbindJettyForStream_Success)
 TEST_F(NpuDriverJettyTest, UnbindJettyForStream_LargeDepth_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext* context = nullptr;
     rtError_t ctxError = StreamJettyHandler::GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D, context);
     ASSERT_EQ(ctxError, RT_ERROR_NONE);
     context->isLargeDepth = true;
     context->capacity = 4096;
     context->filledWqeCount = 100;
-    
+
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
-    
+
     rtError_t bindError = mgr->BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
     ASSERT_EQ(bindError, RT_ERROR_NONE);
-    
+
     rtError_t error = mgr->UnbindJettyForStream(streamId, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1640,7 +1634,7 @@ TEST_F(NpuDriverJettyTest, UnbindJettyForStream_LargeDepth_Success)
 TEST_F(NpuDriverJettyTest, UnbindJettyForStream_NoContext)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
     rtError_t error = mgr->UnbindJettyForStream(99999, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1717,16 +1711,16 @@ TEST_F(NpuDriverJettyTest, HandleUbDmaTask_InvalidCopyType)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     Runtime::Instance()->SetConnectUbFlag(true);
-    
+
     TaskInfo taskInfo = {};
     taskInfo.stream = stream_;
-    taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2D_SDMA;  // Not UB type for H2D/D2H
-    
+    taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_D2D_SDMA; // Not UB type for H2D/D2H
+
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
     rtError_t error = StreamJettyHandler::HandleUbDmaTask(&taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
-    
+
     Runtime::Instance()->SetConnectUbFlag(false);
 }
 
@@ -1744,14 +1738,14 @@ TEST_F(NpuDriverJettyTest, FillWqeToDevice_Success)
 {
     GlobalMockObject::reset();
     SetupJettyDriverMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext context;
     SetupContextWithBuffer(context);
     context.filledWqeCount = 100;
-    
+
     JettyInfo jettyInfo;
     jettyInfo.handle = 1;
-    
+
     rtError_t error = StreamJettyHandler::FillWqeToDevice(stream_, &context, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1770,7 +1764,7 @@ TEST_F(NpuDriverJettyTest, UpdateUbdmaSqeWithJettyInfo_Success)
 {
     StreamJettyContext context;
     JettyInfo jettyInfo;
-    
+
     // No taskWqeCounts - should return early with success
     rtError_t error = StreamJettyHandler::UpdateUbdmaSqeWithJettyInfo(nullptr, &context, jettyInfo);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
@@ -1799,7 +1793,7 @@ TEST_F(NpuDriverJettyTest, AsyncDmaJettyCreate_InvalidDepth)
 TEST_F(NpuDriverJettyTest, JettyPool_CreateJetty_H2D_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyPool pool(0);
     JettyInfo jettyInfo;
     rtError_t error = pool.CreateJetty(JettyType::JETTY_TYPE_H2D, 2048, jettyInfo);
@@ -1812,9 +1806,9 @@ TEST_F(NpuDriverJettyTest, JettyPool_CreateJetty_H2D_Success)
 TEST_F(NpuDriverJettyTest, JettyPool_ReserveJetty_FromFreePool)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyPool pool(0);
-    
+
     rtError_t error1 = pool.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error1, RT_ERROR_NONE);
 
@@ -1822,7 +1816,7 @@ TEST_F(NpuDriverJettyTest, JettyPool_ReserveJetty_FromFreePool)
     ASSERT_TRUE(pool.FindJettyByState(JettyType::JETTY_TYPE_H2D, JettyState::FREE, freeInfo));
     ASSERT_NE(freeInfo, nullptr);
     pool.FreeJettyLazy(freeInfo->handle);
-    
+
     rtError_t error2 = pool.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error2, RT_ERROR_NONE);
 }
@@ -1832,7 +1826,7 @@ TEST_F(NpuDriverJettyTest, JettyPool_ReserveJetty_FromFreePool)
 TEST_F(NpuDriverJettyTest, JettyManager_ReserveJetty_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyManager mgr(0);
     rtError_t error = mgr.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1841,7 +1835,7 @@ TEST_F(NpuDriverJettyTest, JettyManager_ReserveJetty_Success)
 TEST_F(NpuDriverJettyTest, JettyManager_BindJettyForStream_NoContext)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyManager mgr(0);
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     rtError_t error = mgr.BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
@@ -1884,8 +1878,7 @@ TEST_F(NpuDriverJettyTest, Handler_HandleUbDmaTask_H2D_Success)
     taskInfo.u.memcpyAsyncTaskInfo.size = 1024;
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
-    rtError_t error2 = StreamJettyHandler::HandleUbDmaTask(
-        &taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
+    rtError_t error2 = StreamJettyHandler::HandleUbDmaTask(&taskInfo, JettyType::JETTY_TYPE_H2D, &input, &output);
     EXPECT_EQ(error2, RT_ERROR_NONE);
 
     Runtime::Instance()->SetConnectUbFlag(false);
@@ -1897,7 +1890,7 @@ TEST_F(NpuDriverJettyTest, Driver_AsyncDmaJettyQuery_Success)
 {
     uint64_t handle = 0;
     stream_->Device_()->Driver_()->AsyncDmaJettyCreate(0, 1, 2048, TRS_ASYNC_JETTY_HOST_DEVICE, &handle);
-    
+
     uint32_t dieId = 0, functionId = 0, jettyId = 0;
     rtError_t error = stream_->Device_()->Driver_()->AsyncDmaJettyQuery(0, handle, dieId, functionId, jettyId);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1910,7 +1903,7 @@ TEST_F(NpuDriverJettyTest, Driver_AsyncDmaWqeConvert_NOP)
     input.wqeBuffer = reinterpret_cast<uint8_t*>(0x10000);
     input.size = 64;
     input.nop.nopCnt = 5;
-    
+
     AsyncWqeOutputPara output = {};
     rtError_t error = stream_->Device_()->Driver_()->AsyncDmaWqeConvert(0, &input, &output);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1930,10 +1923,10 @@ TEST_F(NpuDriverJettyTest, Handler_IsUbDmaCopyType_NonUB)
 TEST_F(NpuDriverJettyTest, Handler_FillNopWqeForPartialBuffer_ValidContext)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext context;
     context.filledWqeCount = 0;
-    
+
     rtError_t error = StreamJettyHandler::FillNopWqeForPartialBuffer(stream_, &context);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1942,11 +1935,11 @@ TEST_F(NpuDriverJettyTest, Handler_FillNopWqeForPartialBuffer_WithBuffers)
 {
     GlobalMockObject::reset();
     SetupJettyDriverMocks(stream_->Device_()->Driver_());
-    
+
     StreamJettyContext context;
     SetupContextWithBuffer(context);
     context.filledWqeCount = 100;
-    
+
     rtError_t error = StreamJettyHandler::FillNopWqeForPartialBuffer(stream_, &context);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1960,7 +1953,7 @@ TEST_F(NpuDriverJettyTest, Context_ExpandCapacity_Success)
     MOCKER(halMemFree).stubs().will(invoke(StubHalMemFree));
     StreamJettyContext context;
     rtError_t error = context.ExpandCapacity(stream_->Device_()->Driver_());
-    
+
     EXPECT_EQ(error, RT_ERROR_MEMORY_ALLOCATION);
 }
 
@@ -1976,10 +1969,10 @@ TEST_F(NpuDriverJettyTest, Context_ExpandCapacity_ExceedsMaxDepth)
 TEST_F(NpuDriverJettyTest, JettyManager_AllocJettyWithRetry_Success)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyManager mgr(0);
     mgr.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
-    
+
     JettyInfo jettyInfo2;
     rtError_t error = mgr.AllocJettyWithRetry(JettyType::JETTY_TYPE_H2D, 0, nullptr, jettyInfo2);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1990,12 +1983,12 @@ TEST_F(NpuDriverJettyTest, JettyManager_BindJettyForStream_Success)
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER(halMemAlloc).stubs().will(invoke(StubHalMemAlloc));
     MOCKER(halMemFree).stubs().will(invoke(StubHalMemFree));
-    
+
     JettyManager mgr(0);
     StreamJettyContext* ctx = mgr.GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
     ASSERT_NE(ctx, nullptr);
     ctx->jettyHandle = 0U;
-    
+
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     rtError_t error = mgr.BindJettyForStream(streamId, nullptr, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2004,7 +1997,7 @@ TEST_F(NpuDriverJettyTest, JettyManager_BindJettyForStream_Success)
 TEST_F(NpuDriverJettyTest, JettyManager_GetJettyInfoForStream_NotFound)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
-    
+
     JettyManager mgr(0);
     JettyInfo jettyInfo;
     rtError_t error = mgr.GetJettyInfoForStream(99999, JettyType::JETTY_TYPE_H2D, jettyInfo);
@@ -2016,20 +2009,20 @@ TEST_F(NpuDriverJettyTest, JettyManager_DestroyStreamJettyContext_Success)
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER(halMemAlloc).stubs().will(invoke(StubHalMemAlloc));
     MOCKER(halMemFree).stubs().will(invoke(StubHalMemFree));
-    
+
     JettyManager mgr(0);
     mgr.GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
-    
+
     int32_t streamId = static_cast<int32_t>(stream_->Id_());
     mgr.DeleteStreamJettyContext(streamId, JettyType::JETTY_TYPE_H2D);
-    
+
     StreamJettyContext* ctx = mgr.GetStreamJettyContext(streamId, JettyType::JETTY_TYPE_H2D);
     EXPECT_EQ(ctx, nullptr);
 }
 
 static rtError_t StubCreateAsyncDmaWqeSuccess(
-    Driver* drv, uint32_t devId, const AsyncDmaWqeInputInfo& input,
-    AsyncDmaWqeOutputInfo* output, bool isUbMode, bool isSqeUpdate)
+    Driver* drv, uint32_t devId, const AsyncDmaWqeInputInfo& input, AsyncDmaWqeOutputInfo* output, bool isUbMode,
+    bool isSqeUpdate)
 {
     if (output != nullptr) {
         output->dieId = 1;
@@ -2055,9 +2048,11 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDma_SoftwareSqUb_Success)
     GlobalMockObject::reset();
     SetupJettyDriverMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeConvert)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeFill)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
 
     stream_->SetSoftWareSqEnable();
     uint8_t* sqBuf = reinterpret_cast<uint8_t*>(malloc(sizeof(rtDavidSqe_t) * 4));
@@ -2092,7 +2087,8 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDmaForTaskUpdate_SoftwareSqUb_NonPersiste
     updateStream->SetSqBaseAddr(reinterpret_cast<uint64_t>(updateSqBuf));
 
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::CreateAsyncDmaWqe)
-        .stubs().will(invoke(StubCreateAsyncDmaWqeSuccess));
+        .stubs()
+        .will(invoke(StubCreateAsyncDmaWqeSuccess));
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stream_;
@@ -2118,9 +2114,11 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDmaForTaskUpdate_SoftwareSqUb_Persistent_
     GlobalMockObject::reset();
     SetupJettyDriverMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeConvert)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeFill)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
 
     stream_->SetSoftWareSqEnable();
     uint8_t* sqBuf = reinterpret_cast<uint8_t*>(malloc(sizeof(rtDavidSqe_t) * 4));
@@ -2163,7 +2161,8 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDmaForTaskUpdate_SoftwareSqPcie_Success)
     updateStream->SetSqBaseAddr(reinterpret_cast<uint64_t>(updateSqBuf));
 
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::MemConvertAddr)
-        .stubs().will(invoke(StubMemConvertAddrSuccess));
+        .stubs()
+        .will(invoke(StubMemConvertAddrSuccess));
 
     TaskInfo taskInfo = {};
     taskInfo.stream = stream_;
@@ -2178,8 +2177,8 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDmaForTaskUpdate_SoftwareSqPcie_Success)
 
     rtError_t error = ConvertAsyncDmaForTaskUpdate(&taskInfo, &updateTaskInfo);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    EXPECT_EQ(taskInfo.u.memcpyAsyncTaskInfo.size,
-        static_cast<uint64_t>(taskInfo.u.memcpyAsyncTaskInfo.dmaAddr.fixed_size));
+    EXPECT_EQ(
+        taskInfo.u.memcpyAsyncTaskInfo.size, static_cast<uint64_t>(taskInfo.u.memcpyAsyncTaskInfo.dmaAddr.fixed_size));
 
     Runtime::Instance()->SetConnectUbFlag(true);
     free(updateSqBuf);
@@ -2238,9 +2237,7 @@ TEST_F(NpuDriverJettyTest, Context_RoundUpCapacity_AllBranches)
             .stubs()
             .with(outBoundP(&allocBuf, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER_CPP_VIRTUAL(drv, &Driver::AsyncDmaWqeConvert)
-            .stubs()
-            .will(returnValue(RT_ERROR_NONE));
+        MOCKER_CPP_VIRTUAL(drv, &Driver::AsyncDmaWqeConvert).stubs().will(returnValue(RT_ERROR_NONE));
 
         StreamJettyContext ctx;
         ctx.filledWqeCount = 4096;
@@ -2278,9 +2275,7 @@ TEST_F(NpuDriverJettyTest, Context_RoundUpCapacity_AllBranches)
             .stubs()
             .with(outBoundP(&allocBuf, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER_CPP_VIRTUAL(drv, &Driver::AsyncDmaWqeConvert)
-            .stubs()
-            .will(returnValue(RT_ERROR_INVALID_VALUE));
+        MOCKER_CPP_VIRTUAL(drv, &Driver::AsyncDmaWqeConvert).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
         StreamJettyContext ctx;
         ctx.filledWqeCount = 4096;
@@ -2294,8 +2289,8 @@ TEST_F(NpuDriverJettyTest, Context_RoundUpCapacity_AllBranches)
     }
 }
 
-static rtError_t StubHandleUbDmaTaskFixedCntOne(const TaskInfo *task,
-    JettyType jettyType, AsyncWqeInputPara *input, AsyncWqeOutputPara *output)
+static rtError_t StubHandleUbDmaTaskFixedCntOne(
+    const TaskInfo* task, JettyType jettyType, AsyncWqeInputPara* input, AsyncWqeOutputPara* output)
 {
     (void)task;
     (void)jettyType;
@@ -2313,8 +2308,7 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDma2D_SoftwareSq_FixedCntOne)
     Runtime::Instance()->SetConnectUbFlag(true);
     stream_->SetSoftWareSqEnable();
 
-    MOCKER_CPP(&StreamJettyHandler::HandleUbDmaTask)
-        .stubs().will(invoke(StubHandleUbDmaTaskFixedCntOne));
+    MOCKER_CPP(&StreamJettyHandler::HandleUbDmaTask).stubs().will(invoke(StubHandleUbDmaTaskFixedCntOne));
 
     const uint64_t width = 256U;
     const uint64_t height = 128U;
@@ -2322,8 +2316,8 @@ TEST_F(NpuDriverJettyTest, ConvertAsyncDma2D_SoftwareSq_FixedCntOne)
     taskInfo.stream = stream_;
     taskInfo.u.memcpyAsyncTaskInfo.copyType = RT_MEMCPY_DIR_H2D;
 
-    rtError_t error = ConvertAsyncDma2D(&taskInfo, reinterpret_cast<void*>(0x20000), width,
-        reinterpret_cast<void*>(0x10000), width, width, height, 0U);
+    rtError_t error = ConvertAsyncDma2D(
+        &taskInfo, reinterpret_cast<void*>(0x20000), width, reinterpret_cast<void*>(0x10000), width, width, height, 0U);
 
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(taskInfo.u.memcpyAsyncTaskInfo.size, width * height);
@@ -2363,7 +2357,8 @@ TEST_F(CaptureModelJettyTest, ReleaseJetty_LargeDepth_UnbindFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyDestroy)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     captureModel_->ModelPushFrontStream(stream_);
     SetupJettyContext(stream_, JettyType::JETTY_TYPE_H2D, 100, true);
@@ -2379,7 +2374,8 @@ TEST_F(CaptureModelJettyTest, ReleaseJetty_NormalDepth_ReleaseByHandleFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyDestroy)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     captureModel_->ModelPushFrontStream(stream_);
     SetupJettyContext(stream_, JettyType::JETTY_TYPE_H2D, 100, false);
@@ -2395,7 +2391,8 @@ TEST_F(CaptureModelJettyTest, ReleaseAllJetty_WithFailures)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyDestroy)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     Runtime::Instance()->SetConnectUbFlag(true);
     captureModel_->ModelPushFrontStream(stream_);
@@ -2413,7 +2410,8 @@ TEST_F(NpuDriverJettyTest, GetOrCreateStreamJettyContext_ReserveJettyFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyCreate)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     JettyManager mgr(0);
     StreamJettyContext* ctx = mgr.GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
@@ -2424,9 +2422,11 @@ TEST_F(NpuDriverJettyTest, CreateJetty_QueryFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyCreate)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyQuery)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     JettyPool pool(0);
     JettyInfo info;
@@ -2438,7 +2438,8 @@ TEST_F(NpuDriverJettyTest, ReleaseJetty_DestroyFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyDestroy)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     JettyPool pool(0);
     pool.PreAllocJetty(JettyType::JETTY_TYPE_H2D);
@@ -2453,11 +2454,14 @@ TEST_F(NpuDriverJettyTest, DestroyLargeDepthJetty_DestroyFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyCreate)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyQuery)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyDestroy)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     JettyPool pool(0);
     JettyInfo info;
@@ -2470,7 +2474,8 @@ TEST_F(NpuDriverJettyTest, FillNopWqeOnCaptureEnd_FillNopFailed)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeConvert)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
     StreamJettyContext* context = mgr->GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
@@ -2486,7 +2491,8 @@ TEST_F(NpuDriverJettyTest, FillNopWqeOnCaptureEnd_RoundUpCapacityFailed)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeConvert)
-        .stubs().will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE));
 
     JettyManager* mgr = stream_->Device_()->GetJettyManager();
     StreamJettyContext* context = mgr->GetOrCreateStreamJettyContext(stream_, JettyType::JETTY_TYPE_H2D);
@@ -2503,7 +2509,8 @@ TEST_F(NpuDriverJettyTest, CreateAndAppendWqe_GrowBufferFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::HostMemAlloc)
-        .stubs().will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
+        .stubs()
+        .will(returnValue(RT_ERROR_MEMORY_ALLOCATION));
 
     StreamJettyContext context;
     context.capacity = StreamJettyContext::JETTY_DEPTH_MAX;
@@ -2520,7 +2527,8 @@ TEST_F(NpuDriverJettyTest, FillWqeToDevice_AsyncDmaWqeFillFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaWqeFill)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     StreamJettyContext context;
     SetupContextWithBuffer(context);
@@ -2536,7 +2544,8 @@ TEST_F(NpuDriverJettyTest, ReleaseBuffers_HostMemFreeFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::HostMemFree)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     StreamJettyContext context;
     SetupContextWithBuffer(context);
@@ -2548,7 +2557,8 @@ TEST_F(NpuDriverJettyTest, AcquireJettyWithRetry_RecycleFail)
 {
     FullResetAndSetupMocks(stream_->Device_()->Driver_());
     MOCKER_CPP_VIRTUAL(stream_->Device_()->Driver_(), &Driver::AsyncDmaJettyCreate)
-        .stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     JettyPool pool(0);
     JettyInfo info;

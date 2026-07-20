@@ -9,26 +9,23 @@
  */
 #include "profiler.h"
 
-int shm_open(const char *name, int oflag, mode_t mode)
-{
-    return 0;
-}
+int shm_open(const char* name, int oflag, mode_t mode) { return 0; }
 
 namespace Hiva {
-    ProfilerAgent::ProfilerAgent() {}
-    ProfilerAgent::~ProfilerAgent() {}
+ProfilerAgent::ProfilerAgent() {}
+ProfilerAgent::~ProfilerAgent() {}
 namespace Utility {
-static int CreateSharedRegion(const std::string& name, const std::size_t size,
-    uint32_t op, uint32_t mode, void *&start, int &handle)
+static int CreateSharedRegion(
+    const std::string& name, const std::size_t size, uint32_t op, uint32_t mode, void*& start, int& handle)
 {
     return 0;
 }
-}
+} // namespace Utility
 
-}
+} // namespace Hiva
 
 uint64_t GetCntVct()
 {
-    uint64_t  cntvct;
+    uint64_t cntvct;
     return cntvct;
 }

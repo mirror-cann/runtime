@@ -27,7 +27,7 @@ using namespace tsd;
 using namespace std;
 
 namespace {
-drvError_t HalHdcGetSessionAttrDfxFailNegativeStub(HDC_SESSION session, int attr, int *value)
+drvError_t HalHdcGetSessionAttrDfxFailNegativeStub(HDC_SESSION session, int attr, int* value)
 {
     (void)session;
     (void)attr;
@@ -36,14 +36,11 @@ drvError_t HalHdcGetSessionAttrDfxFailNegativeStub(HDC_SESSION session, int attr
     }
     return DRV_ERROR_INNER_ERR;
 }
-}
+} // namespace
 
 class HdcCommonTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before HdcCommonTest()" << endl;
-    }
+    virtual void SetUp() { cout << "Before HdcCommonTest()" << endl; }
 
     virtual void TearDown()
     {
@@ -91,7 +88,7 @@ TEST_F(HdcCommonTest, SendNormalMsg_Success)
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     HDCMessage msg;
     msg.set_type(HDCMessage::TSD_START_PROC_MSG);
-    
+
     TSD_StatusT ret = hdcCommon.SendNormalMsg(msg, session);
     EXPECT_EQ(ret, TSD_OK);
 }
@@ -101,7 +98,7 @@ TEST_F(HdcCommonTest, GetHdcAttrStatus_Success)
     HdcCommon hdcCommon;
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     int32_t hdcSessStat = 0;
-    
+
     TSD_StatusT ret = hdcCommon.GetHdcAttrStatus(session, hdcSessStat);
     EXPECT_EQ(ret, TSD_OK);
 }
@@ -111,7 +108,7 @@ TEST_F(HdcCommonTest, SendNormalShortMsg_SizeZero_Fail)
     HdcCommon hdcCommon;
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     HDCMessage msg;
-    
+
     TSD_StatusT ret = hdcCommon.SendNormalShortMsg(msg, 0U, session);
     EXPECT_EQ(ret, TSD_HDC_SEND_MSG_ERROR);
 }
@@ -122,7 +119,7 @@ TEST_F(HdcCommonTest, SendNormalShortMsg_SizeTooLarge_Fail)
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     HDCMessage msg;
     uint32_t largeSize = 0x20000000U;
-    
+
     TSD_StatusT ret = hdcCommon.SendNormalShortMsg(msg, largeSize, session);
     EXPECT_EQ(ret, TSD_INTERGER_REVERSED);
 }
@@ -141,9 +138,9 @@ TEST_F(HdcCommonTest, SendHdcDefaultMsg_AllocMsgFailed)
     HdcCommon hdcCommon;
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     char_t msgBuf[64] = {0};
-    
+
     MOCKER(&drvHdcAllocMsg).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
-    
+
     TSD_StatusT ret = hdcCommon.SendHdcDefaultMsg(session, msgBuf, 64U);
     EXPECT_EQ(ret, TSD_HDC_SEND_ERROR);
 }
@@ -153,9 +150,9 @@ TEST_F(HdcCommonTest, SendHdcDefaultMsg_AddMsgBufferFailed)
     HdcCommon hdcCommon;
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     char_t msgBuf[64] = {0};
-    
+
     MOCKER(&drvHdcAddMsgBuffer).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
-    
+
     TSD_StatusT ret = hdcCommon.SendHdcDefaultMsg(session, msgBuf, 64U);
     EXPECT_EQ(ret, TSD_HDC_SEND_ERROR);
 }
@@ -165,9 +162,9 @@ TEST_F(HdcCommonTest, SendHdcDefaultMsg_HalHdcSendFailed)
     HdcCommon hdcCommon;
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     char_t msgBuf[64] = {0};
-    
+
     MOCKER(&halHdcSend).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
-    
+
     TSD_StatusT ret = hdcCommon.SendHdcDefaultMsg(session, msgBuf, 64U);
     EXPECT_EQ(ret, TSD_HDC_SEND_ERROR);
 }
@@ -177,9 +174,9 @@ TEST_F(HdcCommonTest, SendHdcDefaultMsg_HalHdcSendSocketClosed)
     HdcCommon hdcCommon;
     HDC_SESSION session = reinterpret_cast<HDC_SESSION>(0x1);
     char_t msgBuf[64] = {0};
-    
+
     MOCKER(&halHdcSend).stubs().will(returnValue(DRV_ERROR_SOCKET_CLOSE));
-    
+
     TSD_StatusT ret = hdcCommon.SendHdcDefaultMsg(session, msgBuf, 64U);
     EXPECT_EQ(ret, TSD_HDC_SERVER_CLIENT_SOCKET_CLOSED);
 }
@@ -192,9 +189,9 @@ TEST_F(HdcCommonTest, RecvHdcDefaultMsg_HalHdcRecvFailed)
     drvHdcMsg drvMsg;
     char_t* buffer = nullptr;
     uint32_t bufferLengthOut = 0U;
-    
+
     MOCKER(&halHdcRecv).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
-    
+
     TSD_StatusT ret = hdcCommon.RecvHdcDefaultMsg(session, &drvMsg, buffer, bufferLengthOut, 1000U);
     EXPECT_EQ(ret, TSD_HDC_RECV_MSG_ERROR);
 }
@@ -223,9 +220,9 @@ TEST_F(HdcCommonTest, RecvHdcDefaultMsg_HalHdcRecvSocketClosed)
     drvHdcMsg drvMsg;
     char_t* buffer = nullptr;
     uint32_t bufferLengthOut = 0U;
-    
+
     MOCKER(&halHdcRecv).stubs().will(returnValue(DRV_ERROR_SOCKET_CLOSE));
-    
+
     TSD_StatusT ret = hdcCommon.RecvHdcDefaultMsg(session, &drvMsg, buffer, bufferLengthOut, 1000U);
     EXPECT_EQ(ret, TSD_HDC_SERVER_CLIENT_SOCKET_CLOSED);
 }
@@ -238,9 +235,9 @@ TEST_F(HdcCommonTest, RecvHdcDefaultMsg_GetMsgBufferFailed)
     drvHdcMsg drvMsg;
     char_t* buffer = nullptr;
     uint32_t bufferLengthOut = 0U;
-    
+
     MOCKER(&drvHdcGetMsgBuffer).stubs().will(returnValue(DRV_ERROR_INNER_ERR));
-    
+
     TSD_StatusT ret = hdcCommon.RecvHdcDefaultMsg(session, &drvMsg, buffer, bufferLengthOut, 1000U);
     EXPECT_EQ(ret, TSD_HDC_RECV_MSG_ERROR);
 }
@@ -253,7 +250,7 @@ TEST_F(HdcCommonTest, RecvHdcDefaultMsg_BufferNull)
     drvHdcMsg drvMsg;
     char_t* buffer = nullptr;
     uint32_t bufferLengthOut = 0U;
-    
+
     SetHdcGetMsgBufferReturnNull(true);
     TSD_StatusT ret = hdcCommon.RecvHdcDefaultMsg(session, &drvMsg, buffer, bufferLengthOut, 1000U);
     EXPECT_EQ(ret, TSD_HDC_RECV_MSG_ERROR);
@@ -268,7 +265,7 @@ TEST_F(HdcCommonTest, RecvHdcDefaultMsg_LengthMismatch)
     drvHdcMsg drvMsg;
     char_t* buffer = nullptr;
     uint32_t bufferLengthOut = 0U;
-    
+
     SetHdcGetMsgBufferLengthMismatch(true);
     TSD_StatusT ret = hdcCommon.RecvHdcDefaultMsg(session, &drvMsg, buffer, bufferLengthOut, 1000U);
     EXPECT_EQ(ret, TSD_HDC_RECV_MSG_ERROR);

@@ -10,75 +10,73 @@
 #ifndef __INC_LOG_WRITER_HPP
 #define __INC_LOG_WRITER_HPP
 
-#include <linux/limits.h>   // for PATH_MAX
+#include <linux/limits.h> // for PATH_MAX
 
 #include <mutex>
 #include <thread>
 #include <atomic>
 
 // 日志输出类型定义
-#define ELOG_ALLOC          0
-#define ELOG_STACK          1
+#define ELOG_ALLOC 0
+#define ELOG_STACK 1
 
-#define Max_Head_Len        64
-#define Max_Buff_Size       (50 * 1024)
-#define Max_Trace_Len       4096
+#define Max_Head_Len 64
+#define Max_Buff_Size (50 * 1024)
+#define Max_Trace_Len 4096
 
-class LogWriter
-{
+class LogWriter {
 public:
-                        LogWriter();
-                        ~LogWriter();
+    LogWriter();
+    ~LogWriter();
 
-    void                Init(const char *szPath, const char *szPrefix);
+    void Init(const char* szPath, const char* szPrefix);
 
-    void                addToBuffer(const char *pszBuff, pthread_t ulThreadId);
-    void                CheckWriteLog(time_t ulNowTime);
-    void                WriteLastLog();
-
-private:
-    void                Lock();
-    void                Unlock();
-    void                WriteToFile(const char *szBuf, size_t uiLen);
+    void addToBuffer(const char* pszBuff, pthread_t ulThreadId);
+    void CheckWriteLog(time_t ulNowTime);
+    void WriteLastLog();
 
 private:
-    char                m_szLogBuff[Max_Buff_Size + 1];
-    size_t              m_iLogSize;
-    size_t              m_iHeadSize;
-
-    time_t              m_lLastTime;
-    time_t              m_lInterval;
-
-    pthread_mutex_t     m_Mutex;
+    void Lock();
+    void Unlock();
+    void WriteToFile(const char* szBuf, size_t uiLen);
 
 private:
-    pid_t               m_Pid;
-    char                m_FilePath[PATH_MAX];
-    char                m_FilePrev[PATH_MAX];
-    char                m_FileName[PATH_MAX];
-    unsigned int        m_FileIndex;
-    int                 m_FileHandle;
+    char m_szLogBuff[Max_Buff_Size + 1];
+    size_t m_iLogSize;
+    size_t m_iHeadSize;
+
+    time_t m_lLastTime;
+    time_t m_lInterval;
+
+    pthread_mutex_t m_Mutex;
+
+private:
+    pid_t m_Pid;
+    char m_FilePath[PATH_MAX];
+    char m_FilePrev[PATH_MAX];
+    char m_FileName[PATH_MAX];
+    unsigned int m_FileIndex;
+    int m_FileHandle;
 };
 
-class LogThread
-{
+class LogThread {
 public:
-    static void         addDebugLog(int logLevel, int moduleId, const char *szInfo);
+    static void addDebugLog(int logLevel, int moduleId, const char* szInfo);
 
 private:
-                        LogThread();
-    virtual             ~LogThread();
+    LogThread();
+    virtual ~LogThread();
 
-    void                Init();
-    void                doFlush();
-    void                Worker();
+    void Init();
+    void doFlush();
+    void Worker();
 
 private:
-    static std::mutex   m_ImplMutex;
-    static LogThread   *m_Singleton;
-    std::thread         m_ImplThread;
-    std::atomic_bool    m_working;
-    LogWriter           m_AllocBuff;
+    static std::mutex m_ImplMutex;
+    static LogThread* m_Singleton;
+    std::thread m_ImplThread;
+    std::atomic_bool m_working;
+    LogWriter m_AllocBuff;
 };
 
 #endif /*__INC_LOG_WRITER_HPP*/

@@ -28,7 +28,8 @@ protected:
     OperatorKernelModelWaitEndGraph kernel_;
 };
 
-TEST_F(OperatorKernelModelWaitEndGraphTest, ModelWaitEndGraph) {
+TEST_F(OperatorKernelModelWaitEndGraphTest, ModelWaitEndGraph)
+{
     AicpuTaskInfo taskT;
     uint32_t modelID = 0;
     taskT.paraBase = (uint64_t)&modelID;
@@ -36,9 +37,10 @@ TEST_F(OperatorKernelModelWaitEndGraphTest, ModelWaitEndGraph) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(OperatorKernelModelWaitEndGraphTest, ModelWaitEndGraph_failed1) {
+TEST_F(OperatorKernelModelWaitEndGraphTest, ModelWaitEndGraph_failed1)
+{
     AicpuTaskInfo taskT;
-    uint32_t *modelID = nullptr;
+    uint32_t* modelID = nullptr;
     taskT.paraBase = (uint64_t)modelID;
     int ret = kernel_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);

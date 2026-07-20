@@ -11,78 +11,67 @@
 #include "driver/ascend_hal.h"
 #include "qs_tsd.h"
 
-drvError_t halQueueCreate(unsigned int devid, const QueueAttr *queAttr, unsigned int *qid)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueCreate(unsigned int devid, const QueueAttr* queAttr, unsigned int* qid) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueDestroy(unsigned int devId, unsigned int qid)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueDestroy(unsigned int devId, unsigned int qid) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueEnQueue(unsigned int devId, unsigned int qid, void *mbuf)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueEnQueue(unsigned int devId, unsigned int qid, void* mbuf) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueDeQueue(unsigned int devId, unsigned int qid, void **mbug)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueDeQueue(unsigned int devId, unsigned int qid, void** mbug) { return DRV_ERROR_NONE; }
 
 drvError_t halQueueSubscribe(unsigned int devid, unsigned int qid, unsigned int groupId, int type)
-{ return DRV_ERROR_NONE; }
+{
+    return DRV_ERROR_NONE;
+}
 
-drvError_t halQueueUnsubscribe(unsigned int devid, unsigned int qid)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueUnsubscribe(unsigned int devid, unsigned int qid) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueSubEvent(struct QueueSubPara *subPara)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueSubEvent(struct QueueSubPara* subPara) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueUnsubEvent(struct QueueUnsubPara *unsubPara)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueUnsubEvent(struct QueueUnsubPara* unsubPara) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueSet(unsigned int devId, QueueSetCmdType cmd, QueueSetInputPara *inPut)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueSet(unsigned int devId, QueueSetCmdType cmd, QueueSetInputPara* inPut) { return DRV_ERROR_NONE; }
 
 drvError_t halEschedThreadSwapout(unsigned int devId, unsigned int grpId, unsigned int threadId)
-{ return DRV_ERROR_NONE; }
+{
+    return DRV_ERROR_NONE;
+}
 
-int SetQueueWorkMode(unsigned int devid, unsigned int qid, int mode)
-{ return DRV_ERROR_NONE; }
+int SetQueueWorkMode(unsigned int devid, unsigned int qid, int mode) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueGetStatus(unsigned int devid, unsigned int qid, QUEUE_QUERY_ITEM queryItem, unsigned int len,  void *data)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueGetStatus(
+    unsigned int devid, unsigned int qid, QUEUE_QUERY_ITEM queryItem, unsigned int len, void* data)
+{
+    return DRV_ERROR_NONE;
+}
 
-int halGetQueueDepth(unsigned int devid, unsigned int qid, unsigned int *depth)
-{ return DRV_ERROR_NONE; }
+int halGetQueueDepth(unsigned int devid, unsigned int qid, unsigned int* depth) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueInit(unsigned int devid)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueInit(unsigned int devid) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueSubF2NFEvent(unsigned int devid, unsigned int qid, unsigned int groupid)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueSubF2NFEvent(unsigned int devid, unsigned int qid, unsigned int groupid) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueUnsubF2NFEvent(unsigned int devid, unsigned int qid)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueUnsubF2NFEvent(unsigned int devid, unsigned int qid) { return DRV_ERROR_NONE; }
 
-drvError_t halQueueGetQidbyName(unsigned int devid, const char *name, unsigned int *qid)
-{ return DRV_ERROR_NO_DEVICE; }
+drvError_t halQueueGetQidbyName(unsigned int devid, const char* name, unsigned int* qid) { return DRV_ERROR_NO_DEVICE; }
 
-drvError_t halQueueCtrlEvent (struct QueueSubscriber *subscriber, QUE_EVENT_CMD cmdType)
-{ return DRV_ERROR_NONE; }
+drvError_t halQueueCtrlEvent(struct QueueSubscriber* subscriber, QUE_EVENT_CMD cmdType) { return DRV_ERROR_NONE; }
 
 void DlogFlush() {}
 
-drvError_t halQueueEnQueueBuff(unsigned int devId, unsigned int qid, struct buff_iovec *vector, int timeout)
+drvError_t halQueueEnQueueBuff(unsigned int devId, unsigned int qid, struct buff_iovec* vector, int timeout)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halQueueDeQueueBuff(unsigned int devId, unsigned int qid, struct buff_iovec *vector, int timeout)
+drvError_t halQueueDeQueueBuff(unsigned int devId, unsigned int qid, struct buff_iovec* vector, int timeout)
 {
     return DRV_ERROR_NONE;
 }
 
-drvError_t halQueuePeek(unsigned int devId, unsigned int qid, uint64_t *buf_len, int timeout)
-{
-    return DRV_ERROR_NONE;
-}
+drvError_t halQueuePeek(unsigned int devId, unsigned int qid, uint64_t* buf_len, int timeout) { return DRV_ERROR_NONE; }
 
-DLLEXPORT drvError_t drvGetLocalDevIDByHostDevID(uint32_t host_dev_id, uint32_t *localDeviceId)
+DLLEXPORT drvError_t drvGetLocalDevIDByHostDevID(uint32_t host_dev_id, uint32_t* localDeviceId)
 {
     return DRV_ERROR_NONE;
 }

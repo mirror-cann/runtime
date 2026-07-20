@@ -47,19 +47,14 @@ protected:
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
     AicpuMonitor instance;
 };
 
 TEST_F(AicpuMonitorSTest, StatisticManagerSTest_TEST)
 {
-    MOCKER(sleep)
-        .stubs()
-        .will(invoke(sleep_stub));
+    MOCKER(sleep).stubs().will(invoke(sleep_stub));
     AicpuMonitor instanceThis;
     instanceThis.modelTimeoutFlag_ = true;
     instanceThis.InitMonitor(0, true);
@@ -71,10 +66,7 @@ TEST_F(AicpuMonitorSTest, StatisticManagerSTest_TEST)
     instanceThis.SetModelStartTime(0);
     bool needWait = false;
     EventWaitManager::AnyQueNotEmptyWaitManager().WaitEvent(1U, 0U, needWait);
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
     instanceThis.Run();
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     instanceThis.SetTaskEndTime(0);
@@ -84,7 +76,8 @@ TEST_F(AicpuMonitorSTest, StatisticManagerSTest_TEST)
     EXPECT_EQ(instanceThis.done_, false);
 }
 
-TEST_F(AicpuMonitorSTest, Init_Success) {
+TEST_F(AicpuMonitorSTest, Init_Success)
+{
     setenv("AICPU_TASK_TIMEOUT", "aa", 1);
     setenv("DATAMASTER_RUN_MODE", "1", 1);
     AicpuMonitor monitor;
@@ -94,16 +87,15 @@ TEST_F(AicpuMonitorSTest, Init_Success) {
     unsetenv("DATAMASTER_RUN_MODE");
 }
 
-TEST_F(AicpuMonitorSTest, HandleTaskAicpuStreamTimeout) {
+TEST_F(AicpuMonitorSTest, HandleTaskAicpuStreamTimeout)
+{
     AicpuMonitor m;
     m.taskTimeoutFlag_ = true;
     m.aicpuCoreNum_ = 1;
     m.taskTimeoutTick_ = 1;
     m.aicpuTaskTimer_.reset(new (std::nothrow) TaskTimer[m.aicpuCoreNum_]);
     m.aicpuStreamTaskTimer_.reset(new (std::nothrow) TaskTimer[MAX_MODEL_COUNT]);
-    MOCKER(aicpu::GetSystemTick)
-        .stubs()
-        .will(returnValue(20));
+    MOCKER(aicpu::GetSystemTick).stubs().will(returnValue(20));
     m.monitorTaskInfo_.reset(new (std::nothrow) TaskInfoForMonitor[m.aicpuCoreNum_]);
     m.online_ = true;
     m.SetTaskInfo(0, {0, 0, 0, false});
@@ -120,7 +112,8 @@ TEST_F(AicpuMonitorSTest, HandleTaskAicpuStreamTimeout) {
     EXPECT_EQ(m.taskTimeoutFlag_, true);
 }
 
-TEST_F(AicpuMonitorSTest, HandleOpTimeout) {
+TEST_F(AicpuMonitorSTest, HandleOpTimeout)
+{
     AicpuMonitor m;
     m.opTimeoutFlag_ = true;
     m.online_ = true;
@@ -133,59 +126,55 @@ TEST_F(AicpuMonitorSTest, HandleOpTimeout) {
     EXPECT_EQ(m.opTimer_.size(), 0);
 }
 
-TEST_F(AicpuMonitorSTest, SetOpTimeoutFlagTest) {
+TEST_F(AicpuMonitorSTest, SetOpTimeoutFlagTest)
+{
     AicpuMonitor monitor;
     monitor.SetOpTimeoutFlag(true);
     EXPECT_EQ(monitor.opTimeoutFlag_, true);
 }
 
-TEST_F(AicpuMonitorSTest, GetTaskDefaultTimeoutTest) {
+TEST_F(AicpuMonitorSTest, GetTaskDefaultTimeoutTest)
+{
     AicpuMonitor monitor;
     monitor.InitMonitor(0, true);
     const auto ret = monitor.GetTaskDefaultTimeout();
     EXPECT_EQ(ret, 28UL);
 }
 
-TEST_F(AicpuMonitorSTest, MonitorDebugSuccess) {
+TEST_F(AicpuMonitorSTest, MonitorDebugSuccess)
+{
     const TaskInfoForMonitor info = {.serialNo = 1UL, .taskId = 2UL, .streamId = 3UL, .isHwts = false};
     const auto ret = MonitorDebug::MonitorDebugString(info);
     EXPECT_STREQ(ret.c_str(), "serialNo=1, stream_id=3, task_id=2");
 }
-}
+} // namespace AicpuSchedule
 
-void regFake()
+void regFake() {}
+TEST_F(AicpuMonitorSTest, StartTimerError_01)
 {
-
-}
-TEST_F(AicpuMonitorSTest, StartTimerError_01) {
     AicpuTimer tempTimer;
     tempTimer.isSupportTimer_ = true;
     TimerHandle handle = 1UL;
-    MOCKER_CPP(&AicpuTimer::RegistTimeoutCallback)
-        .stubs()
-        .will(returnValue(TimerStatus::AICPU_TIMER_FAILED));
+    MOCKER_CPP(&AicpuTimer::RegistTimeoutCallback).stubs().will(returnValue(TimerStatus::AICPU_TIMER_FAILED));
     TimerStatus ret = tempTimer.StartTimer(handle, regFake, 0U);
     EXPECT_EQ(ret, TimerStatus::AICPU_TIMER_FAILED);
     GlobalMockObject::verify();
 }
 
-TEST_F(AicpuMonitorSTest, StartTimerError_02) {
+TEST_F(AicpuMonitorSTest, StartTimerError_02)
+{
     AicpuTimer tempTimer;
     tempTimer.isSupportTimer_ = true;
     TimerHandle handle = 1UL;
-    MOCKER_CPP(&AicpuTimer::RegistTimeoutCallback)
-        .stubs()
-        .will(returnValue(TimerStatus::AICPU_TIMER_SUCCESS));
-    MOCKER_CPP(&AicpuTimer::StartTimerInMonitor)
-        .stubs()
-        .will(returnValue(TimerStatus::AICPU_TIMER_FAILED));
+    MOCKER_CPP(&AicpuTimer::RegistTimeoutCallback).stubs().will(returnValue(TimerStatus::AICPU_TIMER_SUCCESS));
+    MOCKER_CPP(&AicpuTimer::StartTimerInMonitor).stubs().will(returnValue(TimerStatus::AICPU_TIMER_FAILED));
     TimerStatus ret = tempTimer.StartTimer(handle, regFake, 0U);
     EXPECT_EQ(ret, TimerStatus::AICPU_TIMER_FAILED);
     GlobalMockObject::verify();
 }
 
-
-TEST_F(AicpuMonitorSTest, InitMonitorSetTaskTimeFail) {
+TEST_F(AicpuMonitorSTest, InitMonitorSetTaskTimeFail)
+{
     AicpuMonitor monitor;
     const int32_t expect = 1;
     MOCKER_CPP(&AicpuMonitor::SetTaskTimeoutFlag).stubs().will(returnValue(expect));
@@ -193,7 +182,8 @@ TEST_F(AicpuMonitorSTest, InitMonitorSetTaskTimeFail) {
     EXPECT_EQ(ret, expect);
 }
 
-TEST_F(AicpuMonitorSTest, InitMonitorSetModelTimeFai) {
+TEST_F(AicpuMonitorSTest, InitMonitorSetModelTimeFai)
+{
     AicpuMonitor monitor;
     const int32_t expect = AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;
     MOCKER_CPP(&AicpuMonitor::SetModelTimeoutFlag).stubs().will(returnValue(expect));
@@ -201,20 +191,20 @@ TEST_F(AicpuMonitorSTest, InitMonitorSetModelTimeFai) {
     EXPECT_EQ(ret, expect);
 }
 
-TEST_F(AicpuMonitorSTest, SetModelTimeoutFlagFai) {
+TEST_F(AicpuMonitorSTest, SetModelTimeoutFlagFai)
+{
     AicpuMonitor monitor;
     const int32_t expect = AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID;
     setenv("AICPU_MODEL_TIMEOUT", "100", 1);
-    MOCKER(aicpu::GetSystemTickFreq)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
     MOCKER_CPP(&AicpuUtil::IsUint64MulOverflow).stubs().will(returnValue(true));
     const int32_t ret = monitor.SetModelTimeoutFlag();
     unsetenv("AICPU_MODEL_TIMEOUT");
     EXPECT_EQ(ret, expect);
 }
 
-TEST_F(AicpuMonitorSTest, SetModelTimeoutFlagExpection) {
+TEST_F(AicpuMonitorSTest, SetModelTimeoutFlagExpection)
+{
     AicpuMonitor monitor;
     const int32_t expect = AICPU_SCHEDULE_ERROR_COMMON_ERROR;
     MOCKER_CPP(&AicpuUtil::GetEnvVal).stubs().will(returnValue(true));
@@ -222,7 +212,8 @@ TEST_F(AicpuMonitorSTest, SetModelTimeoutFlagExpection) {
     EXPECT_EQ(ret, expect);
 }
 
-TEST_F(AicpuMonitorSTest, InitMonitorInitTimerFail) {
+TEST_F(AicpuMonitorSTest, InitMonitorInitTimerFail)
+{
     AicpuMonitor monitor;
     const int32_t expect = AICPU_SCHEDULE_ERROR_COMMON_ERROR;
     MOCKER_CPP(&AicpuMonitor::InitTimer).stubs().will(returnValue(expect));
@@ -230,7 +221,8 @@ TEST_F(AicpuMonitorSTest, InitMonitorInitTimerFail) {
     EXPECT_EQ(ret, expect);
 }
 
-TEST_F(AicpuMonitorSTest, InitAsyncOpTimerSuccess) {
+TEST_F(AicpuMonitorSTest, InitAsyncOpTimerSuccess)
+{
     AicpuMonitor monitor;
     const int32_t ret = monitor.InitMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -238,7 +230,8 @@ TEST_F(AicpuMonitorSTest, InitAsyncOpTimerSuccess) {
     aicpu::AicpuTimer::GetInstance().stopTimerFunc_(100);
 }
 
-TEST_F(AicpuMonitorSTest, SendKillMsgToTsdFail1) {
+TEST_F(AicpuMonitorSTest, SendKillMsgToTsdFail1)
+{
     AicpuMonitor monitor;
     const int32_t ret = monitor.InitMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -246,7 +239,8 @@ TEST_F(AicpuMonitorSTest, SendKillMsgToTsdFail1) {
     monitor.SendKillMsgToTsd();
 }
 
-TEST_F(AicpuMonitorSTest, RunSemWaitFail) {
+TEST_F(AicpuMonitorSTest, RunSemWaitFail)
+{
     AicpuMonitor monitor;
     const int32_t ret = monitor.InitMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -254,14 +248,16 @@ TEST_F(AicpuMonitorSTest, RunSemWaitFail) {
     monitor.Run();
 }
 
-TEST_F(AicpuMonitorSTest, SetOpExecuteTimeOutNotEnable) {
+TEST_F(AicpuMonitorSTest, SetOpExecuteTimeOutNotEnable)
+{
     AicpuMonitor monitor;
     const int32_t ret = monitor.InitMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     monitor.SetOpExecuteTimeOut(0, 100);
 }
 
-TEST_F(AicpuMonitorSTest, HandleTaskTimeoutSuccess) {
+TEST_F(AicpuMonitorSTest, HandleTaskTimeoutSuccess)
+{
     AicpuMonitor monitor;
     const int32_t ret = monitor.InitMonitor(0, true);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -269,27 +265,20 @@ TEST_F(AicpuMonitorSTest, HandleTaskTimeoutSuccess) {
     monitor.HandleTaskTimeout();
 }
 
-TEST_F(AicpuMonitorSTest, PublicFuncTest_1) {
+TEST_F(AicpuMonitorSTest, PublicFuncTest_1)
+{
     setenv("AICPU_TASK_TIMEOUT", "1", 1);
     setenv("AICPU_MODEL_TIMEOUT", "1", 1);
     AicpuMonitor monitor;
-    MOCKER(aicpu::GetSystemTickFreq)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
     int32_t ret = monitor.InitMonitor(0, true);
     unsetenv("AICPU_TASK_TIMEOUT");
     unsetenv("AICPU_MODEL_TIMEOUT");
     EXPECT_EQ(ret, 0);
 
-    MOCKER(sem_init)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_wait)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(sem_destroy)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(sem_init).stubs().will(returnValue(0));
+    MOCKER(sem_wait).stubs().will(returnValue(0));
+    MOCKER(sem_destroy).stubs().will(returnValue(0));
     monitor.running_ = false;
     monitor.done_ = true;
     ret = monitor.Run();
@@ -297,13 +286,12 @@ TEST_F(AicpuMonitorSTest, PublicFuncTest_1) {
     monitor.StopMonitor();
 }
 
-TEST_F(AicpuMonitorSTest, PublicFuncTest_2) {
+TEST_F(AicpuMonitorSTest, PublicFuncTest_2)
+{
     setenv("AICPU_TASK_TIMEOUT", "1", 1);
     setenv("AICPU_MODEL_TIMEOUT", "1", 1);
     AicpuMonitor monitor;
-    MOCKER(aicpu::GetSystemTickFreq)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(aicpu::GetSystemTickFreq).stubs().will(returnValue(1));
     int32_t ret = monitor.InitMonitor(0, true);
     unsetenv("AICPU_TASK_TIMEOUT");
     unsetenv("AICPU_MODEL_TIMEOUT");
@@ -311,10 +299,7 @@ TEST_F(AicpuMonitorSTest, PublicFuncTest_2) {
 
     bool needWait = false;
     EventWaitManager::AnyQueNotEmptyWaitManager().WaitEvent(1U, 0U, needWait);
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
 
     monitor.done_ = false;
     monitor.running_ = false;

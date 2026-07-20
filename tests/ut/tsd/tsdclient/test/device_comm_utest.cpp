@@ -23,10 +23,7 @@ using namespace std;
 
 class DeviceCommTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before DeviceCommTest()" << endl;
-    }
+    virtual void SetUp() { cout << "Before DeviceCommTest()" << endl; }
 
     virtual void TearDown()
     {
@@ -121,20 +118,16 @@ TEST_F(DeviceCommTest, Register_ReturnTrue)
     // Register() 应始终返回 true
     bool result = DeviceComm::Register(
         static_cast<DeviceCommType>(99U),
-        [](uint32_t devId) -> std::shared_ptr<DeviceComm> {
-            return std::make_shared<HdcClient>(devId);
-        });
+        [](uint32_t devId) -> std::shared_ptr<DeviceComm> { return std::make_shared<HdcClient>(devId); });
     EXPECT_TRUE(result);
 }
 
 TEST_F(DeviceCommTest, Register_CreatorAddedToCreatorMap)
 {
     // 注册后，可通过该类型创建出实例
-    DeviceComm::Register(
-        static_cast<DeviceCommType>(98U),
-        [](uint32_t devId) -> std::shared_ptr<DeviceComm> {
-            return std::make_shared<HdcClient>(devId);
-        });
+    DeviceComm::Register(static_cast<DeviceCommType>(98U), [](uint32_t devId) -> std::shared_ptr<DeviceComm> {
+        return std::make_shared<HdcClient>(devId);
+    });
     auto comm = DeviceComm::GetInstance(98U, static_cast<DeviceCommType>(98U));
     EXPECT_NE(comm, nullptr);
     auto hdcClient = std::dynamic_pointer_cast<HdcClient>(comm);
@@ -145,11 +138,9 @@ TEST_F(DeviceCommTest, Register_CreatorAddedToCreatorMap)
 TEST_F(DeviceCommTest, Register_CustomType_GetInstanceSuccess)
 {
     // 注册自定义类型后，GetInstance 可通过注册表创建实例
-    DeviceComm::Register(
-        static_cast<DeviceCommType>(97U),
-        [](uint32_t devId) -> std::shared_ptr<DeviceComm> {
-            return std::make_shared<HdcClient>(devId);
-        });
+    DeviceComm::Register(static_cast<DeviceCommType>(97U), [](uint32_t devId) -> std::shared_ptr<DeviceComm> {
+        return std::make_shared<HdcClient>(devId);
+    });
     auto comm = DeviceComm::GetInstance(0U, static_cast<DeviceCommType>(97U));
     EXPECT_NE(comm, nullptr);
 }
@@ -158,10 +149,7 @@ TEST_F(DeviceCommTest, Register_CreatorReturnsNull_GetInstanceReturnNull)
 {
     // 注册一个返回 nullptr 的 creator，GetInstance 应返回 nullptr（TSD_CHECK 触发）
     DeviceComm::Register(
-        static_cast<DeviceCommType>(96U),
-        [](uint32_t) -> std::shared_ptr<DeviceComm> {
-            return nullptr;
-        });
+        static_cast<DeviceCommType>(96U), [](uint32_t) -> std::shared_ptr<DeviceComm> { return nullptr; });
     auto comm = DeviceComm::GetInstance(0U, static_cast<DeviceCommType>(96U));
     EXPECT_EQ(comm, nullptr);
 }

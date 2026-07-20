@@ -24,10 +24,7 @@ using namespace std;
 
 class TsdUtilFuncTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before TsdUtilFuncTest()" << endl;
-    }
+    virtual void SetUp() { cout << "Before TsdUtilFuncTest()" << endl; }
 
     virtual void TearDown()
     {
@@ -85,10 +82,10 @@ TEST_F(TsdUtilFuncTest, CalFileSizeSuccess)
     ofstream outfile(filepath);
     outfile << "test content";
     outfile.close();
-    
+
     uint64_t size = CalFileSize(filepath);
     EXPECT_GT(size, 0UL);
-    
+
     remove(filepath.c_str());
 }
 
@@ -242,9 +239,9 @@ TEST_F(TsdUtilFuncTest, RemoveOneFileSuccess)
     ofstream outfile(filepath);
     outfile << "test content";
     outfile.close();
-    
+
     RemoveOneFile(filepath);
-    
+
     int32_t ret = access(filepath.c_str(), F_OK);
     EXPECT_NE(ret, 0);
 }
@@ -281,10 +278,10 @@ TEST_F(TsdUtilFuncTest, IsDirEmptyEmptyDir)
 {
     string dirPath = "/tmp/test_empty_dir";
     mkdir(dirPath.c_str(), 0755);
-    
+
     bool ret = IsDirEmpty(dirPath);
     EXPECT_EQ(ret, true);
-    
+
     rmdir(dirPath.c_str());
 }
 
@@ -292,15 +289,15 @@ TEST_F(TsdUtilFuncTest, IsDirNotEmptyDir)
 {
     string dirPath = "/tmp/test_not_empty_dir";
     mkdir(dirPath.c_str(), 0755);
-    
+
     string filepath = dirPath + "/test_file.txt";
     ofstream outfile(filepath);
     outfile << "test content";
     outfile.close();
-    
+
     bool ret = IsDirEmpty(dirPath);
     EXPECT_EQ(ret, false);
-    
+
     remove(filepath.c_str());
     rmdir(dirPath.c_str());
 }
@@ -318,10 +315,10 @@ TEST_F(TsdUtilFuncTest, CalFileSha256HashValueSuccess)
     ofstream outfile(filepath);
     outfile << "test content for hash";
     outfile.close();
-    
+
     string hashValue = CalFileSha256HashValue(filepath);
     EXPECT_GT(hashValue.length(), 0UL);
-    
+
     remove(filepath.c_str());
 }
 

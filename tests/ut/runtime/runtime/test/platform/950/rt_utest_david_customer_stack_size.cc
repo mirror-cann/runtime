@@ -47,17 +47,17 @@ protected:
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         oldChipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
         GlobalContainer::SetRtChipType(CHIP_DAVID);
         int64_t hardwareVersion = CHIP_DAVID << 8;
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -70,7 +70,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = isCfgOpWaitTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = isCfgOpExcTaskTimeout;
         rtInstance->SetChipType(oldChipType);
@@ -124,7 +124,7 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask1)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -165,7 +165,7 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask2)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -206,7 +206,7 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask3)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -247,7 +247,7 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask4)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -282,7 +282,7 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask5)
     kernelPtr.SetMixType(MIX_AIV);
 
     std::string kernelInfoExt = "abc";
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     kernelPtr.SetMixType(MIX_AIV);
     kernelPtr.SetOffset2(0);
@@ -305,7 +305,7 @@ TEST_F(CustomerStackSize, ConstructDavidMixSqeForDavinciTask5)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -346,7 +346,7 @@ TEST_F(CustomerStackSize, ConstructDavidAICoreSqeForDavinciTask1)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -387,7 +387,7 @@ TEST_F(CustomerStackSize, ConstructDavidAICoreSqeForDavinciTask2)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -428,7 +428,7 @@ TEST_F(CustomerStackSize, ConstructDavidAivSqeForDavinciTask1)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -469,7 +469,7 @@ TEST_F(CustomerStackSize, ConstructDavidAivSqeForDavinciTask2)
 
     rtDavidSqe_t command = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&taskInfo, static_cast<void *>(&command), sqeInfo);
+    ToConstructDavidSqe(&taskInfo, static_cast<void*>(&command), sqeInfo);
 
     ret = rtStreamDestroy(stream);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -485,7 +485,7 @@ TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseFailed)
 {
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, 102400);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     rtError_t ret = dev->AllocCustomerStackPhyBase();
@@ -497,7 +497,7 @@ TEST_F(CustomerStackSize, AllocCustomerStackPhyBase)
 {
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, KERNEL_STACK_SIZE_32K);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     rtError_t ret = dev->AllocCustomerStackPhyBase();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -508,13 +508,15 @@ TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseSuccess)
 {
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, 102400);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     uint32_t tmp = 0;
-    void *addr = &tmp;
+    void* addr = &tmp;
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     rtError_t ret = dev->AllocCustomerStackPhyBase();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -525,13 +527,15 @@ TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseSuccess_align128B)
 {
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, 102400);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     alignas(128) uint32_t tmp = 0;
-    void *addr = &tmp;
+    void* addr = &tmp;
     MOCKER_CPP_VIRTUAL(dev->Driver_(), &Driver::DevMemAlloc)
         .stubs()
-        .with(outBoundP(&addr, sizeof(void *)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .with(
+            outBoundP(&addr, sizeof(void*)), mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            mockcpp::any())
         .will(returnValue(RT_ERROR_NONE));
     rtError_t ret = dev->AllocCustomerStackPhyBase();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -540,13 +544,13 @@ TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseSuccess_align128B)
 
 TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseMinitV3)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     auto oldChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, KERNEL_STACK_SIZE_32K);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     rtError_t ret = dev->AllocCustomerStackPhyBase();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -559,7 +563,7 @@ TEST_F(CustomerStackSize, FreeCustomerStackPhyBase)
 {
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, KERNEL_STACK_SIZE_32K);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     int32_t temp = 1;
     dev->customerStackPhyBase_ = &temp;
@@ -572,7 +576,7 @@ TEST_F(CustomerStackSize, UpdateKernelsMinStackSizeInfo)
 {
     ElfKernelInfo elfKernelInfo;
     elfKernelInfo.minStackSize = 102400;
-    std::map<std::string, ElfKernelInfo *> kernelInfoMap = {{"stackSizeTest", &elfKernelInfo}};
+    std::map<std::string, ElfKernelInfo*> kernelInfoMap = {{"stackSizeTest", &elfKernelInfo}};
     RtKernel kernel;
     kernel.name = "stackSizeTest";
     auto error = UpdateKernelsMinStackSizeInfo(&kernel, &elfKernelInfo);

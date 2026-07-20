@@ -25,19 +25,15 @@ using namespace std;
 
 class AiCPUContextUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 // schedule run closure
 TEST_F(AiCPUContextUt, EventCallback000)
 {
-    std::function<void (void *)> callback = [&](void * param) {
-      std::cout << "do callback function" << std::endl;
-    };
+    std::function<void(void*)> callback = [&](void* param) { std::cout << "do callback function" << std::endl; };
     EXPECT_EQ(RegisterEventCallback(EVENT_QUEUE_ENQUEUE, 0, callback), 0);
     EXPECT_EQ(DoEventCallback(EVENT_QUEUE_ENQUEUE, 0, nullptr), 0);
 }
@@ -45,9 +41,7 @@ TEST_F(AiCPUContextUt, EventCallback000)
 // duplicate register callback function
 TEST_F(AiCPUContextUt, EventCallback001)
 {
-    std::function<void (void *)> callback = [&](void * param) {
-      std::cout << "do callback function" << std::endl;
-    };
+    std::function<void(void*)> callback = [&](void* param) { std::cout << "do callback function" << std::endl; };
     EXPECT_EQ(RegisterEventCallback(EVENT_QUEUE_ENQUEUE, 0, callback), 0);
     EXPECT_NE(RegisterEventCallback(EVENT_QUEUE_ENQUEUE, 0, callback), 0);
 }
@@ -55,18 +49,14 @@ TEST_F(AiCPUContextUt, EventCallback001)
 // can not find callback function
 TEST_F(AiCPUContextUt, EventCallback002)
 {
-    std::function<void (void *)> callback = [&](void * param) {
-      std::cout << "do callback function" << std::endl;
-    };
+    std::function<void(void*)> callback = [&](void* param) { std::cout << "do callback function" << std::endl; };
     EXPECT_NE(DoEventCallback(0, 1, nullptr), 0);
 }
 
 // register & unregister callback function
 TEST_F(AiCPUContextUt, EventCallback003)
 {
-    std::function<void (void *)> callback = [&](void * param) {
-      std::cout << "do callback function" << std::endl;
-    };
+    std::function<void(void*)> callback = [&](void* param) { std::cout << "do callback function" << std::endl; };
     RegisterEventCallback(0, 0, callback);
     EXPECT_EQ(UnRegisterCallback(0, 0), 0);
 }
@@ -74,9 +64,7 @@ TEST_F(AiCPUContextUt, EventCallback003)
 // unregister not exist callback function
 TEST_F(AiCPUContextUt, EventCallback004)
 {
-    std::function<void (void *)> callback = [&](void * param) {
-      std::cout << "do callback function" << std::endl;
-    };
+    std::function<void(void*)> callback = [&](void* param) { std::cout << "do callback function" << std::endl; };
     EXPECT_EQ(UnRegisterCallback(1, 1), 0);
 }
 
@@ -115,7 +103,7 @@ TEST_F(AiCPUContextUt, InitTaskMonitorContext)
 
 TEST_F(AiCPUContextUt, SetTaskAndStreamId)
 {
-    status_t ret = SetTaskAndStreamId(0U,0U);
+    status_t ret = SetTaskAndStreamId(0U, 0U);
     EXPECT_EQ(ret, AICPU_ERROR_NONE);
 }
 
@@ -180,16 +168,9 @@ TEST_F(AiCPUContextUt, GetThreadCtxInfo_failed)
     EXPECT_EQ(ret, AICPU_ERROR_FAILED);
 }
 
+TEST_F(AiCPUContextUt, InitTaskMonitorContextCoreCntNull) { EXPECT_EQ(InitTaskMonitorContext(0), AICPU_ERROR_FAILED); }
 
-TEST_F(AiCPUContextUt, InitTaskMonitorContextCoreCntNull)
-{
-    EXPECT_EQ(InitTaskMonitorContext(0), AICPU_ERROR_FAILED);
-}
-
-TEST_F(AiCPUContextUt, SetThreadLocalCtxKeyNull)
-{
-    EXPECT_EQ(SetThreadLocalCtx("", ""), AICPU_ERROR_FAILED);
-}
+TEST_F(AiCPUContextUt, SetThreadLocalCtxKeyNull) { EXPECT_EQ(SetThreadLocalCtx("", ""), AICPU_ERROR_FAILED); }
 
 TEST_F(AiCPUContextUt, GetThreadLocalCtxKeyNull)
 {
@@ -203,23 +184,16 @@ TEST_F(AiCPUContextUt, RemoveThreadLocalCtxFail)
     EXPECT_EQ(RemoveThreadLocalCtx("123sad21dsad312daads"), AICPU_ERROR_FAILED);
 }
 
+TEST_F(AiCPUContextUt, DoEventCallbackFail) { EXPECT_EQ(DoEventCallback(0, 123987654, nullptr), AICPU_ERROR_FAILED); }
 
-TEST_F(AiCPUContextUt, DoEventCallbackFail)
-{
-    EXPECT_EQ(DoEventCallback(0, 123987654, nullptr), AICPU_ERROR_FAILED);
-}
-
-TEST_F(AiCPUContextUt, UnRegisterCallbackFail)
-{
-    EXPECT_EQ(UnRegisterCallback(0, 123987654), AICPU_ERROR_NONE);
-}
+TEST_F(AiCPUContextUt, UnRegisterCallbackFail) { EXPECT_EQ(UnRegisterCallback(0, 123987654), AICPU_ERROR_NONE); }
 
 TEST_F(AiCPUContextUt, StreamDvppBuffTest)
 {
     MOCKER_CPP(&aicpu::GetTaskAndStreamId).stubs().will(returnValue(AICPU_ERROR_FAILED));
-    SetStreamDvppBuffBychlType(AICPU_DVPP_CHL_VPC, 10, (uint8_t *)nullptr); 
+    SetStreamDvppBuffBychlType(AICPU_DVPP_CHL_VPC, 10, (uint8_t*)nullptr);
     uint64_t buffLen = 1;
-    GetDvppBufAndLenBychlType(AICPU_DVPP_CHL_VPC, (uint8_t **)0, &buffLen);
+    GetDvppBufAndLenBychlType(AICPU_DVPP_CHL_VPC, (uint8_t**)0, &buffLen);
     bool result = IsCustAicpuSd();
     EXPECT_EQ(result, false);
 }
@@ -260,7 +234,7 @@ TEST_F(AiCPUContextUt, GetSqeIdSuccess)
     GetSqeId(numMax, start, end);
     EXPECT_EQ(start, inital);
     EXPECT_EQ(end, UINT32_MAX);
-    GetSqeId(UINT32_MAX-20U, start, end);
+    GetSqeId(UINT32_MAX - 20U, start, end);
     EXPECT_EQ(start, inital);
     GetSqeId(30, start, end);
     EXPECT_EQ(start, inital);

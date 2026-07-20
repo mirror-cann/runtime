@@ -31,7 +31,7 @@ protected:
 
 TEST_F(ActiveEntryStreamKernelTest, TsKernelActiveEntryStream_failed1)
 {
-    void *aa = nullptr;
+    void* aa = nullptr;
     aicpu::HwtsTsKernel tsKernelInfo = {};
     tsKernelInfo.kernelBase.cceKernel.paramBase = (uintptr_t)aa;
 

@@ -10,21 +10,14 @@
 #include <gtest/gtest.h>
 #include "driver/ascend_hal.h"
 
-class drvStubEnvironment : public testing::Environment
-{
+class drvStubEnvironment : public testing::Environment {
 public:
-    virtual void SetUp()
-    {
-        std::cout << "Runtime UT Environment SetUP" << std::endl;
-    }
-    virtual void TearDown()
-    {
-        std::cout << "Runtime UT  Environment TearDown" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "Runtime UT Environment SetUP" << std::endl; }
+    virtual void TearDown() { std::cout << "Runtime UT  Environment TearDown" << std::endl; }
 };
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     testing::AddGlobalTestEnvironment(new drvStubEnvironment);
-	testing::InitGoogleTest(&argc,argv);
+    testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

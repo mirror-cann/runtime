@@ -34,7 +34,7 @@
 #include "task_fail_callback_manager.hpp"
 #include "device/device_error_proc.hpp"
 #include <map>
-#include <utility>  // For std::pair and std::make_pair.
+#include <utility> // For std::pair and std::make_pair.
 #include "mmpa_api.h"
 #include "thread_local_container.hpp"
 #include "rt_unwrap.h"
@@ -42,27 +42,18 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class AsyncHwtsEngineTest : public testing::Test
-{
+class AsyncHwtsEngineTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"AsyncHwtsEngine test start"<<std::endl;
+    static void SetUpTestCase() { std::cout << "AsyncHwtsEngine test start" << std::endl; }
 
-    }
-
-    static void TearDownTestCase()
-    {
-        std::cout<<"AsyncHwtsEngine test end"<<std::endl;
-
-    }
+    static void TearDownTestCase() { std::cout << "AsyncHwtsEngine test end" << std::endl; }
 
     virtual void SetUp()
     {
         GlobalMockObject::verify();
         (void)rtSetSocVersion("Ascend910A");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        rt_ = const_cast<Runtime *>(Runtime::Instance());
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        rt_ = const_cast<Runtime*>(Runtime::Instance());
         EXPECT_NE(rt_, nullptr);
         originType_ = rt_->GetChipType();
         originThread_ = rt_->GetDisableThread();
@@ -73,20 +64,29 @@ protected:
         MOCKER_CPP(&Stream::SubmitCreateStreamTask).stubs().will(returnValue(RT_ERROR_NONE));
 
         int64_t hardwareVersion = CHIP_BEGIN << 8;
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL(driver_,
-            &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
 
-        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode).stubs().will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
+            .stubs()
+            .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
 
         rtError_t error = rtSetDevice(0);
         EXPECT_EQ(error, RT_ERROR_NONE);
 
         device_ = rt_->DeviceRetain(0, 0);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
@@ -104,27 +104,27 @@ protected:
         rt_->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
         rt_->SetDisableThread(originThread_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         GlobalMockObject::verify();
     }
 
 protected:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
 
     rtChipType_t originType_;
     bool originThread_;
-    Runtime *rt_ = nullptr;
-    Driver *driver_ = nullptr;
+    Runtime* rt_ = nullptr;
+    Driver* driver_ = nullptr;
 };
 
 TEST_F(AsyncHwtsEngineTest, Run_WithWrongThreadType)
 {
     std::unique_ptr<Engine> engine = std::make_unique<AsyncHwtsEngine>(device_);
     uint32_t threadType = 4U;
-    void * const typeParm = reinterpret_cast<void *>(static_cast<uintptr_t>(threadType));
+    void* const typeParm = reinterpret_cast<void*>(static_cast<uintptr_t>(threadType));
     std::unique_ptr<Thread> testThread(OsalFactory::CreateThread("test_thread", engine.get(), typeParm));
     EXPECT_NE(testThread, nullptr);
     rtError_t error = testThread->Start();
@@ -156,7 +156,7 @@ TEST_F(AsyncHwtsEngineTest, ReceivingRun_RT_PACKAGE_TYPE_TASK_REPORT)
     report.packageType = RT_PACKAGE_TYPE_TASK_REPORT;
 
     int32_t cqeCnt = 1;
-    void *cqeReport = reinterpret_cast<void *>(&report);
+    void* cqeReport = reinterpret_cast<void*>(&report);
     MOCKER_CPP_VIRTUAL(driver_, &Driver::ReportWait)
         .stubs()
         .with(outBound(cqeReport), outBound(&cqeCnt), mockcpp::any(), mockcpp::any(), mockcpp::any())
@@ -172,7 +172,7 @@ TEST_F(AsyncHwtsEngineTest, ReceivingRun_RT_PACKAGE_TYPE_ERROR_REPORT)
     report.packageType = RT_PACKAGE_TYPE_ERROR_REPORT;
 
     int32_t cqeCnt = 1;
-    void *cqeReport = reinterpret_cast<void *>(&report);
+    void* cqeReport = reinterpret_cast<void*>(&report);
     MOCKER_CPP_VIRTUAL(driver_, &Driver::ReportWait)
         .stubs()
         .with(outBound(cqeReport), outBound(&cqeCnt), mockcpp::any(), mockcpp::any(), mockcpp::any())

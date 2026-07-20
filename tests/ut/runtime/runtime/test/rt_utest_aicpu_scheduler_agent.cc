@@ -17,24 +17,13 @@ using namespace cce::runtime;
 
 class AicpuSchedulerAgentTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AicpuSchedulerAgentTest SetUP" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpuSchedulerAgentTest SetUP" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "AicpuSchedulerAgentTest Tear Down" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AicpuSchedulerAgentTest Tear Down" << std::endl; }
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 protected:
     AicpuSchedulerAgent aicpuSdAgent_;
@@ -50,49 +39,25 @@ TEST_F(AicpuSchedulerAgentTest, NotInit)
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
     ret = aicpuSdAgent_.AicpuModelExecute(modelId);
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
-    const char *dumpInfo = "dumpinfo";
+    const char* dumpInfo = "dumpinfo";
     ret = aicpuSdAgent_.DatadumpInfoLoad(dumpInfo, sizeof(dumpInfo));
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
 }
 
 extern "C" {
-int AICPUModelLoadStubSuccess(void *ptr)
-{
-    return 0;
-}
-int AICPUModelDestroyStubSuccess(uint32_t modelId)
-{
-    return 0;
-}
-int AICPUModelExecuteStubSuccess(uint32_t modelId)
-{
-    return 0;
-}
-int32_t LoadOpMappingInfoStubSuccess(const void *infoAddr, uint32_t len)
-{
-    return 0;
-}
-int AICPUModelLoadStubFail(void *ptr)
-{
-    return -1;
-}
-int AICPUModelDestroyStubFail(uint32_t modelId)
-{
-    return -1;
-}
-int AICPUModelExecuteStubFail(uint32_t modelId)
-{
-    return -1;
-}
-int32_t LoadOpMappingInfoStubFail(const void *infoAddr, uint32_t len)
-{
-    return -1;
-}
+int AICPUModelLoadStubSuccess(void* ptr) { return 0; }
+int AICPUModelDestroyStubSuccess(uint32_t modelId) { return 0; }
+int AICPUModelExecuteStubSuccess(uint32_t modelId) { return 0; }
+int32_t LoadOpMappingInfoStubSuccess(const void* infoAddr, uint32_t len) { return 0; }
+int AICPUModelLoadStubFail(void* ptr) { return -1; }
+int AICPUModelDestroyStubFail(uint32_t modelId) { return -1; }
+int AICPUModelExecuteStubFail(uint32_t modelId) { return -1; }
+int32_t LoadOpMappingInfoStubFail(const void* infoAddr, uint32_t len) { return -1; }
 }
 
 TEST_F(AicpuSchedulerAgentTest, dlopen_failed)
 {
-    void *handle = nullptr;
+    void* handle = nullptr;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
 
     rtError_t ret = aicpuSdAgent_.Init();
@@ -102,17 +67,26 @@ TEST_F(AicpuSchedulerAgentTest, dlopen_failed)
 TEST_F(AicpuSchedulerAgentTest, ModelLoad_notfound)
 {
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
     MOCKER(mmDlclose).stubs().will(returnValue(0));
-    const char *funcName = "AICPUModelLoad";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)nullptr));
+    const char* funcName = "AICPUModelLoad";
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)nullptr));
     funcName = "AICPUModelDestroy";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelDestroyStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelDestroyStubSuccess));
     funcName = "AICPUModelExecute";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelExecuteStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelExecuteStubSuccess));
     funcName = "LoadOpMappingInfo";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)LoadOpMappingInfoStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)LoadOpMappingInfoStubSuccess));
 
     rtError_t ret = aicpuSdAgent_.Init();
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
@@ -120,21 +94,29 @@ TEST_F(AicpuSchedulerAgentTest, ModelLoad_notfound)
     aicpuSdAgent_.Destroy();
 }
 
-
 TEST_F(AicpuSchedulerAgentTest, ModelDestroy_notfound)
 {
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
     MOCKER(mmDlclose).stubs().will(returnValue(0));
-    const char *funcName = "AICPUModelLoad";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelLoadStubSuccess));
+    const char* funcName = "AICPUModelLoad";
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelLoadStubSuccess));
     funcName = "AICPUModelDestroy";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)nullptr));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)nullptr));
     funcName = "AICPUModelExecute";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelExecuteStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelExecuteStubSuccess));
     funcName = "LoadOpMappingInfo";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)LoadOpMappingInfoStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)LoadOpMappingInfoStubSuccess));
 
     rtError_t ret = aicpuSdAgent_.Init();
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
@@ -145,17 +127,26 @@ TEST_F(AicpuSchedulerAgentTest, ModelDestroy_notfound)
 TEST_F(AicpuSchedulerAgentTest, ModelExecute_notfound)
 {
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
     MOCKER(mmDlclose).stubs().will(returnValue(0));
-    const char *funcName = "AICPUModelLoad";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelLoadStubSuccess));
+    const char* funcName = "AICPUModelLoad";
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelLoadStubSuccess));
     funcName = "AICPUModelDestroy";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelDestroyStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelDestroyStubSuccess));
     funcName = "AICPUModelExecute";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)nullptr));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)nullptr));
     funcName = "LoadOpMappingInfo";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)LoadOpMappingInfoStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)LoadOpMappingInfoStubSuccess));
 
     rtError_t ret = aicpuSdAgent_.Init();
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
@@ -166,17 +157,26 @@ TEST_F(AicpuSchedulerAgentTest, ModelExecute_notfound)
 TEST_F(AicpuSchedulerAgentTest, LoadOpMapping_notfound)
 {
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
     MOCKER(mmDlclose).stubs().will(returnValue(0));
-    const char *funcName = "AICPUModelLoad";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelLoadStubSuccess));
+    const char* funcName = "AICPUModelLoad";
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelLoadStubSuccess));
     funcName = "AICPUModelDestroy";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelDestroyStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelDestroyStubSuccess));
     funcName = "AICPUModelExecute";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelExecuteStubSuccess));
+    MOCKER(mmDlsym)
+        .defaults()
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelExecuteStubSuccess));
     funcName = "LoadOpMappingInfo";
-    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)nullptr));
+    MOCKER(mmDlsym).defaults().with(mockcpp::any(), smirror(funcName)).will(returnValue((void*)nullptr));
 
     rtError_t ret = aicpuSdAgent_.Init();
     EXPECT_EQ(ret, RT_ERROR_DRV_SYM_AICPU);
@@ -187,20 +187,29 @@ TEST_F(AicpuSchedulerAgentTest, LoadOpMapping_notfound)
 TEST_F(AicpuSchedulerAgentTest, success)
 {
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
     MOCKER(mmDlclose).stubs().will(returnValue(0));
-    const char *funcName = "AICPUModelLoad";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelLoadStubSuccess));
+    const char* funcName = "AICPUModelLoad";
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelLoadStubSuccess));
     funcName = "AICPUModelDestroy";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(
-            returnValue((void *)AICPUModelDestroyStubSuccess));
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelDestroyStubSuccess));
     funcName = "AICPUModelExecute";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(
-            returnValue((void *)AICPUModelExecuteStubSuccess));
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelExecuteStubSuccess));
     funcName = "LoadOpMappingInfo";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(
-            returnValue((void *)LoadOpMappingInfoStubSuccess));
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)LoadOpMappingInfoStubSuccess));
 
     rtError_t ret = aicpuSdAgent_.Init();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -213,7 +222,7 @@ TEST_F(AicpuSchedulerAgentTest, success)
     EXPECT_EQ(ret, RT_ERROR_NONE);
     ret = aicpuSdAgent_.AicpuModelExecute(modelId);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    const char *dumpInfo = "dumpinfo";
+    const char* dumpInfo = "dumpinfo";
     ret = aicpuSdAgent_.DatadumpInfoLoad(dumpInfo, sizeof(dumpInfo));
     EXPECT_EQ(ret, RT_ERROR_NONE);
     aicpuSdAgent_.Destroy();
@@ -222,20 +231,29 @@ TEST_F(AicpuSchedulerAgentTest, success)
 TEST_F(AicpuSchedulerAgentTest, failed)
 {
     uint64_t stub = 123;
-    void *handle = &stub;
+    void* handle = &stub;
     MOCKER(mmDlopen).stubs().will(returnValue(handle));
     MOCKER(mmDlclose).stubs().will(returnValue(0));
-    const char *funcName = "AICPUModelLoad";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(returnValue((void *)AICPUModelLoadStubFail));
+    const char* funcName = "AICPUModelLoad";
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelLoadStubFail));
     funcName = "AICPUModelDestroy";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(
-            returnValue((void *)AICPUModelDestroyStubFail));
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelDestroyStubFail));
     funcName = "AICPUModelExecute";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(
-            returnValue((void *)AICPUModelExecuteStubFail));
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)AICPUModelExecuteStubFail));
     funcName = "LoadOpMappingInfo";
-    MOCKER(mmDlsym).expects(once()).with(mockcpp::any(), smirror(funcName)).will(
-            returnValue((void *)LoadOpMappingInfoStubFail));
+    MOCKER(mmDlsym)
+        .expects(once())
+        .with(mockcpp::any(), smirror(funcName))
+        .will(returnValue((void*)LoadOpMappingInfoStubFail));
 
     rtError_t ret = aicpuSdAgent_.Init();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -248,7 +266,7 @@ TEST_F(AicpuSchedulerAgentTest, failed)
     EXPECT_EQ(ret, RT_ERROR_AICPU_INTERNAL_ERROR);
     ret = aicpuSdAgent_.AicpuModelExecute(modelId);
     EXPECT_EQ(ret, RT_ERROR_AICPU_INTERNAL_ERROR);
-    const char *dumpInfo = "dumpinfo";
+    const char* dumpInfo = "dumpinfo";
     ret = aicpuSdAgent_.DatadumpInfoLoad(dumpInfo, sizeof(dumpInfo));
     EXPECT_EQ(ret, RT_ERROR_AICPU_INTERNAL_ERROR);
     aicpuSdAgent_.Destroy();

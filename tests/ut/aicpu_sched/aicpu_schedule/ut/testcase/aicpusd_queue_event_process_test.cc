@@ -25,41 +25,41 @@ using namespace AicpuSchedule;
 using namespace bqs;
 using namespace std;
 
-namespace
-{
-    QueueRoute queueRoute = {1,2,0,0};
-    uint32_t mbufSize = 0;
-    constexpr uint32_t MAX_BUFF_SIZE = 1024;
-    char mbuffData[MAX_BUFF_SIZE] = {0};
-    QsRouteHead routeHeadBase = {1000,2,0,0};
-    QueueRoute qRouteArray [] = {{1,2,0,0,0,0,0},{3,4,0,0,0,0,0}};
-    char routeListMsgbuff[MAX_BUFF_SIZE] = {0};
-}
+namespace {
+QueueRoute queueRoute = {1, 2, 0, 0};
+uint32_t mbufSize = 0;
+constexpr uint32_t MAX_BUFF_SIZE = 1024;
+char mbuffData[MAX_BUFF_SIZE] = {0};
+QsRouteHead routeHeadBase = {1000, 2, 0, 0};
+QueueRoute qRouteArray[] = {{1, 2, 0, 0, 0, 0, 0}, {3, 4, 0, 0, 0, 0, 0}};
+char routeListMsgbuff[MAX_BUFF_SIZE] = {0};
+} // namespace
 
-int halMbufAllocStub(unsigned int size, Mbuf **mbuf) {
-    *mbuf = reinterpret_cast<Mbuf *>(mbuffData);
+int halMbufAllocStub(unsigned int size, Mbuf** mbuf)
+{
+    *mbuf = reinterpret_cast<Mbuf*>(mbuffData);
     mbufSize = size;
     return 0;
 }
 
-int halMbufFreeStub(Mbuf *mbuf) {
-    return 0;
-}
+int halMbufFreeStub(Mbuf* mbuf) { return 0; }
 
-int halMbufGetBuffAddrStub(Mbuf *mbuf, void **buf) {
+int halMbufGetBuffAddrStub(Mbuf* mbuf, void** buf)
+{
     *buf = mbuf;
     return 0;
 }
 
-int halMbufGetDataLenStub(Mbuf *mbuf, uint64_t *len) {
+int halMbufGetDataLenStub(Mbuf* mbuf, uint64_t* len)
+{
     *len = mbufSize;
     return 0;
 }
 
-int halGrpQueryWithOneGroup(GroupQueryCmdType cmd,
-                void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
+int halGrpQueryWithOneGroup(
+    GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
-    GroupQueryOutput *groupQueryOutput = reinterpret_cast<GroupQueryOutput *>(outBuff);
+    GroupQueryOutput* groupQueryOutput = reinterpret_cast<GroupQueryOutput*>(outBuff);
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
     groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
@@ -71,29 +71,29 @@ int halGrpQueryWithOneGroup(GroupQueryCmdType cmd,
     return 0;
 }
 
-drvError_t halQueueQueryAllQueues(unsigned int devId, QueueQueryCmdType cmd,
-                                 QueueQueryInputPara *inPut, QueueQueryOutputPara *outPut)
+drvError_t halQueueQueryAllQueues(
+    unsigned int devId, QueueQueryCmdType cmd, QueueQueryInputPara* inPut, QueueQueryOutputPara* outPut)
 {
-    QueueQueryOutput *queueInfoList = reinterpret_cast<QueueQueryOutput *>(outPut->outBuff);
+    QueueQueryOutput* queueInfoList = reinterpret_cast<QueueQueryOutput*>(outPut->outBuff);
     outPut->outLen = sizeof(queueInfoList->queQueryQuesOfProcInfo[0]);
     queueInfoList->queQueryQuesOfProcInfo[0].qid = 1001;
     queueInfoList->queQueryQuesOfProcInfo[0].attr = {1, 1, 1, 0};
     return DRV_ERROR_NONE;
 }
 
-drvError_t halQueueQueryOneWithoutQueueAuth(unsigned int devId, QueueQueryCmdType cmd,
-                                 QueueQueryInputPara *inPut, QueueQueryOutputPara *outPut)
+drvError_t halQueueQueryOneWithoutQueueAuth(
+    unsigned int devId, QueueQueryCmdType cmd, QueueQueryInputPara* inPut, QueueQueryOutputPara* outPut)
 {
-    QueueQueryOutput *queueInfoList = reinterpret_cast<QueueQueryOutput *>(outPut->outBuff);
+    QueueQueryOutput* queueInfoList = reinterpret_cast<QueueQueryOutput*>(outPut->outBuff);
     outPut->outLen = sizeof(queueInfoList->queQueryQueueAttrInfo);
     queueInfoList->queQueryQueueAttrInfo.attr = {0, 0, 0, 0};
     return DRV_ERROR_NONE;
 }
 
-drvError_t halQueueQueryOneWithQueueAuth(unsigned int devId, QueueQueryCmdType cmd,
-                                 QueueQueryInputPara *inPut, QueueQueryOutputPara *outPut)
+drvError_t halQueueQueryOneWithQueueAuth(
+    unsigned int devId, QueueQueryCmdType cmd, QueueQueryInputPara* inPut, QueueQueryOutputPara* outPut)
 {
-    QueueQueryOutput *queueInfoList = reinterpret_cast<QueueQueryOutput *>(outPut->outBuff);
+    QueueQueryOutput* queueInfoList = reinterpret_cast<QueueQueryOutput*>(outPut->outBuff);
     outPut->outLen = sizeof(queueInfoList->queQueryQueueAttrInfo);
     queueInfoList->queQueryQueueAttrInfo.attr = {1, 1, 1, 0};
     return DRV_ERROR_NONE;
@@ -101,10 +101,7 @@ drvError_t halQueueQueryOneWithQueueAuth(unsigned int devId, QueueQueryCmdType c
 
 class AicpusdQueueEventProcessTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AicpusdQueueEventProcessTest SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpusdQueueEventProcessTest SetUpTestCase" << std::endl; }
 
     static void TearDownTestCase()
     {
@@ -114,21 +111,14 @@ protected:
 
     virtual void SetUp()
     {
-        MOCKER(halMbufAlloc)
-            .stubs()
-            .will(invoke(halMbufAllocStub));
-        MOCKER(halMbufFree)
-            .stubs()
-            .will(invoke(halMbufFreeStub));
-        MOCKER(halMbufGetBuffAddr)
-            .stubs()
-            .will(invoke(halMbufGetBuffAddrStub));
-        MOCKER(halMbufGetDataLen)
-            .stubs()
-            .will(invoke(halMbufGetDataLenStub));
+        MOCKER(halMbufAlloc).stubs().will(invoke(halMbufAllocStub));
+        MOCKER(halMbufFree).stubs().will(invoke(halMbufFreeStub));
+        MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrStub));
+        MOCKER(halMbufGetDataLen).stubs().will(invoke(halMbufGetDataLenStub));
         (void)memcpy_s(routeListMsgbuff, MAX_BUFF_SIZE, &routeHeadBase, sizeof(routeHeadBase));
-        (void)memcpy_s(routeListMsgbuff + sizeof(routeHeadBase), MAX_BUFF_SIZE - sizeof(routeHeadBase),
-                       &qRouteArray, sizeof(QueueRoute) * 2);
+        (void)memcpy_s(
+            routeListMsgbuff + sizeof(routeHeadBase), MAX_BUFF_SIZE - sizeof(routeHeadBase), &qRouteArray,
+            sizeof(QueueRoute) * 2);
         AicpuQueueEventProcess::GetInstance().callbacks_.clear();
         std::cout << "AicpusdQueueEventProcessTest SetUP" << std::endl;
     }
@@ -143,7 +133,7 @@ protected:
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_01)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_PEEK_MSG;
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
@@ -152,43 +142,37 @@ TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_01)
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventFailed_03)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ENQUEUE_MSG;
-    MOCKER(halEventProc)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halEventProc).stubs().will(returnValue(1));
     auto ret = AicpuQueueEventProcess::GetInstance().ProcessDrvMsg(event);
     EXPECT_EQ(ret, 1);
 }
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_02)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ENQUEUE_MSG;
-    MOCKER(halEventProc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halEventProc).stubs().will(returnValue(DRV_ERROR_NONE));
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventFailed_02)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_QUEUE_INIT_MSG;
-    MOCKER_CPP(&AicpuQueueEventProcess::GetOrCreateGroup)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_ERROR_DRV_ERR));
+    MOCKER_CPP(&AicpuQueueEventProcess::GetOrCreateGroup).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_DRV_ERR));
     auto ret = AicpuQueueEventProcess::GetInstance().ProcessDrvMsg(event);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_03)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_GRANT_MSG;
 
@@ -208,7 +192,8 @@ TEST_F(AicpusdQueueEventProcessTest, GetOrCreateGroupFail)
 {
     AicpuQueueEventProcess inst;
     std::string grpName;
-    MOCKER_CPP(&AicpuDrvManager::QueryProcBuffInfo).stubs()
+    MOCKER_CPP(&AicpuDrvManager::QueryProcBuffInfo)
+        .stubs()
         .will(returnValue(static_cast<int32_t>(AICPU_SCHEDULE_ERROR_INNER_ERROR)));
     const auto ret = inst.GetOrCreateGroup(grpName);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
@@ -216,7 +201,7 @@ TEST_F(AicpusdQueueEventProcessTest, GetOrCreateGroupFail)
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_04)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ATTACH_MSG;
     AicpuQueueEventProcess::GetInstance().type_ = CpType::SLAVE;
@@ -234,17 +219,16 @@ TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_04)
 
 TEST_F(AicpusdQueueEventProcessTest, DriverEventSuccessed_05)
 {
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = 10000;
     auto ret = AicpuQueueEventProcess::GetInstance().ProcessDrvMsg(event);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-
 TEST_F(AicpusdQueueEventProcessTest, ProcessQsMsg_Failed)
 {
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = 10000;
     uint32_t msgLen = sizeof(QsBindInit);
@@ -258,7 +242,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessQsMsg_Failed)
 
 TEST_F(AicpusdQueueEventProcessTest, BindQueueInitSuccessed)
 {
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_BIND_QUEUE_INIT;
     uint32_t msgLen = sizeof(QsBindInit);
@@ -273,7 +257,7 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueInitSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, BindQueueInitFailed_01)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::UNINIT;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_BIND_QUEUE_INIT;
     uint32_t msgLen = sizeof(QsBindInit);
@@ -281,23 +265,21 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueInitFailed_01)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &qsBindInit, msgLen);
     EXPECT_EQ(retMem, EOK);
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(1));
     auto ret = AicpuQueueEventProcess::GetInstance().ProcessBindQueueInit(event);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
 TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRetSuccessed)
 {
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_BIND_QUEUE_INIT_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
     QsProcMsgRspDstAicpu msgRsp = {0};
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -310,22 +292,20 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRetSuccessed)
 
 TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRetFailed_001)
 {
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_BIND_QUEUE_INIT_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
     QsProcMsgRspDstAicpu msgRsp = {0};
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
     AicpuQueueEventProcess::GetInstance().CreateAndAddCallbackMsg(event, mbuf, userData, callbackMsg);
     EXPECT_EQ(retMem, EOK);
-    MOCKER(halQueueAttach)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halQueueAttach).stubs().will(returnValue(1));
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
     halMbufFreeStub(mbuf);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -333,14 +313,14 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRetFailed_001)
 
 TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRetProcessQsRetFailed)
 {
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_BIND_QUEUE_INIT_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
     QsProcMsgRspDstAicpu msgRsp = {0};
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -354,14 +334,14 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRetProcessQsRetFailed)
 
 TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRethalQueueInitFailed)
 {
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_BIND_QUEUE_INIT_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
     QsProcMsgRspDstAicpu msgRsp = {0};
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -376,7 +356,7 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueInitRethalQueueInitFailed)
 TEST_F(AicpusdQueueEventProcessTest, BindQueueSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -391,7 +371,7 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, UnBindQueueSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_UNBIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -406,7 +386,7 @@ TEST_F(AicpusdQueueEventProcessTest, UnBindQueueSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, BindQueueRetSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_BIND_QUEUE_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
@@ -415,7 +395,7 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueRetSuccessed)
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
     EXPECT_EQ(retMem, EOK);
 
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -423,10 +403,11 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueRetSuccessed)
     event1.priv.msg_len = msgLen1;
     retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP((void **)&mbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP((void**)&mbuf))
         .will(returnValue(DRV_ERROR_NONE));
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -438,7 +419,7 @@ TEST_F(AicpusdQueueEventProcessTest, BindQueueRetSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, UnBindQueueRetSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_UNBIND_QUEUE_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
@@ -447,7 +428,7 @@ TEST_F(AicpusdQueueEventProcessTest, UnBindQueueRetSuccessed)
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
     EXPECT_EQ(retMem, EOK);
 
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -455,10 +436,11 @@ TEST_F(AicpusdQueueEventProcessTest, UnBindQueueRetSuccessed)
     event1.priv.msg_len = msgLen1;
     retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP((void **)&mbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP((void**)&mbuf))
         .will(returnValue(DRV_ERROR_NONE));
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -470,7 +452,7 @@ TEST_F(AicpusdQueueEventProcessTest, UnBindQueueRetSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE_NUM;
     QueueRouteQuery msg = {1, 1, 1, 1, reinterpret_cast<uintptr_t>(&queueRoute)};
@@ -485,7 +467,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumParseFail)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE_NUM;
     QueueRouteQuery msg = {1, 1, 1, 1, reinterpret_cast<uintptr_t>(&queueRoute)};
@@ -501,7 +483,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumParseFail)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumParseCreateCbkFail)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE_NUM;
     QueueRouteQuery msg = {1, 1, 1, 1, reinterpret_cast<uintptr_t>(&queueRoute)};
@@ -517,7 +499,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumParseCreateCbkFail)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumFailed_001)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::UNINIT;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE_NUM;
     QueueRouteQuery msg = {1, 1, 1, 1, reinterpret_cast<uintptr_t>(&queueRoute)};
@@ -532,7 +514,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumFailed_001)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumFailed_002)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE_NUM;
     QueueRouteQuery msg = {1, 1, 1, 1, reinterpret_cast<uintptr_t>(&queueRoute)};
@@ -540,9 +522,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumFailed_002)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msg, msgLen);
     EXPECT_EQ(retMem, EOK);
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(1));
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
@@ -550,7 +530,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumFailed_002)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_QUERY_QUEUE_NUM_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
@@ -558,7 +538,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetSuccessed)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -570,7 +550,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetGetCbkFail)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_QUERY_QUEUE_NUM_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
@@ -578,7 +558,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetGetCbkFail)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -589,7 +569,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetGetCbkFail)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetParseFail)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_QUERY_QUEUE_NUM_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
@@ -597,7 +577,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetParseFail)
     event.priv.msg_len = 0;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -608,7 +588,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueNumRetParseFail)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -623,7 +603,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueSuccessed)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_001)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::UNINIT;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -638,7 +618,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_001)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_002)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, 0};
@@ -653,13 +633,13 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_002)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_003)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
-    QsRouteHead routeHead = {1000,0,0,0};
+    QsRouteHead routeHead = {1000, 0, 0, 0};
     (void)memcpy_s(routeListMsgbuff, MAX_BUFF_SIZE, &routeHead, sizeof(routeHead));
-    (void)memcpy_s(routeListMsgbuff + sizeof(routeHead), MAX_BUFF_SIZE - sizeof(routeHead),
-                       &qRouteArray, sizeof(QueueRoute) * 2);
+    (void)memcpy_s(
+        routeListMsgbuff + sizeof(routeHead), MAX_BUFF_SIZE - sizeof(routeHead), &qRouteArray, sizeof(QueueRoute) * 2);
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
     uint32_t msgLen = sizeof(QueueRouteList);
     event.priv.msg_len = msgLen;
@@ -672,7 +652,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_003)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_004)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -680,9 +660,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_004)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &queueRouteList, msgLen);
     EXPECT_EQ(retMem, EOK);
-    MOCKER(halMbufSetDataLen)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halMbufSetDataLen).stubs().will(returnValue(1));
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
@@ -690,7 +668,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_004)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_005)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -698,9 +676,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_005)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &queueRouteList, msgLen);
     EXPECT_EQ(retMem, EOK);
-    MOCKER_CPP(&AicpuQueueEventProcess::CreateAndAddCallbackMsg)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuQueueEventProcess::CreateAndAddCallbackMsg).stubs().will(returnValue(-1));
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
     EXPECT_EQ(ret, -1);
 }
@@ -708,7 +684,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_005)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_006)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -716,9 +692,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_006)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &queueRouteList, msgLen);
     EXPECT_EQ(retMem, EOK);
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(1));
     auto ret = AicpuEventManager::GetInstance().ProcessEvent(event, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
@@ -726,7 +700,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_006)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_007)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = ACL_QUERY_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -741,7 +715,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueFailed_007)
 TEST_F(AicpusdQueueEventProcessTest, QueryQueueRetSuccessed)
 {
     AicpuQueueEventProcess::GetInstance().initPipeline_ = BindQueueInitStatus::INITED;
-    event_info event = {{EVENT_QS_MSG},{0}};
+    event_info event = {{EVENT_QS_MSG}, {0}};
     event.comm.event_id = EVENT_QS_MSG;
     event.comm.subevent_id = AICPU_QUERY_QUEUE_RES;
     uint32_t msgLen = sizeof(QsProcMsgRspDstAicpu);
@@ -749,7 +723,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueRetSuccessed)
     event.priv.msg_len = msgLen;
     int retMem = memcpy_s(event.priv.msg, msgLen, &msgRsp, msgLen);
     EXPECT_EQ(retMem, EOK);
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -757,10 +731,11 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueRetSuccessed)
     event1.priv.msg_len = msgLen1;
     retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP((void **)&mbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP((void**)&mbuf))
         .will(returnValue(DRV_ERROR_NONE));
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -771,7 +746,7 @@ TEST_F(AicpusdQueueEventProcessTest, QueryQueueRetSuccessed)
 
 TEST_F(AicpusdQueueEventProcessTest, AddCallback_Failed)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -779,7 +754,7 @@ TEST_F(AicpusdQueueEventProcessTest, AddCallback_Failed)
     event1.priv.msg_len = msgLen1;
     auto retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     shared_ptr<CallbackMsg> callbackMsg;
     uint64_t userData = 0;
@@ -798,7 +773,7 @@ TEST_F(AicpusdQueueEventProcessTest, GetAndDeleteCallback_Failed)
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitFailed_02)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -813,7 +788,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitFailed_02)
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitParseMsgFailed)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -829,7 +804,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitParseMsgFailed)
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitQueryQsPidFailed)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -845,7 +820,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitQueryQsPidFailed)
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitGetOrCreateGroupFailed)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -861,7 +836,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitGetOrCreateGroupFailed)
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitShareGroupWithProcessFailed)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -877,7 +852,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitShareGroupWithProcessFa
 
 TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitCreateAndAddCallbackMsgFailed)
 {
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -893,20 +868,18 @@ TEST_F(AicpusdQueueEventProcessTest, ProcessBindQueueInitCreateAndAddCallbackMsg
 
 TEST_F(AicpusdQueueEventProcessTest, SendEventToQs_Failed)
 {
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(1));
-    QueueRouteList *msg = nullptr;
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(1));
+    QueueRouteList* msg = nullptr;
     const size_t len = 0;
     auto ret = AicpuQueueEventProcess::GetInstance().SendEventToQs(
-        reinterpret_cast<char_t *>(msg), len, AICPU_QUEUE_RELATION_PROCESS);
+        reinterpret_cast<char_t*>(msg), len, AICPU_QUEUE_RELATION_PROCESS);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
 TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed01)
 {
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, 0};
@@ -922,7 +895,7 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed01)
 TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed02)
 {
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, 0};
@@ -938,7 +911,7 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed02)
 TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed03)
 {
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -956,7 +929,7 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed04)
 {
     GlobalMockObject::verify();
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -965,12 +938,10 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed04)
     auto retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
     callback->event = event1;
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     callback->buff = mbuf;
-    MOCKER(halMbufGetBuffAddr)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(1));
     auto ret = AicpuQueueEventProcess::GetInstance().CopyResult(callback);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
@@ -979,7 +950,7 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed05)
 {
     GlobalMockObject::verify();
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -988,15 +959,11 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed05)
     auto retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
     callback->event = event1;
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     callback->buff = mbuf;
-    MOCKER(halMbufGetBuffAddr)
-            .stubs()
-            .will(invoke(halMbufGetBuffAddrStub));
-    MOCKER(halMbufGetDataLen)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrStub));
+    MOCKER(halMbufGetDataLen).stubs().will(returnValue(1));
     auto ret = AicpuQueueEventProcess::GetInstance().CopyResult(callback);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
@@ -1004,25 +971,23 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed05)
 TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed06)
 {
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
-    QsRouteHead routeHead = {2,2,0,0};
+    QsRouteHead routeHead = {2, 2, 0, 0};
     (void)memcpy_s(routeListMsgbuff, MAX_BUFF_SIZE, &routeHead, sizeof(routeHead));
-    (void)memcpy_s(routeListMsgbuff + sizeof(routeHead), MAX_BUFF_SIZE - sizeof(routeHead),
-                       &qRouteArray, sizeof(QueueRoute) * 2);
+    (void)memcpy_s(
+        routeListMsgbuff + sizeof(routeHead), MAX_BUFF_SIZE - sizeof(routeHead), &qRouteArray, sizeof(QueueRoute) * 2);
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
     uint32_t msgLen1 = sizeof(QueueRouteList);
     event1.priv.msg_len = msgLen1;
     auto retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
     callback->event = event1;
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     callback->buff = mbuf;
-    MOCKER(halMbufGetDataLen)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halMbufGetDataLen).stubs().will(returnValue(1));
     auto ret = AicpuQueueEventProcess::GetInstance().CopyResult(callback);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
@@ -1030,7 +995,7 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed06)
 TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed07)
 {
     std::shared_ptr<CallbackMsg> callback = make_shared<CallbackMsg>();
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(routeListMsgbuff)};
@@ -1039,12 +1004,10 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResult_Failed07)
     auto retMem = memcpy_s(event1.priv.msg, msgLen1, &queueRouteList, msgLen1);
     EXPECT_EQ(retMem, EOK);
     callback->event = event1;
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(1, &mbuf);
     callback->buff = mbuf;
-    MOCKER(memcpy_s)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(memcpy_s).stubs().will(returnValue(-1));
     auto ret = AicpuQueueEventProcess::GetInstance().CopyResult(callback);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
@@ -1057,18 +1020,18 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResultSuccess)
     }
 
     // set event
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     event1.priv.msg_len = sizeof(QueueRouteList);
-    QsRouteHead routeHead = {.length=10, .routeNum=1, .subEventId=1, .userData=1};
+    QsRouteHead routeHead = {.length = 10, .routeNum = 1, .subEventId = 1, .userData = 1};
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(&routeHead)};
     auto retMem = memcpy_s(event1.priv.msg, sizeof(QueueRouteList), &queueRouteList, sizeof(QueueRouteList));
     EXPECT_EQ(retMem, EOK);
     callback->event = event1;
 
     // set mbuf
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     callback->buff = mbuf;
 
@@ -1084,18 +1047,18 @@ TEST_F(AicpusdQueueEventProcessTest, CopyResultMemcpyFail)
     }
 
     // set event
-    event_info event1 = {{EVENT_QS_MSG},{0}};
+    event_info event1 = {{EVENT_QS_MSG}, {0}};
     event1.comm.event_id = EVENT_QS_MSG;
     event1.comm.subevent_id = ACL_BIND_QUEUE;
     event1.priv.msg_len = sizeof(QueueRouteList);
-    QsRouteHead routeHead = {.length=10, .routeNum=1, .subEventId=1, .userData=1};
+    QsRouteHead routeHead = {.length = 10, .routeNum = 1, .subEventId = 1, .userData = 1};
     QueueRouteList queueRouteList = {1, reinterpret_cast<uintptr_t>(&routeHead)};
     auto retMem = memcpy_s(event1.priv.msg, sizeof(QueueRouteList), &queueRouteList, sizeof(QueueRouteList));
     EXPECT_EQ(retMem, EOK);
     callback->event = event1;
 
     // set mbuf
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     halMbufAllocStub(10, &mbuf);
     callback->buff = mbuf;
 
@@ -1109,9 +1072,7 @@ TEST_F(AicpusdQueueEventProcessTest, AttachGroupForSlave_Success_01)
     MOCKER(halGrpAttach).stubs().will(returnValue(int32_t(DRV_ERROR_NONE)));
     MOCKER(halBuffInit).stubs().will(returnValue(int32_t(DRV_ERROR_NONE)));
 
-    std::map<std::string, GroupShareAttr> grpInfos = {
-        {"aicpusd_1", {0}}
-    };
+    std::map<std::string, GroupShareAttr> grpInfos = {{"aicpusd_1", {0}}};
 
     std::string outGroupName;
     auto ret = AicpuQueueEventProcess::GetInstance().AttachGroupForSlave(grpInfos, outGroupName);
@@ -1123,9 +1084,7 @@ TEST_F(AicpusdQueueEventProcessTest, AttachGroupForSlaveFail)
     MOCKER(halGrpAttach).stubs().will(returnValue(int32_t(DRV_ERROR_INNER_ERR)));
     MOCKER(halBuffInit).stubs().will(returnValue(int32_t(DRV_ERROR_NONE)));
 
-    std::map<std::string, GroupShareAttr> grpInfos = {
-        {"aicpusd_1", {0}}
-    };
+    std::map<std::string, GroupShareAttr> grpInfos = {{"aicpusd_1", {0}}};
 
     std::string outGroupName;
     auto ret = AicpuQueueEventProcess::GetInstance().AttachGroupForSlave(grpInfos, outGroupName);
@@ -1134,9 +1093,7 @@ TEST_F(AicpusdQueueEventProcessTest, AttachGroupForSlaveFail)
 
 TEST_F(AicpusdQueueEventProcessTest, AddQueueAuthToQs_Success_01)
 {
-    MOCKER(halQueueGrant)
-        .stubs()
-        .will(returnValue(int32_t(DRV_ERROR_NONE)));
+    MOCKER(halQueueGrant).stubs().will(returnValue(int32_t(DRV_ERROR_NONE)));
 
     bqs::QueueRoute queueRouterTest = {};
     queueRouterTest.srcId = 0U;
@@ -1154,17 +1111,13 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_CreateGroup_Success)
     event.comm.subevent_id = PROXY_SUBEVENT_CREATE_GROUP;
 
     event.priv.msg_len = sizeof(ProxyMsgCreateGroup) + sizeof(event_sync_msg);
-    ProxyMsgCreateGroup *msg =  reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCreateGroup* msg = reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
     char_t groupName[] = "DEFAULT";
     ASSERT_EQ(memcpy_s(&msg->groupName[0], 16, &groupName[0], sizeof(groupName)), EOK);
 
-    MOCKER_CPP(&AicpuQueueEventProcess::CreateGroupForMaster)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER(halGrpCacheAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER_CPP(&AicpuQueueEventProcess::CreateGroupForMaster).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpCacheAlloc).stubs().will(returnValue(DRV_ERROR_NONE));
 
     AicpuQueueEventProcess instance;
     ProxyMsgRsp rsp = {};
@@ -1191,7 +1144,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCreateGroup_Fail_MultiGroup)
     event.comm.subevent_id = PROXY_SUBEVENT_CREATE_GROUP;
 
     event.priv.msg_len = sizeof(ProxyMsgCreateGroup) + sizeof(event_sync_msg);
-    ProxyMsgCreateGroup *msg =  reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCreateGroup* msg = reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
     char_t groupName[] = "DEFAULT";
     ASSERT_EQ(memcpy_s(&msg->groupName[0], 16, &groupName[0], sizeof(groupName)), EOK);
@@ -1208,15 +1161,13 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCreateGroup_Fail_CreateGroup)
     event.comm.subevent_id = PROXY_SUBEVENT_CREATE_GROUP;
 
     event.priv.msg_len = sizeof(ProxyMsgCreateGroup) + sizeof(event_sync_msg);
-    ProxyMsgCreateGroup *msg =  reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCreateGroup* msg = reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
     char_t groupName[] = "DEFAULT";
     ASSERT_EQ(memcpy_s(&msg->groupName[0], 16, &groupName[0], sizeof(groupName)), EOK);
 
     AicpuQueueEventProcess instance;
-    MOCKER_CPP(&AicpuQueueEventProcess::CreateGroupForMaster)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_ERROR_DRV_ERR));
+    MOCKER_CPP(&AicpuQueueEventProcess::CreateGroupForMaster).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_DRV_ERR));
     EXPECT_EQ(instance.ProxyCreateGroup(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
@@ -1227,18 +1178,14 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCreateGroup_Fail_Alloc)
     event.comm.subevent_id = PROXY_SUBEVENT_CREATE_GROUP;
 
     event.priv.msg_len = sizeof(ProxyMsgCreateGroup) + sizeof(event_sync_msg);
-    ProxyMsgCreateGroup *msg =  reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCreateGroup* msg = reinterpret_cast<ProxyMsgCreateGroup*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
     char_t groupName[] = "DEFAULT";
     ASSERT_EQ(memcpy_s(&msg->groupName[0], 16, &groupName[0], sizeof(groupName)), EOK);
 
     AicpuQueueEventProcess instance;
-    MOCKER_CPP(&AicpuQueueEventProcess::CreateGroupForMaster)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER(halGrpCacheAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER_CPP(&AicpuQueueEventProcess::CreateGroupForMaster).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpCacheAlloc).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
     EXPECT_EQ(instance.ProxyCreateGroup(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
@@ -1249,7 +1196,7 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_AllocMbuf_Success)
     event.comm.subevent_id = PROXY_SUBEVENT_ALLOC_MBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgAllocMbuf) + sizeof(event_sync_msg);
-    ProxyMsgAllocMbuf *msg =  reinterpret_cast<ProxyMsgAllocMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgAllocMbuf* msg = reinterpret_cast<ProxyMsgAllocMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
 
     AicpuQueueEventProcess instance;
@@ -1267,8 +1214,8 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyAllocMbuf_Fail_ParseMessage)
     event.priv.msg_len = sizeof(ProxyMsgAllocMbuf);
 
     AicpuQueueEventProcess instance;
-    Mbuf *mbufPtr = nullptr;
-    void *dataPptr = nullptr;
+    Mbuf* mbufPtr = nullptr;
+    void* dataPptr = nullptr;
     EXPECT_EQ(instance.ProxyAllocMbuf(event, &mbufPtr, &dataPptr), AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
@@ -1281,15 +1228,13 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyAllocMbuf_Fail_halMbufAlloc)
     event.comm.subevent_id = PROXY_SUBEVENT_ALLOC_MBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgAllocMbuf) + sizeof(event_sync_msg);
-    ProxyMsgAllocMbuf *msg =  reinterpret_cast<ProxyMsgAllocMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgAllocMbuf* msg = reinterpret_cast<ProxyMsgAllocMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
 
-    MOCKER(halMbufAlloc)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
+    MOCKER(halMbufAlloc).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
     AicpuQueueEventProcess instance;
-    Mbuf *mbufPtr = nullptr;
-    void *dataPptr = nullptr;
+    Mbuf* mbufPtr = nullptr;
+    void* dataPptr = nullptr;
     EXPECT_EQ(instance.ProxyAllocMbuf(event, &mbufPtr, &dataPptr), AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
@@ -1302,18 +1247,14 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyAllocMbuf_Fail_halMbufGetBuffAddr)
     event.comm.subevent_id = PROXY_SUBEVENT_ALLOC_MBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgAllocMbuf) + sizeof(event_sync_msg);
-    ProxyMsgAllocMbuf *msg =  reinterpret_cast<ProxyMsgAllocMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgAllocMbuf* msg = reinterpret_cast<ProxyMsgAllocMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->size = 1024U;
 
-    MOCKER(halMbufAlloc)
-        .stubs()
-        .will(invoke(halMbufAllocStub));
-    MOCKER(halMbufGetBuffAddr)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
+    MOCKER(halMbufAlloc).stubs().will(invoke(halMbufAllocStub));
+    MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
     AicpuQueueEventProcess instance;
-    Mbuf *mbufPtr = nullptr;
-    void *dataPptr = nullptr;
+    Mbuf* mbufPtr = nullptr;
+    void* dataPptr = nullptr;
     EXPECT_EQ(instance.ProxyAllocMbuf(event, &mbufPtr, &dataPptr), AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
@@ -1324,7 +1265,7 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_FreeMbuf_Success)
     event.comm.subevent_id = PROXY_SUBEVENT_FREE_MBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgFreeMbuf) + sizeof(event_sync_msg);
-    ProxyMsgFreeMbuf *msg =  reinterpret_cast<ProxyMsgFreeMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgFreeMbuf* msg = reinterpret_cast<ProxyMsgFreeMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->mbufAddr = 1U;
 
     AicpuQueueEventProcess instance;
@@ -1366,12 +1307,10 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyFreeMbuf_Fail_halMbufFree)
     event.comm.subevent_id = PROXY_SUBEVENT_FREE_MBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgFreeMbuf) + sizeof(event_sync_msg);
-    ProxyMsgFreeMbuf *msg =  reinterpret_cast<ProxyMsgFreeMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgFreeMbuf* msg = reinterpret_cast<ProxyMsgFreeMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->mbufAddr = 1U;
 
-    MOCKER(halMbufFree)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
+    MOCKER(halMbufFree).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
 
     AicpuQueueEventProcess instance;
     EXPECT_EQ(instance.ProxyFreeMbuf(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -1386,23 +1325,24 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_CopyQMbuf_Success)
     event.comm.subevent_id = PROXY_SUBEVENT_COPY_QMBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgCopyQMbuf) + sizeof(event_sync_msg);
-    ProxyMsgCopyQMbuf *msg =  reinterpret_cast<ProxyMsgCopyQMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCopyQMbuf* msg = reinterpret_cast<ProxyMsgCopyQMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->destLen = 1024U;
 
-    void *stubMbuf = 1;
+    void* stubMbuf = 1;
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     uint64_t mbufSize = 1024U;
     MOCKER(halMbufGetBuffSize)
-        .stubs().with(mockcpp::any(), outBoundP(&mbufSize))
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
-    MOCKER(memcpy_s)
         .stubs()
-        .will(returnValue(0));
+        .with(mockcpp::any(), outBoundP(&mbufSize))
+        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
+    MOCKER(memcpy_s).stubs().will(returnValue(0));
 
     ProxyMsgRsp rsp = {};
     AicpuQueueEventProcess instance;
@@ -1432,9 +1372,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCopyQMbuf_Fail_halQueueDeQueue)
 
     event.priv.msg_len = sizeof(ProxyMsgCopyQMbuf) + sizeof(event_sync_msg);
 
-    MOCKER(halQueueDeQueue)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(halQueueDeQueue).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
 
     AicpuQueueEventProcess instance;
     EXPECT_EQ(instance.ProxyCopyQMbuf(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -1450,13 +1388,12 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCopyQMbuf_Fail_halMbufGetBuffAddr)
 
     event.priv.msg_len = sizeof(ProxyMsgCopyQMbuf) + sizeof(event_sync_msg);
 
-    void *stubMbuf = 1;
+    void* stubMbuf = 1;
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
-        .will(returnValue(DRV_ERROR_NONE));
-    MOCKER(halMbufGetBuffAddr)
         .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
+        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
 
     AicpuQueueEventProcess instance;
     EXPECT_EQ(instance.ProxyCopyQMbuf(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -1472,16 +1409,16 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCopyQMbuf_Fail_halMbufGetBuffSize)
 
     event.priv.msg_len = sizeof(ProxyMsgCopyQMbuf) + sizeof(event_sync_msg);
 
-    void *stubMbuf = 1;
+    void* stubMbuf = 1;
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&stubMbuf))
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
-    MOCKER(halMbufGetBuffSize)
         .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
+        .with(mockcpp::any(), outBoundP(&stubMbuf))
+        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
+    MOCKER(halMbufGetBuffSize).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
 
     AicpuQueueEventProcess instance;
     EXPECT_EQ(instance.ProxyCopyQMbuf(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -1496,19 +1433,22 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCopyQMbuf_Fail_destLen)
     event.comm.subevent_id = PROXY_SUBEVENT_COPY_QMBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgCopyQMbuf) + sizeof(event_sync_msg);
-    ProxyMsgCopyQMbuf *msg =  reinterpret_cast<ProxyMsgCopyQMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCopyQMbuf* msg = reinterpret_cast<ProxyMsgCopyQMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->destLen = 1023U;
 
-    void *stubMbuf = 1;
+    void* stubMbuf = 1;
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     uint64_t mbufSize = 1024U;
     MOCKER(halMbufGetBuffSize)
-        .stubs().with(mockcpp::any(), outBoundP(&mbufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&mbufSize))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
 
     AicpuQueueEventProcess instance;
@@ -1524,23 +1464,24 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyCopyQMbuf_Fail_memcpy_s)
     event.comm.subevent_id = PROXY_SUBEVENT_COPY_QMBUF;
 
     event.priv.msg_len = sizeof(ProxyMsgCopyQMbuf) + sizeof(event_sync_msg);
-    ProxyMsgCopyQMbuf *msg =  reinterpret_cast<ProxyMsgCopyQMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
+    ProxyMsgCopyQMbuf* msg = reinterpret_cast<ProxyMsgCopyQMbuf*>(&event.priv.msg[sizeof(event_sync_msg)]);
     msg->destLen = 1024U;
 
-    void *stubMbuf = 1;
+    void* stubMbuf = 1;
     MOCKER(halQueueDeQueue)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(DRV_ERROR_NONE));
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     uint64_t mbufSize = 1024U;
     MOCKER(halMbufGetBuffSize)
-        .stubs().with(mockcpp::any(), outBoundP(&mbufSize))
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
-    MOCKER(memcpy_s)
         .stubs()
-        .will(returnValue(1));
+        .with(mockcpp::any(), outBoundP(&mbufSize))
+        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
+    MOCKER(memcpy_s).stubs().will(returnValue(1));
 
     AicpuQueueEventProcess instance;
     EXPECT_EQ(instance.ProxyCopyQMbuf(event), AICPU_SCHEDULE_ERROR_SAFE_FUNCTION_ERR);
@@ -1556,9 +1497,7 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_AddGroup_Success)
 
     event.priv.msg_len = sizeof(ProxyMsgAddGroup) + sizeof(event_sync_msg);
 
-    MOCKER(halGrpAddProc)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
 
     AicpuQueueEventProcess instance;
     ProxyMsgRsp rsp = {};
@@ -1577,9 +1516,7 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_AddGroup_ParseMsg_Fail)
 
     event.priv.msg_len = 0;
 
-    MOCKER(halGrpAddProc)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
 
     AicpuQueueEventProcess instance;
     ProxyMsgRsp rsp = {};
@@ -1610,9 +1547,7 @@ TEST_F(AicpusdQueueEventProcessTest, ProxyAddGroup_Fail_halGrpAddProc)
 
     event.priv.msg_len = sizeof(ProxyMsgAddGroup) + sizeof(event_sync_msg);
 
-    MOCKER(halGrpAddProc)
-        .stubs()
-        .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
 
     AicpuQueueEventProcess instance;
     EXPECT_EQ(instance.ProxyAddGroup(event), AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -1647,10 +1582,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgAttachMsgGetGrpFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ATTACH_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1670,10 +1605,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgAttachMsgParseFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ATTACH_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1694,10 +1629,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgAttachMsgQueInitFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ATTACH_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1718,10 +1653,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgAttachMsgQueAttachFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ATTACH_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1742,10 +1677,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgAttachMsgTypeFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_ATTACH_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1768,10 +1703,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgGrantMsgGetGrpFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_GRANT_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1791,10 +1726,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgGrantMsgParseFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_GRANT_MSG;
-    
+
     QueueAttachPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueAttachPara) + sizeof(event_sync_msg);
@@ -1815,10 +1750,10 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgGrantMsgShareFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_GRANT_MSG;
-    
+
     QueueGrantPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueGrantPara) + sizeof(event_sync_msg);
@@ -1835,15 +1770,14 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgGrantMsgShareFail)
     EXPECT_EQ(ret, 1);
 }
 
-
 TEST_F(AicpusdQueueEventProcessTest, DoProcessDrvMsgGrantMsgQueGrantFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_GRANT_MSG;
-    
+
     QueueGrantPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueGrantPara) + sizeof(event_sync_msg);
@@ -1864,10 +1798,10 @@ TEST_F(AicpusdQueueEventProcessTest, GrantQueueFail)
 {
     AicpuQueueEventProcess instance;
 
-    event_info event = {{EVENT_DRV_MSG},{0}};
+    event_info event = {{EVENT_DRV_MSG}, {0}};
     event.comm.event_id = EVENT_DRV_MSG;
     event.comm.subevent_id = DRV_SUBEVENT_GRANT_MSG;
-    
+
     QueueGrantPara msg = {2000, 6, 10001};
     event_sync_msg head;
     uint32_t msgLen = sizeof(QueueGrantPara) + sizeof(event_sync_msg);
@@ -1906,11 +1840,11 @@ TEST_F(AicpusdQueueEventProcessTest, ShareGroupWithProcessGrpQueryFail)
     EXPECT_EQ(ret, DRV_ERROR_INNER_ERR);
 }
 
-int halGrpQueryGrpRepeat(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
+int halGrpQueryGrpRepeat(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
     *outLen = sizeof(GrpQueryGroupsOfProcInfo);
 
-    GroupQueryOutput *grpInfo = PtrToPtr<void, GroupQueryOutput>(outBuff);
+    GroupQueryOutput* grpInfo = PtrToPtr<void, GroupQueryOutput>(outBuff);
     strcpy_s(grpInfo->grpQueryGroupsOfProcInfo[0].groupName, BUFF_GRP_MAX_NUM, "test1\0");
     grpInfo->grpQueryGroupsOfProcInfo[0].attr.admin = 1;
 
@@ -1929,11 +1863,11 @@ TEST_F(AicpusdQueueEventProcessTest, ShareGroupWithProcessGrpNameRepeat)
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-int halGrpQueryGrpLenError(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
+int halGrpQueryGrpLenError(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
     *outLen = 1;
 
-    GroupQueryOutput *grpInfo = PtrToPtr<void, GroupQueryOutput>(outBuff);
+    GroupQueryOutput* grpInfo = PtrToPtr<void, GroupQueryOutput>(outBuff);
     strcpy_s(grpInfo->grpQueryGroupsOfProcInfo[0].groupName, BUFF_GRP_MAX_NUM, "test1\0");
     grpInfo->grpQueryGroupsOfProcInfo[0].attr.admin = 1;
 
@@ -1952,11 +1886,11 @@ TEST_F(AicpusdQueueEventProcessTest, ShareGroupWithProcessGrpNameLenInvalid)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-int halGrpQueryGrpSlave(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
+int halGrpQueryGrpSlave(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
     *outLen = sizeof(GrpQueryGroupsOfProcInfo);
 
-    GroupQueryOutput *grpInfo = PtrToPtr<void, GroupQueryOutput>(outBuff);
+    GroupQueryOutput* grpInfo = PtrToPtr<void, GroupQueryOutput>(outBuff);
     strcpy_s(grpInfo->grpQueryGroupsOfProcInfo[0].groupName, BUFF_GRP_MAX_NUM, "test1\0");
     grpInfo->grpQueryGroupsOfProcInfo[0].attr.admin = 0;
 
@@ -2009,10 +1943,7 @@ TEST_F(AicpusdQueueEventProcessTest, DoProcessProxyMsg_AllocCache_Success)
 
     // fail for halGrpCacheAlloc
     instance.grpName_ = "Default";
-    MOCKER(halGrpCacheAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INNER_ERR))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halGrpCacheAlloc).stubs().will(returnValue(DRV_ERROR_INNER_ERR)).then(returnValue(DRV_ERROR_NONE));
     ProxyMsgRsp rspAllocFail = {};
     instance.DoProcessProxyMsg(event, rspAllocFail);
     EXPECT_EQ(rspAllocFail.retCode, AICPU_SCHEDULE_ERROR_DRV_ERR);

@@ -19,7 +19,7 @@
 #include "ae_so_manager.hpp"
 #include "ae_kernel_lib_manager.hpp"
 #undef private
-#include<pwd.h>
+#include <pwd.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -37,56 +37,47 @@ using namespace aicpu;
 
 using namespace aicpu::FWKAdapter;
 
-
-#define SIMPLE_MAIN_FOO  "func_main"
-#define SIMPLE_TEST_SO  "libengine_ut_simple_so.so"
+#define SIMPLE_MAIN_FOO "func_main"
+#define SIMPLE_TEST_SO "libengine_ut_simple_so.so"
 
 class AicpuEngineUTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        printf("AicpuEngineUTest  SetUpTestCase :%s\n", get_work_so_dir().data());
-    }
+    static void SetUpTestCase() { printf("AicpuEngineUTest  SetUpTestCase :%s\n", get_work_so_dir().data()); }
 
-    static void TearDownTestCase()
-    {
-        printf("AicpuEngineUTest TearDownTestCase \n");
-    }
+    static void TearDownTestCase() { printf("AicpuEngineUTest TearDownTestCase \n"); }
 
 public:
     static string GetCwd()
     {
         char cur_work_dir[1024];
         memset(cur_work_dir, 0, 1024);
-        getcwd(cur_work_dir,1024);
+        getcwd(cur_work_dir, 1024);
         return string(cur_work_dir);
     }
-
 
     static void so_copy(string src, string dst)
     {
         using namespace std;
 
-        ifstream in(src,ios::binary);
-        ofstream out(dst,ios::binary);
+        ifstream in(src, ios::binary);
+        ofstream out(dst, ios::binary);
 
         cout << "COPY " << src << " TO " << dst << endl;
         if (!in.is_open()) {
             cout << "ERROR: open file " << src << endl;
-            return ;
+            return;
         }
         if (!out.is_open()) {
             cout << "ERROR: open file " << dst << endl;
-            return ;
+            return;
         }
         if (src == dst) {
             cout << "ERROR: the src file can't be same with dst file" << endl;
-            return ;
+            return;
         }
         char buf[2048];
         long long totalBytes = 0;
-        while(in)
-        {
+        while (in) {
             in.read(buf, 2048);
             out.write(buf, in.gcount());
             totalBytes += in.gcount();
@@ -113,8 +104,8 @@ public:
         string soRootDir;
         soRootDir.assign(pidTmpDir);
         char localPath[1000];
-        memset(localPath, 0, sizeof(localPath)/sizeof(localPath[0]));
-        sprintf(localPath, "%s", soRootDir.data() );
+        memset(localPath, 0, sizeof(localPath) / sizeof(localPath[0]));
+        sprintf(localPath, "%s", soRootDir.data());
         return string(localPath);
     }
 
@@ -126,13 +117,8 @@ public:
 
 protected:
     // Some expensive resource shared by all tests.
-    virtual void SetUp()
-    {
-    }
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void SetUp() {}
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 /**
@@ -153,7 +139,6 @@ TEST_F(AicpuEngineUTest, input_null)
     int32_t ret = aeCallInterface(NULL);
     EXPECT_EQ(AE_STATUS_BAD_PARAM, ret);
 }
-
 
 /**
 *@test       UT_AICPU_ENGINE_aeCallInterface_02
@@ -178,18 +163,13 @@ TEST_F(AicpuEngineUTest, str_kernel_param_null)
         EXPECT_EQ(AE_STATUS_BAD_PARAM, ret);
     }
 }
-static aeStatus_t stubInstanceInit()
-{
-    return AE_STATUS_INNER_ERROR;
-}
+static aeStatus_t stubInstanceInit() { return AE_STATUS_INNER_ERROR; }
 
 TEST_F(AicpuEngineUTest, GetInstanceInit_FAIL)
 {
     MOCKER_CPP(&cce::MultiSoManager::Init).stubs().will(invoke(stubInstanceInit));
-    MOCKER(aicpu::GetAicpuRunMode)
-                .stubs()
-                .will(returnValue(AICPU_ERROR_FAILED));
-    
+    MOCKER(aicpu::GetAicpuRunMode).stubs().will(returnValue(AICPU_ERROR_FAILED));
+
     cce::AIKernelsLibAiCpu::DestroyInstance();
     auto aiKernelsLibAicpu = cce::AIKernelsLibAiCpu::GetInstance();
     EXPECT_EQ(aiKernelsLibAicpu, nullptr);
@@ -207,7 +187,7 @@ TEST_F(AicpuEngineUTest, SingleSoManager_init_fail_test)
 {
     SingleSoManager sSoMngr;
     sSoMngr.Init("guard", "no_such_so");
-    void *funcAddrPtr = NULL;
+    void* funcAddrPtr = NULL;
     aeStatus_t ret = sSoMngr.GetApi(SIMPLE_TEST_SO, SIMPLE_MAIN_FOO, &funcAddrPtr);
     EXPECT_EQ(AE_STATUS_INNER_ERROR, ret);
 }
@@ -218,7 +198,7 @@ TEST_F(AicpuEngineUTest, SingleSoManager_checkfile_fail_test)
     aeStatus_t ret = sSoMngr.Init("/tmp/xx/d/", AicpuEngineUTest::get_work_so_dir() + SIMPLE_TEST_SO);
     EXPECT_EQ(AE_STATUS_OPEN_SO_FAILED, ret);
 
-    void *funcAddrPtr = NULL;
+    void* funcAddrPtr = NULL;
     ret = sSoMngr.GetApi(SIMPLE_TEST_SO, SIMPLE_MAIN_FOO, &funcAddrPtr);
     EXPECT_EQ(AE_STATUS_INNER_ERROR, ret);
 }
@@ -226,19 +206,19 @@ TEST_F(AicpuEngineUTest, SingleSoManager_checkfile_fail_test)
 #define MAX_TEST_TH 15
 char thread_error_str[MAX_TEST_TH][1024];
 
-const string &stubTfSoFile()
+const string& stubTfSoFile()
 {
     static const string soFile(AicpuEngineUTest::get_out_so_dir() + SIMPLE_TEST_SO);
     return soFile;
 }
 
-const string &stubNoSuchSoFile()
+const string& stubNoSuchSoFile()
 {
     static const string noSuchSo("no_such_so.so");
     return noSuchSo;
 }
 
-const string &stubNoSuchFuncName()
+const string& stubNoSuchFuncName()
 {
     static const string noSuchFuncName("stubNoSuchFuncName");
     return noSuchFuncName;
@@ -264,7 +244,7 @@ TEST_F(AicpuEngineUTest, cc_fwk_tf_kernel_no_such_so)
     HwtsTsKernel strKernel;
     int32_t ret;
     strKernel.kernelType = KERNEL_TYPE_FWK;
-    HwtsFwkKernel *fwkKernel = (HwtsFwkKernel *)&strKernel.kernelBase;
+    HwtsFwkKernel* fwkKernel = (HwtsFwkKernel*)&strKernel.kernelBase;
     {
         GlobalMockObject::verify();
         MOCKER_CPP(&cce::FWKKernelTfImpl::GetSoFile).stubs().will(invoke(stubNoSuchSoFile));
@@ -279,8 +259,7 @@ TEST_F(AicpuEngineUTest, cc_fwk_tf_kernel_no_such_so)
         MOCKER_CPP(&FWKKernelTfImpl::GetTensorflowThreadModeSoPath).stubs().will(returnValue(0));
         ret = aeCallInterface(&strKernel);
         EXPECT_EQ(AE_STATUS_OPEN_SO_FAILED, ret);
-      }
-
+    }
 }
 
 /**
@@ -328,7 +307,7 @@ TEST_F(AicpuEngineUTest, cc_fwk_tf_kernel_call_api_inner_error)
     HwtsTsKernel strKernel;
     int32_t ret;
     strKernel.kernelType = KERNEL_TYPE_FWK;
-    HwtsFwkKernel *fwkKernel = (HwtsFwkKernel *)&strKernel.kernelBase;
+    HwtsFwkKernel* fwkKernel = (HwtsFwkKernel*)&strKernel.kernelBase;
     GlobalMockObject::verify();
     MOCKER_CPP(&cce::FWKKernelTfImpl::GetSoFile).stubs().will(invoke(stubTfSoFile));
     {
@@ -343,7 +322,7 @@ TEST_F(AicpuEngineUTest, cc_fwk_tf_kernel_call_api_inner_error)
     }
 }
 
-static aeStatus_t stubSingleGetApi(const char *soFile, const char *funcName, void **funcAddrPtr, void **retHandle)
+static aeStatus_t stubSingleGetApi(const char* soFile, const char* funcName, void** funcAddrPtr, void** retHandle)
 {
     *funcAddrPtr = NULL;
     return AE_STATUS_SUCCESS;
@@ -354,12 +333,11 @@ TEST_F(AicpuEngineUTest, cc_fwk_tf_kernel_get_api_inner_error)
     HwtsTsKernel strKernel;
     int32_t ret;
     strKernel.kernelType = KERNEL_TYPE_FWK;
-    HwtsFwkKernel *fwkKernel = (HwtsFwkKernel *)&strKernel.kernelBase;
+    HwtsFwkKernel* fwkKernel = (HwtsFwkKernel*)&strKernel.kernelBase;
     aeClear();
     GlobalMockObject::verify();
-    //MOCKER_CPP(&SingleSoManager::GetFunc).stubs().will(invoke(stubSingGetFunc));
-    MOCKER(
-        cce::SingleSoManager::GetApi, aeStatus_t(const char_t *, const char_t *, void **, void **))
+    // MOCKER_CPP(&SingleSoManager::GetFunc).stubs().will(invoke(stubSingGetFunc));
+    MOCKER(cce::SingleSoManager::GetApi, aeStatus_t(const char_t*, const char_t*, void**, void**))
         .stubs()
         .will(invoke(stubSingleGetApi));
     {
@@ -383,19 +361,19 @@ TEST_F(AicpuEngineUTest, cc_fwk_AIKernelsLibFWK_call_test)
 }
 
 /**
-*/
+ */
 
 /**
-*@test       UT_AICPU_ENGINE_aeClear_13
-*- @tspec    aeClear
-*- @ttitle   Test for aeClear
-*- @tprecon     1.None
-*- @tbrief      1.Call aeClear() twice;
-*- @texpect     1.No except happened.
-*- @tprior   1
-*- @tauto TRUE
-*- @tremark
-*/
+ *@test       UT_AICPU_ENGINE_aeClear_13
+ *- @tspec    aeClear
+ *- @ttitle   Test for aeClear
+ *- @tprecon     1.None
+ *- @tbrief      1.Call aeClear() twice;
+ *- @texpect     1.No except happened.
+ *- @tprior   1
+ *- @tauto TRUE
+ *- @tremark
+ */
 /*
 TEST_F(AicpuEngineUTest, ae_clear)
 {
@@ -405,37 +383,33 @@ TEST_F(AicpuEngineUTest, ae_clear)
 
 TEST_F(AicpuEngineUTest, aeBatchLoadKernelSo)
 {
-    const char *aicpuKernelSoName = "libaicpu_kernels.so";
-    const char *cpuKernelSoName = "libcpu_kernels.so";
-    const char *tfKernelSoName = "libtf_kernels.so";
+    const char* aicpuKernelSoName = "libaicpu_kernels.so";
+    const char* cpuKernelSoName = "libcpu_kernels.so";
+    const char* tfKernelSoName = "libtf_kernels.so";
     const uint32_t loadSoNum = 3;
-    const char *soNames[loadSoNum] = {aicpuKernelSoName, cpuKernelSoName, tfKernelSoName};
+    const char* soNames[loadSoNum] = {aicpuKernelSoName, cpuKernelSoName, tfKernelSoName};
     aeStatus_t ret = aeBatchLoadKernelSo(aicpu::KERNEL_TYPE_AICPU, loadSoNum, soNames);
     EXPECT_EQ(AE_STATUS_SUCCESS, ret);
 }
 
 TEST_F(AicpuEngineUTest, aeBatchLoadKernelSo_Success1)
 {
-    MOCKER_CPP(&cce::SingleSoManager::Init)
-        .stubs()
-        .will(returnValue(AE_STATUS_SUCCESS));
-    const char *aicpuKernelSoName = "libaicpu_kernels.so";
-    const char *cpuKernelSoName = "libcpu_kernels.so";
-    const char *tfKernelSoName = "libtf_kernels.so";
+    MOCKER_CPP(&cce::SingleSoManager::Init).stubs().will(returnValue(AE_STATUS_SUCCESS));
+    const char* aicpuKernelSoName = "libaicpu_kernels.so";
+    const char* cpuKernelSoName = "libcpu_kernels.so";
+    const char* tfKernelSoName = "libtf_kernels.so";
     const uint32_t loadSoNum = 3;
-    const char *soNames[loadSoNum] = {aicpuKernelSoName, cpuKernelSoName, tfKernelSoName};
+    const char* soNames[loadSoNum] = {aicpuKernelSoName, cpuKernelSoName, tfKernelSoName};
     aeStatus_t ret = aeBatchLoadKernelSo(aicpu::KERNEL_TYPE_AICPU, loadSoNum, soNames);
     EXPECT_EQ(AE_STATUS_SUCCESS, ret);
 }
 
 TEST_F(AicpuEngineUTest, aeBatchLoadKernelSo_Success2)
 {
-    MOCKER_CPP(&cce::SingleSoManager::Init)
-        .stubs()
-        .will(returnValue(AE_STATUS_SUCCESS));
-    const char *tfKernelSoName = "libtf_kernels.so";
+    MOCKER_CPP(&cce::SingleSoManager::Init).stubs().will(returnValue(AE_STATUS_SUCCESS));
+    const char* tfKernelSoName = "libtf_kernels.so";
     const uint32_t loadSoNum = 1;
-    const char *soNames[loadSoNum] = {tfKernelSoName};
+    const char* soNames[loadSoNum] = {tfKernelSoName};
     aeStatus_t ret = aeBatchLoadKernelSo(aicpu::KERNEL_TYPE_AICPU, loadSoNum, soNames);
     EXPECT_EQ(AE_STATUS_SUCCESS, ret);
 }
@@ -460,11 +434,9 @@ TEST_F(AicpuEngineUTest, BatchLoadEmptySo_Success)
     EXPECT_EQ(AE_STATUS_SUCCESS, ret);
 }
 
-
-
 TEST_F(AicpuEngineUTest, AeAddSoInWhiteList)
 {
-    const char_t * const soName = "789.so";
+    const char_t* const soName = "789.so";
     AeDeleteSoInWhiteList(soName);
     AeDeleteSoInWhiteList(nullptr);
     aeStatus_t ret = AeAddSoInWhiteList(soName);

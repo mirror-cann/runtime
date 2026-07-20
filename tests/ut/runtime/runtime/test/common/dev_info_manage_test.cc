@@ -17,25 +17,15 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class DevInfoManageTest : public testing::Test
-{
+class DevInfoManageTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(DevInfoManageTest, DevInfoManageDestroy)
@@ -95,14 +85,14 @@ TEST_F(DevInfoManageTest, GetChipTypeFromPlatform)
 
 TEST_F(DevInfoManageTest, GetNpuArchByName)
 {
-    const char_t *const socName_910B1 = "Ascend910B1"; 
-    int32_t hardwareNpuArch; 
-    rtError_t result = GetNpuArchByName(socName_910B1, &hardwareNpuArch); 
-    EXPECT_EQ(result, RT_ERROR_NONE); 
-    EXPECT_EQ(hardwareNpuArch, 2201); 
-    
-    const char_t *const socName_err = "Ascend"; 
-    result = GetNpuArchByName(socName_err, &hardwareNpuArch); 
+    const char_t* const socName_910B1 = "Ascend910B1";
+    int32_t hardwareNpuArch;
+    rtError_t result = GetNpuArchByName(socName_910B1, &hardwareNpuArch);
+    EXPECT_EQ(result, RT_ERROR_NONE);
+    EXPECT_EQ(hardwareNpuArch, 2201);
+
+    const char_t* const socName_err = "Ascend";
+    result = GetNpuArchByName(socName_err, &hardwareNpuArch);
     EXPECT_EQ(result, RT_ERROR_INVALID_VALUE);
 }
 
@@ -233,9 +223,7 @@ TEST_F(DevInfoManageTest, DevInfoManageRegChipFeatureExtSegmentOutOfRange)
     constexpr rtChipType_t TEST_EXT_CHIP_OUT_OF_RANGE = static_cast<rtChipType_t>(CHIP_EXT_END + 1);
 
     std::unordered_set<RtOptionalFeatureType> featureSet = {
-        RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL,
-        RtOptionalFeatureType::RT_FEATURE_DEVICE_P2P
-    };
+        RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL, RtOptionalFeatureType::RT_FEATURE_DEVICE_P2P};
 
     bool ret = info.RegChipFeatureSet(TEST_EXT_CHIP_OUT_OF_RANGE, featureSet);
     EXPECT_EQ(ret, false) << "Register ext chip out of range should fail";

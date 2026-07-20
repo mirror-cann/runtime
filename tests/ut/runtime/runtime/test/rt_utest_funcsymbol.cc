@@ -20,20 +20,11 @@ using namespace cce::runtime;
 
 class FuncSymbolTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "funcsymbol test start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "funcsymbol test start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "funcsymbol test end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "funcsymbol test end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        prog_ = CreateMockElfProgram();
-    }
+    virtual void SetUp() { prog_ = CreateMockElfProgram(); }
 
     virtual void TearDown()
     {
@@ -42,11 +33,12 @@ protected:
         GlobalMockObject::verify();
     }
 
-    ElfProgram *CreateMockElfProgram()
+    ElfProgram* CreateMockElfProgram()
     {
-        ElfProgram *prog = new ElfProgram(RT_KERNEL_ATTR_TYPE_AICPU);
+        ElfProgram* prog = new ElfProgram(RT_KERNEL_ATTR_TYPE_AICPU);
         uint64_t tilingValue = 0ULL;
-        Kernel *kernelPtr = new (std::nothrow) Kernel("test_funcsymbol", tilingValue, prog, RT_KERNEL_ATTR_TYPE_AICORE, 0, 0, NO_MIX);
+        Kernel* kernelPtr =
+            new (std::nothrow) Kernel("test_funcsymbol", tilingValue, prog, RT_KERNEL_ATTR_TYPE_AICORE, 0, 0, NO_MIX);
 
         EXPECT_NE(kernelPtr, nullptr);
 
@@ -55,15 +47,14 @@ protected:
         return prog;
     }
 
-    ElfProgram *prog_ = nullptr;
+    ElfProgram* prog_ = nullptr;
     int symbol_ = 0;
 };
-
 
 TEST_F(FuncSymbolTest, rtRegisterFuncSymbol_NullSymbol)
 {
     Runtime* const rtInstance = Runtime::Instance();
-    const Kernel *retKernel = rtInstance->funcSymbolTable_.Lookup(&symbol_);
+    const Kernel* retKernel = rtInstance->funcSymbolTable_.Lookup(&symbol_);
     EXPECT_EQ(retKernel, nullptr);
 }
 TEST_F(FuncSymbolTest, rtRegisterFuncSymbol_Success)
@@ -71,6 +62,6 @@ TEST_F(FuncSymbolTest, rtRegisterFuncSymbol_Success)
     Runtime* const rtInstance = Runtime::Instance();
     rtError_t error = rtInstance->funcSymbolTable_.Register(prog_, &symbol_, "test_funcsymbol");
     EXPECT_EQ(error, RT_ERROR_NONE);
-    const Kernel *retKernel = rtInstance->funcSymbolTable_.Lookup(&symbol_);
+    const Kernel* retKernel = rtInstance->funcSymbolTable_.Lookup(&symbol_);
     EXPECT_NE(retKernel, nullptr);
 }

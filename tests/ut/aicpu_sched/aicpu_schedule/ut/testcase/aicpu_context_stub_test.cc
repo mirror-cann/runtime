@@ -24,11 +24,9 @@ using namespace std;
 
 class AiCPUContextStubUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(AiCPUContextStubUt, AiCPUContextStubUtSuccess)
@@ -71,5 +69,5 @@ TEST_F(AiCPUContextStubUt, AiCPUContextStubUtSuccess)
     SetUniqueVfId(0);
     SetCustAicpuSdFlag(false);
     bool rets2 = IsCustAicpuSd();
-    EXPECT_EQ(rets2, false);    
+    EXPECT_EQ(rets2, false);
 }

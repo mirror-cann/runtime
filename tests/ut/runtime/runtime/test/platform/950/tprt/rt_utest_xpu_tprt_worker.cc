@@ -17,7 +17,6 @@
 #include "tprt_worker.hpp"
 #undef private
 
-
 using namespace cce::tprt;
 
 class TprtWorkerTest : public testing::Test {
@@ -29,27 +28,18 @@ protected:
         std::cout << "TprtWorkerTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TprtWorkerTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TprtWorkerTest end" << std::endl; }
 
-    virtual void SetUp()
-    {
+    virtual void SetUp() {}
 
-    }
-
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(TprtWorkerTest, create_TprtWorker_Success_01)
 {
-    TprtSqHandle *sqHdl = new TprtSqHandle(0, 0);
-    TprtCqHandle *cqHdl = new TprtCqHandle(0, 0);
-    TprtWorker *worker = new TprtWorker(0, sqHdl, cqHdl);
+    TprtSqHandle* sqHdl = new TprtSqHandle(0, 0);
+    TprtCqHandle* cqHdl = new TprtCqHandle(0, 0);
+    TprtWorker* worker = new TprtWorker(0, sqHdl, cqHdl);
     EXPECT_EQ(worker->workerName_, "0_0");
     DELETE_O(sqHdl);
     DELETE_O(cqHdl);
@@ -59,9 +49,9 @@ TEST_F(TprtWorkerTest, create_TprtWorker_Success_01)
 TEST_F(TprtWorkerTest, create_TprtWorker_error)
 {
     MOCKER(mmGetTid).stubs().will(returnValue(101));
-    TprtSqHandle *sqHdl = new TprtSqHandle(0, 0);
-    TprtCqHandle *cqHdl = new TprtCqHandle(0, 0);
-    TprtWorker *worker = new TprtWorker(0, sqHdl, cqHdl);
+    TprtSqHandle* sqHdl = new TprtSqHandle(0, 0);
+    TprtCqHandle* cqHdl = new TprtCqHandle(0, 0);
+    TprtWorker* worker = new TprtWorker(0, sqHdl, cqHdl);
     MOCKER(mmSemInit).stubs().will(returnValue(TPRT_INPUT_NULL));
     uint32_t ans = worker->TprtWorkerStart();
     delete sqHdl;

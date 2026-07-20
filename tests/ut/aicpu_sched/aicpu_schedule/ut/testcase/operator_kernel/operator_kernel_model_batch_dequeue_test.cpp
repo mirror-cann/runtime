@@ -24,8 +24,9 @@
 using namespace AicpuSchedule;
 
 namespace {
-int32_t CheckAndParseBatchDequeueParamsStub(OperatorKernelModelBatchDequeue *obj, const AicpuTaskInfo &kernelTaskInfo,
-    const RunContext &taskContext, BatchDequeueInfo &batchDeqInfo)
+int32_t CheckAndParseBatchDequeueParamsStub(
+    OperatorKernelModelBatchDequeue* obj, const AicpuTaskInfo& kernelTaskInfo, const RunContext& taskContext,
+    BatchDequeueInfo& batchDeqInfo)
 {
     batchDeqInfo.inputNums = 1;
     batchDeqInfo.queueIds = &batchDequeueInfoQueueIds[0];
@@ -33,36 +34,36 @@ int32_t CheckAndParseBatchDequeueParamsStub(OperatorKernelModelBatchDequeue *obj
     return AICPU_SCHEDULE_OK;
 }
 
-int halMbufGetPrivInfoStub2(Mbuf *mbuf, void **priv, unsigned int *size)
+int halMbufGetPrivInfoStub2(Mbuf* mbuf, void** priv, unsigned int* size)
 {
     g_curHead.aicpuBufhead.startTime = 10;
     g_curHead.aicpuBufhead.endTime = 10;
-    *priv = reinterpret_cast<void *>(&g_curHead);
+    *priv = reinterpret_cast<void*>(&g_curHead);
     *size = 256;
     return 0;
 }
 
-int halMbufGetPrivInfoStub3(Mbuf *mbuf, void **priv, unsigned int *size)
+int halMbufGetPrivInfoStub3(Mbuf* mbuf, void** priv, unsigned int* size)
 {
     g_curHead.aicpuBufhead.startTime = 10;
     g_curHead.aicpuBufhead.endTime = 10;
-    *priv = reinterpret_cast<void *>(&g_curHead);
+    *priv = reinterpret_cast<void*>(&g_curHead);
     *size = 32;
     return 0;
 }
 
-int halMbufGetPrivInfoStub4(Mbuf *mbuf, void **priv, unsigned int *size)
+int halMbufGetPrivInfoStub4(Mbuf* mbuf, void** priv, unsigned int* size)
 {
     g_curHead.aicpuBufhead.startTime = 10;
     g_curHead.aicpuBufhead.endTime = 10;
-    *priv = reinterpret_cast<void *>(&g_curHead);
+    *priv = reinterpret_cast<void*>(&g_curHead);
     *size = 32;
     return 0;
 }
 
 uint32_t batchDequeueInfoAlignOffsets[2] = {0, 0};
 
-}  // namespace
+} // namespace
 
 class OperatorKernelModelBatchDequeueTest : public OperatorKernelTest {
 protected:
@@ -82,9 +83,10 @@ TEST_F(OperatorKernelModelBatchDequeueTest, ModelBatchDequeue_001)
 TEST_F(OperatorKernelModelBatchDequeueTest, ModelBatchDequeue_002)
 {
     MOCKER_CPP(&OperatorKernelModelBatchDequeue::CheckAndParseBatchDequeueParams)
-        .stubs().will(invoke(CheckAndParseBatchDequeueParamsStub));
+        .stubs()
+        .will(invoke(CheckAndParseBatchDequeueParamsStub));
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     MOCKER_CPP(&OperatorKernelModelBatchDequeue::DequeueTask).stubs().will(returnValue((int32_t)0));
@@ -97,7 +99,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, ModelBatchDequeue_002)
 TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_001)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     AicpuTaskInfo task;
@@ -129,7 +131,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_002)
 
 TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_003)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuTaskInfo task;
     BatchDequeueDesc batchDeqDesc = {};
@@ -147,7 +149,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_003)
 TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_InputNumMismatch)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
 
@@ -164,7 +166,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, CheckAndParseBatchDequeueParams_Inpu
 TEST_F(OperatorKernelModelBatchDequeueTest, AlignBatchDequeue_001)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     BatchDequeueInfo batchDeqInfo = {};
@@ -176,7 +178,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, AlignBatchDequeue_001)
 TEST_F(OperatorKernelModelBatchDequeueTest, AlignBatchDequeue_002)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     BatchDequeueInfo batchDeqInfo = {};
@@ -195,7 +197,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, AlignBatchDequeue_002)
 TEST_F(OperatorKernelModelBatchDequeueTest, AlignTimestamp_001)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     BatchDequeueInfo batchDeqInfo = {};
@@ -216,7 +218,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, AlignTimestamp_001)
 TEST_F(OperatorKernelModelBatchDequeueTest, AlignTimestamp_002)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     BatchDequeueInfo batchDeqInfo = {};
@@ -237,7 +239,7 @@ TEST_F(OperatorKernelModelBatchDequeueTest, AlignTimestamp_002)
 TEST_F(OperatorKernelModelBatchDequeueTest, AlignTimestamp_003)
 {
     AicpuModel aicpuModel;
-    auto &inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
+    auto& inputsIsDequeue = aicpuModel.MutableInputsIsDequeue();
     inputsIsDequeue.resize(1, false);
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     BatchDequeueInfo batchDeqInfo = {};

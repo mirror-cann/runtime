@@ -13,20 +13,11 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 class SqeMessageAdapterTEST : public ::testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "SqeMessageAdapterTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "SqeMessageAdapterTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "SqeMessageAdapterTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "SqeMessageAdapterTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "SqeMessageAdapterTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "SqeMessageAdapterTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -137,9 +128,8 @@ TEST_F(SqeMessageAdapterTEST, ProcessHWTSControlTaskReport)
         .stubs()
         .will(returnValue(static_cast<AicpuSchedule::AicpuModel*>(nullptr)))
         .then(returnValue(&retModel));
-    MOCKER_CPP(
-        static_cast<uint32_t (AicpuModelErrProc::*)(const AicoreErrMsgInfo&, uint32_t, uint32_t&)>(
-            &AicpuModelErrProc::AddErrLog))
+    MOCKER_CPP(static_cast<uint32_t (AicpuModelErrProc::*)(const AicoreErrMsgInfo&, uint32_t, uint32_t&)>(
+                   &AicpuModelErrProc::AddErrLog))
         .stubs()
         .will(returnValue((uint32_t)0));
     MOCKER_CPP(&AicpuModel::GetModelTsId).stubs().will(returnValue(1));
@@ -257,9 +247,8 @@ TEST_F(SqeMessageAdapterTEST, ProcessHWTSControlDataDumpLoadInfoReport)
     info->u.ts_to_aicpu_datadumploadinfo.task_id = 8;
     info->u.ts_to_aicpu_datadumploadinfo.stream_id = 8;
 
-    MOCKER_CPP(
-        static_cast<int32_t (OpDumpTaskManager::*)(const char_t* const, const uint32_t, AicpuSqeAdapter&)>(
-            &OpDumpTaskManager::LoadOpMappingInfo))
+    MOCKER_CPP(static_cast<int32_t (OpDumpTaskManager::*)(const char_t* const, const uint32_t, AicpuSqeAdapter&)>(
+                   &OpDumpTaskManager::LoadOpMappingInfo))
         .stubs()
         .will(returnValue(0));
     MOCKER_CPP(GetAicpuRunMode).stubs().will(returnValue(0));

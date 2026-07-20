@@ -40,21 +40,19 @@ using namespace cce::runtime;
 
 class CustomerStackSize : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {}
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {}
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         oldChipType = rtInstance->GetChipType();
         oldDeviceCustomerStackSize = rtInstance->deviceCustomerStackSize_;
         rtInstance->SetChipType(CHIP_910_B_93);
         GlobalContainer::SetRtChipType(CHIP_910_B_93);
         int64_t hardwareVersion = CHIP_910_B_93 << 8;
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
@@ -67,7 +65,7 @@ protected:
 
     virtual void TearDown()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->timeoutConfig_.isCfgOpWaitTaskTimeout = isCfgOpWaitTaskTimeout;
         rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = isCfgOpExcTaskTimeout;
         rtInstance->SetChipType(oldChipType);
@@ -85,13 +83,13 @@ private:
 
 TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseMinitV3)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     auto oldChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, KERNEL_STACK_SIZE_32K);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     rtError_t ret = dev->AllocCustomerStackPhyBase();
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -102,13 +100,13 @@ TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseMinitV3)
 
 TEST_F(CustomerStackSize, AllocCustomerStackPhyBaseDavid)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     auto oldChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
     rtError_t error = rtDeviceSetLimit(0, RT_LIMIT_TYPE_STACK_SIZE, KERNEL_STACK_SIZE_32K);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    RawDevice *dev = new RawDevice(0);
+    RawDevice* dev = new RawDevice(0);
     dev->Init();
     rtError_t ret = dev->AllocCustomerStackPhyBase();
     EXPECT_EQ(ret, RT_ERROR_NONE);

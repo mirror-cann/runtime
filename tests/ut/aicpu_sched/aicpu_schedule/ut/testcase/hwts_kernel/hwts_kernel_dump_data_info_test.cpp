@@ -29,28 +29,29 @@ protected:
     DumpDataInfoTsKernel kernel_;
 };
 
-TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest) {
-    const int32_t dataType = 7; //int32
+TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest)
+{
+    const int32_t dataType = 7; // int32
     aicpu::dump::OpMappingInfo opMappingInfo;
 
     opMappingInfo.set_dump_path("dump_path");
 
     uint64_t stepId = 1;
     opMappingInfo.set_step_id_addr(reinterpret_cast<uint64_t>(&stepId));
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("handsome");
     op->set_op_type("Handsome");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -58,14 +59,14 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &(inData[0]);
+    int32_t* q = &(inData[0]);
     input->set_address(reinterpret_cast<uint64_t>(q));
     input->set_size(sizeof(inData));
 
@@ -76,46 +77,47 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest) {
     aicpu::HwtsTsKernel kernelInfo = {};
     kernelInfo.kernelType = aicpu::KERNEL_TYPE_AICPU;
     kernelInfo.kernelBase.cceKernel.kernelSo = 0;
-    const char *kernelName = "DumpDataInfo";
+    const char* kernelName = "DumpDataInfo";
     kernelInfo.kernelBase.cceKernel.kernelName = uint64_t(kernelName);
     const uint32_t singleOpDumpParamNum = 2;
-    const uint32_t paramLen =  sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum*sizeof(uint64_t);
+    const uint32_t paramLen = sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum * sizeof(uint64_t);
     std::unique_ptr<char[]> buff(new (std::nothrow) char[paramLen]);
     if (buff == nullptr) {
         return;
     }
-    aicpu::AicpuParamHead *paramHead = (aicpu::AicpuParamHead*)(buff.get());
+    aicpu::AicpuParamHead* paramHead = (aicpu::AicpuParamHead*)(buff.get());
     paramHead->length = paramLen;
     paramHead->ioAddrNum = 2;
-    uint64_t *param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
+    uint64_t* param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
     param[0] = uint64_t(opMappingInfoStr.data());
     param[1] = uint64_t(&protoSize);
     kernelInfo.kernelBase.cceKernel.paramBase = uint64_t(buff.get());
     EXPECT_EQ(kernel_.Compute(kernelInfo), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest11) {
-    const int32_t dataType = 7; //int32
+TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest11)
+{
+    const int32_t dataType = 7; // int32
     aicpu::dump::OpMappingInfo opMappingInfo;
 
     opMappingInfo.set_dump_path("dump_path");
 
     uint64_t stepId = 1;
     opMappingInfo.set_step_id_addr(reinterpret_cast<uint64_t>(&stepId));
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("handsome");
     op->set_op_type("Handsome");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -123,14 +125,14 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest11) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &(inData[0]);
+    int32_t* q = &(inData[0]);
     input->set_address(reinterpret_cast<uint64_t>(q));
     input->set_size(sizeof(inData));
 
@@ -141,46 +143,47 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest11) {
     aicpu::HwtsTsKernel kernelInfo = {};
     kernelInfo.kernelType = aicpu::KERNEL_TYPE_AICPU;
     kernelInfo.kernelBase.cceKernel.kernelSo = 0;
-    const char *kernelName = "DumpDataInfo";
+    const char* kernelName = "DumpDataInfo";
     kernelInfo.kernelBase.cceKernel.kernelName = uint64_t(kernelName);
     const uint32_t singleOpDumpParamNum = 2;
-    const uint32_t paramLen =  sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum*sizeof(uint64_t);
+    const uint32_t paramLen = sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum * sizeof(uint64_t);
     std::unique_ptr<char[]> buff(new (std::nothrow) char[paramLen]);
     if (buff == nullptr) {
         return;
     }
-    aicpu::AicpuParamHead *paramHead = (aicpu::AicpuParamHead*)(buff.get());
+    aicpu::AicpuParamHead* paramHead = (aicpu::AicpuParamHead*)(buff.get());
     paramHead->length = paramLen;
     paramHead->ioAddrNum = 2;
-    uint64_t *param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
+    uint64_t* param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
     param[0] = reinterpret_cast<uint64_t>(opMappingInfoStr.data());
     param[1] = reinterpret_cast<uint64_t>(&protoSize);
     kernelInfo.kernelBase.cceKernel.paramBase = uint64_t(buff.get());
     EXPECT_EQ(kernel_.Compute(kernelInfo), AICPU_SCHEDULE_OK);
 }
 
-TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDump_failed) {
-    const int32_t dataType = 7; //int32
+TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDump_failed)
+{
+    const int32_t dataType = 7; // int32
     aicpu::dump::OpMappingInfo opMappingInfo;
 
     opMappingInfo.set_dump_path("dump_path");
 
     uint64_t stepId = 1;
     opMappingInfo.set_step_id_addr(reinterpret_cast<uint64_t>(&stepId));
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("handsome");
     op->set_op_type("Handsome");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -188,14 +191,14 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDump_failed) {
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &(inData[0]);
+    int32_t* q = &(inData[0]);
     input->set_address(reinterpret_cast<uint64_t>(q));
     input->set_size(sizeof(inData));
 
@@ -206,18 +209,18 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDump_failed) {
     aicpu::HwtsTsKernel kernelInfo = {};
     kernelInfo.kernelType = aicpu::KERNEL_TYPE_AICPU;
     kernelInfo.kernelBase.cceKernel.kernelSo = 0;
-    const char *kernelName = "DumpDataInfo";
+    const char* kernelName = "DumpDataInfo";
     kernelInfo.kernelBase.cceKernel.kernelName = uint64_t(kernelName);
     const uint32_t singleOpDumpParamNum = 2;
-    const uint32_t paramLen =  sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum*sizeof(uint64_t);
+    const uint32_t paramLen = sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum * sizeof(uint64_t);
     std::unique_ptr<char[]> buff(new (std::nothrow) char[paramLen]);
     if (buff == nullptr) {
         return;
     }
-    aicpu::AicpuParamHead *paramHead = (aicpu::AicpuParamHead*)(buff.get());
+    aicpu::AicpuParamHead* paramHead = (aicpu::AicpuParamHead*)(buff.get());
     paramHead->length = paramLen;
     paramHead->ioAddrNum = 2;
-    uint64_t *param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
+    uint64_t* param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
     param[0] = reinterpret_cast<uint64_t>(opMappingInfoStr.data());
     param[1] = reinterpret_cast<uint64_t>(&protoSize);
     kernelInfo.kernelBase.cceKernel.paramBase = uint64_t(buff.get());
@@ -232,27 +235,27 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDump_failed) {
 
 TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDumpST_failed)
 {
-    const int32_t dataType = 7; //int32
+    const int32_t dataType = 7; // int32
     aicpu::dump::OpMappingInfo opMappingInfo;
 
     opMappingInfo.set_dump_path("dump_path");
 
     uint64_t stepId = 1;
     opMappingInfo.set_step_id_addr(reinterpret_cast<uint64_t>(&stepId));
-    aicpu::dump::Task *task = opMappingInfo.add_task();
+    aicpu::dump::Task* task = opMappingInfo.add_task();
 
-    aicpu::dump::Op *op = task->mutable_op();
+    aicpu::dump::Op* op = task->mutable_op();
     op->set_op_name("handsome");
     op->set_op_type("Handsome");
 
-    aicpu::dump::Output *output = task->add_output();
+    aicpu::dump::Output* output = task->add_output();
     output->set_data_type(dataType);
     output->set_format(1);
-    aicpu::dump::Shape *shape = output->mutable_shape();
+    aicpu::dump::Shape* shape = output->mutable_shape();
     shape->add_dim(2);
     shape->add_dim(2);
     int32_t data[4] = {1, 2, 3, 4};
-    int32_t *p = &data[0];
+    int32_t* p = &data[0];
     output->set_address(reinterpret_cast<uint64_t>(p));
     output->set_original_name("original_name");
     output->set_original_output_index(11);
@@ -260,14 +263,14 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDumpST_failed)
     output->set_original_output_format(1);
     output->set_size(sizeof(data));
 
-    aicpu::dump::Input *input = task->add_input();
+    aicpu::dump::Input* input = task->add_input();
     input->set_data_type(dataType);
     input->set_format(1);
-    aicpu::dump::Shape *inShape = input->mutable_shape();
+    aicpu::dump::Shape* inShape = input->mutable_shape();
     inShape->add_dim(2);
     inShape->add_dim(2);
     int32_t inData[4] = {10, 20, 30, 40};
-    int32_t *q = &(inData[0]);
+    int32_t* q = &(inData[0]);
     input->set_address(reinterpret_cast<uint64_t>(q));
     input->set_size(sizeof(inData));
 
@@ -278,18 +281,18 @@ TEST_F(DumpDataInfoKernelTest, SingleOpOrUnknownShapeOpDumpTest_DoDumpST_failed)
     aicpu::HwtsTsKernel kernelInfo = {};
     kernelInfo.kernelType = aicpu::KERNEL_TYPE_AICPU;
     kernelInfo.kernelBase.cceKernel.kernelSo = 0;
-    const char *kernelName = "DumpDataInfo";
+    const char* kernelName = "DumpDataInfo";
     kernelInfo.kernelBase.cceKernel.kernelName = uint64_t(kernelName);
     const uint32_t singleOpDumpParamNum = 2;
-    const uint32_t paramLen =  sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum*sizeof(uint64_t);
+    const uint32_t paramLen = sizeof(aicpu::AicpuParamHead) + singleOpDumpParamNum * sizeof(uint64_t);
     std::unique_ptr<char[]> buff(new (std::nothrow) char[paramLen]);
     if (buff == nullptr) {
         return;
     }
-    aicpu::AicpuParamHead *paramHead = (aicpu::AicpuParamHead*)(buff.get());
+    aicpu::AicpuParamHead* paramHead = (aicpu::AicpuParamHead*)(buff.get());
     paramHead->length = paramLen;
     paramHead->ioAddrNum = 2;
-    uint64_t *param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
+    uint64_t* param = (uint64_t*)((char*)(buff.get()) + sizeof(aicpu::AicpuParamHead));
     param[0] = reinterpret_cast<uint64_t>(opMappingInfoStr.data());
     param[1] = reinterpret_cast<uint64_t>(&protoSize);
     kernelInfo.kernelBase.cceKernel.paramBase = uint64_t(buff.get());

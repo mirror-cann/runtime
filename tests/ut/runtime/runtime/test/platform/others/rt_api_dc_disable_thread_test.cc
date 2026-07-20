@@ -9,35 +9,40 @@
  */
 #include "../../rt_utest_api.hpp"
 #include "../../data/elf.h"
-class ApiDCDisableThreadTest : public testing::Test
-{
+class ApiDCDisableThreadTest : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend310P");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         originType_ = Runtime::Instance()->GetChipType();
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_DC);
         GlobalContainer::SetRtChipType(CHIP_DC);
 
         int64_t hardwareVersion = CHIP_DC << 8;
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL(driver_,
-            &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
 
         (void)rtSetDevice(0);
         (void)rtSetTSDevice(0);
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -50,7 +55,7 @@ protected:
 
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 0);
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
@@ -58,43 +63,40 @@ protected:
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
         rtDeviceReset(0);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
-        rtInstance->SetDisableThread(flag);      // Recover.
+        rtInstance->SetDisableThread(flag); // Recover.
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
     static rtChipType_t originType_;
-    static Driver    *driver_;
+    static Driver* driver_;
     static bool flag;
 };
 
 rtStream_t ApiDCDisableThreadTest::stream_ = NULL;
 rtEvent_t ApiDCDisableThreadTest::event_ = NULL;
 void* ApiDCDisableThreadTest::binHandle_ = nullptr;
-char  ApiDCDisableThreadTest::function_ = 'a';
+char ApiDCDisableThreadTest::function_ = 'a';
 uint32_t ApiDCDisableThreadTest::binary_[32] = {};
 rtChipType_t ApiDCDisableThreadTest::originType_ = CHIP_CLOUD;
 Driver* ApiDCDisableThreadTest::driver_ = NULL;
@@ -103,15 +105,15 @@ bool ApiDCDisableThreadTest::flag = false;
 TEST_F(ApiDCDisableThreadTest, kernel_launch)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
     const bool isDisableThread = Runtime::Instance()->GetDisableThread();
     EXPECT_EQ(isDisableThread, true);
 
-    error = rtKernelLaunch(&function_, 1, (void *)args, sizeof(args), NULL, stream_);
+    error = rtKernelLaunch(&function_, 1, (void*)args, sizeof(args), NULL, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtGetFunctionByName("foo", &stubFunc);
@@ -134,7 +136,7 @@ TEST_F(ApiDCDisableThreadTest, kernel_launch_unsupport_mc2)
     rtSmDesc_t desc;
     char_t* name = "opName";
 
-    void *args[] = { &error, NULL };
+    void* args[] = {&error, NULL};
     rtAicpuArgsEx_t argsInfo0 = {};
     argsInfo0.args = args;
     argsInfo0.argsSize = sizeof(args);
@@ -147,7 +149,7 @@ TEST_F(ApiDCDisableThreadTest, creat_event_with_mc2)
     rtError_t error;
     rtEvent_t event;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_MC2_RTS_SUPPORT_HCCL_DC);
 
@@ -158,7 +160,7 @@ TEST_F(ApiDCDisableThreadTest, creat_event_with_mc2)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiDCDisableThreadTest, creat_event_mc2_or_other_flags)
@@ -166,7 +168,7 @@ TEST_F(ApiDCDisableThreadTest, creat_event_mc2_or_other_flags)
     rtError_t error;
     rtEvent_t event;
 
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_MC2_RTS_SUPPORT_HCCL_DC);
 
@@ -174,7 +176,7 @@ TEST_F(ApiDCDisableThreadTest, creat_event_mc2_or_other_flags)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiDCDisableThreadTest, kernel_launch_with_timeout)
@@ -183,27 +185,31 @@ TEST_F(ApiDCDisableThreadTest, kernel_launch_with_timeout)
     rtSmDesc_t desc;
     char_t* name = "opName";
 
-    void *args[] = { &error, NULL };
+    void* args[] = {&error, NULL};
     rtAicpuArgsEx_t argsInfo0 = {};
     argsInfo0.args = args;
     argsInfo0.argsSize = sizeof(args);
     argsInfo0.timeout = 100;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
-    error = rtAicpuKernelLaunchExWithArgs(KERNEL_TYPE_AICPU_CUSTOM, name, 1, &argsInfo0, &desc, stream_, RT_KERNEL_CUSTOM_AICPU | RT_KERNEL_USE_SPECIAL_TIMEOUT);
+    error = rtAicpuKernelLaunchExWithArgs(
+        KERNEL_TYPE_AICPU_CUSTOM, name, 1, &argsInfo0, &desc, stream_,
+        RT_KERNEL_CUSTOM_AICPU | RT_KERNEL_USE_SPECIAL_TIMEOUT);
     argsInfo0.timeout = 100000;
     rtSetOpExecuteTimeOut(10);
-    error = rtAicpuKernelLaunchExWithArgs(KERNEL_TYPE_AICPU_CUSTOM, name, 1, &argsInfo0, &desc, stream_, RT_KERNEL_CUSTOM_AICPU | RT_KERNEL_USE_SPECIAL_TIMEOUT);
+    error = rtAicpuKernelLaunchExWithArgs(
+        KERNEL_TYPE_AICPU_CUSTOM, name, 1, &argsInfo0, &desc, stream_,
+        RT_KERNEL_CUSTOM_AICPU | RT_KERNEL_USE_SPECIAL_TIMEOUT);
     rtInstance->SetChipType(type);
     GlobalContainer::SetRtChipType(type);
 
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
-//okay
+// okay
 TEST_F(ApiDCDisableThreadTest, create_external_event)
 {
     rtError_t error;
@@ -232,10 +238,10 @@ TEST_F(ApiDCDisableThreadTest, create_external_event)
 
     error = rtsEventCreateEx(&event, RT_EVENT_FLAG_EXTERNAL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
+
     error = rtsEventCreateEx(&event, RT_EVENT_FLAG_EXTERNAL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
- 
+
     error = rtsEventCreateEx(&event, RT_EVENT_FLAG_EXTERNAL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -311,10 +317,7 @@ TEST_F(ApiDCDisableThreadTest, synchronize_external_event)
 TEST_F(ApiDCDisableThreadTest, user_logic_devid_00)
 {
     uint32_t devNum = 8U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     int32_t cnt = -1;
     int32_t userDeviceId = -1;
@@ -347,10 +350,7 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_00)
 TEST_F(ApiDCDisableThreadTest, user_logic_devid_01)
 {
     uint32_t devNum = 8U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     int32_t cnt = -1;
     int32_t userDeviceId = -1;
@@ -375,7 +375,7 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_01)
     env_visible_device[std::strlen(env_visible_device) - 1] = '\0';
 
     setenv("ASCEND_RT_VISIBLE_DEVICES", env_visible_device, 1);
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     const bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
 
@@ -402,10 +402,7 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_01)
 TEST_F(ApiDCDisableThreadTest, user_logic_devid_02)
 {
     uint32_t devNum = 8U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     int32_t cnt = -1;
     int32_t userDeviceId = -1;
@@ -429,7 +426,7 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_02)
     env_visible_device[std::strlen(env_visible_device) - 1] = '\0';
 
     setenv("ASCEND_RT_VISIBLE_DEVICES", env_visible_device, 1);
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     const bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
 
@@ -452,10 +449,7 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_02)
 TEST_F(ApiDCDisableThreadTest, user_logic_devid_03)
 {
     uint32_t devNum = 8U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     int32_t cnt = -1;
     int32_t userDeviceId = -1;
@@ -480,7 +474,7 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_03)
     env_visible_device[std::strlen(env_visible_device) - 1] = '\0';
 
     setenv("ASCEND_RT_VISIBLE_DEVICES", env_visible_device, 1);
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     const bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
 
@@ -508,13 +502,10 @@ TEST_F(ApiDCDisableThreadTest, user_logic_devid_03)
 
 TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_00)
 {
-    uint32_t devices[10] = { 0 };
+    uint32_t devices[10] = {0};
     size_t arrayLen = sizeof(devices) / sizeof(devices[0]);
     uint32_t devNum = static_cast<uint32_t>(arrayLen);
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
     MOCKER(drvGetDevIDs).stubs().will(invoke(drvGetDevIDs_stub_00));
 
     rtError_t ret = rtGetDeviceIDs(devices, devNum);
@@ -527,10 +518,7 @@ TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_00)
 TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_01)
 {
     uint32_t devNum = 8U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     MOCKER(drvGetDevIDs).stubs().will(invoke(drvGetDevIDs_stub_00));
 
@@ -544,7 +532,7 @@ TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_01)
     env_visible_device[std::strlen(env_visible_device) - 1] = '\0';
 
     setenv("ASCEND_RT_VISIBLE_DEVICES", env_visible_device, 1);
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     const bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
     rtError_t ret = rtInstance->GetVisibleDevices();
@@ -571,10 +559,7 @@ TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_01)
 TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_02)
 {
     uint32_t devNum = 8U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     MOCKER(drvGetDevIDs).stubs().will(invoke(drvGetDevIDs_stub_01));
 
@@ -588,7 +573,7 @@ TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_02)
     env_visible_device[std::strlen(env_visible_device) - 1] = '\0';
 
     setenv("ASCEND_RT_VISIBLE_DEVICES", env_visible_device, 1);
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     const bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
     rtError_t ret = rtInstance->GetVisibleDevices();
@@ -615,10 +600,7 @@ TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_02)
 TEST_F(ApiDCDisableThreadTest, drvGetDevNum_invalid)
 {
     uint32_t devNum = 128U;
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
 
     int32_t visible_device[] = {3, 4, 6, 7};
     size_t visible_device_cnt = sizeof(visible_device) / sizeof(visible_device[0]);
@@ -630,7 +612,7 @@ TEST_F(ApiDCDisableThreadTest, drvGetDevNum_invalid)
     env_visible_device[std::strlen(env_visible_device) - 1] = '\0';
 
     setenv("ASCEND_RT_VISIBLE_DEVICES", env_visible_device, 1);
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     const bool haveDevice = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = true;
     rtError_t ret = rtInstance->GetVisibleDevices();
@@ -652,10 +634,7 @@ TEST_F(ApiDCDisableThreadTest, GetDeviceIDs_03)
     (void)memset_s(devices, sizeof(devices), 0xff, sizeof(devices));
     size_t arrayLen = sizeof(devices) / sizeof(devices[0]);
     uint32_t devNum = static_cast<uint32_t>(arrayLen);
-    MOCKER(drvGetDevNum)
-        .stubs()
-        .with(outBoundP(&devNum, sizeof(devNum)))
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(drvGetDevNum).stubs().with(outBoundP(&devNum, sizeof(devNum))).will(returnValue(DRV_ERROR_NONE));
     MOCKER(drvGetDevIDs).stubs().will(invoke(drvGetDevIDs_stub_00));
 
     uint32_t limit = 8U;

@@ -27,35 +27,33 @@ using namespace testing;
 
 class ApiCTest : public testing::Test {
 protected:
-    void SetUp() {
-        MOCKER(GetMemPoolReuseFlag).stubs().will(returnValue(true));
-    }
-    void TearDown() {
-        GlobalMockObject::verify();
-    }
+    void SetUp() { MOCKER(GetMemPoolReuseFlag).stubs().will(returnValue(true)); }
+    void TearDown() { GlobalMockObject::verify(); }
 };
 
-TEST_F(ApiCTest, memalloc_free) {
+TEST_F(ApiCTest, memalloc_free)
+{
     rtError_t error;
     error = rtFree(nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-    void *ptr1 = nullptr;
+    void* ptr1 = nullptr;
     error = rtMalloc(&ptr1, 100, RT_MEMORY_HBM, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtFree(ptr1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER(halMemAlloc).stubs().will(returnObjectList(DRV_ERROR_MALLOC_FAIL));
-    void *ptr2 = nullptr;
+    void* ptr2 = nullptr;
     error = rtMalloc(&ptr2, 100, RT_MEMORY_HBM, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_RESOURCE_ALLOC_FAIL);
 }
 
-TEST_F(ApiCTest, memset_sync) {
+TEST_F(ApiCTest, memset_sync)
+{
     rtError_t error;
-    void *devPtr1 = nullptr;
-    void *devPtr2 = nullptr;
-    void *devPtr3 = nullptr;
+    void* devPtr1 = nullptr;
+    void* devPtr2 = nullptr;
+    void* devPtr3 = nullptr;
 
     error = rtMalloc(&devPtr1, 60, RT_MEMORY_DDR, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -79,11 +77,12 @@ TEST_F(ApiCTest, memset_sync) {
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
-TEST_F(ApiCTest, memcpy_sync) {
+TEST_F(ApiCTest, memcpy_sync)
+{
     rtError_t error;
-    void *devPtr1 = nullptr;
-    void *devPtr2 = nullptr;
-    void *devPtr3 = nullptr;
+    void* devPtr1 = nullptr;
+    void* devPtr2 = nullptr;
+    void* devPtr3 = nullptr;
 
     error = rtMalloc(&devPtr1, 60, RT_MEMORY_DDR, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -110,7 +109,8 @@ TEST_F(ApiCTest, memcpy_sync) {
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-TEST_F(ApiCTest, mem_get_info) {
+TEST_F(ApiCTest, mem_get_info)
+{
     rtError_t error;
     size_t free;
     size_t total;
@@ -136,7 +136,8 @@ TEST_F(ApiCTest, mem_get_info) {
 }
 
 // env
-TEST_F(ApiCTest, rt_init_deinit_case) {
+TEST_F(ApiCTest, rt_init_deinit_case)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -150,7 +151,8 @@ TEST_F(ApiCTest, rt_init_deinit_case) {
 }
 
 // device
-TEST_F(ApiCTest, rt_get_runmode) {
+TEST_F(ApiCTest, rt_get_runmode)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -171,7 +173,8 @@ TEST_F(ApiCTest, rt_get_runmode) {
     EXPECT_EQ(error, ACL_ERROR_RT_INTERNAL_ERROR);
 }
 
-TEST_F(ApiCTest, rt_get_device_normal) {
+TEST_F(ApiCTest, rt_get_device_normal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -195,20 +198,23 @@ TEST_F(ApiCTest, rt_get_device_normal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, rt_get_device_abnormal1) {
+TEST_F(ApiCTest, rt_get_device_abnormal1)
+{
     rtError_t error;
     error = rtGetDevice(nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
-TEST_F(ApiCTest, rt_get_device_abnormal2) {
+TEST_F(ApiCTest, rt_get_device_abnormal2)
+{
     rtError_t error;
     int32_t devId;
     error = rtGetDevice(&devId);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
-TEST_F(ApiCTest, rt_get_device_abnormal3) {
+TEST_F(ApiCTest, rt_get_device_abnormal3)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -220,7 +226,8 @@ TEST_F(ApiCTest, rt_get_device_abnormal3) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, device_set_normal) {
+TEST_F(ApiCTest, device_set_normal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -234,7 +241,8 @@ TEST_F(ApiCTest, device_set_normal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, device_set_abnormal) {
+TEST_F(ApiCTest, device_set_abnormal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -248,7 +256,8 @@ TEST_F(ApiCTest, device_set_abnormal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, device_not_have) {
+TEST_F(ApiCTest, device_not_have)
+{
     rtError_t error;
 
     error = rtSetDevice(0);
@@ -267,7 +276,8 @@ TEST_F(ApiCTest, device_not_have) {
 }
 
 // context
-TEST_F(ApiCTest, context_create_normal1) {
+TEST_F(ApiCTest, context_create_normal1)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -288,7 +298,8 @@ TEST_F(ApiCTest, context_create_normal1) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_normal2) {
+TEST_F(ApiCTest, context_create_normal2)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -303,7 +314,8 @@ TEST_F(ApiCTest, context_create_normal2) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_get_current) {
+TEST_F(ApiCTest, context_get_current)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -322,7 +334,8 @@ TEST_F(ApiCTest, context_get_current) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_get_abnormal) {
+TEST_F(ApiCTest, context_get_abnormal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -337,8 +350,8 @@ TEST_F(ApiCTest, context_get_abnormal) {
     rtDeinit();
 }
 
-
-TEST_F(ApiCTest, context_set_current) {
+TEST_F(ApiCTest, context_set_current)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -367,7 +380,8 @@ TEST_F(ApiCTest, context_set_current) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_set_current_abnormal) {
+TEST_F(ApiCTest, context_set_current_abnormal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -388,7 +402,8 @@ TEST_F(ApiCTest, context_set_current_abnormal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_abnormal1) {
+TEST_F(ApiCTest, context_create_abnormal1)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -402,21 +417,20 @@ TEST_F(ApiCTest, context_create_abnormal1) {
     error = rtCtxDestroyEx(nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_CONTEXT_NULL);
 
-
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_abnormal2) {
+TEST_F(ApiCTest, context_create_abnormal2)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtSetDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 
     rtContext_t ctx;
     error = rtCtxCreateEx(&ctx, 0, -1);
@@ -428,14 +442,14 @@ TEST_F(ApiCTest, context_create_abnormal2) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_abnormal3) {
+TEST_F(ApiCTest, context_create_abnormal3)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtSetDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 
     rtContext_t ctx;
     error = rtCtxCreateEx(&ctx, 0, -1);
@@ -447,7 +461,8 @@ TEST_F(ApiCTest, context_create_abnormal3) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_abnormal4) {
+TEST_F(ApiCTest, context_create_abnormal4)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -489,7 +504,8 @@ TEST_F(ApiCTest, context_create_abnormal4) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_abnormal5) {
+TEST_F(ApiCTest, context_create_abnormal5)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -497,9 +513,8 @@ TEST_F(ApiCTest, context_create_abnormal5) {
     error = rtSetDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-
     rtContext_t ctx;
-    MOCKER(EmplaceSortVector).stubs().will(returnValue((void *)NULL));
+    MOCKER(EmplaceSortVector).stubs().will(returnValue((void*)NULL));
     if (rtCtxCreateEx(&ctx, 0, 0) == RT_ERROR_NONE) {
         rtCtxDestroyEx(ctx);
     }
@@ -509,7 +524,8 @@ TEST_F(ApiCTest, context_create_abnormal5) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, context_create_abnormal6) {
+TEST_F(ApiCTest, context_create_abnormal6)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -517,9 +533,8 @@ TEST_F(ApiCTest, context_create_abnormal6) {
     error = rtSetDevice(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-
     rtContext_t ctx;
-    MOCKER(MemPoolAllocWithCSingleList).stubs().will(returnValue((void *)NULL));
+    MOCKER(MemPoolAllocWithCSingleList).stubs().will(returnValue((void*)NULL));
     error = rtCtxCreateEx(&ctx, 0, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_MEMORY_ALLOCATION);
 
@@ -530,7 +545,8 @@ TEST_F(ApiCTest, context_create_abnormal6) {
 }
 
 // stream
-TEST_F(ApiCTest, stream_create_normal1) {
+TEST_F(ApiCTest, stream_create_normal1)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -559,7 +575,8 @@ TEST_F(ApiCTest, stream_create_normal1) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_normal2) {
+TEST_F(ApiCTest, stream_create_normal2)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -587,7 +604,8 @@ TEST_F(ApiCTest, stream_create_normal2) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_normal3) {
+TEST_F(ApiCTest, stream_create_normal3)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -609,7 +627,8 @@ TEST_F(ApiCTest, stream_create_normal3) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_normal0) {
+TEST_F(ApiCTest, stream_create_normal0)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -619,7 +638,7 @@ TEST_F(ApiCTest, stream_create_normal0) {
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtStream_t stream;
-    MOCKER(EmplaceBackVector).stubs().will(returnValue((void *)NULL));
+    MOCKER(EmplaceBackVector).stubs().will(returnValue((void*)NULL));
     error = rtStreamCreateWithConfig(&stream, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_INTERNAL_ERROR);
 
@@ -629,7 +648,8 @@ TEST_F(ApiCTest, stream_create_normal0) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_abnormal1) {
+TEST_F(ApiCTest, stream_create_abnormal1)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -647,7 +667,8 @@ TEST_F(ApiCTest, stream_create_abnormal1) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_abnormal2) {
+TEST_F(ApiCTest, stream_create_abnormal2)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -662,7 +683,8 @@ TEST_F(ApiCTest, stream_create_abnormal2) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_abnormal3) {
+TEST_F(ApiCTest, stream_create_abnormal3)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -674,7 +696,8 @@ TEST_F(ApiCTest, stream_create_abnormal3) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_create_abnormal4) {
+TEST_F(ApiCTest, stream_create_abnormal4)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -727,7 +750,8 @@ TEST_F(ApiCTest, stream_create_abnormal4) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_with_nullcontext_abnormal1) {
+TEST_F(ApiCTest, stream_with_nullcontext_abnormal1)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -765,7 +789,8 @@ TEST_F(ApiCTest, stream_with_nullcontext_abnormal1) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sync_normal) {
+TEST_F(ApiCTest, stream_sync_normal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -797,7 +822,8 @@ TEST_F(ApiCTest, stream_sync_normal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sync_abnormal) {
+TEST_F(ApiCTest, stream_sync_abnormal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -814,7 +840,8 @@ TEST_F(ApiCTest, stream_sync_abnormal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sync_abnormal2) {
+TEST_F(ApiCTest, stream_sync_abnormal2)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -846,7 +873,8 @@ TEST_F(ApiCTest, stream_sync_abnormal2) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sync_abnormal3) {
+TEST_F(ApiCTest, stream_sync_abnormal3)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -885,7 +913,8 @@ TEST_F(ApiCTest, stream_sync_abnormal3) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sync_abnormal4) {
+TEST_F(ApiCTest, stream_sync_abnormal4)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -909,7 +938,8 @@ TEST_F(ApiCTest, stream_sync_abnormal4) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sqId_normal) {
+TEST_F(ApiCTest, stream_sqId_normal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -945,7 +975,8 @@ TEST_F(ApiCTest, stream_sqId_normal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_sqId_abnormal) {
+TEST_F(ApiCTest, stream_sqId_abnormal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -961,7 +992,8 @@ TEST_F(ApiCTest, stream_sqId_abnormal) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, stream_workspace_normal) {
+TEST_F(ApiCTest, stream_workspace_normal)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -978,7 +1010,7 @@ TEST_F(ApiCTest, stream_workspace_normal) {
     error = rtStreamCreateWithConfig(&stream, &handle);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *workspace;
+    void* workspace;
     size_t worksize;
     error = rtStreamGetWorkspace(stream, &workspace, &worksize);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1043,9 +1075,7 @@ TEST_F(ApiCTest, runtime_rtProcessReport)
     error = rtProcessReport(timeout);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halCbIrqWait)
-        .stubs()
-        .will(returnObjectList(DRV_ERROR_INVALID_VALUE, DRV_ERROR_WAIT_TIMEOUT));
+    MOCKER(halCbIrqWait).stubs().will(returnObjectList(DRV_ERROR_INVALID_VALUE, DRV_ERROR_WAIT_TIMEOUT));
     timeout = 0;
     error = rtProcessReport(timeout);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1062,7 +1092,8 @@ TEST_F(ApiCTest, runtime_rtProcessReport)
     EXPECT_EQ(error, ACL_ERROR_RT_REPORT_TIMEOUT);
 }
 
-TEST_F(ApiCTest, runtime_rtUnSubscribeReport) {
+TEST_F(ApiCTest, runtime_rtUnSubscribeReport)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1106,14 +1137,15 @@ TEST_F(ApiCTest, runtime_rtUnSubscribeReport) {
     rtDeinit();
 }
 
-void CallBackFuncStub(void *arg)
+void CallBackFuncStub(void* arg)
 {
     (void)arg;
     int a = 1;
     a++;
 }
 
-TEST_F(ApiCTest, runtime_rtCallbackLaunch) {
+TEST_F(ApiCTest, runtime_rtCallbackLaunch)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1172,7 +1204,8 @@ TEST_F(ApiCTest, runtime_rtCallbackLaunch) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, runtime_SendNullMdl) {
+TEST_F(ApiCTest, runtime_SendNullMdl)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1201,14 +1234,16 @@ TEST_F(ApiCTest, runtime_SendNullMdl) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, runtime_InitCtrlMdl) {
+TEST_F(ApiCTest, runtime_InitCtrlMdl)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtDeinit();
 }
 
-TEST_F(ApiCTest, runtime_DeInitCtrlMdl) {
+TEST_F(ApiCTest, runtime_DeInitCtrlMdl)
+{
     rtError_t error;
     error = rtInit();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1232,7 +1267,8 @@ TEST_F(ApiCTest, runtime_DeInitCtrlMdl) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, runtime_rtSubscribeHostFunc) {
+TEST_F(ApiCTest, runtime_rtSubscribeHostFunc)
+{
     rtStreamConfigHandle handle;
     rtStream_t stream;
     rtError_t error = rtInit();
@@ -1273,7 +1309,8 @@ TEST_F(ApiCTest, runtime_rtSubscribeHostFunc) {
     rtDeinit();
 }
 
-TEST_F(ApiCTest, runtime_rtUnSubscribeHostFunc) {
+TEST_F(ApiCTest, runtime_rtUnSubscribeHostFunc)
+{
     rtStreamConfigHandle handle;
     rtStream_t stream;
     rtError_t error = rtInit();
@@ -1317,14 +1354,15 @@ TEST_F(ApiCTest, runtime_rtUnSubscribeHostFunc) {
     rtDeinit();
 }
 
-void *ThreadFunc(void *arg)
+void* ThreadFunc(void* arg)
 {
     int32_t timeout = 1;
     (void)rtProcessHostFunc(timeout);
     return nullptr;
 }
 
-TEST_F(ApiCTest, runtime_rtProcessHostFunc) {
+TEST_F(ApiCTest, runtime_rtProcessHostFunc)
+{
     pthread_t threadId;
     int ret = pthread_create(&threadId, nullptr, ThreadFunc, nullptr);
     if (ret != 0) {

@@ -17,16 +17,13 @@ using namespace tsd;
 using namespace std;
 
 namespace {
-    constexpr size_t ENV_VALUE_MAX_LEN = 1024UL * 1024UL;
-    char g_envBuffer[ENV_VALUE_MAX_LEN + 1];
-}
+constexpr size_t ENV_VALUE_MAX_LEN = 1024UL * 1024UL;
+char g_envBuffer[ENV_VALUE_MAX_LEN + 1];
+} // namespace
 
 class EnvInternalApiTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-        cout << "Before EnvInternalApiTest" << endl;
-    }
+    virtual void SetUp() { cout << "Before EnvInternalApiTest" << endl; }
 
     virtual void TearDown()
     {
@@ -38,7 +35,7 @@ protected:
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_Success_MmSys)
 {
-    const char *envValue = "test_value_123";
+    const char* envValue = "test_value_123";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -98,7 +95,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_ValueAtMaxLenMinus1)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_EmptyValue)
 {
-    const char *envValue = "";
+    const char* envValue = "";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -109,7 +106,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_EmptyValue)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_OverwriteExistingValue)
 {
-    const char *envValue = "new_value";
+    const char* envValue = "new_value";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result = "old_value";
@@ -120,7 +117,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_OverwriteExistingValue)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_SpecialCharsInValue)
 {
-    const char *envValue = "value with spaces\nand\ttabs";
+    const char* envValue = "value with spaces\nand\ttabs";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -131,7 +128,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_SpecialCharsInValue)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_ChineseCharsInValue)
 {
-    const char *envValue = "中文测试值";
+    const char* envValue = "中文测试值";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -142,10 +139,13 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_ChineseCharsInValue)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_MultipleCalls)
 {
-    const char *envValue1 = "first_value";
-    const char *envValue2 = "second_value";
+    const char* envValue1 = "first_value";
+    const char* envValue2 = "second_value";
 
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue1))).then(returnValue(const_cast<char*>(envValue2)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue1)))
+        .then(returnValue(const_cast<char*>(envValue2)));
 
     std::string result1;
     GetEnvFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "ENV1", result1);
@@ -171,7 +171,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_ValueExactlyMaxLen)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_ShortValue)
 {
-    const char *envValue = "short";
+    const char* envValue = "short";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -196,7 +196,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_LongButValidValue)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_NullEnvName)
 {
-    const char *envValue = "test";
+    const char* envValue = "test";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -207,7 +207,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_NullEnvName)
 
 TEST_F(EnvInternalApiTest, GetEnvFromMmSys_DifferentEnvIds)
 {
-    const char *envValue = "id_test_value";
+    const char* envValue = "id_test_value";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -218,7 +218,7 @@ TEST_F(EnvInternalApiTest, GetEnvFromMmSys_DifferentEnvIds)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_MatchExact)
 {
-    const char *envValue = "1";
+    const char* envValue = "1";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "DATAMASTER_RUN_MODE", "1");
@@ -228,7 +228,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_MatchExact)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_NotMatch)
 {
-    const char *envValue = "0";
+    const char* envValue = "0";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "DATAMASTER_RUN_MODE", "1");
@@ -247,7 +247,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_EmptyEnvValue)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_EnvStrNull)
 {
-    const char *envValue = "1";
+    const char* envValue = "1";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, nullptr, "1");
@@ -257,7 +257,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_EnvStrNull)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_CaseSensitive)
 {
-    const char *envValue = "ONE";
+    const char* envValue = "ONE";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "CASE_ENV", "1");
@@ -267,7 +267,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_CaseSensitive)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ValueWithSpaces)
 {
-    const char *envValue = " 1 ";
+    const char* envValue = " 1 ";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "SPACE_ENV", "1");
@@ -277,7 +277,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ValueWithSpaces)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ValueZero)
 {
-    const char *envValue = "0";
+    const char* envValue = "0";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "ZERO_ENV", "1");
@@ -287,7 +287,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ValueZero)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ValueTwo)
 {
-    const char *envValue = "2";
+    const char* envValue = "2";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "TWO_ENV", "1");
@@ -297,7 +297,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ValueTwo)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_TrueString)
 {
-    const char *envValue = "true";
+    const char* envValue = "true";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "TRUE_ENV", "1");
@@ -307,10 +307,13 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_TrueString)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_MultipleDifferentFlags)
 {
-    const char *envValue1 = "1";
-    const char *envValue2 = "0";
+    const char* envValue1 = "1";
+    const char* envValue2 = "0";
 
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue1))).then(returnValue(const_cast<char*>(envValue2)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue1)))
+        .then(returnValue(const_cast<char*>(envValue2)));
 
     bool result1 = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "FLAG1", "1");
     EXPECT_EQ(result1, true);
@@ -321,7 +324,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_MultipleDifferentFlags)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ExpectedValueDifferent)
 {
-    const char *envValue = "enabled";
+    const char* envValue = "enabled";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "DIFF_ENV", "enabled");
@@ -331,7 +334,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_ExpectedValueDifferent)
 
 TEST_F(EnvInternalApiTest, GetFlagFromMmSys_EmptyStringMatch)
 {
-    const char *envValue = "";
+    const char* envValue = "";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "EMPTY_MATCH_ENV", "");
@@ -341,7 +344,7 @@ TEST_F(EnvInternalApiTest, GetFlagFromMmSys_EmptyStringMatch)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_True)
 {
-    const char *envValue = "1";
+    const char* envValue = "1";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsFpgaMmSysEnv();
@@ -351,7 +354,7 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_True)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_ValueZero)
 {
-    const char *envValue = "0";
+    const char* envValue = "0";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsFpgaMmSysEnv();
@@ -361,7 +364,7 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_ValueZero)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_ValueTwo)
 {
-    const char *envValue = "2";
+    const char* envValue = "2";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsFpgaMmSysEnv();
@@ -380,7 +383,7 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_NotSet)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_EmptyValue)
 {
-    const char *envValue = "";
+    const char* envValue = "";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsFpgaMmSysEnv();
@@ -390,7 +393,7 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_EmptyValue)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_InvalidValue)
 {
-    const char *envValue = "invalid";
+    const char* envValue = "invalid";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsFpgaMmSysEnv();
@@ -400,8 +403,12 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_False_InvalidValue)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_MultipleCallsConsistency)
 {
-    const char *envValue = "1";
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue)));
+    const char* envValue = "1";
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)));
 
     bool result1 = IsFpgaMmSysEnv();
     bool result2 = IsFpgaMmSysEnv();
@@ -414,10 +421,13 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_MultipleCallsConsistency)
 
 TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_AfterEnvChange)
 {
-    const char *envValue1 = "0";
-    const char *envValue2 = "1";
+    const char* envValue1 = "0";
+    const char* envValue2 = "1";
 
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue1))).then(returnValue(const_cast<char*>(envValue2)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue1)))
+        .then(returnValue(const_cast<char*>(envValue2)));
 
     bool result1 = IsFpgaMmSysEnv();
     EXPECT_EQ(result1, false);
@@ -428,7 +438,7 @@ TEST_F(EnvInternalApiTest, IsFpgaMmSysEnv_AfterEnvChange)
 
 TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_True)
 {
-    const char *envValue = "1";
+    const char* envValue = "1";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsAsanMmSysEnv();
@@ -438,7 +448,7 @@ TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_True)
 
 TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_False_ValueZero)
 {
-    const char *envValue = "0";
+    const char* envValue = "0";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsAsanMmSysEnv();
@@ -457,7 +467,7 @@ TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_False_NotSet)
 
 TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_False_EmptyValue)
 {
-    const char *envValue = "";
+    const char* envValue = "";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsAsanMmSysEnv();
@@ -467,7 +477,7 @@ TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_False_EmptyValue)
 
 TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_False_InvalidValue)
 {
-    const char *envValue = "invalid";
+    const char* envValue = "invalid";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result = IsAsanMmSysEnv();
@@ -477,8 +487,12 @@ TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_False_InvalidValue)
 
 TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_MultipleCallsConsistency)
 {
-    const char *envValue = "1";
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue)));
+    const char* envValue = "1";
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)));
 
     bool result1 = IsAsanMmSysEnv();
     bool result2 = IsAsanMmSysEnv();
@@ -491,10 +505,13 @@ TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_MultipleCallsConsistency)
 
 TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_AfterEnvChange)
 {
-    const char *envValue1 = "0";
-    const char *envValue2 = "1";
+    const char* envValue1 = "0";
+    const char* envValue2 = "1";
 
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue1))).then(returnValue(const_cast<char*>(envValue2)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue1)))
+        .then(returnValue(const_cast<char*>(envValue2)));
 
     bool result1 = IsAsanMmSysEnv();
     EXPECT_EQ(result1, false);
@@ -505,8 +522,11 @@ TEST_F(EnvInternalApiTest, IsAsanMmSysEnv_AfterEnvChange)
 
 TEST_F(EnvInternalApiTest, Combined_FpgaAndAsanBothTrue)
 {
-    const char *envValue = "1";
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue)));
+    const char* envValue = "1";
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)));
 
     bool fpgaResult = IsFpgaMmSysEnv();
     bool asanResult = IsAsanMmSysEnv();
@@ -517,7 +537,10 @@ TEST_F(EnvInternalApiTest, Combined_FpgaAndAsanBothTrue)
 
 TEST_F(EnvInternalApiTest, Combined_FpgaAndAsanBothFalse)
 {
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(static_cast<char*>(nullptr))).then(returnValue(static_cast<char*>(nullptr)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(static_cast<char*>(nullptr)))
+        .then(returnValue(static_cast<char*>(nullptr)));
 
     bool fpgaResult = IsFpgaMmSysEnv();
     bool asanResult = IsAsanMmSysEnv();
@@ -528,10 +551,13 @@ TEST_F(EnvInternalApiTest, Combined_FpgaAndAsanBothFalse)
 
 TEST_F(EnvInternalApiTest, Combined_FpgaTrueAsanFalse)
 {
-    const char *envValue1 = "1";
-    const char *envValue2 = "0";
+    const char* envValue1 = "1";
+    const char* envValue2 = "0";
 
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue1))).then(returnValue(const_cast<char*>(envValue2)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue1)))
+        .then(returnValue(const_cast<char*>(envValue2)));
 
     bool fpgaResult = IsFpgaMmSysEnv();
     bool asanResult = IsAsanMmSysEnv();
@@ -542,10 +568,13 @@ TEST_F(EnvInternalApiTest, Combined_FpgaTrueAsanFalse)
 
 TEST_F(EnvInternalApiTest, Combined_FpgaFalseAsanTrue)
 {
-    const char *envValue1 = "0";
-    const char *envValue2 = "1";
+    const char* envValue1 = "0";
+    const char* envValue2 = "1";
 
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue1))).then(returnValue(const_cast<char*>(envValue2)));
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue1)))
+        .then(returnValue(const_cast<char*>(envValue2)));
 
     bool fpgaResult = IsFpgaMmSysEnv();
     bool asanResult = IsAsanMmSysEnv();
@@ -556,12 +585,13 @@ TEST_F(EnvInternalApiTest, Combined_FpgaFalseAsanTrue)
 
 TEST_F(EnvInternalApiTest, Combined_BothEnvChanged)
 {
-    const char *envValue1 = "0";
-    const char *envValue2 = "1";
-    const char *envValue3 = "1";
-    const char *envValue4 = "0";
+    const char* envValue1 = "0";
+    const char* envValue2 = "1";
+    const char* envValue3 = "1";
+    const char* envValue4 = "0";
 
-    MOCKER(mmSysGetEnv).stubs()
+    MOCKER(mmSysGetEnv)
+        .stubs()
         .will(returnValue(const_cast<char*>(envValue1)))
         .then(returnValue(const_cast<char*>(envValue2)))
         .then(returnValue(const_cast<char*>(envValue3)))
@@ -580,7 +610,7 @@ TEST_F(EnvInternalApiTest, Combined_BothEnvChanged)
 
 TEST_F(EnvInternalApiTest, Boundary_ShortestValidValue)
 {
-    const char *envValue = "a";
+    const char* envValue = "a";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -591,7 +621,7 @@ TEST_F(EnvInternalApiTest, Boundary_ShortestValidValue)
 
 TEST_F(EnvInternalApiTest, Boundary_ValueLenOneByte)
 {
-    const char *envValue = "x";
+    const char* envValue = "x";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
@@ -602,7 +632,7 @@ TEST_F(EnvInternalApiTest, Boundary_ValueLenOneByte)
 
 TEST_F(EnvInternalApiTest, Boundary_GetFlagWithDifferentExpectedValues)
 {
-    const char *envValue = "test";
+    const char* envValue = "test";
     MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue)));
 
     bool result1 = GetFlagFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "ENV", "test");
@@ -616,8 +646,12 @@ TEST_F(EnvInternalApiTest, Boundary_GetFlagWithDifferentExpectedValues)
 
 TEST_F(EnvInternalApiTest, Boundary_MultipleEnvIdsInSequence)
 {
-    const char *envValue = "1";
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue)));
+    const char* envValue = "1";
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)));
 
     std::string result1;
     GetEnvFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "ENV1", result1);
@@ -633,8 +667,11 @@ TEST_F(EnvInternalApiTest, Boundary_MultipleEnvIdsInSequence)
 
 TEST_F(EnvInternalApiTest, Boundary_GetEnvResultReuse)
 {
-    const char *envValue = "shared_value";
-    MOCKER(mmSysGetEnv).stubs().will(returnValue(const_cast<char*>(envValue))).then(returnValue(const_cast<char*>(envValue)));
+    const char* envValue = "shared_value";
+    MOCKER(mmSysGetEnv)
+        .stubs()
+        .will(returnValue(const_cast<char*>(envValue)))
+        .then(returnValue(const_cast<char*>(envValue)));
 
     std::string result;
     GetEnvFromMmSys(MM_ENV_DATAMASTER_RUN_MODE, "ENV1", result);

@@ -47,8 +47,9 @@
 using namespace testing;
 using namespace cce::runtime;
 
-rtError_t CheckFusionKernelErrorInfoStub(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t CheckFusionKernelErrorInfoStub(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     EXPECT_EQ(info->u.fusionKernelErrorInfo.aicInfo.info[1].coreId, 25U);
     EXPECT_EQ(info->u.fusionKernelErrorInfo.aicInfo.info[1].aicCond, 0x1234U);
@@ -59,33 +60,26 @@ rtError_t CheckFusionKernelErrorInfoStub(const StarsDeviceErrorInfo * const info
     return RT_ERROR_NONE;
 }
 
-class DeviceTestDavid : public testing::Test
-{
+class DeviceTestDavid : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-        rtSetDevice(0);
-    }
+    virtual void SetUp() { rtSetDevice(0); }
 
     virtual void TearDown()
     {
         rtDeviceReset(0);
         GlobalMockObject::verify();
     }
+
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
-    static void *binHandle_;
+    static void* binHandle_;
     static char function_;
     static uint32_t binary_[32];
 };
@@ -123,7 +117,8 @@ static void FillStarv2CoreExt(
     info->errorType = errorType;
     extData->comm.coreNum = coreIndex + 1U;
     extData->info[coreIndex].coreId = coreId;
-    extData->info[coreIndex].validSize = sizeof(extData->info[coreIndex].aicCond) + sizeof(extData->info[coreIndex].rsv[0]);
+    extData->info[coreIndex].validSize =
+        sizeof(extData->info[coreIndex].aicCond) + sizeof(extData->info[coreIndex].rsv[0]);
     extData->info[coreIndex].aicCond = aicCond;
     extData->info[coreIndex].rsv[0] = 0x13579BDFU;
 }
@@ -131,9 +126,9 @@ static void FillStarv2CoreExt(
 TEST_F(DeviceTestDavid, STARS_CORE_Normal_0)
 {
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo *ctlInfo  = (DevRingBufferCtlInfo *)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo* ctlInfo = (DevRingBufferCtlInfo*)malloc(DEVICE_ERROR_EXT_RINGBUFFER_SIZE);
     EXPECT_NE(ctlInfo, nullptr);
     if (ctlInfo == nullptr) {
         return;
@@ -143,7 +138,7 @@ TEST_F(DeviceTestDavid, STARS_CORE_Normal_0)
     ctlInfo->tail = 1;
     ctlInfo->head = 0;
     ctlInfo->magic = RINGBUFFER_MAGIC;
-    ctlInfo->ringBufferLen  = RINGBUFFER_LEN;
+    ctlInfo->ringBufferLen = RINGBUFFER_LEN;
 
     // element size is invalid
     rtError_t error = errorProc->ProcessStarv2OneElementInRingBuffer(ctlInfo, 0, 1);
@@ -152,11 +147,10 @@ TEST_F(DeviceTestDavid, STARS_CORE_Normal_0)
     // init element size
     ctlInfo->elementSize = RINGBUFFER_EXT_ONE_ELEMENT_LENGTH_ON_DAVID;
     uint64_t oneElementLen = sizeof(StarsDeviceErrorInfo) + sizeof(RingBufferElementInfo);
-    uintptr_t infoAddr = reinterpret_cast<uintptr_t>(ctlInfo) +
-                            sizeof(DevRingBufferCtlInfo) +
-                            ctlInfo->head * oneElementLen;
-    RingBufferElementInfo *info = (RingBufferElementInfo *)infoAddr;
-    StarsDeviceErrorInfo *errorInfo = reinterpret_cast<StarsDeviceErrorInfo *>(info + 1);
+    uintptr_t infoAddr =
+        reinterpret_cast<uintptr_t>(ctlInfo) + sizeof(DevRingBufferCtlInfo) + ctlInfo->head * oneElementLen;
+    RingBufferElementInfo* info = (RingBufferElementInfo*)infoAddr;
+    StarsDeviceErrorInfo* errorInfo = reinterpret_cast<StarsDeviceErrorInfo*>(info + 1);
     info->errorType = AICORE_ERROR;
     errorInfo->u.davidCoreErrorInfo.comm.type = AICORE_ERROR;
     errorInfo->u.davidCoreErrorInfo.comm.coreNum = 1;
@@ -179,7 +173,7 @@ TEST_F(DeviceTestDavid, STARS_CORE_Normal_0)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -223,10 +217,10 @@ TEST_F(DeviceTestDavid, ProcessReportRingBuffer_Test)
 {
     uint16_t errorStreamId;
     rtSetDevice(1);
-    Device* device= ((Runtime *)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceErrorProc *errorProc = new DeviceErrorProc(device);
-    DevRingBufferCtlInfo ctlInfo  = {RINGBUFFER_MAGIC, 0U, 1U, RINGBUFFER_LEN, 0U, 0U, 0U};
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(device);
+    DevRingBufferCtlInfo ctlInfo = {RINGBUFFER_MAGIC, 0U, 1U, RINGBUFFER_LEN, 0U, 0U, 0U};
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
 
     // element size is error.
     rtError_t error = errorProc->ProcessReportRingBuffer(&ctlInfo, driver, &errorStreamId);
@@ -234,7 +228,7 @@ TEST_F(DeviceTestDavid, ProcessReportRingBuffer_Test)
 
     errorProc->deviceRingBufferAddr_ = nullptr;
     delete errorProc;
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -242,21 +236,22 @@ TEST_F(DeviceTestDavid, AllocSqRegVirtualAddr)
 {
     rtSetDevice(1);
     Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(1, 0);
-    DeviceSqCqPool *deviceSqCqPool = device->GetDeviceSqCqManage();
+    DeviceSqCqPool* deviceSqCqPool = device->GetDeviceSqCqManage();
     rtError_t expectRet = 1;
     uint64_t sqRegVirtualAddr = 2U;
 
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::GetSqRegVirtualAddrBySqid).stubs()
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::GetSqRegVirtualAddrBySqid)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&DeviceSqCqPool::SetSqRegVirtualAddrToDevice).stubs()
-        .will(returnValue(expectRet));
-    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()),&NpuDriver::UnmapSqRegVirtualAddrBySqid).stubs()
+    MOCKER_CPP(&DeviceSqCqPool::SetSqRegVirtualAddrToDevice).stubs().will(returnValue(expectRet));
+    MOCKER_CPP_VIRTUAL((NpuDriver*)(device->Driver_()), &NpuDriver::UnmapSqRegVirtualAddrBySqid)
+        .stubs()
         .will(returnValue(RT_ERROR_NONE));
 
     rtError_t ret = deviceSqCqPool->AllocSqRegVirtualAddr(1U, sqRegVirtualAddr);
     EXPECT_EQ(ret, expectRet);
 
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
     rtDeviceReset(1);
 }
 
@@ -411,7 +406,9 @@ TEST_F(DavidDeviceLimitTest, SetLimit_Concurrent_SimtStackSize_NoCrash)
             rtDeviceSetLimit(0, RT_LIMIT_TYPE_SIMT_STACK_SIZE, val);
         });
     }
-    for (auto &t : threads) { t.join(); }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     uint32_t val = 0U;
     rtError_t ret = rtDeviceGetLimit(RT_LIMIT_TYPE_SIMT_STACK_SIZE, &val);
@@ -429,7 +426,9 @@ TEST_F(DavidDeviceLimitTest, SetLimit_Concurrent_SimtDvgStackSize_NoCrash)
             rtDeviceSetLimit(0, RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE, val);
         });
     }
-    for (auto &t : threads) { t.join(); }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     uint32_t val = 0U;
     rtError_t ret = rtDeviceGetLimit(RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE, &val);
@@ -459,7 +458,9 @@ TEST_F(DavidDeviceLimitTest, SetLimit_Concurrent_SimtStack_SetAndGet_NoCrash)
             }
         });
     }
-    for (auto &t : threads) { t.join(); }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     uint32_t val = 0U;
     rtError_t ret = rtDeviceGetLimit(RT_LIMIT_TYPE_SIMT_STACK_SIZE, &val);
@@ -480,7 +481,9 @@ TEST_F(DavidDeviceLimitTest, SetLimit_Concurrent_BothSimtStacks_NoCrash)
             }
         });
     }
-    for (auto &t : threads) { t.join(); }
+    for (auto& t : threads) {
+        t.join();
+    }
 
     uint32_t val = 0U;
     rtError_t ret = rtDeviceGetLimit(RT_LIMIT_TYPE_SIMT_STACK_SIZE, &val);

@@ -32,23 +32,18 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class EventTest910 : public testing::Test
-{
+class EventTest910 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        ((Runtime *)Runtime::Instance())->SetDisableThread(true);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(true);
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         oldChipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -59,13 +54,14 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(oldChipType);
         GlobalContainer::SetRtChipType(oldChipType);
         GlobalMockObject::verify();
     }
+
 private:
     rtChipType_t oldChipType;
 };
@@ -134,7 +130,6 @@ TEST_F(EventTest910, query)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(status, RT_EVENT_INIT);
 
-
     error = rtEventRecord(event, stream);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
@@ -160,7 +155,7 @@ TEST_F(EventTest910, query)
 TEST_F(EventTest910, event_destroy_invalidates_handle_when_delete_is_delayed)
 {
     ApiImpl apiImpl;
-    Event *evt = new (std::nothrow) Event();
+    Event* evt = new (std::nothrow) Event();
     ASSERT_NE(evt, nullptr);
     evt->RefreshEventId(1);
     evt->EventIdCountAdd(1);
@@ -170,7 +165,7 @@ TEST_F(EventTest910, event_destroy_invalidates_handle_when_delete_is_delayed)
     const rtError_t error = apiImpl.EventDestroy(evt);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Event *destroyedEvent = nullptr;
+    Event* destroyedEvent = nullptr;
     EXPECT_EQ(GetValidatedObject<Event>(eventHandle, destroyedEvent), RT_ERROR_INVALID_HANDLE);
     EXPECT_EQ(destroyedEvent, nullptr);
 
@@ -296,14 +291,13 @@ TEST_F(EventTest910, TestElapsedTime)
     rtError_t error;
     Event event1, event2;
     float32_t timeInterval;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t curChipType = rtInstance->GetChipType();
-    
+
     rtInstance->SetDisableThread(false);
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     event1.device_ = stub;
     event2.device_ = stub;
-
 
     event1.SetRecord(true);
     event2.SetRecord(true);
@@ -329,7 +323,7 @@ TEST_F(EventTest910, UpdateTimelineWithNoTask)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     int32_t streamId = stm->Id_();
     event = rt_ut::UnwrapOrNull<Event>(eventPtr);
 
@@ -345,7 +339,9 @@ TEST_F(EventTest910, UpdateTimelineWithNoTask)
     event->InsertRecordResetToMap(&taskInfo);
 
     std::shared_ptr<Stream> stmSharedPtr = stm->GetSharedPtr();
-    MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById).stubs().with(mockcpp::any(), outBound(stmSharedPtr))
+    MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById)
+        .stubs()
+        .with(mockcpp::any(), outBound(stmSharedPtr))
         .will(returnValue(RT_ERROR_NONE));
 
     event->UpdateTimeline();
@@ -368,7 +364,7 @@ TEST_F(EventTest910, TestWaitSendCheck)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     event = rt_ut::UnwrapOrNull<Event>(eventPtr);
 
     stm->bindFlag_.Set(true);
@@ -395,7 +391,7 @@ TEST_F(EventTest910, UpdateTimelineWithRecordTask)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     error = rtEventRecord(eventPtr, stream);
-    Stream * stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     int32_t streamId = stm->Id_();
     event = rt_ut::UnwrapOrNull<Event>(eventPtr);
 
@@ -411,7 +407,9 @@ TEST_F(EventTest910, UpdateTimelineWithRecordTask)
     event->InsertRecordResetToMap(&taskInfo);
 
     std::shared_ptr<Stream> stmSharedPtr = stm->GetSharedPtr();
-    MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById).stubs().with(mockcpp::any(), outBound(stmSharedPtr))
+    MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById)
+        .stubs()
+        .with(mockcpp::any(), outBound(stmSharedPtr))
         .will(returnValue(RT_ERROR_NONE));
 
     event->UpdateTimeline();
@@ -456,7 +454,7 @@ TEST_F(EventTest910, UpdateTimeLine)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
-rtError_t QueryEventWaitStatusStub(Event *evt, const bool disableThread, bool &waitFlag)
+rtError_t QueryEventWaitStatusStub(Event* evt, const bool disableThread, bool& waitFlag)
 {
     waitFlag = true;
     return RT_ERROR_NONE;
@@ -466,7 +464,7 @@ TEST_F(EventTest910, EventIdCountSub)
 {
     Event evt;
     EXPECT_NE(sizeof(evt), 0);
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     evt.device_ = stub;
     evt.EventIdCountSub(0, false);
     evt.EventIdCountAdd(1);
@@ -479,7 +477,7 @@ TEST_F(EventTest910, EventIdCountSub)
 TEST_F(EventTest910, EventIdclear)
 {
     Event evt;
-    RawDevice *stub = new RawDevice(0);
+    RawDevice* stub = new RawDevice(0);
     evt.device_ = stub;
     rtError_t error = evt.ClearRecordStatus();
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -494,7 +492,7 @@ TEST_F(EventTest910, event_TimeStamp_arg)
 
     error = rtEventCreate(&start);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(start);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(start);
     eventObj->hasRecord_.Set(true);
     eventObj->timestamp_ = UINT64_MAX;
     eventObj->timeline_ = UINT64_MAX;
@@ -520,7 +518,7 @@ TEST_F(EventTest910, event_sync_01)
 
     error = rtStreamWaitEvent(stream, event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
-    Event *evt= rt_ut::UnwrapOrNull<Event>(event);
+    Event* evt = rt_ut::UnwrapOrNull<Event>(event);
     MOCKER_CPP_VIRTUAL(evt, &Event::WaitTask).stubs().will(returnValue(RT_ERROR_STREAM_SYNC_TIMEOUT));
     error = rtEventSynchronize(event);
     EXPECT_EQ(error, ACL_ERROR_RT_EVENT_SYNC_TIMEOUT);

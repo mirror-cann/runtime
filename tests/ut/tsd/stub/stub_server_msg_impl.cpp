@@ -13,8 +13,8 @@
 #include "capability_manager.h"
 
 namespace tsd {
-void StubServerMsgImpl::DefaultVersionNegotiateMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultVersionNegotiateMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     VersionVerify tempVersionInfo;
@@ -24,8 +24,8 @@ void StubServerMsgImpl::DefaultVersionNegotiateMsgProc(struct drvHdcMsg *msg, Hd
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultCapabilityGetMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultCapabilityGetMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL_RSP);
@@ -35,23 +35,23 @@ void StubServerMsgImpl::DefaultCapabilityGetMsgProc(struct drvHdcMsg *msg, HdcBu
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::CovertProtoMsgToHdcMsg(struct drvHdcMsg *msg, const HDCMessage &rspMsg, HdcBufferInfo *buf)
+void StubServerMsgImpl::CovertProtoMsgToHdcMsg(struct drvHdcMsg* msg, const HDCMessage& rspMsg, HdcBufferInfo* buf)
 {
     const uint32_t msgSize = static_cast<uint32_t>(rspMsg.ByteSizeLong());
     buf->bufferLen = msgSize + 12U;
     buf->segCnt = 1;
     buf->type = static_cast<uint32_t>(rspMsg.type());
-    char *dstPtr = &(buf->buffer[0]);
-    *(reinterpret_cast<uint32_t *>(dstPtr)) = buf->bufferLen;
-    *(reinterpret_cast<uint32_t *>(dstPtr + 4U)) = 1U;
-    *(reinterpret_cast<uint32_t *>(dstPtr + 8U)) = 0U;
+    char* dstPtr = &(buf->buffer[0]);
+    *(reinterpret_cast<uint32_t*>(dstPtr)) = buf->bufferLen;
+    *(reinterpret_cast<uint32_t*>(dstPtr + 4U)) = 1U;
+    *(reinterpret_cast<uint32_t*>(dstPtr + 8U)) = 0U;
     rspMsg.SerializePartialToArray(dstPtr + 12U, static_cast<int32_t>(msgSize));
     msg->bufList[0].pBuf = dstPtr;
     msg->bufList[0].len = static_cast<int32_t>(buf->bufferLen);
 }
 
-void StubServerMsgImpl::DefaultStartProcMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultStartProcMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_START_PROC_RSP);
@@ -60,8 +60,8 @@ void StubServerMsgImpl::DefaultStartProcMsgProc(struct drvHdcMsg *msg, HdcBuffer
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultCloseProcMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultCloseProcMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_CLOSE_PROC_RSP);
@@ -70,8 +70,8 @@ void StubServerMsgImpl::DefaultCloseProcMsgProc(struct drvHdcMsg *msg, HdcBuffer
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultUpdateProfilingModeMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultUpdateProfilingModeMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_UPDATE_PROIFILING_RSP);
@@ -80,7 +80,7 @@ void StubServerMsgImpl::DefaultUpdateProfilingModeMsgProc(struct drvHdcMsg *msg,
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-int32_t StubServerMsgImpl::StubMsProfReportCallBack(uint32_t moduleId, uint32_t type, void *data, uint32_t len)
+int32_t StubServerMsgImpl::StubMsProfReportCallBack(uint32_t moduleId, uint32_t type, void* data, uint32_t len)
 {
     (void)(moduleId);
     (void)(type);
@@ -89,8 +89,7 @@ int32_t StubServerMsgImpl::StubMsProfReportCallBack(uint32_t moduleId, uint32_t 
     return 0;
 }
 
-void StubServerMsgImpl::DefaultInitQsMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultInitQsMsgProc(struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_START_PROC_RSP);
@@ -99,8 +98,8 @@ void StubServerMsgImpl::DefaultInitQsMsgProc(struct drvHdcMsg *msg, HdcBufferInf
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultGetPidQosMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultGetPidQosMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_GET_PID_QOS_RSP);
@@ -110,8 +109,8 @@ void StubServerMsgImpl::DefaultGetPidQosMsgProc(struct drvHdcMsg *msg, HdcBuffer
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultSupportOmInnerDecMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultSupportOmInnerDecMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_SUPPORT_OM_INNER_DEC_RSP);
@@ -120,8 +119,8 @@ void StubServerMsgImpl::DefaultSupportOmInnerDecMsgProc(struct drvHdcMsg *msg, H
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_GET_SUPPORT_CAPABILITY_LEVEL_RSP);
@@ -137,8 +136,8 @@ void StubServerMsgImpl::DefaultOutGetSupportLevelMsgProc(struct drvHdcMsg *msg, 
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultRemoveFileMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultRemoveFileMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_REMOVE_FILE_RSP);
@@ -147,8 +146,8 @@ void StubServerMsgImpl::DefaultRemoveFileMsgProc(struct drvHdcMsg *msg, HdcBuffe
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultLoadRuntimePkgMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultLoadRuntimePkgMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_GET_DEVICE_RUNTIME_CHECKCODE_RSP);
@@ -158,8 +157,8 @@ void StubServerMsgImpl::DefaultLoadRuntimePkgMsgProc(struct drvHdcMsg *msg, HdcB
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultLoadDshapePkgMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultLoadDshapePkgMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_GET_DEVICE_DSHAPE_CHECKCODE_RSP);
@@ -169,8 +168,8 @@ void StubServerMsgImpl::DefaultLoadDshapePkgMsgProc(struct drvHdcMsg *msg, HdcBu
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultProcessOpenMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultProcessOpenMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_OPEN_SUB_PROC_RSP);
@@ -179,34 +178,34 @@ void StubServerMsgImpl::DefaultProcessOpenMsgProc(struct drvHdcMsg *msg, HdcBuff
     rspMsg.set_helper_sub_pid(getpid());
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
-    
-void StubServerMsgImpl::DefaultProcessCloseMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+
+void StubServerMsgImpl::DefaultProcessCloseMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_CLOSE_SUB_PROC_RSP);
     rspMsg.set_tsd_rsp_code(0U);
     rspMsg.set_real_device_id(sendStoreMsg.real_device_id());
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
-}        
+}
 
-void StubServerMsgImpl::DefaultGetStatusMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultGetStatusMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_GET_SUB_PROC_STATUS_RSP);
     rspMsg.set_tsd_rsp_code(0U);
     rspMsg.set_real_device_id(sendStoreMsg.real_device_id());
     for (auto index = 0; index < sendStoreMsg.sub_proc_status_list_size(); index++) {
-        SubProcStatus *rspStatus = rspMsg.add_sub_proc_status_list();
+        SubProcStatus* rspStatus = rspMsg.add_sub_proc_status_list();
         rspStatus->set_sub_proc_pid(sendStoreMsg.sub_proc_status_list(index).sub_proc_pid());
         rspStatus->set_proc_status(0U);
     }
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-void StubServerMsgImpl::DefaultCloseListMsgProc(struct drvHdcMsg *msg, HdcBufferInfo *buf,
-    const HDCMessage &sendStoreMsg)
+void StubServerMsgImpl::DefaultCloseListMsgProc(
+    struct drvHdcMsg* msg, HdcBufferInfo* buf, const HDCMessage& sendStoreMsg)
 {
     HDCMessage rspMsg;
     rspMsg.set_type(HDCMessage::TSD_CLOSE_SUB_PROC_LIST_RSP);
@@ -215,4 +214,4 @@ void StubServerMsgImpl::DefaultCloseListMsgProc(struct drvHdcMsg *msg, HdcBuffer
     StubServerMsgImpl::CovertProtoMsgToHdcMsg(msg, rspMsg, buf);
 }
 
-}
+} // namespace tsd

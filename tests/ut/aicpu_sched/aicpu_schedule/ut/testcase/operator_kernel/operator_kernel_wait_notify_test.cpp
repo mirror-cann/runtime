@@ -41,7 +41,7 @@ TEST_F(OperatorKernelWaitNotifyTest, ModelWait)
 
 TEST_F(OperatorKernelWaitNotifyTest, ModelWait_failed)
 {
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;

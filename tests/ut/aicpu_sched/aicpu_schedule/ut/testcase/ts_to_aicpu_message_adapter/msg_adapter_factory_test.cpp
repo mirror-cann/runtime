@@ -15,20 +15,11 @@ using namespace aicpu;
 
 class TsMsgAdapterFactoryTEST : public ::testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "TsMsgAdapterFactoryTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "TsMsgAdapterFactoryTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "TsMsgAdapterFactoryTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TsMsgAdapterFactoryTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "TsMsgAdapterFactoryTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "TsMsgAdapterFactoryTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -67,7 +58,7 @@ TEST_F(TsMsgAdapterFactoryTEST, CreateAdapterWithMsgVersion0)
 {
     MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue(VERSION_0));
     TsMsgAdapterFactory factory;
-    
+
     char msg[MAX_MSG_LEN] = {0};
     TsAicpuSqe* sqe = reinterpret_cast<TsAicpuSqe*>(msg);
     sqe->pid = 1;
@@ -75,7 +66,7 @@ TEST_F(TsMsgAdapterFactoryTEST, CreateAdapterWithMsgVersion0)
     sqe->vf_id = 2;
     sqe->tid = 3;
     sqe->ts_id = 4;
-    
+
     auto adapter = factory.CreateAdapter(msg);
     EXPECT_NE(adapter, nullptr);
     EXPECT_FALSE(adapter->IsAdapterInvaildParameter());
@@ -90,7 +81,7 @@ TEST_F(TsMsgAdapterFactoryTEST, CreateAdapterWithMsgVersion1)
 {
     MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue(VERSION_1));
     TsMsgAdapterFactory factory;
-    
+
     char msg[MAX_MSG_LEN] = {0};
     TsAicpuMsgInfo* msgInfo = reinterpret_cast<TsAicpuMsgInfo*>(msg);
     msgInfo->pid = 1;
@@ -98,7 +89,7 @@ TEST_F(TsMsgAdapterFactoryTEST, CreateAdapterWithMsgVersion1)
     msgInfo->vf_id = 2;
     msgInfo->tid = 3;
     msgInfo->ts_id = 4;
-    
+
     auto adapter = factory.CreateAdapter(msg);
     EXPECT_NE(adapter, nullptr);
     EXPECT_FALSE(adapter->IsAdapterInvaildParameter());
@@ -113,7 +104,7 @@ TEST_F(TsMsgAdapterFactoryTEST, CreateAdapterWithMsgInvalidVersion)
 {
     MOCKER_CPP(&FeatureCtrl::GetTsMsgVersion).stubs().will(returnValue((uint16_t)2));
     TsMsgAdapterFactory factory;
-    
+
     char msg[MAX_MSG_LEN] = {0};
     auto adapter = factory.CreateAdapter(msg);
     EXPECT_EQ(adapter, nullptr);

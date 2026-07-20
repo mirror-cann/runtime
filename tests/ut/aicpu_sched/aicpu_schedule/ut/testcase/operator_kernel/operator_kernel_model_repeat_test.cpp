@@ -23,13 +23,13 @@
 
 using namespace AicpuSchedule;
 
-
 class OperatorKernelModelRepeatTest : public OperatorKernelTest {
 protected:
     OperatorKernelModelRepeat kernel_;
 };
 
-TEST_F(OperatorKernelModelRepeatTest, ModelRepeatSuccess) {
+TEST_F(OperatorKernelModelRepeatTest, ModelRepeatSuccess)
+{
     AicpuTaskInfo taskT;
     uint32_t modelID = 0;
     taskT.paraBase = (uint64_t)&modelID;
@@ -37,8 +37,9 @@ TEST_F(OperatorKernelModelRepeatTest, ModelRepeatSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(OperatorKernelModelRepeatTest, ModelRepeat_failed1) {
-    TsAicpuNotify *aicpuNotify = nullptr;
+TEST_F(OperatorKernelModelRepeatTest, ModelRepeat_failed1)
+{
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;

@@ -38,18 +38,11 @@ using namespace aicpu;
 
 class AicpuEventProcessTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AicpuEventProcessTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpuEventProcessTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AicpuEventProcessTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AicpuEventProcessTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AicpuEventProcessTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AicpuEventProcessTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -58,31 +51,31 @@ protected:
     }
 };
 
-aicpu::status_t GetAicpuThreadRunMode(aicpu::AicpuRunMode &runMode)
+aicpu::status_t GetAicpuThreadRunMode(aicpu::AicpuRunMode& runMode)
 {
     runMode = aicpu::AicpuRunMode::THREAD_MODE;
     return aicpu::AICPU_ERROR_NONE;
 }
 
-aicpu::status_t GetAicpuPcieRunMode(aicpu::AicpuRunMode &runMode)
+aicpu::status_t GetAicpuPcieRunMode(aicpu::AicpuRunMode& runMode)
 {
     runMode = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
     return aicpu::AICPU_ERROR_NONE;
 }
 
-TEST_F(AicpuEventProcessTEST, InitQueueFlag) {
+TEST_F(AicpuEventProcessTEST, InitQueueFlag)
+{
     AicpuEventProcess::GetInstance().InitQueueFlag();
     EXPECT_EQ(AicpuEventProcess::GetInstance().exitQueueFlag_, true);
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed1) {
+TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed1)
+{
     TsToAicpuTaskReport info;
     info.model_id = 1;
 
-    AicpuModel *model = nullptr;
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(model));
+    AicpuModel* model = nullptr;
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(model));
     TsAicpuSqe sqe{};
     sqe.u.ts_to_aicpu_task_report.model_id = info.model_id;
     AicpuSqeAdapter ada(sqe, 0U);
@@ -90,14 +83,13 @@ TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed1) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed2) {
+TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed2)
+{
     TsToAicpuTaskReport info;
     info.model_id = 1;
 
-    AicpuModel *model = new AicpuModel();
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(model));
+    AicpuModel* model = new AicpuModel();
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(model));
     TsAicpuSqe sqe{};
     sqe.u.ts_to_aicpu_task_report.model_id = info.model_id;
     AicpuSqeAdapter ada(sqe, 0U);
@@ -108,14 +100,13 @@ TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_STATUS_NOT_ALLOW_OPERATE);
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed3) {
+TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed3)
+{
     TsToAicpuTaskReport info;
     info.model_id = 1;
 
-    AicpuModel *model = new AicpuModel();
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(model));
+    AicpuModel* model = new AicpuModel();
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(model));
     AicpuEventProcess::GetInstance().exitQueueFlag_ = false;
     TsAicpuSqe sqe{};
     sqe.u.ts_to_aicpu_task_report.model_id = info.model_id;
@@ -127,14 +118,13 @@ TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed3) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_STATUS_NOT_ALLOW_OPERATE);
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed4) {
+TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed4)
+{
     TsToAicpuTaskReport info;
     info.model_id = 1;
     info.result_code = 0x91;
-    AicpuModel *model = new AicpuModel();
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(model));
+    AicpuModel* model = new AicpuModel();
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(model));
     TsAicpuSqe sqe{};
     sqe.u.ts_to_aicpu_task_report.model_id = info.model_id;
     sqe.u.ts_to_aicpu_task_report.result_code = info.result_code;
@@ -146,18 +136,15 @@ TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed4) {
     model = nullptr;
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed6) {
+TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed6)
+{
     TsToAicpuTaskReport info;
     info.model_id = 1;
 
-    AicpuModel *model = new AicpuModel();
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(model));
+    AicpuModel* model = new AicpuModel();
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(model));
     AicpuEventProcess::GetInstance().exitQueueFlag_ = true;
-    MOCKER_CPP(&AicpuModel::ModelAbort)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER_CPP(&AicpuModel::ModelAbort).stubs().will(returnValue(0));
     TsAicpuSqe sqe{};
     sqe.u.ts_to_aicpu_task_report.model_id = info.model_id;
     AicpuSqeAdapter ada(sqe, 0U);
@@ -167,14 +154,13 @@ TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed6) {
     model = nullptr;
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed5) {
+TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed5)
+{
     TsToAicpuTaskReport info;
     info.model_id = 1;
     info.result_code = 0x90;
-    AicpuModel *model = new AicpuModel();
-    MOCKER_CPP(&AicpuModelManager::GetModel)
-        .stubs()
-        .will(returnValue(model));
+    AicpuModel* model = new AicpuModel();
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(model));
     TsAicpuSqe sqe{};
     sqe.u.ts_to_aicpu_task_report.model_id = info.model_id;
     sqe.u.ts_to_aicpu_task_report.result_code = info.result_code;
@@ -186,37 +172,43 @@ TEST_F(AicpuEventProcessTEST, ProcessTaskReportEvent_failed5) {
     model = nullptr;
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessQueueNotEmptyEvent_success) {
+TEST_F(AicpuEventProcessTEST, ProcessQueueNotEmptyEvent_success)
+{
     uint32_t queueId = 1;
     int ret = AicpuEventProcess::GetInstance().ProcessQueueNotEmptyEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessQueueNotFullEvent_success) {
+TEST_F(AicpuEventProcessTEST, ProcessQueueNotFullEvent_success)
+{
     uint32_t queueId = 1;
     int ret = AicpuEventProcess::GetInstance().ProcessQueueNotFullEvent(queueId);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuEventProcessTEST, CheckCustAicpuKernel_failed1) {
+TEST_F(AicpuEventProcessTEST, CheckCustAicpuKernel_failed1)
+{
     MOCKER(aicpu::GetAicpuRunMode).stubs().will(returnValue(1));
     auto ret = AicpuUtil::CheckCustAicpuThreadMode();
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuEventProcessTEST, CheckCustAicpuKernel_failed2) {
+TEST_F(AicpuEventProcessTEST, CheckCustAicpuKernel_failed2)
+{
     MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuPcieRunMode));
     auto ret = AicpuUtil::CheckCustAicpuThreadMode();
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuEventProcessTEST, CheckCustAicpuKernel_success) {
+TEST_F(AicpuEventProcessTEST, CheckCustAicpuKernel_success)
+{
     MOCKER(aicpu::GetAicpuRunMode).stubs().will(invoke(GetAicpuThreadRunMode));
     auto ret = AicpuUtil::CheckCustAicpuThreadMode();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMem) {
+TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMem)
+{
     AicpuModel aicpuModel;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));
     MOCKER_CPP(&AicpuModel::RecoverStream).stubs().will(returnValue(AICPU_SCHEDULE_OK));
@@ -228,7 +220,8 @@ TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMem) {
     EXPECT_EQ(ret, static_cast<int32_t>(AICPU_SCHEDULE_OK));
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventTableUnlock_success) {
+TEST_F(AicpuEventProcessTEST, AICPUEventTableUnlock_success)
+{
     AicpuModel aicpuModel;
     aicpuModel.modelId_ = 0U;
     std::vector<AicpuModel*> aicpuModels = {&aicpuModel};
@@ -242,7 +235,8 @@ TEST_F(AicpuEventProcessTEST, AICPUEventTableUnlock_success) {
     EXPECT_EQ(ret, static_cast<int32_t>(AICPU_SCHEDULE_OK));
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_success) {
+TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_success)
+{
     AicpuModel aicpuModel;
     aicpuModel.modelId_ = 0U;
     aicpuModel.gatheredMbuf_[0U][0U].Init(1U);
@@ -257,7 +251,8 @@ TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_success) {
     EventWaitManager::AnyQueNotEmptyWaitManager().ClearBatch({0});
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_noWait) {
+TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_noWait)
+{
     AicpuModel aicpuModel;
     aicpuModel.modelId_ = 0U;
     aicpuModel.gatheredMbuf_[0U][0U].Init(1U);
@@ -268,8 +263,9 @@ TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_noWait) {
     EventWaitManager::AnyQueNotEmptyWaitManager().ClearBatch({0});
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_GetModel) {
-    AicpuModel *aicpuModel = nullptr;
+TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_GetModel)
+{
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
 
     AICPUSubEventInfo subEventInfo = {};
@@ -278,7 +274,8 @@ TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_GetModel) {
     EventWaitManager::AnyQueNotEmptyWaitManager().ClearBatch({0});
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_RecoverStream) {
+TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_RecoverStream)
+{
     AicpuModel aicpuModel;
     aicpuModel.modelId_ = 0U;
     aicpuModel.gatheredMbuf_[0U][0U].Init(1U);
@@ -293,7 +290,8 @@ TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnque_fail_RecoverStream) {
     EventWaitManager::AnyQueNotEmptyWaitManager().ClearBatch({0});
 }
 
-TEST_F(AicpuEventProcessTEST, SendLoadPlatformFromBufMsgRsp_01) {
+TEST_F(AicpuEventProcessTEST, SendLoadPlatformFromBufMsgRsp_01)
+{
     TsAicpuSqe ctrlMsg = {};
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));
     AicpuSqeAdapter adapter(ctrlMsg, 0U);
@@ -302,7 +300,8 @@ TEST_F(AicpuEventProcessTEST, SendLoadPlatformFromBufMsgRsp_01) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AicpuEventProcessTEST, SendLoadPlatformFromBufMsgRsp_02) {
+TEST_F(AicpuEventProcessTEST, SendLoadPlatformFromBufMsgRsp_02)
+{
     TsAicpuSqe ctrlMsg = {};
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(1));
     AicpuSqeAdapter adapter(ctrlMsg, 0U);
@@ -311,14 +310,16 @@ TEST_F(AicpuEventProcessTEST, SendLoadPlatformFromBufMsgRsp_02) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessLoadPlatformFromBuf) {
+TEST_F(AicpuEventProcessTEST, ProcessLoadPlatformFromBuf)
+{
     TsAicpuSqe ctrlMsg = {};
     AicpuSqeAdapter adapter(ctrlMsg, 0U);
     auto ret = AicpuEventProcess::GetInstance().ProcessLoadPlatformFromBuf(adapter);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuEventProcessTEST, GetAicpuExtendSoPlatformFuncPtr) {
+TEST_F(AicpuEventProcessTEST, GetAicpuExtendSoPlatformFuncPtr)
+{
     auto ret = AicpuEventProcess::GetInstance().GetAicpuExtendSoPlatformFuncPtr();
     EXPECT_EQ(ret, nullptr);
 }
@@ -331,19 +332,21 @@ int32_t FakePlatformKernels(uint64_t addr, uint32_t infolen)
     return 0;
 }
 
-TEST_F(AicpuEventProcessTEST, GetAicpuExtendSoPlatformFuncPtr_01) {
+TEST_F(AicpuEventProcessTEST, GetAicpuExtendSoPlatformFuncPtr_01)
+{
     AicpuEventProcess::GetInstance().platformFuncPtr_ = FakePlatformKernels;
     auto ret = AicpuEventProcess::GetInstance().GetAicpuExtendSoPlatformFuncPtr();
     EXPECT_EQ(ret, FakePlatformKernels);
 }
 
-void *dlsymStubPlatformKernels(void *const soHandle, const char_t * const funcName)
+void* dlsymStubPlatformKernels(void* const soHandle, const char_t* const funcName)
 {
     std::cout << "enter dlsymStub" << std::endl;
-    return (reinterpret_cast<void *>(FakePlatformKernels));
+    return (reinterpret_cast<void*>(FakePlatformKernels));
 }
 
-TEST_F(AicpuEventProcessTEST, ProcessLoadPlatformFromBuf_01) {
+TEST_F(AicpuEventProcessTEST, ProcessLoadPlatformFromBuf_01)
+{
     AicpuEventProcess::GetInstance().platformFuncPtr_ = FakePlatformKernels;
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));
     TsAicpuSqe ctrlMsg = {};
@@ -421,7 +424,8 @@ TEST_F(AicpuEventProcessTEST, ProcessEndGraphHasWait)
     EXPECT_EQ(aicpuModel.GetModelRetCode(), 1);
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMemNoModel) {
+TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMemNoModel)
+{
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
     MOCKER_CPP(&AicpuModel::RecoverStream).stubs().will(returnValue(AICPU_SCHEDULE_OK));
 
@@ -429,12 +433,13 @@ TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMemNoModel) {
     event.modelId = 111;
     bool needWait = true;
     EventWaitManager::PrepareMemWaitManager().WaitEvent(event.modelId, 0, needWait);
-    
+
     auto ret = AicpuEventProcess::GetInstance().AICPUEventPrepareMem(event);
     EXPECT_EQ(ret, static_cast<int32_t>(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMemRecoverFail) {
+TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMemRecoverFail)
+{
     AicpuModel model;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&model));
     MOCKER_CPP(&AicpuModel::RecoverStream).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
@@ -443,12 +448,13 @@ TEST_F(AicpuEventProcessTEST, AICPUEventPrepareMemRecoverFail) {
     event.modelId = 112;
     bool needWait = true;
     EventWaitManager::PrepareMemWaitManager().WaitEvent(event.modelId, 0, needWait);
-    
+
     auto ret = AicpuEventProcess::GetInstance().AICPUEventPrepareMem(event);
     EXPECT_EQ(ret, static_cast<int32_t>(AICPU_SCHEDULE_ERROR_INNER_ERROR));
 }
 
-TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnqueNoModel) {
+TEST_F(AicpuEventProcessTEST, AICPUEventSupplyEnqueNoModel)
+{
     AicpuModel aicpuModel;
     aicpuModel.modelId_ = 0U;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel));

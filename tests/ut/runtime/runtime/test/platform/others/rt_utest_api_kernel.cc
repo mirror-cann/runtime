@@ -28,24 +28,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiKernelTest : public testing::Test
-{
+class ApiKernelTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout<<"ApiKernelTest test start start. "<<std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "ApiKernelTest test start start. " << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"ApiKernelTest test start end. "<<std::endl;
+    static void TearDownTestCase() { std::cout << "ApiKernelTest test start end. " << std::endl; }
 
-    }
-
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -56,7 +45,7 @@ protected:
 
 TEST_F(ApiKernelTest, TestRtsRegKernelLaunchFillFuncFailed)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t preChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
@@ -71,7 +60,7 @@ TEST_F(ApiKernelTest, TestRtsRegKernelLaunchFillFuncFailed)
 
 TEST_F(ApiKernelTest, TestRtsUnRegKernelLaunchFillFuncFailed)
 {
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     rtChipType_t preChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);

@@ -86,11 +86,9 @@ rtError_t SubmitTaskStub(
 void MockSubmitTask()
 {
     Device* device = Runtime::Instance()->GetDevice(0, 0);
-    MOCKER_CPP_VIRTUAL(device, &Device::SubmitTask)
-        .stubs()
-        .will(invoke(SubmitTaskStub));
+    MOCKER_CPP_VIRTUAL(device, &Device::SubmitTask).stubs().will(invoke(SubmitTaskStub));
 }
-}
+} // namespace
 
 class CloudV2AicpuKernelLaunchTest : public testing::Test {
 protected:
@@ -174,24 +172,24 @@ TEST_F(CloudV2AicpuKernelLaunchTest, CPU_KERNEL_LAUNCH_EX_WITH_ARGS_TEST_00)
     MockSubmitTask();
 
     void* memBase = reinterpret_cast<void*>(100);
-    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+    NpuDriver* rawDrv = new (std::nothrow) NpuDriver();
     MockCopyAndDevAlloc(memBase, rawDrv);
 
     auto stream = GetDefaultStream();
     rtAicpuArgsEx_t argsInfo = {};
     InitRtArgs(argsInfo);
 
-    error = StreamLaunchCpuKernelExWithArgs(
-        1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
+    error =
+        StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     auto origPcieBarFlag = stream->isHasPcieBar_;
     stream->isHasPcieBar_ = true;
-    error = StreamLaunchCpuKernelExWithArgs(
-        1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
+    error =
+        StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-    Kernel* k1 = new(std::nothrow) Kernel("", 0UL, &stubProgram, RT_KERNEL_ATTR_TYPE_AICPU, 1);
+    Kernel* k1 = new (std::nothrow) Kernel("", 0UL, &stubProgram, RT_KERNEL_ATTR_TYPE_AICPU, 1);
     error = StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, k1, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -220,7 +218,7 @@ TEST_F(CloudV2AicpuKernelLaunchTest, CPU_KERNEL_LAUNCH_EX_WITH_ARGS_TEST_01)
     MockSubmitTask();
 
     void* memBase = reinterpret_cast<void*>(100);
-    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+    NpuDriver* rawDrv = new (std::nothrow) NpuDriver();
     uint32_t supportPcieBar = 1;
     MockCopyAndDevAlloc(memBase, rawDrv);
 
@@ -234,11 +232,11 @@ TEST_F(CloudV2AicpuKernelLaunchTest, CPU_KERNEL_LAUNCH_EX_WITH_ARGS_TEST_01)
     rtAicpuArgsEx_t argsInfo = {};
     InitRtArgs(argsInfo);
 
-    error = StreamLaunchCpuKernelExWithArgs(
-        1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
+    error =
+        StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Kernel* k2 = new(std::nothrow) Kernel("", 0UL, &stubProgram, RT_KERNEL_ATTR_TYPE_AICPU, 1);
+    Kernel* k2 = new (std::nothrow) Kernel("", 0UL, &stubProgram, RT_KERNEL_ATTR_TYPE_AICPU, 1);
     error = StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, k2, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -261,7 +259,7 @@ TEST_F(CloudV2AicpuKernelLaunchTest, CPU_KERNEL_LAUNCH_EX_WITH_ARGS_TEST_02)
 {
     rtError_t error = RT_ERROR_NONE;
     void* memBase = reinterpret_cast<void*>(100);
-    NpuDriver* rawDrv = new(std::nothrow) NpuDriver();
+    NpuDriver* rawDrv = new (std::nothrow) NpuDriver();
     MockCopyAndDevAlloc(memBase, rawDrv);
 
     expectedSubmitTaskResults.push(RT_ERROR_NONE);
@@ -274,12 +272,12 @@ TEST_F(CloudV2AicpuKernelLaunchTest, CPU_KERNEL_LAUNCH_EX_WITH_ARGS_TEST_02)
     InitRtArgs(argsInfo);
     argsInfo.argsSize = stream->Context_()->Device_()->GetDevProperties().argsItemSize + 1;
 
-    error = StreamLaunchCpuKernelExWithArgs(
-        1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
+    error =
+        StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     argsInfo.kernelNameAddrOffset = 1;
-    Kernel* k3 = new(std::nothrow) Kernel("", 0UL, &stubProgram, RT_KERNEL_ATTR_TYPE_AICPU, 1);
+    Kernel* k3 = new (std::nothrow) Kernel("", 0UL, &stubProgram, RT_KERNEL_ATTR_TYPE_AICPU, 1);
     error = StreamLaunchCpuKernelExWithArgs(1, &argsInfo, nullptr, stream, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU, k3, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 

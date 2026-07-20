@@ -16,28 +16,18 @@ using namespace cce::runtime;
 
 class UpdateDevPropertiesValueTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        GlobalMockObject::verify();
-    }
+    static void SetUpTestCase() { GlobalMockObject::verify(); }
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(UpdateDevPropertiesValueTest, UpdateDevPropertiesValue)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     EXPECT_NE(rtInstance, nullptr);
     DevProperties props;
     EXPECT_EQ(GET_DEV_PROPERTIES(CHIP_910_B_93, props), RT_ERROR_NONE);

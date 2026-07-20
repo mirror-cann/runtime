@@ -33,21 +33,14 @@ protected:
         std::cout << "XpuContextTest start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "XpuContextTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "XpuContextTest end" << std::endl; }
 
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
-rtError_t InsertStreamList_Mock(Context *ctx, Stream *const stm)
+rtError_t InsertStreamList_Mock(Context* ctx, Stream* const stm)
 {
     delete stm;
     return RT_ERROR_NONE;
@@ -56,10 +49,10 @@ rtError_t InsertStreamList_Mock(Context *ctx, Stream *const stm)
 TEST_F(XpuContextTest, streamCreate_Success)
 {
     // 正常调用流程
-    XpuDevice *device = new XpuDevice(1);
-    XpuContext *context = new XpuContext(device, false);
-    XpuStream *xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
-    XpuStreamSqCqManage *stmSqCqManage = new XpuStreamSqCqManage(device);
+    XpuDevice* device = new XpuDevice(1);
+    XpuContext* context = new XpuContext(device, false);
+    XpuStream* xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
+    XpuStreamSqCqManage* stmSqCqManage = new XpuStreamSqCqManage(device);
     device->streamSqCqManage_ = stmSqCqManage;
 
     // 正常流程中的Mock
@@ -70,7 +63,7 @@ TEST_F(XpuContextTest, streamCreate_Success)
 
     // 特殊Mock：析构Stream
     MOCKER_CPP(&XpuContext::InsertStreamList).stubs().will(invoke(InsertStreamList_Mock));
-    Stream *stream;
+    Stream* stream;
     EXPECT_EQ(
         context->StreamCreate(RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, &stream, nullptr, false), RT_ERROR_NONE);
     DELETE_O(xpuStream);
@@ -79,11 +72,11 @@ TEST_F(XpuContextTest, streamCreate_Success)
 
 TEST_F(XpuContextTest, TearDownStream_Success)
 {
-    XpuDevice *device = new XpuDevice(1);
-    XpuStream *stream = new XpuStream(device, RT_STREAM_DEFAULT);
-    XpuContext *ctxt = new (std::nothrow) XpuContext(device, true);
+    XpuDevice* device = new XpuDevice(1);
+    XpuStream* stream = new XpuStream(device, RT_STREAM_DEFAULT);
+    XpuContext* ctxt = new (std::nothrow) XpuContext(device, true);
     MOCKER_CPP_VIRTUAL(stream, &XpuStream::TearDown).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER_CPP(&XpuStream::Destructor).stubs().will(returnValue((void *)nullptr));
+    MOCKER_CPP(&XpuStream::Destructor).stubs().will(returnValue((void*)nullptr));
     MOCKER_CPP(&XpuStreamSqCqManage::DeAllocXpuStreamSqCq).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = ctxt->TearDownStream(stream, true);
@@ -95,11 +88,11 @@ TEST_F(XpuContextTest, TearDownStream_Success)
 
 TEST_F(XpuContextTest, TearDownStream_TearDown_error)
 {
-    XpuDevice *device = new XpuDevice(1);
-    XpuStream *stream = new XpuStream(device, RT_STREAM_DEFAULT);
-    XpuContext *ctxt = new (std::nothrow) XpuContext(device, true);
+    XpuDevice* device = new XpuDevice(1);
+    XpuStream* stream = new XpuStream(device, RT_STREAM_DEFAULT);
+    XpuContext* ctxt = new (std::nothrow) XpuContext(device, true);
     MOCKER_CPP_VIRTUAL(stream, &XpuStream::TearDown).stubs().will(returnValue(RT_ERROR_DRV_INVALID_HANDLE));
-    MOCKER_CPP(&XpuStream::Destructor).stubs().will(returnValue((void *)nullptr));
+    MOCKER_CPP(&XpuStream::Destructor).stubs().will(returnValue((void*)nullptr));
     MOCKER_CPP(&XpuStreamSqCqManage::DeAllocXpuStreamSqCq).stubs().will(returnValue(RT_ERROR_NONE));
     rtError_t error = ctxt->TearDownStream(stream, true);
     EXPECT_EQ(error, RT_ERROR_DRV_INVALID_HANDLE);
@@ -110,10 +103,10 @@ TEST_F(XpuContextTest, TearDownStream_TearDown_error)
 TEST_F(XpuContextTest, streamCreate_prior_Fail)
 {
     // 正常调用流程
-    XpuDevice *device = new XpuDevice(1);
-    XpuContext *context = new XpuContext(device, false);
-    XpuStream *xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
-    XpuStreamSqCqManage *stmSqCqManage = new XpuStreamSqCqManage(device);
+    XpuDevice* device = new XpuDevice(1);
+    XpuContext* context = new XpuContext(device, false);
+    XpuStream* xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
+    XpuStreamSqCqManage* stmSqCqManage = new XpuStreamSqCqManage(device);
     device->streamSqCqManage_ = stmSqCqManage;
 
     // 正常流程中的Mock
@@ -124,7 +117,7 @@ TEST_F(XpuContextTest, streamCreate_prior_Fail)
 
     // 特殊Mock：析构Stream
     MOCKER_CPP(&XpuContext::InsertStreamList).stubs().will(invoke(InsertStreamList_Mock));
-    Stream *stream;
+    Stream* stream;
     EXPECT_EQ(context->StreamCreate(1U, RT_STREAM_DEFAULT, &stream, nullptr, false), RT_ERROR_INVALID_VALUE);
     DELETE_O(xpuStream);
     DELETE_O(context);
@@ -133,10 +126,10 @@ TEST_F(XpuContextTest, streamCreate_prior_Fail)
 TEST_F(XpuContextTest, streamCreate_flag_Fail)
 {
     // 正常调用流程
-    XpuDevice *device = new XpuDevice(1);
-    XpuContext *context = new XpuContext(device, false);
-    XpuStream *xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
-    XpuStreamSqCqManage *stmSqCqManage = new XpuStreamSqCqManage(device);
+    XpuDevice* device = new XpuDevice(1);
+    XpuContext* context = new XpuContext(device, false);
+    XpuStream* xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
+    XpuStreamSqCqManage* stmSqCqManage = new XpuStreamSqCqManage(device);
     device->streamSqCqManage_ = stmSqCqManage;
 
     // 正常流程中的Mock
@@ -147,8 +140,9 @@ TEST_F(XpuContextTest, streamCreate_flag_Fail)
 
     // 特殊Mock：析构Stream
     MOCKER_CPP(&XpuContext::InsertStreamList).stubs().will(invoke(InsertStreamList_Mock));
-    Stream *stream;
-    EXPECT_EQ(context->StreamCreate(RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_PERSISTENT, &stream, nullptr, false),
+    Stream* stream;
+    EXPECT_EQ(
+        context->StreamCreate(RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_PERSISTENT, &stream, nullptr, false),
         RT_ERROR_INVALID_VALUE);
     DELETE_O(xpuStream);
     DELETE_O(context);
@@ -157,10 +151,10 @@ TEST_F(XpuContextTest, streamCreate_flag_Fail)
 TEST_F(XpuContextTest, streamCreate_setUp_Fail)
 {
     // 正常调用流程
-    XpuDevice *device = new XpuDevice(1);
-    XpuContext *context = new XpuContext(device, false);
-    XpuStream *xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
-    XpuStreamSqCqManage *stmSqCqManage = new XpuStreamSqCqManage(device);
+    XpuDevice* device = new XpuDevice(1);
+    XpuContext* context = new XpuContext(device, false);
+    XpuStream* xpuStream = new XpuStream(device, RT_STREAM_DEFAULT);
+    XpuStreamSqCqManage* stmSqCqManage = new XpuStreamSqCqManage(device);
     device->streamSqCqManage_ = stmSqCqManage;
 
     // 正常流程中的Mock
@@ -171,8 +165,9 @@ TEST_F(XpuContextTest, streamCreate_setUp_Fail)
 
     // 特殊Mock：析构Stream
     MOCKER_CPP(&XpuContext::InsertStreamList).stubs().will(invoke(InsertStreamList_Mock));
-    Stream *stream;
-    EXPECT_EQ(context->StreamCreate(RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, &stream, nullptr, false),
+    Stream* stream;
+    EXPECT_EQ(
+        context->StreamCreate(RT_STREAM_PRIORITY_DEFAULT, RT_STREAM_DEFAULT, &stream, nullptr, false),
         RT_ERROR_STREAM_NEW);
     DELETE_O(xpuStream);
     DELETE_O(context);
@@ -180,7 +175,7 @@ TEST_F(XpuContextTest, streamCreate_setUp_Fail)
 
 TEST_F(XpuContextTest, ConstructRuntimeImpl_success)
 {
-    Runtime *rt = ConstructRuntimeImpl();
+    Runtime* rt = ConstructRuntimeImpl();
     EXPECT_NE(rt, nullptr);
     DestructorRuntimeImpl(rt);
 }

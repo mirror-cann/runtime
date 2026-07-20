@@ -18,18 +18,11 @@ using namespace AicpuSchedule;
 using namespace aicpu;
 class AicpuSdPeriodStatisticTest : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        std::cout << "AicpuSdPeriodStatisticTest SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AicpuSdPeriodStatisticTest SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase() {
-        std::cout << "AicpuSdPeriodStatisticTest TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AicpuSdPeriodStatisticTest TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AicpuSdPeriodStatisticTest SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AicpuSdPeriodStatisticTest SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -38,7 +31,8 @@ protected:
     }
 };
 
-TEST_F(AicpuSdPeriodStatisticTest, StartPeriodFailed) {
+TEST_F(AicpuSdPeriodStatisticTest, StartPeriodFailed)
+{
     MOCKER_CPP(&AicpuSdPeriodStatistic::SetThreadAffinity).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
     MOCKER_CPP(&AicpuSdProcMemStatistic::InitProcMemStatistic).stubs().will(returnValue(false));
     MOCKER(&pthread_setaffinity_np).stubs().will(returnValue(1));
@@ -50,14 +44,16 @@ TEST_F(AicpuSdPeriodStatisticTest, StartPeriodFailed) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AicpuSdPeriodStatisticTest, InitStatisticTwice) {
+TEST_F(AicpuSdPeriodStatisticTest, InitStatisticTwice)
+{
     AicpuSdPeriodStatistic::GetInstance().initFlag_ = true;
     AicpuSdPeriodStatistic::GetInstance().InitStatistic(0U, 123U, 0U);
     EXPECT_EQ(AicpuSdPeriodStatistic::GetInstance().initFlag_, true);
     GlobalMockObject::verify();
 }
 
-TEST_F(AicpuSdPeriodStatisticTest, SetThreadAffinity_Failed1) {
+TEST_F(AicpuSdPeriodStatisticTest, SetThreadAffinity_Failed1)
+{
     MOCKER(&pthread_setaffinity_np).stubs().will(returnValue(1));
     EXPECT_EQ(AicpuSdPeriodStatistic::GetInstance().SetThreadAffinity(), AICPU_SCHEDULE_ERROR_INNER_ERROR);
     GlobalMockObject::verify();

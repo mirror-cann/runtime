@@ -22,192 +22,187 @@
 
 namespace dgw {
 namespace {
-    constexpr int32_t kRequestCacheNum = 3;
-    void *halMbufGetBuffAddrFakeAddr = nullptr;
-    int32_t halMbufGetBuffAddrFake(Mbuf *mbuf, void **buf)
-    {
-        *buf = halMbufGetBuffAddrFakeAddr;
-        return DRV_ERROR_NONE;
-    }
+constexpr int32_t kRequestCacheNum = 3;
+void* halMbufGetBuffAddrFakeAddr = nullptr;
+int32_t halMbufGetBuffAddrFake(Mbuf* mbuf, void** buf)
+{
+    *buf = halMbufGetBuffAddrFakeAddr;
+    return DRV_ERROR_NONE;
+}
+} // namespace
+
+class DynamicSchedMgrUTest : public testing::Test {
+protected:
+    virtual void SetUp() {}
+
+    virtual void TearDown() { GlobalMockObject::verify(); }
+};
+
+TEST_F(DynamicSchedMgrUTest, AddRootModelInfo_success)
+{
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
 }
 
-    class DynamicSchedMgrUTest : public testing::Test {
-    protected:
-        virtual void SetUp()
-        {
-        }
-
-        virtual void TearDown()
-        {
-            GlobalMockObject::verify();
-        }
-    };
-
-    TEST_F(DynamicSchedMgrUTest, AddRootModelInfo_success)
-    {
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, AddRootModelInfo_fail)
-    {
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, SendRequest_success)
-    {
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        uint64_t begin = DynamicSchedMgr::GetInstance().DynamicSchedNow();
-        halMbufGetBuffAddrFakeAddr = malloc(200);
-        MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        rootModelInfo.responseQue.globalLogicId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
-        DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
-        requestInfos[0].dsts.emplace_back(dstGroupInfo);
-        DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
-        requestInfos[0].decisions.emplace_back(decisionInfo);
-        ret = DynamicSchedMgr::GetInstance().SendRequest(1U, requestInfos);
-        free(halMbufGetBuffAddrFakeAddr);
-        halMbufGetBuffAddrFakeAddr = nullptr;
-        DynamicSchedMgr::GetInstance().DynamicSchedDurationEnd(begin);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, SendRequest_fail)
-    {
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        uint64_t begin = DynamicSchedMgr::GetInstance().DynamicSchedNow();
-        halMbufGetBuffAddrFakeAddr = malloc(200);
-        MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        rootModelInfo.responseQue.globalLogicId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
-        DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
-        requestInfos[0].dsts.emplace_back(dstGroupInfo);
-        DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
-        requestInfos[0].decisions.emplace_back(decisionInfo);
-        ret = DynamicSchedMgr::GetInstance().SendRequest(2U, requestInfos);
-        free(halMbufGetBuffAddrFakeAddr);
-        halMbufGetBuffAddrFakeAddr = nullptr;
-        DynamicSchedMgr::GetInstance().DynamicSchedDurationEnd(begin);
-        EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
-        DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, GetReponse_NotFind)
-    {
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::ResponseInfo> responses;
-        ret = DynamicSchedMgr::GetInstance().GetResponse(2U, responses);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, GetReponse_fail01)
-    {
-        MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(1));
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::GetInstance().requestSentNum_ = 1;
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::ResponseInfo> responses;
-        ret = DynamicSchedMgr::GetInstance().GetResponse(1U, responses);
-        EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, GetReponse_fail02)
-    {
-        MOCKER(halQueueDeQueue).stubs().will(returnValue(2));
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::GetInstance().requestSentNum_ = 1;
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::ResponseInfo> responses;
-        ret = DynamicSchedMgr::GetInstance().GetResponse(1U, responses);
-        EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, SendRequest_cache_success)
-    {
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        uint64_t begin = DynamicSchedMgr::GetInstance().DynamicSchedNow();
-        halMbufGetBuffAddrFakeAddr = malloc(200);
-        MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        rootModelInfo.responseQue.globalLogicId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
-        DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
-        requestInfos[0].dsts.emplace_back(dstGroupInfo);
-        DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
-        requestInfos[0].decisions.emplace_back(decisionInfo);
-        for (auto i = 0; i <= kRequestCacheNum; i++) {
-            ret = DynamicSchedMgr::GetInstance().SendRequest(1U, requestInfos);
-        }
-        free(halMbufGetBuffAddrFakeAddr);
-        halMbufGetBuffAddrFakeAddr = nullptr;
-        DynamicSchedMgr::GetInstance().DynamicSchedDurationEnd(begin);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
-    }
-
-    TEST_F(DynamicSchedMgrUTest, GetReponse_cache_success)
-    {
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        halMbufGetBuffAddrFakeAddr = malloc(200);
-        MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
-        DynamicSchedMgr::GetInstance().UpdateNodeId(0);
-        DynamicSchedMgr::RootModelInfo rootModelInfo;
-        rootModelInfo.rootModelId = 1U;
-        rootModelInfo.responseQue.globalLogicId = 1U;
-        auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
-        DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
-        requestInfos[0].dsts.emplace_back(dstGroupInfo);
-        DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
-        requestInfos[0].decisions.emplace_back(decisionInfo);
-        DynamicSchedMgr::GetInstance().requestSentNum_ = kRequestCacheNum + 1;
-        ret = DynamicSchedMgr::GetInstance().SendRequest(1U, requestInfos);
-        free(halMbufGetBuffAddrFakeAddr);
-        halMbufGetBuffAddrFakeAddr = nullptr;
-        EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
-        DynamicSchedMgr::GetInstance().requestSentNum_ = 0;
-        std::vector<DynamicSchedMgr::ResponseInfo> responses;
-        ret = DynamicSchedMgr::GetInstance().GetResponse(1U, responses);
-        DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
-        DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
-    }
+TEST_F(DynamicSchedMgrUTest, AddRootModelInfo_fail)
+{
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
 }
+
+TEST_F(DynamicSchedMgrUTest, SendRequest_success)
+{
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    uint64_t begin = DynamicSchedMgr::GetInstance().DynamicSchedNow();
+    halMbufGetBuffAddrFakeAddr = malloc(200);
+    MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    rootModelInfo.responseQue.globalLogicId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
+    DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
+    requestInfos[0].dsts.emplace_back(dstGroupInfo);
+    DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
+    requestInfos[0].decisions.emplace_back(decisionInfo);
+    ret = DynamicSchedMgr::GetInstance().SendRequest(1U, requestInfos);
+    free(halMbufGetBuffAddrFakeAddr);
+    halMbufGetBuffAddrFakeAddr = nullptr;
+    DynamicSchedMgr::GetInstance().DynamicSchedDurationEnd(begin);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
+}
+
+TEST_F(DynamicSchedMgrUTest, SendRequest_fail)
+{
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    uint64_t begin = DynamicSchedMgr::GetInstance().DynamicSchedNow();
+    halMbufGetBuffAddrFakeAddr = malloc(200);
+    MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    rootModelInfo.responseQue.globalLogicId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
+    DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
+    requestInfos[0].dsts.emplace_back(dstGroupInfo);
+    DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
+    requestInfos[0].decisions.emplace_back(decisionInfo);
+    ret = DynamicSchedMgr::GetInstance().SendRequest(2U, requestInfos);
+    free(halMbufGetBuffAddrFakeAddr);
+    halMbufGetBuffAddrFakeAddr = nullptr;
+    DynamicSchedMgr::GetInstance().DynamicSchedDurationEnd(begin);
+    EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
+    DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
+}
+
+TEST_F(DynamicSchedMgrUTest, GetReponse_NotFind)
+{
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::ResponseInfo> responses;
+    ret = DynamicSchedMgr::GetInstance().GetResponse(2U, responses);
+}
+
+TEST_F(DynamicSchedMgrUTest, GetReponse_fail01)
+{
+    MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(1));
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::GetInstance().requestSentNum_ = 1;
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::ResponseInfo> responses;
+    ret = DynamicSchedMgr::GetInstance().GetResponse(1U, responses);
+    EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
+}
+
+TEST_F(DynamicSchedMgrUTest, GetReponse_fail02)
+{
+    MOCKER(halQueueDeQueue).stubs().will(returnValue(2));
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::GetInstance().requestSentNum_ = 1;
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::ResponseInfo> responses;
+    ret = DynamicSchedMgr::GetInstance().GetResponse(1U, responses);
+    EXPECT_EQ(ret, FsmStatus::FSM_FAILED);
+}
+
+TEST_F(DynamicSchedMgrUTest, SendRequest_cache_success)
+{
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    uint64_t begin = DynamicSchedMgr::GetInstance().DynamicSchedNow();
+    halMbufGetBuffAddrFakeAddr = malloc(200);
+    MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    rootModelInfo.responseQue.globalLogicId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
+    DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
+    requestInfos[0].dsts.emplace_back(dstGroupInfo);
+    DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
+    requestInfos[0].decisions.emplace_back(decisionInfo);
+    for (auto i = 0; i <= kRequestCacheNum; i++) {
+        ret = DynamicSchedMgr::GetInstance().SendRequest(1U, requestInfos);
+    }
+    free(halMbufGetBuffAddrFakeAddr);
+    halMbufGetBuffAddrFakeAddr = nullptr;
+    DynamicSchedMgr::GetInstance().DynamicSchedDurationEnd(begin);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
+}
+
+TEST_F(DynamicSchedMgrUTest, GetReponse_cache_success)
+{
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    halMbufGetBuffAddrFakeAddr = malloc(200);
+    MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFake));
+    DynamicSchedMgr::GetInstance().UpdateNodeId(0);
+    DynamicSchedMgr::RootModelInfo rootModelInfo;
+    rootModelInfo.rootModelId = 1U;
+    rootModelInfo.responseQue.globalLogicId = 1U;
+    auto ret = DynamicSchedMgr::GetInstance().AddRootModelInfo(rootModelInfo);
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    std::vector<DynamicSchedMgr::RequestInfo> requestInfos(1);
+    DynamicSchedMgr::DstGroupInfo dstGroupInfo = {0U};
+    requestInfos[0].dsts.emplace_back(dstGroupInfo);
+    DynamicSchedMgr::DecisionInfo decisionInfo = {0, 0};
+    requestInfos[0].decisions.emplace_back(decisionInfo);
+    DynamicSchedMgr::GetInstance().requestSentNum_ = kRequestCacheNum + 1;
+    ret = DynamicSchedMgr::GetInstance().SendRequest(1U, requestInfos);
+    free(halMbufGetBuffAddrFakeAddr);
+    halMbufGetBuffAddrFakeAddr = nullptr;
+    EXPECT_EQ(ret, FsmStatus::FSM_SUCCESS);
+    DynamicSchedMgr::GetInstance().requestSentNum_ = 0;
+    std::vector<DynamicSchedMgr::ResponseInfo> responses;
+    ret = DynamicSchedMgr::GetInstance().GetResponse(1U, responses);
+    DynamicSchedMgr::GetInstance().rootModelInfos_.clear();
+    DynamicSchedMgr::GetInstance().DeleteQueue(1U, 1U);
+}
+} // namespace dgw

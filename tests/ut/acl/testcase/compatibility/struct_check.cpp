@@ -18,13 +18,13 @@
 #undef private
 #endif
 
-class UTEST_ACL_compatibility_struct_check : public testing::Test
-{
-    public:
-        UTEST_ACL_compatibility_struct_check() {}
-    protected:
-        virtual void SetUp() {}
-        virtual void TearDown() {}
+class UTEST_ACL_compatibility_struct_check : public testing::Test {
+public:
+    UTEST_ACL_compatibility_struct_check() {}
+
+protected:
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtUtilizationInfo)
@@ -42,7 +42,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtUtilizationInfo)
     offset = OFFSET_OF_MEMBER(aclrtUtilizationInfo, memoryUtilization);
     EXPECT_EQ(offset, 12);
 
-    EXPECT_EQ(sizeof(aclrtUtilizationInfo), 4*4 + sizeof (aclrtUtilizationExtendInfo *));
+    EXPECT_EQ(sizeof(aclrtUtilizationInfo), 4 * 4 + sizeof(aclrtUtilizationExtendInfo*));
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtBinaryLoadOption)
@@ -79,9 +79,9 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtLaunchKernelAttr)
     EXPECT_EQ(offset, sizeof(aclrtLaunchKernelAttrId));
 
     EXPECT_EQ(sizeof(aclrtLaunchKernelAttr), sizeof(aclrtLaunchKernelAttrId) + sizeof(aclrtLaunchKernelAttrValue));
-    EXPECT_EQ(sizeof(aclrtLaunchKernelAttrId), 4U); // 4 bytes
+    EXPECT_EQ(sizeof(aclrtLaunchKernelAttrId), 4U);     // 4 bytes
     EXPECT_EQ(sizeof(aclrtLaunchKernelAttrValue), 16U); // 16 bytes
-    EXPECT_EQ(sizeof(aclrtLaunchKernelAttr), 20U); // 20 bytes
+    EXPECT_EQ(sizeof(aclrtLaunchKernelAttr), 20U);      // 20 bytes
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtLaunchKernelCfg)
@@ -96,10 +96,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtLaunchKernelCfg)
     EXPECT_EQ(sizeof(aclrtLaunchKernelCfg), sizeof(aclrtLaunchKernelAttr*) * 2U);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMallocAttrValue)
-{
-    EXPECT_EQ(sizeof(aclrtMallocAttrValue), 8);
-}
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMallocAttrValue) { EXPECT_EQ(sizeof(aclrtMallocAttrValue), 8); }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMallocAttribute)
 {
@@ -129,9 +126,9 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMallocConfig)
     EXPECT_EQ(offset, 0);
 
     offset = OFFSET_OF_MEMBER(aclrtMallocConfig, numAttrs);
-    EXPECT_EQ(offset, sizeof(aclrtMallocAttribute *));
+    EXPECT_EQ(offset, sizeof(aclrtMallocAttribute*));
 
-    EXPECT_EQ(sizeof(aclrtMallocConfig), sizeof(aclrtMallocAttribute *) + sizeof(size_t));
+    EXPECT_EQ(sizeof(aclrtMallocConfig), sizeof(aclrtMallocAttribute*) + sizeof(size_t));
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtServerPid)
@@ -141,12 +138,12 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtServerPid)
     EXPECT_EQ(offset, 0);
 
     offset = OFFSET_OF_MEMBER(aclrtServerPid, pid);
-    EXPECT_EQ(offset, sizeof(int32_t *));
+    EXPECT_EQ(offset, sizeof(int32_t*));
 
     offset = OFFSET_OF_MEMBER(aclrtServerPid, num);
-    EXPECT_EQ(offset, sizeof(int32_t *) + sizeof(int32_t *));
+    EXPECT_EQ(offset, sizeof(int32_t*) + sizeof(int32_t*));
 
-    EXPECT_EQ(sizeof(aclrtServerPid), sizeof(int32_t *) + sizeof(int32_t *) + sizeof(size_t));
+    EXPECT_EQ(sizeof(aclrtServerPid), sizeof(int32_t*) + sizeof(int32_t*) + sizeof(size_t));
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMemLocation)
@@ -185,10 +182,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtPtrAttributes)
     EXPECT_EQ(sizeof(aclrtPtrAttributes), sizeof(aclrtMemLocation) + sizeof(uint32_t) + sizeof(uint32_t) * 4);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtStreamAttrValue)
-{
-    EXPECT_EQ(sizeof(aclrtStreamAttrValue), 16);
-}
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtStreamAttrValue) { EXPECT_EQ(sizeof(aclrtStreamAttrValue), 16); }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtBarrierCmoInfo)
 {
@@ -197,13 +191,15 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtBarrierCmoInfo)
     EXPECT_EQ(offset, 0);
 
     offset = OFFSET_OF_MEMBER(aclrtBarrierCmoInfo, barrierId);
-    EXPECT_EQ(offset,
-        sizeof(aclrtCmoType)   // cmoType
+    EXPECT_EQ(
+        offset,
+        sizeof(aclrtCmoType) // cmoType
     );
 
-    EXPECT_EQ(sizeof(aclrtBarrierCmoInfo),
+    EXPECT_EQ(
+        sizeof(aclrtBarrierCmoInfo),
         sizeof(aclrtCmoType) + // cmoType
-        sizeof(uint32_t)       // barrierId
+            sizeof(uint32_t)   // barrierId
     );
 }
 
@@ -214,13 +210,15 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtBarrierTaskInfo)
     EXPECT_EQ(offset, 0);
 
     offset = OFFSET_OF_MEMBER(aclrtBarrierTaskInfo, cmoInfo);
-    EXPECT_EQ(offset,
-        sizeof(size_t)    // barrierNum
+    EXPECT_EQ(
+        offset,
+        sizeof(size_t) // barrierNum
     );
 
-    EXPECT_EQ(sizeof(aclrtBarrierTaskInfo),
-        sizeof(size_t) +                                           // barrierNum
-        sizeof(aclrtBarrierCmoInfo) * ACL_RT_CMO_MAX_BARRIER_NUM   // cmoInfo
+    EXPECT_EQ(
+        sizeof(aclrtBarrierTaskInfo),
+        sizeof(size_t) +                                             // barrierNum
+            sizeof(aclrtBarrierCmoInfo) * ACL_RT_CMO_MAX_BARRIER_NUM // cmoInfo
     );
 }
 
@@ -256,184 +254,172 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtPlaceHolderInfo)
 // please ensure that the changes have been synchronized in other components as well.
 TEST_F(UTEST_ACL_compatibility_struct_check, aclDataBuffer)
 {
-    EXPECT_EQ(sizeof(aclDataBuffer), sizeof(void *) + sizeof(uint64_t));
+    EXPECT_EQ(sizeof(aclDataBuffer), sizeof(void*) + sizeof(uint64_t));
 
     size_t offset;
     offset = OFFSET_OF_MEMBER(aclDataBuffer, data);
     EXPECT_EQ(offset, 0);
     offset = OFFSET_OF_MEMBER(aclDataBuffer, length);
-    EXPECT_EQ(offset, sizeof(void *));
+    EXPECT_EQ(offset, sizeof(void*));
 
     aclDataBuffer dataBuffer{nullptr, 0};
-    EXPECT_EQ(sizeof(dataBuffer.data), sizeof(void *));
+    EXPECT_EQ(sizeof(dataBuffer.data), sizeof(void*));
     EXPECT_EQ(sizeof(dataBuffer.length), sizeof(uint64_t));
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomParaInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomParaInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, isAddr);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, isAddr);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, valueOrAddr);
-  EXPECT_EQ(offset, sizeof(uint8_t));
+    offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, valueOrAddr);
+    EXPECT_EQ(offset, sizeof(uint8_t));
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, size);
-  EXPECT_EQ(offset, sizeof(uint8_t) * 9);
+    offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, size);
+    EXPECT_EQ(offset, sizeof(uint8_t) * 9);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, rsv);
-  EXPECT_EQ(offset, sizeof(uint8_t) * 10);
+    offset = OFFSET_OF_MEMBER(aclrtRandomParaInfo, rsv);
+    EXPECT_EQ(offset, sizeof(uint8_t) * 10);
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtRandomParaInfo), sizeof(uint8_t) * 16);
+    // check total size
+    EXPECT_EQ(sizeof(aclrtRandomParaInfo), sizeof(uint8_t) * 16);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtDropoutBitmaskInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtDropoutBitmaskInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtDropoutBitmaskInfo, dropoutRation);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtDropoutBitmaskInfo, dropoutRation);
+    EXPECT_EQ(offset, 0);
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtDropoutBitmaskInfo), sizeof(aclrtRandomParaInfo));
+    // check total size
+    EXPECT_EQ(sizeof(aclrtDropoutBitmaskInfo), sizeof(aclrtRandomParaInfo));
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtUniformDisInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtUniformDisInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtUniformDisInfo, min);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtUniformDisInfo, min);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtUniformDisInfo, max);
-  EXPECT_EQ(offset, sizeof(aclrtRandomParaInfo));
+    offset = OFFSET_OF_MEMBER(aclrtUniformDisInfo, max);
+    EXPECT_EQ(offset, sizeof(aclrtRandomParaInfo));
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtUniformDisInfo),
-            sizeof(aclrtRandomParaInfo) + sizeof(aclrtRandomParaInfo));
+    // check total size
+    EXPECT_EQ(sizeof(aclrtUniformDisInfo), sizeof(aclrtRandomParaInfo) + sizeof(aclrtRandomParaInfo));
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtNormalDisInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtNormalDisInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtNormalDisInfo, mean);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtNormalDisInfo, mean);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtNormalDisInfo, stddev);
-  EXPECT_EQ(offset, sizeof(aclrtRandomParaInfo));
+    offset = OFFSET_OF_MEMBER(aclrtNormalDisInfo, stddev);
+    EXPECT_EQ(offset, sizeof(aclrtRandomParaInfo));
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtNormalDisInfo), sizeof(aclrtRandomParaInfo) * 2);
+    // check total size
+    EXPECT_EQ(sizeof(aclrtNormalDisInfo), sizeof(aclrtRandomParaInfo) * 2);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomNumFuncParaInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomNumFuncParaInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumFuncParaInfo, funcType);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumFuncParaInfo, funcType);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumFuncParaInfo, paramInfo);
-  EXPECT_EQ(offset, sizeof(aclrtRandomNumFuncType));
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumFuncParaInfo, paramInfo);
+    EXPECT_EQ(offset, sizeof(aclrtRandomNumFuncType));
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtRandomNumFuncParaInfo),
-            sizeof(aclrtRandomNumFuncType) + sizeof(aclrtUniformDisInfo));
+    // check total size
+    EXPECT_EQ(sizeof(aclrtRandomNumFuncParaInfo), sizeof(aclrtRandomNumFuncType) + sizeof(aclrtUniformDisInfo));
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomNumTaskInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomNumTaskInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, dataType);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, dataType);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomNumFuncParaInfo);
-  EXPECT_EQ(offset, sizeof(aclDataType));
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomNumFuncParaInfo);
+    EXPECT_EQ(offset, sizeof(aclDataType));
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomParaAddr);
-  EXPECT_EQ(offset, sizeof(aclDataType) +
-                            sizeof(aclrtRandomNumFuncParaInfo));
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomParaAddr);
+    EXPECT_EQ(offset, sizeof(aclDataType) + sizeof(aclrtRandomNumFuncParaInfo));
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomResultAddr);
-  EXPECT_EQ(offset, sizeof(aclDataType) +
-                        sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void *));
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomResultAddr);
+    EXPECT_EQ(offset, sizeof(aclDataType) + sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void*));
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomCounterAddr);
-  EXPECT_EQ(offset, sizeof(aclDataType) +
-                        sizeof(aclrtRandomNumFuncParaInfo) +
-                        sizeof(void *) * 2);
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomCounterAddr);
+    EXPECT_EQ(offset, sizeof(aclDataType) + sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void*) * 2);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomSeed);
-  EXPECT_EQ(offset, sizeof(aclDataType) +
-                        sizeof(aclrtRandomNumFuncParaInfo) +
-                        sizeof(void *) * 3);
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomSeed);
+    EXPECT_EQ(offset, sizeof(aclDataType) + sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void*) * 3);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomNum);
-  EXPECT_EQ(offset, sizeof(aclDataType) +
-                        sizeof(aclrtRandomNumFuncParaInfo) +
-                        sizeof(void *) * 3 + sizeof(aclrtRandomParaInfo));
+    offset = OFFSET_OF_MEMBER(aclrtRandomNumTaskInfo, randomNum);
+    EXPECT_EQ(
+        offset,
+        sizeof(aclDataType) + sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void*) * 3 + sizeof(aclrtRandomParaInfo));
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtRandomNumTaskInfo),
-            sizeof(aclDataType) +
-                sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void *) * 3 +
-                sizeof(aclrtRandomParaInfo) * 2 + sizeof(uint8_t) * 8);
+    // check total size
+    EXPECT_EQ(
+        sizeof(aclrtRandomNumTaskInfo), sizeof(aclDataType) + sizeof(aclrtRandomNumFuncParaInfo) + sizeof(void*) * 3 +
+                                            sizeof(aclrtRandomParaInfo) * 2 + sizeof(uint8_t) * 8);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomTaskUpdateAttr) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtRandomTaskUpdateAttr)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtRandomTaskUpdateAttr, srcAddr);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtRandomTaskUpdateAttr, srcAddr);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtRandomTaskUpdateAttr, size);
-  EXPECT_EQ(offset, sizeof(void *));
+    offset = OFFSET_OF_MEMBER(aclrtRandomTaskUpdateAttr, size);
+    EXPECT_EQ(offset, sizeof(void*));
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtRandomTaskUpdateAttr),
-            sizeof(void *) + sizeof(size_t) + sizeof(uint32_t) * 4);
+    // check total size
+    EXPECT_EQ(sizeof(aclrtRandomTaskUpdateAttr), sizeof(void*) + sizeof(size_t) + sizeof(uint32_t) * 4);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtAicAivTaskUpdateAttr) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtAicAivTaskUpdateAttr)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtAicAivTaskUpdateAttr, binHandle);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtAicAivTaskUpdateAttr, binHandle);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtAicAivTaskUpdateAttr, funcEntryAddr);
-  EXPECT_EQ(offset, sizeof(void *));
+    offset = OFFSET_OF_MEMBER(aclrtAicAivTaskUpdateAttr, funcEntryAddr);
+    EXPECT_EQ(offset, sizeof(void*));
 
-  offset = OFFSET_OF_MEMBER(aclrtAicAivTaskUpdateAttr, blockDimAddr);
-  EXPECT_EQ(offset, sizeof(void *) * 2);
+    offset = OFFSET_OF_MEMBER(aclrtAicAivTaskUpdateAttr, blockDimAddr);
+    EXPECT_EQ(offset, sizeof(void*) * 2);
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtAicAivTaskUpdateAttr),
-            sizeof(void *) * 3 + sizeof(uint32_t) * 4);
+    // check total size
+    EXPECT_EQ(sizeof(aclrtAicAivTaskUpdateAttr), sizeof(void*) * 3 + sizeof(uint32_t) * 4);
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtUpdateTaskAttrVal) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtUpdateTaskAttrVal)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtUpdateTaskAttrVal, randomTaskAttr);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtUpdateTaskAttrVal, randomTaskAttr);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtUpdateTaskAttrVal, aicAivTaskAttr);
-  EXPECT_EQ(offset, 0);
+    offset = OFFSET_OF_MEMBER(aclrtUpdateTaskAttrVal, aicAivTaskAttr);
+    EXPECT_EQ(offset, 0);
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtUpdateTaskAttrVal), sizeof(aclrtAicAivTaskUpdateAttr));
+    // check total size
+    EXPECT_EQ(sizeof(aclrtUpdateTaskAttrVal), sizeof(aclrtAicAivTaskUpdateAttr));
 }
 
-TEST_F(UTEST_ACL_compatibility_struct_check, aclrtTaskUpdateInfo) 
+TEST_F(UTEST_ACL_compatibility_struct_check, aclrtTaskUpdateInfo)
 {
-  size_t offset;
-  offset = OFFSET_OF_MEMBER(aclrtTaskUpdateInfo, id);
-  EXPECT_EQ(offset, 0);
+    size_t offset;
+    offset = OFFSET_OF_MEMBER(aclrtTaskUpdateInfo, id);
+    EXPECT_EQ(offset, 0);
 
-  offset = OFFSET_OF_MEMBER(aclrtTaskUpdateInfo, val);
-  EXPECT_EQ(offset, sizeof(aclrtUpdateTaskAttrId)*2);
+    offset = OFFSET_OF_MEMBER(aclrtTaskUpdateInfo, val);
+    EXPECT_EQ(offset, sizeof(aclrtUpdateTaskAttrId) * 2);
 
-  // check total size
-  EXPECT_EQ(sizeof(aclrtTaskUpdateInfo),
-            sizeof(aclrtUpdateTaskAttrId)*2 + sizeof(aclrtUpdateTaskAttrVal));
+    // check total size
+    EXPECT_EQ(sizeof(aclrtTaskUpdateInfo), sizeof(aclrtUpdateTaskAttrId) * 2 + sizeof(aclrtUpdateTaskAttrVal));
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtCntNotifyRecordInfo)
@@ -445,7 +431,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtCntNotifyRecordInfo)
     offset = OFFSET_OF_MEMBER(aclrtCntNotifyRecordInfo, value);
     EXPECT_EQ(offset, sizeof(aclrtCntNotifyRecordMode));
 
-    EXPECT_EQ(sizeof(aclrtCntNotifyRecordInfo), sizeof(aclrtCntNotifyRecordMode) + sizeof (uint32_t));
+    EXPECT_EQ(sizeof(aclrtCntNotifyRecordInfo), sizeof(aclrtCntNotifyRecordMode) + sizeof(uint32_t));
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtCntNotifyWaitInfo)
@@ -461,12 +447,14 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtCntNotifyWaitInfo)
     EXPECT_EQ(offset, sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t));
 
     offset = OFFSET_OF_MEMBER(aclrtCntNotifyWaitInfo, isClear);
-    EXPECT_EQ(offset, sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t)*2);
+    EXPECT_EQ(offset, sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t) * 2);
 
     offset = OFFSET_OF_MEMBER(aclrtCntNotifyWaitInfo, rsv);
-    EXPECT_EQ(offset, sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t)*2 + sizeof(bool));
+    EXPECT_EQ(offset, sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t) * 2 + sizeof(bool));
 
-    EXPECT_EQ(sizeof(aclrtCntNotifyWaitInfo), sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t) * 2 + sizeof(bool) + sizeof(uint8_t) * 3);
+    EXPECT_EQ(
+        sizeof(aclrtCntNotifyWaitInfo),
+        sizeof(aclrtCntNotifyWaitMode) + sizeof(uint32_t) * 2 + sizeof(bool) + sizeof(uint8_t) * 3);
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtErrorInfoDetail)
@@ -485,8 +473,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtErrorInfoDetail)
     EXPECT_EQ(offset, 0);
 
     // 联合体的大小由最大的成员决定
-    size_t expectedSize = sizeof(size_t) +
-        ACL_RT_MEM_UCE_INFO_MAX_NUM * sizeof(aclrtMemUceInfo);
+    size_t expectedSize = sizeof(size_t) + ACL_RT_MEM_UCE_INFO_MAX_NUM * sizeof(aclrtMemUceInfo);
 
     EXPECT_EQ(sizeof(aclrtErrorInfoDetail), expectedSize);
 }
@@ -502,14 +489,13 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtErrorInfo)
     EXPECT_EQ(offset, sizeof(uint8_t));
 
     offset = OFFSET_OF_MEMBER(aclrtErrorInfo, errorType);
-    EXPECT_EQ(offset, 4*sizeof(uint8_t));
+    EXPECT_EQ(offset, 4 * sizeof(uint8_t));
 
     offset = OFFSET_OF_MEMBER(aclrtErrorInfo, detail);
     EXPECT_EQ(offset, 4 * sizeof(uint8_t) + 4);
 
     // 检查总大小
-    EXPECT_EQ(sizeof(aclrtErrorInfo),
-        4 * sizeof(uint8_t) + sizeof(aclrtErrorInfoDetail) + 4);
+    EXPECT_EQ(sizeof(aclrtErrorInfo), 4 * sizeof(uint8_t) + sizeof(aclrtErrorInfoDetail) + 4);
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMemAccessDesc)
@@ -528,10 +514,8 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMemAccessDesc)
     EXPECT_EQ(offset, sizeof(aclrtMemLocation) + sizeof(aclrtMemAccessFlags));
 
     // 检查整个结构体的大小是否正确
-    EXPECT_EQ(sizeof(aclrtMemAccessDesc),
-        sizeof(aclrtMemLocation) + 
-        sizeof(aclrtMemAccessFlags) + 
-        sizeof(uint8_t) * 12);
+    EXPECT_EQ(
+        sizeof(aclrtMemAccessDesc), sizeof(aclrtMemLocation) + sizeof(aclrtMemAccessFlags) + sizeof(uint8_t) * 12);
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMemUsageInfo)
@@ -554,8 +538,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclrtMemUsageInfo)
     EXPECT_EQ(offset, sizeof(char) * 32 + sizeof(uint64_t) * 2);
 
     // 检查整个结构体的大小是否正确
-    EXPECT_EQ(sizeof(aclrtMemUsageInfo),
-        sizeof(char) * 32 + sizeof(uint64_t) * 2 + sizeof(size_t) * 8);
+    EXPECT_EQ(sizeof(aclrtMemUsageInfo), sizeof(char) * 32 + sizeof(uint64_t) * 2 + sizeof(size_t) * 8);
 }
 
 TEST_F(UTEST_ACL_compatibility_struct_check, aclmdlRITaskParams)
@@ -627,5 +610,7 @@ TEST_F(UTEST_ACL_compatibility_struct_check, aclmdlRICondTaskParams)
     offset = OFFSET_OF_MEMBER(aclmdlRICondTaskParams, modelRIArray);
     EXPECT_EQ(offset, sizeof(aclmdlRICondHandle) + sizeof(aclmdlRICondTaskType) + sizeof(uint32_t));
 
-    EXPECT_EQ(sizeof(aclmdlRICondTaskParams), sizeof(aclmdlRICondHandle) + sizeof(aclmdlRICondTaskType) + sizeof(uint32_t) + sizeof(aclmdlRI *));
+    EXPECT_EQ(
+        sizeof(aclmdlRICondTaskParams),
+        sizeof(aclmdlRICondHandle) + sizeof(aclmdlRICondTaskType) + sizeof(uint32_t) + sizeof(aclmdlRI*));
 }

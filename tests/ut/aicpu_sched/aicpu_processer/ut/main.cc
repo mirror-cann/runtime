@@ -8,8 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include <gtest/gtest.h>  
-int main(int argc, char **argv)
+#include <gtest/gtest.h>
+int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
 

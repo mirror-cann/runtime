@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "mockcpp/mockcpp.hpp"
 #include "mockcpp/ChainingMockHelper.h"
- 
+
 #define private public
 #define protected public
 #include "entity.h"
@@ -27,28 +27,19 @@
 #include "bqs_util.h"
 #undef private
 #undef protected
- 
+
 #include "driver/ascend_hal.h"
- 
+
 using namespace std;
 using namespace dgw;
 class EntityUTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        bqs::GlobalCfg::GetInstance().RecordDeviceId(0U, 0U, 0U);
-    }
+    static void SetUpTestCase() { bqs::GlobalCfg::GetInstance().RecordDeviceId(0U, 0U, 0U); }
 
-    static void TearDownTestCase()
-    {
-        bqs::GlobalCfg::GetInstance().deviceIdToResIndex_.clear();
-    }
+    static void TearDownTestCase() { bqs::GlobalCfg::GetInstance().deviceIdToResIndex_.clear(); }
 
-    virtual void SetUp()
-    {
-        cout << "Before entity_utest" << endl;
-    }
- 
+    virtual void SetUp() { cout << "Before entity_utest" << endl; }
+
     virtual void TearDown()
     {
         cout << "after entity_utest" << endl;
@@ -64,10 +55,10 @@ TEST_F(EntityUTest, GroupCheckTimeout_success_01)
     GroupEntity group(material, 0U);
     group.groupInfo_.timeout = -1;
     EXPECT_EQ(false, group.CheckTimeout(1U));
- 
+
     group.groupInfo_.timeout = 0;
     EXPECT_EQ(false, group.CheckTimeout(1U)); // ?
- 
+
     group.groupInfo_.timeout = 10;
     group.groupInfo_.lastTimestamp = 0U;
     EXPECT_EQ(true, group.CheckTimeout(1U));
@@ -102,20 +93,23 @@ TEST_F(EntityUTest, DoClientEnqueue_Fail)
     ClientEntity entity(material, 0U);
     uint32_t headBufSize = 256U;
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
     uint64_t dataLen = 4UL;
     MOCKER(halMbufGetDataLen)
-        .stubs().with(mockcpp::any(), outBoundP(&dataLen))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
     uint32_t placeHolder = 0U;
-    void *dataPtr = (void*)&placeHolder;
+    void* dataPtr = (void*)&placeHolder;
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&dataPtr))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataPtr))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
@@ -126,30 +120,30 @@ TEST_F(EntityUTest, DoClientEnqueue_Fail)
         .then(returnValue(DRV_ERROR_NOT_EXIST))
         .then(returnValue(DRV_ERROR_NO_DEVICE));
 
-        // halMbufGetPrivInfo fail
+    // halMbufGetPrivInfo fail
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_FAILED);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_INIT);
- 
+
     // halMbufGetBuffSize fail
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_FAILED);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_INIT);
- 
+
     // halMbufGetBuffAddr fail
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_FAILED);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_INIT);
- 
+
     // halQueueEnQueueBuff success
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_SUCCESS);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_SENT);
- 
+
     // halQueueEnQueueBuff full
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_DEST_FULL);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_INIT);
- 
+
     // halQueueEnQueueBuff not exist
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_ERROR_PENDING);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_INIT);
- 
+
     // halQueueEnQueueBuff other error
     EXPECT_EQ(entity.DoClientEnqueue(nullptr), dgw::FsmStatus::FSM_FAILED);
     EXPECT_EQ(entity.asyncDataState_, dgw::AsyncDataState::FSM_ASYNC_DATA_INIT);
@@ -167,15 +161,17 @@ TEST_F(EntityUTest, SdmaCopy_Fail)
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
-    void *srcDataBuf = reinterpret_cast<void*>(1);
+    void* srcDataBuf = reinterpret_cast<void*>(1);
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&srcDataBuf))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&srcDataBuf))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
     uint32_t srcHeadBufSize = 0U;
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP(&srcDataBuf), outBoundP(&srcHeadBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&srcDataBuf), outBoundP(&srcHeadBufSize))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE))
         .then(returnValue((int)DRV_ERROR_NONE))
@@ -184,9 +180,10 @@ TEST_F(EntityUTest, SdmaCopy_Fail)
         .then(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
-    Mbuf *mbufPtr = reinterpret_cast<Mbuf*>(1);
+    Mbuf* mbufPtr = reinterpret_cast<Mbuf*>(1);
     MOCKER(halMbufAllocEx)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&mbufPtr))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&mbufPtr))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
@@ -230,11 +227,9 @@ TEST_F(EntityUTest, ClientEntity_DoDeQueue)
     material.id = 1001U;
     material.queueType = 1U;
     ClientEntity entity(material, 0U);
- 
+
     // asyncDeque fail
-    MOCKER(halQueueGetStatus)
-        .stubs()
-        .will(returnValue((int)DRV_ERROR_NO_DEVICE));
+    MOCKER(halQueueGetStatus).stubs().will(returnValue((int)DRV_ERROR_NO_DEVICE));
     EXPECT_EQ(entity.DoDequeue(), FsmStatus::FSM_KEEP_STATE);
     int32_t tryTimes = 0;
     while (tryTimes++ < 3) {
@@ -244,11 +239,11 @@ TEST_F(EntityUTest, ClientEntity_DoDeQueue)
         sleep(1);
     }
     EXPECT_TRUE(tryTimes < 3);
- 
+
     // dequing
     entity.asyncDataState_ = AsyncDataState::FSM_ASYNC_DATA_WAIT;
     EXPECT_EQ(entity.DoDequeue(), FsmStatus::FSM_KEEP_STATE);
- 
+
     // asyncDeque success
     entity.asyncDataState_ = AsyncDataState::FSM_ASYNC_DATA_SENT;
     EXPECT_EQ(entity.DoDequeue(), FsmStatus::FSM_SUCCESS);
@@ -261,19 +256,18 @@ TEST_F(EntityUTest, ClientEntity_DoDequeueMbuf)
     material.eType = dgw::EntityType::ENTITY_QUEUE;
     material.queueType = 1U;
     dgw::ClientEntity entity(material, 0U);
-    MOCKER(halQueueGetStatus)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueueGetStatus).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
     uint64_t deqLen = 256U;
     MOCKER(halQueuePeek)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&deqLen), mockcpp::any())
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&deqLen), mockcpp::any())
         .will(returnValue(DRV_ERROR_NOT_EXIST))
         .then(returnValue(DRV_ERROR_NONE));
 
-    Mbuf *stubMbuf = reinterpret_cast<Mbuf*>(1);
+    Mbuf* stubMbuf = reinterpret_cast<Mbuf*>(1);
     MOCKER(halMbufAlloc)
-        .stubs().with(mockcpp::any(), outBoundP(&stubMbuf))
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&stubMbuf))
         .will(returnValue((int)DRV_ERROR_NO_DEVICE))
         .then(returnValue((int)DRV_ERROR_NONE));
 
@@ -284,22 +278,21 @@ TEST_F(EntityUTest, ClientEntity_DoDequeueMbuf)
 
     uint32_t headBufSize = 256U;
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), mockcpp::any(), outBoundP(&headBufSize))
-        .will(returnValue((int)DRV_ERROR_NO_DEVICE))
-        .then(returnValue((int)DRV_ERROR_NONE));
-
-    void *dataPtr = reinterpret_cast<void*>(1);
-    MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&dataPtr))
-        .will(returnValue((int)DRV_ERROR_NO_DEVICE))
-        .then(returnValue((int)DRV_ERROR_NONE));
-
-    MOCKER(halQueueDeQueueBuff)
         .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+        .with(mockcpp::any(), mockcpp::any(), outBoundP(&headBufSize))
+        .will(returnValue((int)DRV_ERROR_NO_DEVICE))
+        .then(returnValue((int)DRV_ERROR_NONE));
 
-    void *mbuf = nullptr;
+    void* dataPtr = reinterpret_cast<void*>(1);
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataPtr))
+        .will(returnValue((int)DRV_ERROR_NO_DEVICE))
+        .then(returnValue((int)DRV_ERROR_NONE));
+
+    MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
+
+    void* mbuf = nullptr;
     //  halQueueGetStatus fail
     EXPECT_EQ(entity.DoDequeueMbuf(&mbuf), dgw::FsmStatus::FSM_FAILED);
     //  halQueuePeek fail
@@ -329,10 +322,7 @@ TEST_F(EntityUTest, ClientEntity_DoClientDequeue)
     material.eType = dgw::EntityType::ENTITY_QUEUE;
     material.queueType = 1U;
     dgw::ClientEntity entity(material, 0U);
-    MOCKER(halQueueGetStatus)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE))
-        .then(returnValue(DRV_ERROR_NONE));
+    MOCKER(halQueueGetStatus).stubs().will(returnValue(DRV_ERROR_NO_DEVICE)).then(returnValue(DRV_ERROR_NONE));
     // DoDequeueMbuf fail
     entity.DoClientDequeue();
     EXPECT_EQ(entity.asyncDataState_, AsyncDataState::FSM_ASYNC_DATA_INIT);
@@ -346,9 +336,7 @@ TEST_F(EntityUTest, ClientEntity_DoSendData)
     material.id = 1001U;
     ClientEntity entity(material, 0U);
     // asyncEnque fail
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(returnValue((int)DRV_ERROR_NO_DEVICE));
+    MOCKER(halMbufGetPrivInfo).stubs().will(returnValue((int)DRV_ERROR_NO_DEVICE));
     EXPECT_EQ(entity.DoSendData(nullptr), FsmStatus::FSM_KEEP_STATE);
     int32_t tryTimes = 0;
     while (tryTimes++ < 3) {
@@ -358,11 +346,11 @@ TEST_F(EntityUTest, ClientEntity_DoSendData)
         sleep(1);
     }
     EXPECT_TRUE(tryTimes < 3);
- 
+
     // enquing
     entity.asyncDataState_ = AsyncDataState::FSM_ASYNC_DATA_WAIT;
     EXPECT_EQ(entity.DoSendData(nullptr), FsmStatus::FSM_KEEP_STATE);
- 
+
     // asyncEnque success
     entity.asyncDataState_ = AsyncDataState::FSM_ASYNC_DATA_SENT;
     EXPECT_EQ(entity.DoSendData(nullptr), FsmStatus::FSM_SUCCESS);
@@ -446,8 +434,8 @@ TEST_F(EntityUTest, ChannelEntity_AllocMbuf_fail)
 {
     bqs::BqsMsprofManager::GetInstance().isRun_ = true;
     MOCKER(halMbufAlloc).stubs().will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)));
-    Mbuf *stubMbuf = nullptr;
-    void *stubPtr = nullptr;
+    Mbuf* stubMbuf = nullptr;
+    void* stubPtr = nullptr;
     dgw::EntityMaterial material = {};
     material.eType = dgw::EntityType::ENTITY_TAG;
     ChannelEntity entity(material, 0U);
@@ -499,7 +487,7 @@ TEST_F(EntityUTest, GroupEntity_ResumeSubscribe_success)
     dgw::SimpleEntity entity3(material, 0U);
     EXPECT_EQ(group.ResumeSubscribe(entity3), FsmStatus::FSM_SUCCESS);
 
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     auto dataObj = DataObjManager::Instance().CreateDataObj(entity1.get(), mbuf);
     dataObj->AddRecvEntity(&entity3);
     entity3.AddDataObjToRecvList(dataObj);
@@ -523,7 +511,7 @@ TEST_F(EntityUTest, GroupEntity_SelectSrcEntity_success)
     group.groupInfo_.lastTransId = 1U;
     FsmStatus status = FsmStatus::FSM_FAILED;
     EXPECT_EQ(group.SelectSrcEntity(status), nullptr);
-    Mbuf *stubMbuf = reinterpret_cast<Mbuf*>(1);
+    Mbuf* stubMbuf = reinterpret_cast<Mbuf*>(1);
 
     material.eType = dgw::EntityType::ENTITY_QUEUE;
     material.id = 0U;
@@ -580,7 +568,7 @@ TEST_F(EntityUTest, ChannelEntity_Init_Fail)
 
     RequestInfo info = {};
     info.mbuf = (Mbuf*)1;
-    RequestInfo *invalidPtr = nullptr;
+    RequestInfo* invalidPtr = nullptr;
     MOCKER_CPP(&CommChannelQueue<RequestInfo>::IsEmpty).stubs().will(returnValue(false));
     MOCKER_CPP(&CommChannelQueue<RequestInfo>::Front).stubs().will(returnValue(&info)).then(returnValue(invalidPtr));
     MOCKER_CPP(&CommChannelQueue<RequestInfo>::Pop).stubs().will(returnValue(0));
@@ -597,7 +585,7 @@ TEST_F(EntityUTest, ChannelEntity_CreateAndSubscribeCompletedQueue_Fail)
     material.channel = &channel;
     ChannelEntity entity(material, 0U);
     // GetSubscriber fail
-    auto &subscribers = bqs::Subscribers::GetInstance();
+    auto& subscribers = bqs::Subscribers::GetInstance();
     subscribers.subscribeManagers_.clear();
     EXPECT_EQ(entity.CreateAndSubscribeCompletedQueue(), FsmStatus::FSM_FAILED);
 
@@ -640,7 +628,7 @@ TEST_F(EntityUTest, ChannelEntity_Probe_Fail_Cache)
     uint64_t hcclHandle = 100UL;
     HcclComm hcclComm = &hcclHandle;
     dgw::CommChannel channel(hcclComm, 1U, 1U, 0U, 1U, 1U, 1U);
-   dgw::EntityMaterial material = {};
+    dgw::EntityMaterial material = {};
     material.eType = dgw::EntityType::ENTITY_TAG;
     material.channel = &channel;
     ChannelEntity entity(material, 0U);
@@ -665,7 +653,7 @@ TEST_F(EntityUTest, ChannelEntity_ReceiveDataForLink_Fail)
     material.eType = dgw::EntityType::ENTITY_TAG;
     material.channel = &channel;
     ChannelEntity entity(material, 0U);
-    auto &subscribers = bqs::Subscribers::GetInstance();
+    auto& subscribers = bqs::Subscribers::GetInstance();
     subscribers.InitSubscribeManagers(std::set<uint32_t>{0U}, 0U);
     EXPECT_EQ(entity.Init(FsmState::FSM_IDLE_STATE, EntityDirection::DIRECTION_SEND), FsmStatus::FSM_SUCCESS);
 
@@ -691,19 +679,21 @@ TEST_F(EntityUTest, ChannelEntity_ReceiveMbufData_Fail)
     material.eType = dgw::EntityType::ENTITY_TAG;
     material.channel = &channel;
     ChannelEntity entity(material, 0U);
-    auto &subscribers = bqs::Subscribers::GetInstance();
+    auto& subscribers = bqs::Subscribers::GetInstance();
     subscribers.InitSubscribeManagers(std::set<uint32_t>{0U}, 0U);
     EXPECT_EQ(entity.Init(FsmState::FSM_IDLE_STATE, EntityDirection::DIRECTION_SEND), FsmStatus::FSM_SUCCESS);
 
     uint32_t placeHolder = 0U;
-    void *ptr = (void*)&placeHolder;
+    void* ptr = (void*)&placeHolder;
     MOCKER(halMbufGetPrivInfo)
         .stubs()
         .with(mockcpp::any(), outBoundP(&ptr), mockcpp::any())
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NO_DEVICE)))
         .then(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
 
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(&ptr))
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&ptr))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     HcclMessage msg = {};
     // AllocMbuf fail
@@ -713,7 +703,7 @@ TEST_F(EntityUTest, ChannelEntity_ReceiveMbufData_Fail)
     MOCKER(HcclImrecv).stubs().will(returnValue(1)).then(returnValue(1)).then(returnValue(0));
     // HcclImrecv fail
     EXPECT_EQ(entity.ReceiveMbufData(msg), FsmStatus::FSM_FAILED);
-    entity.hcclData_.mbuf = (Mbuf*) ptr;
+    entity.hcclData_.mbuf = (Mbuf*)ptr;
     EXPECT_EQ(entity.ReceiveMbufHead(msg), FsmStatus::FSM_FAILED);
 
     // push uncompReqQueue_ to full
@@ -754,11 +744,7 @@ TEST_F(EntityUTest, ChannelEntity_SendDataWithHccl_Fail)
     ChannelEntity entity(material, 0U);
     entity.uncompReqQueue_.Init(1);
 
-    MOCKER(HcclIsend)
-        .stubs()
-        .will(returnValue(20))
-        .then(returnValue(1))
-        .then(returnValue(0));
+    MOCKER(HcclIsend).stubs().will(returnValue(20)).then(returnValue(1)).then(returnValue(0));
     // HcclIsend HCCL_E_AGAIN
     EXPECT_EQ(FsmStatus::FSM_DEST_FULL, entity.SendDataWithHccl(nullptr, 1, nullptr));
     // HcclIsend err
@@ -783,10 +769,8 @@ TEST_F(EntityUTest, ChannelEntity_SendMbufData_Fail)
     EXPECT_EQ(FsmStatus::FSM_DEST_FULL, entity.SendMbufData(nullptr));
 
     uint32_t placeHolder = 0U;
-    void *dataPtr = (void*)&placeHolder;
-    MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(), outBoundP(&dataPtr))
-        .will(returnValue((int)DRV_ERROR_NONE));
+    void* dataPtr = (void*)&placeHolder;
+    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(&dataPtr)).will(returnValue((int)DRV_ERROR_NONE));
     MOCKER(HcclIsend).stubs().will(returnValue(20));
     entity.uncompReqQueue_.Uninit();
     entity.uncompReqQueue_.Init(2);
@@ -855,7 +839,7 @@ TEST_F(EntityUTest, ChannelEntity_ProcessSendCompletion_Error)
 
     MbufTypeInfo typeInfo = {};
     typeInfo.type = static_cast<uint32_t>(MBUF_CREATE_BY_BUILD);
-    void *ptr = reinterpret_cast<void*>(&typeInfo);
+    void* ptr = reinterpret_cast<void*>(&typeInfo);
     MOCKER(halBuffGetInfo)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(ptr, sizeof(MbufTypeInfo)), mockcpp::any())
@@ -923,16 +907,22 @@ TEST_F(EntityUTest, EntityManager_RepeatedCreateEntity)
     // repeated create
     EXPECT_NE(entityManager.CreateEntity(material), nullptr);
 
-    EXPECT_EQ(FsmStatus::FSM_SUCCESS, entityManager.DeleteEntity(
-        material.queueType, material.resId, material.eType, material.id, material.direction));
+    EXPECT_EQ(
+        FsmStatus::FSM_SUCCESS,
+        entityManager.DeleteEntity(
+            material.queueType, material.resId, material.eType, material.id, material.direction));
 
     material.direction = EntityDirection::DIRECTION_RECV;
     EXPECT_NE(entityManager.CreateEntity(material), nullptr);
 
-    EXPECT_EQ(FsmStatus::FSM_SUCCESS, entityManager.DeleteEntity(
-        material.queueType, material.resId, material.eType, material.id, material.direction));
-    EXPECT_EQ(FsmStatus::FSM_SUCCESS, entityManager.DeleteEntity(
-        material.queueType, material.resId, material.eType, material.id, EntityDirection::DIRECTION_SEND));
+    EXPECT_EQ(
+        FsmStatus::FSM_SUCCESS,
+        entityManager.DeleteEntity(
+            material.queueType, material.resId, material.eType, material.id, material.direction));
+    EXPECT_EQ(
+        FsmStatus::FSM_SUCCESS,
+        entityManager.DeleteEntity(
+            material.queueType, material.resId, material.eType, material.id, EntityDirection::DIRECTION_SEND));
 }
 
 TEST_F(EntityUTest, EntityManager_CreateEntity_Fail_For_Init)
@@ -971,8 +961,8 @@ TEST_F(EntityUTest, SupplyEventForRecvRequest)
     auto entity = std::make_shared<dgw::ChannelEntity>(material, 0U);
     entityManager.srcCommChannels_.entities.emplace_back(entity);
     MOCKER_CPP(&ChannelEntity::CheckRecvReqEventContinue).stubs().will(returnValue(true));
-    EXPECT_EQ(FsmStatus::FSM_SUCCESS,
-        entityManager.SupplyEventForRecvRequest(static_cast<uint32_t>(EVENT_RECV_REQUEST_MSG)));
+    EXPECT_EQ(
+        FsmStatus::FSM_SUCCESS, entityManager.SupplyEventForRecvRequest(static_cast<uint32_t>(EVENT_RECV_REQUEST_MSG)));
 }
 
 TEST_F(EntityUTest, GroupEntity_SelectSrcEntity_Fail)
@@ -983,7 +973,7 @@ TEST_F(EntityUTest, GroupEntity_SelectSrcEntity_Fail)
     FsmStatus status = FsmStatus::FSM_SUCCESS;
     EXPECT_EQ(group.SelectSrcEntity(status), nullptr);
 
-    auto &entityManager = EntityManager::Instance(0U);
+    auto& entityManager = EntityManager::Instance(0U);
     uint32_t groupId = 0U;
     std::vector<EntityPtr> entitiesInGroup = {nullptr};
     EXPECT_EQ(entityManager.CreateGroup(groupId, entitiesInGroup), FsmStatus::FSM_SUCCESS);
@@ -1004,8 +994,9 @@ TEST_F(EntityUTest, GroupEntity_SelectSrcEntity_Fail)
     int32_t srcStatus = 1;
     MOCKER(halQueueGetStatus)
         .stubs()
-        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
-              outBoundP((void*)&srcStatus, sizeof(int32_t)))
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(),
+            outBoundP((void*)&srcStatus, sizeof(int32_t)))
         .will(returnValue(DRV_ERROR_NONE));
     group.groupInfo_.timeout = 1;
     EXPECT_NE(group.SelectSrcEntity(status), nullptr);
@@ -1024,7 +1015,7 @@ TEST_F(EntityUTest, GroupEntity_SelectDstEntities_Fail_For_UnknownStrategy)
     dgw::EntityMaterial material = {};
     material.eType = dgw::EntityType::ENTITY_GROUP;
     GroupEntity group(material, 0U);
-    Strategy *strategy = nullptr;
+    Strategy* strategy = nullptr;
     MOCKER_CPP(&StrategyManager::GetStrategy).stubs().will(returnValue(strategy));
     std::vector<Entity*> entityVec;
     group.SelectDstEntities(0U, entityVec, entityVec, entityVec);
@@ -1053,12 +1044,12 @@ TEST_F(EntityUTest, SimpleEntity_SendData_Full)
 
     material.id = 2U;
     SimpleEntity srcEntity(material, 0U);
-    Mbuf *mbuf = (Mbuf*)1;
+    Mbuf* mbuf = (Mbuf*)1;
     auto dataObj = DataObjManager::Instance().CreateDataObj(&srcEntity, mbuf);
     dataObj->AddRecvEntity(&dstEntity1);
     dataObj->AddRecvEntity(&dstEntity2);
 
-    Mbuf *copyMbuf = (Mbuf*)2;
+    Mbuf* copyMbuf = (Mbuf*)2;
     MOCKER(halMbufCopyRef)
         .stubs()
         .with(mockcpp::any(), outBoundP(&copyMbuf))
@@ -1094,7 +1085,7 @@ TEST_F(EntityUTest, SimpleEntity_PauseSubscribe_Fail)
     entity.subscribeStatus_ = SubscribeStatus::SUBSCRIBE_RESUME;
     EXPECT_EQ(entity.PauseSubscribe(entity), FsmStatus::FSM_FAILED);
 
-    auto &subscribers = bqs::Subscribers::GetInstance();
+    auto& subscribers = bqs::Subscribers::GetInstance();
     subscribers.InitSubscribeManagers(std::set<uint32_t>{0U}, 0U);
     entity.subscribeStatus_ = SubscribeStatus::SUBSCRIBE_PAUSE;
     EXPECT_EQ(entity.ResumeSubscribe(entity), FsmStatus::FSM_SUCCESS);
@@ -1111,7 +1102,7 @@ TEST_F(EntityUTest, SimpleEntity_ClearQueue_Success)
 
     material.id = 2U;
     SimpleEntity entity1(material, 0U);
-    void *ptr = (void*)1;
+    void* ptr = (void*)1;
     MOCKER(halQueueDeQueue)
         .stubs()
         .with(mockcpp::any(), mockcpp::any(), outBoundP(&ptr))

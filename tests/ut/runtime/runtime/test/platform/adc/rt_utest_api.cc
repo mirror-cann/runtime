@@ -61,36 +61,22 @@ using namespace cce::runtime;
 class ApiTest : public testing::Test {
 public:
 protected:
-    static void SetUpTestCase()
-    {
-        (void)rtSetDevice(0);
-    }
+    static void SetUpTestCase() { (void)rtSetDevice(0); }
 
-    static void TearDownTestCase()
-    {
-        rtDeviceReset(0);
-    }
+    static void TearDownTestCase() { rtDeviceReset(0); }
 
-    virtual void SetUp()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void SetUp() { GlobalMockObject::verify(); }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ApiTest, ADCProfiler_test_failed)
 {
     rtError_t error;
-    void *addr;
+    void* addr;
     uint32_t length = 256 * 1024;
-    Api *api = Api::Instance();
-    MOCKER_CPP_VIRTUAL(api, &Api::AdcProfiler)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    Api* api = Api::Instance();
+    MOCKER_CPP_VIRTUAL(api, &Api::AdcProfiler).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = rtStartADCProfiler(&addr, length);
     EXPECT_NE(error, ACL_RT_SUCCESS);
 }
@@ -98,12 +84,10 @@ TEST_F(ApiTest, ADCProfiler_test_failed)
 TEST_F(ApiTest, ADCProfiler_malloc_failed)
 {
     rtError_t error;
-    void *addr = nullptr;
+    void* addr = nullptr;
     uint32_t length = 256 * 1024;
 
-    MOCKER(rtMalloc)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER(rtMalloc).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtStartADCProfiler(&addr, length);
     EXPECT_EQ(error, ACL_ERROR_RT_MEMORY_ALLOCATION);
@@ -117,7 +101,7 @@ TEST_F(ApiTest, StopADCProfiler_test_failed)
 
 TEST_F(ApiTest, ipc_test_unsupport)
 {
-    int32_t pid[]={1};
+    int32_t pid[] = {1};
     int num = 1;
     rtError_t error = rtSetIpcNotifyPid("test", pid, num);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

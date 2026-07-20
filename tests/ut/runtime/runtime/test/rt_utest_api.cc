@@ -15,51 +15,49 @@
 #include "data/elf.h"
 #include "base_info.hpp"
 
-class ApiTest7 : public testing::Test
-{
+class ApiTest7 : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
-class ApiTestNew : public testing::Test
-{
+class ApiTestNew : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        flag = ((Runtime *)Runtime::Instance())->GetDisableThread();
-        ((Runtime *)Runtime::Instance())->SetDisableThread(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        flag = ((Runtime*)Runtime::Instance())->GetDisableThread();
+        ((Runtime*)Runtime::Instance())->SetDisableThread(false);
         originType_ = Runtime::Instance()->GetChipType();
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
 
         int64_t hardwareVersion = CHIP_CLOUD << 8;
-        driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL(driver_,
-            &Driver::GetDevInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+        driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL(driver_, &Driver::GetDevInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        MOCKER(halGetSocVersion).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(DRV_ERROR_NOT_SUPPORT));
-        MOCKER(halGetDeviceInfo).stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion))).will(returnValue(RT_ERROR_NONE));
+        MOCKER(halGetSocVersion)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any())
+            .will(returnValue(DRV_ERROR_NOT_SUPPORT));
+        MOCKER(halGetDeviceInfo)
+            .stubs()
+            .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
+            .will(returnValue(RT_ERROR_NONE));
 
         (void)rtSetDevice(0);
         (void)rtSetTSDevice(1);
@@ -67,8 +65,7 @@ protected:
         rtError_t error1 = rtStreamCreate(&stream_, 0);
         rtError_t error2 = rtEventCreate(&event_);
 
-        for (uint32_t i = 0; i < sizeof(binary_)/sizeof(uint32_t); i++)
-        {
+        for (uint32_t i = 0; i < sizeof(binary_) / sizeof(uint32_t); i++) {
             binary_[i] = i;
         }
 
@@ -81,7 +78,7 @@ protected:
 
         rtError_t error4 = rtFunctionRegister(binHandle_, &function_, "foo", NULL, 1);
 
-        std::cout<<"api test start:"<<error1<<", "<<error2<<", "<<error3<<", "<<error4<<std::endl;
+        std::cout << "api test start:" << error1 << ", " << error2 << ", " << error3 << ", " << error4 << std::endl;
     }
 
     static void TearDownTestCase()
@@ -89,63 +86,57 @@ protected:
         rtError_t error1 = rtStreamDestroy(stream_);
         rtError_t error2 = rtEventDestroy(event_);
         rtError_t error3 = rtDevBinaryUnRegister(binHandle_);
-        std::cout<<"api test start end : "<<error1<<", "<<error2<<", "<<error3<<std::endl;
+        std::cout << "api test start end : " << error1 << ", " << error2 << ", " << error3 << std::endl;
         GlobalMockObject::verify();
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         (void)rtSetSocVersion("");
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetIsUserSetSocVersion(false);
         rtInstance->SetChipType(originType_);
         GlobalContainer::SetRtChipType(originType_);
-        ((Runtime *)Runtime::Instance())->SetDisableThread(flag);
+        ((Runtime*)Runtime::Instance())->SetDisableThread(flag);
     }
 
     virtual void SetUp()
     {
-        
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
 public:
     static rtStream_t stream_;
-    static rtEvent_t  event_;
-    static void      *binHandle_;
-    static char       function_;
-    static uint32_t   binary_[32];
-    static Driver*    driver_;
+    static rtEvent_t event_;
+    static void* binHandle_;
+    static char function_;
+    static uint32_t binary_[32];
+    static Driver* driver_;
     static rtChipType_t originType_;
     static bool flag;
 };
 
-
 rtStream_t ApiTestNew::stream_ = NULL;
 rtEvent_t ApiTestNew::event_ = NULL;
 void* ApiTestNew::binHandle_ = NULL;
-char  ApiTestNew::function_ = 'a';
+char ApiTestNew::function_ = 'a';
 uint32_t ApiTestNew::binary_[32] = {};
 Driver* ApiTestNew::driver_ = NULL;
 rtChipType_t ApiTestNew::originType_ = CHIP_CLOUD;
 bool ApiTestNew::flag = false;
 
 // rts-event-notify-ut-begin
-class ApiTestOfEventNotify : public testing::Test
-{
+class ApiTestOfEventNotify : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend910B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_CLOUD);
         GlobalContainer::SetRtChipType(CHIP_CLOUD);
         (void)rtSetDevice(0);
@@ -156,23 +147,20 @@ protected:
     {
         ut::ResetPrimaryDeviceIfActiveWithDeviceDown();
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
     virtual void SetUp()
     {
-        RawDevice *rawDevice = new RawDevice(0);
+        RawDevice* rawDevice = new RawDevice(0);
         MOCKER_CPP_VIRTUAL(rawDevice, &RawDevice::SetTschVersionForCmodel).stubs().will(ignoreReturnValue());
         delete rawDevice;
     }
 
-    virtual void TearDown()
-    {
-         GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
-static void MakeDir(const char * const dirName)
+static void MakeDir(const char* const dirName)
 {
     const std::string cmd = "mkdir -p ";
     const std::string name = dirName;
@@ -181,28 +169,29 @@ static void MakeDir(const char * const dirName)
     system(full_command.c_str());
 }
 
-static void CreateACorrectIniFile(const char * const filename)
+static void CreateACorrectIniFile(const char* const filename)
 {
     std::ofstream myfile;
     myfile.open(filename);
 
-    myfile<<"[Global Config]\n";
-    myfile<<"IsStreamSyncEschedMode=1\n";
+    myfile << "[Global Config]\n";
+    myfile << "IsStreamSyncEschedMode=1\n";
 
     myfile.close();
 }
 
-rtError_t rtStarsGetEventId(int deviceId, uint32_t count, rtKpEventIdType_t *eventId);
-rtError_t rtStarsReleaseEventId(int deviceId, uint32_t count, rtKpEventIdType_t *eventId);
+rtError_t rtStarsGetEventId(int deviceId, uint32_t count, rtKpEventIdType_t* eventId);
+rtError_t rtStarsReleaseEventId(int deviceId, uint32_t count, rtKpEventIdType_t* eventId);
 bool g_taskAbortCallBack = false;
-static int32_t StubTaskAbortCallBack(uint32_t devId, rtTaskAbortStage_t stage, uint32_t timeout, void *args)
+static int32_t StubTaskAbortCallBack(uint32_t devId, rtTaskAbortStage_t stage, uint32_t timeout, void* args)
 {
     g_taskAbortCallBack = true;
     return 0;
 }
 
-rtError_t MemcpyAsyncCheckKindAndLocationStub(rtMemcpyKind_t *kind, rtMemoryType_t &srcLocationType,
-    rtMemoryType_t &dstLocationType, const void *const src, void *const dst)
+rtError_t MemcpyAsyncCheckKindAndLocationStub(
+    rtMemcpyKind_t* kind, rtMemoryType_t& srcLocationType, rtMemoryType_t& dstLocationType, const void* const src,
+    void* const dst)
 {
     srcLocationType = RT_MEMORY_TYPE_USER;
     dstLocationType = RT_MEMORY_TYPE_DEVICE;
@@ -242,19 +231,17 @@ TEST_F(ApiTest, event_destroysync_null)
 TEST_F(ApiTest, event_destroysync_notsupport)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     bool oldFlag = rtInstance->GetDisableThread();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     rtInstance->SetDisableThread(true);
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(false));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(false));
 
     error = rtEventDestroySync(NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -270,21 +257,19 @@ TEST_F(ApiTest, rtEventDestroySync_test2)
     rtEvent_t event;
 
     error = rtEventCreate(&event);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
 
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
 
     error = rtEventDestroySync(event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -299,7 +284,7 @@ TEST_F(ApiTest, rtEventDestroySync_test4)
     rtEvent_t event;
 
     error = rtEventCreate(&event);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
@@ -309,20 +294,18 @@ TEST_F(ApiTest, rtEventDestroySync_test4)
 
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
     MOCKER_CPP(&Event::GetFailureStatus).stubs().will(returnValue(RT_ERROR_END_OF_SEQUENCE));
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     bool oldFlag = rtInstance->GetDisableThread();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     rtInstance->SetDisableThread(true);
 
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(false));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(false));
 
     error = rtEventDestroySync(event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -363,7 +346,7 @@ TEST_F(ApiTest, QueryFunctionRegistered)
 TEST_F(ApiTest, device_binary_register_null)
 {
     rtError_t error;
-    void *handle;
+    void* handle;
 
     error = rtDevBinaryRegister(NULL, &handle);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -379,7 +362,6 @@ TEST_F(ApiTest, function_register_null)
     error = rtFunctionRegister(NULL, NULL, NULL, NULL, 0);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
-
 
 TEST_F(ApiTest, get_device_count)
 {
@@ -402,7 +384,7 @@ TEST_F(ApiTest, get_device_id)
     error = rtGetDeviceCount(&count);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     MOCKER_CPP_VIRTUAL(api, &Api::GetDeviceIDs).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtGetDeviceIDs(device_arr, 2);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -476,14 +458,12 @@ TEST_F(ApiTest, device_mem_null_memfree)
 {
     rtError_t error;
     rtContext_t ctx = nullptr;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP(&ApiImpl::CurrentContext)
-        .stubs()
-        .will(invoke(CurrentContextStub));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(invoke(CurrentContextStub));
 
     error = rtFree(devPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -493,14 +473,12 @@ TEST_F(ApiTest, device_mem_null_rtHostFree)
 {
     rtError_t error;
     rtContext_t ctx = nullptr;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMallocHost(&devPtr, 60, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP(&ApiImpl::CurrentContext)
-        .stubs()
-        .will(invoke(CurrentContextStub));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(invoke(CurrentContextStub));
 
     error = rtFreeHost(devPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -510,14 +488,12 @@ TEST_F(ApiTest, device_mem_null_DvppFree)
 {
     rtError_t error;
     rtContext_t ctx = nullptr;
-    void * devPtr;
+    void* devPtr;
 
     error = rtDvppMalloc(&devPtr, 60, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP(&ApiImpl::CurrentContext)
-        .stubs()
-        .will(invoke(CurrentContextStub));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(invoke(CurrentContextStub));
 
     error = rtDvppFree(devPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -527,14 +503,12 @@ TEST_F(ApiTest, device_mem_null_ManageMemFree)
 {
     rtError_t error;
     rtContext_t ctx = nullptr;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMemAllocManaged(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP(&ApiImpl::CurrentContext)
-        .stubs()
-        .will(invoke(CurrentContextStub));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(invoke(CurrentContextStub));
 
     error = rtMemFreeManaged(devPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -543,7 +517,7 @@ TEST_F(ApiTest, device_mem_null_ManageMemFree)
 TEST_F(ApiTest, device_mem_alloc_free)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -554,17 +528,15 @@ TEST_F(ApiTest, device_mem_alloc_free)
 
 TEST_F(ApiTest, rt_malloc_1G_huge_page_1)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_910_B_93);
     GlobalContainer::SetRtChipType(CHIP_910_B_93);
     rtError_t error;
-    void * devPtr;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* devPtr;
+    NpuDriver* rawDrv = new NpuDriver();
 
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-                        .stubs()
-                        .will(returnValue(1));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(1));
     // 芯片不支持
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -581,17 +553,15 @@ TEST_F(ApiTest, rt_malloc_1G_huge_page_1)
 
 TEST_F(ApiTest, rt_malloc_1G_huge_page_offline_2)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_910_B_93);
     GlobalContainer::SetRtChipType(CHIP_910_B_93);
     rtError_t error;
-    void * devPtr;
-    NpuDriver * rawDrv = new NpuDriver();
+    void* devPtr;
+    NpuDriver* rawDrv = new NpuDriver();
 
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode)
-                        .stubs()
-                        .will(returnValue(0U));
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetRunMode).stubs().will(returnValue(0U));
 
     // 芯片不支持
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -610,7 +580,7 @@ TEST_F(ApiTest, rt_malloc_1G_huge_page_offline_2)
 TEST_F(ApiTest, rtMallocPysical)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t ori_chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_910_B_93);
     GlobalContainer::SetRtChipType(CHIP_910_B_93);
@@ -635,7 +605,7 @@ TEST_F(ApiTest, rtMallocPysical)
 TEST_F(ApiTest, device_dvpp_mem_alloc_free)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtDvppMalloc(&devPtr, 60, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -647,7 +617,7 @@ TEST_F(ApiTest, device_dvpp_mem_alloc_free)
 TEST_F(ApiTest, device_dvpp_with_flag_mem_alloc_free)
 {
     uint32_t flag = RT_MEMORY_ATTRIBUTE_READONLY;
-    void * devPtr = nullptr;
+    void* devPtr = nullptr;
     rtError_t error = rtDvppMallocWithFlag(&devPtr, 60, flag, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -658,7 +628,7 @@ TEST_F(ApiTest, device_dvpp_with_flag_mem_alloc_free)
 TEST_F(ApiTest, device_dvpp_with_flag_hbm_mem_alloc_free)
 {
     uint32_t flag = RT_MEMORY_ATTRIBUTE_READONLY | RT_MEMORY_HBM | RT_MEMORY_POLICY_HUGE_PAGE_ONLY;
-    void * devPtr = nullptr;
+    void* devPtr = nullptr;
     rtError_t error = rtDvppMallocWithFlag(&devPtr, 60, flag, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -669,7 +639,7 @@ TEST_F(ApiTest, device_dvpp_with_flag_hbm_mem_alloc_free)
 TEST_F(ApiTest, device_dvpp_with_flag_ddr_mem_alloc_free)
 {
     uint32_t flag = RT_MEMORY_ATTRIBUTE_READONLY | RT_MEMORY_DDR | RT_MEMORY_POLICY_HUGE_PAGE_ONLY | 0x40000000;
-    void * devPtr = nullptr;
+    void* devPtr = nullptr;
     rtError_t error = rtDvppMallocWithFlag(&devPtr, 60, flag, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -679,11 +649,9 @@ TEST_F(ApiTest, device_dvpp_with_flag_ddr_mem_alloc_free)
 
 TEST_F(ApiTest, device_dvpp_with_flag_ddr_mem_alloc_failed)
 {
-    MOCKER(halMemAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halMemAlloc).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     uint32_t flag = RT_MEMORY_ATTRIBUTE_READONLY | RT_MEMORY_DDR | RT_MEMORY_POLICY_HUGE_PAGE_ONLY | 0x40000000;
-    void * devPtr = nullptr;
+    void* devPtr = nullptr;
     rtError_t error = rtDvppMallocWithFlag(&devPtr, 60, flag, DEFAULT_MODULEID);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -691,7 +659,7 @@ TEST_F(ApiTest, device_dvpp_with_flag_ddr_mem_alloc_failed)
 TEST_F(ApiTest, device_cache_mem_alloc_free)
 {
     rtError_t error;
-    void *devMem;
+    void* devMem;
     error = rtMallocCached((void**)&devMem, 100 * sizeof(uint32_t), 2, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -705,7 +673,7 @@ TEST_F(ApiTest, device_cache_mem_alloc_free)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     devMem = NULL;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_LHISI);
     GlobalContainer::SetRtChipType(CHIP_LHISI);
     error = rtMallocCached((void**)&devMem, 100 * sizeof(uint32_t), 2, DEFAULT_MODULEID);
@@ -714,11 +682,10 @@ TEST_F(ApiTest, device_cache_mem_alloc_free)
     error = rtFree(devMem);
 }
 
-
 TEST_F(ApiTest, device_cache_mem_alloc_free_02)
 {
     rtError_t error;
-    void *devMem;
+    void* devMem;
     error = rtMallocCached((void**)&devMem, 100 * sizeof(uint32_t), 2, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -735,8 +702,8 @@ TEST_F(ApiTest, device_cache_mem_alloc_free_02)
 TEST_F(ApiTest, rts_memset_sync)
 {
     rtError_t error;
-    void * devPtr;
-    rtMallocConfig_t * p = nullptr;
+    void* devPtr;
+    rtMallocConfig_t* p = nullptr;
     error = rtsMalloc(&devPtr, 60, RT_MEM_MALLOC_HUGE_FIRST, RT_MEM_ADVISE_NONE, p);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -750,7 +717,7 @@ TEST_F(ApiTest, rts_memset_sync)
 TEST_F(ApiTest, memset_sync)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -765,7 +732,7 @@ TEST_F(ApiTest, memset_sync)
 TEST_F(ApiTest, memset_sync_2)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -780,17 +747,17 @@ TEST_F(ApiTest, memset_sync_2)
 TEST_F(ApiTest, memset_async_host)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
 
     uint32_t memsize = 64;
     MOCKER(drvMemGetAttribute).stubs().will(invoke(drvMemGetAttribute_2));
 
-    error = rtMallocHost(&hostPtr, memsize+1, DEFAULT_MODULEID);
+    error = rtMallocHost(&hostPtr, memsize + 1, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtMemsetAsync(hostPtr, memsize+1, 0, memsize+1, stream_);
+    error = rtMemsetAsync(hostPtr, memsize + 1, 0, memsize + 1, stream_);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtFreeHost(hostPtr);
@@ -802,13 +769,13 @@ TEST_F(ApiTest, memset_async_host)
 TEST_F(ApiTest, memcpy_async_host_to_device_Not_support_user_mem)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
     uint64_t memsize = 64;
 
-    Context *curCtx = Runtime::Instance()->CurrentContext();
+    Context* curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    RawDevice *device = (RawDevice *)(curCtx->Device_());
+    RawDevice* device = (RawDevice*)(curCtx->Device_());
     EXPECT_EQ(device != nullptr, true);
     bool isSupportUserMem = device->IsSupportUserMem();
     device->isDrvSupportUserMem_ = false;
@@ -832,18 +799,15 @@ TEST_F(ApiTest, memcpy_async_host_to_device_Not_support_user_mem)
     device->isDrvSupportUserMem_ = isSupportUserMem;
 }
 
-
 TEST_F(ApiTest, dsa_update_coverage_apidecorator)
 {
     rtError_t error;
     uint32_t dsaStreamId = 0;
     uint32_t dsaTaskId = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::LaunchSqeUpdateTask)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::LaunchSqeUpdateTask).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.LaunchSqeUpdateTask(dsaStreamId, dsaTaskId, nullptr, 40U, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
@@ -852,18 +816,16 @@ TEST_F(ApiTest, dsa_update_coverage_apidecorator)
 
 TEST_F(ApiTest, memsetAsync_coverage)
 {
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
     ApiImpl impl;
     ApiDecorator api(&impl);
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::MemsetAsync)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::MemsetAsync).stubs().will(returnValue(RT_ERROR_NONE));
     rtError_t error = api.MemsetAsync(devPtr, 60, 0, 60, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-drvError_t drvDeviceGetChannelTypeByAddrStubD2d(void *src, void* dest, uint8_t *Channel_type, uint32_t *HCCS_id)
+drvError_t drvDeviceGetChannelTypeByAddrStubD2d(void* src, void* dest, uint8_t* Channel_type, uint32_t* HCCS_id)
 {
     *Channel_type = 0;
     *HCCS_id = 0;
@@ -878,8 +840,7 @@ TEST_F(ApiTest, dev_sync_null)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
-
+    (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
 
     error = rtDeviceSynchronize();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -889,7 +850,7 @@ TEST_F(ApiTest, dev_sync_null)
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
 TEST_F(ApiTest, dev_sync_ok)
@@ -914,7 +875,7 @@ TEST_F(ApiTest, dev_get_all)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
 
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -925,7 +886,7 @@ TEST_F(ApiTest, dev_get_all)
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
 TEST_F(ApiTest, device_exchange)
@@ -936,7 +897,7 @@ TEST_F(ApiTest, device_exchange)
     error = rtGetDevice(&devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
 
     error = rtSetDevice(1);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -944,13 +905,13 @@ TEST_F(ApiTest, device_exchange)
     error = rtDeviceReset(1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error =rtSetDevice(devId);
+    error = rtSetDevice(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtDeviceReset(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
 }
 
 TEST_F(ApiTest, dev_default_use)
@@ -982,7 +943,7 @@ TEST_F(ApiTest, dev_default_use)
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_EQ(defaultDevId, 0);
 
-    error =rtSetDevice(devId);
+    error = rtSetDevice(devId);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtDeviceReset(devId);
@@ -1042,7 +1003,7 @@ TEST_F(ApiTest, event_query_wait_status_failure)
     rtError_t error;
     rtContext_t ctx;
     rtEvent_t event;
-    Context *context = NULL;
+    Context* context = NULL;
     rtEventWaitStatus_t status = EVENT_STATUS_MAX;
 
     int32_t devId = 0;
@@ -1056,7 +1017,7 @@ TEST_F(ApiTest, event_query_wait_status_failure)
     error = rtEventCreate(&event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    context = (Context *)ctx;
+    context = (Context*)ctx;
     context->SetFailureError(RT_ERROR_END_OF_SEQUENCE);
     TsStreamFailureMode flag = context->GetCtxMode();
     context->SetCtxMode(STOP_ON_FAILURE);
@@ -1240,11 +1201,11 @@ TEST_F(ApiTest, context_sync)
 TEST_F(ApiTest, context_sync_failMode_stream_failed)
 {
     rtError_t error;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
 
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     error = rtStreamSetMode(stream, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
@@ -1253,23 +1214,21 @@ TEST_F(ApiTest, context_sync_failMode_stream_failed)
     stream = rt_ut::UnwrapOrNull<Stream>(stm);
 
     stream->failureMode_ = STOP_ON_FAILURE;
-    MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize)
-        .stubs()
-        .will(returnValue(RT_ERROR_TSFW_AICORE_TRAP_EXCEPTION));
+    MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_TSFW_AICORE_TRAP_EXCEPTION));
 
     error = rtStreamDestroy(stm);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiTest, context_sync_stream_failed)
 {
     rtError_t error;
-    Device *device = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+    Device* device = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
     int32_t version = device->GetTschVersion();
     device->SetTschVersion(TS_VERSION_SET_STREAM_MODE);
 
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     error = rtStreamSetMode(stream, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
@@ -1277,23 +1236,21 @@ TEST_F(ApiTest, context_sync_stream_failed)
     error = rtStreamCreate(&stm, 0);
     stream = rt_ut::UnwrapOrNull<Stream>(stm);
 
-    MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize)
-        .stubs()
-        .will(returnValue(RT_ERROR_TSFW_AICORE_TRAP_EXCEPTION));
+    MOCKER_CPP_VIRTUAL(stream, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_TSFW_AICORE_TRAP_EXCEPTION));
 
     error = rtStreamDestroy(stm);
     device->SetTschVersion(version);
-    ((Runtime *)Runtime::Instance())->DeviceRelease(device);
+    ((Runtime*)Runtime::Instance())->DeviceRelease(device);
 }
 
 TEST_F(ApiTest, device_memory_ddr)
 {
     rtError_t error;
     uint32_t info = RT_RUN_MODE_ONLINE;
-    void *devPtr = (void *)0x100;
-    void *devPtr1 = (void *)0x200;
-    void *devPtr2 = (void *)0x300;
-    void *devPtr3 = (void *)0x400;
+    void* devPtr = (void*)0x100;
+    void* devPtr1 = (void*)0x200;
+    void* devPtr2 = (void*)0x300;
+    void* devPtr3 = (void*)0x400;
     int64_t devInfo;
 
     MOCKER(drvGetPlatformInfo).stubs().with(outBoundP(&info, sizeof(info))).will(returnValue(DRV_ERROR_NONE));
@@ -1301,13 +1258,13 @@ TEST_F(ApiTest, device_memory_ddr)
     error = rtMalloc(&devPtr, 64, RT_MEMORY_DDR, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtMalloc(&devPtr1, 2*1024*1024, RT_MEMORY_DDR, DEFAULT_MODULEID);
+    error = rtMalloc(&devPtr1, 2 * 1024 * 1024, RT_MEMORY_DDR, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMalloc(&devPtr2, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtMalloc(&devPtr3, 2*1024*1024, RT_MEMORY_HBM, DEFAULT_MODULEID);
+    error = rtMalloc(&devPtr3, 2 * 1024 * 1024, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtFree(devPtr);
@@ -1321,20 +1278,19 @@ TEST_F(ApiTest, device_memory_ddr)
 
     error = rtFree(devPtr3);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
-
-void taskFailCallbackByMode(rtExceptionInfo_t *exceptionInfo)
+void taskFailCallbackByMode(rtExceptionInfo_t* exceptionInfo)
 {
-    printf("taskFailCallbackByMode, taskid=[%d],streamid=[%d],tid=[%d],deviceid=[%d],retcode=[%d]",
-	exceptionInfo->taskid,exceptionInfo->streamid,exceptionInfo->tid,exceptionInfo->deviceid, exceptionInfo->retcode);
+    printf(
+        "taskFailCallbackByMode, taskid=[%d],streamid=[%d],tid=[%d],deviceid=[%d],retcode=[%d]", exceptionInfo->taskid,
+        exceptionInfo->streamid, exceptionInfo->tid, exceptionInfo->deviceid, exceptionInfo->retcode);
 }
 
 TEST_F(ApiTest, reg_taskFailByModule_callback)
 {
     rtError_t error;
-	char *regName ="lltruntime";
+    char* regName = "lltruntime";
     error = rtRegTaskFailCallbackByModule(regName, taskFailCallbackByMode);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -1348,10 +1304,10 @@ TEST_F(ApiTest, reg_taskFailByModule_callback)
 TEST_F(ApiTest, reg_taskFailByModule_callback_1)
 {
     rtError_t error;
-	char *regName ="struntime";
+    char* regName = "struntime";
     error = rtRegTaskFailCallbackByModule(regName, taskFailCallbackByMode);
     EXPECT_EQ(error, RT_ERROR_NONE);
-	char *regName1 ="struntime_1";
+    char* regName1 = "struntime_1";
     error = rtRegTaskFailCallbackByModule(regName1, taskFailCallbackByMode);
 
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1368,10 +1324,8 @@ TEST_F(ApiTest, get_dev_info)
     error = rtGetDeviceInfo(-1, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION, &hardwareVersion);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    NpuDriver * rawDrv = new NpuDriver();
-    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetDeviceCount)
-                    .stubs()
-                    .will(returnValue(RT_ERROR_INVALID_VALUE));
+    NpuDriver* rawDrv = new NpuDriver();
+    MOCKER_CPP_VIRTUAL(rawDrv, &NpuDriver::GetDeviceCount).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtGetDeviceInfo(devid, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION, &hardwareVersion);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1394,9 +1348,7 @@ TEST_F(ApiTest, get_dev_info_err_1910)
     rtError_t error;
     int32_t devid = 0;
     int64_t hardwareVersion = 0;
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
     error = rtGetDeviceInfo(devid, RT_MODULE_TYPE_VECTOR_CORE, INFO_TYPE_VERSION, &hardwareVersion);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1408,7 +1360,7 @@ TEST_F(ApiTest, advise_mem)
 
     uint64_t size = 128;
     uint32_t advise = 1;
-    void *ptr = NULL;
+    void* ptr = NULL;
 
     error = rtMemAllocManaged(&ptr, size, 0, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1421,7 +1373,7 @@ TEST_F(ApiTest, prefetch_mem)
     rtError_t error;
     uint64_t size = 128;
     int32_t device = 0;
-    void *ptr = NULL;
+    void* ptr = NULL;
 
     error = rtMemAllocManaged(&ptr, size, 0, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1434,19 +1386,16 @@ TEST_F(ApiTest, prefetch_mem)
 
 extern "C" drvError_t halMemAdvise(DVdeviceptr ptr, size_t count, unsigned int advise, DVdevice device);
 
-void excptCallback(rtExceptionType type)
-{
-    printf("this is app exception callback, exception type=%d\n", type);
-}
+void excptCallback(rtExceptionType type) { printf("this is app exception callback, exception type=%d\n", type); }
 
 TEST_F(ApiTest, api_error_test)
 {
     rtError_t error;
-    Event *event = NULL;
+    Event* event = NULL;
     Event event1;
-    Context *ctx = NULL;
-    Stream *stream = NULL;
-    const char *name=NULL;
+    Context* ctx = NULL;
+    Stream* stream = NULL;
+    const char* name = NULL;
 
     error = rtCtxSetCurrent(ctx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1470,32 +1419,26 @@ TEST_F(ApiTest, api_error_test)
 TEST_F(ApiTest, api_error_test_coverage)
 {
     rtError_t error;
-    Event *event = NULL;
+    Event* event = NULL;
     Event event1;
-    Context *ctx = NULL;
-    Stream *stream = NULL;
-    const char *name = NULL;
+    Context* ctx = NULL;
+    Stream* stream = NULL;
+    const char* name = NULL;
 
     ApiImpl impl;
     ApiDecorator api(&impl);
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ContextSetCurrent)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ContextSetCurrent).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = api.ContextSetCurrent(ctx);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::NameStream)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::NameStream).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = api.NameStream(stream, name);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 
-    size_t *free;
-    size_t *total;
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::MemGetInfo)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    size_t* free;
+    size_t* total;
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::MemGetInfo).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = api.MemGetInfo(free, total);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
@@ -1503,14 +1446,14 @@ TEST_F(ApiTest, api_error_test_coverage)
 TEST_F(ApiTest, api_error_test_coverage_2)
 {
     rtError_t error;
-    Event *event = NULL;
+    Event* event = NULL;
     Event event1;
-    Context *ctx;
-    Stream *stream = NULL;
-    const char *name = NULL;
-    void *hostPtr;
-    void *devPtr;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Context* ctx;
+    Stream* stream = NULL;
+    const char* name = NULL;
+    void* hostPtr;
+    void* devPtr;
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
@@ -1518,9 +1461,7 @@ TEST_F(ApiTest, api_error_test_coverage_2)
     ApiImpl impl;
     ApiErrorDecorator api(&impl);
 
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ContextSetCurrent)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ContextSetCurrent).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = api.ContextSetCurrent(ctx);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
@@ -1528,23 +1469,23 @@ TEST_F(ApiTest, api_error_test_coverage_2)
 namespace cce {
 namespace runtime {
 extern bool g_isAddrFlatDevice;
-} // runtime
-} // cce
+} // namespace runtime
+} // namespace cce
 
 TEST_F(ApiTest, get_aiCoreCount_test_null)
 {
     rtError_t error;
-    uint32_t *aiCoreCnt;
-    aiCoreCnt = (uint32_t *)malloc(sizeof(uint32_t));
+    uint32_t* aiCoreCnt;
+    aiCoreCnt = (uint32_t*)malloc(sizeof(uint32_t));
 
-    error = rtGetAiCoreCount((uint32_t *)NULL);
+    error = rtGetAiCoreCount((uint32_t*)NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     free(aiCoreCnt);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool tmp = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = false;
-    error = rtGetAiCoreCount((uint32_t *)NULL);
+    error = rtGetAiCoreCount((uint32_t*)NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     rtInstance->isHaveDevice_ = tmp;
 }
@@ -1552,9 +1493,9 @@ TEST_F(ApiTest, get_aiCoreCount_test_null)
 TEST_F(ApiTest, get_aiCpuCount_test)
 {
     rtError_t error;
-    uint32_t *aiCpuCnt;
-    aiCpuCnt = (uint32_t *)malloc(sizeof(uint32_t));
-    Device *rawDevice = new RawDevice(0);
+    uint32_t* aiCpuCnt;
+    aiCpuCnt = (uint32_t*)malloc(sizeof(uint32_t));
+    Device* rawDevice = new RawDevice(0);
 
     error = rtGetAiCpuCount(aiCpuCnt);
 
@@ -1568,9 +1509,9 @@ TEST_F(ApiTest, get_aiCpuCount_test_null)
     rtError_t error;
     uint32_t aiCpuCnt;
 
-    error = rtGetAiCpuCount((uint32_t *)NULL);
+    error = rtGetAiCpuCount((uint32_t*)NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     bool flag = Runtime::Instance()->GetIsUserSetSocVersion();
     bool tmp = rtInstance->isHaveDevice_;
@@ -1584,9 +1525,9 @@ TEST_F(ApiTest7, get_aiCpuCount_ctx_null)
 {
     rtError_t error;
     uint32_t aiCpuCnt;
-    error = rtGetAiCpuCount((uint32_t *)NULL);
+    error = rtGetAiCpuCount((uint32_t*)NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtGetAiCpuCount(&aiCpuCnt);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -1594,11 +1535,13 @@ TEST_F(ApiTest7, get_aiCpuCount_ctx_null)
 TEST_F(ApiTest, RT_MEMCPY_ASYNC_TEST_1)
 {
     rtError_t error;
-    void *hostPtr = (void*)0x41;
-    void *devPtr = (void*)0x42;
-    uint64_t count = 64*1024*1024+1;
+    void* hostPtr = (void*)0x41;
+    void* devPtr = (void*)0x42;
+    uint64_t count = 64 * 1024 * 1024 + 1;
 
-    MOCKER_CPP_VIRTUAL((Api *)(((Runtime *)Runtime::Instance())->Api_()),&Api::MemcpyAsync).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL((Api*)(((Runtime*)Runtime::Instance())->Api_()), &Api::MemcpyAsync)
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtMemcpyAsync(devPtr, count, hostPtr, count, RT_MEMCPY_DEVICE_TO_DEVICE, NULL);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -1607,11 +1550,14 @@ TEST_F(ApiTest, RT_MEMCPY_ASYNC_TEST_1)
 TEST_F(ApiTest, RT_MEMCPY_ASYNC_2)
 {
     rtError_t error;
-    void *hostPtr = (void*)0x41;
-    void *devPtr = (void*)0x42;
-    uint64_t count = 64*1024*1024+1;
+    void* hostPtr = (void*)0x41;
+    void* devPtr = (void*)0x42;
+    uint64_t count = 64 * 1024 * 1024 + 1;
 
-    MOCKER_CPP_VIRTUAL((Api *)(((Runtime *)Runtime::Instance())->Api_()),&Api::MemcpyAsync).stubs().will(returnValue(RT_ERROR_NONE)).then(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL((Api*)(((Runtime*)Runtime::Instance())->Api_()), &Api::MemcpyAsync)
+        .stubs()
+        .will(returnValue(RT_ERROR_NONE))
+        .then(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtMemcpyAsync(devPtr, count, hostPtr, count, RT_MEMCPY_DEVICE_TO_DEVICE, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1620,8 +1566,8 @@ TEST_F(ApiTest, RT_MEMCPY_ASYNC_2)
 TEST_F(ApiTest, memcpyasync_withoutcheckkind_host_to_device_default)
 {
     rtError_t error;
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
 
     error = rtMalloc(&hostPtr, 64, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1646,9 +1592,9 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_Ex_API2)
     rtSmDesc_t desc;
     char_t* name = "opName";
 
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     MOCKER_CPP_VIRTUAL(api, &Api::CpuKernelLaunchExWithArgs).stubs().will(returnValue(RT_ERROR_NONE));
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtAicpuArgsEx_t argsInfo = {};
     argsInfo.args = args;
     argsInfo.argsSize = sizeof(args);
@@ -1662,8 +1608,7 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_Ex_API2)
     error = rtAicpuKernelLaunchExWithArgs(100, name, 1, NULL, &desc, stream, 2);
     EXPECT_NE(error, ACL_RT_SUCCESS);
 
-
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_LHISI);
     GlobalContainer::SetRtChipType(CHIP_LHISI);
     error = rtAicpuKernelLaunchExWithArgs(1, name, 1, NULL, &desc, stream, 2);
@@ -1675,18 +1620,17 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_TEST1)
     rtError_t error;
     ApiImpl impl;
     ApiDecorator api(&impl);
-    void * devPtr;
+    void* devPtr;
 
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtArgsEx_t argsInfo = {};
     argsInfo.args = args;
     argsInfo.argsSize = sizeof(args);
     std::string soName = "libDvpp.so";
     std::string kernelName = "DvppResize";
-    rtKernelLaunchNames_t name = {reinterpret_cast<const char *>(soName.c_str()),
-                                 reinterpret_cast<const char *>(kernelName.c_str()),
-                                 ""};
-    error = api.CpuKernelLaunch(&name, 1, &argsInfo, NULL,0);
+    rtKernelLaunchNames_t name = {
+        reinterpret_cast<const char*>(soName.c_str()), reinterpret_cast<const char*>(kernelName.c_str()), ""};
+    error = api.CpuKernelLaunch(&name, 1, &argsInfo, NULL, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -1695,19 +1639,18 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_TEST2)
     rtError_t error;
     ApiImpl impl;
     ApiDecorator api(&impl);
-    void * devPtr;
+    void* devPtr;
 
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtArgsEx_t argsInfo = {};
     argsInfo.args = args;
     argsInfo.argsSize = sizeof(args);
     std::string soName = "libDvpp.so";
     std::string kernelName = "DvppResize";
-    rtKernelLaunchNames_t name = {reinterpret_cast<const char *>(soName.c_str()),
-                                 reinterpret_cast<const char *>(kernelName.c_str()),
-                                 ""};
+    rtKernelLaunchNames_t name = {
+        reinterpret_cast<const char*>(soName.c_str()), reinterpret_cast<const char*>(kernelName.c_str()), ""};
     uint32_t flag = 0x20;
-    error = api.CpuKernelLaunch(&name, 1, &argsInfo, NULL,flag);
+    error = api.CpuKernelLaunch(&name, 1, &argsInfo, NULL, flag);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -1716,7 +1659,7 @@ TEST_F(ApiTest, model_api)
     rtError_t error;
     rtStream_t stream;
     rtStream_t execStream;
-    rtModel_t  model;
+    rtModel_t model;
     uint32_t taskid = 0;
     uint32_t streamId = 0;
 
@@ -1757,7 +1700,7 @@ TEST_F(ApiTest, model_api)
     error = rtStreamDestroy(execStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     MOCKER_CPP_VIRTUAL(api, &Api::ModelBindQueue).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = rtModelBindQueue(model, 0, RT_MODEL_INPUT_QUEUE);
@@ -1775,13 +1718,13 @@ TEST_F(ApiTest, model_api)
 
 TEST_F(ApiTest, model_api_MC62CM12A)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->GetChipType();
 
     rtError_t error;
     rtStream_t stream;
     rtStream_t execStream;
-    rtModel_t  model;
+    rtModel_t model;
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -1825,7 +1768,7 @@ TEST_F(ApiTest, rdma_send_test_1)
 {
     rtError_t error;
     int32_t devId = 0;
-    rtContext_t ctxA,current;
+    rtContext_t ctxA, current;
     rtStream_t stream;
 
     error = rtStreamCreate(&stream, 0);
@@ -1869,7 +1812,7 @@ TEST_F(ApiTest, rdma_send_test_2)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
 
     MOCKER(RdmaSendTaskInit).stubs().will(invoke(RdmaSendTaskInitStub));
@@ -1890,7 +1833,7 @@ TEST_F(ApiTest, rdma_send_test_3)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Engine *engine = new AsyncHwtsEngine(NULL);
+    Engine* engine = new AsyncHwtsEngine(NULL);
     MOCKER_CPP_VIRTUAL(engine, &Engine::SubmitTaskNormal).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtRDMASend(1, 1, stream);
@@ -1906,7 +1849,7 @@ TEST_F(ApiTest, rdma_db_send_test_1)
 {
     rtError_t error;
     int32_t devId = 0;
-    rtContext_t ctxA,current;
+    rtContext_t ctxA, current;
     rtStream_t stream;
 
     error = rtStreamCreate(&stream, 0);
@@ -1951,7 +1894,7 @@ TEST_F(ApiTest, rdma_db_send_test_2)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
 
     MOCKER(RdmaDbSendTaskInit).stubs().will(invoke(RdmaDbSendTaskInitStub));
@@ -1972,7 +1915,7 @@ TEST_F(ApiTest, rdma_db_send_test_3)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Engine *engine = new AsyncHwtsEngine(NULL);
+    Engine* engine = new AsyncHwtsEngine(NULL);
     MOCKER_CPP_VIRTUAL(engine, &Engine::SubmitTaskNormal).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtRDMADBSend(1, 1, stream);
@@ -1986,7 +1929,7 @@ TEST_F(ApiTest, rdma_db_send_test_3)
 
 TEST_F(ApiTest, notify_record)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
 
@@ -1994,11 +1937,11 @@ TEST_F(ApiTest, notify_record)
     rtError_t error;
     int32_t device_id = 0;
 
-    Context *ctx = NULL;
-    Api *api = Api::Instance();
+    Context* ctx = NULL;
+    Api* api = Api::Instance();
     error = api->ContextGetCurrent(&ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    RawDevice* device= (RawDevice*)ctx->Device_();
+    RawDevice* device = (RawDevice*)ctx->Device_();
     device->chipType = static_cast<rtChipType_t>(PLAT_GET_CHIP(static_cast<uint64_t>(0x100)));
 
     error = rtNotifyCreate(device_id, &notify);
@@ -2025,7 +1968,7 @@ TEST_F(ApiTest, notify_ipc1)
     rtError_t error;
     int32_t device_id = 0;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
@@ -2054,9 +1997,9 @@ TEST_F(ApiTest, notify_create_with_flag_not_support)
     rtNotify_t notify;
     rtError_t error;
     int32_t device_id = 0;
-    Context *ctx = NULL;
+    Context* ctx = NULL;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
 
     uint32_t flag = 0x1U;
@@ -2077,7 +2020,7 @@ TEST_F(ApiTest, notify_ipc_mini)
     rtError_t error;
     int32_t device_id = 0;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
 
@@ -2099,7 +2042,7 @@ TEST_F(ApiTest, rts_st_notify_with_flag_notsupport)
     rtNotify_t notify;
     rtError_t error;
     int32_t device_id = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     rtChipType_t type = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MINI);
@@ -2193,7 +2136,7 @@ TEST_F(ApiTest, ipc_set_notify_pid3)
 TEST_F(ApiTest, memset_rc)
 {
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
     uint64_t readcount = 3;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
@@ -2233,7 +2176,7 @@ TEST_F(ApiTest, model_get_taskId_fail)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::ModelGetTaskId).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtModelGetTaskId(model, &taskid, &streamId);
@@ -2255,7 +2198,7 @@ TEST_F(ApiTest, model_switch_stream)
     rtStream_t exeStream;
     int64_t dev_val;
 
-    int64_t *devMem = &dev_val;
+    int64_t* devMem = &dev_val;
 
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2299,7 +2242,6 @@ TEST_F(ApiTest, model_switch_stream)
 
     error = rtStreamDestroy(exeStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(ApiTest, model_switch_stream_ex)
@@ -2312,8 +2254,8 @@ TEST_F(ApiTest, model_switch_stream_ex)
     rtStream_t exeStream;
     int64_t dev_val, dev_val_target;
 
-    int64_t *devMem = &dev_val;
-    int64_t *devMem_target = &dev_val_target;
+    int64_t* devMem = &dev_val;
+    int64_t* devMem_target = &dev_val_target;
 
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2334,7 +2276,7 @@ TEST_F(ApiTest, model_switch_stream_ex)
     error = rtModelBindStream(model, streamB, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtStreamSwitchEx((void *)devMem,  RT_EQUAL, (void *)devMem_target, streamB, streamA, RT_SWITCH_INT64);
+    error = rtStreamSwitchEx((void*)devMem, RT_EQUAL, (void*)devMem_target, streamB, streamA, RT_SWITCH_INT64);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelExecute(model, exeStream, 0);
@@ -2374,10 +2316,10 @@ TEST_F(ApiTest, model_switch_stream_ex_impl)
     rtStream_t exeStream;
     int64_t dev_val, dev_val_target;
 
-    int64_t *devMem = &dev_val;
-    int64_t *devMem_target = &dev_val_target;
+    int64_t* devMem = &dev_val;
+    int64_t* devMem_target = &dev_val_target;
 
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
     error = rtStreamCreate(&streamA, 0);
@@ -2399,11 +2341,12 @@ TEST_F(ApiTest, model_switch_stream_ex_impl)
     error = rtModelBindStream(model, streamB, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtStreamSwitchEx((void *)devMem,  RT_EQUAL, (void *)devMem_target, streamB, streamA, RT_SWITCH_INT64);
+    error = rtStreamSwitchEx((void*)devMem, RT_EQUAL, (void*)devMem_target, streamB, streamA, RT_SWITCH_INT64);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = api.StreamSwitchEx((void *)devMem, RT_EQUAL, (void *)devMem_target,
-        rt_ut::UnwrapOrNull<Stream>(streamB), rt_ut::UnwrapOrNull<Stream>(streamA), RT_SWITCH_INT64);
+    error = api.StreamSwitchEx(
+        (void*)devMem, RT_EQUAL, (void*)devMem_target, rt_ut::UnwrapOrNull<Stream>(streamB),
+        rt_ut::UnwrapOrNull<Stream>(streamA), RT_SWITCH_INT64);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelUnbindStream(model, streamA);
@@ -2436,12 +2379,12 @@ TEST_F(ApiTest, model_switch_stream_ex_log)
     rtStream_t exeStream;
     int64_t dev_val, dev_val_target;
 
-    int64_t *devMem = &dev_val;
-    int64_t *devMem_target = &dev_val_target;
+    int64_t* devMem = &dev_val;
+    int64_t* devMem_target = &dev_val_target;
 
-    Api * oldApi_ = const_cast<Api *>(((Runtime *)Runtime::Instance())->api_);
-    ApiDecorator *apiDeco_ = new ApiDecorator(oldApi_);
-    ApiErrorDecorator *apiErrorDeco_ = new ApiErrorDecorator(oldApi_);
+    Api* oldApi_ = const_cast<Api*>(((Runtime*)Runtime::Instance())->api_);
+    ApiDecorator* apiDeco_ = new ApiDecorator(oldApi_);
+    ApiErrorDecorator* apiErrorDeco_ = new ApiErrorDecorator(oldApi_);
 
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2462,11 +2405,12 @@ TEST_F(ApiTest, model_switch_stream_ex_log)
     error = rtModelBindStream(model, streamB, 1);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtStreamSwitchEx((void *)devMem,  RT_EQUAL, (void *)devMem_target, streamB, streamA, RT_SWITCH_INT64);
+    error = rtStreamSwitchEx((void*)devMem, RT_EQUAL, (void*)devMem_target, streamB, streamA, RT_SWITCH_INT64);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = apiErrorDeco_->StreamSwitchEx((void *)devMem, RT_EQUAL, (void *)devMem_target,
-        rt_ut::UnwrapOrNull<Stream>(streamB), rt_ut::UnwrapOrNull<Stream>(streamA), RT_SWITCH_INT64);
+    error = apiErrorDeco_->StreamSwitchEx(
+        (void*)devMem, RT_EQUAL, (void*)devMem_target, rt_ut::UnwrapOrNull<Stream>(streamB),
+        rt_ut::UnwrapOrNull<Stream>(streamA), RT_SWITCH_INT64);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtModelUnbindStream(model, streamA);
@@ -2501,7 +2445,7 @@ TEST_F(ApiTest, model_active_stream)
     rtStream_t exeStream;
     uint32_t dev_val;
 
-    uint32_t *devMem = &dev_val;
+    uint32_t* devMem = &dev_val;
 
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2561,12 +2505,10 @@ TEST_F(ApiTest, model_active_stream_error)
     rtStream_t exeStream;
     uint32_t dev_val;
 
-    uint32_t *devMem = &dev_val;
-    ApiImpl *apiImpl = new ApiImpl();
+    uint32_t* devMem = &dev_val;
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::StreamActive)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::StreamActive).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = rtStreamCreate(&streamA, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2623,15 +2565,13 @@ TEST_F(ApiTest, model_active_stream_error)
 
 TEST_F(ApiTest, dev_alloc_mem_online_exception1)
 {
-    void * dptr = NULL;
+    void* dptr = NULL;
     rtError_t error;
 
-    MOCKER(halGetDeviceInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halGetDeviceInfo).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
-    NpuDriver * rawDrv = new NpuDriver();
-    error = rawDrv->DevMemAllocOnline(&dptr, 2*1024*1024, RT_MEMORY_HBM, 0);
+    NpuDriver* rawDrv = new NpuDriver();
+    error = rawDrv->DevMemAllocOnline(&dptr, 2 * 1024 * 1024, RT_MEMORY_HBM, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     delete rawDrv;
@@ -2639,29 +2579,25 @@ TEST_F(ApiTest, dev_alloc_mem_online_exception1)
 
 TEST_F(ApiTest, dev_alloc_mem_online_exception2)
 {
-    void * dptr = NULL;
+    void* dptr = NULL;
     rtError_t error;
 
-    MOCKER(halMemAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halMemAlloc).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
-    NpuDriver * rawDrv = new NpuDriver();
-    error = rawDrv->DevMemAllocOnline(&dptr, 2*1024*1024, RT_MEMORY_HBM, 0);
+    NpuDriver* rawDrv = new NpuDriver();
+    error = rawDrv->DevMemAllocOnline(&dptr, 2 * 1024 * 1024, RT_MEMORY_HBM, 0);
     EXPECT_EQ(error, RT_ERROR_DRV_INVALID_DEVICE);
     delete rawDrv;
 }
 
 TEST_F(ApiTest, dev_alloc_mem_online_exception3)
 {
-    void * dptr = NULL;
+    void* dptr = NULL;
     rtError_t error;
 
-    MOCKER(halMemAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halMemAlloc).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     error = rawDrv->DevMemAllocOnline(&dptr, 1024, RT_MEMORY_HBM, 0);
     EXPECT_EQ(error, RT_ERROR_DRV_INVALID_DEVICE);
     delete rawDrv;
@@ -2670,13 +2606,11 @@ TEST_F(ApiTest, dev_alloc_mem_online_exception3)
 TEST_F(ApiTest, dev_getdevinfo_ex1)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
-    MOCKER(drvDeviceGetPhyIdByIndex)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(drvDeviceGetPhyIdByIndex).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     error = rawDrv->GetDevInfo(0, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION, NULL);
 
     delete rawDrv;
@@ -2699,7 +2633,7 @@ TEST_F(ApiTest, dev_getdevinfo_ex1)
 TEST_F(ApiTest, dev_getdevinfo_ex2)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
 
     error = rtInstance->startAicpuExecutor(64, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -2742,7 +2676,7 @@ TEST_F(ApiTest, Profiler_trace_fail)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
 
     MOCKER(ProfilerTraceTaskInit).stubs().will(invoke(ProfilerTraceTaskInitStub));
@@ -2771,7 +2705,6 @@ TEST_F(ApiTest, Profiler_trace_ex_api)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-
 TEST_F(ApiTest, Profiler_trace_ex_api_flag)
 {
     rtError_t error;
@@ -2783,7 +2716,7 @@ TEST_F(ApiTest, Profiler_trace_ex_api_flag)
     error = rtProfilerTraceEx(0, 0, 0, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error =rtStreamSynchronize(stream);
+    error = rtStreamSynchronize(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamDestroy(stream);
@@ -2798,7 +2731,7 @@ TEST_F(ApiTest, Profiler_trace_ex_fail)
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    RawDevice *stubDevice = new RawDevice(0);
+    RawDevice* stubDevice = new RawDevice(0);
     stubDevice->Init();
 
     MOCKER(ProfilerTraceExTaskInit).stubs().will(invoke(ProfilerTraceExTaskInitStub));
@@ -2819,7 +2752,7 @@ TEST_F(ApiTest, EnableP2P)
     uint32_t phyIdSrc = 1;
     uint32_t flag = 0;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -2836,9 +2769,7 @@ TEST_F(ApiTest, EnableP2P)
     error = rtEnableP2P(65, phyIdSrc, flag);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halDeviceEnableP2P)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halDeviceEnableP2P).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
     error = rtEnableP2P(devIdDes, phyIdSrc, flag);
     EXPECT_EQ(error, ACL_ERROR_RT_INVALID_DEVICEID);
@@ -2856,7 +2787,7 @@ TEST_F(ApiTest, DisableP2P)
     rtError_t error;
     uint32_t devIdDes = 0;
     uint32_t phyIdSrc = 1;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -2873,9 +2804,7 @@ TEST_F(ApiTest, DisableP2P)
     error = rtDisableP2P(65, phyIdSrc);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halDeviceDisableP2P)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halDeviceDisableP2P).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
     error = rtDisableP2P(devIdDes, phyIdSrc);
     EXPECT_EQ(error, ACL_ERROR_RT_INVALID_DEVICEID);
@@ -2898,7 +2827,7 @@ TEST_F(ApiTest, DeviceCanAccessPeer)
     // online
     MOCKER(drvGetPlatformInfo).stubs().will(invoke(drvGetPlatformInfo_1));
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -2915,9 +2844,7 @@ TEST_F(ApiTest, DeviceCanAccessPeer)
     error = rtDeviceCanAccessPeer(&canAccessPeer, 65, peerDevId);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halDeviceCanAccessPeer)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_DEVICE));
+    MOCKER(halDeviceCanAccessPeer).stubs().will(returnValue(DRV_ERROR_INVALID_DEVICE));
 
     error = rtDeviceCanAccessPeer(&canAccessPeer, devId, peerDevId);
     EXPECT_EQ(error, ACL_ERROR_RT_INVALID_DEVICEID);
@@ -2967,12 +2894,10 @@ TEST_F(ApiTest, api_DeviceCanAccessPeer)
     uint32_t devId = 0;
     uint32_t peerDevId = 1;
     int32_t canAccessPeer = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DeviceCanAccessPeer)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DeviceCanAccessPeer).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = api.DeviceCanAccessPeer(&canAccessPeer, devId, peerDevId);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -2987,7 +2912,7 @@ TEST_F(ApiTest, api_EnableP2P)
     uint32_t devId = 0;
     uint32_t peerDevId = 1;
     uint32_t flag = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
     MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::EnableP2P).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
@@ -3011,21 +2936,19 @@ TEST_F(ApiTest, ai_cpu_info_load_test_01)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     char aicpu_info[16] = "aicpu info";
-    error = rtAicpuInfoLoad((const void *)aicpu_info, 16);
+    error = rtAicpuInfoLoad((const void*)aicpu_info, 16);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamDestroy(stream);
@@ -3038,7 +2961,7 @@ TEST_F(ApiTest, nop_task_api_test_01)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
@@ -3061,14 +2984,14 @@ TEST_F(ApiTest, ai_cpu_info_load_test_04)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_LHISI);
     GlobalContainer::SetRtChipType(CHIP_LHISI);
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
     char aicpu_info[16] = "aicpu info";
-    error = rtAicpuInfoLoad((const void *)aicpu_info, 16);
+    error = rtAicpuInfoLoad((const void*)aicpu_info, 16);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -3079,7 +3002,7 @@ TEST_F(ApiTest, ai_cpu_info_load_test_04)
 TEST_F(ApiTest, MODEL_TASK_UPDATE_TEST_01)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_LHISI);
     GlobalContainer::SetRtChipType(CHIP_LHISI);
@@ -3092,21 +3015,21 @@ TEST_F(ApiTest, MODEL_TASK_UPDATE_TEST_01)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint64_t tillingkey = 123456;
-    uint64_t *devMemSrc;
-    error = rtMalloc((void **)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
+    uint64_t* devMemSrc;
+    error = rtMalloc((void**)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemcpy(devMemSrc, sizeof(uint64_t), &tillingkey, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *devMem;
-    error = rtMalloc((void **)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
+    void* devMem;
+    error = rtMalloc((void**)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint64_t blockDimAddr = 123U;
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo;
     fftsPlusTaskInfo.descBuf = devMem;
-    rtMdlTaskUpdateInfo_t  para;
+    rtMdlTaskUpdateInfo_t para;
     para.tilingKeyAddr = devMemSrc;
     para.blockDimAddr = &blockDimAddr;
     para.hdl = devMemSrc;
@@ -3129,7 +3052,7 @@ TEST_F(ApiTest, MODEL_TASK_UPDATE_TEST_01)
 TEST_F(ApiTest, MODEL_TASK_UPDATE_TEST_02)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
@@ -3142,21 +3065,21 @@ TEST_F(ApiTest, MODEL_TASK_UPDATE_TEST_02)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint64_t tillingkey = 123456;
-    uint64_t *devMemSrc;
-    error = rtMalloc((void **)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
+    uint64_t* devMemSrc;
+    error = rtMalloc((void**)&devMemSrc, sizeof(uint64_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtMemcpy(devMemSrc, sizeof(uint64_t), &tillingkey, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *devMem;
-    error = rtMalloc((void **)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
+    void* devMem;
+    error = rtMalloc((void**)&devMem, sizeof(rtFftsPlusMixAicAivCtx_t), RT_MEMORY_HBM, 255);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint64_t blockDimAddr = 123U;
     rtFftsPlusTaskInfo_t fftsPlusTaskInfo;
     fftsPlusTaskInfo.descBuf = devMem;
-    rtMdlTaskUpdateInfo_t  para;
+    rtMdlTaskUpdateInfo_t para;
     para.tilingKeyAddr = devMemSrc;
     para.blockDimAddr = &blockDimAddr;
     para.hdl = devMemSrc;
@@ -3218,37 +3141,36 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_DUMP)
     rtError_t error;
     rtStream_t stream;
 
-    error = rtCpuKernelLaunchWithFlag(NULL, NULL, 1, NULL, NULL, NULL,2);
+    error = rtCpuKernelLaunchWithFlag(NULL, NULL, 1, NULL, NULL, NULL, 2);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     std::string soName = "libDvpp.so";
     std::string kernelName = "DvppResize";
-    error = rtCpuKernelLaunchWithFlag(reinterpret_cast<const void *>(soName.c_str()),
-                              reinterpret_cast<const void *>(kernelName.c_str()),
-                              1, NULL, NULL, NULL,2);
+    error = rtCpuKernelLaunchWithFlag(
+        reinterpret_cast<const void*>(soName.c_str()), reinterpret_cast<const void*>(kernelName.c_str()), 1, NULL, NULL,
+        NULL, 2);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream0 = rt_ut::UnwrapOrNull<Stream>(stream);
-    Context *context0 = (Context *)stream0->Context_();
-    stream0->SetContext((Context *)NULL);
+    Stream* stream0 = rt_ut::UnwrapOrNull<Stream>(stream);
+    Context* context0 = (Context*)stream0->Context_();
+    stream0->SetContext((Context*)NULL);
 
     uint64_t arg = 0x1234567890;
     rtArgsEx_t argsInfo = {};
     argsInfo.args = &arg;
     argsInfo.argsSize = sizeof(arg);
-    error = rtCpuKernelLaunchWithFlag(reinterpret_cast<const void *>(soName.c_str()),
-                              reinterpret_cast<const void *>(kernelName.c_str()),
-                              1, &argsInfo, NULL, stream,2);
+    error = rtCpuKernelLaunchWithFlag(
+        reinterpret_cast<const void*>(soName.c_str()), reinterpret_cast<const void*>(kernelName.c_str()), 1, &argsInfo,
+        NULL, stream, 2);
     EXPECT_NE(error, RT_ERROR_NONE);
 
     stream0->SetContext(context0);
 
     error = rtStreamDestroy(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(ApiTest, CPU_KERNEL_LAUNCH_310M_TEST)
@@ -3256,14 +3178,14 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_310M_TEST)
     rtError_t error;
     rtStream_t stream;
 
-    Device *rawDevice = new RawDevice(0);
+    Device* rawDevice = new RawDevice(0);
     rawDevice->SetChipType(CHIP_AS31XM1);
     error = rtStreamCreate(&stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Stream *stream0 = rt_ut::UnwrapOrNull<Stream>(stream);
-    Context *context0 = (Context *)stream0->Context_();
-    stream0->SetContext((Context *)NULL);
+    Stream* stream0 = rt_ut::UnwrapOrNull<Stream>(stream);
+    Context* context0 = (Context*)stream0->Context_();
+    stream0->SetContext((Context*)NULL);
 
     uint64_t arg = 0x1234567890;
     rtArgsEx_t argsInfo = {};
@@ -3271,14 +3193,14 @@ TEST_F(ApiTest, CPU_KERNEL_LAUNCH_310M_TEST)
     argsInfo.argsSize = sizeof(arg);
     std::string soName = "libDvpp.so";
     std::string kernelName = "DvppResize";
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     rtInstance->SetAicpuCnt(0);
-    error = rtCpuKernelLaunchWithFlag(reinterpret_cast<const void *>(soName.c_str()),
-                              reinterpret_cast<const void *>(kernelName.c_str()),
-                              1, &argsInfo, NULL, stream,2);
+    error = rtCpuKernelLaunchWithFlag(
+        reinterpret_cast<const void*>(soName.c_str()), reinterpret_cast<const void*>(kernelName.c_str()), 1, &argsInfo,
+        NULL, stream, 2);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
     stream0->SetContext(context0);
@@ -3295,22 +3217,18 @@ TEST_F(ApiTest, AI_CPU_KERNEL_LAUNCH_310M_TEST)
     rtStream_t stream;
 
     uint32_t aiCpuCnt = 0U;
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     MOCKER_CPP_VIRTUAL(api, &Api::GetAiCpuCount)
-    .stubs()
-    .with(outBoundP(&aiCpuCnt, sizeof(aiCpuCnt)))
-    .will(returnValue(RT_ERROR_NONE));
+        .stubs()
+        .with(outBoundP(&aiCpuCnt, sizeof(aiCpuCnt)))
+        .will(returnValue(RT_ERROR_NONE));
     rtSmDesc_t desc;
-    const rtKernelLaunchNames_t name = {
-        "soName",
-        "kernelName",
-        "opName"
-    };
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    const rtKernelLaunchNames_t name = {"soName", "kernelName", "opName"};
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtArgsEx_t argsInfo = {};
     argsInfo.args = args;
     argsInfo.argsSize = sizeof(args);
@@ -3341,15 +3259,15 @@ TEST_F(ApiTest, rtGetC2cCtrlAddr_david)
     rtError_t error;
     uint64_t addr;
     uint32_t len;
- 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
- 
+
     error = rtGetC2cCtrlAddr(&addr, &len);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     // restore all type
     rtInstance->SetChipType(oriChipType);
     GlobalContainer::SetRtChipType(oriChipType);
@@ -3379,7 +3297,7 @@ TEST_F(ApiTest, rtsLabelSwitchListCreate)
     error = rtsLabelCreate(&labelTmp); // 超规格
     EXPECT_EQ(error, ACL_ERROR_RT_INTERNAL_ERROR);
 
-    void *labelList = nullptr;
+    void* labelList = nullptr;
     error = rtsLabelSwitchListCreate(nullptr, labelNum, &labelList);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     error = rtsLabelSwitchListCreate(&labelInfo[0], 0U, &labelList);
@@ -3404,12 +3322,10 @@ TEST_F(ApiTest, rtLabelGotoEx)
 {
     rtError_t error;
 
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::LabelGotoEx)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::LabelGotoEx).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = api.LabelGotoEx(NULL, NULL);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -3425,12 +3341,10 @@ TEST_F(ApiTest, rtLabelListCpy)
 {
     rtError_t error;
 
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::LabelListCpy)
-        .stubs()
-        .will(returnValue(RT_ERROR_INVALID_VALUE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::LabelListCpy).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
 
     error = api.LabelListCpy(NULL, 0, NULL, 0);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -3460,7 +3374,7 @@ TEST_F(ApiTest, rtLabelCreateEx)
 
     error = rtLabelDestroy(labelEx);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Stream *stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stream_var = rt_ut::UnwrapOrNull<Stream>(stream);
     stream_var->pendingNum_.Set(0);
 
     error = rtModelDestroy(model);
@@ -3478,18 +3392,16 @@ TEST_F(ApiTest, rtDebugRegister)
     uint64_t addr = 0x1000;
     uint32_t streamId = 0;
     uint32_t taskId = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugRegister).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = rtDebugRegister(model, flag, &addr, &streamId, &taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     error = rtDebugRegister(model, flag, &addr, &streamId, &taskId);
@@ -3516,17 +3428,15 @@ TEST_F(ApiTest, rtDebugUnRegister)
     uint64_t addr = 0x1000;
     uint32_t streamId = 0;
     uint32_t taskId = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
     error = rtDebugUnRegister(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     error = rtDebugUnRegister(model);
@@ -3553,15 +3463,13 @@ TEST_F(ApiTest, DebugRegister)
     uint64_t addr = 0x1000;
     uint32_t streamId = 0;
     uint32_t taskId = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugRegister).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.DebugRegister(rt_ut::UnwrapOrNull<Model>(model), flag, &addr, &streamId, &taskId);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelDestroy(model);
@@ -3578,15 +3486,13 @@ TEST_F(ApiTest, DebugUnRegister)
     uint64_t addr = 0x1000;
     uint32_t streamId = 0;
     uint32_t taskId = 0;
-    ApiImpl *apiImpl = new ApiImpl();
+    ApiImpl* apiImpl = new ApiImpl();
     ApiDecorator api(apiImpl);
 
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugUnRegister)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(apiImpl, &ApiImpl::DebugUnRegister).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.DebugUnRegister(rt_ut::UnwrapOrNull<Model>(model));
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtModelDestroy(model);
@@ -3598,14 +3504,14 @@ TEST_F(ApiTest, DebugUnRegister)
 TEST_F(ApiTest, rtGetOpTimeOutV2_notset)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
 
-    //not set timeout
+    // not set timeout
     uint32_t timeout = 0;
     error = rtGetOpExecuteTimeoutV2(&timeout);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -3669,7 +3575,7 @@ TEST_F(ApiTest, rtGetOpTimeOutV2_set)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtSetOpExecuteTimeOutWithMs(10);
     EXPECT_NE(error, RT_ERROR_NONE);
     rtChipType_t oriChipType = rtInstance->GetChipType();
@@ -3682,19 +3588,19 @@ TEST_F(ApiTest, rtGetOpTimeOutV2_set)
     rtInstance->timeoutConfig_.isCfgOpExcTaskTimeout = true;
 
     uint32_t timeout = 0;
-    //set timeout is 0ms
+    // set timeout is 0ms
     rtInstance->timeoutConfig_.opExcTaskTimeout = 0;
     error = rtGetOpExecuteTimeoutV2(&timeout);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(timeout, 8523);
 
-    //set timeout is 1ms
+    // set timeout is 1ms
     rtInstance->timeoutConfig_.opExcTaskTimeout = 1 * 1000;
     error = rtGetOpExecuteTimeoutV2(&timeout);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     EXPECT_EQ(timeout, 34);
 
-    //set timeout is 10000ms > 8522ms(max)
+    // set timeout is 10000ms > 8522ms(max)
     rtInstance->timeoutConfig_.opExcTaskTimeout = 10000 * 1000;
     error = rtGetOpExecuteTimeoutV2(&timeout);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
@@ -3770,13 +3676,13 @@ TEST_F(ApiTest, rtGetPriCtxByDeviceId)
     rtContext_t ctx;
     rtError_t error;
 
-    error =  rtGetPriCtxByDeviceId(0, nullptr);
+    error = rtGetPriCtxByDeviceId(0, nullptr);
     EXPECT_NE(error, RT_ERROR_NONE);
 
-    error =  rtGetPriCtxByDeviceId(0, &ctx);
+    error = rtGetPriCtxByDeviceId(0, &ctx);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error =  rtGetPriCtxByDeviceId(65, &ctx);
+    error = rtGetPriCtxByDeviceId(65, &ctx);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
@@ -3788,8 +3694,9 @@ TEST_F(ApiTest, rtGetSocVersion)
 
     MOCKER(halGetDeviceInfo).stubs().will(invoke(stubHalGetDeviceInfo));
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    std:string socBak = rtInstance->GetSocVersion();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+std:
+    string socBak = rtInstance->GetSocVersion();
 
     error = rtGetSocVersion(nullptr, 50);
     EXPECT_NE(error, RT_ERROR_NONE);
@@ -3924,7 +3831,7 @@ TEST_F(ApiTest, rtGetSocVersion)
     // restore soc type
     drvStubInit(socBak);
     rtInstance->InitSocVersion();
-    ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+    ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     GlobalContainer::SetHardwareSocVersion("");
 }
 
@@ -3933,7 +3840,7 @@ TEST_F(ApiTest, rtModelCheckCompatibility_socVersion)
     rtError_t error;
     char version[50] = {0};
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     std::string socBak = rtInstance->GetSocVersion();
 
@@ -4040,10 +3947,10 @@ TEST_F(ApiTest, notify_record1_adc)
     rtError_t error;
     int32_t time_out = 70;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    rtInstance->SetChipType(CHIP_ADC);   // chip type can be restore after testcase
-    MOCKER(&rtNotifyWait).stubs().will(returnValue(RT_ERROR_NONE))
-    error = rtNotifyWaitWithTimeOut(notify, NULL, time_out);
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    rtInstance->SetChipType(CHIP_ADC); // chip type can be restore after testcase
+    MOCKER(&rtNotifyWait).stubs().will(returnValue(RT_ERROR_NONE)) error =
+        rtNotifyWaitWithTimeOut(notify, NULL, time_out);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -4053,11 +3960,11 @@ TEST_F(ApiTest, notify_address_otherChipMini)
     uint64_t address;
     int32_t device_id = 0;
     NpuDriver drv;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ASCEND_031);
     GlobalContainer::SetRtChipType(CHIP_ASCEND_031);
-    Notify *notify = new Notify(device_id, 0);
+    Notify* notify = new Notify(device_id, 0);
     error = notify->Setup();
     EXPECT_EQ(error, RT_ERROR_NONE);
     notify->CreateIpcNotify("test_ipc", 8);
@@ -4074,11 +3981,11 @@ TEST_F(ApiTest, notify_address_otherChip)
     uint64_t address;
     int32_t device_id = 0;
     NpuDriver drv;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
-    Notify *notify = new Notify(device_id, 0);
+    Notify* notify = new Notify(device_id, 0);
     error = notify->Setup();
     EXPECT_EQ(error, RT_ERROR_NONE);
     notify->CreateIpcNotify("test_ipc", 8);
@@ -4088,7 +3995,7 @@ TEST_F(ApiTest, notify_address_otherChip)
     MOCKER(halResAddrMap).stubs().will(returnValue(DRV_ERROR_NONE));
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
-    Notify *notify1 = new Notify(device_id, 0);
+    Notify* notify1 = new Notify(device_id, 0);
     notify1->Setup();
     error = rtGetNotifyAddress(static_cast<rtNotify_t>(notify1), &address);
     rtInstance->SetChipType(type);
@@ -4129,7 +4036,7 @@ TEST_F(ApiTest, get_runtime_310p_capability)
 {
     rtError_t error;
     int64_t value = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
@@ -4146,7 +4053,7 @@ TEST_F(ApiTest, get_runtime_milan_capability)
 {
     rtError_t error;
     int64_t value = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
 
     rtInstance->SetChipType(CHIP_CLOUD);
@@ -4166,7 +4073,7 @@ TEST_F(ApiTest, rtLaunchSqeUpdateTask_FEATURE_NOT_SUPPORT)
     uint64_t cnt = 40U;
 
     // not support chiptype
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -4209,7 +4116,7 @@ TEST_F(ApiTest, rtProfilerConfig)
 TEST_F(ApiTest, FEATURECAPINFO_Versiondvpp)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -4227,7 +4134,7 @@ TEST_F(ApiTest, FEATURECAPINFO_Versiondvpp)
 TEST_F(ApiTest, FEATURECAPINFO_Software)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
@@ -4245,7 +4152,7 @@ TEST_F(ApiTest, FEATURECAPINFO_Software)
 TEST_F(ApiTest, FEATURECAPINFO_Blocking_Operator)
 {
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     int32_t value = 0;
     rtChipType_t old_chip_type = rtInstance->GetDevice(0, 0)->GetChipType();
 
@@ -4271,7 +4178,7 @@ TEST_F(ApiTest, model_exit_stream_NULL)
     error = rtModelCreate(&model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error =rtModelExit(model, NULL);
+    error = rtModelExit(model, NULL);
     error = rtModelDestroy(model);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
@@ -4328,7 +4235,6 @@ TEST_F(ApiTest, model_exit)
 
     error = rtStreamDestroy(exeStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 TEST_F(ApiTest, model_exit_error)
@@ -4384,7 +4290,6 @@ TEST_F(ApiTest, model_exit_error)
 
     error = rtStreamDestroy(exeStream);
     EXPECT_EQ(error, RT_ERROR_NONE);
-
 }
 
 static bool g_logDeviceStateOpen[TEST_MAX_DEV_NUM];
@@ -4396,10 +4301,7 @@ static void ResetAllDeviceState()
         g_profilingDeviceStateOpen[i] = false;
     }
 }
-static void StubLogDeviceStateCallback(uint32_t deviceId, bool isOpen)
-{
-    g_logDeviceStateOpen[deviceId] = isOpen;
-}
+static void StubLogDeviceStateCallback(uint32_t deviceId, bool isOpen) { g_logDeviceStateOpen[deviceId] = isOpen; }
 
 static void StubProfilingDeviceStateCallback(uint32_t deviceId, bool isOpen)
 {
@@ -4444,7 +4346,7 @@ TEST_F(ApiTest, debug_register_for_stream)
     error = rtDebugUnRegisterForStream(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     error = rtDebugRegisterForStream(stream, 1, (const void*)0x1, &stream_id, &task_id);
@@ -4488,7 +4390,6 @@ TEST_F(ApiTest, rtMemQueueCreate)
     error = rtMemQueueCreate(0, &attr, &qid);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
     attr.depth = RT_MQ_DEPTH_MIN;
-    
 }
 
 TEST_F(ApiTest, rtMemQueueDestroy)
@@ -4497,9 +4398,7 @@ TEST_F(ApiTest, rtMemQueueDestroy)
     rtError_t error = rtMemQueueDestroy(0, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halQueueDestroy)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueDestroy).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueDestroy(0, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4517,10 +4416,7 @@ TEST_F(ApiTest, rtMemQueueInit)
     error = rtSetDefaultDeviceId(0xFFFFFFFF);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halGetAPIVersion)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE))
-        .then(invoke(halGetAPIVersionStub));
+    MOCKER(halGetAPIVersion).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE)).then(invoke(halGetAPIVersionStub));
     error = rtMemQueueInit(0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -4539,9 +4435,7 @@ TEST_F(ApiTest, rtMemQueueEnQueue)
     error = rtMemQueueEnQueue(0, 0, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueueEnQueue)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueEnQueue).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueEnQueue(0, 0, &value);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4549,7 +4443,7 @@ TEST_F(ApiTest, rtMemQueueEnQueue)
 TEST_F(ApiTest, rtMemQueueDeQueue)
 {
     // normal
-    void *value = nullptr;
+    void* value = nullptr;
     rtError_t error = rtMemQueueDeQueue(0, 0, &value);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -4557,9 +4451,7 @@ TEST_F(ApiTest, rtMemQueueDeQueue)
     error = rtMemQueueDeQueue(0, 0, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueueDeQueue)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueDeQueue).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueDeQueue(0, 0, &value);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4575,9 +4467,7 @@ TEST_F(ApiTest, rtMemQueuePeek)
     error = rtMemQueuePeek(0, 0, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueuePeek)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueuePeek).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueuePeek(0, 0, &value, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4593,16 +4483,14 @@ TEST_F(ApiTest, rtMemQueueEnQueueBuff)
     error = rtMemQueueEnQueueBuff(0, 0, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueueEnQueueBuff)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueEnQueueBuff).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueEnQueueBuff(0, 0, &buff, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(ApiTest, rtMemQueueEnQueueBuff_128)
 {
-// normal
+    // normal
     rtMemQueueBuff_t queueBuf = {nullptr, 0, nullptr, 0};
     int32_t dataTmp = 0;
     rtMemQueueBuffInfo tmpInfo = {&dataTmp, sizeof(dataTmp)};
@@ -4615,9 +4503,7 @@ TEST_F(ApiTest, rtMemQueueEnQueueBuff_128)
     rtError_t error = rtMemQueueEnQueueBuff(0, 0, &queueBuf, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(drvMemcpy)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemcpy).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueEnQueueBuff(0, 0, &queueBuf, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4633,9 +4519,7 @@ TEST_F(ApiTest, rtMemQueueDeQueueBuff)
     error = rtMemQueueDeQueueBuff(0, 0, nullptr, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueueDeQueueBuff)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueDeQueueBuff).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueDeQueueBuff(0, 0, &buff, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4651,9 +4535,7 @@ TEST_F(ApiTest, rtMemQueueQueryInfo)
     error = rtMemQueueQueryInfo(0, 0, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueueQueryInfo)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueQueryInfo).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueQueryInfo(0, 0, &queInfo);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4664,7 +4546,7 @@ TEST_F(ApiTest, rtMemQueueQuery)
     EXPECT_EQ(RT_MQ_QUERY_QUE_ATTR_OF_CUR_PROC, queryCmd);
     queryCmd = (rtMemQueueQueryCmd_t)QUEUE_QUERY_QUES_OF_CUR_PROC;
     EXPECT_EQ(RT_MQ_QUERY_QUES_OF_CUR_PROC, queryCmd);
- 
+
     // normal
     rtMemQueueBuff_t buff = {nullptr};
     rtMemQueueQueryCmd_t cmd = RT_MQ_QUERY_QUE_ATTR_OF_CUR_PROC;
@@ -4699,9 +4581,7 @@ TEST_F(ApiTest, rtMemQueueAttach)
     rtError_t error = rtMemQueueAttach(0, 0, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(halQueueAttach)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueueAttach).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtMemQueueAttach(0, 0, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4745,9 +4625,7 @@ TEST_F(ApiTest, rtEschedSubmitEventSync)
     error = rtEschedSubmitEventSync(0, &event, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halEschedSubmitEventSync)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halEschedSubmitEventSync).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtEschedSubmitEventSync(0, &event, &ack);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4782,9 +4660,7 @@ TEST_F(ApiTest, rtQueryDevPid)
     error = rtQueryDevPid(&info, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    MOCKER(halQueryDevpid)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(halQueryDevpid).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
     error = rtQueryDevPid(&info, &devPid);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4802,9 +4678,7 @@ TEST_F(ApiTest, rtMbufInit)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBuffInit)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halBuffInit).stubs().will(returnValue(code));
     error = rtMbufInit(&cfg);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4813,7 +4687,7 @@ TEST_F(ApiTest, rtBuffConfirm)
 {
     // normal
     const uint64_t alloc_size = 100;
-    void *buff = malloc(alloc_size);
+    void* buff = malloc(alloc_size);
     rtError_t error = rtBuffConfirm(buff, alloc_size);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -4822,9 +4696,7 @@ TEST_F(ApiTest, rtBuffConfirm)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBuffGet)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halBuffGet).stubs().will(returnValue(code));
     error = rtBuffConfirm(buff, alloc_size);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -4836,7 +4708,7 @@ TEST_F(ApiTest, rtBuffAlloc)
     // normal
     const uint64_t alloc_size = 100;
     const uint64_t alloc_zero_size = 0U;
-    void *buff = nullptr;
+    void* buff = nullptr;
     rtError_t error = rtBuffAlloc(alloc_size, &buff);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -4845,9 +4717,7 @@ TEST_F(ApiTest, rtBuffAlloc)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBuffAlloc)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halBuffAlloc).stubs().will(returnValue(code));
     error = rtBuffAlloc(alloc_size, &buff);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4863,11 +4733,8 @@ TEST_F(ApiTest, rtMbufAlloc)
     error = rtMbufAlloc(nullptr, 1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufAlloc)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufAlloc).stubs().will(returnValue(code));
     error = rtMbufAlloc(&mbuf, 1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4887,9 +4754,7 @@ TEST_F(ApiTest, rtMbufAllocEx_malloc)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufAlloc)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufAlloc).stubs().will(returnValue(code));
     error = rtMbufAllocEx(&mbuf, 1, 0, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4899,7 +4764,7 @@ TEST_F(ApiTest, rtMbufBuild)
     // normal
     rtMbufPtr_t mbuf = nullptr;
     const uint64_t alloc_size = 100;
-    void *buff = malloc(alloc_size);
+    void* buff = malloc(alloc_size);
     rtError_t error = rtMbufBuild(buff, alloc_size, &mbuf);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -4908,9 +4773,7 @@ TEST_F(ApiTest, rtMbufBuild)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufBuild)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufBuild).stubs().will(returnValue(code));
     error = rtMbufBuild(buff, alloc_size, &mbuf);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -4921,7 +4784,7 @@ TEST_F(ApiTest, rtBuffFree)
 {
     // normal
     const uint64_t alloc_size = 100;
-    void *buff = malloc(alloc_size);
+    void* buff = malloc(alloc_size);
 
     rtError_t error = rtBuffFree(buff);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -4931,9 +4794,7 @@ TEST_F(ApiTest, rtBuffFree)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBuffFree)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halBuffFree).stubs().will(returnValue(code));
     error = rtBuffFree(buff);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -4945,7 +4806,7 @@ TEST_F(ApiTest, rtMbufUnBuild)
     // normal
     rtMbufPtr_t mbuf = (rtMbufPtr_t)1;
     uint64_t alloc_size_free = 0U;
-    void *buff = nullptr;
+    void* buff = nullptr;
     rtError_t error = rtMbufUnBuild(mbuf, &buff, &alloc_size_free);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -4954,9 +4815,7 @@ TEST_F(ApiTest, rtMbufUnBuild)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufUnBuild)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufUnBuild).stubs().will(returnValue(code));
     error = rtMbufUnBuild(mbuf, &buff, &alloc_size_free);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -4965,7 +4824,7 @@ TEST_F(ApiTest, rtBuffGet)
 {
     // normal
     const uint64_t alloc_size = 100;
-    void *buff = malloc(alloc_size);
+    void* buff = malloc(alloc_size);
     rtError_t error = rtBuffGet(nullptr, buff, alloc_size);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -4974,9 +4833,7 @@ TEST_F(ApiTest, rtBuffGet)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBuffGet)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halBuffGet).stubs().will(returnValue(code));
     error = rtBuffGet(nullptr, buff, alloc_size);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -4987,7 +4844,7 @@ TEST_F(ApiTest, rtBuffPut)
 {
     // normal
     const uint64_t alloc_size = 100;
-    void *buff = malloc(alloc_size);
+    void* buff = malloc(alloc_size);
     rtError_t error = rtBuffPut(nullptr, buff);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -5010,9 +4867,7 @@ TEST_F(ApiTest, rtMbufAllocEx_malloc_ex)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufAllocEx)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufAllocEx).stubs().will(returnValue(code));
     error = rtMbufAllocEx(&mbuf, 1, 1, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5029,9 +4884,7 @@ TEST_F(ApiTest, rtMbufFree)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufFree)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufFree).stubs().will(returnValue(code));
     error = rtMbufFree(mbuf);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5048,9 +4901,7 @@ TEST_F(ApiTest, rtMbufSetDataLen)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufSetDataLen)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufSetDataLen).stubs().will(returnValue(code));
     error = rtMbufSetDataLen(mbuf, 1);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5071,9 +4922,7 @@ TEST_F(ApiTest, rtMbufGetDataLen)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufGetDataLen)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufGetDataLen).stubs().will(returnValue(code));
     error = rtMbufGetDataLen(mbuf, &size);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5082,7 +4931,7 @@ TEST_F(ApiTest, rtMbufGetBuffAddr)
 {
     // normal
     rtMbufPtr_t mbuf = (rtMbufPtr_t)1;
-    void *buff = nullptr;
+    void* buff = nullptr;
     rtError_t error = rtMbufGetBuffAddr(mbuf, &buff);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -5093,9 +4942,7 @@ TEST_F(ApiTest, rtMbufGetBuffAddr)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufGetBuffAddr)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(code));
     error = rtMbufGetBuffAddr(mbuf, &buff);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5115,9 +4962,7 @@ TEST_F(ApiTest, rtMbufGetBuffSize)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufGetBuffSize)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufGetBuffSize).stubs().will(returnValue(code));
     error = rtMbufGetBuffSize(mbuf, &totalSize);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5126,7 +4971,7 @@ TEST_F(ApiTest, rtMbufGetPrivInfo)
 {
     // normal
     rtMbufPtr_t mbuf = (rtMbufPtr_t)1;
-    void *priv = nullptr;
+    void* priv = nullptr;
     uint64_t size = 0;
     rtError_t error = rtMbufGetPrivInfo(mbuf, &priv, &size);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -5170,9 +5015,7 @@ TEST_F(ApiTest, rtMbufChainAppend)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufChainAppend)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufChainAppend).stubs().will(returnValue(code));
     error = rtMbufChainAppend(memBufChainHead, memBuf);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5192,9 +5035,7 @@ TEST_F(ApiTest, rtMbufChainGetMbufNum)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufChainGetMbufNum)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufChainGetMbufNum).stubs().will(returnValue(code));
     error = rtMbufChainGetMbufNum(memBufChainHead, &num);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5214,9 +5055,7 @@ TEST_F(ApiTest, rtMbufChainGetMbuf)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halMbufChainGetMbuf)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halMbufChainGetMbuf).stubs().will(returnValue(code));
     error = rtMbufChainGetMbuf(memBufChainHead, 0, &memBuf);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5225,7 +5064,7 @@ TEST_F(ApiTest, rtMemGrpCreate)
 {
     // normal
     rtMemGrpConfig_t cfg = {0};
-    const char *name = "grp0";
+    const char* name = "grp0";
     rtError_t error = rtMemGrpCreate(name, &cfg);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -5236,9 +5075,7 @@ TEST_F(ApiTest, rtMemGrpCreate)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halGrpCreate)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halGrpCreate).stubs().will(returnValue(code));
     error = rtMemGrpCreate(name, &cfg);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5250,22 +5087,20 @@ TEST_F(ApiTest, rtBuffGetInfo)
     rtBuffBuildInfo buff_info = {};
     int32_t inbuff = 0;
     uint32_t len = 0;
-    rtError_t error = rtBuffGetInfo(cmd_type, (void *)&inbuff, sizeof(void *), &buff_info, &len);
+    rtError_t error = rtBuffGetInfo(cmd_type, (void*)&inbuff, sizeof(void*), &buff_info, &len);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     // invalid paramter
-    error = rtBuffGetInfo(cmd_type, nullptr, sizeof(void *), &buff_info, &len);
+    error = rtBuffGetInfo(cmd_type, nullptr, sizeof(void*), &buff_info, &len);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-    error = rtBuffGetInfo(cmd_type, (void *)&inbuff, sizeof(void *), nullptr, &len);
+    error = rtBuffGetInfo(cmd_type, (void*)&inbuff, sizeof(void*), nullptr, &len);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-    error = rtBuffGetInfo(cmd_type, (void *)&inbuff, sizeof(void *), &buff_info, nullptr);
+    error = rtBuffGetInfo(cmd_type, (void*)&inbuff, sizeof(void*), &buff_info, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBuffGetInfo)
-        .stubs()
-        .will(returnValue(code));
-    error = rtBuffGetInfo(cmd_type, (void *)&inbuff, sizeof(void *), &buff_info, &len);
+    MOCKER(halBuffGetInfo).stubs().will(returnValue(code));
+    error = rtBuffGetInfo(cmd_type, (void*)&inbuff, sizeof(void*), &buff_info, &len);
     EXPECT_NE(error, RT_ERROR_NONE);
 }
 
@@ -5274,7 +5109,7 @@ TEST_F(ApiTest, rtMemGrpCacheAlloc)
     // normal
     rtMemGrpCacheAllocPara para = {};
     const int32_t devId = 0;
-    const char *name = "grp0";
+    const char* name = "grp0";
     rtError_t error = rtMemGrpCacheAlloc(name, devId, &para);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -5285,9 +5120,7 @@ TEST_F(ApiTest, rtMemGrpCacheAlloc)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halGrpCacheAlloc)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halGrpCacheAlloc).stubs().will(returnValue(code));
     error = rtMemGrpCacheAlloc(name, devId, &para);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5303,11 +5136,8 @@ TEST_F(ApiTest, rtMemQueueSet)
     error = rtMemQueueSet(0, RT_MQ_QUEUE_ENABLE_LOCAL_QUEUE, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halQueueSet)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halQueueSet).stubs().will(returnValue(code));
     error = rtMemQueueSet(0, RT_MQ_QUEUE_ENABLE_LOCAL_QUEUE, &para);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5316,7 +5146,7 @@ TEST_F(ApiTest, rtMemGrpAddProc)
 {
     // normal
     rtMemGrpShareAttr_t attr = {0};
-    const char *name = "grp0";
+    const char* name = "grp0";
     int32_t pid = 0;
     rtError_t error = rtMemGrpAddProc(name, pid, &attr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -5328,9 +5158,7 @@ TEST_F(ApiTest, rtMemGrpAddProc)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halGrpAddProc)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(code));
     error = rtMemGrpAddProc(name, pid, &attr);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5338,7 +5166,7 @@ TEST_F(ApiTest, rtMemGrpAddProc)
 TEST_F(ApiTest, rtMemGrpAttach)
 {
     // normal
-    const char *name = "grp0";
+    const char* name = "grp0";
     int32_t timeout = 0;
     rtError_t error = rtMemGrpAttach(name, timeout);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -5348,9 +5176,7 @@ TEST_F(ApiTest, rtMemGrpAttach)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halGrpAttach)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halGrpAttach).stubs().will(returnValue(code));
     error = rtMemGrpAttach(name, timeout);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5381,9 +5207,7 @@ TEST_F(ApiTest, rtMemGrpQuery)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halGrpQuery)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halGrpQuery).stubs().will(returnValue(code));
     error = rtMemGrpQuery(&input, &output);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5412,15 +5236,16 @@ TEST_F(ApiTest, rtMemGrpQuery_addrInfo_maxGrp)
     input.cmd = RT_MEM_GRP_QUERY_GROUP_ADDR_INFO;
     input.grpQueryGroupAddrPara.devId = 0;
 
-    const std::unique_ptr<rtMemGrpQueryGroupAddrInfo_t[]> \
-        addrInfo(new (std::nothrow)rtMemGrpQueryGroupAddrInfo_t[BUFF_GRP_MAX_NUM]);
-    memset_s(reinterpret_cast<rtMemGrpQueryGroupAddrInfo_t *>(addrInfo.get()),
+    const std::unique_ptr<rtMemGrpQueryGroupAddrInfo_t[]> addrInfo(new (std::nothrow)
+                                                                       rtMemGrpQueryGroupAddrInfo_t[BUFF_GRP_MAX_NUM]);
+    memset_s(
+        reinterpret_cast<rtMemGrpQueryGroupAddrInfo_t*>(addrInfo.get()),
         sizeof(rtMemGrpQueryGroupAddrInfo_t) * BUFF_GRP_MAX_NUM, 0x0,
         sizeof(rtMemGrpQueryGroupAddrInfo_t) * BUFF_GRP_MAX_NUM);
 
     rtMemGrpQueryOutput_t output;
     output.maxNum = BUFF_GRP_MAX_NUM + 1U;
-    output.groupAddrInfo = reinterpret_cast<rtMemGrpQueryGroupAddrInfo_t *>(addrInfo.get());
+    output.groupAddrInfo = reinterpret_cast<rtMemGrpQueryGroupAddrInfo_t*>(addrInfo.get());
     output.resultNum = 0U;
     unsigned int outLen = (sizeof(GrpQueryGroupAddrInfo) * (BUFF_GRP_MAX_NUM + 1U));
     MOCKER(halGrpQuery)
@@ -5457,9 +5282,7 @@ TEST_F(ApiTest, rtMemGrpQuery_grpId)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halGrpQuery)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halGrpQuery).stubs().will(returnValue(code));
     error = rtMemGrpQuery(&input, &output);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5480,9 +5303,7 @@ TEST_F(ApiTest, rtMemQueueGetQidByName)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halQueueGetQidbyName)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halQueueGetQidbyName).stubs().will(returnValue(code));
     error = rtMemQueueGetQidByName(device, name, &qid);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5492,11 +5313,9 @@ TEST_F(ApiTest, rtQueueSubscribe)
     int32_t device = 0;
     uint32_t qid = 0;
     uint32_t groupId = 1;
-    int type = 2;  //QUEUE_TYPE
+    int type = 2; // QUEUE_TYPE
 
-    MOCKER(NpuDriver::QueueSubscribe)
-        .stubs()
-        .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+    MOCKER(NpuDriver::QueueSubscribe).stubs().will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
     rtError_t error = rtQueueSubscribe(device, qid, groupId, type);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
@@ -5507,9 +5326,7 @@ TEST_F(ApiTest, rtQueueSubF2NFEvent)
     uint32_t qid = 0;
     uint32_t groupId = 1;
 
-    MOCKER(NpuDriver::QueueSubF2NFEvent)
-        .stubs()
-        .will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
+    MOCKER(NpuDriver::QueueSubF2NFEvent).stubs().will(returnValue(RT_ERROR_FEATURE_NOT_SUPPORT));
     rtError_t error = rtQueueSubF2NFEvent(device, qid, groupId);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
@@ -5522,9 +5339,7 @@ TEST_F(ApiTest, rtEschedAttachDevice)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halEschedAttachDevice)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halEschedAttachDevice).stubs().will(returnValue(code));
     error = rtEschedAttachDevice(device);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5537,9 +5352,7 @@ TEST_F(ApiTest, rtEschedDettachDevice)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(code));
     error = rtEschedDettachDevice(device);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5553,7 +5366,7 @@ TEST_F(ApiTest, rtEschedWaitEvent)
     rtEschedEventSummary_t event;
     char msg[128] = "test";
 
-    event.pid = 0; // dst PID
+    event.pid = 0;     // dst PID
     event.grpId = 0;
     event.eventId = 0; // only RT_MQ_SCHED_EVENT_QS_MSG is supported
     event.subeventId = 0;
@@ -5570,9 +5383,7 @@ TEST_F(ApiTest, rtEschedWaitEvent)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halEschedWaitEvent).stubs().will(returnValue(code));
     error = rtEschedWaitEvent(device, grpId, threadId, timeout, &event);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5586,11 +5397,8 @@ TEST_F(ApiTest, rtEschedCreateGrp)
     rtError_t error = rtEschedCreateGrp(device, grpId, type);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halEschedCreateGrp)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halEschedCreateGrp).stubs().will(returnValue(code));
     error = rtEschedCreateGrp(device, grpId, type);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5598,16 +5406,13 @@ TEST_F(ApiTest, rtEschedCreateGrp)
 TEST_F(ApiTest, rtEschedSubmitEvent)
 {
     int32_t device = 0;
-     rtEschedEventSummary_t event;
+    rtEschedEventSummary_t event;
 
     rtError_t error = rtEschedSubmitEvent(device, &event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halEschedSubmitEvent)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halEschedSubmitEvent).stubs().will(returnValue(code));
     error = rtEschedSubmitEvent(device, &event);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5644,9 +5449,7 @@ TEST_F(ApiTest, rtEschedAckEvent)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     drvError_t code = DRV_ERROR_INVALID_VALUE;
-    MOCKER(halEschedAckEvent)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halEschedAckEvent).stubs().will(returnValue(code));
     error = rtEschedAckEvent(device, event_id, subevent_id, msg, len);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -5670,11 +5473,11 @@ TEST_F(ApiTest, FftsPlusTaskLaunchApi)
 TEST_F(ApiTest, FftsPlusTaskLaunchWithFlag_NotSupported)
 {
     rtFftsPlusSqe_t fftsSqe = {{0}, 0};
-    void *descBuf = malloc(100);         // device memory
-    uint32_t descBufLen=100;
+    void* descBuf = malloc(100); // device memory
+    uint32_t descBufLen = 100;
     uint32_t flag = 0;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -5790,15 +5593,15 @@ TEST_F(ApiTest, api_register_all_kernel)
 TEST_F(ApiTest, api_mem_and_buf_test)
 {
     rtError_t error;
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ApiDecorator apiDec(api);
-    Stream *stream = rt_ut::UnwrapOrNull<Stream>(stream_);
+    Stream* stream = rt_ut::UnwrapOrNull<Stream>(stream_);
     char grpName[] = "group";
 
-    error = apiDec.KernelLaunchEx("", (void *)1, 1, 0, stream);
+    error = apiDec.KernelLaunchEx("", (void*)1, 1, 0, stream);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *m_devPtr;
+    void* m_devPtr;
     error = rtMalloc(&m_devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -5812,7 +5615,7 @@ TEST_F(ApiTest, api_mem_and_buf_test)
     error = apiDec.ReduceAsync(NULL, NULL, 0, RT_RECUDE_KIND_END, RT_DATA_TYPE_END, stream, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    void *m_ptr = NULL;
+    void* m_ptr = NULL;
     uint64_t m_size = 100 * sizeof(uint32_t);
     error = apiDec.ManagedMemAlloc(&m_ptr, 128, RT_MEMORY_SPM);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -5907,7 +5710,7 @@ TEST_F(ApiTest, api_mem_and_buf_test)
     error = apiDec.QueryDevPid(NULL, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    ApiMbuf *apiMbuf = ApiMbuf::Instance();
+    ApiMbuf* apiMbuf = ApiMbuf::Instance();
     MOCKER_CPP_VIRTUAL(apiMbuf, &apiMbuf::MbufInit).stubs().will(returnValue(RT_ERROR_NONE));
     error = apiMbuf->MbufInit(NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -5968,15 +5771,15 @@ TEST_F(ApiTest, api_mem_and_buf_test)
 TEST_F(ApiTest, api_model_test)
 {
     rtError_t error;
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ApiDecorator apiDec(api);
-    Model *m_model = NULL;
+    Model* m_model = NULL;
 
     error = apiDec.ModelCreate(&m_model, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     char dump_info[16] = "dump info";
-    error = apiDec.DatadumpInfoLoad((const void *)dump_info, sizeof(dump_info), RT_KERNEL_DEFAULT);
+    error = apiDec.DatadumpInfoLoad((const void*)dump_info, sizeof(dump_info), RT_KERNEL_DEFAULT);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint32_t modelId;
@@ -6028,7 +5831,7 @@ TEST_F(ApiTest, api_model_test_impl)
     ApiImpl impl;
     ApiDecorator apiDec(&impl);
     Model m_model;
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
 
     MOCKER_CPP_VIRTUAL(api, &Api::ModelSetExtId).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&Model::SendTaskToAicpu).stubs().will(returnValue(RT_ERROR_NONE));
@@ -6042,9 +5845,7 @@ TEST_F(ApiTest, api_model_test_log)
     ApiImpl impl;
     ApiErrorDecorator api(&impl);
     Model mdl;
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP(&Model::SendTaskToAicpu).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.ModelSetExtId(&mdl, 0);
@@ -6058,9 +5859,7 @@ TEST_F(ApiTest, api_model_test_profiling)
     Profiler profiler(nullptr);
     ApiProfileDecorator api(&impl, &profiler);
     Model mdl;
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP(&Model::SendTaskToAicpu).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.ModelSetExtId(&mdl, 0);
@@ -6074,9 +5873,7 @@ TEST_F(ApiTest, api_model_test_profiling_log)
     Profiler profiler(nullptr);
     ApiProfileLogDecorator api(&impl, &profiler);
     Model mdl;
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP(&Model::SendTaskToAicpu).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.ModelSetExtId(&mdl, 0);
@@ -6101,9 +5898,7 @@ TEST_F(ApiTest, api_model_test_error)
     ApiImpl impl;
     ApiErrorDecorator api(&impl);
     Model mdl;
-    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ModelSetExtId).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP(&Model::SendTaskToAicpu).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.ModelSetExtId(&mdl, 0);
@@ -6121,16 +5916,14 @@ TEST_F(ApiTest, api_model_test_set_ext_id)
     error = api.ModelSetExtId(&mdl, 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER_CPP(&ApiImpl::CurrentContext)
-        .stubs()
-        .will(invoke(CurrentContextStubCtx));
+    MOCKER_CPP(&ApiImpl::CurrentContext).stubs().will(invoke(CurrentContextStubCtx));
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(ApiTest, api_kernel_fusion_test)
 {
     rtError_t error;
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ApiDecorator apiDec(api);
 
     error = apiDec.KernelFusionStart(NULL);
@@ -6146,7 +5939,7 @@ TEST_F(ApiTest, api_notify_test)
     ApiImpl impl;
     ApiDecorator api(&impl);
 
-    Notify *m_notify;
+    Notify* m_notify;
     uint32_t notifyID;
     MOCKER_CPP_VIRTUAL(impl, &ApiImpl::NotifyCreate).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.NotifyCreate(0, &m_notify);
@@ -6175,7 +5968,7 @@ TEST_F(ApiTest, api_ctx_test)
     ApiImpl impl;
     ApiDecorator api(&impl);
 
-    Context *ctx = NULL;
+    Context* ctx = NULL;
     MOCKER_CPP_VIRTUAL(impl, &ApiImpl::ContextCreate).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.ContextCreate(&ctx, 0, RT_DEVICE_MODE_SINGLE_DIE);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -6214,7 +6007,7 @@ TEST_F(ApiTest, api_stream_test)
     ApiImpl impl;
     ApiDecorator api(&impl);
 
-    Stream *stream;
+    Stream* stream;
     Event event;
     MOCKER_CPP_VIRTUAL(impl, &ApiImpl::StreamCreate).stubs().will(returnValue(RT_ERROR_NONE));
     error = api.StreamCreate(&stream, 0, 0, nullptr);
@@ -6345,8 +6138,8 @@ TEST_F(ApiTest, rtGet_DevMsg)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
-rtError_t CmoTaskInitStub(TaskInfo *taskInfo, const rtCmoTaskInfo_t *const cmoTaskInfo, const Stream * const stm,
-                      const uint32_t flag)
+rtError_t CmoTaskInitStub(
+    TaskInfo* taskInfo, const rtCmoTaskInfo_t* const cmoTaskInfo, const Stream* const stm, const uint32_t flag)
 {
     (void)flag;
     taskInfo->typeName = "CMO";
@@ -6358,7 +6151,7 @@ rtError_t CmoTaskInitStub(TaskInfo *taskInfo, const rtCmoTaskInfo_t *const cmoTa
 
 TEST_F(ApiTest, api_rtCmoTaskLaunch)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
     rtCmoTaskInfo_t cmoTask = {0};
 
@@ -6386,7 +6179,7 @@ TEST_F(ApiTest, api_rtCmoTaskLaunch)
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
     error = rtCmoTaskLaunch(&cmoTask, stream_, 0);
 
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ApiDecorator apiDec(api);
     error = apiDec.CmoTaskLaunch(&cmoTask, NULL, 0);
 
@@ -6404,7 +6197,7 @@ TEST_F(ApiTest, api_rtCmoTaskLaunch)
 
 TEST_F(ApiTest, api_rtCmoAsync)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
 
     // only support CLOUDV2
@@ -6419,7 +6212,7 @@ TEST_F(ApiTest, api_rtCmoAsync)
 
 TEST_F(ApiTest, api_rtsGetCmoDescSize)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
 
     rtInstance->SetChipType(CHIP_DC);
@@ -6433,7 +6226,7 @@ TEST_F(ApiTest, api_rtsGetCmoDescSize)
 
 TEST_F(ApiTest, api_rtCmoAddrTaskLaunch_destMax)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DAVID);
     GlobalContainer::SetRtChipType(CHIP_DAVID);
@@ -6444,19 +6237,19 @@ TEST_F(ApiTest, api_rtCmoAddrTaskLaunch_destMax)
 
     uint64_t destMax = sizeof(rtDavidCmoAddrInfo) + 1;
     rtCmoOpCode_t cmoOpCode = RT_CMO_PREFETCH;
-    error = rtCmoAddrTaskLaunch(reinterpret_cast<void *>(&cmoAddrTask), destMax, cmoOpCode, NULL, 0);
+    error = rtCmoAddrTaskLaunch(reinterpret_cast<void*>(&cmoAddrTask), destMax, cmoOpCode, NULL, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     destMax = 0U;
-    error = rtCmoAddrTaskLaunch(reinterpret_cast<void *>(&cmoAddrTask), destMax, cmoOpCode, NULL, 0);
+    error = rtCmoAddrTaskLaunch(reinterpret_cast<void*>(&cmoAddrTask), destMax, cmoOpCode, NULL, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     rtInstance->SetChipType(oldChipType);
     GlobalContainer::SetRtChipType(oldChipType);
 }
 
-rtError_t BarrierTaskInitStub(TaskInfo *taskInfo, const rtBarrierTaskInfo_t *const barrierTaskInfo, const Stream * const stm,
-                              const uint32_t flag)
+rtError_t BarrierTaskInitStub(
+    TaskInfo* taskInfo, const rtBarrierTaskInfo_t* const barrierTaskInfo, const Stream* const stm, const uint32_t flag)
 {
     (void)flag;
     taskInfo->typeName = "BARRIER";
@@ -6467,7 +6260,7 @@ rtError_t BarrierTaskInitStub(TaskInfo *taskInfo, const rtBarrierTaskInfo_t *con
 
 TEST_F(ApiTest, api_rtBarrierTaskLaunch)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
     rtBarrierTaskInfo_t barrierTask = {0};
 
@@ -6482,23 +6275,23 @@ TEST_F(ApiTest, api_rtBarrierTaskLaunch)
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
 
     barrierTask.logicIdNum = 0U;
-    error = rtBarrierTaskLaunch(&barrierTask,  stream_, 0);
+    error = rtBarrierTaskLaunch(&barrierTask, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     // logicIdNum exceeded the upper limit
     barrierTask.logicIdNum = RT_CMO_MAX_BARRIER_NUM + 1U;
-    error = rtBarrierTaskLaunch(&barrierTask,  stream_, 0);
+    error = rtBarrierTaskLaunch(&barrierTask, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     barrierTask.logicIdNum = 1U;
-    error = rtBarrierTaskLaunch(&barrierTask,  stream_, 0);
+    error = rtBarrierTaskLaunch(&barrierTask, stream_, 0);
 
-    Api *api = Api::Instance();
+    Api* api = Api::Instance();
     ApiDecorator apiDec(api);
-    error = apiDec.BarrierTaskLaunch(&barrierTask,  NULL, 0);
+    error = apiDec.BarrierTaskLaunch(&barrierTask, NULL, 0);
 
     MOCKER(BarrierTaskInit).stubs().will(invoke(BarrierTaskInitStub));
-    error = rtBarrierTaskLaunch(&barrierTask,  stream_, 0);
+    error = rtBarrierTaskLaunch(&barrierTask, stream_, 0);
 
     rtInstance->SetChipType(oldChipType);
     GlobalContainer::SetRtChipType(oldChipType);
@@ -6507,7 +6300,7 @@ TEST_F(ApiTest, api_rtBarrierTaskLaunch)
 TEST_F(ApiTest, rtBufEventTrigger)
 {
     // normal
-    const char *name = "name";
+    const char* name = "name";
     rtError_t error = rtBufEventTrigger(name);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -6516,12 +6309,9 @@ TEST_F(ApiTest, rtBufEventTrigger)
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halBufEventReport)
-    .stubs()
-    .will(returnValue(code));
+    MOCKER(halBufEventReport).stubs().will(returnValue(code));
     error = rtBufEventTrigger(name);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
-
 }
 
 TEST_F(ApiTest, rtGetAvailStreamNum)
@@ -6535,7 +6325,7 @@ TEST_F(ApiTest, rtGetAvailStreamNum)
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t type = rtInstance->chipType_;
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
@@ -6555,9 +6345,7 @@ TEST_F(ApiTest, rtGetAvailStreamNum)
     GlobalContainer::SetRtChipType(type);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halResourceInfoQuery)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halResourceInfoQuery).stubs().will(returnValue(code));
     error = rtGetAvailStreamNum(RT_NORMAL_STREAM, &avaliStrCount);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
@@ -6579,9 +6367,7 @@ TEST_F(ApiTest, rtGetAvailEventNum)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
     int32_t code = (int32_t)DRV_ERROR_INVALID_VALUE;
-    MOCKER(halResourceInfoQuery)
-        .stubs()
-        .will(returnValue(code));
+    MOCKER(halResourceInfoQuery).stubs().will(returnValue(code));
     error = rtGetAvailEventNum(&avaliEventCount);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
@@ -6597,7 +6383,7 @@ TEST_F(ApiTest, rtGetTsMemType)
 TEST_F(ApiTest, rtGetTsMemType_lhisi)
 {
     uint32_t memType = 0U;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SetChipType(CHIP_LHISI);
     GlobalContainer::SetRtChipType(CHIP_LHISI);
     memType = rtGetTsMemType(MEM_REQUEST_FEATURE_DEFAULT, 1024U);
@@ -6606,7 +6392,7 @@ TEST_F(ApiTest, rtGetTsMemType_lhisi)
 
 TEST_F(ApiTest, rtProfilingCommandHandle)
 {
-    void *data = malloc(8);
+    void* data = malloc(8);
     uint32_t len = 8;
 
     rtError_t error = rtProfilingCommandHandle(0, data, len);
@@ -6624,7 +6410,8 @@ TEST_F(ApiTest, rtProfilingCommandHandle_02)
     profilerConfig.type = PROF_COMMANDHANDLE_TYPE_START;
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
-    rtError_t error = rtProfilingCommandHandle(PROF_CTRL_SWITCH, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    rtError_t error =
+        rtProfilingCommandHandle(PROF_CTRL_SWITCH, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -6635,7 +6422,8 @@ TEST_F(ApiTest, rtProfilingCommandHandle_03)
     profilerConfig.type = PROF_COMMANDHANDLE_TYPE_STOP;
     profilerConfig.profSwitch = 1;
     profilerConfig.devNums = 1;
-    rtError_t error = rtProfilingCommandHandle(PROF_CTRL_SWITCH, (void *)(&profilerConfig), sizeof(rtProfCommandHandle_t));
+    rtError_t error =
+        rtProfilingCommandHandle(PROF_CTRL_SWITCH, (void*)(&profilerConfig), sizeof(rtProfCommandHandle_t));
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
@@ -6647,32 +6435,24 @@ TEST_F(ApiTest, rtDvppGroupCreate)
     EXPECT_EQ(ret, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
 
-extern "C" drvError_t halMemcpySumbit(struct DMA_ADDR *dmaAddr, int32_t flag);
-extern "C" drvError_t halMemcpyFinish(struct DMA_ADDR *dmaAddr);
+extern "C" drvError_t halMemcpySumbit(struct DMA_ADDR* dmaAddr, int32_t flag);
+extern "C" drvError_t halMemcpyFinish(struct DMA_ADDR* dmaAddr);
 TEST_F(ApiTest, drv_mem_dma_api)
 {
     rtError_t error;
     NpuDriver drv;
     struct DMA_ADDR dmaHandle;
 
-    MOCKER(halMemcpySumbit)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemcpySumbit).stubs().will(returnValue(DRV_ERROR_NONE));
     rtError_t ret = drv.MemCopyAsyncEx(&dmaHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    MOCKER(halMemcpySumbit)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(halMemcpySumbit).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
     ret = drv.MemCopyAsyncEx(&dmaHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    MOCKER(halMemcpyWait)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemcpyWait).stubs().will(returnValue(DRV_ERROR_NONE));
     ret = drv.MemCopyAsyncWaitFinishEx(&dmaHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
-    MOCKER(halMemcpyWait)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NO_DEVICE));
+    MOCKER(halMemcpyWait).stubs().will(returnValue(DRV_ERROR_NO_DEVICE));
     ret = drv.MemCopyAsyncWaitFinishEx(&dmaHandle);
     EXPECT_EQ(ret, RT_ERROR_NONE);
 }
@@ -6708,7 +6488,7 @@ TEST_F(ApiTest, rtSetDeviceSatMode)
 TEST_F(ApiTest, rtMultipleTaskInfoLaunchCtrl_aicpuTask)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
+    void* args[] = {&error, NULL};
     rtMultipleTaskInfo_t multipleTaskInfo = {0};
     rtTaskDesc_t taskDesc;
     multipleTaskInfo.taskNum = 1;
@@ -6737,11 +6517,11 @@ TEST_F(ApiTest, rtMultipleTaskInfoLaunchCtrl_dvppTask)
     multipleTaskInfo.taskDesc = &taskDesc;
     memset(multipleTaskInfo.taskDesc, 0, sizeof(rtTaskDesc_t));
 
-    void *devPtr;
+    void* devPtr;
     rtMalloc(&devPtr, 16, RT_MEMORY_HBM, DEFAULT_MODULEID);
     multipleTaskInfo.taskDesc[0].type = RT_MULTIPLE_TASK_TYPE_DVPP;
     multipleTaskInfo.taskDesc[0].u.dvppTaskDesc.sqe.sqeHeader.type = 14; // RT_STARS_SQE_TYPE_JPEGD;
-    multipleTaskInfo.taskDesc[0].u.dvppTaskDesc.aicpuTaskPos = 1 + 3;  // for dvpp rr, add 3 write value
+    multipleTaskInfo.taskDesc[0].u.dvppTaskDesc.aicpuTaskPos = 1 + 3;    // for dvpp rr, add 3 write value
 
     std::vector<uintptr_t> input;
     input.push_back(reinterpret_cast<uintptr_t>(&multipleTaskInfo));
@@ -6779,7 +6559,7 @@ TEST_F(ApiTestOfEventNotify, rtsEventTest)
     rtEvent_t eventEx = nullptr;
     rtError_t error3 = rtsEventCreateEx(&eventEx, 0x888U);
     EXPECT_NE(error3, RT_ERROR_NONE);
-    
+
     uint32_t event_id = 0;
     rtError_t error4 = rtsEventGetId(event, &event_id);
     EXPECT_NE(error4, RT_ERROR_NONE);
@@ -6825,9 +6605,9 @@ TEST_F(ApiTestOfEventNotify, rtsEventTest)
 
 TEST_F(ApiTest, memset_async_errorTest)
 {
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     rtError_t error;
-    void * devPtr;
+    void* devPtr;
 
     error = rtMalloc(&devPtr, 60, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -6836,19 +6616,17 @@ TEST_F(ApiTest, memset_async_errorTest)
     rtInstance->SetChipType(chipType);
     GlobalContainer::SetRtChipType(chipType);
 
-     error = rtFree(devPtr);
-     EXPECT_EQ(error, RT_ERROR_NONE);
+    error = rtFree(devPtr);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
 TEST_F(ApiTest, read_aicore_mem)
 {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
 
     ApiImpl impl;
     ApiDecorator api(&impl);
@@ -6878,7 +6656,7 @@ TEST_F(ApiTest, read_aicore_mem)
 
 TEST_F(ApiTest, get_bin_and_stack_buffer)
 {
-    unsigned char *m_data = g_m_data;
+    unsigned char* m_data = g_m_data;
     size_t m_len = sizeof(g_m_data) / sizeof(g_m_data[0]);
     rtBinHandle bin_handle = nullptr;
     rtDevBinary_t bin;
@@ -6887,13 +6665,13 @@ TEST_F(ApiTest, get_bin_and_stack_buffer)
     bin.data = m_data;
     bin.length = m_len;
     EXPECT_EQ(rtBinaryLoad(&bin, &bin_handle), RT_ERROR_NONE);
-    Program * const program = rt_ut::UnwrapOrNull<Program>(bin_handle);
+    Program* const program = rt_ut::UnwrapOrNull<Program>(bin_handle);
     ASSERT_NE(program, nullptr);
     rtBinHandle real_bin_handle = RtPtrToPtr<rtBinHandle>(program);
 
     ApiImpl impl;
     ApiDecorator api(&impl);
-    void *outputBin = nullptr;
+    void* outputBin = nullptr;
     uint32_t binSize = 0U;
     EXPECT_EQ(rtGetBinBuffer(bin_handle, RT_BIN_HOST_ADDR, &outputBin, &binSize), RT_ERROR_NONE);
     EXPECT_EQ(binSize, m_len);
@@ -6901,7 +6679,7 @@ TEST_F(ApiTest, get_bin_and_stack_buffer)
     EXPECT_EQ(rtGetBinBuffer(bin_handle, RT_BIN_DEVICE_ADDR, &outputBin, &binSize), RT_ERROR_NONE);
     EXPECT_EQ(binSize, m_len);
 
-    const void *stack = nullptr;
+    const void* stack = nullptr;
     uint32_t stackSize = 0U;
     EXPECT_EQ(rtGetStackBuffer(bin_handle, 0, 0, 0, 0, &stack, &stackSize), RT_ERROR_NONE);
     EXPECT_EQ(rtGetStackBuffer(bin_handle, 0, 0, 1, 0, &stack, &stackSize), RT_ERROR_NONE);
@@ -6913,13 +6691,11 @@ TEST_F(ApiTest, get_bin_and_stack_buffer)
 
 TEST_F(ApiTest, rts_read_aicore_mem)
 {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(true));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(true));
 
     ApiImpl impl;
     ApiDecorator api(&impl);
@@ -6947,7 +6723,7 @@ TEST_F(ApiTest, rts_read_aicore_mem)
 
 TEST_F(ApiTest, rts_get_bin_and_stack_buffer)
 {
-    unsigned char *m_data = g_m_data;
+    unsigned char* m_data = g_m_data;
     size_t m_len = sizeof(g_m_data) / sizeof(g_m_data[0]);
     rtBinHandle bin_handle = nullptr;
     rtDevBinary_t bin;
@@ -6956,18 +6732,18 @@ TEST_F(ApiTest, rts_get_bin_and_stack_buffer)
     bin.data = m_data;
     bin.length = m_len;
     EXPECT_EQ(rtBinaryLoad(&bin, &bin_handle), RT_ERROR_NONE);
-    Program * const program = rt_ut::UnwrapOrNull<Program>(bin_handle);
+    Program* const program = rt_ut::UnwrapOrNull<Program>(bin_handle);
     ASSERT_NE(program, nullptr);
     rtBinHandle real_bin_handle = RtPtrToPtr<rtBinHandle>(program);
 
     ApiImpl impl;
     ApiDecorator api(&impl);
-    void *outputBin = nullptr;
+    void* outputBin = nullptr;
     uint32_t binSize = 0U;
     EXPECT_EQ(rtsBinaryGetDevAddress(bin_handle, &outputBin, &binSize), RT_ERROR_NONE);
     EXPECT_EQ(binSize, m_len);
 
-    const void *stack = nullptr;
+    const void* stack = nullptr;
     uint32_t stackSize = 0U;
     EXPECT_EQ(rtGetStackBuffer(bin_handle, 0, 0, RT_CORE_TYPE_AIC, 0, &stack, &stackSize), RT_ERROR_NONE);
     EXPECT_EQ(rtGetStackBuffer(bin_handle, 0, 0, RT_CORE_TYPE_AIV, 0, &stack, &stackSize), RT_ERROR_NONE);
@@ -6977,18 +6753,16 @@ TEST_F(ApiTest, rts_get_bin_and_stack_buffer)
 
 TEST_F(ApiTest, dev_alloc_mem_offline_1910_test)
 {
-    void * dptr = NULL;
+    void* dptr = NULL;
     rtError_t error;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = Runtime::Instance()->GetChipType();
     rtInstance->SetChipType(CHIP_MINI);
     GlobalContainer::SetRtChipType(CHIP_MINI);
 
-    MOCKER(halMemAlloc)
-        .stubs()
-        .will(returnValue(DRV_ERROR_NONE));
+    MOCKER(halMemAlloc).stubs().will(returnValue(DRV_ERROR_NONE));
 
-    NpuDriver * rawDrv = new NpuDriver();
+    NpuDriver* rawDrv = new NpuDriver();
     int32_t ret = rawDrv->MemAllocHugePolicyPageOffline(&dptr, 1024 * 1024 + 1, RT_MEMORY_TS, 0, 2);
     ret = rawDrv->MemAllocHugePolicyPageOffline(&dptr, 1024, RT_MEMORY_TS, 0, 2);
     EXPECT_EQ(ret, RT_ERROR_NONE);
@@ -7009,8 +6783,8 @@ TEST_F(ApiTest, get_srvid_by_sdid_test)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 }
 
-rtError_t rtStarsSendTask(rtStream_t stm, const rtStarsTransParm_t *transParm, uint32_t taskCount);
-rtError_t rtStarsWaitCqe(rtStream_t stm, uint32_t taskCount, uint32_t *taskCmplCount, void *output);
+rtError_t rtStarsSendTask(rtStream_t stm, const rtStarsTransParm_t* transParm, uint32_t taskCount);
+rtError_t rtStarsWaitCqe(rtStream_t stm, uint32_t taskCount, uint32_t* taskCmplCount, void* output);
 
 TEST_F(ApiTest, rtDeviceStatusQuery_03)
 {
@@ -7027,13 +6801,13 @@ TEST_F(ApiTest, rtDeviceStatusQuery_03)
 TEST_F(ApiTest, rtDeviceStatusQuery_04)
 {
     rtError_t error = RT_ERROR_NONE;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t originType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
     uint32_t devId = 0U;
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_NORMAL;
-    RawDevice *dev = new RawDevice(devId);
+    RawDevice* dev = new RawDevice(devId);
     error = rtInstance->SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_ABNORMAL);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtDeviceStatusQuery(devId, &deviceStatus);
@@ -7061,25 +6835,25 @@ TEST_F(ApiTest, rtOperateWithHostid)
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
 
-rtError_t rtGetProfilingBuffer(uint32_t sqId, uint32_t *profBufId);
+rtError_t rtGetProfilingBuffer(uint32_t sqId, uint32_t* profBufId);
 rtError_t rtPrintProfilingLog(uint32_t profBufId);
 rtError_t rtReleaseProfilingBuffer(uint32_t sqId, uint32_t profBufId);
 
 TEST_F(ApiTest, BIN_LOAD_MIX_KERNEL_TEST_2)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
-    Api * const apiInstance = Api::Instance();
-    Profiler *profiler = ((Runtime *)Runtime::Instance())->profiler_;
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
+    Api* const apiInstance = Api::Instance();
+    Profiler* profiler = ((Runtime*)Runtime::Instance())->profiler_;
 
     uint8_t data[64];
-    Program *prog = nullptr;
-    Kernel *kernel = nullptr;
+    Program* prog = nullptr;
+    Kernel* kernel = nullptr;
 
-    profiler->apiProfileLogDecorator_->BinaryLoadWithoutTilingKey((void *)&data[0], 0, &prog);
-    profiler->apiProfileDecorator_->BinaryLoadWithoutTilingKey((void *)&data[0], 0, &prog);
+    profiler->apiProfileLogDecorator_->BinaryLoadWithoutTilingKey((void*)&data[0], 0, &prog);
+    profiler->apiProfileDecorator_->BinaryLoadWithoutTilingKey((void*)&data[0], 0, &prog);
     EXPECT_EQ(prog, nullptr);
 
-    apiInstance->BinaryLoadWithoutTilingKey((void *)&data[0], 0, &prog);
+    apiInstance->BinaryLoadWithoutTilingKey((void*)&data[0], 0, &prog);
     EXPECT_EQ(prog, nullptr);
 
     prog = new (std::nothrow) ElfProgram(RT_KERNEL_ATTR_TYPE_AICORE);
@@ -7092,7 +6866,8 @@ TEST_F(ApiTest, BIN_LOAD_MIX_KERNEL_TEST_2)
     delete prog;
 }
 
-TEST_F(ApiTest, get_cqId) {
+TEST_F(ApiTest, get_cqId)
+{
     rtStream_t stream;
     rtError_t error = RT_ERROR_NONE;
     error = rtStreamCreate(&stream, 0);
@@ -7129,7 +6904,7 @@ TEST_F(ApiTest, get_lasterr)
 {
     rtError_t error;
     error = rtGetLastError(RT_THREAD_LEVEL);
-    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID );
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(ApiTest, peek_lasterr)
@@ -7143,7 +6918,7 @@ TEST_F(ApiTest, get_lasterr1)
 {
     rtError_t error;
     error = rtGetLastError(RT_CONTEXT_LEVEL);
-    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID );
+    EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(ApiTest, peek_lasterr1)
@@ -7156,14 +6931,14 @@ TEST_F(ApiTest, peek_lasterr1)
 TEST_F(ApiTest, get_lasterr2)
 {
     rtError_t error;
-    error = rtGetLastError((rtLastErrLevel_t)(RT_CONTEXT_LEVEL+2));
+    error = rtGetLastError((rtLastErrLevel_t)(RT_CONTEXT_LEVEL + 2));
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
 TEST_F(ApiTest, peek_lasterr2)
 {
     rtError_t error;
-    error = rtPeekAtLastError((rtLastErrLevel_t)(RT_CONTEXT_LEVEL+2));
+    error = rtPeekAtLastError((rtLastErrLevel_t)(RT_CONTEXT_LEVEL + 2));
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 }
 
@@ -7171,18 +6946,18 @@ TEST_F(ApiTest, RT_MEMCPY_ASYNCEX_2)
 {
     rtError_t error;
 
-    void *hostPtr;
-    void *devPtr;
+    void* hostPtr;
+    void* devPtr;
     uint64_t count = 64;
-    error = rtMalloc(&hostPtr, 64, RT_MEMORY_TYPE_HOST, DEFAULT_MODULEID);//RT_MEMORY_TYPE_HOST
+    error = rtMalloc(&hostPtr, 64, RT_MEMORY_TYPE_HOST, DEFAULT_MODULEID); // RT_MEMORY_TYPE_HOST
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    error = rtMalloc(&devPtr, 64, RT_MEMORY_TYPE_DEVICE, DEFAULT_MODULEID);//RT_MEMORY_TYPE_DEVICE
+    error = rtMalloc(&devPtr, 64, RT_MEMORY_TYPE_DEVICE, DEFAULT_MODULEID); // RT_MEMORY_TYPE_DEVICE
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtMemcpyConfig_t* memcpyConfig = new rtMemcpyConfig_t;
     memcpyConfig->numAttrs = 1;
-    rtMemcpyAttribute_t *attrs = new rtMemcpyAttribute_t[1];
+    rtMemcpyAttribute_t* attrs = new rtMemcpyAttribute_t[1];
     attrs->id = RT_MEMCPY_ATTRIBUTE_CHECK;
     rtMemcpyAttributeValue_t value;
     value.checkBitmap = 2; // bit1 = 1 使能withoutcheckoutkind功能
@@ -7199,7 +6974,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtSetOpExecuteTimeOutWithMs(10);
     EXPECT_NE(error, RT_ERROR_NONE);
     rtChipType_t oriChipType = rtInstance->GetChipType();
@@ -7210,7 +6985,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs)
     error = rtSetOpExecuteTimeOutWithMs(10);
     EXPECT_EQ(error, RT_ERROR_NONE);
     uint16_t kernelCredit = GetAicpuKernelCredit(0);
-    EXPECT_EQ(kernelCredit, 5);      // failed
+    EXPECT_EQ(kernelCredit, 5); // failed
     kernelCredit = GetAicoreKernelCredit(0);
     EXPECT_EQ(kernelCredit, 1);
     kernelCredit = GetSdmaKernelCredit();
@@ -7224,7 +6999,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_2)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
@@ -7233,7 +7008,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_2)
     error = rtSetOpExecuteTimeOutWithMs(33);
     EXPECT_EQ(error, RT_ERROR_NONE);
     uint16_t kernelCredit = GetAicpuKernelCredit(0);
-    EXPECT_EQ(kernelCredit, 5);  // 1+4=5
+    EXPECT_EQ(kernelCredit, 5); // 1+4=5
     kernelCredit = GetAicoreKernelCredit(0);
     EXPECT_EQ(kernelCredit, 1);
     kernelCredit = GetSdmaKernelCredit();
@@ -7247,7 +7022,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_3)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
@@ -7271,7 +7046,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_4)
     rtError_t error;
     rtStream_t stream;
     uint32_t timeout = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
@@ -7295,7 +7070,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_5)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
@@ -7318,7 +7093,7 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_6)
     rtError_t error;
     rtStream_t stream;
     uint32_t timeout = 0;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
@@ -7341,13 +7116,13 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_7)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_AS31XM1);
     GlobalContainer::SetRtChipType(CHIP_AS31XM1);
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("AS31XM1X");
-    error= rtSetOpExecuteTimeOutWithMs(300);
+    error = rtSetOpExecuteTimeOutWithMs(300);
     EXPECT_EQ(error, RT_ERROR_NONE);
     uint16_t kernelCredit = GetAicpuKernelCredit(0);
     EXPECT_EQ(kernelCredit, 13);
@@ -7366,11 +7141,11 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_14)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
-    error= rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 300, RT_TIME_UNIT_TYPE_S);
+    error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 300, RT_TIME_UNIT_TYPE_S);
     uint16_t kernelCredit = GetAicpuKernelCredit(0);
-    EXPECT_EQ(kernelCredit, 254);  // CHIP_BEGIN  GetKernelCreditScaleUS=0
+    EXPECT_EQ(kernelCredit, 254); // CHIP_BEGIN  GetKernelCreditScaleUS=0
     kernelCredit = GetAicoreKernelCredit(0);
     EXPECT_EQ(kernelCredit, 254); // CHIP_BEGIN  GetKernelCreditScaleUS=0
     kernelCredit = GetSdmaKernelCredit();
@@ -7382,19 +7157,19 @@ TEST_F(ApiTest, RT_SetOpExecuteWithMs_10)
 {
     rtError_t error;
     rtStream_t stream;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_ADC);
     GlobalContainer::SetRtChipType(CHIP_ADC);
     std::string socVersion = rtInstance->GetSocVersion();
     rtInstance->SetSocVersion("Ascend910B1");
-    error= rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 300, RT_TIME_UNIT_TYPE_S);
+    error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 300, RT_TIME_UNIT_TYPE_S);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtInstance->SetChipType(CHIP_610LITE);
     GlobalContainer::SetRtChipType(CHIP_610LITE);
-    error= rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 30000, RT_TIME_UNIT_TYPE_MS);
+    error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 30000, RT_TIME_UNIT_TYPE_MS);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    error= rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 300, RT_TIME_UNIT_TYPE_MS);
+    error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, 300, RT_TIME_UNIT_TYPE_MS);
     EXPECT_EQ(error, RT_ERROR_NONE);
     rtInstance->SetChipType(oriChipType);
     GlobalContainer::SetRtChipType(oriChipType);
@@ -7411,8 +7186,7 @@ TEST_F(ApiTest, get_device_status)
         {DRV_STATUS_WORK, RT_DEV_STATUS_WORK},
         {DRV_STATUS_EXCEPTION, RT_DEV_STATUS_EXCEPTION},
         {DRV_STATUS_SLEEP, RT_DEV_STATUS_SLEEP},
-        {DRV_STATUS_COMMUNICATION_LOST, RT_DEV_STATUS_COMMUNICATION_LOST}
-    };
+        {DRV_STATUS_COMMUNICATION_LOST, RT_DEV_STATUS_COMMUNICATION_LOST}};
 
     error = rtGetDeviceStatus(-1, nullptr);
     EXPECT_EQ(error, ACL_ERROR_RT_INVALID_DEVICEID);
@@ -7441,9 +7215,7 @@ TEST_F(ApiTest, get_device_status)
     EXPECT_EQ(error, ACL_ERROR_RT_INVALID_DEVICEID);
 
     NpuDriver drv;
-    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetDeviceStatus)
-        .stubs()
-        .will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
+    MOCKER_CPP_VIRTUAL(drv, &NpuDriver::GetDeviceStatus).stubs().will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
     error = rtGetDeviceStatus(0, &rtStatus);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 }
@@ -7461,16 +7233,16 @@ TEST_F(ApiTest, get_hostcpu_deviceId)
     EXPECT_EQ(device_id, DEFAULT_HOSTCPU_USER_DEVICE_ID);
 }
 
-//error case for rtModelDebugJsonPrint;
+// error case for rtModelDebugJsonPrint;
 TEST_F(ApiTest, ModelDebugJsonPrint_Error_02)
 {
     rtError_t error;
     rtStream_t stream;
-    rtModel_t  model;
+    rtModel_t model;
     rtModel_t captureMdl;
     rtCallback_t stub_func = (rtCallback_t)0x12345;
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
 
     rtInstance->SetChipType(CHIP_DAVID);
@@ -7497,7 +7269,7 @@ TEST_F(ApiTest, rtsMemMap)
 {
     rtError_t error;
 
-    void *virptr = (void *)10;
+    void* virptr = (void*)10;
     rtMemHandle handVal;
 
     error = rtsMemMap(virptr, 100, 0, handVal, 0);
@@ -7521,8 +7293,8 @@ TEST_F(ApiTest, rtMemAlloc)
 {
     // rtMallocConfig_t cfg is nullptr
     rtError_t error;
-    void * devPtr;
-    rtMallocConfig_t * p = nullptr;
+    void* devPtr;
+    rtMallocConfig_t* p = nullptr;
     error = rtMemAlloc(&devPtr, 60, RT_MEM_MALLOC_HUGE_FIRST, RT_MEM_ADVISE_NONE, p);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -7533,8 +7305,8 @@ TEST_F(ApiTest, rtMemAlloc)
 TEST_F(ApiTest, rtsDvppLaunch_test_01)
 {
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
 
@@ -7544,13 +7316,13 @@ TEST_F(ApiTest, rtsDvppLaunch_test_01)
 
 TEST_F(ApiTest, rtsDvppLaunch_test_02)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
     rtError_t error;
-    void *args[] = {&error, NULL};
-    void *stubFunc;
+    void* args[] = {&error, NULL};
+    void* stubFunc;
 
     MOCKER(memcpy_s).stubs().will(returnValue(NULL));
     cce::runtime::rtStarsCommonSqe_t sqe = {};
@@ -7567,27 +7339,28 @@ TEST_F(ApiTest, create_args_test_01)
 {
     rtError_t error;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     int32_t fun1;
-    Kernel * k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
+    Kernel* k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
     rtFuncHandle funcHandle = rt_ut::InitAndExportHandle<rtFuncHandle>(k1);
     k1->userParaNum_ = 2;
     k1->systemParaNum_ = 2;
     k1->isSupportOverFlow_ = true;
     k1->isNeedSetFftsAddrInArg_ = true;
-    void *argsHandle;
+    void* argsHandle;
     error = rtsKernelArgsInit(funcHandle, &argsHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(argsHandle, nullptr);
-    RtArgsHandle *handle = rt_ut::UnwrapOrNull<RtArgsHandle>(argsHandle);
+    RtArgsHandle* handle = rt_ut::UnwrapOrNull<RtArgsHandle>(argsHandle);
     EXPECT_NE(handle->buffer, nullptr);
     EXPECT_NE(handle->bufferSize, 0);
     uint32_t param1 = 1002;
-    void *paramHandle = nullptr;
+    void* paramHandle = nullptr;
     error = rtsKernelArgsAppend(argsHandle, &param1, sizeof(uint32_t), &paramHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    ParaDetail *pHandle = rt_ut::UnwrapOrNull<ParaDetail>(paramHandle);
-    uint32_t *addr1 = reinterpret_cast<uint32_t *>(reinterpret_cast<uintptr_t>(handle->buffer) + static_cast<uint64_t>(pHandle->paraOffset));
+    ParaDetail* pHandle = rt_ut::UnwrapOrNull<ParaDetail>(paramHandle);
+    uint32_t* addr1 = reinterpret_cast<uint32_t*>(
+        reinterpret_cast<uintptr_t>(handle->buffer) + static_cast<uint64_t>(pHandle->paraOffset));
     EXPECT_EQ(*addr1, param1);
     error = rtsKernelArgsFinalize(argsHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -7635,26 +7408,26 @@ TEST_F(ApiTest, create_args_test_03)
 {
     rtError_t error;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICPU);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     int32_t fun1;
-    Kernel * k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
+    Kernel* k1 = new Kernel("f1", 0ULL, program, RT_KERNEL_ATTR_TYPE_AICPU, 10);
     rtFuncHandle funcHandle = rt_ut::InitAndExportHandle<rtFuncHandle>(k1);
     k1->userParaNum_ = 20;
     k1->systemParaNum_ = 2;
     k1->isSupportOverFlow_ = true;
     k1->isNeedSetFftsAddrInArg_ = true;
-    void *argsHandle;
+    void* argsHandle;
     error = rtsKernelArgsInit(funcHandle, &argsHandle);
     EXPECT_EQ(error, RT_ERROR_NONE);
     EXPECT_NE(argsHandle, nullptr);
 
     for (uint16_t i = 0; i < 128; i++) {
-        void *paraHandle;
+        void* paraHandle;
         error = rtsKernelArgsAppendPlaceHolder(argsHandle, &paraHandle);
         EXPECT_EQ(error, RT_ERROR_NONE);
     }
 
-    RtArgsHandle *handle = rt_ut::UnwrapOrNull<RtArgsHandle>(argsHandle);
+    RtArgsHandle* handle = rt_ut::UnwrapOrNull<RtArgsHandle>(argsHandle);
     rtKernelLaunchCfg_t cfg;
     rtLaunchKernelAttr_t attrs[5];
     attrs[0].id = RT_LAUNCH_KERNEL_ATTR_SCHEM_MODE;
@@ -7717,15 +7490,15 @@ TEST_F(ApiTest, stale_launch_args_handle_should_be_rejected)
 
 TEST_F(ApiTest, api_rtsLaunchBarrierTask)
 {
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oldChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_910_B_93);
     GlobalContainer::SetRtChipType(CHIP_910_B_93);
     rtBarrierTaskInfo_t barrierTask = {0};
-    barrierTask.logicIdNum=1;
-    barrierTask.cmoInfo[0].cmoType=RT_CMO_INVALID;
-    barrierTask.cmoInfo[0].logicId=1;
-    rtError_t error = rtsLaunchBarrierTask(&barrierTask,  NULL, 0);
+    barrierTask.logicIdNum = 1;
+    barrierTask.cmoInfo[0].cmoType = RT_CMO_INVALID;
+    barrierTask.cmoInfo[0].logicId = 1;
+    rtError_t error = rtsLaunchBarrierTask(&barrierTask, NULL, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
     uint32_t tag = 0;
@@ -7738,29 +7511,29 @@ TEST_F(ApiTest, api_rtsLaunchBarrierTask)
     rtInstance->SetChipType(CHIP_MINI_V3);
     GlobalContainer::SetRtChipType(CHIP_MINI_V3);
     // taskInfo is nullptr
-    error = rtsLaunchBarrierTask(nullptr,  stream_, 0);
+    error = rtsLaunchBarrierTask(nullptr, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     barrierTask.logicIdNum = 0U;
-    error = rtsLaunchBarrierTask(&barrierTask,  stream_, 0);
+    error = rtsLaunchBarrierTask(&barrierTask, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     // logicIdNum exceeded the upper limit
     barrierTask.logicIdNum = RT_CMO_MAX_BARRIER_NUM + 1U;
-    error = rtsLaunchBarrierTask(&barrierTask,  stream_, 0);
+    error = rtsLaunchBarrierTask(&barrierTask, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     // invalid op,but logicId is 0
     barrierTask.logicIdNum = 1;
-    barrierTask.cmoInfo[0].cmoType=RT_CMO_INVALID;
-    barrierTask.cmoInfo[0].logicId=0;
-    error = rtsLaunchBarrierTask(&barrierTask,  stream_, 0);
+    barrierTask.cmoInfo[0].cmoType = RT_CMO_INVALID;
+    barrierTask.cmoInfo[0].logicId = 0;
+    error = rtsLaunchBarrierTask(&barrierTask, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
-    // prefetch op 
+    // prefetch op
     barrierTask.logicIdNum = 1;
-    barrierTask.cmoInfo[0].cmoType=RT_CMO_PREFETCH;
-    error = rtsLaunchBarrierTask(&barrierTask,  stream_, 0);
+    barrierTask.cmoInfo[0].cmoType = RT_CMO_PREFETCH;
+    error = rtsLaunchBarrierTask(&barrierTask, stream_, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
 
     rtInstance->SetChipType(oldChipType);
@@ -7787,7 +7560,7 @@ TEST_F(ApiTest, api_rtsLaunchUpdateTask)
     uint64_t cnt = sizeof(rtRandomNumTaskInfo_t);
 
     // not support chiptype
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t oriChipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_CLOUD);
     GlobalContainer::SetRtChipType(CHIP_CLOUD);
@@ -7808,7 +7581,7 @@ TEST_F(ApiTest, api_rtsLaunchUpdateTask)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     rtDsaTaskUpdateAttr_t attr = {};
-    attr.srcAddr = (void *)src_addr;
+    attr.srcAddr = (void*)src_addr;
     attr.size = cnt;
 
     rtTaskUpdateCfg_t cfg = {};
@@ -7840,7 +7613,7 @@ TEST_F(ApiTest, api_rtsLaunchUpdateTask)
 TEST_F(ApiTest, rts_memroy_attritue_fail)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
     rtPtrAttributes_t attributes;
 
     error = rtMallocHost(&hostPtr, 60, DEFAULT_MODULEID);
@@ -7861,7 +7634,7 @@ TEST_F(ApiTest, rts_memroy_attritue_fail)
 TEST_F(ApiTest, rts_memory_attritue_1)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
     rtPtrAttributes_t attributes;
 
     error = rtMallocHost(&hostPtr, 60, DEFAULT_MODULEID);
@@ -7906,7 +7679,7 @@ TEST_F(ApiTest, rts_memory_attritue_1)
     error = rtsPointerGetAttributes(hostPtr, &attributes);
     EXPECT_NE(error, RT_ERROR_NONE);
     GlobalMockObject::verify();
-    
+
     MOCKER(drvMemGetAttribute).stubs().will(invoke(drvMemGetAttribute_2));
     error = rtFreeHost(hostPtr);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -7915,15 +7688,13 @@ TEST_F(ApiTest, rts_memory_attritue_1)
 TEST_F(ApiTest, rts_memory_attritue_2)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
     rtPtrAttributes_t attributes;
 
     error = rtMallocHost(&hostPtr, 60, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(drvMemGetAttribute)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemGetAttribute).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtsPointerGetAttributes(hostPtr, &attributes);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -7938,18 +7709,16 @@ TEST_F(ApiTest, rts_memory_attritue_2)
 TEST_F(ApiTest, rts_memory_attritue_3)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
     rtPtrAttributes_t attributes;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     bool tmp = rtInstance->isHaveDevice_;
     rtInstance->isHaveDevice_ = false;
 
     error = rtMallocHost(&hostPtr, 60, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    MOCKER(drvMemGetAttribute)
-        .stubs()
-        .will(returnValue(DRV_ERROR_INVALID_VALUE));
+    MOCKER(drvMemGetAttribute).stubs().will(returnValue(DRV_ERROR_INVALID_VALUE));
 
     error = rtsPointerGetAttributes(hostPtr, &attributes);
     EXPECT_EQ(error, ACL_ERROR_RT_PARAM_INVALID);
@@ -7966,7 +7735,7 @@ TEST_F(ApiTest, rts_memory_attritue_3)
 TEST_F(ApiTest, rts_memory_attritue_4)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
     rtPtrAttributes_t attributes;
 
     error = rtMallocHost(&hostPtr, 60, DEFAULT_MODULEID);
@@ -7990,7 +7759,7 @@ TEST_F(ApiTest, rts_memory_attritue_4)
 TEST_F(ApiTest, rts_memory_reallocation)
 {
     rtError_t error;
-    void * hostPtr;
+    void* hostPtr;
     rtMemLocationType location;
     rtMemLocationType realLocation;
 
@@ -8049,15 +7818,15 @@ TEST_F(ApiTest, rts_notify_batch_reset_2)
     rtNotify_t notify_arr[2];
     error = rtNotifyCreate(device_id, &notify);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtNotifyCreate(device_id, &notify1);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     notify_arr[0] = notify;
     notify_arr[1] = notify1;
     error = rtsNotifyBatchReset(notify_arr, 2U);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
-  
+
     error = rtNotifyDestroy(notify);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtNotifyDestroy(notify1);
@@ -8076,58 +7845,58 @@ TEST_F(ApiTest, rt_notify_reset_all_2)
 TEST_F(ApiTest, rts_ipc_memory)
 {
     rtError_t error;
-    void *ptr1 = NULL;
-    void *ptr2 = (void *)0x20000;
-    void *ptr3 = (void *)0x10000;
+    void* ptr1 = NULL;
+    void* ptr2 = (void*)0x20000;
+    void* ptr3 = (void*)0x10000;
     error = rtSetDevice(0);
- 
+
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtMalloc(&ptr1, 128, RT_MEMORY_HBM, DEFAULT_MODULEID);
     EXPECT_EQ(error, RT_ERROR_NONE);
-     uint32_t len = 65;
+    uint32_t len = 65;
     char name[65] = {0};
 
     error = rtsIpcMemGetExportKey(ptr1, 32, name, len, 0UL);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtIpcSetMemoryAttr("mem1", RT_ATTR_TYPE_MEM_MAP, 0);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtsIpcMemImportByKey(&ptr2, name, 0UL);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtsIpcMemImportByKey(&ptr3, "bbb", 0UL);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtsIpcMemClose("aaa");
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtsIpcMemClose("bbb");
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtsIpcMemClose(name);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
- 
+
     error = rtFree(ptr1);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtDeviceReset(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 }
- 
+
 namespace cce {
 namespace runtime {
 extern bool g_isAddrFlatDevice;
-} // runtime
-} // cce
+} // namespace runtime
+} // namespace cce
 
 TEST_F(ApiTest, profling_getctxState)
 {
     rtError_t error;
     uint64_t size = 128;
-    void *ptr = NULL;
+    void* ptr = NULL;
     Api* oldApi_ = Runtime::runtime_->api_;
-    Profiler *profiler = new Profiler(oldApi_);
+    Profiler* profiler = new Profiler(oldApi_);
     profiler->Init();
 
     int32_t active = 0;
@@ -8137,7 +7906,7 @@ TEST_F(ApiTest, profling_getctxState)
     delete profiler;
 }
 
-int32_t stubRtsDeviceTaskAbortCallback2(uint32_t devId, rtDeviceTaskAbortStage stage, uint32_t timeout, void *args)
+int32_t stubRtsDeviceTaskAbortCallback2(uint32_t devId, rtDeviceTaskAbortStage stage, uint32_t timeout, void* args)
 {
     return 1;
 }
@@ -8145,17 +7914,17 @@ int32_t stubRtsDeviceTaskAbortCallback2(uint32_t devId, rtDeviceTaskAbortStage s
 TEST_F(ApiTest, rtsSetDeviceTaskAbortCallback_005)
 {
     rtError_t error;
-    char *regName ="task-abort-005";
+    char* regName = "task-abort-005";
     error = rtsSetDeviceTaskAbortCallback(regName, &stubRtsDeviceTaskAbortCallback2, nullptr);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtInstance->TaskAbortCallBack(0, RT_DEVICE_ABORT_PRE, 1000);
     EXPECT_EQ(error, 1);
 }
 
 bool g_taskAbortCallBackV2 = false;
-static int32_t StubTaskAbortCallBackV2(uint32_t devId, rtTaskAbortStage_t stage, uint32_t timeout, void *args)
+static int32_t StubTaskAbortCallBackV2(uint32_t devId, rtTaskAbortStage_t stage, uint32_t timeout, void* args)
 {
     g_taskAbortCallBackV2 = true;
     return 1;
@@ -8167,7 +7936,7 @@ TEST_F(ApiTest, rtTaskAbortCallBack_006)
     rtError_t error;
     char args[] = "0x100";
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     error = rtSetTaskAbortCallBack(moduleName, StubTaskAbortCallBackV2, args);
     EXPECT_EQ(error, RT_ERROR_NONE);
     error = rtInstance->TaskAbortCallBack(0, RT_DEVICE_ABORT_PRE, 1000);
@@ -8177,15 +7946,14 @@ TEST_F(ApiTest, rtTaskAbortCallBack_006)
 TEST_F(ApiTest, LAUNCH_NPU_SAVE)
 {
     size_t MAX_LENGTH = 75776;
-    FILE *master = NULL;
+    FILE* master = NULL;
     master = fopen("llt/ace/npuruntime/runtime/ut/runtime/test/data/elf.o", "rb");
-    if (NULL == master)
-    {
-        printf ("master open error\n");
+    if (NULL == master) {
+        printf("master open error\n");
         return;
     }
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtInstance->SaveModule();
     rtInstance->RestoreModule();
     rtInstance->DeleteModuleBackupPoint();
@@ -8196,8 +7964,8 @@ TEST_F(ApiTest, LAUNCH_NPU_SAVE)
     fclose(master);
 
     rtError_t error;
-    void *m_handle;
-    Program *m_prog;
+    void* m_handle;
+    Program* m_prog;
     rtDevBinary_t master_bin;
     master_bin.magic = RT_DEV_BINARY_MAGIC_ELF;
     master_bin.version = 2;
@@ -8206,15 +7974,15 @@ TEST_F(ApiTest, LAUNCH_NPU_SAVE)
 
     error = rtDevBinaryRegister(&master_bin, &m_handle);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    EXPECT_NE(m_handle, (void *)NULL);
+    EXPECT_NE(m_handle, (void*)NULL);
 
     //_Z15executor_conv2dPDhj
-    void *stub_func = (void *)0x869242;
+    void* stub_func = (void*)0x869242;
     error = rtFunctionRegister(m_handle, stub_func, "stub_func1", "_Z15executor_conv2dPDhj", 0);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     uint64_t arg = 0x1234567890;
-    error = rtKernelLaunch(stub_func, 1, (void *)&arg, sizeof(arg), NULL, NULL);
+    error = rtKernelLaunch(stub_func, 1, (void*)&arg, sizeof(arg), NULL, NULL);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = rtStreamSynchronize(NULL);
@@ -8230,8 +7998,8 @@ TEST_F(ApiTest, LAUNCH_NPU_SAVE)
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     MOCKER_CPP_VIRTUAL(stm->Device_()->Driver_(), &Driver::MemCopySync)
-       .stubs()
-       .will(returnValue(RT_ERROR_INVALID_VALUE));
+        .stubs()
+        .will(returnValue(RT_ERROR_INVALID_VALUE));
 
     rtInstance->SaveModule();
     rtInstance->DeleteModuleBackupPoint();
@@ -8247,7 +8015,7 @@ TEST_F(ApiTest, register_all_kernel)
     ApiImpl impl;
     ApiDecorator apiDec(&impl);
     rtError_t error;
-    Runtime *rtInstance = ((Runtime *)Runtime::Instance());
+    Runtime* rtInstance = ((Runtime*)Runtime::Instance());
     rtChipType_t originType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_MC62CM12A);
     GlobalContainer::SetRtChipType(CHIP_MC62CM12A);
@@ -8259,7 +8027,7 @@ TEST_F(ApiTest, register_all_kernel)
     devBin.length = sizeof(binary);
     devBin.data = binary;
     PlainProgram stubProg(RT_KERNEL_ATTR_TYPE_AICORE);
-    Program *program = &stubProg;
+    Program* program = &stubProg;
     program->SetDefaultKernelAttrType(RT_KERNEL_ATTR_TYPE_AICORE);
 
     MOCKER_CPP(&Runtime::ProgramRegister)
@@ -8268,7 +8036,7 @@ TEST_F(ApiTest, register_all_kernel)
         .will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP(&Runtime::AllKernelRegister).stubs().will(returnValue(RT_ERROR_NONE));
-    error = apiDec.RegisterAllKernel(&devBin ,&program);
+    error = apiDec.RegisterAllKernel(&devBin, &program);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP(&Runtime::KernelRegister).stubs().will(returnValue(RT_ERROR_NONE));

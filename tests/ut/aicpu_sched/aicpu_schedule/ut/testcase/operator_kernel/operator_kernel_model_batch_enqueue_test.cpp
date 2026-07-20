@@ -23,21 +23,21 @@
 
 using namespace AicpuSchedule;
 
-namespace {
-}  // namespace
+namespace {} // namespace
 
 class OperatorKernelModelBatchEnqueueTest : public OperatorKernelTest {
 protected:
     OperatorKernelModelBatchEnqueue kernel_;
 };
 
-TEST_F(OperatorKernelModelBatchEnqueueTest, ModelBatchEnque_success) {
+TEST_F(OperatorKernelModelBatchEnqueueTest, ModelBatchEnque_success)
+{
     BatchDequeueDesc param = {};
     param.inputNums = 2U;
     char placeHolder0[1500U] = {};
-    Mbuf *mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
+    Mbuf* mbuf0 = reinterpret_cast<Mbuf*>(&placeHolder0[0U]);
     char placeHolder1[1500U] = {};
-    Mbuf *mbuf1 = reinterpret_cast<Mbuf*>(&placeHolder1[0U]);
+    Mbuf* mbuf1 = reinterpret_cast<Mbuf*>(&placeHolder1[0U]);
     std::vector<uint64_t> mbufAddrs;
     mbufAddrs.emplace_back(PtrToValue(&mbuf0));
     mbufAddrs.emplace_back(PtrToValue(&mbuf1));

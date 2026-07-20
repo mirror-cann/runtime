@@ -18,7 +18,7 @@ namespace {
 
 TEST(QueueScheduleStubUtest, BqsServerStubFunctions)
 {
-    BqsServer &server = BqsServer::GetInstance();
+    BqsServer& server = BqsServer::GetInstance();
     EXPECT_EQ(&server, &BqsServer::GetInstance());
     EXPECT_EQ(server.InitBqsServer("stub_group", 7U), BQS_STATUS_OK);
     server.BindMsgProc();
@@ -26,7 +26,7 @@ TEST(QueueScheduleStubUtest, BqsServerStubFunctions)
 
 TEST(QueueScheduleStubUtest, TsdStubFunctions)
 {
-    SubProcEventCallBackInfo regInfo {};
+    SubProcEventCallBackInfo regInfo{};
     regInfo.eventType = TSD_EVENT_START_QS_MODULE;
     regInfo.callBackFunc = nullptr;
 
@@ -38,4 +38,4 @@ TEST(QueueScheduleStubUtest, TsdStubFunctions)
     EXPECT_EQ(TsdDestroy(0U, TSD_QS, 1U, 2U), 0);
 }
 
-}  // namespace
+} // namespace

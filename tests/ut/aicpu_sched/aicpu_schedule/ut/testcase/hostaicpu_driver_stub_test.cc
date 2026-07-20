@@ -16,16 +16,14 @@
 
 class HostCpu1971DriverStubUt : public ::testing::Test {
 public:
-    virtual void SetUp()
-    {}
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {}
+    virtual void TearDown() {}
 };
 
 TEST_F(HostCpu1971DriverStubUt, HostCpu1971DriverStubUtSuccess)
 {
-    Mbuf *mbuf = nullptr;
+    Mbuf* mbuf = nullptr;
     uint64_t len = 0;
     poolHandle pHandle;
     halMbufChainGetMbuf(mbuf, 0, &mbuf);
@@ -38,7 +36,8 @@ TEST_F(HostCpu1971DriverStubUt, HostCpu1971DriverStubUtSuccess)
     halMbufAllocEx(0, 0, 0, 0, &mbuf);
 
     mpAttr attr;
-    struct mempool_t *mp = nullptr;;
+    struct mempool_t* mp = nullptr;
+    ;
     halBuffCreatePool(&attr, &mp);
     halBuffDeletePool(mp);
 

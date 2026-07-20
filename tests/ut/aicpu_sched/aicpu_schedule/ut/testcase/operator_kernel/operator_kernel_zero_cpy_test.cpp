@@ -39,8 +39,8 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpy_Success)
     taskT.taskID = 1;
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     AddrMapInfo addrMapInfo;
     addrMapInfo.addrNum = 1;
     addrMapInfo.srcAddrList = (uint64_t)&srcMbuf;
@@ -54,8 +54,8 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpy_Failed)
 {
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
-    uint64_t *srcVal = nullptr;
-    uint64_t *dstVal = nullptr;
+    uint64_t* srcVal = nullptr;
+    uint64_t* dstVal = nullptr;
     AddrMapInfo addrMapInfo;
     addrMapInfo.addrNum = 1;
     addrMapInfo.srcAddrList = (uint64_t)srcVal;
@@ -93,8 +93,8 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpy_Failed3)
     taskT.taskID = 1;
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     AddrMapInfo addrMapInfo;
     addrMapInfo.addrNum = 1;
     addrMapInfo.srcAddrList = (uint64_t)&srcMbuf;
@@ -106,7 +106,7 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpy_Failed3)
 
 TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpy_failed4)
 {
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -119,15 +119,18 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_Success)
 {
     RuntimeTensorDesc desc;
     auto descP = &desc;
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **))).will(returnValue(0));
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
+        .will(returnValue(0));
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     AddrMapInfoV2 addrMapInfo;
     addrMapInfo.addrNum = 1;
     addrMapInfo.srcAddrList = (uint64_t)&srcMbuf;
@@ -143,23 +146,26 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_Success01)
 {
     RuntimeTensorDesc desc;
     auto descP = &desc;
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **))).will(returnValue(0));
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
+        .will(returnValue(0));
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 0;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(AddrMapInfoV2) + sizeof(uint32_t)] = {0};
-    AddrMapInfoV2 *addrMapInfo = (AddrMapInfoV2 *)buff;
+    AddrMapInfoV2* addrMapInfo = (AddrMapInfoV2*)buff;
     addrMapInfo->addrNum = 1;
     addrMapInfo->srcAddrList = (uint64_t)&srcMbuf;
     addrMapInfo->dstAddrList = (uint64_t)&dstMbuf;
     addrMapInfo->isNoTilingList = (uint64_t)&noTilingVal;
     addrMapInfo->len = sizeof(uint32_t);
-    uint32_t *skipSize = (uint32_t *)addrMapInfo->extendInfo;
+    uint32_t* skipSize = (uint32_t*)addrMapInfo->extendInfo;
     *skipSize = 1024;
     taskT.paraBase = (uint64_t)buff;
     int ret = kernelV2_.Compute(taskT, runContextT);
@@ -170,25 +176,28 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_Success02)
 {
     RuntimeTensorDesc desc;
     auto descP = &desc;
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(((void **)&descP), sizeof(void **))).will(returnValue(0));
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(((void**)&descP), sizeof(void**)))
+        .will(returnValue(0));
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(AddrMapInfoV2) + sizeof(uint32_t) + sizeof(uint64_t)] = {0};
-    AddrMapInfoV2 *addrMapInfo = (AddrMapInfoV2 *)buff;
+    AddrMapInfoV2* addrMapInfo = (AddrMapInfoV2*)buff;
     addrMapInfo->addrNum = 1;
     addrMapInfo->srcAddrList = (uint64_t)&srcMbuf;
     addrMapInfo->dstAddrList = (uint64_t)&dstMbuf;
     addrMapInfo->isNoTilingList = (uint64_t)&noTilingVal;
     addrMapInfo->len = sizeof(uint32_t) + sizeof(uint64_t);
-    uint32_t *skipSize = (uint32_t *)addrMapInfo->extendInfo;
+    uint32_t* skipSize = (uint32_t*)addrMapInfo->extendInfo;
     *skipSize = 1024;
-    uint64_t *const dest_is_tiling_list = (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
+    uint64_t* const dest_is_tiling_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
     int32_t tiling_flag[10] = {1, 1, 1};
     *dest_is_tiling_list = (uint64_t)(tiling_flag);
     taskT.paraBase = (uint64_t)buff;
@@ -201,12 +210,15 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_Success03)
     // BUFF = tensordesc1 + 512 + tensordesc2 + 512
     size_t buff_size = 2 * sizeof(RuntimeTensorDesc) + 512 * 2;
     std::vector<int8_t> tensor_buff(buff_size);
-    auto desc1 = (RuntimeTensorDesc *)(&tensor_buff[0]);
+    auto desc1 = (RuntimeTensorDesc*)(&tensor_buff[0]);
     desc1->dataSize = 512;
-    auto desc2 = (RuntimeTensorDesc *)(&tensor_buff[sizeof(RuntimeTensorDesc) + 512]);
+    auto desc2 = (RuntimeTensorDesc*)(&tensor_buff[sizeof(RuntimeTensorDesc) + 512]);
     desc2->dataSize = 512;
     auto buffP = &tensor_buff[0];
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(((void **)&buffP), sizeof(void **))).will(returnValue(0));
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(((void**)&buffP), sizeof(void**)))
+        .will(returnValue(0));
 
     uint64_t dataLen = buff_size;
     MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen)).will(returnValue(0));
@@ -216,22 +228,21 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_Success03)
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(AddrMapInfoV2) + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t)] = {0};
-    AddrMapInfoV2 *addrMapInfo = (AddrMapInfoV2 *)buff;
+    AddrMapInfoV2* addrMapInfo = (AddrMapInfoV2*)buff;
     addrMapInfo->addrNum = 1;
     addrMapInfo->srcAddrList = (uint64_t)&srcMbuf;
     addrMapInfo->dstAddrList = (uint64_t)&dstMbuf;
     addrMapInfo->isNoTilingList = (uint64_t)&noTilingVal;
     addrMapInfo->len = sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t);
-    uint32_t *skipSize = (uint32_t *)addrMapInfo->extendInfo;
+    uint32_t* skipSize = (uint32_t*)addrMapInfo->extendInfo;
     *skipSize = 1024;
-    uint64_t *const dest_is_tiling_list = (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
+    uint64_t* const dest_is_tiling_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
     int32_t tiling_flag[10] = {1, 1, 1};
     *dest_is_tiling_list = (uint64_t)(tiling_flag);
-    uint64_t *const fusion_offset_list =
-        (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
+    uint64_t* const fusion_offset_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
     int32_t fusion_offsets[1] = {1};
     *fusion_offset_list = (uint64_t)(fusion_offsets);
     taskT.paraBase = (uint64_t)buff;
@@ -255,27 +266,26 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_FusionNull)
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(AddrMapInfoV2) + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t)] = {0};
-    AddrMapInfoV2 *addrMapInfo = (AddrMapInfoV2 *)buff;
+    AddrMapInfoV2* addrMapInfo = (AddrMapInfoV2*)buff;
     addrMapInfo->addrNum = 1;
     addrMapInfo->srcAddrList = (uint64_t)&srcMbuf;
     addrMapInfo->dstAddrList = (uint64_t)&dstMbuf;
     addrMapInfo->isNoTilingList = (uint64_t)&noTilingVal;
     addrMapInfo->len = sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t);
-    uint32_t *skipSize = (uint32_t *)addrMapInfo->extendInfo;
+    uint32_t* skipSize = (uint32_t*)addrMapInfo->extendInfo;
     *skipSize = 1024;
-    uint64_t *const dest_is_tiling_list = (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
+    uint64_t* const dest_is_tiling_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
     int32_t tiling_flag[10] = {1, 1, 1};
     *dest_is_tiling_list = (uint64_t)(tiling_flag);
-    uint64_t *const fusion_offset_list =
-        (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
+    uint64_t* const fusion_offset_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
     *fusion_offset_list = 0UL;
     taskT.paraBase = (uint64_t)buff;
     int ret = kernelV2_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
-    int32_t *fusion_offsets = nullptr;
+    int32_t* fusion_offsets = nullptr;
     *fusion_offset_list = (uint64_t)(fusion_offsets);
     ret = kernelV2_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -286,14 +296,17 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_FusionSizeInvalid)
     // BUFF = tensordesc1 + 512 + tensordesc2 + 512
     size_t buff_size = 2 * sizeof(RuntimeTensorDesc) + 512 * 2;
     std::vector<int8_t> tensor_buff(buff_size);
-    auto desc1 = (RuntimeTensorDesc *)(&tensor_buff[0]);
+    auto desc1 = (RuntimeTensorDesc*)(&tensor_buff[0]);
     desc1->dataSize = 512;
-    auto desc2 = (RuntimeTensorDesc *)(&tensor_buff[sizeof(RuntimeTensorDesc) + 512]);
+    auto desc2 = (RuntimeTensorDesc*)(&tensor_buff[sizeof(RuntimeTensorDesc) + 512]);
     desc2->dataSize = 512;
     auto buffP = &tensor_buff[0];
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(((void **)&buffP), sizeof(void **))).will(returnValue(0));
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(((void**)&buffP), sizeof(void**)))
+        .will(returnValue(0));
 
-    uint64_t dataLen = 1;  // invalid size
+    uint64_t dataLen = 1; // invalid size
     MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen)).will(returnValue(0));
 
     AicpuTaskInfo taskT;
@@ -301,34 +314,33 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_FusionSizeInvalid)
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(AddrMapInfoV2) + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t)] = {0};
-    AddrMapInfoV2 *addrMapInfo = (AddrMapInfoV2 *)buff;
+    AddrMapInfoV2* addrMapInfo = (AddrMapInfoV2*)buff;
     addrMapInfo->addrNum = 1;
     addrMapInfo->srcAddrList = (uint64_t)&srcMbuf;
     addrMapInfo->dstAddrList = (uint64_t)&dstMbuf;
     addrMapInfo->isNoTilingList = (uint64_t)&noTilingVal;
     addrMapInfo->len = sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t);
-    uint32_t *skipSize = (uint32_t *)addrMapInfo->extendInfo;
+    uint32_t* skipSize = (uint32_t*)addrMapInfo->extendInfo;
     *skipSize = 1024;
-    uint64_t *const dest_is_tiling_list = (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
+    uint64_t* const dest_is_tiling_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
     int32_t tiling_flag[10] = {1, 1, 1};
     *dest_is_tiling_list = (uint64_t)(tiling_flag);
-    uint64_t *const fusion_offset_list =
-        (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
+    uint64_t* const fusion_offset_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
     int32_t fusion_offsets[1] = {1};
     *fusion_offset_list = (uint64_t)(fusion_offsets);
     taskT.paraBase = (uint64_t)buff;
     int ret = kernelV2_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
-    uint64_t dataLen2 = sizeof(RuntimeTensorDesc) + 128;  // invalid size
+    uint64_t dataLen2 = sizeof(RuntimeTensorDesc) + 128; // invalid size
     MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen2)).will(returnValue(0));
     ret = kernelV2_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 
-    uint64_t dataLen3 = sizeof(RuntimeTensorDesc) + 512;  // invalid size
+    uint64_t dataLen3 = sizeof(RuntimeTensorDesc) + 512; // invalid size
     MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen3)).will(returnValue(0));
     ret = kernelV2_.Compute(taskT, runContextT);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
@@ -339,12 +351,15 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_GetDataSizeFailed)
     // BUFF = tensordesc1 + 512 + tensordesc2 + 512
     size_t buff_size = 2 * sizeof(RuntimeTensorDesc) + 512 * 2;
     std::vector<int8_t> tensor_buff(buff_size);
-    auto desc1 = (RuntimeTensorDesc *)(&tensor_buff[0]);
+    auto desc1 = (RuntimeTensorDesc*)(&tensor_buff[0]);
     desc1->dataSize = 512;
-    auto desc2 = (RuntimeTensorDesc *)(&tensor_buff[sizeof(RuntimeTensorDesc) + 512]);
+    auto desc2 = (RuntimeTensorDesc*)(&tensor_buff[sizeof(RuntimeTensorDesc) + 512]);
     desc2->dataSize = 512;
     auto buffP = &tensor_buff[0];
-    MOCKER(halMbufGetBuffAddr).stubs().with(mockcpp::any(), outBoundP(((void **)&buffP), sizeof(void **))).will(returnValue(0));
+    MOCKER(halMbufGetBuffAddr)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(((void**)&buffP), sizeof(void**)))
+        .will(returnValue(0));
 
     uint64_t dataLen = buff_size;
     MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen)).will(returnValue(1));
@@ -354,22 +369,21 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyV2_GetDataSizeFailed)
     uint64_t srcVal = 1;
     uint64_t dstVal = 1;
     int32_t noTilingVal = 1;
-    Mbuf *srcMbuf = (Mbuf *)&srcVal;
-    Mbuf *dstMbuf = (Mbuf *)&dstVal;
+    Mbuf* srcMbuf = (Mbuf*)&srcVal;
+    Mbuf* dstMbuf = (Mbuf*)&dstVal;
     uint8_t buff[sizeof(AddrMapInfoV2) + sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t)] = {0};
-    AddrMapInfoV2 *addrMapInfo = (AddrMapInfoV2 *)buff;
+    AddrMapInfoV2* addrMapInfo = (AddrMapInfoV2*)buff;
     addrMapInfo->addrNum = 1;
     addrMapInfo->srcAddrList = (uint64_t)&srcMbuf;
     addrMapInfo->dstAddrList = (uint64_t)&dstMbuf;
     addrMapInfo->isNoTilingList = (uint64_t)&noTilingVal;
     addrMapInfo->len = sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint64_t);
-    uint32_t *skipSize = (uint32_t *)addrMapInfo->extendInfo;
+    uint32_t* skipSize = (uint32_t*)addrMapInfo->extendInfo;
     *skipSize = 1024;
-    uint64_t *const dest_is_tiling_list = (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
+    uint64_t* const dest_is_tiling_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t));
     int32_t tiling_flag[10] = {1, 1, 1};
     *dest_is_tiling_list = (uint64_t)(tiling_flag);
-    uint64_t *const fusion_offset_list =
-        (uint64_t *)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
+    uint64_t* const fusion_offset_list = (uint64_t*)(&addrMapInfo->extendInfo[0] + sizeof(uint32_t) + sizeof(uint64_t));
     int32_t fusion_offsets[1] = {1};
     *fusion_offset_list = (uint64_t)(fusion_offsets);
     taskT.paraBase = (uint64_t)buff;
@@ -385,7 +399,7 @@ TEST_F(OperatorKernelZeroCpyTest, UpdateDataPtrExtendForUnorderFusionOffset)
     info.lastDataOffset = 100U;
     fusionMap[0U] = info;
 
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     MOCKER_CPP(&OperatorKernelCommon::DoUpdateDataPtr).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     EXPECT_EQ(kernelV2_.UpdateDataPtrExtend(0U, 2, dataPtr, fusionMap), AICPU_SCHEDULE_OK);
     EXPECT_EQ(fusionMap[0U].lastFusionOffset, 0);
@@ -395,11 +409,11 @@ TEST_F(OperatorKernelZeroCpyTest, UpdateDataPtrExtendForUnorderFusionOffset)
 TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyCpu_Success)
 {
     AddrMapInfo mapInfo = {};
-    void *src1 = nullptr;
-    void *src2 = nullptr;
+    void* src1 = nullptr;
+    void* src2 = nullptr;
     uint64_t srcAddrList[] = {PtrToValue(&src1), PtrToValue(&src2)};
-    void *dst1 = nullptr;
-    void *dst2 = nullptr;
+    void* dst1 = nullptr;
+    void* dst2 = nullptr;
     uint64_t dstAddrList[] = {PtrToValue(&dst1), PtrToValue(&dst2)};
     mapInfo.srcAddrList = PtrToValue(&srcAddrList[0U]);
     mapInfo.dstAddrList = PtrToValue(&dstAddrList[0U]);
@@ -409,8 +423,9 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyCpu_Success)
     taskT.paraBase = PtrToValue(&mapInfo);
 
     EXPECT_EQ(kernelCpu_.Compute(taskT, runContextT), AICPU_SCHEDULE_OK);
-    EXPECT_EQ(*(reinterpret_cast<void **>(ValueToPtr(srcAddrList[0U]))),
-        *(reinterpret_cast<void **>(ValueToPtr(dstAddrList[0U]))));
+    EXPECT_EQ(
+        *(reinterpret_cast<void**>(ValueToPtr(srcAddrList[0U]))),
+        *(reinterpret_cast<void**>(ValueToPtr(dstAddrList[0U]))));
 }
 
 TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyCpu_fail_MissingParam)
@@ -424,8 +439,8 @@ TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyCpu_fail_MissingParam)
 TEST_F(OperatorKernelZeroCpyTest, ModelZeroCpyCpu_fail_NullSrc)
 {
     AddrMapInfo mapInfo = {};
-    void *src1 = nullptr;
-    void *src2 = nullptr;
+    void* src1 = nullptr;
+    void* src2 = nullptr;
     uint64_t srcAddrList[] = {PtrToValue(&src1), PtrToValue(&src2)};
     mapInfo.srcAddrList = PtrToValue(&srcAddrList[0U]);
     mapInfo.dstAddrList = 0U;

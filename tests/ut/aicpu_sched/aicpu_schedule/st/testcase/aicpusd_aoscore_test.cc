@@ -25,20 +25,11 @@
 
 class AICPUAoscoreTEST : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AICPUAoscoreTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUAoscoreTEST SetUpTestCase" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "AICPUAoscoreTEST TearDownTestCase" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "AICPUAoscoreTEST TearDownTestCase" << std::endl; }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUAoscoreTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUAoscoreTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -213,7 +204,7 @@ TEST_F(AICPUAoscoreTEST, AicpusdProfilerSetMbufHead)
     EXPECT_EQ(profiler.accessHiperfSo_, true);
 
     AicpuSchedule::MbufHeadMsg mbufHead = {};
-    profiler.SetMbufHead(reinterpret_cast<void *>(&mbufHead));
+    profiler.SetMbufHead(reinterpret_cast<void*>(&mbufHead));
 
     profiler.Profiler();
     profiler.Uninit();

@@ -10,18 +10,18 @@
 #include <unistd.h>
 #include "rt_comm_testcase.hpp"
 
-#define ERROR_PROC(ret, stream, start, end, ctx)        \
-    if (ret != 0)                                       \
-    {                                                   \
-        rtEventDestroy(start);                          \
-        rtEventDestroy(end);                            \
-        rtStreamDestroy(stream);                        \
-        rtCtxDestroy(ctx);                              \
-        rtDeviceReset(0);                                \
-        return -1;                                      \
-    }                                                   \
+#define ERROR_PROC(ret, stream, start, end, ctx) \
+    if (ret != 0) {                              \
+        rtEventDestroy(start);                   \
+        rtEventDestroy(end);                     \
+        rtStreamDestroy(stream);                 \
+        rtCtxDestroy(ctx);                       \
+        rtDeviceReset(0);                        \
+        return -1;                               \
+    }
 
-int rt_event_ctx_test(int32_t device, uint32_t flags, int32_t priority, uint32_t sleepTime, uint32_t count, int32_t listener)
+int rt_event_ctx_test(
+    int32_t device, uint32_t flags, int32_t priority, uint32_t sleepTime, uint32_t count, int32_t listener)
 {
     rtStream_t stream = NULL;
     rtEvent_t start = NULL;
@@ -85,4 +85,3 @@ int rt_event_ctx_test(int32_t device, uint32_t flags, int32_t priority, uint32_t
 
     return 0;
 }
-

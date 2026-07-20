@@ -17,35 +17,28 @@
 #include "aicpusd_threads_process.h"
 #undef private
 
-
 using namespace AicpuSchedule;
 
 class ComputeProcessTest : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase() {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 namespace {
-drvError_t halEschedSubmitEventBatchSuccess1(unsigned int devId, SUBMIT_FLAG flag,
-    struct event_summary *events, unsigned int event_num, unsigned int *succ_event_num)
+drvError_t halEschedSubmitEventBatchSuccess1(
+    unsigned int devId, SUBMIT_FLAG flag, struct event_summary* events, unsigned int event_num,
+    unsigned int* succ_event_num)
 {
     *succ_event_num = 1;
     return DRV_ERROR_NONE;
 }
-};
+}; // namespace
 
 TEST_F(ComputeProcessTest, RegisterScheduleTaskSuccess)
 {
@@ -103,7 +96,8 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskAdcSuccess)
     const aicpu::Closure task = []() {};
     taskQueue.push(task);
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(true));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 }
 
@@ -120,7 +114,8 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskDcSuccess)
     const aicpu::Closure task = []() {};
     taskQueue.push(task);
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 }
 
@@ -137,7 +132,8 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskAddTaskFail)
     const aicpu::Closure task = []() {};
     taskQueue.push(task);
     MOCKER_CPP(&TaskMap::BatchAddTask).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
@@ -155,7 +151,8 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskAdcFail)
     taskQueue.push(task);
     MOCKER(halEschedSubmitEvent).stubs().will(returnValue(1));
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(true));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
@@ -173,7 +170,8 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskDcFail)
     taskQueue.push(task);
     MOCKER(halEschedSubmitEventBatch).stubs().will(returnValue(1));
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 }
 
@@ -192,7 +190,8 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskDcPartSubmitSuccess)
     taskQueue.push(task);
     MOCKER(halEschedSubmitEventBatch).stubs().will(invoke(halEschedSubmitEventBatchSuccess1));
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 }
 
@@ -212,16 +211,17 @@ TEST_F(ComputeProcessTest, SubmitSplitKernelTaskDcPartSubmitFail)
     MOCKER(halEschedSubmitEventBatch).stubs().will(invoke(halEschedSubmitEventBatchSuccess1));
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
     MOCKER_CPP(&ComputeProcess::DoSplitKernelTask).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-drvError_t halEschedGetEventHasEvent(unsigned int devId, unsigned int grpId, unsigned int threadId,
-                                     EVENT_ID eventId, struct event_info *event)
+drvError_t halEschedGetEventHasEvent(
+    unsigned int devId, unsigned int grpId, unsigned int threadId, EVENT_ID eventId, struct event_info* event)
 {
     AICPUSubEventInfo aicpuEventInfo = {};
     aicpuEventInfo.para.sharderTaskInfo = {1U, 1};
-    memcpy(event->priv.msg, (void *)(&aicpuEventInfo), sizeof(AICPUSubEventInfo));
+    memcpy(event->priv.msg, (void*)(&aicpuEventInfo), sizeof(AICPUSubEventInfo));
     return DRV_ERROR_NONE;
 }
 
@@ -238,7 +238,8 @@ TEST_F(ComputeProcessTest, GetAndDoSplitKernelTaskSuccess)
     const aicpu::Closure task = []() {};
     taskQueue.push(task);
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 
     MOCKER(halEschedGetEvent).stubs().will(invoke(halEschedGetEventHasEvent));
@@ -259,7 +260,8 @@ TEST_F(ComputeProcessTest, GetAndDoSplitKernelTaskNoEventSuccess)
     const aicpu::Closure task = []() {};
     taskQueue.push(task);
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 
     MOCKER(halEschedGetEvent).stubs().will(returnValue(DRV_ERROR_NO_EVENT));
@@ -280,7 +282,8 @@ TEST_F(ComputeProcessTest, GetAndDoSplitKernelTaskNoEventFail)
     const aicpu::Closure task = []() {};
     taskQueue.push(task);
     MOCKER_CPP(&FeatureCtrl::ShouldSubmitTaskOneByOne).stubs().will(returnValue(false));
-    const uint32_t schRet = aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
+    const uint32_t schRet =
+        aicpu::SharderNonBlock::GetInstance().splitKernelScheduler_(parallelId, shardNum, taskQueue);
     EXPECT_EQ(schRet, AICPU_SCHEDULE_OK);
 
     MOCKER(halEschedGetEvent).stubs().will(returnValue(DRV_ERROR_GROUP_EXIST));
@@ -299,7 +302,7 @@ TEST_F(ComputeProcessTest, DoSplitKernelTaskException)
     const int64_t shardNum = 1;
     const AICPUSharderTaskInfo taskInfo = {parallelId, shardNum};
     std::queue<aicpu::Closure> taskQueue;
-    const aicpu::Closure task = []() {throw std::runtime_error("runtime error");};
+    const aicpu::Closure task = []() { throw std::runtime_error("runtime error"); };
     taskQueue.push(task);
     inst.splitKernelTask_.BatchAddTask(taskInfo, taskQueue);
 
@@ -313,7 +316,6 @@ TEST_F(ComputeProcessTest, DoRandomKernelTaskSuccess)
     inst.deviceVec_.push_back(0U);
     const int32_t ret = inst.RegisterScheduleTask();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-
 
     const aicpu::Closure task = []() {};
     inst.randomKernelTask_.Enqueue(task);
@@ -329,8 +331,7 @@ TEST_F(ComputeProcessTest, DoRandomKernelTaskException)
     const int32_t ret = inst.RegisterScheduleTask();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 
-
-    const aicpu::Closure task = []() {throw std::runtime_error("runtime error");};
+    const aicpu::Closure task = []() { throw std::runtime_error("runtime error"); };
     inst.randomKernelTask_.Enqueue(task);
 
     const bool taskRet = inst.DoRandomKernelTask();

@@ -30,28 +30,24 @@ uint32_t data_[dataLen_] = {};
 const uint32_t coreNum_ = 2U;
 std::queue<aicpu::Closure> taskQueue_;
 
-const RandomKernelScheduler randomKernelScheduler = [] (const aicpu::Closure &task)
-{
+const RandomKernelScheduler randomKernelScheduler = [](const aicpu::Closure& task) {
     task();
     return 0U;
 };
 
-const SplitKernelScheduler splitKernelScheduler = [] (const uint32_t parallelId,
-                                                                 const int64_t shardNum,
-                                                                 const std::queue<Closure> &queue)
-{
+const SplitKernelScheduler splitKernelScheduler = [](const uint32_t parallelId, const int64_t shardNum,
+                                                     const std::queue<Closure>& queue) {
     taskQueue_ = queue;
     return 0U;
 };
 
-const SplitKernelGetProcesser splitKernelGetProcesser = [] ()
-{
+const SplitKernelGetProcesser splitKernelGetProcesser = []() {
     const auto work = taskQueue_.front();
     taskQueue_.pop();
     work();
     return true;
 };
-}
+} // namespace
 
 class AiCPUSharderUt : public ::testing::Test {
 public:
@@ -61,13 +57,10 @@ public:
         while (!taskQueue_.empty()) {
             taskQueue_.pop();
         }
-        memset((void*)(&data_), 0, sizeof(uint32_t)*dataLen_);
+        memset((void*)(&data_), 0, sizeof(uint32_t) * dataLen_);
     }
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(AiCPUSharderUt, GetCPUNumSuccess)
@@ -78,9 +71,9 @@ TEST_F(AiCPUSharderUt, GetCPUNumSuccess)
 
 TEST_F(AiCPUSharderUt, ParallelForSuccess)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) {
         for (int64_t i = start; i < end; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -93,9 +86,9 @@ TEST_F(AiCPUSharderUt, ParallelForSuccess)
 
 TEST_F(AiCPUSharderUt, ParallelForShardNum1)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) {
         for (int64_t i = start; i < end; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -108,11 +101,9 @@ TEST_F(AiCPUSharderUt, ParallelForShardNum1)
 
 TEST_F(AiCPUSharderUt, ParallelForTaskException)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
-        throw std::runtime_error("runtime error");
-    };
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) { throw std::runtime_error("runtime error"); };
     ParallelFor(dataLen_, 1, worker);
     for (uint32_t i = 0U; i < dataLen_; ++i) {
         EXPECT_EQ(data_[i], 0);
@@ -121,17 +112,11 @@ TEST_F(AiCPUSharderUt, ParallelForTaskException)
 
 TEST_F(AiCPUSharderUt, ParallelForSplitSchedulerFail)
 {
-    const SplitKernelScheduler splitKernelScheduler = [] (const uint32_t parallelId,
-                                                                 const int64_t shardNum,
-                                                                 const std::queue<Closure> &queue)
-    {
-        return 1U;
-    };
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
-        throw std::runtime_error("runtime error");
-    };
+    const SplitKernelScheduler splitKernelScheduler = [](const uint32_t parallelId, const int64_t shardNum,
+                                                         const std::queue<Closure>& queue) { return 1U; };
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) { throw std::runtime_error("runtime error"); };
     ParallelFor(dataLen_, 1, worker);
     for (uint32_t i = 0U; i < dataLen_; ++i) {
         EXPECT_EQ(data_[i], 0);
@@ -140,9 +125,9 @@ TEST_F(AiCPUSharderUt, ParallelForSplitSchedulerFail)
 
 TEST_F(AiCPUSharderUt, ParallelForSemWaitFail)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) {
         for (int64_t i = start; i < end; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -156,9 +141,9 @@ TEST_F(AiCPUSharderUt, ParallelForSemWaitFail)
 
 TEST_F(AiCPUSharderUt, ParallelForSemDestroyFail)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) {
         for (int64_t i = start; i < end; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -173,8 +158,7 @@ TEST_F(AiCPUSharderUt, ParallelForSemDestroyFail)
 TEST_F(AiCPUSharderUt, ParallelForGetTaskThousands)
 {
     uint32_t count = 0U;
-    const auto splitKernelGetProcesserThousands = [&count] ()
-    {
+    const auto splitKernelGetProcesserThousands = [&count]() {
         if (count <= 1001) {
             ++count;
             return true;
@@ -186,9 +170,9 @@ TEST_F(AiCPUSharderUt, ParallelForGetTaskThousands)
         return true;
     };
 
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesserThousands);
-    const auto worker = [this] (int64_t start, int64_t end) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesserThousands);
+    const auto worker = [this](int64_t start, int64_t end) {
         for (int64_t i = start; i < end; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -201,9 +185,9 @@ TEST_F(AiCPUSharderUt, ParallelForGetTaskThousands)
 
 TEST_F(AiCPUSharderUt, ScheduleSuccess)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] () {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this]() {
         for (int64_t i = 0; i < dataLen_; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -216,9 +200,8 @@ TEST_F(AiCPUSharderUt, ScheduleSuccess)
 
 TEST_F(AiCPUSharderUt, ScheduleNullptrSuccess)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, nullptr, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] () {
+    SharderNonBlock::GetInstance().Register(coreNum_, nullptr, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this]() {
         for (int64_t i = 0; i < dataLen_; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -231,14 +214,11 @@ TEST_F(AiCPUSharderUt, ScheduleNullptrSuccess)
 
 TEST_F(AiCPUSharderUt, ScheduleFail)
 {
-    const RandomKernelScheduler randomKernelSchedulerFail = [] (const aicpu::Closure &task)
-    {
-        return 1U;
-    };
+    const RandomKernelScheduler randomKernelSchedulerFail = [](const aicpu::Closure& task) { return 1U; };
 
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelSchedulerFail, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] () {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelSchedulerFail, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this]() {
         for (int64_t i = 0; i < dataLen_; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -251,9 +231,9 @@ TEST_F(AiCPUSharderUt, ScheduleFail)
 
 TEST_F(AiCPUSharderUt, ParallelForHashSuccess)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t total, int64_t cur) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t total, int64_t cur) {
         for (int64_t i = cur; i < total; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -266,9 +246,9 @@ TEST_F(AiCPUSharderUt, ParallelForHashSuccess)
 
 TEST_F(AiCPUSharderUt, ParallelForHashSemInitFail)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t total, int64_t cur) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t total, int64_t cur) {
         for (int64_t i = cur; i < total; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -282,9 +262,9 @@ TEST_F(AiCPUSharderUt, ParallelForHashSemInitFail)
 
 TEST_F(AiCPUSharderUt, ParallelForHashSemWaitFail)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t total, int64_t cur) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t total, int64_t cur) {
         for (int64_t i = cur; i < total; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -298,9 +278,9 @@ TEST_F(AiCPUSharderUt, ParallelForHashSemWaitFail)
 
 TEST_F(AiCPUSharderUt, ParallelForHashSemDestroyFail)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t total, int64_t cur) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t total, int64_t cur) {
         for (int64_t i = cur; i < total; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -314,9 +294,9 @@ TEST_F(AiCPUSharderUt, ParallelForHashSemDestroyFail)
 
 TEST_F(AiCPUSharderUt, ParallelForHashSemPostFail)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t total, int64_t cur) {
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t total, int64_t cur) {
         for (int64_t i = cur; i < total; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -331,9 +311,8 @@ TEST_F(AiCPUSharderUt, ParallelForHashSemPostFail)
 
 TEST_F(AiCPUSharderUt, ParallelForHashNullptr)
 {
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, nullptr,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t total, int64_t cur) {
+    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, nullptr, splitKernelGetProcesser);
+    const auto worker = [this](int64_t total, int64_t cur) {
         for (int64_t i = cur; i < total; ++i) {
             data_[i] = defaultFillData_;
         }
@@ -346,17 +325,11 @@ TEST_F(AiCPUSharderUt, ParallelForHashNullptr)
 
 TEST_F(AiCPUSharderUt, ParallelForHashSplitSchedulerFail)
 {
-    const SplitKernelScheduler splitKernelScheduler = [] (const uint32_t parallelId,
-                                                                     const int64_t shardNum,
-                                                                     const std::queue<Closure> &queue)
-    {
-        return 1U;
-    };
-    SharderNonBlock::GetInstance().Register(coreNum_, randomKernelScheduler, splitKernelScheduler,
-                                            splitKernelGetProcesser);
-    const auto worker = [this] (int64_t start, int64_t end) {
-        throw std::runtime_error("runtime error");
-    };
+    const SplitKernelScheduler splitKernelScheduler = [](const uint32_t parallelId, const int64_t shardNum,
+                                                         const std::queue<Closure>& queue) { return 1U; };
+    SharderNonBlock::GetInstance().Register(
+        coreNum_, randomKernelScheduler, splitKernelScheduler, splitKernelGetProcesser);
+    const auto worker = [this](int64_t start, int64_t end) { throw std::runtime_error("runtime error"); };
     SharderNonBlock::GetInstance().ParallelForHash(dataLen_, coreNum_, worker);
     for (uint32_t i = 0U; i < dataLen_; ++i) {
         EXPECT_EQ(data_[i], 0);

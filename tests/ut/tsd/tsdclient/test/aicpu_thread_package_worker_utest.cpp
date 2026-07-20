@@ -23,7 +23,7 @@ using namespace tsd;
 namespace {
 std::string GetDirName()
 {
-    std::unique_ptr<char_t []> path(new (std::nothrow) char_t[PATH_MAX]);
+    std::unique_ptr<char_t[]> path(new (std::nothrow) char_t[PATH_MAX]);
     if (path == nullptr) {
         std::cout << "Oom" << std::endl;
         return "";
@@ -48,7 +48,7 @@ std::string GetDirName()
     return dirPath;
 }
 std::string g_curWorkDir = "";
-}
+} // namespace
 
 class AicpuThreadPackageWorkerTest : public testing::Test {
 protected:
@@ -117,7 +117,7 @@ TEST_F(AicpuThreadPackageWorkerTest, LoadPackageSucc)
     MOCKER_CPP(&PackageWorkerUtils::VerifyPackage).stubs().will(returnValue(TSD_OK));
     MOCKER(PackSystem).stubs().will(returnValue(0));
     auto ret = inst.LoadPackage(path, name);
-    
+
     EXPECT_EQ(ret, TSD_OK);
 }
 
@@ -179,7 +179,8 @@ TEST_F(AicpuThreadPackageWorkerTest, PostProcessPackageMoveSoFail)
 {
     AicpuThreadPackageWorker inst({0U, 0U});
     MOCKER_CPP(&AicpuPackageProcess::CheckPackageName).stubs().will(returnValue(TSD_OK));
-    MOCKER_CPP(&AicpuPackageProcess::MoveSoToSandBox).stubs()
+    MOCKER_CPP(&AicpuPackageProcess::MoveSoToSandBox)
+        .stubs()
         .will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
     const auto ret = inst.PostProcessPackage();
     EXPECT_EQ(ret, TSD_OK);
@@ -189,7 +190,8 @@ TEST_F(AicpuThreadPackageWorkerTest, ExtendPostProcessSucc)
 {
     ExtendThreadPackageWorker inst({0U, 0U});
 
-    MOCKER_CPP(&AicpuPackageProcess::CopyExtendSoToCommonSoPath).stubs()
+    MOCKER_CPP(&AicpuPackageProcess::CopyExtendSoToCommonSoPath)
+        .stubs()
         .will(returnValue(static_cast<uint32_t>(TSD_OK)));
     const TSD_StatusT ret = inst.PostProcessPackage();
     EXPECT_EQ(ret, TSD_OK);
@@ -199,7 +201,8 @@ TEST_F(AicpuThreadPackageWorkerTest, ExtendPostProcessFail)
 {
     ExtendThreadPackageWorker inst({0U, 0U});
 
-    MOCKER_CPP(&AicpuPackageProcess::CopyExtendSoToCommonSoPath).stubs()
+    MOCKER_CPP(&AicpuPackageProcess::CopyExtendSoToCommonSoPath)
+        .stubs()
         .will(returnValue(static_cast<uint32_t>(TSD_INTERNAL_ERROR)));
     const TSD_StatusT ret = inst.PostProcessPackage();
     EXPECT_EQ(ret, TSD_INTERNAL_ERROR);

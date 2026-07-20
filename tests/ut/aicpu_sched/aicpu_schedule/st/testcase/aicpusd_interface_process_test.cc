@@ -56,29 +56,20 @@ using namespace aicpu;
 
 namespace {
 static struct event_info g_event = {
-    .comm = {
-        .event_id = EVENT_TEST,
-        .subevent_id = 2,
-        .pid = 3,
-        .host_pid = 4,
-        .grp_id = 5,
-        .submit_timestamp = 6,
-        .sched_timestamp = 7
-    },
-    .priv = {
-        .msg_len = EVENT_MAX_MSG_LEN,
-        .msg = {0}
-    }
-};
+    .comm =
+        {.event_id = EVENT_TEST,
+         .subevent_id = 2,
+         .pid = 3,
+         .host_pid = 4,
+         .grp_id = 5,
+         .submit_timestamp = 6,
+         .sched_timestamp = 7},
+    .priv = {.msg_len = EVENT_MAX_MSG_LEN, .msg = {0}}};
 }
-
 
 class AICPUScheduleInterfaceTEST : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "AICPUScheduleInterfaceTEST SetUpTestCase" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "AICPUScheduleInterfaceTEST SetUpTestCase" << std::endl; }
 
     static void TearDownTestCase()
     {
@@ -88,10 +79,7 @@ protected:
         std::cout << "AICPUScheduleInterfaceTEST TearDownTestCase" << std::endl;
     }
 
-    virtual void SetUp()
-    {
-        std::cout << "AICPUScheduleInterfaceTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AICPUScheduleInterfaceTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -129,13 +117,9 @@ uint32_t currentTsId = 5000;
 static constexpr uint32_t TS_STREAM_INDEX = 0x01;
 char END_GRAPH[] = "endGraph";
 uint32_t head = 0;
-uint32_t *pHead = nullptr;
+uint32_t* pHead = nullptr;
 
-RunContext runContextT = {.modelId = 1,
-                .modelTsId = 1,
-                .streamId = 1,
-                .pending = false,
-                .executeInline = true};
+RunContext runContextT = {.modelId = 1, .modelTsId = 1, .streamId = 1, .pending = false, .executeInline = true};
 
 // std::mutex g_qidToValueMutex;
 std::map<uint32_t, std::vector<int32_t> > g_qidToValue;
@@ -191,46 +175,45 @@ std::map<uint32_t, uint32_t> g_qidToIndex;
     return DRV_ERROR_QUEUE_NONE;
 }*/
 
-int32_t halMbufGetBuffAddrFake(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFake(Mbuf* mbuf, void** buf)
 {
     std::cout << "aicpusd_interface_process_test halMbufGetBuffAddr stub begin" << std::endl;
-    *(int32_t **)buf = (int32_t *)mbuf;
+    *(int32_t**)buf = (int32_t*)mbuf;
     std::cout << "aicpusd_interface_process_test halMbufGetBuffAddr stub end" << std::endl;
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetBuffSizeFake(Mbuf *mbuf, uint64_t *totalSize)
+int halMbufGetBuffSizeFake(Mbuf* mbuf, uint64_t* totalSize)
 {
     (void)(mbuf);
     *totalSize = 102;
     return -1;
 }
 
-int halMbufAllocFake(unsigned int size, unsigned int align, unsigned long flag, int grp_id, Mbuf **mbuf)
+int halMbufAllocFake(unsigned int size, unsigned int align, unsigned long flag, int grp_id, Mbuf** mbuf)
 {
     static char buf[128];
-    *mbuf = (Mbuf *)buf;
+    *mbuf = (Mbuf*)buf;
     return 0;
 }
 
 constexpr uint32_t mbufDataOffSet = 256;
 
-int32_t halMbufGetBuffAddrFake2(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFake2(Mbuf* mbuf, void** buf)
 {
     std::cout << "aicpusd_interface_process_test halMbufGetBuffAddr stubv2 begin" << std::endl;
-    *buf = (void*)((char*)mbuf+mbufDataOffSet);
+    *buf = (void*)((char*)mbuf + mbufDataOffSet);
     return 0;
 }
 
-int halMbufGetPrivInfoFake2(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFake2(Mbuf* mbuf, void** priv, unsigned int* size)
 {
-    *priv = (void *)mbuf;
+    *priv = (void*)mbuf;
     *size = mbufDataOffSet;
     return DRV_ERROR_NONE;
 }
 
-int halGrpQueryWithSize(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen, void *outBuff,
-    unsigned int *outLen)
+int halGrpQueryWithSize(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
 {
     if (GRP_QUERY_GROUPS_OF_PROCESS == cmd) {
         *outLen = sizeof(GrpQueryGroupsOfProcInfo);
@@ -242,7 +225,7 @@ int halGrpQueryWithSize(GroupQueryCmdType cmd, void *inBuff, unsigned int inLen,
     return static_cast<int>(DRV_ERROR_NONE);
 }
 
-}
+} // namespace
 /*drvError_t halQueueSubscribeFake(unsigned int devid, unsigned int qid, unsigned int groupId, int type)
 {
     std::cout << "halQueueSubscribe stub begin" << std::endl;
@@ -283,13 +266,13 @@ void CheckQueueSize(uint32_t qid, int32_t size)
     return;
 }
 
-int tsDevSendMsgAsyncFake(unsigned int devId, unsigned int tsId, char *msg, unsigned int msgLen, unsigned int handleId)
+int tsDevSendMsgAsyncFake(unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned int handleId)
 {
     currentExeModelId = handleId;
     return 0;
 }
 
-int halMbufGetPrivInfoFake(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFake(Mbuf* mbuf, void** priv, unsigned int* size)
 {
     pHead = &head;
     *priv = pHead;
@@ -297,7 +280,7 @@ int halMbufGetPrivInfoFake(Mbuf *mbuf,  void **priv, unsigned int *size)
     return DRV_ERROR_NONE;
 }
 
-uint32_t CreateAicpuModel(AicpuModelInfo *model)
+uint32_t CreateAicpuModel(AicpuModelInfo* model)
 {
     model->moduleID = currentModelId;
     currentModelId++;
@@ -309,7 +292,7 @@ uint32_t CreateAicpuModel(AicpuModelInfo *model)
     return model->moduleID;
 }
 
-uint32_t CreateStream(StreamInfo *stream, uint32_t flag)
+uint32_t CreateStream(StreamInfo* stream, uint32_t flag)
 {
     stream->streamID = currentStreamId;
     currentStreamId++;
@@ -318,7 +301,7 @@ uint32_t CreateStream(StreamInfo *stream, uint32_t flag)
 }
 
 uint32_t CreateAicpuTask(
-    AicpuTaskInfo *aicpuTask, uint32_t streamID, uint32_t kernelType, char *kernelName, uint64_t paraBase)
+    AicpuTaskInfo* aicpuTask, uint32_t streamID, uint32_t kernelType, char* kernelName, uint64_t paraBase)
 {
     aicpuTask->taskID = currentTaskId;
     currentTaskId++;
@@ -330,7 +313,7 @@ uint32_t CreateAicpuTask(
     return aicpuTask->taskID;
 }
 
-uint32_t CreateQueue(QueInfo *queue, uint32_t flag)
+uint32_t CreateQueue(QueInfo* queue, uint32_t flag)
 {
     queue->queueID = currentQId;
     currentQId++;
@@ -340,19 +323,19 @@ uint32_t CreateQueue(QueInfo *queue, uint32_t flag)
     return queue->queueID;
 }
 
-void AddStream2Model(AicpuModelInfo *model, StreamInfo *stream, uint32_t streamInfoNum)
+void AddStream2Model(AicpuModelInfo* model, StreamInfo* stream, uint32_t streamInfoNum)
 {
     model->streamInfoNum = streamInfoNum;
     model->streamInfoPtr = (uint64_t)stream;
 }
 
-void AddAicpuTask2Model(AicpuModelInfo *model, AicpuTaskInfo *aicpuTask, uint32_t aicpuTaskNum)
+void AddAicpuTask2Model(AicpuModelInfo* model, AicpuTaskInfo* aicpuTask, uint32_t aicpuTaskNum)
 {
     model->aicpuTaskNum = aicpuTaskNum;
     model->aicpuTaskPtr = (uint64_t)aicpuTask;
 }
 
-void AddQueue2Model(AicpuModelInfo *model, QueInfo *queue, uint32_t queueSize)
+void AddQueue2Model(AicpuModelInfo* model, QueInfo* queue, uint32_t queueSize)
 {
     model->queueSize = queueSize;
     model->queueInfoPtr = (uint64_t)queue;
@@ -371,85 +354,84 @@ void AddQueue2Model(AicpuModelInfo *model, QueInfo *queue, uint32_t queueSize)
     return DRV_ERROR_NONE;
 }*/
 
-    int halGrpQueryWithTwoGroup(GroupQueryCmdType cmd,
-                    void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
-    {
-        GroupQueryOutput *groupQueryOutput = reinterpret_cast<GroupQueryOutput *>(outBuff);
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.admin = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.read = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.write = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.alloc = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[0] = 'g';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[1] = '2';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[2] = '\0';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.admin = 0;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.read = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.write = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.alloc = 1;
-        *outLen = sizeof(groupQueryOutput->grpQueryGroupsOfProcInfo[0]) * 2;
-        return 0;
-    }
-       int halGrpQueryWithError(GroupQueryCmdType cmd,
-                    void *inBuff, unsigned int inLen, void *outBuff, unsigned int *outLen)
-    {
-        GroupQueryOutput *groupQueryOutput = reinterpret_cast<GroupQueryOutput *>(outBuff);
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.admin = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.read = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.write = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.alloc = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[0] = 'g';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[1] = '2';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[2] = '\0';
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.admin = 0;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.read = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.write = 1;
-        groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.alloc = 1;
-        *outLen = sizeof(groupQueryOutput->grpQueryGroupsOfProcInfo[0]);
-        return 0;
-    }
-    int32_t CreateOrFindCustPidStub(const uint32_t deviceId, const uint32_t loadLibNum,
-        const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-        const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
-    {
-        *custProcPid = 1234509;
-        *firstStart = true;
-        return 0;
-    }
-    int32_t CreateOrFindCustPidStubExist(const uint32_t deviceId, const uint32_t loadLibNum,
-        const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-        const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
-    {
-        *custProcPid = 12;
-        *firstStart = false;
-        return 0;
-    }
-    int32_t CreateOrFindCustPidFailedStub(const uint32_t deviceId, const uint32_t loadLibNum,
-        const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-        const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
-    {
-        *custProcPid = -1;
-        *firstStart = false;
-        return 1;
-    }
-    int32_t CreateOrFindCustPidFailedStub2(const uint32_t deviceId, const uint32_t loadLibNum,
-        const char * const loadLibName[], const uint32_t hostPid, const uint32_t vfId, const char *groupNameList,
-        const uint32_t groupNameNum, int32_t *custProcPid, bool *firstStart)
-    {
-        *custProcPid = -100;
-        *firstStart = false;
-        return 1;
-    }
+int halGrpQueryWithTwoGroup(
+    GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
+{
+    GroupQueryOutput* groupQueryOutput = reinterpret_cast<GroupQueryOutput*>(outBuff);
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.admin = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.read = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.write = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.alloc = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[0] = 'g';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[1] = '2';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[2] = '\0';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.admin = 0;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.read = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.write = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.alloc = 1;
+    *outLen = sizeof(groupQueryOutput->grpQueryGroupsOfProcInfo[0]) * 2;
+    return 0;
+}
+int halGrpQueryWithError(GroupQueryCmdType cmd, void* inBuff, unsigned int inLen, void* outBuff, unsigned int* outLen)
+{
+    GroupQueryOutput* groupQueryOutput = reinterpret_cast<GroupQueryOutput*>(outBuff);
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[0] = 'g';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[1] = '1';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].groupName[2] = '\0';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.admin = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.read = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.write = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[0].attr.alloc = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[0] = 'g';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[1] = '2';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].groupName[2] = '\0';
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.admin = 0;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.read = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.write = 1;
+    groupQueryOutput->grpQueryGroupsOfProcInfo[1].attr.alloc = 1;
+    *outLen = sizeof(groupQueryOutput->grpQueryGroupsOfProcInfo[0]);
+    return 0;
+}
+int32_t CreateOrFindCustPidStub(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
+{
+    *custProcPid = 1234509;
+    *firstStart = true;
+    return 0;
+}
+int32_t CreateOrFindCustPidStubExist(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
+{
+    *custProcPid = 12;
+    *firstStart = false;
+    return 0;
+}
+int32_t CreateOrFindCustPidFailedStub(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
+{
+    *custProcPid = -1;
+    *firstStart = false;
+    return 1;
+}
+int32_t CreateOrFindCustPidFailedStub2(
+    const uint32_t deviceId, const uint32_t loadLibNum, const char* const loadLibName[], const uint32_t hostPid,
+    const uint32_t vfId, const char* groupNameList, const uint32_t groupNameNum, int32_t* custProcPid, bool* firstStart)
+{
+    *custProcPid = -100;
+    *firstStart = false;
+    return 1;
+}
 
 std::vector<MbufHeadMsg> g_mbufHeads[3];
 std::map<uint32_t, uint32_t> g_dequeCursor;
 
-void GenerateMbufHead(uint64_t transId, uint32_t routeLabel, std::vector<MbufHeadMsg> &heads)
+void GenerateMbufHead(uint64_t transId, uint32_t routeLabel, std::vector<MbufHeadMsg>& heads)
 {
     MbufHeadMsg head = {transId, routeLabel};
     heads.push_back(head);
@@ -463,7 +445,7 @@ void ClearMbufHeads()
     }
 }
 
-drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void **mbuf)
+drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void** mbuf)
 {
     if (qid >= 3U) {
         return DRV_ERROR_NO_DEVICE;
@@ -471,8 +453,8 @@ drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void **mbuf
     if (g_dequeCursor[qid] >= g_mbufHeads[qid].size()) {
         return DRV_ERROR_QUEUE_EMPTY;
     }
-    auto &head = g_mbufHeads[qid][g_dequeCursor[qid]];
-    *mbuf = reinterpret_cast<Mbuf *>(&head);
+    auto& head = g_mbufHeads[qid][g_dequeCursor[qid]];
+    *mbuf = reinterpret_cast<Mbuf*>(&head);
     ++g_dequeCursor[qid];
     if ((head.transId == 0U) && (head.routeLabel == 0U)) {
         return DRV_ERROR_QUEUE_EMPTY;
@@ -480,55 +462,50 @@ drvError_t halQueueDeQueueHead(unsigned int devId, unsigned int qid, void **mbuf
     return DRV_ERROR_NONE;
 }
 
-int halMbufGetPrivInfoFakeHead(Mbuf *mbuf,  void **priv, unsigned int *size)
+int halMbufGetPrivInfoFakeHead(Mbuf* mbuf, void** priv, unsigned int* size)
 {
-    *priv = reinterpret_cast<void *>(mbuf);
+    *priv = reinterpret_cast<void*>(mbuf);
     *size = sizeof(MbufHeadMsg);
     return DRV_ERROR_NONE;
 }
 
-int32_t halMbufGetBuffAddrFakeHead(Mbuf *mbuf, void **buf)
+int32_t halMbufGetBuffAddrFakeHead(Mbuf* mbuf, void** buf)
 {
     std::cout << "aicpusd_interface_process_test halMbufGetBuffAddrFakeHead begin" << std::endl;
-    *buf = reinterpret_cast<void *>(reinterpret_cast<char *>(mbuf) + sizeof(MbufHeadMsg));
+    *buf = reinterpret_cast<void*>(reinterpret_cast<char*>(mbuf) + sizeof(MbufHeadMsg));
     return 0;
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf)
 {
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidStub));
     aicpu::SetHaveCustPid(false);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3200, 0, false);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
     pid_t hostPid = AicpuDrvManager::GetInstance().GetHostPid();
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -537,8 +514,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -557,7 +533,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf)
     int ret = system(command.c_str());
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
 }
-aicpu::status_t GetAicpuRunModePCIE(aicpu::AicpuRunMode &runMode)
+aicpu::status_t GetAicpuRunModePCIE(aicpu::AicpuRunMode& runMode)
 {
     runMode = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
     return aicpu::AICPU_ERROR_NONE;
@@ -565,26 +541,21 @@ aicpu::status_t GetAicpuRunModePCIE(aicpu::AicpuRunMode &runMode)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed1)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = 0;
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -593,8 +564,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed1)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -604,26 +574,21 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed1)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed2)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = 0;
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -632,8 +597,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed2)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -643,30 +607,27 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed2)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed3)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels_fail.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -675,8 +636,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed3)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -686,26 +646,21 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed3)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed4)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "loadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for loadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_cpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     struct LoadOpFromBufArgs loadOpFromBufArgs;
@@ -714,8 +669,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed4)
     loadOpFromBufArgs.kernelSoName = kernelSoName;
     loadOpFromBufArgs.kernelSoNameLen = kernelSoNameLen;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(&loadOpFromBufArgs));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -723,11 +677,9 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBuf_failed4)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelLoadOpFromBufNotSupport)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_MSGQ);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_MSGQ);
 
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
@@ -745,8 +697,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile_Fail6)
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3206, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     char* curDirName = getenv("HOME");
     std::string dirName(curDirName);
@@ -755,12 +707,12 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile_Fail6)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
 
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -776,8 +728,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile7)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
     aicpu::SetHaveCustPid(false);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3207, 0, true);
@@ -788,10 +740,10 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile7)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -807,8 +759,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile7)
 TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile8)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -820,10 +772,10 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile8)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -839,8 +791,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile8)
 TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile9)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
@@ -852,10 +804,10 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile9)
     }
 
     char soContent[] = "This is test for loadOpFromBuf";
-    void *buf = reinterpret_cast<void *>(soContent);
+    void* buf = reinterpret_cast<void*>(soContent);
     size_t kernelSoBufLen = strlen(soContent);
     char kernelSoName[] = "libcust_cpu_kernels.so";
-    FileInfo fileInfo = {.data=soContent, .size=kernelSoBufLen, .name=kernelSoName};
+    FileInfo fileInfo = {.data = soContent, .size = kernelSoBufLen, .name = kernelSoName};
     int retStatus = AicpuCustSoManager::GetInstance().CreateSoFile(fileInfo);
 
     std::string command = "rm -rf ";
@@ -871,18 +823,16 @@ TEST_F(AICPUScheduleInterfaceTEST, ParseSoFile9)
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidStub));
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
@@ -893,49 +843,44 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -948,7 +893,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success)
     int retStatus = batch_loadso_from_buffer_kernel_.Compute(tsKernelInfo);
 
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    //AicpuDrvManager::GetInstance().InitDrvMgr(1, 3000, true);
+    // AicpuDrvManager::GetInstance().InitDrvMgr(1, 3000, true);
     retStatus = delete_custop_kernel_.Compute(tsKernelInfo);
     deviceVec[0] = deviceId;
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, hostPid, 0, hasThread);
@@ -957,14 +902,14 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success)
     command = command + dirName + "cust_aicpu_0_3001";
     int ret = system(command.c_str());
 
-    free (p);
+    free(p);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail0)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
@@ -975,62 +920,57 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail0)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
-    uint32_t kernelSoBufLen = 0;//strlen(soContent);
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
+    uint32_t kernelSoBufLen = 0; // strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int retStatus = batch_loadso_from_buffer_kernel_.Compute(tsKernelInfo);
 
-    free (p);
+    free(p);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail3)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
@@ -1041,77 +981,70 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail3)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
-    //cceKernel.kernelName = kernel_name_addr;
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
+    // cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
-    uint32_t kernelSoBufLen = 0;//strlen(soContent);
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
+    uint32_t kernelSoBufLen = 0; // strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
 
     int retStatus = batch_loadso_from_buffer_kernel_.Compute(tsKernelInfo);
 
-    free (p);
+    free(p);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail4)
 {
     MOCKER(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidStub));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3004, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     uint32_t deviceId = AicpuDrvManager::GetInstance().GetDeviceId();
     bool hasThread = AicpuDrvManager::GetInstance().HasThread();
@@ -1119,49 +1052,44 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail4)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1180,22 +1108,21 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail4)
     EXPECT_EQ(retStatus, 0);
     v_cust_so.clear();
     LoadOpFromBufArgs custSoInfo1;
-    custSoInfo1.kernelSoBuf=kernelSoBuf;
-    custSoInfo1.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo1.kernelSoName=kernelSoName;
-    custSoInfo1.kernelSoNameLen=0;
+    custSoInfo1.kernelSoBuf = kernelSoBuf;
+    custSoInfo1.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo1.kernelSoName = kernelSoName;
+    custSoInfo1.kernelSoNameLen = 0;
     v_cust_so.push_back(custSoInfo1);
-    p->soNum=1;
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->soNum = 1;
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase2 = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     retStatus = delete_custop_kernel_.Compute(tsKernelInfo);
     deviceVec[0] = deviceId;
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, hostPid, 0, hasThread);
-    free (p);
+    free(p);
 
     command = "rm -rf ";
     command = command + dirName + "cust_aicpu_0_3004";
@@ -1205,65 +1132,60 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail4)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success2)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3005, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1282,77 +1204,67 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success2)
         aicpusd_info("Remove directory %s fail", dirName.c_str());
     }
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    free (p);
+    free(p);
 }
-
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_queryGrp01)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(returnValue(1));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpQuery).stubs().will(returnValue(1));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3005, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1370,77 +1282,67 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_queryGrp01)
         aicpusd_info("Remove directory %s fail", dirName.c_str());
     }
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    free (p);
+    free(p);
 }
-
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_queryGrp02)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithError));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithError));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3005, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1458,79 +1360,68 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_queryGrp02)
         aicpusd_info("Remove directory %s fail", dirName.c_str());
     }
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    free (p);
+    free(p);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_addGrp)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halGrpAddProc)
-    .stubs()
-    .will(returnValue(1));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(1));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3005, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1548,79 +1439,68 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_addGrp)
         aicpusd_info("Remove directory %s fail", dirName.c_str());
     }
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    free (p);
+    free(p);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_StartCust)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidFailedStub2));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halGrpAddProc)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3005, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1638,79 +1518,68 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_fail_StartCust)
         aicpusd_info("Remove directory %s fail", dirName.c_str());
     }
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    free (p);
+    free(p);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_succ_StartCust)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidStubExist));
-    MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(halGrpAddProc)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(halGrpAddProc).stubs().will(returnValue(0));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3005, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1728,191 +1597,172 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_succ_StartCust)
         aicpusd_info("Remove directory %s fail", dirName.c_str());
     }
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
-    free (p);
+    free(p);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_failed6)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3006, 0, true);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
 
     int retStatus = batch_loadso_from_buffer_kernel_.Compute(tsKernelInfo);
-    free (p);
+    free(p);
     EXPECT_NE(retStatus, AICPU_SCHEDULE_OK);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_failed7)
 {
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::SetHaveCustPid(false);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 0;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
 
     int retStatus = batch_loadso_from_buffer_kernel_.Compute(tsKernelInfo);
-    free (p);
+    free(p);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success3)
 {
-   MOCKER(halGrpQuery)
-    .stubs()
-    .will(invoke(halGrpQueryWithTwoGroup));
-    MOCKER(halGrpAttach)
-    .stubs()
-    .will(returnValue(0));
-    MOCKER(CreateOrFindCustPid, int32_t(const uint32_t, const uint32_t, const char * const *,
-        const uint32_t, const uint32_t, const char *, const uint32_t, int32_t*, bool*))
+    MOCKER(halGrpQuery).stubs().will(invoke(halGrpQueryWithTwoGroup));
+    MOCKER(halGrpAttach).stubs().will(returnValue(0));
+    MOCKER(
+        CreateOrFindCustPid, int32_t(
+                                 const uint32_t, const uint32_t, const char* const*, const uint32_t, const uint32_t,
+                                 const char*, const uint32_t, int32_t*, bool*))
         .stubs()
         .will(invoke(CreateOrFindCustPidStub));
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3006, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for batchLoadOpFromBuf";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "batchLoadOpFromBuf batchLoadOpFromBuf batchLoadOpFromBuf";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -1923,9 +1773,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success3)
         dirName = dirName + "/";
     }
 
-    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuCustSoManager::CreateSoFile).stubs().will(returnValue(AICPU_SCHEDULE_OK));
 
     int retStatus = batch_loadso_from_buffer_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_OK);
@@ -1933,15 +1781,14 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBuf_success3)
     std::string command = "rm -rf ";
     command = command + dirName + "cust_aicpu_0_3006";
     int ret = system(command.c_str());
-    free (p);
+    free(p);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelBatchLoadOpFromBufNotSupport)
 {
     std::vector<uint32_t> deviceVec = {1};
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3006, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_MSGQ);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_MSGQ);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "batchLoadOpFromBuf";
@@ -1960,54 +1807,49 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDeleteCustOp_fail1)
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3006, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "deleteCustOp";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     char soContent[] = "This is test for deleteCustOp";
-    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent));
+    uint64_t kernelSoBuf = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent));
     uint32_t kernelSoBufLen = strlen(soContent);
     char kernelSoNameContent[] = "libcust_aicpu_kernels.so";
-    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent));
+    uint64_t kernelSoName = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent));
     uint32_t kernelSoNameLen = strlen(kernelSoNameContent);
 
     char soContent2[] = "deleteCustOp deleteCustOp deleteCustOp";
-    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                      (soContent2));
+    uint64_t kernelSoBuf2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(soContent2));
     uint32_t kernelSoBufLen2 = strlen(soContent2);
     char kernelSoNameContent2[] = "../../libcust_aicpu_kernels2.so";
-    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>
-                                                       (kernelSoNameContent2));
+    uint64_t kernelSoName2 = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernelSoNameContent2));
     uint32_t kernelSoNameLen2 = strlen(kernelSoNameContent2);
 
     uint32_t num = 2;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
-    p->soNum=num;
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
+    p->soNum = num;
     std::vector<LoadOpFromBufArgs> v_cust_so;
     LoadOpFromBufArgs custSoInfo;
-    custSoInfo.kernelSoBuf=kernelSoBuf;
-    custSoInfo.kernelSoBufLen=kernelSoBufLen;
-    custSoInfo.kernelSoName=kernelSoName;
-    custSoInfo.kernelSoNameLen=kernelSoNameLen;
+    custSoInfo.kernelSoBuf = kernelSoBuf;
+    custSoInfo.kernelSoBufLen = kernelSoBufLen;
+    custSoInfo.kernelSoName = kernelSoName;
+    custSoInfo.kernelSoNameLen = kernelSoNameLen;
     v_cust_so.push_back(custSoInfo);
     LoadOpFromBufArgs custSoInfo2;
-    custSoInfo2.kernelSoBuf=kernelSoBuf2;
-    custSoInfo2.kernelSoBufLen=kernelSoBufLen2;
-    custSoInfo2.kernelSoName=kernelSoName2;
-    custSoInfo2.kernelSoNameLen=kernelSoNameLen2;
+    custSoInfo2.kernelSoBuf = kernelSoBuf2;
+    custSoInfo2.kernelSoBufLen = kernelSoBufLen2;
+    custSoInfo2.kernelSoName = kernelSoName2;
+    custSoInfo2.kernelSoNameLen = kernelSoNameLen2;
     v_cust_so.push_back(custSoInfo2);
 
-    p->opInfoArgs=reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
+    p->opInfoArgs = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(v_cust_so.data()));
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -2018,7 +1860,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDeleteCustOp_fail1)
         dirName = dirName + "/";
     }
     int retStatus = delete_custop_kernel_.Compute(tsKernelInfo);
-    free (p);
+    free(p);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
@@ -2027,22 +1869,21 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDeleteCustOp_fail2)
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(1);
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3006, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_INTERRUPT);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(
+        aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_INTERRUPT);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "deleteCustOp";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
 
     uint32_t num = 0;
-    BatchLoadOpFromBufArgs *p=(BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs)+sizeof(LoadOpFromBufArgs)*num);
+    BatchLoadOpFromBufArgs* p =
+        (BatchLoadOpFromBufArgs*)malloc(sizeof(BatchLoadOpFromBufArgs) + sizeof(LoadOpFromBufArgs) * num);
     p->soNum = num;
     p->opInfoArgs = 0;
 
-    uint64_t paramBase = reinterpret_cast<uint64_t>(
-                         reinterpret_cast<uintptr_t>(p));
+    uint64_t paramBase = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(p));
     cceKernel.paramBase = paramBase;
     tsKernelInfo.kernelType = 2;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -2053,7 +1894,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDeleteCustOp_fail2)
         dirName = dirName + "/";
     }
     int retStatus = delete_custop_kernel_.Compute(tsKernelInfo);
-    free (p);
+    free(p);
     EXPECT_EQ(retStatus, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
@@ -2061,8 +1902,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDeleteCustOp_fail3)
 {
     std::vector<uint32_t> deviceVec = {1};
     AicpuDrvManager::GetInstance().InitDrvMgr(deviceVec, 3006, 0, true);
-    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE,
-                                                                   SCHED_MODE_MSGQ);
+    (void)AicpuCustSoManager::GetInstance().InitAicpuCustSoManager(aicpu::AicpuRunMode::THREAD_MODE, SCHED_MODE_MSGQ);
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "deleteCustOp";
@@ -2079,7 +1919,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDeleteCustOp_fail3)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventActiveAicpuStream)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ActiveStream).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -2091,16 +1931,15 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventActiveAicpuStream)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventActiveAicpuStream_failed)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     AICPUSubEventInfo event;
     int ret = AicpuEventProcess::GetInstance().AICPUEventActiveAicpuStream(event);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }
 
-
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelRepeat).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -2112,7 +1951,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel_failed)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelRepeat).stubs().will(returnValue(1));
     AICPUSubEventInfo event;
@@ -2124,7 +1963,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRepeatModel_failed)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventRecoveryStream)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::RecoverStream).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -2158,8 +1997,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph01)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }
 
-
-TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph02) {
+TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph02)
+{
     ModelQueueInfo modelQueueInfo = {0, 0};
     ModelTaskInfo modelTaskInfo = {0, 0, 0};
     ModelStreamInfo modelStreamInfo = {1, 0x28U, 1, &modelTaskInfo};
@@ -2182,7 +2021,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventEndGraph02) {
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelRecordNotifyHasWait)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&ModelStreamManager::GetStreamModelId).stubs().will(returnValue(AICPU_SCHEDULE_OK));
 
@@ -2201,7 +2040,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelRecordNotifyHasWait)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelRecordNotify)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
 
     aicpu::HwtsTsKernel tsKernelInfo;
@@ -2222,31 +2061,32 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelRecordNotifySucc)
     bool needWait = false;
     cceKernel.paramBase = (uint64_t)&notifyId;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    const auto info = reinterpret_cast<TsAicpuNotify *>(static_cast<uintptr_t>(
-            tsKernelInfo.kernelBase.cceKernel.paramBase));
+    const auto info =
+        reinterpret_cast<TsAicpuNotify*>(static_cast<uintptr_t>(tsKernelInfo.kernelBase.cceKernel.paramBase));
     EventWaitManager::NotifyWaitManager().WaitEvent(static_cast<size_t>(info->notify_id), waitStreamId, needWait);
     MOCKER_CPP(&ModelStreamManager::GetInstance().GetStreamModelId).stubs().will(returnValue(0));
     MOCKER_CPP(&AicpuMsgSend::SendAICPUSubEvent).stubs().will(returnValue(0));
     int ret = record_notify_kernel_.Compute(tsKernelInfo);
-    
+
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelCreateQueue_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelCreateQueue_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(uint64_t) + QUEUE_MAX_STR_LEN + sizeof(uint32_t);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(uint64_t) + QUEUE_MAX_STR_LEN + sizeof(uint32_t);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    char *p = args + sizeof(aicpu::AicpuParamHead);
-    uint64_t *qidAddr = (uint64_t *)p;
+    char* p = args + sizeof(aicpu::AicpuParamHead);
+    uint64_t* qidAddr = (uint64_t*)p;
     uint32_t qid = 1;
     *qidAddr = (uint64_t)&qid;
     p += sizeof(uint64_t);
     memcpy(p, "test_queue", 10);
     p += QUEUE_MAX_STR_LEN;
-    uint32_t *qDepth = (uint32_t *)p;
+    uint32_t* qDepth = (uint32_t*)p;
     *qDepth = 8;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -2254,24 +2094,23 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCreateQueue_success) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelCreateQueue_fail) {
-    MOCKER_CPP(&CreateQueueTsKernel::CreateGrp)
-        .stubs()
-        .will(returnValue(1));
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelCreateQueue_fail)
+{
+    MOCKER_CPP(&CreateQueueTsKernel::CreateGrp).stubs().will(returnValue(1));
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(uint64_t) + QUEUE_MAX_STR_LEN + sizeof(uint32_t);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(uint64_t) + QUEUE_MAX_STR_LEN + sizeof(uint32_t);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    char *p = args + sizeof(aicpu::AicpuParamHead);
-    uint64_t *qidAddr = (uint64_t *)p;
+    char* p = args + sizeof(aicpu::AicpuParamHead);
+    uint64_t* qidAddr = (uint64_t*)p;
     uint32_t qid = 1;
     *qidAddr = (uint64_t)&qid;
     p += sizeof(uint64_t);
     memcpy(p, "test_queue", 10);
     p += QUEUE_MAX_STR_LEN;
-    uint32_t *qDepth = (uint32_t *)p;
+    uint32_t* qDepth = (uint32_t*)p;
     *qDepth = 8;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -2279,23 +2118,25 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCreateQueue_fail) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    char *p = args + sizeof(aicpu::AicpuParamHead);
+    char* p = args + sizeof(aicpu::AicpuParamHead);
     uint32_t qid = 1;
-    p = (char *)&qid;
+    p = (char*)&qid;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = destroy_queue_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_failed) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_failed)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     cceKernel.paramBase = 0;
@@ -2304,12 +2145,13 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_failed) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_failed2) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_failed2)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t) + 100;
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(uint32_t) + 100;
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -2317,60 +2159,70 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelDestroyQueue_failed2) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, Resubscribe_success) {
+TEST_F(AICPUScheduleInterfaceTEST, Resubscribe_success)
+{
     int32_t ret = create_queue_kernel_.Resubscribe(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, Resubscribe_failed) {
+TEST_F(AICPUScheduleInterfaceTEST, Resubscribe_failed)
+{
     MOCKER(halQueueUnsubscribe).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.Resubscribe(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, Resubscribe_failed2) {
+TEST_F(AICPUScheduleInterfaceTEST, Resubscribe_failed2)
+{
     MOCKER(halQueueSubscribe).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.Resubscribe(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, ResubscribeF2NF_success) {
+TEST_F(AICPUScheduleInterfaceTEST, ResubscribeF2NF_success)
+{
     int32_t ret = create_queue_kernel_.ResubscribeF2NF(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, ResubscribeF2NF_failed) {
+TEST_F(AICPUScheduleInterfaceTEST, ResubscribeF2NF_failed)
+{
     MOCKER(halQueueUnsubF2NFEvent).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.ResubscribeF2NF(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, ResubscribeF2NF_failed2) {
+TEST_F(AICPUScheduleInterfaceTEST, ResubscribeF2NF_failed2)
+{
     MOCKER(halQueueSubF2NFEvent).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.ResubscribeF2NF(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed) {
+TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed)
+{
     MOCKER(halQueueSubscribe).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.SubscribeEvent(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed2) {
+TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed2)
+{
     MOCKER(halQueueSubscribe).stubs().will(returnValue(DRV_ERROR_QUEUE_RE_SUBSCRIBED));
     MOCKER(halQueueUnsubscribe).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.SubscribeEvent(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed3) {
+TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed3)
+{
     MOCKER(halQueueSubF2NFEvent).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.SubscribeEvent(0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed4) {
+TEST_F(AICPUScheduleInterfaceTEST, SubscribeEvent_failed4)
+{
     MOCKER(halQueueSubF2NFEvent).stubs().will(returnValue(DRV_ERROR_QUEUE_RE_SUBSCRIBED));
     MOCKER(halQueueUnsubscribe).stubs().will(returnValue(200));
     int32_t ret = create_queue_kernel_.SubscribeEvent(0, 0);
@@ -2396,12 +2248,12 @@ TEST_F(AICPUScheduleInterfaceTEST, InitAICPUScheduler_failed1)
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(0);
     pid_t hostPid = 0;
-    char *pidSign = "test";
+    char* pidSign = "test";
     bool isOnline = true;
     AicpuScheduleInterface::GetInstance().UpdateOrInsertStartFlag(0U, false);
     MOCKER_CPP(&AicpuDrvManager::InitDrvSchedModule).stubs().will(returnValue(10));
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, hostPid, pidSign, PROFILING_CLOSE,
-                                                                       0, isOnline);
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(
+        deviceVec, hostPid, pidSign, PROFILING_CLOSE, 0, isOnline);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
 }
 
@@ -2410,16 +2262,14 @@ TEST_F(AICPUScheduleInterfaceTEST, InitAICPUScheduler_failed2)
     std::vector<uint32_t> deviceVec;
     deviceVec.push_back(0);
     pid_t hostPid = 0;
-    char *pidSign = "test";
+    char* pidSign = "test";
     bool isOnline = true;
     AicpuScheduleInterface::GetInstance().UpdateOrInsertStartFlag(0U, false);
     MOCKER_CPP(&AicpuDrvManager::InitDrvSchedModule).stubs().will(returnValue(0));
     MOCKER_CPP(&ComputeProcess::Start).stubs().will(returnValue(10));
-    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid)
-        .stubs()
-        .will(returnValue(0));
-    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(deviceVec, hostPid, pidSign, PROFILING_CLOSE,
-                                                                       0, isOnline);
+    MOCKER_CPP(&AicpuDrvManager::CheckBindHostPid).stubs().will(returnValue(0));
+    int ret = AicpuScheduleInterface::GetInstance().InitAICPUScheduler(
+        deviceVec, hostPid, pidSign, PROFILING_CLOSE, 0, isOnline);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INIT_CP_FAILED);
 }
 
@@ -2429,14 +2279,12 @@ TEST_F(AICPUScheduleInterfaceTEST, StopAICPUScheduler_failed1)
     deviceVec.push_back(0);
     pid_t hostPid = 0;
     AicpuScheduleInterface::GetInstance().noThreadFlag_ = true;
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(10));
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(10));
     int32_t ret = AicpuScheduleInterface::GetInstance().StopAICPUScheduler(deviceVec, hostPid);
     EXPECT_EQ(ret, 10);
 }
 
-hdcError_t drvHdcGetCapacity_pcie(struct drvHdcCapacity *capacity)
+hdcError_t drvHdcGetCapacity_pcie(struct drvHdcCapacity* capacity)
 {
     capacity->chanType = HDC_CHAN_TYPE_PCIE;
     return DRV_ERROR_NONE;
@@ -2446,12 +2294,8 @@ TEST_F(AICPUScheduleInterfaceTEST, StopAICPUScheduler_failed2)
 {
     pid_t hostPid = 0;
     AicpuScheduleInterface::GetInstance().noThreadFlag_ = true;
-    MOCKER(halEschedDettachDevice)
-        .stubs()
-        .will(returnValue(10));
-    MOCKER(drvHdcGetCapacity)
-        .stubs()
-        .will(invoke(drvHdcGetCapacity_pcie));
+    MOCKER(halEschedDettachDevice).stubs().will(returnValue(10));
+    MOCKER(drvHdcGetCapacity).stubs().will(invoke(drvHdcGetCapacity_pcie));
     std::vector<uint32_t> deviceId;
     deviceId.push_back(0);
     AicpuScheduleInterface::GetInstance().GetCurrentRunMode(true);
@@ -2470,7 +2314,7 @@ TEST_F(AICPUScheduleInterfaceTEST, DettachDeviceInDestory_success)
 
 TEST_F(AICPUScheduleInterfaceTEST, ExecuteProcess_failed1)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     int ret = AicpuEventManager::GetInstance().ExecuteProcess(0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
@@ -2478,7 +2322,7 @@ TEST_F(AICPUScheduleInterfaceTEST, ExecuteProcess_failed1)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelExecute).stubs().will(returnValue(0));
     AICPUSubEventInfo event;
@@ -2490,7 +2334,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed1)
 {
-    AicpuModel *aicpuModel = nullptr;
+    AicpuModel* aicpuModel = nullptr;
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AICPUSubEventInfo event;
     int ret = AicpuEventProcess::GetInstance().AICPUEventExecuteModel(event);
@@ -2499,7 +2343,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed1)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed2)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ModelExecute).stubs().will(returnValue(1));
     AICPUSubEventInfo event;
@@ -2511,7 +2355,7 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUEventExecuteModel_failed2)
 
 TEST_F(AICPUScheduleInterfaceTEST, ProcessAICPUEvent)
 {
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::ActiveStream).stubs().will(returnValue(0));
     event_info eventInfo = g_event;
@@ -2537,20 +2381,20 @@ TEST_F(AICPUScheduleInterfaceTEST, SendAICPUSubEvent)
     AICPUSubEventInfo subEventInfo = {0};
     subEventInfo.modelId = 0;
     subEventInfo.para.streamInfo.streamId = 0;
-    int ret = AicpuMsgSend::SendAICPUSubEvent(reinterpret_cast<char *>(&subEventInfo), sizeof(AICPUSubEventInfo), 0, 0);
+    int ret = AicpuMsgSend::SendAICPUSubEvent(reinterpret_cast<char*>(&subEventInfo), sizeof(AICPUSubEventInfo), 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, SendAICPUSubEvent_failed1)
 {
-    char *msg = nullptr;
+    char* msg = nullptr;
     int ret = AicpuMsgSend::SendAICPUSubEvent(msg, 1, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INVAILD_EVENT_SUBMIT);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, SendAICPUSubEvent_failed2)
 {
-    char *msg = "test";
+    char* msg = "test";
     int ret = AicpuMsgSend::SendAICPUSubEvent(msg, 0, 0, 0);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INVAILD_EVENT_SUBMIT);
 }
@@ -2569,7 +2413,8 @@ TEST_F(AICPUScheduleInterfaceTEST, ProcessEndGraph)
     EXPECT_EQ(aicpuModel.GetModelRetCode(), 1);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelCfgExtInfo_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelCfgExtInfo_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     AicpuExtendInfo cfgMsg;
     cfgMsg.msgType = static_cast<uint8_t>(AicpuExtInfoMsgType::EXT_MODEL_ID_MSG_TYPE);
@@ -2582,27 +2427,29 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCfgExtInfo_success) {
     AicpuModelManager::GetInstance().allModel_[0].isValid = false;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfig_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfig_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelConfig);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelConfig);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    char *p = args + sizeof(aicpu::AicpuParamHead);
+    char* p = args + sizeof(aicpu::AicpuParamHead);
     AicpuModelConfig cfg;
     cfg.geModelId = 1;
     cfg.runtimeModelId = 0;
     cfg.abnormalBreak = 1;
     cfg.abnormalEnqueue = 1;
-    p = (char *)&cfg;
+    p = (char*)&cfg;
     cceKernel.paramBase = (uint64_t)args;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = model_config_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfig_failed) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfig_failed)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     cceKernel.paramBase = 0;
@@ -2611,17 +2458,18 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfig_failed) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_success01) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_success01)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 36;
@@ -2632,17 +2480,18 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_success01) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_success02) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_success02)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     uint8_t data[56] = {-24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0,
-        -24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+                        -24, 3, 0, 0, 8, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 3, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 56;
@@ -2653,17 +2502,18 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_success02) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed01) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed01)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 35;
@@ -2674,17 +2524,18 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed01) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed02) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed02)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        1, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {1, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0, 0, 0, 0, 0,  0, 1, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 36;
@@ -2695,17 +2546,18 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed02) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed03) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed03)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 36;
@@ -2716,17 +2568,18 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed03) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed04) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed04)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    uint8_t data[36] = {
-        -24, 3, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
+    uint8_t data[36] = {-24, 3, 0, 0, 16, 0, 0,   0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0,
+                        0,   0, 0, 0, 0,  0, -23, 3, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0};
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuModelShapeConfig);
     uint8_t args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len - 1;
-    AicpuModelShapeConfig *cfg =
-        reinterpret_cast<AicpuModelShapeConfig *>(reinterpret_cast<uint8_t *>(args) + sizeof(aicpu::AicpuParamHead));
+    AicpuModelShapeConfig* cfg =
+        reinterpret_cast<AicpuModelShapeConfig*>(reinterpret_cast<uint8_t*>(args) + sizeof(aicpu::AicpuParamHead));
     cfg->geModelId = 1;
     cfg->runtimeModelId = 0;
     cfg->tensortlvLen = 35;
@@ -2737,14 +2590,15 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelConfigHasShape_failed04) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 3;
     cfg->eventPriority = 1;
@@ -2754,14 +2608,15 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_success) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = 0x1234;
     cfg->pidPriority = 3;
     cfg->eventPriority = 1;
@@ -2771,14 +2626,15 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_default) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_default)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = -1;
     cfg->eventPriority = -1;
@@ -2788,14 +2644,15 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_default) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_0) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_0)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 2;
     cfg->eventPriority = 2;
@@ -2807,14 +2664,15 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_0) {
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_1) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_1)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 2;
     cfg->eventPriority = 2;
@@ -2827,14 +2685,15 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_1) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_2) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_2)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    const uint32_t len =  sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
+    const uint32_t len = sizeof(aicpu::AicpuParamHead) + sizeof(AicpuPriInfo);
     char args[len] = {};
-    aicpu::AicpuParamHead *paramHead = reinterpret_cast<aicpu::AicpuParamHead *>(args);
+    aicpu::AicpuParamHead* paramHead = reinterpret_cast<aicpu::AicpuParamHead*>(args);
     paramHead->length = len;
-    AicpuPriInfo *cfg = reinterpret_cast<AicpuPriInfo *>(args + sizeof(aicpu::AicpuParamHead));
+    AicpuPriInfo* cfg = reinterpret_cast<AicpuPriInfo*>(args + sizeof(aicpu::AicpuParamHead));
     cfg->checkHead = PRIORITY_MSG_CHECKCODE;
     cfg->pidPriority = 2;
     cfg->eventPriority = 2;
@@ -2849,14 +2708,14 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelSetPriority_fail_2) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_success) {
-
+TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_success)
+{
     GatherDequeParam param0 = {};
     param0.inputNums = 3U;
     uint32_t queueIds[3] = {0U, 1U, 2U};
     param0.queueIdsAddr = (uint64_t)(&queueIds[0U]);
-    MbufHeadMsg *placeHolder[3] = {nullptr};
-    MbufHeadMsg **mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
+    MbufHeadMsg* placeHolder[3] = {nullptr};
+    MbufHeadMsg** mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
     param0.mbufAddrsAddr = (uint64_t)(&mbufAddrsAddr[0U]);
     uint32_t deviceTypes[3] = {0U};
     param0.deviceTypeAddr = (uint64_t)(&deviceTypes[0U]);
@@ -2882,11 +2741,13 @@ TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_success) {
     EXPECT_EQ(static_cast<int32_t>(AICPU_SCHEDULE_SUCCESS), AicpuLoadModelWithQ((void*)(&modelInfo)));
 
     MOCKER_CPP(&AicpuModel::CheckOperate).stubs().will(returnValue(0));
-    AICPUSubEventInfo event = {0, };
+    AICPUSubEventInfo event = {
+        0,
+    };
     GenerateMbufHead(1U, 1U, g_mbufHeads[0]);
     GenerateMbufHead(2U, 2U, g_mbufHeads[0]);
     GenerateMbufHead(0U, 0U, g_mbufHeads[0]); // use (0,0) to mock data-break
-    GenerateMbufHead(3U, 2U, g_mbufHeads[0]); 
+    GenerateMbufHead(3U, 2U, g_mbufHeads[0]);
     GenerateMbufHead(2U, 2U, g_mbufHeads[1]);
     GenerateMbufHead(3U, 2U, g_mbufHeads[1]);
     GenerateMbufHead(3U, 3U, g_mbufHeads[1]);
@@ -2911,12 +2772,12 @@ TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_success) {
 
     uint64_t dataLen = sizeof(RuntimeTensorDesc);
     char mbufStub[dataLen + mbufDataOffSet] = {};
-    MOCKER_CPP(&BufManager::MallocAndGuardBufU64)
-        .stubs()
-        .will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
+    MOCKER_CPP(&BufManager::MallocAndGuardBufU64).stubs().will(returnValue(reinterpret_cast<Mbuf*>(&mbufStub[0U])));
     // for we have mock mbuf head to just MbufHeadMsg, so we should shift sizeof(MbufHeadMsg) to get data
     MOCKER(halMbufGetBuffAddr).stubs().will(invoke(halMbufGetBuffAddrFakeHead));
-    MOCKER(halMbufGetBuffSize).stubs().with(mockcpp::any(), outBoundP(&dataLen))
+    MOCKER(halMbufGetBuffSize)
+        .stubs()
+        .with(mockcpp::any(), outBoundP(&dataLen))
         .will(returnValue(static_cast<int32_t>(DRV_ERROR_NONE)));
     param0.inputsAlignMaxCacheNum = 1U;
     AICPUSubEventInfo subEventInfo = {};
@@ -2924,21 +2785,21 @@ TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_success) {
     // after executing, the second task finish, stream reach end
     EXPECT_EQ(0, AicpuEventProcess::GetInstance().AICPUEventSupplyEnque(subEventInfo));
     EXPECT_EQ(PtrToValue(placeHolder[1]), PtrToValue(&mbufStub[0U]));
-    MbufHeadMsg *headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufStub[0U]);
+    MbufHeadMsg* headMsg = PtrToPtr<char_t, MbufHeadMsg>(&mbufStub[0U]);
     EXPECT_EQ(headMsg->retCode, INNER_ERROR_BASE + AICPU_SCHEDULE_ERROR_DISCARD_DATA);
 
     AicpuScheduleInterface::GetInstance().Destroy(0U);
     ClearMbufHeads();
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_passTimeOut) {
-
+TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_passTimeOut)
+{
     GatherDequeParam param0 = {};
     param0.inputNums = 3U;
     uint32_t queueIds[3] = {0U, 1U, 2U};
     param0.queueIdsAddr = (uint64_t)(&queueIds[0U]);
-    MbufHeadMsg *placeHolder[3] = {nullptr};
-    MbufHeadMsg **mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
+    MbufHeadMsg* placeHolder[3] = {nullptr};
+    MbufHeadMsg** mbufAddrsAddr[3] = {&placeHolder[0], &placeHolder[1], &placeHolder[2]};
     param0.mbufAddrsAddr = (uint64_t)(&mbufAddrsAddr[0U]);
     uint32_t deviceTypes[3] = {0U};
     param0.deviceTypeAddr = (uint64_t)(&deviceTypes[0U]);
@@ -2964,7 +2825,9 @@ TEST_F(AICPUScheduleInterfaceTEST, LoadAndExecuteModelForGatherDeque_passTimeOut
     EXPECT_EQ(static_cast<int32_t>(AICPU_SCHEDULE_SUCCESS), AicpuLoadModelWithQ((void*)(&modelInfo)));
 
     MOCKER_CPP(&AicpuModel::CheckOperate).stubs().will(returnValue(0));
-    AICPUSubEventInfo event = {0, };
+    AICPUSubEventInfo event = {
+        0,
+    };
     GenerateMbufHead(1U, 1U, g_mbufHeads[0]);
     GenerateMbufHead(2U, 2U, g_mbufHeads[1]);
     GenerateMbufHead(2U, 2U, g_mbufHeads[2]);
@@ -2995,7 +2858,6 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_success)
     unlockParam.tableId = 0U;
     ModelTaskInfo unlockTask = {1U, PtrToValue(names[1U].c_str()), PtrToValue(&unlockParam)};
 
-
     ModelTaskInfo tasks[] = {lockTask, unlockTask};
     ModelStreamInfo modelStreamInfo = {101, 0x28U, 2, tasks};
 
@@ -3013,14 +2875,17 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_success)
     EXPECT_EQ(static_cast<int32_t>(AICPU_SCHEDULE_SUCCESS), AicpuLoadModelWithQ((void*)(&modelInfo)));
 
     MOCKER_CPP(&AicpuModel::CheckOperate).stubs().will(returnValue(0));
-    AICPUSubEventInfo event = {modelInfo.modelId, };
+    AICPUSubEventInfo event = {
+        modelInfo.modelId,
+    };
     EXPECT_EQ(0, AicpuEventProcess::GetInstance().AICPUEventExecuteModel(event));
-    AicpuScheduleInterface::GetInstance().Destroy(modelInfo.modelId );
+    AicpuScheduleInterface::GetInstance().Destroy(modelInfo.modelId);
 }
 
-drvError_t StubHalEschedSubmitEvent(unsigned int devId, struct event_summary *event)
+drvError_t StubHalEschedSubmitEvent(unsigned int devId, struct event_summary* event)
 {
-    std::cout << "StubHalEschedSubmitEvent, event is " << event->event_id << ", subevent is " << event->subevent_id << std::endl;
+    std::cout << "StubHalEschedSubmitEvent, event is " << event->event_id << ", subevent is " << event->subevent_id
+              << std::endl;
     event_info eventInfo = {};
     eventInfo.comm.event_id = event->event_id;
     eventInfo.comm.subevent_id = event->subevent_id;
@@ -3032,7 +2897,8 @@ drvError_t StubHalEschedSubmitEvent(unsigned int devId, struct event_summary *ev
     return DRV_ERROR_NONE;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SetTsDevSendMsgAsync2) {
+TEST_F(AICPUScheduleInterfaceTEST, SetTsDevSendMsgAsync2)
+{
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(1)).then(returnValue(0));
     TsAicpuSqe tsAicpuSqe = {0};
     tsAicpuSqe.pid = 0;
@@ -3141,7 +3007,6 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_read_write_fail)
     // 触发事件发送
     AicpuMsgSend::SendEvent();
 
-
     EXPECT_EQ(stream0->nextTaskIndex_, 3);
     EXPECT_EQ(stream1->nextTaskIndex_, 2);
 
@@ -3233,7 +3098,6 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_read_read_success)
     AicpuEventProcess::GetInstance().AICPUEventEndGraph(eventEndGraph);
     // 触发事件发送
     AicpuMsgSend::SendEvent();
-
 
     EXPECT_EQ(stream0->nextTaskIndex_, 3);
     EXPECT_EQ(stream1->nextTaskIndex_, 2);
@@ -3327,7 +3191,6 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_write_read_fail)
     // 触发事件发送
     AicpuMsgSend::SendEvent();
 
-
     EXPECT_EQ(stream0->nextTaskIndex_, 3);
     EXPECT_EQ(stream1->nextTaskIndex_, 2);
 
@@ -3420,7 +3283,6 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_write_write_fail)
     // 触发事件发送
     AicpuMsgSend::SendEvent();
 
-
     EXPECT_EQ(stream0->nextTaskIndex_, 3);
     EXPECT_EQ(stream1->nextTaskIndex_, 2);
 
@@ -3428,23 +3290,20 @@ TEST_F(AICPUScheduleInterfaceTEST, NN_lock_write_write_fail)
     AicpuScheduleInterface::GetInstance().Destroy(modelId1);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&AicpuModel::ReleaseModelResource)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuModel::ReleaseModelResource).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     int ret = model_stop_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3453,10 +3312,11 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_success) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail1) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail1)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
@@ -3468,20 +3328,19 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail1) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail2) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail2)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus).stubs().will(returnValue(-1));
     int ret = model_stop_kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3490,23 +3349,20 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail2) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail3) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail3)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER_CPP(&AicpuModel::ReleaseModelResource)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus).stubs().will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuModel::ReleaseModelResource).stubs().will(returnValue(-1));
     int ret = model_stop_kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3515,24 +3371,23 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail3) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail4) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail4)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     AicpuModelInfo modelInfoT = {0};
     modelInfoT.moduleID = 1;
     (void)aicpuModel->ModelLoad(&modelInfoT);
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(-1));
-    MOCKER_CPP(&AicpuModel::ModelStop)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuModel::ModelStop).stubs().will(returnValue(-1));
     int ret = model_stop_kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3541,27 +3396,24 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelStop_fail4) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
         .stubs()
         .will(returnValue(AICPU_SCHEDULE_OK))
         .then(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER(halQueueDeQueue)
-        .stubs()
-        .will(returnValue(DRV_ERROR_QUEUE_EMPTY));
-    MOCKER_CPP(&AicpuMsgSend::SendAICPUSubEvent)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER(halQueueDeQueue).stubs().will(returnValue(DRV_ERROR_QUEUE_EMPTY));
+    MOCKER_CPP(&AicpuMsgSend::SendAICPUSubEvent).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     int ret = clear_and_restart_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3570,10 +3422,11 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_success) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail1) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail1)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
@@ -3585,20 +3438,19 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail1) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail2) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail2)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
-    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus).stubs().will(returnValue(-1));
     int ret = clear_and_restart_kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3607,24 +3459,23 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail2) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail3) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail3)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
         .stubs()
         .will(returnValue(AICPU_SCHEDULE_OK))
         .then(returnValue(-1));
-    MOCKER(halQueueDeQueue)
-        .stubs()
-        .will(returnValue(DRV_ERROR_QUEUE_EMPTY));
+    MOCKER(halQueueDeQueue).stubs().will(returnValue(DRV_ERROR_QUEUE_EMPTY));
     int ret = clear_and_restart_kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3633,27 +3484,24 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail3) {
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail4) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail4)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    AicpuModel *aicpuModel = new AicpuModel();
+    AicpuModel* aicpuModel = new AicpuModel();
     MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(aicpuModel));
     MOCKER_CPP(&AicpuModel::CheckOperateAndUpdateStatus)
         .stubs()
         .will(returnValue(AICPU_SCHEDULE_OK))
         .then(returnValue(AICPU_SCHEDULE_OK));
-    MOCKER(halQueueDeQueue)
-        .stubs()
-        .will(returnValue(DRV_ERROR_QUEUE_EMPTY));
-    MOCKER_CPP(&AicpuMsgSend::SendAICPUSubEvent)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(halQueueDeQueue).stubs().will(returnValue(DRV_ERROR_QUEUE_EMPTY));
+    MOCKER_CPP(&AicpuMsgSend::SendAICPUSubEvent).stubs().will(returnValue(-1));
     int ret = clear_and_restart_kernel_.Compute(tsKernelInfo);
     EXPECT_NE(ret, AICPU_SCHEDULE_OK);
     delete aicpuModel;
@@ -3664,33 +3512,33 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelModelClearInputAndRestart_fail4) {
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_success01)
 {
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 8;
-    char *OpraterkernelName = "markStep";
+    char* OpraterkernelName = "markStep";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
     config->checkResultLen = 0;
     int ret = CheckKernelSupported(config);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_OK);
     delete config;
     config = nullptr;
 }
- 
+
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed01)
 {
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 14;
-    char *OpraterkernelName = "markStepMytest";
+    char* OpraterkernelName = "markStepMytest";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
     config->checkResultLen = 0;
     int ret = CheckKernelSupported(config);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
     delete config;
     config = nullptr;
@@ -3703,7 +3551,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed02)
 
 TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed03)
 {
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     int ret = CheckKernelSupported(config);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
     delete config;
@@ -3715,12 +3563,11 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_success02)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "TsKernelCheckKernelSupported";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 8;
-    char *OpraterkernelName = "markStep";
+    char* OpraterkernelName = "markStep";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
@@ -3730,7 +3577,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_success02)
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = check_supported_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_OK);
     delete config;
     config = nullptr;
@@ -3741,12 +3588,11 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_success03)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "TsKernelCheckKernelSupported";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 14;
-    char *OpraterkernelName = "markStepMytest";
+    char* OpraterkernelName = "markStepMytest";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelType = 2;
@@ -3762,12 +3608,11 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed05)
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
     char kernel_name[] = "TsKernelCheckKernelSupported";
-    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(
-                                reinterpret_cast<uintptr_t>(kernel_name));
+    uint64_t kernel_name_addr = reinterpret_cast<uint64_t>(reinterpret_cast<uintptr_t>(kernel_name));
     cceKernel.kernelName = kernel_name_addr;
-    CheckKernelSupportedConfig *config = new CheckKernelSupportedConfig();
+    CheckKernelSupportedConfig* config = new CheckKernelSupportedConfig();
     config->kernelNameLen = 14;
-    char *OpraterkernelName = "markStepMytest";
+    char* OpraterkernelName = "markStepMytest";
     config->kernelNameAddr = PtrToValue(&OpraterkernelName[0]);
     uint32_t retValue = 10;
     config->checkResultAddr = PtrToValue(&retValue);
@@ -3777,13 +3622,14 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelCheckKernelSupported_failed05)
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
     int ret = check_supported_kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
-    uint32_t *resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
+    uint32_t* resultAddr = PtrToPtr<void, uint32_t>(ValueToPtr(config->checkResultAddr));
     EXPECT_EQ(*resultAddr, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
     delete config;
     config = nullptr;
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SendLoadPlatformFromBufMsgRsp_01) {
+TEST_F(AICPUScheduleInterfaceTEST, SendLoadPlatformFromBufMsgRsp_01)
+{
     TsAicpuSqe ctrlMsg = {};
     AicpuSqeAdapter adapter(ctrlMsg, 0U);
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(0));
@@ -3792,7 +3638,8 @@ TEST_F(AICPUScheduleInterfaceTEST, SendLoadPlatformFromBufMsgRsp_01) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, SendLoadPlatformFromBufMsgRsp_02) {
+TEST_F(AICPUScheduleInterfaceTEST, SendLoadPlatformFromBufMsgRsp_02)
+{
     TsAicpuSqe ctrlMsg = {};
     AicpuSqeAdapter adapter(ctrlMsg, 0U);
     MOCKER(tsDevSendMsgAsync).stubs().will(returnValue(1));
@@ -3801,21 +3648,25 @@ TEST_F(AICPUScheduleInterfaceTEST, SendLoadPlatformFromBufMsgRsp_02) {
     GlobalMockObject::verify();
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, ProcessLoadPlatformFromBuf) {
+TEST_F(AICPUScheduleInterfaceTEST, ProcessLoadPlatformFromBuf)
+{
     TsAicpuSqe ctrlMsg = {};
     AicpuSqeAdapter adapter(ctrlMsg, 0U);
     auto ret = AicpuEventProcess::GetInstance().ProcessLoadPlatformFromBuf(adapter);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, GetAicpuExtendSoPlatformFuncPtr) {
+TEST_F(AICPUScheduleInterfaceTEST, GetAicpuExtendSoPlatformFuncPtr)
+{
     auto ret = AicpuEventProcess::GetInstance().GetAicpuExtendSoPlatformFuncPtr();
     EXPECT_EQ(ret, nullptr);
 }
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUModelDestroy_failed)
 {
-    MOCKER_CPP(&AicpuScheduleInterface::Destroy, int32_t(AicpuScheduleInterface::*)(const uint32_t)const).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
+    MOCKER_CPP(&AicpuScheduleInterface::Destroy, int32_t(AicpuScheduleInterface::*)(const uint32_t) const)
+        .stubs()
+        .will(returnValue(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
     EXPECT_EQ(AICPUModelDestroy(1U), AICPU_SCHEDULE_FAIL);
 }
 
@@ -3835,8 +3686,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUExecuteTask_success)
 
 TEST_F(AICPUScheduleInterfaceTEST, AICPUExecuteTask_failed)
 {
-    struct event_info *drvEventInfo;
-    struct event_ack *drvEventAck;
+    struct event_info* drvEventInfo;
+    struct event_ack* drvEventAck;
     MOCKER_CPP(&AicpuEventManager::ExecuteProcessSyc).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND));
     EXPECT_EQ(AICPUExecuteTask(drvEventInfo, drvEventAck), AICPU_SCHEDULE_FAIL);
 }
@@ -3893,7 +3744,9 @@ TEST_F(AICPUScheduleInterfaceTEST, AicpuSetMsprofReporterCallback)
 
 TEST_F(AICPUScheduleInterfaceTEST, AicpuLoadModelWithQ_success)
 {
-    MOCKER_CPP(&AicpuSchedule::AicpuScheduleInterface::LoadModelWithQueue).stubs().will(returnValue(AicpuSchedule::AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuSchedule::AicpuScheduleInterface::LoadModelWithQueue)
+        .stubs()
+        .will(returnValue(AicpuSchedule::AICPU_SCHEDULE_OK));
     int ret = AicpuLoadModelWithQ(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
@@ -3921,10 +3774,10 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelProcessDataException_success)
 
     AicpuModelManager::GetInstance().allModel_[0U].modelId_ = 0U;
     AicpuModelManager::GetInstance().allModel_[0U].isValid = true;
-    AicpuModel &aicpuModel0 = AicpuModelManager::GetInstance().allModel_[0U];
+    AicpuModel& aicpuModel0 = AicpuModelManager::GetInstance().allModel_[0U];
     AicpuModelManager::GetInstance().allModel_[1U].modelId_ = 1U;
     AicpuModelManager::GetInstance().allModel_[1U].isValid = true;
-    AicpuModel &aicpuModel1 = AicpuModelManager::GetInstance().allModel_[1U];
+    AicpuModel& aicpuModel1 = AicpuModelManager::GetInstance().allModel_[1U];
 
     EXPECT_EQ(aicpuModel0.StoreDequedMbuf(0U, 0U, 0U, nullptr, 1U), StoreResult::SUCCESS_STORE);
 
@@ -3934,8 +3787,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelProcessDataException_success)
     // repeat adding execption transid
     EXPECT_EQ(AICPUModelProcessDataException(&notify), AICPU_SCHEDULE_OK);
 
-    Mbuf *mbuf = nullptr;
-    Mbuf **mbufPtr =  &mbuf;
+    Mbuf* mbuf = nullptr;
+    Mbuf** mbufPtr = &mbuf;
     EXPECT_EQ(aicpuModel0.SelectGatheredMbuf(&mbufPtr, 1000U, 1000U), GatherResult::UN_SELECTED);
     EXPECT_EQ(aicpuModel0.gatheredMbuf_.size(), 0);
     EXPECT_TRUE(aicpuModel0.exceptionTranses_[0]);
@@ -3965,10 +3818,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelProcessDataException_fail_for_inval
 
     AicpuModel aicpuModel0;
     aicpuModel0.modelId_ = 0U;
-    AicpuModel *nullAicpuModel = nullptr;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs()
-        .will(returnValue(&aicpuModel0))
-        .then(returnValue(nullAicpuModel));
+    AicpuModel* nullAicpuModel = nullptr;
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel0)).then(returnValue(nullAicpuModel));
 
     EXPECT_EQ(AICPUModelProcessDataException(&notify), AICPU_SCHEDULE_ERROR_MODEL_NOT_FOUND);
 }
@@ -3993,7 +3844,8 @@ TEST_F(AICPUScheduleInterfaceTEST, AICPUModelProcessDataException_fail_for_inval
     EXPECT_EQ(AICPUModelProcessDataException(&notify), AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AICPUScheduleInterfaceTEST, TsKernelProcessDataException_success) {
+TEST_F(AICPUScheduleInterfaceTEST, TsKernelProcessDataException_success)
+{
     DataFlowExceptionNotify notify = {};
     notify.modelIdNum = 2U;
     std::vector<uint32_t> modelIds = {0U, 1U};
@@ -4003,9 +3855,7 @@ TEST_F(AICPUScheduleInterfaceTEST, TsKernelProcessDataException_success) {
     aicpuModel0.modelId_ = 0U;
     AicpuModel aicpuModel1;
     aicpuModel1.modelId_ = 0U;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs()
-        .will(returnValue(&aicpuModel0))
-        .then(returnValue(&aicpuModel1));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue(&aicpuModel0)).then(returnValue(&aicpuModel1));
 
     aicpu::HwtsTsKernel tskenrel = {};
     tskenrel.kernelBase.cceKernel.paramBase = PtrToValue(&notify);

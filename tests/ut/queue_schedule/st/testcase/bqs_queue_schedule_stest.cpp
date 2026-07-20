@@ -44,103 +44,104 @@ using namespace std;
 using namespace bqs;
 
 namespace {
-    // hccl handle
-    uint64_t hcclHandle = 100UL;
-    HcclComm hcclComm = &hcclHandle;
+// hccl handle
+uint64_t hcclHandle = 100UL;
+HcclComm hcclComm = &hcclHandle;
 
-    int32_t g_totalEnvelopeCount = 0U;
-    int HcclImprobeFake(int srcRank, int tag, HcclComm comm, int *flag, HcclMessage *msg, HcclStatus *status)
-    {
-        if (g_totalEnvelopeCount == 0U) {
-            *flag = 0;
-        } else {
-            g_totalEnvelopeCount--;
-            *flag = 1;
-        }
-        return 0;
+int32_t g_totalEnvelopeCount = 0U;
+int HcclImprobeFake(int srcRank, int tag, HcclComm comm, int* flag, HcclMessage* msg, HcclStatus* status)
+{
+    if (g_totalEnvelopeCount == 0U) {
+        *flag = 0;
+    } else {
+        g_totalEnvelopeCount--;
+        *flag = 1;
     }
+    return 0;
+}
 
-    bool g_link = false;
-    int HcclGetCountFake(const HcclStatus *status, HcclDataType dataType, int *count)
-    {
-        if (g_link) {
-            *count = 0;
-            g_link = false;
-        } else {
-            *count = 1;
-        }
-        return 0;
+bool g_link = false;
+int HcclGetCountFake(const HcclStatus* status, HcclDataType dataType, int* count)
+{
+    if (g_link) {
+        *count = 0;
+        g_link = false;
+    } else {
+        *count = 1;
     }
+    return 0;
+}
 
-    int HcclImrecvFake(void *buffer, int count, HcclDataType datatype, HcclMessage *msg, HcclRequest *request)
-    {
-        int32_t req = 1;
-        *request = reinterpret_cast<HcclRequest>(&req);
-        return 0;
-    }
+int HcclImrecvFake(void* buffer, int count, HcclDataType datatype, HcclMessage* msg, HcclRequest* request)
+{
+    int32_t req = 1;
+    *request = reinterpret_cast<HcclRequest>(&req);
+    return 0;
+}
 
-    int HcclTestSomeFake(int count, HcclRequest requestArray[], int *compCount, int compIndices[], HcclStatus compStatus[])
-    {
-        *compCount = count;
-        for (int i = 0; i < count; i++) {
-            compIndices[i] = i;
-            HcclStatus status;
-            status.error = 0;
-            compStatus[i] = status;
-        }
-        return 0;
+int HcclTestSomeFake(int count, HcclRequest requestArray[], int* compCount, int compIndices[], HcclStatus compStatus[])
+{
+    *compCount = count;
+    for (int i = 0; i < count; i++) {
+        compIndices[i] = i;
+        HcclStatus status;
+        status.error = 0;
+        compStatus[i] = status;
     }
-    int HcclTestSomeFakeFail(int count, HcclRequest requestArray[], int *compCount, int compIndices[], HcclStatus compStatus[])
-    {
-        *compCount = count;
-        for (int i = 0; i < count; i++) {
-            compIndices[i] = i;
-            HcclStatus status;
-            status.error = HCCL_E_ROCE_TRANSFER;
-            compStatus[i] = status;
-        }
-        return HCCL_E_IN_STATUS;
+    return 0;
+}
+int HcclTestSomeFakeFail(
+    int count, HcclRequest requestArray[], int* compCount, int compIndices[], HcclStatus compStatus[])
+{
+    *compCount = count;
+    for (int i = 0; i < count; i++) {
+        compIndices[i] = i;
+        HcclStatus status;
+        status.error = HCCL_E_ROCE_TRANSFER;
+        compStatus[i] = status;
     }
-    errno_t CopyStub(void *dest, size_t destMax, const void *src, size_t count)
-    {
-        printf("Dst addr:%p, size:%zu, src addr:%p, size:%zu\n", dest, destMax, src, count);
-        memcpy(dest, src, count);
-        return EOK;
-    }
+    return HCCL_E_IN_STATUS;
+}
+errno_t CopyStub(void* dest, size_t destMax, const void* src, size_t count)
+{
+    printf("Dst addr:%p, size:%zu, src addr:%p, size:%zu\n", dest, destMax, src, count);
+    memcpy(dest, src, count);
+    return EOK;
+}
 
-    bool g_schedule_wait_fake_to_err = false;
-    bool g_schedule_wait_fake_to_param_err = false;
-    drvError_t halEschedWaitEventErrorOrTimeOut(unsigned int devId, unsigned int grpId,
-        unsigned int threadId, int timeout, struct event_info *event)
-    {
-        usleep(10);
-        if (g_schedule_wait_fake_to_err) {
-            return DRV_ERROR_NO_DEVICE;
-        } else if (g_schedule_wait_fake_to_param_err) {
-            return DRV_ERROR_PARA_ERROR;
-        } else {
-            return DRV_ERROR_SCHED_WAIT_TIMEOUT;
-        }
-    }
-
-    uint32_t g_dynamicResponseQ = 0U;
-    dgw::FsmStatus DynamicGetResponseFake(dgw::DynamicSchedMgr *ptr, const uint32_t rootModelId,
-        std::vector<dgw::DynamicSchedMgr::ResponseInfo> &responses)
-    {
-        std::cout << "DynamicGetResponseFake" << std::endl;
-        void* realVal = nullptr;
-        int ret = halQueueDeQueueFake(0, g_dynamicResponseQ, (void**)&realVal);
-        if ((DRV_ERROR_NONE == ret) && (realVal != nullptr)) {
-            dgw::DynamicSchedMgr::ResponseInfo dynamicResponse = {};
-            dynamicResponse.src.queueLogicId = 6U;
-            dynamicResponse.groupResults.emplace_back(dgw::DynamicSchedMgr::GroupResult{7U, 0U});
-            dynamicResponse.groupResults.emplace_back(dgw::DynamicSchedMgr::GroupResult{8U, 1U});
-            responses.emplace_back(dynamicResponse);
-            return dgw::FsmStatus::FSM_SUCCESS;
-        }
-        return dgw::FsmStatus::FSM_FAILED;
+bool g_schedule_wait_fake_to_err = false;
+bool g_schedule_wait_fake_to_param_err = false;
+drvError_t halEschedWaitEventErrorOrTimeOut(
+    unsigned int devId, unsigned int grpId, unsigned int threadId, int timeout, struct event_info* event)
+{
+    usleep(10);
+    if (g_schedule_wait_fake_to_err) {
+        return DRV_ERROR_NO_DEVICE;
+    } else if (g_schedule_wait_fake_to_param_err) {
+        return DRV_ERROR_PARA_ERROR;
+    } else {
+        return DRV_ERROR_SCHED_WAIT_TIMEOUT;
     }
 }
+
+uint32_t g_dynamicResponseQ = 0U;
+dgw::FsmStatus DynamicGetResponseFake(
+    dgw::DynamicSchedMgr* ptr, const uint32_t rootModelId, std::vector<dgw::DynamicSchedMgr::ResponseInfo>& responses)
+{
+    std::cout << "DynamicGetResponseFake" << std::endl;
+    void* realVal = nullptr;
+    int ret = halQueueDeQueueFake(0, g_dynamicResponseQ, (void**)&realVal);
+    if ((DRV_ERROR_NONE == ret) && (realVal != nullptr)) {
+        dgw::DynamicSchedMgr::ResponseInfo dynamicResponse = {};
+        dynamicResponse.src.queueLogicId = 6U;
+        dynamicResponse.groupResults.emplace_back(dgw::DynamicSchedMgr::GroupResult{7U, 0U});
+        dynamicResponse.groupResults.emplace_back(dgw::DynamicSchedMgr::GroupResult{8U, 1U});
+        responses.emplace_back(dynamicResponse);
+        return dgw::FsmStatus::FSM_SUCCESS;
+    }
+    return dgw::FsmStatus::FSM_FAILED;
+}
+} // namespace
 
 class BQS_QUEUE_SCHEDULE_STTest : public testing::Test {
 protected:
@@ -153,32 +154,21 @@ protected:
         std::vector<uint32_t> aiCpuIds_;
         MOCKER(&QueueScheduleInterface::GetAiCpuIds).stubs().will(returnValue(aiCpuIds_));
 
-        MOCKER(HcclImprobe)
-            .stubs()
-            .will(invoke(HcclImprobeFake));
+        MOCKER(HcclImprobe).stubs().will(invoke(HcclImprobeFake));
 
-        MOCKER(HcclGetCount)
-            .stubs()
-            .will(invoke(HcclGetCountFake));
+        MOCKER(HcclGetCount).stubs().will(invoke(HcclGetCountFake));
 
-        MOCKER(HcclImrecv)
-            .stubs()
-            .will(invoke(HcclImrecvFake));
+        MOCKER(HcclImrecv).stubs().will(invoke(HcclImrecvFake));
 
-        MOCKER(HcclTestSome)
-            .stubs()
-            .will(invoke(HcclTestSomeFake));
+        MOCKER(HcclTestSome).stubs().will(invoke(HcclTestSomeFake));
 
-        MOCKER(memcpy_s)
-            .stubs()
-            .will(invoke(CopyStub));
+        MOCKER(memcpy_s).stubs().will(invoke(CopyStub));
 
         queueSchedule.qsInitGroupName_ = "Default";
-        BindCpuUtils::GetDevCpuInfo(0, QueueScheduleInterface::GetInstance().aiCpuIds_,
-                                    QueueScheduleInterface::GetInstance().ctrlCpuIds_,
-                                    QueueScheduleInterface::GetInstance().coreNumPerDev_,
-                                    QueueScheduleInterface::GetInstance().aicpuNum_,
-                                    QueueScheduleInterface::GetInstance().aicpuBaseId_);
+        BindCpuUtils::GetDevCpuInfo(
+            0, QueueScheduleInterface::GetInstance().aiCpuIds_, QueueScheduleInterface::GetInstance().ctrlCpuIds_,
+            QueueScheduleInterface::GetInstance().coreNumPerDev_, QueueScheduleInterface::GetInstance().aicpuNum_,
+            QueueScheduleInterface::GetInstance().aicpuBaseId_);
         queueSchedule.StartQueueSchedule();
     }
 
@@ -200,7 +190,8 @@ public:
         queueSchedule.Destroy();
     }
 
-    void AddBindRelation(const std::multimap<uint32_t, uint32_t>& srcDstMap, const int32_t expectRet,
+    void AddBindRelation(
+        const std::multimap<uint32_t, uint32_t>& srcDstMap, const int32_t expectRet,
         std::vector<bqs::BQSBindQueueResult>& bindResultVec)
     {
         std::vector<bqs::BQSBindQueueItem> bindQueueVec;
@@ -215,15 +206,16 @@ public:
         return;
     }
 
-    void AddBindRelation(EntityInfo &src, EntityInfo &dst)
+    void AddBindRelation(EntityInfo& src, EntityInfo& dst)
     {
         auto ret = BindRelation::GetInstance().Bind(src, dst);
         EXPECT_EQ(ret, BQS_STATUS_OK);
         BindRelation::GetInstance().Order();
     }
 
-    void DelBindRelation(const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap,
-        const int32_t expectRet, std::vector<bqs::BQSBindQueueResult>& bindResultVec)
+    void DelBindRelation(
+        const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap, const int32_t expectRet,
+        std::vector<bqs::BQSBindQueueResult>& bindResultVec)
     {
         std::vector<bqs::BQSQueryPara> bqsQueryParaVec;
         for (auto iter = keySrcDstMap.begin(); iter != keySrcDstMap.end(); ++iter) {
@@ -237,8 +229,9 @@ public:
         return;
     }
 
-    void GetBindRelation(const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap,
-        const int32_t expectRet, std::vector<bqs::BQSBindQueueItem>& getBindQueueResult)
+    void GetBindRelation(
+        const std::multimap<bqs::QsQueryType, bqs::BQSBindQueueItem>& keySrcDstMap, const int32_t expectRet,
+        std::vector<bqs::BQSBindQueueItem>& getBindQueueResult)
     {
         std::vector<bqs::BQSQueryPara> bqsQueryParaVec;
         for (auto iter = keySrcDstMap.begin(); iter != keySrcDstMap.end(); ++iter) {
@@ -269,36 +262,34 @@ public:
         auto& bindRelation = bqs::BindRelation::GetInstance();
         auto& dstToSrcRelation = bindRelation.GetDstToSrcRelation();
         for (auto& relation : dstToSrcRelation) {
-            const auto &dstId = relation.first;
+            const auto& dstId = relation.first;
             ClearEntity(dstId);
-            for (auto srcId : relation.second){
+            for (auto srcId : relation.second) {
                 ClearEntity(srcId);
                 allRelation.emplace_back(std::make_tuple(srcId, dstId));
             }
         }
 
         for (auto& relation : allRelation) {
-            auto &srcId = std::get<0>(relation);
-            auto &dstId = std::get<1>(relation);
+            auto& srcId = std::get<0>(relation);
+            auto& dstId = std::get<1>(relation);
             bqs::BqsStatus ret = bindRelation.UnBind(srcId, dstId);
             EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
         }
         bindRelation.Order();
     }
 
-    void ClearEntity(const EntityInfo &entity)
-    {
-    }
+    void ClearEntity(const EntityInfo& entity) {}
 
     void CreateQueue(const std::map<uint32_t, int32_t>& id2Depth, bool needTransId = false)
     {
         for (auto iter = id2Depth.begin(); iter != id2Depth.end(); ++iter) {
             uint32_t qid = 0;
-            QueueAttr queAttr = { 0 };
+            QueueAttr queAttr = {0};
             memcpy(queAttr.name, std::to_string(iter->first).c_str(), std::to_string(iter->first).length());
             queAttr.depth = iter->second;
-            int ret = needTransId ? halQueueCreateWithTransId(0, &queAttr, &qid) :
-                                    halQueueCreateFake(0, &queAttr, &qid);
+            int ret =
+                needTransId ? halQueueCreateWithTransId(0, &queAttr, &qid) : halQueueCreateFake(0, &queAttr, &qid);
             EXPECT_EQ(ret, 0);
         }
         return;
@@ -314,7 +305,7 @@ public:
         return;
     }
 
-    void EnQueue(std::vector<EntityInfoPtr> &entities, std::vector<int32_t> &val, std::vector<int32_t> &idx)
+    void EnQueue(std::vector<EntityInfoPtr>& entities, std::vector<int32_t>& val, std::vector<int32_t>& idx)
     {
         std::cout << "EnQueue with transId is processing..." << std::endl;
         size_t entityNum = entities.size();
@@ -347,8 +338,8 @@ public:
             int ret = halQueueDeQueueFake(0, qid, (void**)&realVal);
             EXPECT_EQ(ret, DRV_ERROR_NONE);
             ASSERT_NE(realVal, nullptr);
-            auto pair = (std::pair<std::shared_ptr<HeadBuf>, uint32_t> *)realVal;
-            std:: cout << "transId:" << pair->first->info.transId << ", value:" << pair->second << std::endl;
+            auto pair = (std::pair<std::shared_ptr<HeadBuf>, uint32_t>*)realVal;
+            std::cout << "transId:" << pair->first->info.transId << ", value:" << pair->second << std::endl;
             EXPECT_EQ(pair->second, values[i]);
             EXPECT_EQ(pair->first->info.transId, transIds[i]);
         }
@@ -373,12 +364,12 @@ public:
     {
         uint32_t verifyThreshold = 5U;
         bool verifySuccess = false;
-        while(verifyThreshold-- > 0U) {
+        while (verifyThreshold-- > 0U) {
             verifySuccess = VerifyQueueSize(qid, size);
             if (verifySuccess) {
                 break;
             } else {
-                std::cout << "the " <<  5 - verifyThreshold << "th check" << std::endl;
+                std::cout << "the " << 5 - verifyThreshold << "th check" << std::endl;
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
         }
@@ -391,13 +382,13 @@ public:
     void DestroyQueue(std::vector<uint32_t> qidVec)
     {
         for (size_t i = 0; i < qidVec.size(); i++) {
-        int ret = DestroyBuffQueueFake(0, qidVec[i]);
+            int ret = DestroyBuffQueueFake(0, qidVec[i]);
             EXPECT_EQ(ret, 0);
         }
         return;
     }
 
-    void CreateGroup(std::vector<EntityInfoPtr> &entities, uint32_t &groupId)
+    void CreateGroup(std::vector<EntityInfoPtr>& entities, uint32_t& groupId)
     {
         auto ret = BindRelation::GetInstance().CreateGroup(entities, groupId);
         EXPECT_EQ(ret, BQS_STATUS_OK);
@@ -459,12 +450,9 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, BindQueueFailed2)
 
     int32_t i = 0;
     for (auto iter : srcDstMap) {
-        if ((iter.first == 2 && iter.second == 6)
-        || (iter.first== 3 && iter.second == 1))
-        {
+        if ((iter.first == 2 && iter.second == 6) || (iter.first == 3 && iter.second == 1)) {
             EXPECT_NE(bindResultVec[i].bindResult_, 0);
-        }
-        else {
+        } else {
             EXPECT_EQ(bindResultVec[i].bindResult_, 0);
         }
         i++;
@@ -621,8 +609,11 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Success)
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Q2T_Success)
 {
-    MOCKER(HcclIsend).stubs().will(returnValue((int)HCCL_SUCCESS))
-        .then(returnValue((int)HCCL_E_NETWORK)).then(returnValue((int)HCCL_SUCCESS));
+    MOCKER(HcclIsend)
+        .stubs()
+        .will(returnValue((int)HCCL_SUCCESS))
+        .then(returnValue((int)HCCL_E_NETWORK))
+        .then(returnValue((int)HCCL_SUCCESS));
 
     // create queue
     std::map<uint32_t, int32_t> id2Depth;
@@ -653,9 +644,7 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Q2T_Success)
     CheckQueueSize(2, 4);
     CheckAndDeQueue(2, std::vector<int32_t>{1, 3, 2, 1});
 
-    MOCKER_CPP(&QueueManager::EnqueueFullToNotFullEvent)
-        .stubs()
-        .will(returnValue(BqsStatus::BQS_STATUS_OK));
+    MOCKER_CPP(&QueueManager::EnqueueFullToNotFullEvent).stubs().will(returnValue(BqsStatus::BQS_STATUS_OK));
     dgw::HcclProcess hcclProcess;
     event_info event;
     event.comm.event_id = static_cast<EVENT_ID>(dgw::EVENT_SEND_COMPLETION_MSG);
@@ -686,9 +675,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_Success)
 
     uint32_t headBufSize = 256U;
     char headBuf[256];
-    void *headBufAddr = (void *)(&headBuf[0]);
+    void* headBufAddr = (void*)(&headBuf[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -699,10 +689,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_Success)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
     EXPECT_EQ(channelEntity->uncompReqQueue_.Size(), 2U);
     EXPECT_EQ(channelEntity->cachedEnvelopeQueue_.Size(), 2U);
     EXPECT_EQ(channelEntity->cachedReqCount_, 2U);
@@ -761,9 +751,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_OneTrackEvent_Success)
 
     uint32_t headBufSize = 256U;
     char headBuf[256];
-    void *headBufAddr = (void *)(&headBuf[0]);
+    void* headBufAddr = (void*)(&headBuf[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     // setenv("TMP_ENV_COMM_OPT_ENABLE", "1", 1);
@@ -777,10 +768,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_OneTrackEvent_Success)
     auto ret = hcclProcess.ProcessRecvCompletionEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
     std::this_thread::sleep_for(std::chrono::seconds(1));
     EXPECT_EQ(channelEntity->uncompReqQueue_.Size(), 2U);
     EXPECT_EQ(channelEntity->cachedEnvelopeQueue_.Size(), 2U);
@@ -852,14 +843,16 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to3_Success)
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to2_AcrossNuma_Success)
 {
     int32_t mbufValue = 1;
-    int32_t *mbuf = &mbufValue;
+    int32_t* mbuf = &mbufValue;
 
     MOCKER(halMbufAllocEx)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((Mbuf **)&mbuf))
+        .stubs()
+        .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((Mbuf**)&mbuf))
         .will(returnValue((int)DRV_ERROR_NONE));
     uint32_t headSize = 1LU;
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&mbuf), outBoundP(&headSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&mbuf), outBoundP(&headSize))
         .will(returnValue((int)DRV_ERROR_NONE));
     GlobalCfg::GetInstance().SetNumaFlag(true);
     GlobalCfg::GetInstance().RecordDeviceId(1U, 1U, 0U);
@@ -1016,9 +1009,7 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_Restart_1to1_Success)
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Queue_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 1001 and queue 1002
     std::map<uint32_t, int32_t> id2Depth;
@@ -1062,16 +1053,15 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Queue_Success)
     CheckQueueSize(1001, 0);
     CheckQueueSize(1002, 0);
     CheckQueueSize(1003, 8);
-    CheckAndDeQueue(1003, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
+    CheckAndDeQueue(
+        1003, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to2_Group2Queue_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 1001 and queue 1002
     std::map<uint32_t, int32_t> id2Depth;
@@ -1125,18 +1115,18 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to2_Group2Queue_Success)
     CheckQueueSize(2003, 0);
     CheckQueueSize(2004, 8);
     CheckQueueSize(2005, 8);
-    CheckAndDeQueue(2004, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
-    CheckAndDeQueue(2005, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
+    CheckAndDeQueue(
+        2004, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
+    CheckAndDeQueue(
+        2005, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Group_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 1001 and queue 1002
     std::map<uint32_t, int32_t> id2Depth;
@@ -1195,19 +1185,15 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Group_Success)
     CheckQueueSize(3003, 0);
     CheckQueueSize(3004, 4);
     CheckQueueSize(3005, 4);
-    CheckAndDeQueue(3005, std::vector<int32_t>{90001, 90003, 90005, 90007},
-                    std::vector<int32_t>{1, 3, 5, 7});
-    CheckAndDeQueue(3004, std::vector<int32_t>{90002, 90004, 90006, 90008},
-                    std::vector<int32_t>{2, 4, 6, 8});
+    CheckAndDeQueue(3005, std::vector<int32_t>{90001, 90003, 90005, 90007}, std::vector<int32_t>{1, 3, 5, 7});
+    CheckAndDeQueue(3004, std::vector<int32_t>{90002, 90004, 90006, 90008}, std::vector<int32_t>{2, 4, 6, 8});
 
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to3_QueueTo1GroupAnd1TagAnd1QueueSuccess)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     MOCKER(HcclIsend).stubs().will(returnValue((int)HCCL_SUCCESS));
 
@@ -1279,22 +1265,18 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to3_QueueTo1GroupAnd1TagAnd1QueueSuc
     CheckQueueSize(4004, 2);
     CheckQueueSize(4005, 8);
 
-    CheckAndDeQueue(4002, std::vector<int32_t>{90004, 90008},
-                    std::vector<int32_t>{4, 8});
-    CheckAndDeQueue(4003, std::vector<int32_t>{90001, 90005},
-                    std::vector<int32_t>{1, 5});
-    CheckAndDeQueue(4004, std::vector<int32_t>{90002, 90006},
-                    std::vector<int32_t>{2, 6});
-    CheckAndDeQueue(4005, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
+    CheckAndDeQueue(4002, std::vector<int32_t>{90004, 90008}, std::vector<int32_t>{4, 8});
+    CheckAndDeQueue(4003, std::vector<int32_t>{90001, 90005}, std::vector<int32_t>{1, 5});
+    CheckAndDeQueue(4004, std::vector<int32_t>{90002, 90006}, std::vector<int32_t>{2, 6});
+    CheckAndDeQueue(
+        4005, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Broadcast_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 5001 and queue 5002 and queue 5003
     std::map<uint32_t, int32_t> id2Depth;
@@ -1343,18 +1325,18 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Broadcast_Success)
     CheckQueueSize(5002, 8);
     CheckQueueSize(5003, 8);
 
-    CheckAndDeQueue(5002, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
-    CheckAndDeQueue(5003, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
+    CheckAndDeQueue(
+        5002, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
+    CheckAndDeQueue(
+        5003, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 3, 4, 5, 6, 7, 8});
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, ScheduleQueueTo_1Q_2DynamicGroup_1StaticGroup_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
     g_dynamicResponseQ = 4010U;
     MOCKER_CPP(&dgw::DynamicSchedMgr::GetResponse).stubs().will(invoke(DynamicGetResponseFake));
     MOCKER_CPP(&dgw::DynamicSchedMgr::SendRequest).stubs().will(returnValue(dgw::FsmStatus::FSM_SUCCESS));
@@ -1490,9 +1472,7 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, ScheduleQueueTo_1Q_2DynamicGroup_1StaticGroup_
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Queue_LostOneTransId_Success)
 {
-     MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 6001 and queue 6002 and queue 6003
     std::map<uint32_t, int32_t> id2Depth;
@@ -1536,16 +1516,15 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Queue_LostOneTransId_Succe
     CheckQueueSize(6001, 0);
     CheckQueueSize(6002, 0);
     CheckQueueSize(6003, 8);
-    CheckAndDeQueue(6003, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
-                    std::vector<int32_t>{1, 2, 4, 5, 6, 7, 8, 9});
+    CheckAndDeQueue(
+        6003, std::vector<int32_t>{90001, 90002, 90003, 90004, 90005, 90006, 90007, 90008},
+        std::vector<int32_t>{1, 2, 4, 5, 6, 7, 8, 9});
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Full_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 5001 and queue 5002 and queue 5003
     std::map<uint32_t, int32_t> id2Depth;
@@ -1591,10 +1570,8 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Full_Success)
     std::this_thread::sleep_for(std::chrono::seconds(1));
     CheckQueueSize(7002, 3);
     CheckQueueSize(7003, 3);
-    CheckAndDeQueue(7002, std::vector<int32_t>{90002, 90004, 90006},
-                    std::vector<int32_t>{2, 4, 6});
-    CheckAndDeQueue(7003, std::vector<int32_t>{90001, 90003, 90005},
-                    std::vector<int32_t>{1, 3, 5});
+    CheckAndDeQueue(7002, std::vector<int32_t>{90002, 90004, 90006}, std::vector<int32_t>{2, 4, 6});
+    CheckAndDeQueue(7003, std::vector<int32_t>{90001, 90003, 90005}, std::vector<int32_t>{1, 3, 5});
     EXPECT_EQ(GetSubscribedData().size(), 4UL);
 
     // waiting for work schedule
@@ -1614,9 +1591,7 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Full_Success)
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Error)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 5001 and queue 5002 and queue 5003
     std::map<uint32_t, int32_t> id2Depth;
@@ -1671,9 +1646,7 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_QueueToGroup_Error)
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Group_Full_Success)
 {
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(invoke(halMbufGetPrivInfoFake));
+    MOCKER(halMbufGetPrivInfo).stubs().will(invoke(halMbufGetPrivInfoFake));
 
     // create queue 1001 and queue 1002
     std::map<uint32_t, int32_t> id2Depth;
@@ -1710,7 +1683,7 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Group_Full_Success)
     EntityInfo src(groupId, 0U, &args);
     EntityInfo dst(groupId2, 0U, &args);
     AddBindRelation(src, dst);
-    
+
     // include 2 inner queue
     EXPECT_EQ(GetSubscribedData().size(), 7UL);
 
@@ -1730,10 +1703,8 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Group_Full_Success)
     std::this_thread::sleep_for(std::chrono::seconds(1));
     CheckQueueSize(8004, 2);
     CheckQueueSize(8005, 2);
-    CheckAndDeQueue(8004, std::vector<int32_t>{90002, 90004},
-                    std::vector<int32_t>{2, 4});
-    CheckAndDeQueue(8005, std::vector<int32_t>{90001, 90003},
-                    std::vector<int32_t>{1, 3});
+    CheckAndDeQueue(8004, std::vector<int32_t>{90002, 90004}, std::vector<int32_t>{2, 4});
+    CheckAndDeQueue(8005, std::vector<int32_t>{90001, 90003}, std::vector<int32_t>{1, 3});
 
     // waiting for work schedule
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -1746,10 +1717,8 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_Group2Group_Full_Success)
     CheckQueueSize(8003, 0);
     CheckQueueSize(8004, 2);
     CheckQueueSize(8005, 2);
-    CheckAndDeQueue(8005, std::vector<int32_t>{90005, 90007},
-                    std::vector<int32_t>{5, 7});
-    CheckAndDeQueue(8004, std::vector<int32_t>{90006, 90008},
-                    std::vector<int32_t>{6, 8});
+    CheckAndDeQueue(8005, std::vector<int32_t>{90005, 90007}, std::vector<int32_t>{5, 7});
+    CheckAndDeQueue(8004, std::vector<int32_t>{90006, 90008}, std::vector<int32_t>{6, 8});
     QueueScheduleDestroy();
 }
 
@@ -1774,9 +1743,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_FULL_Success)
 
     uint32_t headBufSize = 256U;
     char headBuf[256];
-    void *headBufAddr = (void *)(&headBuf[0]);
+    void* headBufAddr = (void*)(&headBuf[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -1787,10 +1757,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_FULL_Success)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
     EXPECT_EQ(channelEntity->uncompReqQueue_.Size(), 2U);
     EXPECT_EQ(channelEntity->cachedEnvelopeQueue_.Size(), 2U);
     EXPECT_EQ(channelEntity->cachedReqCount_, 2U);
@@ -1822,8 +1792,8 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_1to1_T2Q_FULL_Success)
     std::this_thread::sleep_for(std::chrono::seconds(1));
     // check result
     CheckQueueSize(72, 1);
-    dgw::EntityPtr queueEntity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_QUEUE, 72,
-        dgw::EntityDirection::DIRECTION_RECV);
+    dgw::EntityPtr queueEntity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_QUEUE, 72, dgw::EntityDirection::DIRECTION_RECV);
     EXPECT_NE(queueEntity, nullptr);
     CheckAndDeQueue(72, std::vector<int32_t>{g_tagMbuf_int});
 
@@ -1863,9 +1833,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_build_link)
 
     uint32_t headBufSize = 256U;
     char headBuf[256];
-    void *headBufAddr = (void *)(&headBuf[0]);
+    void* headBufAddr = (void*)(&headBuf[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -1877,10 +1848,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_build_link)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
     EXPECT_EQ(channelEntity->uncompReqQueue_.Size(), 1U);
 
     // hccl recv completion
@@ -1912,9 +1883,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_AllocMbuf_fail1)
 
     uint32_t headBufSize = 256U;
     char headBuf11[256];
-    void *headBufAddr = (void *)(&headBuf11[0]);
+    void* headBufAddr = (void*)(&headBuf11[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -1926,23 +1898,19 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_AllocMbuf_fail1)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufSetDataLen)
-        .stubs()
-        .will(returnValue(-1));
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufSetDataLen).stubs().will(returnValue(-1));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
 
-    Mbuf *mbuf1 = nullptr;
-    void *headBuf = nullptr;
-    void *dataBuf = nullptr;
+    Mbuf* mbuf1 = nullptr;
+    void* headBuf = nullptr;
+    void* dataBuf = nullptr;
     const uint64_t dataSize = 128;
     channelEntity->AllocMbuf(mbuf1, headBuf, dataBuf, dataSize);
     QueueScheduleDestroy();
@@ -1976,27 +1944,21 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_AllocMbuf_fail2)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufSetDataLen)
-        .stubs()
-        .will(returnValue(0));
-    MOCKER(halMbufGetPrivInfo)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER(halMbufSetDataLen).stubs().will(returnValue(0));
+    MOCKER(halMbufGetPrivInfo).stubs().will(returnValue(-1));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
 
-    Mbuf *mbuf1 = nullptr;
-    void *headBuf = nullptr;
-    void *dataBuf = nullptr;
+    Mbuf* mbuf1 = nullptr;
+    void* headBuf = nullptr;
+    void* dataBuf = nullptr;
     const uint64_t dataSize = 128;
     channelEntity->AllocMbuf(mbuf1, headBuf, dataBuf, dataSize);
     QueueScheduleDestroy();
@@ -2030,33 +1992,28 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_AllocMbuf_fail3)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufSetDataLen)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(halMbufSetDataLen).stubs().will(returnValue(0));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
     uint32_t headBufSize = 256U;
     char headBuf11[256];
-    void *headBufAddr = (void *)(&headBuf11[0]);
+    void* headBufAddr = (void*)(&headBuf11[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
-    MOCKER(halMbufGetBuffAddr)
-            .stubs()
-            .will(returnValue(-1));
+    MOCKER(halMbufGetBuffAddr).stubs().will(returnValue(-1));
 
-    Mbuf *mbuf1 = nullptr;
-    void *headBuf = nullptr;
-    void *dataBuf = nullptr;
+    Mbuf* mbuf1 = nullptr;
+    void* headBuf = nullptr;
+    void* dataBuf = nullptr;
     const uint64_t dataSize = 128;
     channelEntity->AllocMbuf(mbuf1, headBuf, dataBuf, dataSize);
     QueueScheduleDestroy();
@@ -2083,24 +2040,22 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_AllocMbuf_fail4)
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufSetDataLen)
-        .stubs()
-        .will(returnValue(0));
+    MOCKER(halMbufSetDataLen).stubs().will(returnValue(0));
     uint32_t headBufSize = 256U;
     char headBuf11[256];
-    void *headBufAddr = (void *)(&headBuf11[0]);
+    void* headBufAddr = (void*)(&headBuf11[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
     int32_t mbufValue = 1;
-    int32_t *mbuf = &mbufValue;
+    int32_t* mbuf = &mbufValue;
 
     MOCKER(halMbufGetBuffAddr)
-        .stubs().with(mockcpp::any(),  outBoundP((void **)&mbuf))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&mbuf))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -2112,15 +2067,14 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_AllocMbuf_fail4)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
-
-    Mbuf *mbuf1 = nullptr;
-    void *headBuf = nullptr;
-    void *dataBuf = nullptr;
+    Mbuf* mbuf1 = nullptr;
+    void* headBuf = nullptr;
+    void* dataBuf = nullptr;
     const uint64_t dataSize = 128;
     channelEntity->AllocMbuf(mbuf1, headBuf, dataBuf, dataSize);
     QueueScheduleDestroy();
@@ -2147,9 +2101,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_ReceiveMbufData_fail1)
 
     uint32_t headBufSize = 256U;
     char headBuf11[256];
-    void *headBufAddr = (void *)(&headBuf11[0]);
+    void* headBufAddr = (void*)(&headBuf11[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -2161,22 +2116,16 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_ReceiveMbufData_fail1)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
-    MOCKER_CPP(&dgw::ChannelEntity::AllocMbuf)
-            .stubs()
-            .will(returnValue(0));
-    MOCKER(HcclImrecv)
-            .stubs()
-            .will(returnValue(-1));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
+    MOCKER_CPP(&dgw::ChannelEntity::AllocMbuf).stubs().will(returnValue(0));
+    MOCKER(HcclImrecv).stubs().will(returnValue(-1));
 
     HcclMessage msg = nullptr;
     channelEntity->ReceiveMbufData(msg);
@@ -2204,9 +2153,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_ReceiveMbufData_fail2)
 
     uint32_t headBufSize = 256U;
     char headBuf11[256];
-    void *headBufAddr = (void *)(&headBuf11[0]);
+    void* headBufAddr = (void*)(&headBuf11[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -2218,23 +2168,17 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_ReceiveMbufData_fail2)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
-    MOCKER_CPP(&dgw::ChannelEntity::AllocMbuf)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
+    MOCKER_CPP(&dgw::ChannelEntity::AllocMbuf).stubs().will(returnValue(0));
 
-    MOCKER(HcclImrecv)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(HcclImrecv).stubs().will(returnValue(0));
 
     HcclMessage msg = nullptr;
     channelEntity->ReceiveMbufData(msg);
@@ -2262,9 +2206,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_SendMbufData_fail1)
 
     uint32_t headBufSize = 256U;
     char headBuf11[256];
-    void *headBufAddr = (void *)(&headBuf11[0]);
+    void* headBufAddr = (void*)(&headBuf11[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -2276,22 +2221,18 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_SendMbufData_fail1)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
 
-    MOCKER(halMbufGetBuffSize)
-            .stubs()
-            .will(returnValue(-1));
+    MOCKER(halMbufGetBuffSize).stubs().will(returnValue(-1));
 
-    Mbuf *mbuf1 = nullptr;
+    Mbuf* mbuf1 = nullptr;
     channelEntity->SendMbufData(mbuf1);
     QueueScheduleDestroy();
 }
@@ -2324,34 +2265,26 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, HcclProcess_SendMbufHead_fail1)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
 
     MOCKER(halMbufAlloc).stubs().will(returnValue(0));
 
-    MOCKER(halMbufFree)
-            .stubs()
-            .will(returnValue(0));
+    MOCKER(halMbufFree).stubs().will(returnValue(0));
 
-    MOCKER(halMbufGetPrivInfo)
-            .stubs()
-            .will(returnValue(-1));
+    MOCKER(halMbufGetPrivInfo).stubs().will(returnValue(-1));
 
-    Mbuf *mbuf1 = nullptr;
+    Mbuf* mbuf1 = nullptr;
     channelEntity->SendMbufHead(mbuf1);
     QueueScheduleDestroy();
 }
 
 TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_build_link_with_HcclTestSome_Fail)
 {
-    MOCKER(HcclTestSome)
-        .stubs()
-        .will(invoke(HcclTestSomeFakeFail));
-    MOCKER(HcclTestSomeFake)
-        .stubs()
-        .will(invoke(HcclTestSomeFakeFail));
+    MOCKER(HcclTestSome).stubs().will(invoke(HcclTestSomeFakeFail));
+    MOCKER(HcclTestSomeFake).stubs().will(invoke(HcclTestSomeFakeFail));
     // create queue
     std::map<uint32_t, int32_t> id2Depth;
     id2Depth.insert(std::make_pair(72, 5));
@@ -2371,9 +2304,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_build_link_with_HcclTestSome_Fail)
 
     uint32_t headBufSize = 256U;
     char headBuf[256];
-    void *headBufAddr = (void *)(&headBuf[0]);
+    void* headBufAddr = (void*)(&headBuf[0]);
     MOCKER(halMbufGetPrivInfo)
-        .stubs().with(mockcpp::any(), outBoundP((void **)&headBufAddr), outBoundP(&headBufSize))
+        .stubs()
+        .with(mockcpp::any(), outBoundP((void**)&headBufAddr), outBoundP(&headBufSize))
         .will(returnValue((int)DRV_ERROR_NONE));
 
     dgw::HcclProcess hcclProcess;
@@ -2385,10 +2319,10 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_build_link_with_HcclTestSome_Fail)
     auto ret = hcclProcess.ProcessRecvRequestEvent(event, 0U, 0U);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
 
-    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId,
-        dgw::EntityDirection::DIRECTION_SEND);
+    dgw::EntityPtr entity = dgw::EntityManager::Instance().GetEntityById(
+        bqs::LOCAL_Q, 0, dgw::EntityType::ENTITY_TAG, uniqueTagId, dgw::EntityDirection::DIRECTION_SEND);
     ASSERT_NE(entity, nullptr);
-    dgw::ChannelEntity *channelEntity = static_cast<dgw::ChannelEntity *>(entity.get());
+    dgw::ChannelEntity* channelEntity = static_cast<dgw::ChannelEntity*>(entity.get());
     EXPECT_EQ(channelEntity->uncompReqQueue_.Size(), 1U);
 
     // hccl recv completion
@@ -2401,16 +2335,11 @@ TEST_F(BQS_QUEUE_SCHEDULE_STTest, Schedule_build_link_with_HcclTestSome_Fail)
 
 class QUEUE_SCHEDULE_STest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 
-    void QueueScheduleDestroy(bqs::QueueSchedule &queueSchedule)
+    void QueueScheduleDestroy(bqs::QueueSchedule& queueSchedule)
     {
         queueSchedule.StopQueueSchedule();
         queueSchedule.WaitForStop();
@@ -2424,15 +2353,15 @@ protected:
         auto& bindRelation = bqs::BindRelation::GetInstance();
         auto& dstToSrcRelation = bindRelation.GetDstToSrcRelation();
         for (auto& relation : dstToSrcRelation) {
-            const auto &dstId = relation.first;
-            for (auto srcId : relation.second){
+            const auto& dstId = relation.first;
+            for (auto srcId : relation.second) {
                 allRelation.emplace_back(std::make_tuple(srcId, dstId));
             }
         }
 
         for (auto& relation : allRelation) {
-            auto &srcId = std::get<0>(relation);
-            auto &dstId = std::get<1>(relation);
+            auto& srcId = std::get<0>(relation);
+            auto& dstId = std::get<1>(relation);
             bqs::BqsStatus ret = bindRelation.UnBind(srcId, dstId);
             EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
         }
@@ -2453,13 +2382,11 @@ TEST_F(QUEUE_SCHEDULE_STest, start_schedule_success)
 
 TEST_F(QUEUE_SCHEDULE_STest, LoopProcessEnqueueEvent_with_halEschedWaitEventFail)
 {
-    MOCKER(halEschedWaitEvent)
-        .stubs()
-        .will(invoke(halEschedWaitEventErrorOrTimeOut));
+    MOCKER(halEschedWaitEvent).stubs().will(invoke(halEschedWaitEventErrorOrTimeOut));
 
     bqs::QueueSchedule queueSchedule{{0, 0, 1, 30U}};
 
-    std::thread controlThread {[&] {
+    std::thread controlThread{[&] {
         usleep(50);
         g_schedule_wait_fake_to_err = true;
         usleep(1000);
@@ -2482,9 +2409,7 @@ TEST_F(QUEUE_SCHEDULE_STest, LoopProcessEnqueueEvent_with_halEschedWaitEventFail
 TEST_F(QUEUE_SCHEDULE_STest, StartWithAos_SUCCESS)
 {
     char hostNameAos[] = "AOS_SD";
-    MOCKER(gethostname)
-        .stubs().with(outBoundP(&hostNameAos[0U], strlen(hostNameAos) + 1))
-        .will(returnValue(0));
+    MOCKER(gethostname).stubs().with(outBoundP(&hostNameAos[0U], strlen(hostNameAos) + 1)).will(returnValue(0));
     MOCKER(bqs::GetRunContext).stubs().will(returnValue(bqs::RunContext::DEVICE));
     MOCKER(&QueueScheduleInterface::GetAicpuPhysIndex).stubs().will(returnValue(1));
     bqs::QueueSchedule queueSchedule{{0, 0, 1}};
@@ -2501,7 +2426,7 @@ TEST_F(QUEUE_SCHEDULE_STest, StartWithDeviceBindAicpu_FAILED)
     MOCKER(&QueueScheduleInterface::GetAiCpuNum).stubs().will(returnValue(1));
     MOCKER(&QueueScheduleInterface::GetAicpuPhysIndex).stubs().will(returnValue(1));
     bqs::QueueSchedule queueSchedule{{0, 0, 1}};
-    (void) queueSchedule.StartQueueSchedule();
+    (void)queueSchedule.StartQueueSchedule();
     EXPECT_EQ(queueSchedule.running_, false);
 
     QueueScheduleDestroy(queueSchedule);
@@ -2515,13 +2440,15 @@ TEST_F(QUEUE_SCHEDULE_STest, ChannelEntity_ProcessSendCompleteion_success)
     material.eType = dgw::EntityType::ENTITY_TAG;
     material.channel = &channel;
     material.id = uniqueTagId;
-    auto channelEntity= std::make_shared<dgw::ChannelEntity>(material, 0U);
+    auto channelEntity = std::make_shared<dgw::ChannelEntity>(material, 0U);
 
     MbufTypeInfo typeInfo = {};
     typeInfo.type = static_cast<uint32_t>(MBUF_CREATE_BY_BUILD);
     MOCKER(halBuffGetInfo)
-        .stubs().with(mockcpp::any(), mockcpp::any(), mockcpp::any(),
-                      outBoundP((void*)(&typeInfo), sizeof(MbufTypeInfo)), mockcpp::any())
+        .stubs()
+        .with(
+            mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP((void*)(&typeInfo), sizeof(MbufTypeInfo)),
+            mockcpp::any())
         .will(returnValue(0));
 
     auto ret = channelEntity->ProcessSendCompletion(nullptr);
@@ -2536,11 +2463,9 @@ TEST_F(QUEUE_SCHEDULE_STest, ChannelEntity_ProcessSendCompleteion_success_with_h
     material.eType = dgw::EntityType::ENTITY_TAG;
     material.channel = &channel;
     material.id = uniqueTagId;
-    auto channelEntity= std::make_shared<dgw::ChannelEntity>(material, 0U);
+    auto channelEntity = std::make_shared<dgw::ChannelEntity>(material, 0U);
 
-    MOCKER(halBuffGetInfo)
-        .stubs()
-        .will(returnValue(1));
+    MOCKER(halBuffGetInfo).stubs().will(returnValue(1));
 
     auto ret = channelEntity->ProcessSendCompletion(nullptr);
     EXPECT_EQ(ret, dgw::FsmStatus::FSM_SUCCESS);
@@ -2553,9 +2478,7 @@ TEST_F(QUEUE_SCHEDULE_STest, GetInstanceConnectFailedServerNotCreate)
     bqs::BqsClient* bqsClient = bqs::BqsClient::GetInstance("test", 4, PipBrokenException);
     if (bqsClient != nullptr) {
         bqsClient->initFlag_ = false;
-        MOCKER(EzcomCreateClient)
-            .stubs()
-            .will(returnValue(-2));
+        MOCKER(EzcomCreateClient).stubs().will(returnValue(-2));
         bqs::BqsClient* bqsClientptr = bqs::BqsClient::GetInstance("test", 4, PipBrokenException);
         EXPECT_EQ(bqsClientptr, nullptr);
     }
@@ -2584,7 +2507,10 @@ TEST_F(QUEUE_SCHEDULE_STest, EnqueueAsynMemBuffEventBuffSuccess)
 
 TEST_F(QUEUE_SCHEDULE_STest, HandleAsynMemBuffEventSuccess)
 {
-    MOCKER(halQueueDeQueue).stubs().will(returnValue((int)DRV_ERROR_NONE)).then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
+    MOCKER(halQueueDeQueue)
+        .stubs()
+        .will(returnValue((int)DRV_ERROR_NONE))
+        .then(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     MOCKER(halMbufFree).stubs().will(returnValue((int)DRV_ERROR_QUEUE_EMPTY));
     bqs::QueueManager::GetInstance().isTriggeredByAsyncMemDequeue_ = true;
     bqs::QueueManager::GetInstance().isTriggeredByAsyncMemEnqueue_ = true;
@@ -2595,15 +2521,13 @@ TEST_F(QUEUE_SCHEDULE_STest, HandleAsynMemBuffEventSuccess)
 
 TEST_F(QUEUE_SCHEDULE_STest, Start_DeviceVec_SUCCESS)
 {
-    MOCKER(BindCpuUtils::BindAicpu)
-            .stubs()
-            .will(returnValue(BQS_STATUS_OK));
+    MOCKER(BindCpuUtils::BindAicpu).stubs().will(returnValue(BQS_STATUS_OK));
     MOCKER(&QueueScheduleInterface::GetAicpuPhysIndex).stubs().will(returnValue(1));
     MOCKER(&QueueScheduleInterface::GetExtraAicpuPhysIndex).stubs().will(returnValue(1));
     MOCKER(HcclSetGrpIdCallback).stubs().will(returnValue(HCCL_SUCCESS));
     bqs::QueueSchedule queueSchedule{{0, 0, 1}};
     queueSchedule.initQsParams_.numaFlag = true;
-    queueSchedule.initQsParams_.devIdVec = {1,2};
+    queueSchedule.initQsParams_.devIdVec = {1, 2};
     int32_t ret = queueSchedule.StartQueueSchedule();
     EXPECT_EQ(ret, BQS_STATUS_OK);
 
@@ -2614,7 +2538,7 @@ TEST_F(QUEUE_SCHEDULE_STest, Start_DeviceVec_SUCCESS)
     GlobalMockObject::verify();
 }
 
-drvError_t halQueuePeekFake(unsigned int devId, unsigned int qid, uint64_t *buf_len, int timeout)
+drvError_t halQueuePeekFake(unsigned int devId, unsigned int qid, uint64_t* buf_len, int timeout)
 {
     std::cout << "peek fake" << std::endl;
     *buf_len = 256U;
@@ -2639,14 +2563,14 @@ TEST_F(QUEUE_SCHEDULE_STest, ScheduleDataBuffAll_MemQueue_ProcessAsysnc_success0
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     dgw::EntityManager::Instance(0).SetExistAsyncMemEntity();
 
-    auto &bindRelation = BindRelation::GetInstance();
+    auto& bindRelation = BindRelation::GetInstance();
     auto srcEntity = EntityInfo(1261U, 0U);
     auto dstEntity = EntityInfo(1271U, 0U);
     bindRelation.Bind(srcEntity, dstEntity);
     bindRelation.Order();
     bool dataEnqueue = true;
     bqs::QueueSchedule queueSchedule{{0, 0, 1}};
-    queueSchedule.ScheduleDataBuffAll(dataEnqueue); 
+    queueSchedule.ScheduleDataBuffAll(dataEnqueue);
     sleep(1);
     GlobalMockObject::verify();
 }
@@ -2658,7 +2582,7 @@ TEST_F(QUEUE_SCHEDULE_STest, ScheduleDataBuffAll_MemQueue_ProcessAsysnc_success0
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
     dgw::EntityManager::Instance(0).SetExistAsyncMemEntity();
 
-    auto &bindRelation = BindRelation::GetInstance();
+    auto& bindRelation = BindRelation::GetInstance();
     std::vector<EntityInfoPtr> entities;
     EntityInfoPtr entity1 = std::make_shared<EntityInfo>(1281U, 0U);
     EntityInfoPtr entity2 = std::make_shared<EntityInfo>(1291U, 0U);
@@ -2693,8 +2617,8 @@ TEST_F(QUEUE_SCHEDULE_STest, BindQueueMbufPool)
 {
     std::vector<bqs::BQSBindQueueMbufPoolItem> bindQueueVec;
     std::vector<bqs::BQSBindQueueResult> bindResultVec;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            BindQueueMbufPool(bindQueueVec, bindResultVec);
+    uint32_t result =
+        bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->BindQueueMbufPool(bindQueueVec, bindResultVec);
     EXPECT_EQ(result, 0);
 }
 
@@ -2702,23 +2626,21 @@ TEST_F(QUEUE_SCHEDULE_STest, UnbindQueueMbufPool)
 {
     std::vector<bqs::BQSUnbindQueueMbufPoolItem> bindQueueVec;
     std::vector<bqs::BQSBindQueueResult> bindResultVec;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            UnbindQueueMbufPool(bindQueueVec, bindResultVec);
+    uint32_t result =
+        bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->UnbindQueueMbufPool(bindQueueVec, bindResultVec);
     EXPECT_EQ(result, 0);
 }
 
 TEST_F(QUEUE_SCHEDULE_STest, BindQueueInterChip)
 {
     bqs::BindQueueInterChipInfo interChipInfo;
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            BindQueueInterChip(interChipInfo);
+    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->BindQueueInterChip(interChipInfo);
     EXPECT_EQ(result, 0);
 }
 
 TEST_F(QUEUE_SCHEDULE_STest, UnbindQueueInterChip)
 {
-    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->
-            UnbindQueueInterChip(0);
+    uint32_t result = bqs::BqsClient::GetInstance("test", 4, PipBrokenException)->UnbindQueueInterChip(0);
     EXPECT_EQ(result, 0);
 }
 
@@ -2740,11 +2662,11 @@ TEST_F(QUEUE_SCHEDULE_STest, SendBqsMsgFailForPbSerialize)
     EXPECT_EQ(ret, bqs::BQS_STATUS_INNER_ERROR);
 }
 
-int EzcomRPCSyncSuccessFake(int fd, struct EzcomRequest *req, struct EzcomResponse *resp)
+int EzcomRPCSyncSuccessFake(int fd, struct EzcomRequest* req, struct EzcomResponse* resp)
 {
     std::cout << "EzcomRPCSync stub  begin" << std::endl;
     resp->size = req->size;
-    char *respData = new (std::nothrow) char[req->size];
+    char* respData = new (std::nothrow) char[req->size];
     memcpy(respData, (char*)req->data, req->size);
     resp->data = (uint8_t*)respData;
     std::cout << "EzcomRPCSync stub end" << std::endl;
@@ -2752,9 +2674,7 @@ int EzcomRPCSyncSuccessFake(int fd, struct EzcomRequest *req, struct EzcomRespon
 }
 TEST_F(QUEUE_SCHEDULE_STest, SendBqsMsgFailForPbParse)
 {
-    MOCKER(EzcomRPCSync)
-        .stubs()
-        .will(invoke(EzcomRPCSyncSuccessFake));
+    MOCKER(EzcomRPCSync).stubs().will(invoke(EzcomRPCSyncSuccessFake));
     MOCKER_CPP(&bqs::BQSMsg::ParseFromArray).stubs().will(returnValue(false));
     bqs::BQSMsg bqsReqMsg;
     bqs::BQSMsg bqsRespMsg;

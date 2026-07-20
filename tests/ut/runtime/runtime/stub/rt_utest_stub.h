@@ -22,25 +22,25 @@
 #include "rt_model.h"
 
 namespace error_message {
-std::string TrimPath(const std::string &str);
+std::string TrimPath(const std::string& str);
 #ifdef __GNUC__
-int FormatErrorMessage(char *str_dst, size_t dst_max, const char *format, ...) __attribute__((format(printf, 3, 4)));
+int FormatErrorMessage(char* str_dst, size_t dst_max, const char* format, ...) __attribute__((format(printf, 3, 4)));
 #define TRIM_PATH(x) strrchr(x, '/') ? strrchr(x, '/') + 1 : (x)
 #else
-int FormatErrorMessage(char *str_dst, size_t dst_max, const char *format, ...);
+int FormatErrorMessage(char* str_dst, size_t dst_max, const char* format, ...);
 #define TRIM_PATH(x) strrchr(x, '\\') ? strrchr(x, '\\') + 1 : (x)
 #endif
-}
+} // namespace error_message
 
 class ErrorManager {
 public:
-   static ErrorManager &GetInstance();
-   void SetStage(const std::string &firstStage, const std::string &secondStage);
-   void ATCReportErrMessage(std::string error_code, const std::vector<std::string> &key = {},
-                           const std::vector<std::string> &value = {});
-   int Init();
-   int ReportInterErrMessage(std::string error_code, const std::string &error_msg);
+    static ErrorManager& GetInstance();
+    void SetStage(const std::string& firstStage, const std::string& secondStage);
+    void ATCReportErrMessage(
+        std::string error_code, const std::vector<std::string>& key = {}, const std::vector<std::string>& value = {});
+    int Init();
+    int ReportInterErrMessage(std::string error_code, const std::string& error_msg);
     std::string GetErrorMessage();
-    const std::string &GetLogHeader();
+    const std::string& GetLogHeader();
 };
 #endif

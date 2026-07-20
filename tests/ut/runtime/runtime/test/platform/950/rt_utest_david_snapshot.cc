@@ -46,9 +46,10 @@ static rtChipType_t g_chipType;
 
 class ErrorProcWithMem {
 public:
-    ErrorProcWithMem(Device *dev, bool needFastMem = false) : dev_(dev), needFastMem_(needFastMem) {
+    ErrorProcWithMem(Device* dev, bool needFastMem = false) : dev_(dev), needFastMem_(needFastMem)
+    {
         errorProc_ = new DeviceErrorProc(dev);
-        drv_ = dynamic_cast<NpuDriver *>(dev->Driver_());
+        drv_ = dynamic_cast<NpuDriver*>(dev->Driver_());
         if (drv_ != nullptr) {
             drv_->DevMemAlloc(&devMem_, 4096, RT_MEMORY_TS, dev->Id_());
             if (needFastMem_) {
@@ -62,7 +63,8 @@ public:
             }
         }
     }
-    ~ErrorProcWithMem() {
+    ~ErrorProcWithMem()
+    {
         if (drv_ != nullptr) {
             if (devMem_ != nullptr) {
                 drv_->DevMemFree(devMem_, dev_->Id_());
@@ -79,16 +81,17 @@ public:
     void* GetFastDevMem() { return fastDevMem_; }
     bool IsValid() { return errorProc_ != nullptr && drv_ != nullptr && devMem_ != nullptr; }
     bool IsFullyValid() { return IsValid() && (!needFastMem_ || fastDevMem_ != nullptr); }
+
 private:
-    Device *dev_;
-    DeviceErrorProc *errorProc_{nullptr};
-    NpuDriver *drv_{nullptr};
-    void *devMem_{nullptr};
-    void *fastDevMem_{nullptr};
+    Device* dev_;
+    DeviceErrorProc* errorProc_{nullptr};
+    NpuDriver* drv_{nullptr};
+    void* devMem_{nullptr};
+    void* fastDevMem_{nullptr};
     bool needFastMem_{false};
 };
 
-static void MockRingBufferRestoreSuccess(NpuDriver *drv)
+static void MockRingBufferRestoreSuccess(NpuDriver* drv)
 {
     MOCKER_CPP(&DeviceErrorProc::WriteRuntimeCapability).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(drv, &NpuDriver::MemCopySync).stubs().will(returnValue(RT_ERROR_NONE));
@@ -96,39 +99,32 @@ static void MockRingBufferRestoreSuccess(NpuDriver *drv)
 }
 
 rtLogicCqReport_t g_cqReport1_snapshot;
-static rtError_t Sub_LogicCqReportV2(NpuDriver *drv, const LogicCqWaitInfo &waitInfo, uint8_t *report,
-                                      uint32_t reportCnt, uint32_t &realCnt)
+static rtError_t Sub_LogicCqReportV2(
+    NpuDriver* drv, const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt)
 {
     realCnt = 1;
-    rtLogicCqReport_t *reportPtr = reinterpret_cast<rtLogicCqReport_t *>(report);
+    rtLogicCqReport_t* reportPtr = reinterpret_cast<rtLogicCqReport_t*>(report);
     g_cqReport1_snapshot.taskId = 1U;
     *reportPtr = g_cqReport1_snapshot;
 
     return RT_ERROR_NONE;
 }
 
-static drvError_t stubHalMemAllocSuccess(void **ptr, uint64_t size, uint64_t flag)
+static drvError_t stubHalMemAllocSuccess(void** ptr, uint64_t size, uint64_t flag)
 {
     *ptr = reinterpret_cast<void*>(0x1000);
     return DRV_ERROR_NONE;
 }
 
 class DavidSnapshotTest : public testing::Test {
-
 protected:
-    static void SetUpTestCase()
-    {
-        std::cout << "DavidSnapshotTest start" << std::endl;
-    }
+    static void SetUpTestCase() { std::cout << "DavidSnapshotTest start" << std::endl; }
 
-    static void TearDownTestCase()
-    {
-        std::cout << "DavidSnapshotTest end" << std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "DavidSnapshotTest end" << std::endl; }
 
     virtual void SetUp()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         g_disableThread = rtInstance->GetDisableThread();
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetDisableThread(true);
@@ -137,11 +133,11 @@ protected:
         rtSetDevice(0);
         (void)rtSetSocVersion("Ascend950PR_9599");
         dev_ = rtInstance->DeviceRetain(0, 0);
-        Driver *driver_ = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::GetRunMode)
+        Driver* driver_ = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::GetRunMode)
             .stubs()
             .will(returnValue((uint32_t)RT_RUN_MODE_ONLINE));
-        MOCKER_CPP_VIRTUAL((NpuDriver *)(driver_), &NpuDriver::LogicCqReportV2)
+        MOCKER_CPP_VIRTUAL((NpuDriver*)(driver_), &NpuDriver::LogicCqReportV2)
             .stubs()
             .will(invoke(Sub_LogicCqReportV2));
 
@@ -156,7 +152,7 @@ protected:
     {
         DELETE_O(deviceSnapshot_);
         DELETE_O(eventPool_);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->DeviceRelease(dev_);
         rtDeviceReset(0);
         rtInstance->SetDisableThread(g_disableThread);
@@ -173,7 +169,7 @@ protected:
 
 TEST_F(DavidSnapshotTest, RingBufferRestore_DeviceNull)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(nullptr);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(nullptr);
     ASSERT_NE(errorProc, nullptr);
 
     rtError_t error = errorProc->RingBufferRestore();
@@ -184,7 +180,7 @@ TEST_F(DavidSnapshotTest, RingBufferRestore_DeviceNull)
 
 TEST_F(DavidSnapshotTest, RingBufferRestore_RingBufferAddrNull)
 {
-    DeviceErrorProc *errorProc = new DeviceErrorProc(dev_);
+    DeviceErrorProc* errorProc = new DeviceErrorProc(dev_);
     ASSERT_NE(errorProc, nullptr);
 
     rtError_t error = errorProc->RingBufferRestore();
@@ -267,7 +263,7 @@ TEST_F(DavidSnapshotTest, RingBufferRestore_ProcRingBufferTask)
 
 TEST_F(DavidSnapshotTest, EventExpandingPoolRestore_NullPool)
 {
-    RawDevice *rawDev = static_cast<RawDevice*>(dev_);
+    RawDevice* rawDev = static_cast<RawDevice*>(dev_);
 
     rtError_t error = rawDev->EventExpandingPoolRestore();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -275,7 +271,7 @@ TEST_F(DavidSnapshotTest, EventExpandingPoolRestore_NullPool)
 
 TEST_F(DavidSnapshotTest, CntNotifiesReAllocId_Success)
 {
-    RawDevice *rawDev = static_cast<RawDevice*>(dev_);
+    RawDevice* rawDev = static_cast<RawDevice*>(dev_);
 
     rtError_t error = rawDev->CntNotifiesReAllocId();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -297,8 +293,7 @@ TEST_F(DavidSnapshotTest, DavidEventReAllocId_ReAllocSuccess)
     DavidEvent* event = new (std::nothrow) DavidEvent(dev_, RT_EVENT_DEFAULT, nullptr);
     ASSERT_NE(event, nullptr);
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = event->ReAllocId();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -311,8 +306,7 @@ TEST_F(DavidSnapshotTest, DavidEventReAllocId_ReAllocFailed)
     DavidEvent* event = new (std::nothrow) DavidEvent(dev_, RT_EVENT_MC2, nullptr);
     ASSERT_NE(event, nullptr);
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs()
-        .will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs().will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
 
     rtError_t error = event->ReAllocId();
     EXPECT_EQ(error, RT_ERROR_DRV_NOT_SUPPORT);
@@ -322,7 +316,7 @@ TEST_F(DavidSnapshotTest, DavidEventReAllocId_ReAllocFailed)
 
 TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_Success)
 {
-    H2DCopyMgr *copyMgr = new (std::nothrow) H2DCopyMgr(dev_, COPY_POLICY_UB);
+    H2DCopyMgr* copyMgr = new (std::nothrow) H2DCopyMgr(dev_, COPY_POLICY_UB);
     ASSERT_NE(copyMgr, nullptr);
 
     copyMgr->cpyInfoUbMap_.cpyCount = 1;
@@ -337,7 +331,7 @@ TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_Success)
     addrMgr.poolIndex = 0;
     copyMgr->cpyInfoUbMap_.cpyUbMap[0x1000] = addrMgr;
 
-    memTsegInfo *tsegInfo = new (std::nothrow) memTsegInfo();
+    memTsegInfo* tsegInfo = new (std::nothrow) memTsegInfo();
     ASSERT_NE(tsegInfo, nullptr);
     copyMgr->cpyInfoUbMap_.memTsegInfoMap[0] = tsegInfo;
 
@@ -352,7 +346,7 @@ TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_Success)
 
 TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_GetMemTsegInfoFailed)
 {
-    H2DCopyMgr *copyMgr = new (std::nothrow) H2DCopyMgr(dev_, COPY_POLICY_UB);
+    H2DCopyMgr* copyMgr = new (std::nothrow) H2DCopyMgr(dev_, COPY_POLICY_UB);
     ASSERT_NE(copyMgr, nullptr);
 
     copyMgr->cpyInfoUbMap_.cpyCount = 2;
@@ -367,7 +361,7 @@ TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_GetMemTsegInfoFailed)
     addrMgr.poolIndex = 1;
     copyMgr->cpyInfoUbMap_.cpyUbMap[0x3000] = addrMgr;
 
-    memTsegInfo *tsegInfo = new (std::nothrow) memTsegInfo();
+    memTsegInfo* tsegInfo = new (std::nothrow) memTsegInfo();
     ASSERT_NE(tsegInfo, nullptr);
     copyMgr->cpyInfoUbMap_.memTsegInfoMap[1] = tsegInfo;
 
@@ -382,7 +376,7 @@ TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_GetMemTsegInfoFailed)
 
 TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_TsegInfoNotFound)
 {
-    H2DCopyMgr *copyMgr = new (std::nothrow) H2DCopyMgr(dev_, COPY_POLICY_UB);
+    H2DCopyMgr* copyMgr = new (std::nothrow) H2DCopyMgr(dev_, COPY_POLICY_UB);
     ASSERT_NE(copyMgr, nullptr);
 
     copyMgr->cpyInfoUbMap_.cpyCount = 3;
@@ -405,7 +399,7 @@ TEST_F(DavidSnapshotTest, H2DCopyMgrUbArgsPoolConvertAddr_TsegInfoNotFound)
 
 TEST_F(DavidSnapshotTest, RuntimeRestoreModule_EmptyBackupList)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
 
     rtError_t error = rt->RestoreModule();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -413,7 +407,7 @@ TEST_F(DavidSnapshotTest, RuntimeRestoreModule_EmptyBackupList)
 
 TEST_F(DavidSnapshotTest, RuntimeRestoreModule_MemCopySyncSuccess)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
 
     auto memInfo = std::make_unique<Runtime::ModuleMemInfo>();
     memInfo->devId = 0;
@@ -433,7 +427,7 @@ TEST_F(DavidSnapshotTest, RuntimeRestoreModule_MemCopySyncSuccess)
 
 TEST_F(DavidSnapshotTest, RuntimeRestoreModule_MemCopySyncFailed)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
 
     auto memInfo = std::make_unique<Runtime::ModuleMemInfo>();
     memInfo->devId = 0;
@@ -453,7 +447,7 @@ TEST_F(DavidSnapshotTest, RuntimeRestoreModule_MemCopySyncFailed)
 
 TEST_F(DavidSnapshotTest, RuntimeRestoreModule_ReadonlySkip)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
 
     auto memInfo = std::make_unique<Runtime::ModuleMemInfo>();
     memInfo->devId = 0;
@@ -471,7 +465,7 @@ TEST_F(DavidSnapshotTest, RuntimeRestoreModule_ReadonlySkip)
 
 TEST_F(DavidSnapshotTest, RuntimeRestoreModule_MemAdviseFailed)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
 
     auto memInfo = std::make_unique<Runtime::ModuleMemInfo>();
     memInfo->devId = 0;
@@ -574,8 +568,7 @@ TEST_F(DavidSnapshotTest, DavidStreamUpdateTaskAndSqe_MemcpyTaskConvertFailed)
     taskInfo.u.memcpyAsyncTaskInfo.desPtr = reinterpret_cast<void*>(0x2000);
     taskInfo.u.memcpyAsyncTaskInfo.size = 1024;
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemConvertAddr).stubs()
-        .will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::MemConvertAddr).stubs().will(returnValue(RT_ERROR_DRV_NOT_SUPPORT));
 
     rtError_t error = stream->UpdateTaskAndSqe(&taskInfo, dev_->PrimaryStream_());
     EXPECT_EQ(error, RT_ERROR_DRV_NOT_SUPPORT);
@@ -602,44 +595,44 @@ TEST_F(DavidSnapshotTest, DavidStreamUpdateTaskAndSqe_UpdateKernelFailed)
 
 TEST_F(DavidSnapshotTest, NpuDriverAllocFastRingBufferAndDispatch_Success)
 {
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(dev_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(dev_->Driver_());
     ASSERT_NE(drv, nullptr);
     ASSERT_NE(drv, nullptr);
 }
 
 TEST_F(DavidSnapshotTest, NpuDriverAllocFastRingBufferAndDispatch_MemAllocFailed)
 {
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(dev_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(dev_->Driver_());
     ASSERT_NE(drv, nullptr);
 }
 
 TEST_F(DavidSnapshotTest, NpuDriverAllocFastRingBufferAndDispatch_SetMemSharingFailed)
 {
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(dev_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(dev_->Driver_());
     ASSERT_NE(drv, nullptr);
 }
 
 TEST_F(DavidSnapshotTest, NpuDriverSetMemSharing_Success)
 {
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(dev_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(dev_->Driver_());
     ASSERT_NE(drv, nullptr);
 }
 
 TEST_F(DavidSnapshotTest, NpuDriverSetMemSharing_Failed)
 {
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(dev_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(dev_->Driver_());
     ASSERT_NE(drv, nullptr);
 }
 
 TEST_F(DavidSnapshotTest, NpuDriverSetMemSharing_NotSupport)
 {
-    NpuDriver *drv = dynamic_cast<NpuDriver *>(dev_->Driver_());
+    NpuDriver* drv = dynamic_cast<NpuDriver*>(dev_->Driver_());
     ASSERT_NE(drv, nullptr);
 }
 
 TEST_F(DavidSnapshotTest, CountNotifyReAllocId_Success)
 {
-    CountNotify *cntNotify = new (std::nothrow) CountNotify(0, 0);
+    CountNotify* cntNotify = new (std::nothrow) CountNotify(0, 0);
     ASSERT_NE(cntNotify, nullptr);
 
     cntNotify->driver_ = dev_->Driver_();
@@ -655,7 +648,7 @@ TEST_F(DavidSnapshotTest, CountNotifyReAllocId_Success)
 
 TEST_F(DavidSnapshotTest, CountNotifyReAllocId_ContextNull)
 {
-    CountNotify *cntNotify = new (std::nothrow) CountNotify(0, 0);
+    CountNotify* cntNotify = new (std::nothrow) CountNotify(0, 0);
     ASSERT_NE(cntNotify, nullptr);
 
     cntNotify->driver_ = dev_->Driver_();
@@ -669,7 +662,7 @@ TEST_F(DavidSnapshotTest, CountNotifyReAllocId_ContextNull)
 
 TEST_F(DavidSnapshotTest, CountNotifyReAllocId_ReAllocFailed)
 {
-    CountNotify *cntNotify = new (std::nothrow) CountNotify(0, 0);
+    CountNotify* cntNotify = new (std::nothrow) CountNotify(0, 0);
     ASSERT_NE(cntNotify, nullptr);
 
     cntNotify->driver_ = dev_->Driver_();
@@ -685,7 +678,7 @@ TEST_F(DavidSnapshotTest, CountNotifyReAllocId_ReAllocFailed)
 
 TEST_F(DavidSnapshotTest, DeviceSnapshotUbArgsPoolRestore_NotConnectUb)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
     rt->SetConnectUbFlag(false);
 
     rtError_t error = deviceSnapshot_->UbArgsPoolRestore();
@@ -696,7 +689,7 @@ TEST_F(DavidSnapshotTest, DeviceSnapshotUbArgsPoolRestore_NotConnectUb)
 
 TEST_F(DavidSnapshotTest, DeviceSnapshotUbArgsPoolRestore_Success)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
     rt->SetConnectUbFlag(true);
 
     MOCKER_CPP(&DeviceSnapshot::ArgsPoolConvertAddr).stubs().will(returnValue(RT_ERROR_NONE));
@@ -707,7 +700,7 @@ TEST_F(DavidSnapshotTest, DeviceSnapshotUbArgsPoolRestore_Success)
 
 TEST_F(DavidSnapshotTest, DeviceSnapshotUbArgsPoolRestore_ConvertAddrFailed)
 {
-    Runtime *rt = Runtime::Instance();
+    Runtime* rt = Runtime::Instance();
     rt->SetConnectUbFlag(true);
 
     MOCKER_CPP(&DeviceSnapshot::ArgsPoolConvertAddr).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
@@ -715,11 +708,6 @@ TEST_F(DavidSnapshotTest, DeviceSnapshotUbArgsPoolRestore_ConvertAddrFailed)
     rtError_t error = deviceSnapshot_->UbArgsPoolRestore();
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
 }
-
-
-
-
-
 
 TEST_F(DavidSnapshotTest, RecordOpAddrAndSize_EmptyTaskList)
 {
@@ -736,24 +724,18 @@ TEST_F(DavidSnapshotTest, RecordOpAddrAndSize_EmptyTaskList)
     const auto& addrs = deviceSnapshot_->GetOpVirtualAddrs();
     EXPECT_EQ(addrs.size(), 0U);
 
-    error = rtStreamDestroy(streamHandle);	 
+    error = rtStreamDestroy(streamHandle);
     ASSERT_EQ(error, RT_ERROR_NONE);
 }
-
-
 
 TEST_F(DavidSnapshotTest, ReAllocStreamId_NonPersistentStream)
 {
     DavidStream* stream = new (std::nothrow) DavidStream(dev_, 0, 0, nullptr);
     ASSERT_NE(stream, nullptr);
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = stream->ReAllocStreamId();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -766,17 +748,11 @@ TEST_F(DavidSnapshotTest, ReAllocStreamId_PersistentStream)
     DavidStream* stream = new (std::nothrow) DavidStream(dev_, 0, RT_STREAM_PERSISTENT, nullptr);
     ASSERT_NE(stream, nullptr);
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::GetSqRegVirtualAddrBySqid)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::GetSqRegVirtualAddrBySqid).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = stream->ReAllocStreamId();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -791,13 +767,9 @@ TEST_F(DavidSnapshotTest, Restore_WithCntNotifyId_Success)
 
     stream->cntNotifyId_ = 1;
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = stream->Restore();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -817,9 +789,7 @@ TEST_F(DavidSnapshotTest, Restore_CntNotifyIdReAllocFailed)
         .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), mockcpp::any(), DRV_STREAM_ID)
         .will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP(&StreamSqCqManage::ReAllocSqCqId).stubs().will(returnValue(RT_ERROR_NONE));
 
     MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::ReAllocResourceId)
         .stubs()
@@ -844,17 +814,11 @@ TEST_F(DavidSnapshotTest, ReAllocDavidSqCqId_Success)
     StreamSqCqManage* stmSqCqManage = dev_->GetStreamSqCqManage();
     ASSERT_NE(stmSqCqManage, nullptr);
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::NormalSqCqAllocate)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::NormalSqCqAllocate).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::LogicCqAllocateV2)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::LogicCqAllocateV2).stubs().will(returnValue(RT_ERROR_NONE));
 
-    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::StreamBindLogicCq)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(dev_->Driver_(), &Driver::StreamBindLogicCq).stubs().will(returnValue(RT_ERROR_NONE));
 
     rtError_t error = stmSqCqManage->ReAllocDavidSqCqId(stream);
     EXPECT_EQ(error, RT_ERROR_NONE);

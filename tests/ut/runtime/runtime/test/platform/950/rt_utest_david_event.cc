@@ -52,7 +52,7 @@ using namespace testing;
 using namespace cce::runtime;
 extern int64_t g_device_driver_version_stub;
 static rtChipType_t g_chipType;
-static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t *value)
+static drvError_t stubDavidGetDeviceInfo(uint32_t devId, int32_t moduleType, int32_t infoType, int64_t* value)
 {
     if (value) {
         if (moduleType == MODULE_TYPE_SYSTEM && infoType == INFO_TYPE_VERSION) {
@@ -71,13 +71,13 @@ protected:
     static void SetUpTestCase()
     {
         MOCKER(halGetDeviceInfo).stubs().will(invoke(stubDavidGetDeviceInfo));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
             .will(returnValue(DRV_ERROR_NONE));
         std::cout << "EventTestDavid SetUP" << std::endl;
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetDisableThread(true);
         g_chipType = rtInstance->GetChipType();
         rtInstance->SetChipType(CHIP_DAVID);
@@ -88,7 +88,7 @@ protected:
 
     static void TearDownTestCase()
     {
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(g_chipType);
         GlobalContainer::SetRtChipType(g_chipType);
         rtInstance->SetDisableThread(false);
@@ -99,12 +99,12 @@ protected:
     virtual void SetUp()
     {
         int64_t hardwareVersion = ((ARCH_V100 << 16) | (CHIP_DAVID << 8) | (VER_NA));
-        Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+        Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetDevInfo)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBoundP(&hardwareVersion, sizeof(hardwareVersion)))
             .will(returnValue(RT_ERROR_NONE));
-        char *socVer = "Ascend950PR_9599";
+        char* socVer = "Ascend950PR_9599";
         MOCKER(halGetSocVersion)
             .stubs()
             .with(mockcpp::any(), outBoundP(socVer, strlen("Ascend950PR_9599")), mockcpp::any())
@@ -125,18 +125,18 @@ protected:
         rtSetDevice(0);
 
         (void)rtSetSocVersion("Ascend950PR_9599");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
 
-        device_ = ((Runtime *)Runtime::Instance())->DeviceRetain(0, 0);
+        device_ = ((Runtime*)Runtime::Instance())->DeviceRetain(0, 0);
         device_->SetChipType(CHIP_DAVID);
-        engine_ = ((RawDevice *)device_)->engine_;
+        engine_ = ((RawDevice*)device_)->engine_;
 
         rtError_t res = rtStreamCreate(&streamHandle_, 0);
         EXPECT_EQ(res, RT_ERROR_NONE);
         stream_ = rt_ut::UnwrapOrNull<Stream>(streamHandle_);
 
         stream_->SetSqMemAttr(false);
-        TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(stream_)->taskResMang_));
+        TaskResManageDavid* taskResMang = ((TaskResManageDavid*)(static_cast<Stream*>(stream_)->taskResMang_));
         MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqHead)
             .stubs()
             .with(mockcpp::any(), mockcpp::any(), mockcpp::any(), outBound(taskResMang->GetTaskPosTail()))
@@ -154,16 +154,16 @@ protected:
         rtStreamDestroy(streamHandle_);
         stream_ = nullptr;
         engine_ = nullptr;
-        ((Runtime *)Runtime::Instance())->DeviceRelease(device_);
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->DeviceRelease(device_);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
         rtDeviceReset(0);
         GlobalMockObject::reset();
     }
 
 public:
-    Device *device_ = nullptr;
-    Stream *stream_ = nullptr;
-    Engine *engine_ = nullptr;
+    Device* device_ = nullptr;
+    Stream* stream_ = nullptr;
+    Engine* engine_ = nullptr;
     rtStream_t streamHandle_ = 0;
 };
 
@@ -174,9 +174,9 @@ TEST_F(EventTestDavid, TestAllocEventIdResource)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     int32_t eventId = 0;
     evt->eventFlag_ = RT_EVENT_TIME_LINE;
@@ -192,8 +192,8 @@ TEST_F(EventTestDavid, TestAllocEventIdResource)
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP_VIRTUAL(evt, &DavidEvent::QueryEventWaitStatus).stubs().will(returnValue(RT_ERROR_DRV_ERR));
-    ((Stream *)stm)->Context_()->SetCtxMode(STOP_ON_FAILURE);
-    ((Stream *)stm)->Context_()->SetFailureError(RT_ERROR_DRV_ERR); 
+    ((Stream*)stm)->Context_()->SetCtxMode(STOP_ON_FAILURE);
+    ((Stream*)stm)->Context_()->SetFailureError(RT_ERROR_DRV_ERR);
     error = evt->AllocEventIdResource(stm, eventId);
     EXPECT_EQ(error, RT_ERROR_DRV_ERR);
 
@@ -201,9 +201,9 @@ TEST_F(EventTestDavid, TestAllocEventIdResource)
     EXPECT_EQ(error, ACL_RT_SUCCESS);
     rtStreamDestroy(stream);
 
-    EventPool *eventPool = new (std::nothrow) EventPool(device_, 0);
+    EventPool* eventPool = new (std::nothrow) EventPool(device_, 0);
     EXPECT_EQ(eventPool->poolSize_, 0U);
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(driver, &Driver::NotifyIdAlloc).stubs().will(returnValue(RT_ERROR_NONE));
     error = eventPool->AllocEventIdFromDrv(0);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -217,9 +217,9 @@ TEST_F(EventTestDavid, TestWaitSendCheck)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     int32_t eventId = -1;
     evt->isNewMode_ = true;
@@ -252,7 +252,7 @@ TEST_F(EventTestDavid, TestReclaimTask)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
 
     error = evt->ReclaimTask(false);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -268,9 +268,9 @@ TEST_F(EventTestDavid, TestWaitTask)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
     uint64_t mode = stm->GetFailureMode();
     std::shared_ptr<Stream> stmSharedPtr = stm->GetSharedPtr();
     MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById)
@@ -304,7 +304,7 @@ TEST_F(EventTestDavid, TestClearRecordStatus)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
 
     error = evt->ClearRecordStatus();
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -318,9 +318,9 @@ TEST_F(EventTestDavid, TestDoCompleteSuccessForDavidEventWaitTask)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventWaitTaskInit(&task, evt, evt->EventId_(), 0U);
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_WAIT);
     task.id = 0;
@@ -339,9 +339,9 @@ TEST_F(EventTestDavid, TestDoCompleteSuccessForDavidEventResetTask)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventResetTaskInit(&task, evt, evt->EventId_());
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RESET);
     MOCKER(TryToFreeEventIdAndDestroyEvent).stubs();
@@ -355,9 +355,9 @@ TEST_F(EventTestDavid, TestDoCompleteSuccessForDavidEventRecordTask)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RECORD);
     task.errorCode = TS_ERROR_UNKNOWN;
@@ -372,14 +372,14 @@ TEST_F(EventTestDavid, TestToConstructDavidEventRecordTask)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     evt->isCntNotify_ = true;
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RECORD);
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&task, static_cast<void *>(&sqe), sqeInfo);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     delete evt;
 }
 
@@ -388,14 +388,14 @@ TEST_F(EventTestDavid, TestToConstructDavidEventWaitTask)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     evt->isCntNotify_ = true;
     DavidEventWaitTaskInit(&task, evt, evt->EventId_(), 0U);
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_WAIT);
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(&task, static_cast<void *>(&sqe), sqeInfo);
+    ToConstructDavidSqe(&task, static_cast<void*>(&sqe), sqeInfo);
     delete evt;
 }
 
@@ -421,10 +421,10 @@ TEST_F(EventTestDavid, TestElapsedTime)
     rtStream_t stream;
 
     rtEventCreate(&start);
-    DavidEvent *startEvt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(start));
+    DavidEvent* startEvt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(start));
     startEvt->SetRecord(false);
     rtEventCreate(&end);
-    DavidEvent *endEvt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(end));
+    DavidEvent* endEvt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(end));
     endEvt->SetRecord(false);
 
     float32_t timeInterval = 0;
@@ -450,7 +450,7 @@ TEST_F(EventTestDavid, TestGetTimeStamp)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     uint64_t recTimestamp = 0UL;
     evt->SetRecord(false);
 
@@ -474,9 +474,9 @@ TEST_F(EventTestDavid, TestResetTaskUnInit)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventResetTaskInit(&task, evt, evt->EventId_());
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RESET);
     DavidEventResetTaskUnInit(&task);
@@ -488,9 +488,9 @@ TEST_F(EventTestDavid, TestWaitTaskUnInit)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventWaitTaskInit(&task, evt, evt->EventId_(), 0U);
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_WAIT);
     MOCKER(TryToFreeEventIdAndDestroyEvent).stubs();
@@ -505,9 +505,9 @@ TEST_F(EventTestDavid, TestQuery)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     TaskInfo taskInfo = {0};
     taskInfo.stream = stm;
@@ -531,9 +531,9 @@ TEST_F(EventTestDavid, TestSynchronize)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     MOCKER_CPP_VIRTUAL(evt, &DavidEvent::WaitTask).stubs().will(returnValue(RT_ERROR_NONE));
     evt->SetRecord(false);
@@ -557,9 +557,9 @@ TEST_F(EventTestDavid, TestQueryEventStatus)
     rtEventStatus_t status;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     MOCKER_CPP_VIRTUAL(evt, &DavidEvent::QueryEventTask).stubs().will(returnValue(RT_ERROR_NONE));
     evt->SetRecord(false);
@@ -586,9 +586,9 @@ TEST_F(EventTestDavid, TestQueryEventTask)
     rtEventStatus_t status;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     rtEventStatus_t status1 = RT_EVENT_RECORDED;
     MOCKER_CPP(&StreamSqCqManage::GetStreamById)
@@ -618,9 +618,9 @@ TEST_F(EventTestDavid, TestQueryEventWaitStatus)
     bool waitFlag = false;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     TaskInfo taskInfo = {0};
     taskInfo.stream = stm;
@@ -644,7 +644,7 @@ TEST_F(EventTestDavid, TestEventCreateEx)
     rtError_t error;
     rtStream_t stream;
     ApiImplDavid apiImpl;
-    Event *evt = NULL;
+    Event* evt = NULL;
     error = apiImpl.EventCreate(&evt, RT_EVENT_MC2);
     EXPECT_EQ(error, RT_ERROR_NONE);
     apiImpl.EventDestroy(evt);
@@ -661,10 +661,10 @@ TEST_F(EventTestDavid, TestProcStreamRecordTask)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    Device *dev = stm->Device_();
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Device* dev = stm->Device_();
     MOCKER(DavidEventRecordTaskInit).stubs().will(returnValue(RT_ERROR_INVALID_VALUE));
     error = ProcStreamRecordTask(stm, 0);
     EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
@@ -681,9 +681,9 @@ TEST_F(EventTestDavid, TestRecordDavidEventComplete)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
-    Stream *stm = rt_ut::UnwrapOrNull<Stream>(stream);
+    Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     TaskInfo taskInfo = {0};
     taskInfo.stream = stm;
@@ -706,9 +706,9 @@ TEST_F(EventTestDavid, TestDavidEventRecordTaskUnInit)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RECORD);
 
@@ -726,13 +726,13 @@ TEST_F(EventTestDavid, TestDavidUpdateAndTryToDestroyEvent)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventRecordTaskInit(&task, evt, evt->EventId_());
     evt->InsertRecordResetToMap(&task);
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_RECORD);
-    Event *evtTmp = (Event *)evt;
+    Event* evtTmp = (Event*)evt;
     evt->SetIsNeedDestroy(true);
     DavidUpdateAndTryToDestroyEvent(&task, &evtTmp, DavidTaskMapType::TASK_MAP_TYPE_RECORD_RESET_MAP);
 }
@@ -742,13 +742,13 @@ TEST_F(EventTestDavid, TestDavidUpdateAndTryToDestroyEvent1)
     TaskInfo task = {};
     InitByStream(&task, stream_);
     uint32_t value = 0U;
-    void *addr = &value;
+    void* addr = &value;
     rtDavidSqe_t sqe = {};
-    DavidEvent *evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
+    DavidEvent* evt = new (std::nothrow) DavidEvent(device_, 0x1, nullptr, false);
     DavidEventWaitTaskInit(&task, evt, evt->EventId_(), 1000);
     evt->InsertWaitToMap(&task);
     EXPECT_EQ(task.type, TS_TASK_TYPE_DAVID_EVENT_WAIT);
-    Event *evtTmp = (Event *)evt;
+    Event* evtTmp = (Event*)evt;
     evt->SetIsNeedDestroy(true);
     DavidUpdateAndTryToDestroyEvent(&task, &evtTmp, DavidTaskMapType::TASK_MAP_TYPE_WAIT_MAP);
 }
@@ -757,21 +757,21 @@ TEST_F(EventTestDavid, event_recordnull)
 {
     rtError_t error;
     error = EvtRecordSoftwareMode(NULL, NULL);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 }
 
 TEST_F(EventTestDavid, event_waitnull)
 {
     rtError_t error;
     error = EvtWaitSoftwareMode(NULL, NULL);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 }
 
 TEST_F(EventTestDavid, event_resetnull)
 {
     rtError_t error;
     error = EvtResetSoftwareMode(NULL, NULL);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 }
 
 TEST_F(EventTestDavid, GetCaptureEvent1)
@@ -782,32 +782,32 @@ TEST_F(EventTestDavid, GetCaptureEvent1)
     ApiImplDavid apiImpl;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     evt->SoftwareModeEnable();
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     rtStreamCreate(&captureStream, 0);
-    Stream* stmCapture = (Stream *)captureStream;
+    Stream* stmCapture = (Stream*)captureStream;
     stm->UpdateCaptureStream(stmCapture);
     stm->SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_ACTIVE);
     CaptureModel* captureModel = new CaptureModel();
-    (rt_ut::UnwrapOrNull<Stream>(captureStream))->SetModel(static_cast<Model *>(captureModel));
+    (rt_ut::UnwrapOrNull<Stream>(captureStream))->SetModel(static_cast<Model*>(captureModel));
     captureModel->context_ = stm->Context_();
 
-    Event *curEvent = evt->GetCaptureEvent();
+    Event* curEvent = evt->GetCaptureEvent();
 
     rtError_t error = apiImpl.GetCaptureEvent(stm, evt, &curEvent);
-    EXPECT_EQ(error,RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = apiImpl.CaptureRecordEvent(stm->Context_(), evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     error = apiImpl.CaptureWaitEvent(stm->Context_(), stm, evt, 0U);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     error = apiImpl.CaptureResetEvent(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     stmCapture->SetModel(nullptr);
     stm->UpdateCaptureStream(nullptr);
@@ -825,13 +825,13 @@ TEST_F(EventTestDavid, GetCaptureEvent2)
     ApiImplDavid apiImpl;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    Event *curEvent = evt->GetCaptureEvent();
+    Event* curEvent = evt->GetCaptureEvent();
 
     rtError_t error = apiImpl.GetCaptureEvent(stm, evt, &curEvent);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
     rtEventDestroy(event);
     rtStreamDestroy(stream);
     delete curEvent;
@@ -845,8 +845,8 @@ TEST_F(EventTestDavid, GetCaptureEvent3)
     ApiImplDavid apiImpl;
 
     rtEventCreate(&event);
-    Event *evtTmp = rt_ut::UnwrapOrNull<Event>(event);
-    DavidEvent *evt = (DavidEvent *)evtTmp;
+    Event* evtTmp = rt_ut::UnwrapOrNull<Event>(event);
+    DavidEvent* evt = (DavidEvent*)evtTmp;
     evt->SoftwareModeEnable();
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
@@ -861,19 +861,19 @@ TEST_F(EventTestDavid, GetCaptureEvent3)
     stmCapture->SetModel(&captureModel);
     captureModel.context_ = stm->Context_();
 
-    Event *curEvent = evt->GetCaptureEvent();
+    Event* curEvent = evt->GetCaptureEvent();
 
     rtError_t error = apiImpl.GetCaptureEvent(stm, evt, &curEvent);
-    EXPECT_EQ(error,RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     error = apiImpl.CaptureRecordEvent(stm->Context_(), evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     error = apiImpl.CaptureWaitEvent(stm->Context_(), stm, evt, 0U);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     error = apiImpl.CaptureResetEvent(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     stmCapture->SetModel(nullptr);
     stm->UpdateCaptureStream(nullptr);
@@ -890,13 +890,13 @@ TEST_F(EventTestDavid, CaptureResetEvent1)
     ApiImplDavid apiImpl;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     evt->SoftwareModeEnable();
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     rtError_t error = apiImpl.CaptureResetEvent(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
     rtEventDestroy(event);
     rtStreamDestroy(stream);
 }
@@ -908,12 +908,12 @@ TEST_F(EventTestDavid, CaptureResetEvent2)
     ApiImplDavid apiImpl;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     rtError_t error = apiImpl.CaptureResetEvent(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
     rtEventDestroy(event);
     rtStreamDestroy(stream);
 }
@@ -924,15 +924,15 @@ TEST_F(EventTestDavid, EvtRecordSoftwareMode1)
     rtStream_t stream;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     TaskInfo* fakeTask = new TaskInfo();
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_DRV_ERR));
     rtError_t error = EvtRecordSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     rtEventDestroy(event);
     rtStreamDestroy(stream);
@@ -944,11 +944,11 @@ TEST_F(EventTestDavid, EvtRecordSoftwareMode2)
     rtError_t error;
     rtEvent_t event;
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
-    
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
+
     error = EvtRecordSoftwareMode(evt, nullptr);
-    EXPECT_NE(error,RT_ERROR_NONE);
-    
+    EXPECT_NE(error, RT_ERROR_NONE);
+
     rtEventDestroy(event);
 }
 
@@ -959,23 +959,26 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode1)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
-    void *eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    void* eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
     evt->SetEventAddr(eventAddr);
 
     TaskInfo task1 = {};
-    TaskInfo *tmpTask = &task1;
-    MOCKER(AllocTaskInfoForCapture).stubs().with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    TaskInfo* tmpTask = &task1;
+    MOCKER(AllocTaskInfoForCapture)
+        .stubs()
+        .with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER(MemWaitValueTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_EQ(error,RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     free(eventAddr);
     rtEventDestroy(event);
@@ -989,10 +992,10 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode2)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
-    
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
+
     error = EvtWaitSoftwareMode(evt, nullptr);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     rtEventDestroy(event);
 }
@@ -1004,14 +1007,14 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode3)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     rtEventDestroy(event);
     rtStreamDestroy(stream);
@@ -1024,15 +1027,15 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode4)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
     evt->SetEventAddr(nullptr);
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     rtEventDestroy(event);
     rtStreamDestroy(stream);
@@ -1045,18 +1048,18 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode5)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
-    void *eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    void* eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
     evt->SetEventAddr(eventAddr);
 
     MOCKER(AllocTaskInfoForCapture).stubs().will(returnValue(ACL_ERROR_RT_RESOURCE_ALLOC_FAIL));
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     free(eventAddr);
     rtEventDestroy(event);
@@ -1070,21 +1073,24 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode6)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
-    void *eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    void* eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
     evt->SetEventAddr(eventAddr);
 
     TaskInfo task1 = {};
-    TaskInfo *tmpTask = &task1;
-    MOCKER(AllocTaskInfoForCapture).stubs().with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    TaskInfo* tmpTask = &task1;
+    MOCKER(AllocTaskInfoForCapture)
+        .stubs()
+        .with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER(MemWaitValueTaskInit).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     free(eventAddr);
     rtEventDestroy(event);
@@ -1098,28 +1104,30 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode7)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
-    void *eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    void* eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
     evt->SetEventAddr(eventAddr);
 
     TaskInfo task1 = {};
-    TaskInfo *tmpTask = &task1;
-    MOCKER(AllocTaskInfoForCapture).stubs().with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    TaskInfo* tmpTask = &task1;
+    MOCKER(AllocTaskInfoForCapture)
+        .stubs()
+        .with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER(MemWaitValueTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     free(eventAddr);
     rtEventDestroy(event);
     rtStreamDestroy(stream);
 }
-
 
 TEST_F(EventTestDavid, EvtWaitSoftwareMode8)
 {
@@ -1128,23 +1136,26 @@ TEST_F(EventTestDavid, EvtWaitSoftwareMode8)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
-    void *eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    void* eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
     evt->SetEventAddr(eventAddr);
 
     TaskInfo task1 = {};
-    TaskInfo *tmpTask = &task1;
-    MOCKER(AllocTaskInfoForCapture).stubs().with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    TaskInfo* tmpTask = &task1;
+    MOCKER(AllocTaskInfoForCapture)
+        .stubs()
+        .with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER(MemWaitValueTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_DRV_ERR));
 
     error = EvtWaitSoftwareMode(evt, stm);
-    EXPECT_NE(error,RT_ERROR_NONE);
+    EXPECT_NE(error, RT_ERROR_NONE);
 
     free(eventAddr);
     rtEventDestroy(event);
@@ -1158,23 +1169,26 @@ TEST_F(EventTestDavid, EvtResetSoftwareMode1)
     rtError_t error;
 
     rtEventCreate(&event);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
-    
+
     MOCKER(CheckTaskCanSend).stubs().will(returnValue(RT_ERROR_NONE));
-    void *eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
+    void* eventAddr = malloc(RT_STARS_WRITE_VALUE_SIZE_TYPE_8BIT);
     evt->SetEventAddr(eventAddr);
 
     TaskInfo task1 = {};
-    TaskInfo *tmpTask = &task1;
-    MOCKER(AllocTaskInfoForCapture).stubs().with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any()).will(returnValue(RT_ERROR_NONE));
+    TaskInfo* tmpTask = &task1;
+    MOCKER(AllocTaskInfoForCapture)
+        .stubs()
+        .with(outBoundP(&tmpTask), mockcpp::any(), mockcpp::any(), mockcpp::any())
+        .will(returnValue(RT_ERROR_NONE));
     MOCKER(MemWaitValueTaskInit).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(DavidSendTask).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER(SubmitTaskPostProc).stubs().will(returnValue(RT_ERROR_NONE));
 
     error = EvtResetSoftwareMode(evt, stm);
-    EXPECT_EQ(error,RT_ERROR_NONE);
+    EXPECT_EQ(error, RT_ERROR_NONE);
 
     free(eventAddr);
     rtEventDestroy(event);
@@ -1185,7 +1199,7 @@ TEST_F(EventTestDavid, EventRecordSoftwareModeDispatchesSoftwareHelper)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     ASSERT_NE(evt, nullptr);
     evt->SoftwareModeEnable();
 
@@ -1202,7 +1216,7 @@ TEST_F(EventTestDavid, EventResetSoftwareModeDispatchesSoftwareHelper)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreateWithFlag(&event, RT_EVENT_WITH_FLAG), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     ASSERT_NE(evt, nullptr);
     evt->SoftwareModeEnable();
 
@@ -1220,7 +1234,7 @@ TEST_F(EventTestDavid, StreamWaitSoftwareModeAfterResetDispatchesSoftwareHelper)
     rtEvent_t event = nullptr;
     uint8_t recordValue = 0U;
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     ASSERT_NE(evt, nullptr);
     evt->SoftwareModeEnable();
     evt->SetEventAddr(&recordValue);
@@ -1243,8 +1257,8 @@ TEST_F(EventTestDavid, CaptureExternalRecordRegistersPlaceholder)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
-    auto *captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
+    auto* captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     ASSERT_NE(evt, nullptr);
     ASSERT_NE(captureModel, nullptr);
     stream_->UpdateCaptureStream(stream_);
@@ -1269,8 +1283,8 @@ TEST_F(EventTestDavid, EventRecordExternalDispatchesThroughApiImpl)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DDSYNC_NS), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
-    auto *captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
+    auto* captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     ASSERT_NE(evt, nullptr);
     ASSERT_NE(captureModel, nullptr);
     evt->isNewMode_ = false;
@@ -1295,8 +1309,8 @@ TEST_F(EventTestDavid, CaptureExternalWaitRegistersPlaceholder)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreate(&event), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
-    auto *captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
+    auto* captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     ASSERT_NE(evt, nullptr);
     ASSERT_NE(captureModel, nullptr);
     stream_->UpdateCaptureStream(stream_);
@@ -1321,8 +1335,8 @@ TEST_F(EventTestDavid, StreamWaitExternalDispatchesThroughApiImpl)
 {
     rtEvent_t event = nullptr;
     ASSERT_EQ(rtEventCreateExWithFlag(&event, RT_EVENT_DDSYNC_NS), RT_ERROR_NONE);
-    DavidEvent *evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
-    auto *captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
+    auto* captureModel = new CaptureModel(RT_MODEL_CAPTURE_MODEL);
     ASSERT_NE(evt, nullptr);
     ASSERT_NE(captureModel, nullptr);
     evt->isNewMode_ = false;
@@ -1351,23 +1365,23 @@ TEST_F(EventTestDavid, TestEventSynchronizeWithEventInModel)
     rtModel_t model;
 
     rtEventCreate(&event);
-    DavidEvent* evt = static_cast<DavidEvent *>(rt_ut::UnwrapOrNull<Event>(event));
+    DavidEvent* evt = static_cast<DavidEvent*>(rt_ut::UnwrapOrNull<Event>(event));
     rtStreamCreate(&stream, 0);
     Stream* stm = rt_ut::UnwrapOrNull<Stream>(stream);
 
     DavidRecordTaskInfo latestRecord = {stm->Id_(), 0U};
     evt->UpdateLatestRecord(latestRecord, DavidEventState_t::EVT_RECORDED, UINT64_MAX);
 
-    std::shared_ptr<Stream> stmSharedPtr(stm, [](Stream*){});
+    std::shared_ptr<Stream> stmSharedPtr(stm, [](Stream*) {});
     MOCKER_CPP(&StreamSqCqManage::GetStreamSharedPtrById)
         .stubs()
         .with(mockcpp::any(), outBound(stmSharedPtr))
         .will(returnValue(RT_ERROR_NONE));
 
-    Driver *driver = ((Runtime *)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* driver = ((Runtime*)Runtime::Instance())->driverFactory_.GetDriver(NPU_DRIVER);
     MOCKER_CPP_VIRTUAL(stm, &Stream::Synchronize).stubs().will(returnValue(RT_ERROR_NONE));
     MOCKER_CPP_VIRTUAL(driver, &Driver::GetSqTail).stubs().will(returnValue(1));
-    stm->flags_ = stm->flags_  | RT_STREAM_PERSISTENT;
+    stm->flags_ = stm->flags_ | RT_STREAM_PERSISTENT;
 
     error = rtModelCreate(&model, 0);
     error = rtModelBindStream(model, stream, 0);
@@ -1382,7 +1396,8 @@ TEST_F(EventTestDavid, TestEventSynchronizeWithEventInModel)
     error = rtEventSynchronize(event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);
 
-    TaskResManageDavid *taskResMang = ((TaskResManageDavid *)(static_cast<Stream *>(device_->PrimaryStream_())->taskResMang_ ));
+    TaskResManageDavid* taskResMang =
+        ((TaskResManageDavid*)(static_cast<Stream*>(device_->PrimaryStream_())->taskResMang_));
     taskResMang->ResetTaskRes();
     error = rtModelDestroy(model);
     EXPECT_EQ(error, ACL_RT_SUCCESS);

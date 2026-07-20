@@ -19,20 +19,18 @@
 
 using namespace AicpuSchedule;
 
-
-class OperatorKernelCommonTest : public OperatorKernelTest {
-};
+class OperatorKernelCommonTest : public OperatorKernelTest {};
 
 TEST_F(OperatorKernelCommonTest, SendAICPUSubEvent_failed1)
 {
-    char *msg1 = nullptr;
+    char* msg1 = nullptr;
     unsigned int msgLen = 1;
     unsigned int subevent_id = 1;
 
     int ret = OperatorKernelCommon::SendAICPUSubEvent(msg1, msgLen, subevent_id);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INVAILD_EVENT_SUBMIT);
 
-    char *msg2 = "aa";
+    char* msg2 = "aa";
     msgLen = 0;
     subevent_id = 1;
 
@@ -49,7 +47,7 @@ TEST_F(OperatorKernelCommonTest, TraceQueueData_failed)
     g_curHead.aicpuBufhead.transId = 5;
     g_curHead.aicpuBufhead.routeLabel = 2;
     g_curHead.aicpuBufhead.retCode = 1;
-    void *priv = reinterpret_cast<void*>(&g_curHead);
+    void* priv = reinterpret_cast<void*>(&g_curHead);
     int32_t size = 256;
     OperatorKernelCommon::TraceQueueData(runContextT, priv, size, "Dequeued");
     EXPECT_EQ(g_curHead.aicpuBufhead.transId, 5);
@@ -63,7 +61,7 @@ TEST_F(OperatorKernelCommonTest, TraceQueueDataSuccess)
     g_curHead.aicpuBufhead.transId = 5;
     g_curHead.aicpuBufhead.routeLabel = 2;
     g_curHead.aicpuBufhead.retCode = 1;
-    void *priv = reinterpret_cast<void*>(&g_curHead);
+    void* priv = reinterpret_cast<void*>(&g_curHead);
     int32_t size = 256;
     OperatorKernelCommon::TraceQueueData(runContextT, priv, size, "Dequeued");
     EXPECT_EQ(g_curHead.aicpuBufhead.transId, 5);
@@ -75,11 +73,11 @@ TEST_F(OperatorKernelCommonTest, Model_CopyMbufHeadInfo_Succ)
 
     char src[mbufHeadSize] = {0};
     char dest[mbufHeadSize] = {0};
-    void *srcHeaderBuf = (void *)src;
+    void* srcHeaderBuf = (void*)src;
     uint32_t srcHeadSize = mbufHeadSize;
-    void *destMbuf = (void *)dest;
+    void* destMbuf = (void*)dest;
 
-    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf *)destMbuf);
+    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf*)destMbuf);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
@@ -90,11 +88,11 @@ TEST_F(OperatorKernelCommonTest, Model_CopyMbufHeadInfo_Error)
     char src[mbufHeadSize] = {0};
     char dest[mbufHeadSize] = {0};
     // error
-    void *srcHeaderBuf = nullptr;
+    void* srcHeaderBuf = nullptr;
     uint32_t srcHeadSize = mbufHeadSize;
-    void *destMbuf = (void *)dest;
+    void* destMbuf = (void*)dest;
 
-    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf *)destMbuf);
+    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf*)destMbuf);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
@@ -104,12 +102,12 @@ TEST_F(OperatorKernelCommonTest, Model_CopyMbufHeadInfo_Error1)
 
     char src[mbufHeadSize] = {0};
     char dest[mbufHeadSize] = {0};
-    void *srcHeaderBuf = (void *)src;
+    void* srcHeaderBuf = (void*)src;
     uint32_t srcHeadSize = mbufHeadSize;
     // error
-    void *destMbuf = nullptr;
+    void* destMbuf = nullptr;
 
-    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf *)destMbuf);
+    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf*)destMbuf);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
@@ -120,11 +118,11 @@ TEST_F(OperatorKernelCommonTest, Model_CopyMbufHeadInfo_Error2)
 
     char src[mbufHeadSize] = {0};
     char dest[mbufHeadSize] = {0};
-    void *srcHeaderBuf = (void *)src;
+    void* srcHeaderBuf = (void*)src;
     uint32_t srcHeadSize = mbufHeadSize;
-    void *destMbuf = (void *)dest;
+    void* destMbuf = (void*)dest;
 
-    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf *)destMbuf);
+    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf*)destMbuf);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_FROM_DRV);
 }
 
@@ -135,17 +133,17 @@ TEST_F(OperatorKernelCommonTest, Model_CopyMbufHeadInfo_Error3)
 
     char src[mbufHeadSize] = {0};
     char dest[mbufHeadSize] = {0};
-    void *srcHeaderBuf = (void *)src;
+    void* srcHeaderBuf = (void*)src;
     uint32_t srcHeadSize = mbufHeadSize;
-    void *destMbuf = (void *)dest;
+    void* destMbuf = (void*)dest;
 
-    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf *)destMbuf);
+    int ret = OperatorKernelCommon::CopyMbufHeadInfo(srcHeaderBuf, srcHeadSize, (Mbuf*)destMbuf);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_MALLOC_MEM_FAIL_THROUGH_DRV);
 }
 
 TEST_F(OperatorKernelCommonTest, UpdateDataPtr_FAIL)
 {
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     uint64_t totalOffset = 20U;
     uint64_t dataSize = 10UL;
     MOCKER_CPP(&OperatorKernelCommon::GetMbufDataSize)
@@ -156,13 +154,13 @@ TEST_F(OperatorKernelCommonTest, UpdateDataPtr_FAIL)
     // fail for GetMbufDataSize
     EXPECT_EQ(OperatorKernelCommon::UpdateDataPtr(0U, 1, dataPtr, totalOffset), AICPU_SCHEDULE_ERROR_FROM_DRV);
     // fail for dataSize invalid
-    EXPECT_EQ(OperatorKernelCommon::UpdateDataPtr(0U, 1, dataPtr, totalOffset),
-        AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
+    EXPECT_EQ(
+        OperatorKernelCommon::UpdateDataPtr(0U, 1, dataPtr, totalOffset), AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
 TEST_F(OperatorKernelCommonTest, DoUpdateDataPtr_FAIL_InvalidOffset)
 {
-    void *dataPtr = nullptr;
+    void* dataPtr = nullptr;
     int32_t lastFusionOffset = 2;
     uint64_t lastDataOffset = 20U;
     FusionInfo info = {};

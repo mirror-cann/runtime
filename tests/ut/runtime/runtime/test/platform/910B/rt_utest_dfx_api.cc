@@ -23,22 +23,13 @@ using namespace cce::runtime;
 
 class DfxApiTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
-    }
+    static void SetUpTestCase() {}
 
-    static void TearDownTestCase()
-    {
-    }
+    static void TearDownTestCase() {}
 
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(DfxApiTest, rtSetTaskTag_param_check)
@@ -54,9 +45,10 @@ TEST_F(DfxApiTest, rtSetTaskTag_param_check)
 TEST_F(DfxApiTest, rtSetTaskTag_success)
 {
     ThreadLocalContainer::ResetTaskTag();
-    bool isTaskTagValid = ThreadLocalContainer::IsTaskTagValid();;
+    bool isTaskTagValid = ThreadLocalContainer::IsTaskTagValid();
+    ;
     EXPECT_FALSE(isTaskTagValid);
-    const char *taskTag = "123456";
+    const char* taskTag = "123456";
     rtError_t error = rtSetTaskTag(taskTag);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
@@ -72,7 +64,8 @@ TEST_F(DfxApiTest, rtSetTaskTag_success)
 TEST_F(DfxApiTest, rtSetTaskTag_overlens)
 {
     ThreadLocalContainer::ResetTaskTag();
-    bool isTaskTagValid = ThreadLocalContainer::IsTaskTagValid();;
+    bool isTaskTagValid = ThreadLocalContainer::IsTaskTagValid();
+    ;
     EXPECT_FALSE(isTaskTagValid);
 
     constexpr size_t overLen = TASK_TAG_MAX_LEN + 10;
@@ -98,13 +91,11 @@ TEST_F(DfxApiTest, rtSetTaskTag_overlens)
 
 TEST_F(DfxApiTest, rtSetAicpuAttr_success)
 {
-    const char *key = "key";
-    const char *value = "value";
+    const char* key = "key";
+    const char* value = "value";
     rtError_t error = rtSetAicpuAttr(key, value);
     EXPECT_EQ(error, RT_ERROR_NONE);
-    auto func = [](const char_t * const, const char_t * const)->TDT_StatusType {
-        return 0U;
-    };
+    auto func = [](const char_t* const, const char_t* const) -> TDT_StatusType { return 0U; };
     Runtime::Instance()->tsdSetAttr_ = func;
     error = rtSetAicpuAttr(key, value);
     EXPECT_EQ(error, RT_ERROR_NONE);
@@ -112,18 +103,14 @@ TEST_F(DfxApiTest, rtSetAicpuAttr_success)
 
 TEST_F(DfxApiTest, getTsdQos_success)
 {
-    auto func = [](const int32_t, const int32_t, const uint64_t)->TDT_StatusType {
-        return 0U;
-    };
+    auto func = [](const int32_t, const int32_t, const uint64_t) -> TDT_StatusType { return 0U; };
 
     uint16_t qos;
     Runtime::Instance()->tsdGetCapability_ = func;
     rtError_t error = Runtime::Instance()->GetTsdQos(0, qos);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
-    auto failStub = [](const int32_t, const int32_t, const uint64_t)->TDT_StatusType {
-        return 1U;
-    };
+    auto failStub = [](const int32_t, const int32_t, const uint64_t) -> TDT_StatusType { return 1U; };
 
     Runtime::Instance()->tsdGetCapability_ = failStub;
     error = Runtime::Instance()->GetTsdQos(0, qos);
@@ -132,27 +119,22 @@ TEST_F(DfxApiTest, getTsdQos_success)
 
 class ArgsBufferTest : public testing::Test {
 protected:
-    virtual void SetUp()
-    {
-    }
+    virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
 TEST_F(ArgsBufferTest, BasicAllocation_ReturnsValidBuffer)
 {
     uint64_t requiredSize = 1024ULL;
-    void *buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(requiredSize);
+    void* buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(requiredSize);
     ASSERT_NE(buffer, nullptr) << "GetOrCreateArgsBuffer should return valid buffer for kernel args";
 }
 
 TEST_F(ArgsBufferTest, LargeSizeAllocation_ReturnsValidBuffer)
 {
     uint64_t requiredSize = 8192ULL;
-    void *buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(requiredSize);
+    void* buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(requiredSize);
     ASSERT_NE(buffer, nullptr) << "GetOrCreateArgsBuffer should handle large kernel args";
 }
 
@@ -160,7 +142,7 @@ TEST_F(ArgsBufferTest, MultipleCalls_StableBehavior)
 {
     for (int i = 0; i < 10; i++) {
         uint64_t size = 1024ULL + i * 100ULL;
-        void *buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(size);
+        void* buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(size);
         ASSERT_NE(buffer, nullptr) << "GetOrCreateArgsBuffer should be stable across multiple calls";
     }
 }
@@ -168,7 +150,6 @@ TEST_F(ArgsBufferTest, MultipleCalls_StableBehavior)
 TEST_F(ArgsBufferTest, SmallSize_GetsDefaultSizeBuffer)
 {
     uint64_t requiredSize = 64ULL;
-    void *buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(requiredSize);
+    void* buffer = ThreadLocalContainer::GetOrCreateArgsBuffer(requiredSize);
     ASSERT_NE(buffer, nullptr) << "GetOrCreateArgsBuffer should allocate at least default size";
 }
-

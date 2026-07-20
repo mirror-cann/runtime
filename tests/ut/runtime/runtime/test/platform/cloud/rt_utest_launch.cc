@@ -23,18 +23,12 @@ protected:
     static void SetUpTestCase()
     {
         GlobalMockObject::verify();
-        std::cout<<"TaskLaunchTest test start start"<<std::endl;
+        std::cout << "TaskLaunchTest test start start" << std::endl;
     }
 
-    static void TearDownTestCase()
-    {
-        std::cout<<"TaskLaunchTest test start end"<<std::endl;
-    }
+    static void TearDownTestCase() { std::cout << "TaskLaunchTest test start end" << std::endl; }
 
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -42,7 +36,7 @@ protected:
         rtDeviceReset(0);
     }
 };
-}
+} // namespace
 
 TEST_F(TaskLaunchTest, rtEventDestroySync_test4)
 {
@@ -50,7 +44,7 @@ TEST_F(TaskLaunchTest, rtEventDestroySync_test4)
     rtEvent_t event;
 
     error = rtEventCreate(&event);
-    Event *eventObj = rt_ut::UnwrapOrNull<Event>(event);
+    Event* eventObj = rt_ut::UnwrapOrNull<Event>(event);
     EXPECT_EQ(error, RT_ERROR_NONE);
 
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
@@ -61,13 +55,11 @@ TEST_F(TaskLaunchTest, rtEventDestroySync_test4)
     MOCKER_CPP(&Event::IsEventTaskEmpty).stubs().will(returnValue(false)).then(returnValue(true));
     MOCKER_CPP(&Event::GetFailureStatus).stubs().will(returnValue(RT_ERROR_END_OF_SEQUENCE));
 
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     EXPECT_EQ(curCtx != nullptr, true);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     EXPECT_EQ(dev != nullptr, true);
-    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport)
-    .stubs()
-    .will(returnValue(false));
+    MOCKER_CPP_VIRTUAL(dev, &Device::CheckFeatureSupport).stubs().will(returnValue(false));
 
     error = rtEventDestroySync(event);
     EXPECT_EQ(error, ACL_RT_SUCCESS);

@@ -27,7 +27,7 @@ using namespace AicpuSchedule;
 namespace {
 using AicpuScheduleUtStub::DlopenMsqOperatorStub;
 using AicpuScheduleUtStub::DlsymMsqOperatorStub;
-}
+} // namespace
 
 class AicpusdMessageQueueTest : public testing::Test {
 protected:
@@ -45,18 +45,16 @@ protected:
     }
 };
 
-
 namespace {
 uint32_t g_starsRegister[33] = {};
 
-drvError_t halResAddrMapFake(unsigned int devId, struct res_addr_info *res_info, unsigned long *va, unsigned int *len)
+drvError_t halResAddrMapFake(unsigned int devId, struct res_addr_info* res_info, unsigned long* va, unsigned int* len)
 {
     *va = reinterpret_cast<uint64_t>(g_starsRegister);
     *len = sizeof(uint32_t) / sizeof(uint8_t);
     return DRV_ERROR_NONE;
 }
-}
-
+} // namespace
 
 TEST_F(AicpusdMessageQueueTest, InitMessageQueueSuccess)
 {
@@ -64,7 +62,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueSuccess)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     const int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -75,7 +73,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueGetAddrFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(returnValue(DRV_ERROR_BAD_ADDRESS));
     const int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -86,7 +84,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueGetCqeFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(returnValue(DRV_ERROR_BAD_ADDRESS));
     const int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_DRV_ERR);
@@ -97,7 +95,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueForThreadSuccess)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -113,7 +111,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueHardThreadSuccess)
     inst.isEnableHardThread_ = true;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -127,7 +125,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueForThreadResetStatusFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -142,7 +140,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueForThreadInitStatusFuncFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -157,7 +155,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueForThreadInitDataFuncFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -172,7 +170,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueForThreadInitRspFuncFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -187,7 +185,7 @@ TEST_F(AicpusdMessageQueueTest, InitMessageQueueForThreadInintCqeFail)
     MessageQueue inst;
 
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
@@ -226,7 +224,7 @@ TEST_F(AicpusdMessageQueueTest, ReadMsq0DataSuccess)
 {
     MessageQueue inst;
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     EXPECT_EQ(inst.InitMessageQueue(deviceId, aicpuPhyIds), AICPU_SCHEDULE_OK);
     EXPECT_EQ(inst.InitMessageQueueForThread(0), AICPU_SCHEDULE_OK);
@@ -240,7 +238,7 @@ TEST_F(AicpusdMessageQueueTest, ReadMsq4DataSuccess)
 {
     MessageQueue inst;
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     EXPECT_EQ(inst.InitMessageQueue(deviceId, aicpuPhyIds), AICPU_SCHEDULE_OK);
     EXPECT_EQ(inst.InitMessageQueueForThread(0), AICPU_SCHEDULE_OK);
@@ -254,7 +252,7 @@ TEST_F(AicpusdMessageQueueTest, WaitMsqInfoOnceFail)
 {
     MessageQueue inst;
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     EXPECT_EQ(inst.InitMessageQueue(deviceId, aicpuPhyIds), AICPU_SCHEDULE_OK);
     EXPECT_EQ(inst.InitMessageQueueForThread(0), AICPU_SCHEDULE_OK);
@@ -286,7 +284,7 @@ TEST_F(AicpusdMessageQueueTest, SendResponseSuccess)
 {
     MessageQueue inst;
     const uint32_t deviceId = 1;
-    const std::vector<uint32_t> aicpuPhyIds = {1,2,3,4};
+    const std::vector<uint32_t> aicpuPhyIds = {1, 2, 3, 4};
     MOCKER(halResAddrMap).stubs().will(invoke(halResAddrMapFake));
     const int32_t ret = inst.InitMessageQueue(deviceId, aicpuPhyIds);
     EXPECT_EQ(inst.InitMessageQueueForThread(0), AICPU_SCHEDULE_OK);

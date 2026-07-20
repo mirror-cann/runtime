@@ -14,8 +14,7 @@
 #include <string>
 #include <vector>
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 struct SetSchedulerInfo {
     pid_t threadId{0};

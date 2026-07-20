@@ -37,7 +37,7 @@ TEST_F(OperatorKernelModelDequeueTest, ModelDequeue)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 1;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     BufEnQueueInfo queue{0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
@@ -46,7 +46,7 @@ TEST_F(OperatorKernelModelDequeueTest, ModelDequeue)
 
 TEST_F(OperatorKernelModelDequeueTest, ModelDequeue_failed1)
 {
-    TsAicpuNotify *aicpuNotify = nullptr;
+    TsAicpuNotify* aicpuNotify = nullptr;
 
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
@@ -61,7 +61,7 @@ TEST_F(OperatorKernelModelDequeueTest, ModelDequeue_Empty)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 10;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     uint32_t queueId = 123;
     BufEnQueueInfo queue{queueId, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
@@ -79,7 +79,7 @@ TEST_F(OperatorKernelModelDequeueTest, ModelDequeue_halQueueDeQueue_FAILED)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     int mbufVal = 10;
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     BufEnQueueInfo queue{0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     int ret = kernel_.Compute(taskT, runContextT);
@@ -96,7 +96,7 @@ TEST_F(OperatorKernelModelDequeueTest, ModelDequeueForEOS)
     AicpuTaskInfo taskT;
     taskT.taskID = 1;
     char mbufVal[256] = {0};
-    Mbuf *mbuf = (Mbuf *)&mbufVal;
+    Mbuf* mbuf = (Mbuf*)&mbufVal;
     BufEnQueueInfo queue{0, (uint64_t)&mbuf};
     taskT.paraBase = (uint64_t)&queue;
     bufForFakeEOS[128] = 0x5A;
@@ -161,7 +161,7 @@ TEST_F(OperatorKernelModelDequeueTest, SetMbufStepId_ModelNull)
     AicpuModel aicpuModel;
     aicpuModel.SetHeadNodeFlag(false);
     aicpuModel.SetStepIdInfo(std::move(StepIdInfo(&geStepIdAddr, geStepIdAddr)));
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel *)nullptr));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
 
     MbufHeadMsg headMsg = {};
     headMsg.stepId = stepId;
@@ -190,7 +190,7 @@ TEST_F(OperatorKernelModelDequeueTest, SetModelNullData_ModelNull)
     AicpuModel aicpuModel;
     MbufHeadMsg headMsg = {};
     headMsg.dataFlag = 1;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel *)nullptr));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
 
     kernel_.SetModelNullData(0, &headMsg);
     EXPECT_EQ(aicpuModel.GetNullDataFlag(), false);
@@ -201,7 +201,7 @@ TEST_F(OperatorKernelModelDequeueTest, SetModelRetCode_ModelNull)
     AicpuModel aicpuModel;
     MbufHeadMsg headMsg = {};
     headMsg.dataFlag = 1;
-    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel *)nullptr));
+    MOCKER_CPP(&AicpuModelManager::GetModel).stubs().will(returnValue((AicpuModel*)nullptr));
 
     kernel_.SetModelRetCode(0, &headMsg);
     EXPECT_EQ(aicpuModel.GetModelRetCode(), 0);

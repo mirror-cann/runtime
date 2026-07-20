@@ -33,18 +33,13 @@ protected:
 
     virtual void SetUp() {}
 
-    virtual void TearDown()
-    {
-        GlobalMockObject::verify();
-    }
+    virtual void TearDown() { GlobalMockObject::verify(); }
 };
 
-
-TEST_F(AicpuLastwordSTest, RegLastwordCallbackTest) {
+TEST_F(AicpuLastwordSTest, RegLastwordCallbackTest)
+{
     uint64_t times = 0;
-    auto TestLastword = [&times]() {
-        times++;
-    };
+    auto TestLastword = [&times]() { times++; };
     std::function<void()> cancelReg;
     AicpusdLastword lastword;
     lastword.RegLastwordCallback("test", TestLastword, cancelReg);
@@ -60,14 +55,13 @@ TEST_F(AicpuLastwordSTest, RegLastwordCallbackTest) {
     lastword.RegLastwordCallback("test", nullptr, cancelReg);
 }
 
-TEST_F(AicpuLastwordSTest, RegLastwordCallbackTest_api) {
+TEST_F(AicpuLastwordSTest, RegLastwordCallbackTest_api)
+{
     uint64_t times = 0;
-    auto TestLastword = [&times]() {
-        times++;
-    };
+    auto TestLastword = [&times]() { times++; };
     std::function<void()> cancelReg;
     RegLastwordCallback("test", TestLastword, cancelReg);
     EXPECT_TRUE(cancelReg != nullptr);
     cancelReg();
 }
-}
+} // namespace AicpuSchedule

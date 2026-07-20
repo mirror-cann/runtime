@@ -26,20 +26,19 @@ using namespace aicpu;
 
 class AicpuCustSoManagerTEST : public testing::Test {
 protected:
-    static void SetUpTestCase() {
-        dlog_setlevel(0,1,1);
+    static void SetUpTestCase()
+    {
+        dlog_setlevel(0, 1, 1);
         std::cout << "AicpuCustSoManagerTEST SetUpTestCase" << std::endl;
     }
 
-    static void TearDownTestCase() {
-        dlog_setlevel(0,3,0);
+    static void TearDownTestCase()
+    {
+        dlog_setlevel(0, 3, 0);
         std::cout << "AicpuCustSoManagerTEST TearDownTestCase" << std::endl;
     }
 
-    virtual void SetUp()
-    {
-        std::cout << "AicpuCustSoManagerTEST SetUP" << std::endl;
-    }
+    virtual void SetUp() { std::cout << "AicpuCustSoManagerTEST SetUP" << std::endl; }
 
     virtual void TearDown()
     {
@@ -48,52 +47,48 @@ protected:
     }
 };
 
-TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValid_Failed0) {
+TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValid_Failed0)
+{
     std::string soFullPath = "/abc/";
-    char *a = nullptr;
-    MOCKER(realpath)
-        .stubs()
-        .will(returnValue(a));
+    char* a = nullptr;
+    MOCKER(realpath).stubs().will(returnValue(a));
     auto ret = AicpuCustSoManager::GetInstance().CheckSoFullPathValid(soFullPath);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValid_Failed1) {
+TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValid_Failed1)
+{
     std::string soFullPath = "/abc/";
-    char *a = nullptr;
-    MOCKER(memset_s)
-        .stubs()
-        .will(returnValue(-1));
+    char* a = nullptr;
+    MOCKER(memset_s).stubs().will(returnValue(-1));
     auto ret = AicpuCustSoManager::GetInstance().CheckSoFullPathValid(soFullPath);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckDirEmpty_Success) {
+TEST_F(AicpuCustSoManagerTEST, CheckDirEmpty_Success)
+{
     dirent ent;
     ent.d_name[0] = '.';
     ent.d_name[1] = '/';
     ent.d_type = DT_DIR;
-    dirent *a = nullptr;
-    MOCKER(readdir)
-        .stubs()
-        .will(returnValue(&ent))
-        .then(returnValue(a));
-    DIR *dirHandle = reinterpret_cast<DIR *>(static_cast<uintptr_t>(0x001));
-    MOCKER(readdir)
-        .stubs()
-        .will(returnValue(dirHandle));
+    dirent* a = nullptr;
+    MOCKER(readdir).stubs().will(returnValue(&ent)).then(returnValue(a));
+    DIR* dirHandle = reinterpret_cast<DIR*>(static_cast<uintptr_t>(0x001));
+    MOCKER(readdir).stubs().will(returnValue(dirHandle));
     auto ret = AicpuCustSoManager::GetInstance().CheckDirEmpty("./");
     EXPECT_EQ(ret, true);
 }
 
-TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDir_Success) {
+TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDir_Success)
+{
     AicpuCustSoManager::GetInstance().custSoDirName_ = "/var/aicpu_testA";
     MOCKER(access).stubs().will(returnValue(0));
     int32_t ret = AicpuCustSoManager::GetInstance().DeleteCustSoDir();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFilePathFailed) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFilePathFailed)
+{
     AicpuCustSoManager soManager;
     const LoadOpFromBufArgs args = {};
     std::string soName = "libcust_aicpu.so";
@@ -101,7 +96,8 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFilePathFailed) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileArgsNullptr) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileArgsNullptr)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/var/";
     std::string soName = "libcust_aicpu.so";
@@ -109,7 +105,8 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileArgsNullptr) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileSoBufNullptr) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileSoBufNullptr)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/var/";
     LoadOpFromBufArgs args = {};
@@ -119,7 +116,8 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileSoBufNullptr) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileSoNameNullptr) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileSoNameNullptr)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/var/";
     LoadOpFromBufArgs args = {};
@@ -132,7 +130,8 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndCreateSoFileSoNameNullptr) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoPathFailed) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoPathFailed)
+{
     AicpuCustSoManager soManager;
     LoadOpFromBufArgs args = {};
     args.kernelSoBuf = 0UL;
@@ -140,14 +139,16 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoPathFailed) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileArgsNullptr) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileArgsNullptr)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/var/";
     const int32_t ret = soManager.CheckAndDeleteSoFile(nullptr);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoNameNullptr) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoNameNullptr)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/var/";
     LoadOpFromBufArgs args = {};
@@ -158,7 +159,8 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoNameNullptr) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoPathInvalid) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoPathInvalid)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/var/";
     LoadOpFromBufArgs args = {};
@@ -173,23 +175,26 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteSoFileSoPathInvalid) {
     EXPECT_EQ(ret, 1);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteCustSoDirPathFailed) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteCustSoDirPathFailed)
+{
     AicpuCustSoManager soManager;
     const int32_t ret = soManager.CheckAndDeleteCustSoDir();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileSoNameInvalid) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileSoNameInvalid)
+{
     AicpuCustSoManager soManager;
     const char buf;
     const size_t bufLen = 1;
     const std::string soName = "?????";
-    FileInfo fileInfo = {.data=&buf, .size=bufLen, .name=soName};
+    FileInfo fileInfo = {.data = &buf, .size = bufLen, .name = soName};
     const int32_t ret = soManager.CreateSoFile(fileInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_PARAMETER_NOT_VALID);
 }
 
-TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoVfId) {
+TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoVfId)
+{
     AicpuCustSoManager soManager;
     soManager.runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
     std::string dirName = "tmp";
@@ -198,21 +203,24 @@ TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoVfId) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidPathTooLong) {
+TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidPathTooLong)
+{
     AicpuCustSoManager soManager;
-    const std::string dirName(PATH_MAX+1, 'A');
+    const std::string dirName(PATH_MAX + 1, 'A');
     const int32_t ret = soManager.CheckSoFullPathValid(dirName);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidPathInvalid) {
+TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidPathInvalid)
+{
     AicpuCustSoManager soManager;
     const std::string dirName(10, 'A');
     const int32_t ret = soManager.CheckSoFullPathValid(dirName);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidSuccess) {
+TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidSuccess)
+{
     AicpuCustSoManager soManager;
     std::string dirName("/");
     MOCKER(realpath).stubs().will(returnValue(const_cast<char*>(dirName.data())));
@@ -220,13 +228,15 @@ TEST_F(AicpuCustSoManagerTEST, CheckSoFullPathValidSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDirPathInvalid) {
+TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDirPathInvalid)
+{
     AicpuCustSoManager soManager;
     const int32_t ret = soManager.DeleteCustSoDir();
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDirPathSuccess) {
+TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDirPathSuccess)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/aicpu_test";
     MOCKER(access).stubs().will(returnValue(0));
@@ -235,7 +245,8 @@ TEST_F(AicpuCustSoManagerTEST, DeleteCustSoDirPathSuccess) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, RemoveSoFileAccessFail) {
+TEST_F(AicpuCustSoManagerTEST, RemoveSoFileAccessFail)
+{
     AicpuCustSoManager soManager;
     const std::string dirName = "/aicpu_test";
     const std::string soFullPath = "/aicpu_test";
@@ -245,7 +256,8 @@ TEST_F(AicpuCustSoManagerTEST, RemoveSoFileAccessFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, RemoveSoFileChmodFail) {
+TEST_F(AicpuCustSoManagerTEST, RemoveSoFileChmodFail)
+{
     AicpuCustSoManager soManager;
     const std::string dirName = "/aicpu_test";
     const std::string soFullPath = "/aicpu_test";
@@ -256,7 +268,8 @@ TEST_F(AicpuCustSoManagerTEST, RemoveSoFileChmodFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, RemoveSoFileRemoveFail) {
+TEST_F(AicpuCustSoManagerTEST, RemoveSoFileRemoveFail)
+{
     AicpuCustSoManager soManager;
     const std::string dirName = "/aicpu_test";
     const std::string soFullPath = "/aicpu_test";
@@ -268,16 +281,20 @@ TEST_F(AicpuCustSoManagerTEST, RemoveSoFileRemoveFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, DeleteSoFileRemoveFileFail) {
+TEST_F(AicpuCustSoManagerTEST, DeleteSoFileRemoveFileFail)
+{
     AicpuCustSoManager soManager;
     soManager.runMode_ = aicpu::AicpuRunMode::THREAD_MODE;
 
-    MOCKER_CPP(&AicpuCustSoManager::RemoveSoFile).stubs().will(returnValue(static_cast<int32_t>(AICPU_SCHEDULE_ERROR_INNER_ERROR)));
+    MOCKER_CPP(&AicpuCustSoManager::RemoveSoFile)
+        .stubs()
+        .will(returnValue(static_cast<int32_t>(AICPU_SCHEDULE_ERROR_INNER_ERROR)));
     const int32_t ret = soManager.DeleteSoFile("/home/home/home", "soFullPath");
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, DeleteSoFileCloseFail) {
+TEST_F(AicpuCustSoManagerTEST, DeleteSoFileCloseFail)
+{
     AicpuCustSoManager soManager;
     soManager.runMode_ = aicpu::AicpuRunMode::THREAD_MODE;
 
@@ -287,20 +304,23 @@ TEST_F(AicpuCustSoManagerTEST, DeleteSoFileCloseFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckDirEmptyDirNullptr) {
+TEST_F(AicpuCustSoManagerTEST, CheckDirEmptyDirNullptr)
+{
     AicpuCustSoManager soManager;
     const bool ret = soManager.CheckDirEmpty("/aicputesttesttest");
     EXPECT_EQ(ret, false);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckOrMakeDirectoryMkdirFail) {
+TEST_F(AicpuCustSoManagerTEST, CheckOrMakeDirectoryMkdirFail)
+{
     AicpuCustSoManager soManager;
     MOCKER(mkdir).stubs().will(returnValue(-1));
     const int32_t ret = soManager.CheckOrMakeDirectory("/aicpu_test/aicpu_test");
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckOrMakeDirectoryChmodFail) {
+TEST_F(AicpuCustSoManagerTEST, CheckOrMakeDirectoryChmodFail)
+{
     AicpuCustSoManager soManager;
     MOCKER(mkdir).stubs().will(returnValue(0));
     MOCKER(chmod).stubs().will(returnValue(-1));
@@ -308,7 +328,8 @@ TEST_F(AicpuCustSoManagerTEST, CheckOrMakeDirectoryChmodFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoThreadDirEmpty) {
+TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoThreadDirEmpty)
+{
     AicpuCustSoManager soManager;
     soManager.runMode_ = aicpu::AicpuRunMode::THREAD_MODE;
 
@@ -319,7 +340,8 @@ TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoThreadDirEmpty) {
     unsetenv(ENV_NAME_CUST_SO_PATH.c_str());
 }
 
-TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoThreadGetEnvFail) {
+TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoThreadGetEnvFail)
+{
     AicpuCustSoManager soManager;
     soManager.runMode_ = aicpu::AicpuRunMode::THREAD_MODE;
 
@@ -329,32 +351,36 @@ TEST_F(AicpuCustSoManagerTEST, GetPathForCustAicpuSoThreadGetEnvFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileMkdirFail) {
+TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileMkdirFail)
+{
     AicpuCustSoManager soManager;
-    FileInfo fileInfo = {.data=nullptr, .size=0, .name="libtest.so"};
+    FileInfo fileInfo = {.data = nullptr, .size = 0, .name = "libtest.so"};
     std::string filePath = "/tmp/libtest.so";
     const int32_t ret = soManager.WriteBufToSoFile(fileInfo, filePath);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileCheckPathFail) {
+TEST_F(AicpuCustSoManagerTEST, WriteBufToSoFileCheckPathFail)
+{
     AicpuCustSoManager soManager;
 
     MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(0));
-    FileInfo fileInfo = {.data=nullptr, .size=0, .name="libtest.so"};
+    FileInfo fileInfo = {.data = nullptr, .size = 0, .name = "libtest.so"};
     std::string filePath = "/tmp/libtest.so";
     const int32_t ret = soManager.WriteBufToSoFile(fileInfo, filePath);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileWriteFail) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileWriteFail)
+{
     AicpuCustSoManager soManager;
-    FileInfo fileInfo = {.data=nullptr, .size=0, .name="libtest.so"};
+    FileInfo fileInfo = {.data = nullptr, .size = 0, .name = "libtest.so"};
     const int32_t ret = soManager.CreateSoFile(fileInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteCustSoDirRemoveFail) {
+TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteCustSoDirRemoveFail)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/aicpu1testtesttest";
 
@@ -365,14 +391,15 @@ TEST_F(AicpuCustSoManagerTEST, CheckAndDeleteCustSoDirRemoveFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieMode) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieMode)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/home/CustAiCpuUser/cust_aicpu_0_0_238463/";
     soManager.runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
 
     const char buf = 'a';
     const size_t bufLen = 1;
-    FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
+    FileInfo fileInfo = {.data = &buf, .size = bufLen, .name = "libtest.so"};
 
     MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(0));
     MOCKER_CPP(&AicpuCustSoManager::CheckSoFullPathValid).stubs().will(returnValue(0));
@@ -380,17 +407,18 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieMode) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFile) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFile)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/home/CustAiCpuUser/cust_aicpu_0_0_238463/";
     soManager.runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
 
     const char buf = 'a';
     const size_t bufLen = 1;
-    FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
+    FileInfo fileInfo = {.data = &buf, .size = bufLen, .name = "libtest.so"};
 
     const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
-    FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
+    FileHashInfo hashInfo = {.filePath = "libtest.so", .fileSize = bufLen, .hashValue = hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
     MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(0));
@@ -401,17 +429,18 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFile) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileSoNotExist) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileSoNotExist)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/home/CustAiCpuUser/cust_aicpu_0_0_238463/";
     soManager.runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
 
     const char buf = 'a';
     const size_t bufLen = 1;
-    FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
+    FileInfo fileInfo = {.data = &buf, .size = bufLen, .name = "libtest.so"};
 
     const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
-    FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
+    FileHashInfo hashInfo = {.filePath = "libtest.so", .fileSize = bufLen, .hashValue = hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
     MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(0));
@@ -422,17 +451,18 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileSoNotExist) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileLinkExist) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileLinkExist)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/home/CustAiCpuUser/cust_aicpu_0_0_238463/";
     soManager.runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
 
     const char buf = 'a';
     const size_t bufLen = 1;
-    FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
+    FileInfo fileInfo = {.data = &buf, .size = bufLen, .name = "libtest.so"};
 
     const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
-    FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
+    FileHashInfo hashInfo = {.filePath = "libtest.so", .fileSize = bufLen, .hashValue = hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
     MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(0));
@@ -443,17 +473,18 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileLinkExist) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
 }
 
-TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileCheckDirFailed) {
+TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileCheckDirFailed)
+{
     AicpuCustSoManager soManager;
     soManager.custSoDirName_ = "/home/CustAiCpuUser/cust_aicpu_0_0_238463/";
     soManager.runMode_ = aicpu::AicpuRunMode::PROCESS_PCIE_MODE;
 
     const char buf = 'a';
     const size_t bufLen = 1;
-    FileInfo fileInfo = {.data=&buf, .size=bufLen, .name="libtest.so"};
+    FileInfo fileInfo = {.data = &buf, .size = bufLen, .name = "libtest.so"};
 
     const uint64_t hashVal = soManager.hashCalculator_.GetQuickHash(&buf, bufLen);
-    FileHashInfo hashInfo = {.filePath="libtest.so", .fileSize=bufLen, .hashValue=hashVal};
+    FileHashInfo hashInfo = {.filePath = "libtest.so", .fileSize = bufLen, .hashValue = hashVal};
     soManager.hashCalculator_.cache_.emplace_back(hashInfo);
 
     MOCKER_CPP(&AicpuCustSoManager::CheckOrMakeDirectory).stubs().will(returnValue(AICPU_SCHEDULE_ERROR_INNER_ERROR));
@@ -464,14 +495,16 @@ TEST_F(AicpuCustSoManagerTEST, CreateSoFileInPcieModeFindSameFileCheckDirFailed)
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, TestQuickHash) {
+TEST_F(AicpuCustSoManagerTEST, TestQuickHash)
+{
     HashCalculator calculator;
     std::string data = "aaaaaaaaaaaaaaaaa";
     uint64_t hash = calculator.GetQuickHash(data.c_str(), data.size());
     EXPECT_EQ(hash, 12846934374798548220);
 }
 
-TEST_F(AicpuCustSoManagerTEST, GenerateFileHashInfoFail) {
+TEST_F(AicpuCustSoManagerTEST, GenerateFileHashInfoFail)
+{
     HashCalculator calculator;
 
     const std::string filePath = "libtest.so";
@@ -481,7 +514,8 @@ TEST_F(AicpuCustSoManagerTEST, GenerateFileHashInfoFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, GenerateFileHashInfoOpFileFail) {
+TEST_F(AicpuCustSoManagerTEST, GenerateFileHashInfoOpFileFail)
+{
     HashCalculator calculator;
 
     const std::string filePath = "libtest.so";
@@ -492,15 +526,17 @@ TEST_F(AicpuCustSoManagerTEST, GenerateFileHashInfoOpFileFail) {
     EXPECT_EQ(ret, AICPU_SCHEDULE_ERROR_INNER_ERROR);
 }
 
-TEST_F(AicpuCustSoManagerTEST, IsFileInCacheSuccess) {
+TEST_F(AicpuCustSoManagerTEST, IsFileInCacheSuccess)
+{
     HashCalculator calculator;
-    FileHashInfo fileInfo = {.filePath="test"};
+    FileHashInfo fileInfo = {.filePath = "test"};
     calculator.cache_.emplace_back(fileInfo);
     EXPECT_TRUE(calculator.IsFileInCache("test"));
     EXPECT_FALSE(calculator.IsFileInCache("test1"));
 }
 
-TEST_F(AicpuCustSoManagerTEST, FileLockerSuccessTest) {
+TEST_F(AicpuCustSoManagerTEST, FileLockerSuccessTest)
+{
     CustSoFileLock fileLock;
     fileLock.locker_ = 1;
 
@@ -510,7 +546,8 @@ TEST_F(AicpuCustSoManagerTEST, FileLockerSuccessTest) {
     fileLock.UnlockFileLocker();
 }
 
-TEST_F(AicpuCustSoManagerTEST, FileLockerFailTest) {
+TEST_F(AicpuCustSoManagerTEST, FileLockerFailTest)
+{
     CustSoFileLock fileLock;
     fileLock.locker_ = 1;
 

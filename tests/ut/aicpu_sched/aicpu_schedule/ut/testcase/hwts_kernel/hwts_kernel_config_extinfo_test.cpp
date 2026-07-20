@@ -29,7 +29,8 @@ protected:
     ConfigExtInfoTsKernel kernel_;
 };
 
-TEST_F(ConfigExtInfoKernelTest, TsKernelCfgExtInfo_success) {
+TEST_F(ConfigExtInfoKernelTest, TsKernelCfgExtInfo_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     AicpuExtendInfo cfgMsg;
     cfgMsg.msgType = static_cast<uint8_t>(AicpuExtInfoMsgType::EXT_MODEL_ID_MSG_TYPE);
@@ -42,7 +43,8 @@ TEST_F(ConfigExtInfoKernelTest, TsKernelCfgExtInfo_success) {
     AicpuModelManager::GetInstance().allModel_[0].isValid = false;
 }
 
-TEST_F(ConfigExtInfoKernelTest, TsKernelCfgExtInfo_failed) {
+TEST_F(ConfigExtInfoKernelTest, TsKernelCfgExtInfo_failed)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     AicpuExtendInfo cfgMsg;
     cfgMsg.modelIdMap.modelId = 0U;

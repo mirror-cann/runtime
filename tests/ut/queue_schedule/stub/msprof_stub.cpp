@@ -16,7 +16,7 @@
 namespace qstest {
 ProfCommandHandle g_profCallback = nullptr;
 
-int32_t RunMsprofCallback(uint32_t type, void *data, uint32_t len)
+int32_t RunMsprofCallback(uint32_t type, void* data, uint32_t len)
 {
     if (g_profCallback == nullptr) {
         BQS_LOG_ERROR("Prof callback is nullptr, type=%u", type);
@@ -27,20 +27,16 @@ int32_t RunMsprofCallback(uint32_t type, void *data, uint32_t len)
 }
 } // namespace qstest
 
-
-int32_t MsprofInit(uint32_t dataType, void *data, uint32_t dataLen)
+int32_t MsprofInit(uint32_t dataType, void* data, uint32_t dataLen)
 {
     BQS_LOG_INFO("In %s, dataType=%u", __func__, dataType);
 
     return 0;
 }
 
-int32_t MsprofFinalize()
-{
-    return 0;
-}
+int32_t MsprofFinalize() { return 0; }
 
-int32_t MsprofRegTypeInfo(uint16_t level, uint32_t typeId, const char *typeName)
+int32_t MsprofRegTypeInfo(uint16_t level, uint32_t typeId, const char* typeName)
 {
     BQS_LOG_INFO("In %s, typeId=%u", __func__, typeId);
 
@@ -55,22 +51,24 @@ int32_t MsprofRegisterCallback(uint32_t moduleId, ProfCommandHandle handle)
     return 0;
 }
 
-int32_t MsprofReportApi(uint32_t agingFlag, const MsprofApi *api)
+int32_t MsprofReportApi(uint32_t agingFlag, const MsprofApi* api)
 {
     BQS_LOG_INFO("In %s, agingFlag=%u", __func__, agingFlag);
 
-    BQS_LOG_INFO("level=%u, type=%u, threadId=%u, beginTime=%lu, endTime=%lu, itemId=%lu",
-                 api->level, api->type, api->threadId, api->beginTime, api->endTime, api->itemId);
+    BQS_LOG_INFO(
+        "level=%u, type=%u, threadId=%u, beginTime=%lu, endTime=%lu, itemId=%lu", api->level, api->type, api->threadId,
+        api->beginTime, api->endTime, api->itemId);
 
     return 0;
 }
 
-int32_t MsprofReportEvent(uint32_t agingFlag, const MsprofEvent *event)
+int32_t MsprofReportEvent(uint32_t agingFlag, const MsprofEvent* event)
 {
     BQS_LOG_INFO("In %s, agingFlag=%u", __func__, agingFlag);
 
-    BQS_LOG_INFO("level=%u, type=%u, threadId=%u, requestId=%u, timeStamp=%lu, itemId=%lu",
-                 event->level, event->type, event->threadId, event->requestId, event->timeStamp, event->itemId);
+    BQS_LOG_INFO(
+        "level=%u, type=%u, threadId=%u, requestId=%u, timeStamp=%lu, itemId=%lu", event->level, event->type,
+        event->threadId, event->requestId, event->timeStamp, event->itemId);
     return 0;
 }
 

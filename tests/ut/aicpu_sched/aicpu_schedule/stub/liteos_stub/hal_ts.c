@@ -11,67 +11,40 @@
 #include "hal_ts.h"
 #include "file_if.h"
 
-drvError_t halEschedWaitEvent(uint32_t tId, void *outInfo, uint32_t *infotype,
-    uint32_t *ctrlinfo,  uint32_t *outsize, int32_t timeout)
-{
-    return DRV_ERROR_NONE;
-}
- 
-drvError_t halEschedAckEvent(uint32_t infoType, uint32_t ctrlInfo)
+drvError_t halEschedWaitEvent(
+    uint32_t tId, void* outInfo, uint32_t* infotype, uint32_t* ctrlinfo, uint32_t* outsize, int32_t timeout)
 {
     return DRV_ERROR_NONE;
 }
 
-int32_t file_create(char *filename, size_t size)
-{
-    return 0;
-}
+drvError_t halEschedAckEvent(uint32_t infoType, uint32_t ctrlInfo) { return DRV_ERROR_NONE; }
 
-file_t *file_open(const char *filename, const char *mode)
+int32_t file_create(char* filename, size_t size) { return 0; }
+
+file_t* file_open(const char* filename, const char* mode)
 {
-    file_t *a;
+    file_t* a;
     return a;
 }
 
-int32_t file_close(file_t *file)
-{
-    return 0;
-}
+int32_t file_close(file_t* file) { return 0; }
 
-size_t file_read(void *dst, size_t size, size_t nmemb, file_t *file)
-{
-    return 0;
-}
+size_t file_read(void* dst, size_t size, size_t nmemb, file_t* file) { return 0; }
 
-size_t file_write(const void *src, size_t size, size_t nmemb, file_t *file)
-{
-    return nmemb;
-}
+size_t file_write(const void* src, size_t size, size_t nmemb, file_t* file) { return nmemb; }
 
-int32_t file_seek(file_t *file, long offset, int32_t whence)
-{
-    return 0;
-}
+int32_t file_seek(file_t* file, long offset, int32_t whence) { return 0; }
 
-long int file_tell(file_t *file)
-{
-    return 0;
-}
+long int file_tell(file_t* file) { return 0; }
 
-uint32_t LOS_CurTaskIDGet(void)
-{
-    return 0;
-}
-drvError_t halHostMemAlloc(void **pp, unsigned long long size, unsigned long long flag)
+uint32_t LOS_CurTaskIDGet(void) { return 0; }
+drvError_t halHostMemAlloc(void** pp, unsigned long long size, unsigned long long flag)
 {
     *pp = malloc(size);
     return 0;
 }
-void drv_uart_send(const char *fmt, ...)
-{
-    return;
-}
-drvError_t halHostMemFree(void *p)
+void drv_uart_send(const char* fmt, ...) { return; }
+drvError_t halHostMemFree(void* p)
 {
     free(p);
     return 0;

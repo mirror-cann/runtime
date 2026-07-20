@@ -47,18 +47,11 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ChipContextTest : public testing::Test
-{
+class ChipContextTest : public testing::Test {
 protected:
-    static void SetUpTestCase()
-    {
+    static void SetUpTestCase() {}
 
-    }
-
-    static void TearDownTestCase()
-    {
-
-    }
+    static void TearDownTestCase() {}
 
     virtual void SetUp()
     {
@@ -81,18 +74,18 @@ TEST_F(ChipContextTest, PrimaryContextRetain_test)
     GlobalMockObject::verify();
     int32_t devId;
     rtError_t error;
-    Context *ctx;
+    Context* ctx;
 
     error = rtGetDevice(&devId);
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     EXPECT_NE(device, nullptr);
     device->Init();
     rtStream_t stm;
     error = rtStreamCreate(&stm, 0);
     EXPECT_NE(stm, nullptr);
 
-    RefObject<Context*> *refObject = NULL;
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    RefObject<Context*>* refObject = NULL;
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     Runtime::Instance()->timeoutConfig_.isCfgOpExcTaskTimeout = true;
     Runtime::Instance()->timeoutConfig_.opExcTaskTimeout = 1000;
@@ -117,36 +110,31 @@ TEST_F(ChipContextTest, ReduceAsync_test)
     GlobalMockObject::verify();
     int32_t devId;
     rtError_t error;
-    Context *ctx;
+    Context* ctx;
 
     error = rtGetDevice(&devId);
-    RawDevice *device = new RawDevice(0);
+    RawDevice* device = new RawDevice(0);
     EXPECT_NE(device, nullptr);
     device->Init();
-    Stream *stream = new Stream(device, 0);
+    Stream* stream = new Stream(device, 0);
     EXPECT_NE(stream, nullptr);
-    RefObject<Context*> *refObject = NULL;
-    refObject = (RefObject<Context*> *)((Runtime *)Runtime::Instance())->PrimaryContextRetain(devId);
+    RefObject<Context*>* refObject = NULL;
+    refObject = (RefObject<Context*>*)((Runtime*)Runtime::Instance())->PrimaryContextRetain(devId);
     EXPECT_NE(refObject, nullptr);
     ctx = refObject->GetVal();
     stream->SetContext(ctx);
 
     int tempMemory;
     auto preVal = stream->taskResMang_;
-    stream->taskResMang_ = reinterpret_cast<TaskResManage *>(&tempMemory);
+    stream->taskResMang_ = reinterpret_cast<TaskResManage*>(&tempMemory);
 
     MOCKER_CPP_VIRTUAL(ctx->device_, &Device::SubmitTask).stubs().will(returnValue(1)).then(returnValue(RT_ERROR_NONE));
     MOCKER_CPP(&TaskFactory::Recycle).stubs().will(returnValue(RT_ERROR_NONE));
-    MOCKER(MemcpyAsyncTaskInitV3)
-        .stubs()
-        .will(returnValue(1))
-        .then(returnValue(RT_ERROR_NONE));
+    MOCKER(MemcpyAsyncTaskInitV3).stubs().will(returnValue(1)).then(returnValue(RT_ERROR_NONE));
     stream->streamId_ = MAX_INT32_NUM;
-    MOCKER_CPP_VIRTUAL(ctx->device_, &Device::GetDeviceCapabilities)
-        .stubs()
-        .will(returnValue(RT_ERROR_NONE));
+    MOCKER_CPP_VIRTUAL(ctx->device_, &Device::GetDeviceCapabilities).stubs().will(returnValue(RT_ERROR_NONE));
 
-    Runtime *rtInstance = (Runtime *)Runtime::Instance();
+    Runtime* rtInstance = (Runtime*)Runtime::Instance();
     rtChipType_t chipType = rtInstance->GetChipType();
     rtInstance->SetChipType(CHIP_DC);
     GlobalContainer::SetRtChipType(CHIP_DC);
@@ -155,7 +143,7 @@ TEST_F(ChipContextTest, ReduceAsync_test)
     rtInstance->SetChipType(chipType);
     GlobalContainer::SetRtChipType(chipType);
 
-    (void)((Runtime *)Runtime::Instance())->PrimaryContextRelease(devId);
+    (void)((Runtime*)Runtime::Instance())->PrimaryContextRelease(devId);
     stream->taskResMang_ = preVal;
     delete stream;
     delete device;

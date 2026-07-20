@@ -73,10 +73,7 @@ public:
         req.size = reqLength;
     }
 
-    void DelRequest(EzcomRequest& req)
-    {
-        delete[](char*)(req.data);
-    }
+    void DelRequest(EzcomRequest& req) { delete[] (char*)(req.data); }
 
     void DelAllBindRelation()
     {
@@ -84,15 +81,15 @@ public:
         auto& bindRelation = bqs::BindRelation::GetInstance();
         auto& dstToSrcRelation = bindRelation.GetDstToSrcRelation();
         for (auto& relation : dstToSrcRelation) {
-            const auto &dstId = relation.first;
-            for (auto srcId : relation.second){
+            const auto& dstId = relation.first;
+            for (auto srcId : relation.second) {
                 allRelation.emplace_back(std::make_tuple(srcId, dstId));
             }
         }
 
         for (auto& relation : allRelation) {
-            auto &srcId = std::get<0>(relation);
-            auto &dstId = std::get<1>(relation);
+            auto& srcId = std::get<0>(relation);
+            auto& dstId = std::get<1>(relation);
             bqs::BqsStatus ret = bindRelation.UnBind(srcId, dstId);
             EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
         }
@@ -122,11 +119,11 @@ int EzcomRegisterServiceHandlerFake(int fd, void (*handler)(int, struct EzcomReq
     return 0;
 }
 
-int EzcomCreateServerFake(const struct EzcomServerAttr *attr)
+int EzcomCreateServerFake(const struct EzcomServerAttr* attr)
 {
     std::cout << "default EzcomCreateServer stub" << std::endl;
     if ((attr != nullptr) && (attr->handler != nullptr)) {
-      g_msgProc = attr->handler;
+        g_msgProc = attr->handler;
     }
     return 0;
 }
@@ -141,14 +138,13 @@ bqs::BqsStatus EnqueueRelationEventFake()
     return bqs::BQS_STATUS_OK;
 }
 
-void BqsCheckAssign32UAddStubOverFlow(const uint32_t para1,
-    const uint32_t para2, uint32_t &result, bool &onceOverFlow)
+void BqsCheckAssign32UAddStubOverFlow(const uint32_t para1, const uint32_t para2, uint32_t& result, bool& onceOverFlow)
 {
     onceOverFlow = true;
     return;
 }
 
-}  // namespace
+} // namespace
 
 TEST_F(BQS_SERVER_UTest, InitSuccess1)
 {
@@ -163,7 +159,7 @@ TEST_F(BQS_SERVER_UTest, RpcHandlerSuccess)
 
     MOCKER_CPP(&bqs::BqsServer::HandleBqsReqMsg).stubs().will(returnValue(0));
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
     bqs::BqsStatus ret = bqs::BqsServer::GetInstance().InitBqsServer("DEFAULT", 0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -181,11 +177,11 @@ TEST_F(BQS_SERVER_UTest, HandleBqsGetBindMsgSuccess)
     MOCKER(EzcomRegisterServiceHandler).stubs().will(invoke(EzcomRegisterServiceHandlerFake));
     MOCKER(EzcomCreateServer).stubs().will(invoke(EzcomCreateServerFake));
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
-    //MOCKER_CPP(&bqs::BqsServer::ParseGetBindMsg).stubs().will(returnValue(0));
+    // MOCKER_CPP(&bqs::BqsServer::ParseGetBindMsg).stubs().will(returnValue(0));
 
     bqs::BqsStatus ret = bqs::BqsServer::GetInstance().InitBqsServer("DEFAULT", 0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -203,11 +199,11 @@ TEST_F(BQS_SERVER_UTest, HandleBqsGetAllBindMsgSuccess)
     MOCKER(EzcomRegisterServiceHandler).stubs().will(invoke(EzcomRegisterServiceHandlerFake));
     MOCKER(EzcomCreateServer).stubs().will(invoke(EzcomCreateServerFake));
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
-    //MOCKER_CPP(&bqs::BqsServer::ParseGetPagedBindMsg).stubs().will(returnValue(0));
+    // MOCKER_CPP(&bqs::BqsServer::ParseGetPagedBindMsg).stubs().will(returnValue(0));
 
     bqs::BqsStatus ret = bqs::BqsServer::GetInstance().InitBqsServer("DEFAULT", 0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -225,7 +221,7 @@ TEST_F(BQS_SERVER_UTest, HandleBqsWaitBindMsgSuccess)
     MOCKER(EzcomRegisterServiceHandler).stubs().will(invoke(EzcomRegisterServiceHandlerFake));
     MOCKER(EzcomCreateServer).stubs().will(invoke(EzcomCreateServerFake));
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
     MOCKER_CPP(&bqs::BqsServer::WaitBindMsgProc).stubs().will(returnValue(0));
 
@@ -259,7 +255,7 @@ TEST_F(BQS_SERVER_UTest, HandleBqsMsgUnsupportFailed)
     MOCKER(EzcomRegisterServiceHandler).stubs().will(invoke(EzcomRegisterServiceHandlerFake));
     MOCKER(EzcomCreateServer).stubs().will(invoke(EzcomCreateServerFake));
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
     bqs::BqsStatus ret = bqs::BqsServer::GetInstance().InitBqsServer("DEFAULT", 0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -277,7 +273,7 @@ TEST_F(BQS_SERVER_UTest, HandleBqsMsgCheckSizeFailed)
     MOCKER(EzcomRegisterServiceHandler).stubs().will(invoke(EzcomRegisterServiceHandlerFake));
     MOCKER(EzcomCreateServer).stubs().will(invoke(EzcomCreateServerFake));
 
-    //MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
+    // MOCKER_CPP(&bqs::BqsServer::SendRspMsg).stubs().will(ignoreReturnValue());
 
     bqs::BqsStatus ret = bqs::BqsServer::GetInstance().InitBqsServer("DEFAULT", 0);
     EXPECT_EQ(ret, bqs::BQS_STATUS_OK);
@@ -296,9 +292,7 @@ TEST_F(BQS_SERVER_UTest, ParseGetBindMsgBySrcSuccess)
     bqs::BqsServer::GetInstance().SendRspMsg(0, 0);
     MOCKER(EzcomSendResponse).stubs().will(returnValue(-1));
     bqs::BqsServer::GetInstance().SendRspMsg(0, 0);
-    MOCKER(BqsCheckAssign32UAdd)
-        .stubs()
-        .will(invoke(BqsCheckAssign32UAddStubOverFlow));
+    MOCKER(BqsCheckAssign32UAdd).stubs().will(invoke(BqsCheckAssign32UAddStubOverFlow));
     bqs::BqsServer::GetInstance().SendRspMsg(0, 0);
     bqs::BQSMsg bqsReqMsg;
 
@@ -708,7 +702,7 @@ TEST_F(BQS_SERVER_UTest, ParseUnbindMsgByUnsupportedFailed)
 
 TEST_F(BQS_SERVER_UTest, SerializeGetBindRspBySrc)
 {
-    auto &bindRelation = bqs::BindRelation::GetInstance();
+    auto& bindRelation = bqs::BindRelation::GetInstance();
     auto src = bqs::EntityInfo(1U, 0U);
     auto dst = bqs::EntityInfo(2U, 0U);
     auto abnormalDst = bqs::EntityInfo(3U, 0U);
@@ -717,7 +711,7 @@ TEST_F(BQS_SERVER_UTest, SerializeGetBindRspBySrc)
 
     bqs::BQSMsg responseMsg;
     bqs::BqsServer::GetInstance().SerializeGetBindRspBySrc(1U, responseMsg);
-    const auto &bindQueMsg = responseMsg.bind_queue_msgs();
+    const auto& bindQueMsg = responseMsg.bind_queue_msgs();
     EXPECT_EQ(bindQueMsg.bind_queue_vec().size(), 2);
     bindRelation.srcToDstRelation_.clear();
     bindRelation.abnormalSrcToDst_.clear();
@@ -725,7 +719,7 @@ TEST_F(BQS_SERVER_UTest, SerializeGetBindRspBySrc)
 
 TEST_F(BQS_SERVER_UTest, SerializeGetBindRspByDst)
 {
-    auto &bindRelation = bqs::BindRelation::GetInstance();
+    auto& bindRelation = bqs::BindRelation::GetInstance();
     auto dst = bqs::EntityInfo(1U, 0U);
     auto src = bqs::EntityInfo(2U, 0U);
     auto abnormalSrc = bqs::EntityInfo(3U, 0U);
@@ -734,7 +728,7 @@ TEST_F(BQS_SERVER_UTest, SerializeGetBindRspByDst)
 
     bqs::BQSMsg responseMsg;
     bqs::BqsServer::GetInstance().SerializeGetBindRspByDst(1U, responseMsg);
-    const auto &bindQueMsg = responseMsg.bind_queue_msgs();
+    const auto& bindQueMsg = responseMsg.bind_queue_msgs();
     EXPECT_EQ(bindQueMsg.bind_queue_vec().size(), 2);
     bindRelation.dstToSrcRelation_.clear();
     bindRelation.abnormalDstToSrc_.clear();
@@ -745,8 +739,8 @@ TEST_F(BQS_SERVER_UTest, AppendRelations)
     std::vector<std::tuple<uint32_t, uint32_t>> relations;
     relations.emplace_back(std::make_pair(1U, 2U));
 
-    std::unordered_map<bqs::EntityInfo,
-        std::unordered_set<bqs::EntityInfo, bqs::EntityInfoHash>, bqs::EntityInfoHash> srcMap;
+    std::unordered_map<bqs::EntityInfo, std::unordered_set<bqs::EntityInfo, bqs::EntityInfoHash>, bqs::EntityInfoHash>
+        srcMap;
     auto src1 = bqs::EntityInfo(3U, 0U);
     auto dst1 = bqs::EntityInfo(4U, 0U);
     auto src2 = bqs::EntityInfo(5U, 0U);

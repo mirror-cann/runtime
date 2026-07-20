@@ -11,14 +11,16 @@
 #include "bqs_log.h"
 
 namespace Hiva {
-void Marker(const QueueScheduleTrack enqueEventTrack) {
-    BQS_LOG_ERROR("Time out info:{event:%u, state:%u, schedTimes:%lu, schedDelay:%lu, startStamp:%lu, "
+void Marker(const QueueScheduleTrack enqueEventTrack)
+{
+    BQS_LOG_ERROR(
+        "Time out info:{event:%u, state:%u, schedTimes:%lu, schedDelay:%lu, startStamp:%lu, "
         "dequeueNum:%lu, dequeueCost:%lu, enqueueNum:%lu, enqueueCost:%lu, copyCost:%lu, statusAndDepthCost:%lu, "
         "fullQueueNum:%u, srcQueueNum:%u, relationCost:%lu, f2NFCost:%lu, totalCost:%lu}",
         enqueEventTrack.event, enqueEventTrack.state, enqueEventTrack.schedTimes, enqueEventTrack.schedDelay,
-        enqueEventTrack.startStamp, enqueEventTrack.dequeueNum, enqueEventTrack.dequeueCost,
-        enqueEventTrack.enqueueNum, enqueEventTrack.enqueueCost, enqueEventTrack.copyCost,
-        enqueEventTrack.statusAndDepthCost, enqueEventTrack.fullQueueNum, enqueEventTrack.srcQueueNum,
-        enqueEventTrack.relationCost, enqueEventTrack.f2NFCost, enqueEventTrack.totalCost);
+        enqueEventTrack.startStamp, enqueEventTrack.dequeueNum, enqueEventTrack.dequeueCost, enqueEventTrack.enqueueNum,
+        enqueEventTrack.enqueueCost, enqueEventTrack.copyCost, enqueEventTrack.statusAndDepthCost,
+        enqueEventTrack.fullQueueNum, enqueEventTrack.srcQueueNum, enqueEventTrack.relationCost,
+        enqueEventTrack.f2NFCost, enqueEventTrack.totalCost);
 }
-}
+} // namespace Hiva

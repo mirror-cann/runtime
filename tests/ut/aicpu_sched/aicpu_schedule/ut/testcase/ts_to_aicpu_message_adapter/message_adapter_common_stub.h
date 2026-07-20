@@ -84,42 +84,46 @@ inline TsAicpuMsgInfo expMsg_;
 inline TsAicpuSqe expSqe_;
 constexpr int32_t MAX_MSG_LEN = 128;
 // tsDevSendMsgAsync
-inline int32_t SqetsDevSendMsgAsyncStub(unsigned int devId, unsigned int tsId, char *msg, unsigned int msgLen, unsigned handleId)
+inline int32_t SqetsDevSendMsgAsyncStub(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned handleId)
 {
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(msg);
     EXPECT_EQ(std::memcmp(ctrlMsg, &expSqe_, sizeof(TsAicpuSqe)), 0);
     return AICPU_SCHEDULE_OK;
 }
 
-inline int32_t MsgInfotsDevSendMsgAsyncStub(unsigned int devId, unsigned int tsId, char *msg, unsigned int msgLen, unsigned handleId)
+inline int32_t MsgInfotsDevSendMsgAsyncStub(
+    unsigned int devId, unsigned int tsId, char* msg, unsigned int msgLen, unsigned handleId)
 {
-    TsAicpuMsgInfo *ctrlMsg = reinterpret_cast<TsAicpuMsgInfo *>(msg);
+    TsAicpuMsgInfo* ctrlMsg = reinterpret_cast<TsAicpuMsgInfo*>(msg);
     EXPECT_EQ(std::memcmp(ctrlMsg, &expMsg_, sizeof(TsAicpuMsgInfo)), 0);
     return AICPU_SCHEDULE_OK;
 }
 
 // halEschedAckEvent
 
-inline int32_t SqehalEschedAckEventStub(uint32_t devId, EVENT_ID eventId, uint32_t subeventId, char *msg, uint32_t msgLen)
+inline int32_t SqehalEschedAckEventStub(
+    uint32_t devId, EVENT_ID eventId, uint32_t subeventId, char* msg, uint32_t msgLen)
 {
-    hwts_response_t *hwtsResp = reinterpret_cast<hwts_response_t *>(msg);
-    TsAicpuSqe *ctrlMsg = reinterpret_cast<TsAicpuSqe *>(hwtsResp->msg);
+    hwts_response_t* hwtsResp = reinterpret_cast<hwts_response_t*>(msg);
+    TsAicpuSqe* ctrlMsg = reinterpret_cast<TsAicpuSqe*>(hwtsResp->msg);
     EXPECT_EQ(std::memcmp(ctrlMsg, &expSqe_, sizeof(TsAicpuSqe)), 0);
     return AICPU_SCHEDULE_OK;
 }
 
-inline int32_t MsgInfohalEschedAckEventStub(uint32_t devId, EVENT_ID eventId, uint32_t subeventId, char *msg, uint32_t msgLen)
+inline int32_t MsgInfohalEschedAckEventStub(
+    uint32_t devId, EVENT_ID eventId, uint32_t subeventId, char* msg, uint32_t msgLen)
 {
-    hwts_response_t *hwtsResp = reinterpret_cast<hwts_response_t *>(msg);
-    TsAicpuMsgInfo *ctrlMsg = reinterpret_cast<TsAicpuMsgInfo *>(hwtsResp->msg);
+    hwts_response_t* hwtsResp = reinterpret_cast<hwts_response_t*>(msg);
+    TsAicpuMsgInfo* ctrlMsg = reinterpret_cast<TsAicpuMsgInfo*>(hwtsResp->msg);
     EXPECT_EQ(std::memcmp(ctrlMsg, &expMsg_, sizeof(TsAicpuMsgInfo)), 0);
     return AICPU_SCHEDULE_OK;
 }
 
-inline void ClearMsgAndSqe() 
+inline void ClearMsgAndSqe()
 {
     memset_s(&expSqe_, sizeof(expSqe_), 0, sizeof(expSqe_));
     memset_s(&expMsg_, sizeof(expSqe_), 0, sizeof(expMsg_));
 }
 
-#endif //MESSAGE_ADAPTER_COMMON_STUB_H
+#endif // MESSAGE_ADAPTER_COMMON_STUB_H

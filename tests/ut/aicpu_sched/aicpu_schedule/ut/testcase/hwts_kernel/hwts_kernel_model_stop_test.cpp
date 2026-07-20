@@ -26,28 +26,28 @@ protected:
     ModelStopTsKernel kernel_;
 };
 
-TEST_F(ModelStopKernelTest, TsKernelModelStop_success) {
+TEST_F(ModelStopKernelTest, TsKernelModelStop_success)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    MOCKER_CPP(&AicpuScheduleInterface::Stop)
-        .stubs()
-        .will(returnValue(AICPU_SCHEDULE_OK));
+    MOCKER_CPP(&AicpuScheduleInterface::Stop).stubs().will(returnValue(AICPU_SCHEDULE_OK));
     int ret = kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_OK);
     delete config;
     config = nullptr;
 }
 
-TEST_F(ModelStopKernelTest, TsKernelModelStop_fail1) {
+TEST_F(ModelStopKernelTest, TsKernelModelStop_fail1)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
@@ -57,18 +57,17 @@ TEST_F(ModelStopKernelTest, TsKernelModelStop_fail1) {
     config = nullptr;
 }
 
-TEST_F(ModelStopKernelTest, TsKernelModelStop_fail2) {
+TEST_F(ModelStopKernelTest, TsKernelModelStop_fail2)
+{
     aicpu::HwtsTsKernel tsKernelInfo;
     aicpu::HwtsCceKernel cceKernel;
-    ReDeployConfig *config = new ReDeployConfig();
+    ReDeployConfig* config = new ReDeployConfig();
     config->modelIdNum = 1;
     uint32_t modelIds[1] = {0};
     config->modelIdsAddr = PtrToValue(&modelIds[0]);
     cceKernel.paramBase = (uint64_t)config;
     tsKernelInfo.kernelBase.cceKernel = cceKernel;
-    MOCKER_CPP(&AicpuScheduleInterface::Stop)
-        .stubs()
-        .will(returnValue(-1));
+    MOCKER_CPP(&AicpuScheduleInterface::Stop).stubs().will(returnValue(-1));
     int ret = kernel_.Compute(tsKernelInfo);
     EXPECT_EQ(ret, AICPU_SCHEDULE_FAIL);
     delete config;

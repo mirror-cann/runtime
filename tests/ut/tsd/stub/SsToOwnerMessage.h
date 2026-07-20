@@ -29,16 +29,8 @@ enum class SsOperSysType : uint32_t {
     SD,
     SEA,
 };
-enum class GroupOwner : uint32_t {
-    DATAMASTER = 0U,
-    IAM,
-    APPMGR
-};
-enum class OptionType : uint32_t {
-    START = 0U,
-    TERM,
-    RESTART
-};
+enum class GroupOwner : uint32_t { DATAMASTER = 0U, IAM, APPMGR };
+enum class OptionType : uint32_t { START = 0U, TERM, RESTART };
 
 struct AppInfo {
     AppInfo(const SsOperSysType type, const GroupOwner groupOwner, const std::string name, const OptionType opt)
@@ -84,10 +76,11 @@ enum class SstoOwnerRequestType : uint32_t {
 };
 
 struct AppInfoForServer {
-    AppInfoForServer(const std::string &name, const std::vector<std::string> &argVec)
+    AppInfoForServer(const std::string& name, const std::vector<std::string>& argVec)
         : appName(name), arguments(argVec){};
-    AppInfoForServer(const std::string &name, const std::vector<std::string> &argVec,
-        const std::map<int, std::vector<std::string>> &para)
+    AppInfoForServer(
+        const std::string& name, const std::vector<std::string>& argVec,
+        const std::map<int, std::vector<std::string>>& para)
         : appName(name), arguments(argVec), dynamicPara(para){};
     AppInfoForServer() = default;
     std::string appName;
@@ -106,12 +99,7 @@ struct CoreAffinityConfig {
     uint32_t checkInterval = 1000U; // ms
 };
 
-enum class DynamicParaIndex : int32_t {
-    EXECV_PATH = 0,
-    DEVICE_ID,
-    ENV,
-    MAX
-};
+enum class DynamicParaIndex : int32_t { EXECV_PATH = 0, DEVICE_ID, ENV, MAX };
 
 enum class PorcDetailStatus : uint32_t {
     SUB_PROC_STATUS_NORMAL = 0U,

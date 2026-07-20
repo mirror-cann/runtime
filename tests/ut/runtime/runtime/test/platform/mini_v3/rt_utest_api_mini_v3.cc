@@ -60,14 +60,13 @@
 using namespace testing;
 using namespace cce::runtime;
 
-class ApiMINIV3Test : public testing::Test
-{
+class ApiMINIV3Test : public testing::Test {
 protected:
     static void SetUpTestCase()
     {
         (void)rtSetSocVersion("Ascend310B1");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
-        Runtime *rtInstance = (Runtime *)Runtime::Instance();
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        Runtime* rtInstance = (Runtime*)Runtime::Instance();
         rtInstance->SetChipType(CHIP_MINI_V3);
         GlobalContainer::SetRtChipType(CHIP_MINI_V3);
         (void)rtSetDevice(0);
@@ -78,13 +77,10 @@ protected:
     {
         rtDeviceReset(0);
         (void)rtSetSocVersion("");
-        ((Runtime *)Runtime::Instance())->SetIsUserSetSocVersion(false);
+        ((Runtime*)Runtime::Instance())->SetIsUserSetSocVersion(false);
     }
 
-    virtual void SetUp()
-    {
-        (void)rtSetDevice(0);
-    }
+    virtual void SetUp() { (void)rtSetDevice(0); }
 
     virtual void TearDown()
     {
@@ -92,7 +88,6 @@ protected:
         GlobalMockObject::verify();
     }
 };
-
 
 TEST_F(ApiMINIV3Test, notify_test)
 {
@@ -102,7 +97,7 @@ TEST_F(ApiMINIV3Test, notify_test)
 
     error = rtNotifyCreate(device_id, &notify);
     EXPECT_EQ(error, RT_ERROR_NONE);
- 
+
     error = rtIpcSetNotifyName(notify, "test_ipc", 8);
     EXPECT_EQ(error, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
 
@@ -116,15 +111,15 @@ TEST_F(ApiMINIV3Test, notify_test)
 TEST_F(ApiMINIV3Test, IPC_ADAPT)
 {
     ApiImpl apiImpl;
-    void *ptr = nullptr;
-    void **ptrNull = nullptr;
+    void* ptr = nullptr;
+    void** ptrNull = nullptr;
     char* name = nullptr;
     rtNotify_t notify;
-    int32_t pid[]={1};
+    int32_t pid[] = {1};
     rtError_t error;
-    Runtime *rtInstance = const_cast<Runtime *>(Runtime::Instance());
+    Runtime* rtInstance = const_cast<Runtime*>(Runtime::Instance());
     Device* device = rtInstance->DeviceRetain(0, 0);
-    
+
     error = apiImpl.IpcSetMemoryName(ptr, 0, name, 0, 0UL);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
     error = apiImpl.IpcOpenMemory(ptrNull, name, 0UL);
@@ -137,15 +132,15 @@ TEST_F(ApiMINIV3Test, IPC_ADAPT)
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
     error = apiImpl.SetIpcMemPid(name, pid, 1);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
-    
+
     error = apiImpl.IpcSetMemoryAttr(name, RT_ATTR_TYPE_MEM_MAP, 0);
     EXPECT_EQ(error, RT_ERROR_FEATURE_NOT_SUPPORT);
 }
 
-TEST_F(ApiMINIV3Test, rtCacheLastTaskOpInfo_test) 
+TEST_F(ApiMINIV3Test, rtCacheLastTaskOpInfo_test)
 {
     rtError_t error;
-    
+
     char rawInfo[] = "test_op_info_data";
     size_t infoSize = sizeof(rawInfo);
 
