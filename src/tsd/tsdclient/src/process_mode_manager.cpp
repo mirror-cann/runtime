@@ -248,6 +248,9 @@ TSD_StatusT ProcessModeManager::Close(const uint32_t flag)
     hccpPid_ = 0;
     SetTsdStartInfo(false, false, false);
     aicpuPackageExistInDevice_ = false;
+    hasSendConfigFile_ = false;
+    pkgHostHashValue_.clear();
+    pkgDeviceHashValue_.clear();
     TSD_RUN_INFO("[TsdClient][deviceId=%u] [sessionId=%u] close hccp and "
                  "computer process success", logicDeviceId_, tsdSessionId_);
     return TSD_OK;
