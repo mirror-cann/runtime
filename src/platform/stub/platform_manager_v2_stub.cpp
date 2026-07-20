@@ -14,15 +14,17 @@
 extern "C" {
 #endif // __cplusplus
 
-PlatformManagerV2 &PlatformManagerV2::Instance() {
-  static PlatformManagerV2 platform_info;
-  return platform_info;
+PlatformManagerV2& PlatformManagerV2::Instance()
+{
+    static PlatformManagerV2 platform_info;
+    return platform_info;
 }
 
-int32_t PlatformManagerV2::GetSocSpec(const std::string &soc_version,
-                                       const std::string &label, const std::string &key, std::string &value) {
-  value = "3004";
-  return 0;
+int32_t PlatformManagerV2::GetSocSpec(
+    const std::string& soc_version, const std::string& label, const std::string& key, std::string& value)
+{
+    value = "3004";
+    return 0;
 }
 
 #ifdef __cplusplus

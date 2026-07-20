@@ -16,7 +16,7 @@ constexpr uint32_t PLATFORM_FAILED = 0xFFFFFFFF;
 constexpr uint32_t PLATFORM_SUCCESS = 0;
 
 // ensure the numerical value remains consistent with rts
-constexpr int32_t PLATFORM_ERROR_NOT_FOUND                          = 0x071A0001;
-constexpr int32_t PLATFORM_ERROR_PARSE_FILE_FAILED                  = 0x071F0001;
+constexpr int32_t PLATFORM_ERROR_NOT_FOUND = 0x071A0001;
+constexpr int32_t PLATFORM_ERROR_PARSE_FILE_FAILED = 0x071F0001;
 
-#endif  // __PLATFORM_ERROR_DEFINE_H__
+#endif // __PLATFORM_ERROR_DEFINE_H__

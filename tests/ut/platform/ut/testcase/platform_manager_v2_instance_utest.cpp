@@ -19,64 +19,69 @@
 #undef protected
 #undef private
 
-
 namespace fe {
 class PlatformManagerV2UTest : public testing::Test {
 protected:
-  void SetUp() {
-    std::lock_guard<std::mutex> lock_guard(PlatformManagerV2::Instance().soc_lock_);
-    PlatformManagerV2::Instance().soc_file_status_.clear();
-    PlatformManagerV2::Instance().platform_infos_map_.clear();
-  }
+    void SetUp()
+    {
+        std::lock_guard<std::mutex> lock_guard(PlatformManagerV2::Instance().soc_lock_);
+        PlatformManagerV2::Instance().soc_file_status_.clear();
+        PlatformManagerV2::Instance().platform_infos_map_.clear();
+    }
 
-  void TearDown() {
-    std::lock_guard<std::mutex> lock_guard(PlatformManagerV2::Instance().soc_lock_);
-    PlatformManagerV2::Instance().soc_file_status_.clear();
-    PlatformManagerV2::Instance().platform_infos_map_.clear();
-    GlobalMockObject::verify();
-  }
+    void TearDown()
+    {
+        std::lock_guard<std::mutex> lock_guard(PlatformManagerV2::Instance().soc_lock_);
+        PlatformManagerV2::Instance().soc_file_status_.clear();
+        PlatformManagerV2::Instance().platform_infos_map_.clear();
+        GlobalMockObject::verify();
+    }
 };
 
-TEST_F(PlatformManagerV2UTest, platform_instance_001) {
-  PlatformManagerV2 &instance = PlatformManagerV2::Instance();
-  std::string value_arch = "";
-  auto ret = instance.GetSocSpec("Ascend910B1", "Version", "NpuArch", value_arch);
-  EXPECT_EQ(value_arch, "");
+TEST_F(PlatformManagerV2UTest, platform_instance_001)
+{
+    PlatformManagerV2& instance = PlatformManagerV2::Instance();
+    std::string value_arch = "";
+    auto ret = instance.GetSocSpec("Ascend910B1", "Version", "NpuArch", value_arch);
+    EXPECT_EQ(value_arch, "");
 
-  ret = instance.GetSocSpec("Ascend910B1", "version", "NpuArch", value_arch);
-  EXPECT_EQ(value_arch, "2201");
+    ret = instance.GetSocSpec("Ascend910B1", "version", "NpuArch", value_arch);
+    EXPECT_EQ(value_arch, "2201");
 
-  ret = instance.GetSocSpec("Ascend910B1", "version", "Npu-Arch", value_arch);
-  EXPECT_EQ(ret, 0x071A0001);
+    ret = instance.GetSocSpec("Ascend910B1", "version", "Npu-Arch", value_arch);
+    EXPECT_EQ(ret, 0x071A0001);
 
-  ret = instance.GetSocSpec("AscendTest", "version", "Npu-Arch", value_arch);
-  EXPECT_EQ(ret, 0x071F0001);
+    ret = instance.GetSocSpec("AscendTest", "version", "Npu-Arch", value_arch);
+    EXPECT_EQ(ret, 0x071F0001);
 }
 
-TEST_F(PlatformManagerV2UTest, platform_instance_Trim) {
-  std::string strOk = " \t \t \t \t \t123456 \t \t \t \t";
-  std::vector<std::string> res_vec;
-  fe::PlatformInfosUtils::Split(strOk, ' ', res_vec);
-  fe::PlatformInfosUtils::Trim(strOk);
-  EXPECT_EQ(strOk, "123456");
+TEST_F(PlatformManagerV2UTest, platform_instance_Trim)
+{
+    std::string strOk = " \t \t \t \t \t123456 \t \t \t \t";
+    std::vector<std::string> res_vec;
+    fe::PlatformInfosUtils::Split(strOk, ' ', res_vec);
+    fe::PlatformInfosUtils::Trim(strOk);
+    EXPECT_EQ(strOk, "123456");
 
-  std::string strNg = " \t \t \t \t \t                  ";
-  fe::PlatformInfosUtils::Split(strOk, '\t', res_vec);
-  fe::PlatformInfosUtils::Trim(strNg);
-  EXPECT_EQ(strNg, "");
-}
-
-TEST_F(PlatformManagerV2UTest, platform_instance_RealPath1) {
-  std::string path = "";
-  string res = "";
-  res = fe::RealSoFilePath(path);
-  EXPECT_EQ(res, "");
+    std::string strNg = " \t \t \t \t \t                  ";
+    fe::PlatformInfosUtils::Split(strOk, '\t', res_vec);
+    fe::PlatformInfosUtils::Trim(strNg);
+    EXPECT_EQ(strNg, "");
 }
 
-TEST_F(PlatformManagerV2UTest, platform_instance_RealPath2) {
-  std::string path = "test1";
-  string res = "";
-  res = fe::RealSoFilePath(path);
-  EXPECT_EQ(res, "");
+TEST_F(PlatformManagerV2UTest, platform_instance_RealPath1)
+{
+    std::string path = "";
+    string res = "";
+    res = fe::RealSoFilePath(path);
+    EXPECT_EQ(res, "");
 }
+
+TEST_F(PlatformManagerV2UTest, platform_instance_RealPath2)
+{
+    std::string path = "test1";
+    string res = "";
+    res = fe::RealSoFilePath(path);
+    EXPECT_EQ(res, "");
 }
+} // namespace fe

@@ -21,37 +21,40 @@
 extern "C" {
 #endif // __cplusplus
 class PlatformManagerV2 {
- public:
-  PlatformManagerV2(const PlatformManagerV2 &) = delete;
-  PlatformManagerV2 &operator=(const PlatformManagerV2 &) = delete;
+public:
+    PlatformManagerV2(const PlatformManagerV2&) = delete;
+    PlatformManagerV2& operator=(const PlatformManagerV2&) = delete;
 
-  static PlatformManagerV2 &Instance();
+    static PlatformManagerV2& Instance();
 
-  int32_t GetSocSpec(const std::string &soc_version, const std::string &label, const std::string &key, std::string &value);
+    int32_t GetSocSpec(
+        const std::string& soc_version, const std::string& label, const std::string& key, std::string& value);
 
- private:
-  PlatformManagerV2() = default;
-  ~PlatformManagerV2() = default;
+private:
+    PlatformManagerV2() = default;
+    ~PlatformManagerV2() = default;
 
-  uint32_t LoadIniFile(const std::string &ini_file_real_path);
-  uint32_t AssemblePlatformInfoVector(std::map<std::string, std::map<std::string, std::string>> &content_info_map);
-  void FillupFixPipeInfo(fe::PlatFormInfos &platform_infos);
-  void ParseAICoreintrinsicDtypeMap(std::map<std::string, std::string> &ai_coreintrinsic_dtype_map,
-                                    fe::PlatFormInfos &platform_info_temp);
-  void ParseVectorCoreintrinsicDtypeMap(std::map<std::string, std::string> &vector_coreintrinsic_dtype_map,
-                                        fe::PlatFormInfos &platform_info_temp);
-  void ParsePlatformRes(const std::string &label, std::map<std::string, std::string> &platform_res_map,
-                        fe::PlatFormInfos &platform_info_temp);
-  uint32_t ParsePlatformInfo(std::map<std::string, std::map<std::string, std::string>> &content_info_map,
-                            fe::PlatFormInfos &platform_info_temp);
-  uint32_t InitPlatformInfos(const std::string &soc_version);
-  int32_t GetPlatformInfos(const std::string &soc_version, fe::PlatFormInfos &platform_info);
+    uint32_t LoadIniFile(const std::string& ini_file_real_path);
+    uint32_t AssemblePlatformInfoVector(std::map<std::string, std::map<std::string, std::string>>& content_info_map);
+    void FillupFixPipeInfo(fe::PlatFormInfos& platform_infos);
+    void ParseAICoreintrinsicDtypeMap(
+        std::map<std::string, std::string>& ai_coreintrinsic_dtype_map, fe::PlatFormInfos& platform_info_temp);
+    void ParseVectorCoreintrinsicDtypeMap(
+        std::map<std::string, std::string>& vector_coreintrinsic_dtype_map, fe::PlatFormInfos& platform_info_temp);
+    void ParsePlatformRes(
+        const std::string& label, std::map<std::string, std::string>& platform_res_map,
+        fe::PlatFormInfos& platform_info_temp);
+    uint32_t ParsePlatformInfo(
+        std::map<std::string, std::map<std::string, std::string>>& content_info_map,
+        fe::PlatFormInfos& platform_info_temp);
+    uint32_t InitPlatformInfos(const std::string& soc_version);
+    int32_t GetPlatformInfos(const std::string& soc_version, fe::PlatFormInfos& platform_info);
 
- private:
-  std::mutex soc_lock_;
-  std::map<std::string, bool> soc_file_status_;
+private:
+    std::mutex soc_lock_;
+    std::map<std::string, bool> soc_file_status_;
 
-  std::map<std::string, fe::PlatFormInfos> platform_infos_map_;
+    std::map<std::string, fe::PlatFormInfos> platform_infos_map_;
 };
 
 #ifdef __cplusplus

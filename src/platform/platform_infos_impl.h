@@ -19,47 +19,49 @@
 
 namespace fe {
 class PlatFormInfosImpl {
- public:
-  PlatFormInfosImpl() = default;
-  PlatFormInfosImpl(const PlatFormInfosImpl &platform_infos_impl);
-  PlatFormInfosImpl& operator=(const PlatFormInfosImpl &platform_infos_impl);
+public:
+    PlatFormInfosImpl() = default;
+    PlatFormInfosImpl(const PlatFormInfosImpl& platform_infos_impl);
+    PlatFormInfosImpl& operator=(const PlatFormInfosImpl& platform_infos_impl);
 
-  std::map<std::string, std::vector<std::string>> GetAICoreIntrinsicDtype();
-  std::map<std::string, std::vector<std::string>> GetVectorCoreIntrinsicDtype();
-  bool GetPlatformRes(const std::string &label, const std::string &key, std::string &val);
-  bool GetPlatformRes(const std::string &label, std::map<std::string, std::string> &res);
-  bool GetPlatformRes(std::map<std::string, std::map<std::string, std::string>> &res);
+    std::map<std::string, std::vector<std::string>> GetAICoreIntrinsicDtype();
+    std::map<std::string, std::vector<std::string>> GetVectorCoreIntrinsicDtype();
+    bool GetPlatformRes(const std::string& label, const std::string& key, std::string& val);
+    bool GetPlatformRes(const std::string& label, std::map<std::string, std::string>& res);
+    bool GetPlatformRes(std::map<std::string, std::map<std::string, std::string>>& res);
 
-  void SetAICoreIntrinsicDtype(std::map<std::string, std::vector<std::string>> &intrinsic_dtypes);
-  void SetVectorCoreIntrinsicDtype(std::map<std::string, std::vector<std::string>> &intrinsic_dtypes);
-  void SetPlatformRes(const std::string &label, std::map<std::string, std::string> &res);
-  std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
-  void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>> &fixpipe_dtype_map);
- private:
-  std::map<std::string, std::vector<std::string>> ai_core_intrinsic_dtype_map_;
-  std::map<std::string, std::vector<std::string>> vector_core_intrinsic_dtype_map_;
-  std::map<std::string, std::map<std::string, std::string>> platform_res_map_;
-  std::map<std::string, std::vector<std::string>> fixpipe_dtype_map_;
+    void SetAICoreIntrinsicDtype(std::map<std::string, std::vector<std::string>>& intrinsic_dtypes);
+    void SetVectorCoreIntrinsicDtype(std::map<std::string, std::vector<std::string>>& intrinsic_dtypes);
+    void SetPlatformRes(const std::string& label, std::map<std::string, std::string>& res);
+    std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
+    void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>>& fixpipe_dtype_map);
+
+private:
+    std::map<std::string, std::vector<std::string>> ai_core_intrinsic_dtype_map_;
+    std::map<std::string, std::vector<std::string>> vector_core_intrinsic_dtype_map_;
+    std::map<std::string, std::map<std::string, std::string>> platform_res_map_;
+    std::map<std::string, std::vector<std::string>> fixpipe_dtype_map_;
 };
 
 class OptionalInfosImpl {
- public:
-  std::string GetSocVersion();
-  std::string GetCoreType();
-  uint32_t GetAICoreNum();
-  std::string GetL1FusionFlag();
-  std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
-  void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>> &fixpipe_dtype_map);
-  void SetSocVersion(std::string soc_version);
-  void SetCoreType(std::string core_type);
-  void SetAICoreNum(uint32_t ai_core_num);
-  void SetL1FusionFlag(std::string l1_fusion_flag);
- private:
-  std::string soc_version_;
-  std::string core_type_;
-  uint32_t ai_core_num_{0};
-  std::string l1_fusion_flag_;
-  std::map<std::string, std::vector<std::string>> fixpipe_dtype_map_;
+public:
+    std::string GetSocVersion();
+    std::string GetCoreType();
+    uint32_t GetAICoreNum();
+    std::string GetL1FusionFlag();
+    std::map<std::string, std::vector<std::string>> GetFixPipeDtypeMap();
+    void SetFixPipeDtypeMap(const std::map<std::string, std::vector<std::string>>& fixpipe_dtype_map);
+    void SetSocVersion(std::string soc_version);
+    void SetCoreType(std::string core_type);
+    void SetAICoreNum(uint32_t ai_core_num);
+    void SetL1FusionFlag(std::string l1_fusion_flag);
+
+private:
+    std::string soc_version_;
+    std::string core_type_;
+    uint32_t ai_core_num_{0};
+    std::string l1_fusion_flag_;
+    std::map<std::string, std::vector<std::string>> fixpipe_dtype_map_;
 };
-}  // namespace fe
+} // namespace fe
 #endif

@@ -16,37 +16,25 @@ using namespace std;
 
 namespace fe {
 
-bool PlatFormInfos::GetPlatformRes(const std::string &label, const std::string &key, std::string &val)
+bool PlatFormInfos::GetPlatformRes(const std::string& label, const std::string& key, std::string& val) { return true; }
+
+uint32_t PlatFormInfos::GetCoreNum() const { return 0; }
+
+bool PlatFormInfos::GetPlatformResWithLock(const std::string& label, const std::string& key, std::string& val)
 {
     return true;
 }
 
-uint32_t PlatFormInfos::GetCoreNum() const
-{
-    return 0;
-}
-
-bool PlatFormInfos::GetPlatformResWithLock(const std::string &label, const std::string &key, std::string &val)
+bool PlatFormInfos::GetPlatformResWithLock(const std::string& label, std::map<std::string, std::string>& res)
 {
     return true;
 }
 
-bool PlatFormInfos::GetPlatformResWithLock(const std::string &label, std::map<std::string, std::string> &res)
-{
-    return true;
-}
+void PlatFormInfos::SetCoreNumByCoreType(const std::string& core_type) {}
 
-void PlatFormInfos::SetCoreNumByCoreType(const std::string &core_type) {}
+uint32_t PlatFormInfos::GetCoreNumByType(const std::string& core_type) { return 0; }
 
-uint32_t PlatFormInfos::GetCoreNumByType(const std::string &core_type)
-{
-    return 0;
-}
+void PlatFormInfos::SetPlatformResWithLock(const std::string& label, std::map<std::string, std::string>& res) {}
 
-void PlatFormInfos::SetPlatformResWithLock(const std::string &label, std::map<std::string, std::string> &res) {}
-
-std::string PlatFormInfos::SaveToBuffer()
-{
-    return "";
-}
-}  // namespace fe
+std::string PlatFormInfos::SaveToBuffer() { return ""; }
+} // namespace fe

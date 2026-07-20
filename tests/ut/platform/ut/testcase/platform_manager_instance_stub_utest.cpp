@@ -18,56 +18,56 @@
 #undef protected
 #undef private
 
-
 namespace fe {
 class PlatformManagerUTest : public testing::Test {
 protected:
-  void SetUp() {
-    PlatformInfoManager::Instance().platform_infos_map_.clear();
-    PlatformInfoManager::Instance().platform_info_map_.clear();
-    PlatformInfoManager::Instance().device_platform_infos_map_.clear();
-    PlatformInfoManager::Instance().runtime_device_platform_infos_map_.clear();
-    PlatformInfoManager::Instance().init_flag_ = false;
-    PlatformInfoManager::Instance().runtime_init_flag_ = false;
-  }
+    void SetUp()
+    {
+        PlatformInfoManager::Instance().platform_infos_map_.clear();
+        PlatformInfoManager::Instance().platform_info_map_.clear();
+        PlatformInfoManager::Instance().device_platform_infos_map_.clear();
+        PlatformInfoManager::Instance().runtime_device_platform_infos_map_.clear();
+        PlatformInfoManager::Instance().init_flag_ = false;
+        PlatformInfoManager::Instance().runtime_init_flag_ = false;
+    }
 
-  void TearDown() {
-    GlobalMockObject::verify();
-  }
+    void TearDown() { GlobalMockObject::verify(); }
 };
 
-TEST_F(PlatformManagerUTest, platform_instance_001) {
-  PlatformInfoManager &instance = PlatformInfoManager::Instance();
-  uint32_t ret = instance.InitializePlatformInfo();
-  EXPECT_EQ(ret, 0U);
-  // platform info interface
-  PlatFormInfos platform_infos;
-  platform_infos.SetCoreNumByCoreType("AiCore");
-  std::string label = "abc";
-  std::string key = "abc";
-  std::string val = "abc";
-  platform_infos.GetPlatformResWithLock(label, key, val);
-  std::map<std::string, std::string> res;
-  platform_infos.GetPlatformResWithLock(label, res);
-  platform_infos.SetPlatformResWithLock(label, res);
-  platform_infos.GetPlatformRes(label, key, val);
-  platform_infos.GetCoreNum();
-  platform_infos.SaveToBuffer();
+TEST_F(PlatformManagerUTest, platform_instance_001)
+{
+    PlatformInfoManager& instance = PlatformInfoManager::Instance();
+    uint32_t ret = instance.InitializePlatformInfo();
+    EXPECT_EQ(ret, 0U);
+    // platform info interface
+    PlatFormInfos platform_infos;
+    platform_infos.SetCoreNumByCoreType("AiCore");
+    std::string label = "abc";
+    std::string key = "abc";
+    std::string val = "abc";
+    platform_infos.GetPlatformResWithLock(label, key, val);
+    std::map<std::string, std::string> res;
+    platform_infos.GetPlatformResWithLock(label, res);
+    platform_infos.SetPlatformResWithLock(label, res);
+    platform_infos.GetPlatformRes(label, key, val);
+    platform_infos.GetCoreNum();
+    platform_infos.SaveToBuffer();
 }
 
-TEST_F(PlatformManagerUTest, platform_instance_002) {
-  PlatformInfoManager &instance = PlatformInfoManager::Instance();
-  // platform info interface
-  uint32_t ret = instance.InitializePlatformInfo();
-  PlatFormInfos platform_infos;
-  platform_infos.SetCoreNumByCoreType("AiCore");
-  std::string label = "abc";
-  std::string key = "abc";
-  std::string val = "abc";
-  platform_infos.GetPlatformResWithLock(label, key, val);
-  std::map<std::string, std::string> res;
-  std::string soc = "AiCore";
-  ret = platform_infos.GetCoreNumByType(soc);
-  EXPECT_EQ(ret, 0);
+TEST_F(PlatformManagerUTest, platform_instance_002)
+{
+    PlatformInfoManager& instance = PlatformInfoManager::Instance();
+    // platform info interface
+    uint32_t ret = instance.InitializePlatformInfo();
+    PlatFormInfos platform_infos;
+    platform_infos.SetCoreNumByCoreType("AiCore");
+    std::string label = "abc";
+    std::string key = "abc";
+    std::string val = "abc";
+    platform_infos.GetPlatformResWithLock(label, key, val);
+    std::map<std::string, std::string> res;
+    std::string soc = "AiCore";
+    ret = platform_infos.GetCoreNumByType(soc);
+    EXPECT_EQ(ret, 0);
 }
-}
+} // namespace fe

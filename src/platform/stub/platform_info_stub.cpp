@@ -10,81 +10,68 @@
 
 #include "platform_info.h"
 namespace fe {
-PlatformInfoManager::PlatformInfoManager() : init_flag_(false), runtime_init_flag_(false), opti_compilation_info_()
-{}
+PlatformInfoManager::PlatformInfoManager() : init_flag_(false), runtime_init_flag_(false), opti_compilation_info_() {}
 
-PlatformInfoManager::~PlatformInfoManager()
-{}
+PlatformInfoManager::~PlatformInfoManager() {}
 
-PlatformInfoManager &PlatformInfoManager::Instance()
+PlatformInfoManager& PlatformInfoManager::Instance()
 {
     static PlatformInfoManager platform_info;
     return platform_info;
 }
 
-PlatformInfoManager &PlatformInfoManager::GeInstance()
+PlatformInfoManager& PlatformInfoManager::GeInstance()
 {
     static PlatformInfoManager ge_platform_info;
     return ge_platform_info;
 }
 
-uint32_t PlatformInfoManager::Finalize() {
-  return 0U;
-}
+uint32_t PlatformInfoManager::Finalize() { return 0U; }
 
-__attribute__((visibility("default"))) uint32_t PlatformInfoManager::InitializePlatformInfo()
+__attribute__((visibility("default"))) uint32_t PlatformInfoManager::InitializePlatformInfo() { return 0; }
+
+__attribute__((visibility("default"))) uint32_t PlatformInfoManager::GetPlatformInfo(
+    const std::string SoCVersion, PlatformInfo& platform_info, OptionalInfo& opti_compilation_info)
 {
     return 0;
 }
 
-__attribute__((visibility("default"))) uint32_t PlatformInfoManager::GetPlatformInfo(const std::string SoCVersion,
-    PlatformInfo &platform_info, OptionalInfo &opti_compilation_info)
+__attribute__((visibility("default"))) uint32_t PlatformInfoManager::GetPlatformInfos(
+    const std::string SoCVersion, PlatFormInfos& platform_info, OptionalInfos& opti_compilation_info)
 {
     return 0;
 }
 
-__attribute__((visibility("default"))) uint32_t PlatformInfoManager::GetPlatformInfos(const std::string SoCVersion,
-    PlatFormInfos &platform_info, OptionalInfos &opti_compilation_info)
-{
-    return 0;
-}
-
-__attribute__((visibility("default"))) uint32_t PlatformInfoManager::GetPlatformInstanceByDevice(
-    const uint32_t &device_id, PlatFormInfos &platform_info)
+__attribute__((visibility("default"))) uint32_t
+PlatformInfoManager::GetPlatformInstanceByDevice(const uint32_t& device_id, PlatFormInfos& platform_info)
 {
     return 0;
 }
 
 __attribute__((visibility("default"))) uint32_t PlatformInfoManager::GetPlatformInfoWithOutSocVersion(
-    PlatFormInfos &platform_info, OptionalInfos &opti_compilation_info)
+    PlatFormInfos& platform_info, OptionalInfos& opti_compilation_info)
 {
     return 0;
 }
 
-uint32_t PlatformInfoManager::UpdateRuntimePlatformInfosByDevice(const uint32_t &device_id,
-    PlatFormInfos &platform_infos)
+uint32_t PlatformInfoManager::UpdateRuntimePlatformInfosByDevice(
+    const uint32_t& device_id, PlatFormInfos& platform_infos)
 {
     return 0;
 }
 
-uint32_t PlatformInfoManager::UpdatePlatformInfos(fe::PlatFormInfos &platform_info)
+uint32_t PlatformInfoManager::UpdatePlatformInfos(fe::PlatFormInfos& platform_info) { return 0; }
+
+uint32_t PlatformInfoManager::GetRuntimePlatformInfosByDevice(
+    const uint32_t& device_id, PlatFormInfos& platform_infos, bool need_deep_copy)
 {
     return 0;
 }
 
-uint32_t PlatformInfoManager::GetRuntimePlatformInfosByDevice(const uint32_t &device_id,
-    PlatFormInfos &platform_infos, bool need_deep_copy)
+uint32_t PlatformInfoManager::UpdatePlatformInfos(const std::string& soc_version, fe::PlatFormInfos& platform_info)
 {
     return 0;
 }
 
-uint32_t PlatformInfoManager::UpdatePlatformInfos(const std::string &soc_version, fe::PlatFormInfos &platform_info)
-{
-    return 0;
-}
-
-uint32_t PlatformInfoManager::InitRuntimePlatformInfos(const std::string &SoCVersion)
-{
-    return 0;
-}
-}  // namespace fe
+uint32_t PlatformInfoManager::InitRuntimePlatformInfos(const std::string& SoCVersion) { return 0; }
+} // namespace fe

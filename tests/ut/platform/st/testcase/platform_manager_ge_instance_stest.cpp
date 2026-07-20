@@ -18,36 +18,38 @@
 #undef protected
 #undef private
 
-
 namespace fe {
 class PlatformManagerGeSTest : public testing::Test {
 protected:
-  void SetUp() {
-    PlatformInfoManager::GeInstance().platform_infos_map_.clear();
-    PlatformInfoManager::GeInstance().platform_info_map_.clear();
-    PlatformInfoManager::GeInstance().device_platform_infos_map_.clear();
-    PlatformInfoManager::GeInstance().runtime_device_platform_infos_map_.clear();
-    PlatformInfoManager::GeInstance().init_flag_ = false;
-    PlatformInfoManager::GeInstance().runtime_init_flag_ = false;
-  }
+    void SetUp()
+    {
+        PlatformInfoManager::GeInstance().platform_infos_map_.clear();
+        PlatformInfoManager::GeInstance().platform_info_map_.clear();
+        PlatformInfoManager::GeInstance().device_platform_infos_map_.clear();
+        PlatformInfoManager::GeInstance().runtime_device_platform_infos_map_.clear();
+        PlatformInfoManager::GeInstance().init_flag_ = false;
+        PlatformInfoManager::GeInstance().runtime_init_flag_ = false;
+    }
 
-  void TearDown() {
-    PlatformInfoManager::GeInstance().Finalize();
-    GlobalMockObject::verify();
-  }
+    void TearDown()
+    {
+        PlatformInfoManager::GeInstance().Finalize();
+        GlobalMockObject::verify();
+    }
 };
 
-TEST_F(PlatformManagerGeSTest, platform_ge_instance_001) {
-  PlatformInfoManager &ge_instance = PlatformInfoManager::GeInstance();
-  std::string soc_version = "Ascend910B1";
-  ge_instance.InitRuntimePlatformInfos(soc_version);
-  PlatFormInfos platform_infos;
-  OptionalInfos optional_infos;
-  uint32_t ret1 = ge_instance.GetPlatformInfos(soc_version, platform_infos, optional_infos);
-  EXPECT_EQ(ret1, 0U);
-  uint32_t ret2 = ge_instance.GetRuntimePlatformInfosByDevice(0, platform_infos);
-  EXPECT_EQ(ret2, 0U);
-  uint32_t ret3 = ge_instance.UpdateRuntimePlatformInfosByDevice(0, platform_infos);
-  EXPECT_EQ(ret3, 0U);
+TEST_F(PlatformManagerGeSTest, platform_ge_instance_001)
+{
+    PlatformInfoManager& ge_instance = PlatformInfoManager::GeInstance();
+    std::string soc_version = "Ascend910B1";
+    ge_instance.InitRuntimePlatformInfos(soc_version);
+    PlatFormInfos platform_infos;
+    OptionalInfos optional_infos;
+    uint32_t ret1 = ge_instance.GetPlatformInfos(soc_version, platform_infos, optional_infos);
+    EXPECT_EQ(ret1, 0U);
+    uint32_t ret2 = ge_instance.GetRuntimePlatformInfosByDevice(0, platform_infos);
+    EXPECT_EQ(ret2, 0U);
+    uint32_t ret3 = ge_instance.UpdateRuntimePlatformInfosByDevice(0, platform_infos);
+    EXPECT_EQ(ret3, 0U);
 }
-}
+} // namespace fe
